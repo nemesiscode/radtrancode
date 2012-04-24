@@ -1,0 +1,21 @@
+C     Define the fixed CIA parameters
+      INTEGER NUMWN,NUMT,NUMPAIRS,NPARA
+      PARAMETER (NUMWN = 1501)
+      PARAMETER (NUMT = 25)
+      PARAMETER (NPARA = 24)
+      PARAMETER (NUMPAIRS = 9)
+      CHARACTER*100 ANAME1,ANAME2
+
+      REAL KCIA(NUMPAIRS,NUMT,NUMWN),VVK1(NUMWN),TEMPK1(NUMT),DNU1
+      INTEGER IREAD1,IT1C,IT2C,IVC
+      REAL KH2H2(NPARA,NUMT,NUMWN),KH2HE(NPARA,NUMT,NUMWN)
+      REAL VVK2(NUMWN),TEMPK2(NUMT),DNU2,FP(NPARA)   
+      INTEGER IREAD2,IT1K,IT2K,IVK,IPARA2
+  
+C     ----------------------------------------------------------------------
+      COMMON /CIATABLE/ IREAD1, ANAME1, DNU1, TEMPK1, VVK1, KCIA,
+     1 IT1C, IT2C, IVC
+      COMMON /FPTABLE/ IREAD2, ANAME2, DNU2, VVK2, TEMPK2, IPARA2, FP,
+     1 KH2H2, KH2HE, IT1K, IT2K, IVK
+C     ----------------------------------------------------------------------
+

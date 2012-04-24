@@ -1,0 +1,310 @@
+      SUBROUTINE NH2H2(FPARA,TEMP,FREQ,ALFATOT)
+C     *************************************************************
+C     Subroutine to calculate an H2-H2 collision induced absorption spectrum
+C     in the v0 rotational-translational band.
+C
+C     Input variables:
+C       fpara		double	Required para-fraction (if negative, 
+C			      	the ratio is assumed to be in thermal eqm)
+C	temp		double	Temperature (K)
+C	freq 		double	Desired wavenumber
+C
+C     Output variables
+C	alfatot 	double	Absorption coefficient (cm-1 amagat-2)
+C
+C     Pat Irwin		31/1/96
+C			Modified 11/7/01
+C			2/3/12	Updated for Radtrans2.0
+C
+C ============================================================================
+C Copyright (C) 1991  Aleksandra Borysow and Lothar Frommhold
+C ============================================================================
+C 
+C Copyright Notice:
+C You may use this program  for your scientific applications,
+C but please do not  distribute it yourself.
+C Direct all your inquires to the  author: e-mail aborysow@phy.mtu.edu
+C Final request: If you publish  your work which benefited from this
+C program, please acknowledge using this program and QUOTE 
+C the original paper describing the procedure: 
+c	 The Astrophysical Journal
+c      vol. 296, p. 644--654, (1985) by J. Borysow, L. Trafton,
+C      L. Frommhold and G. Birnbaum.
+C ============================================================================
+C
+C
+C     THIS SUBROUTINE GENERATES THE H2-H2 TRANSLATIONAL/ROTATIONL
+C     CIA SPECTRA. IT IS BASED ON QUANTUM LINE SHAPE COMPUTATIONS AND
+C     THE AB INITIO DIPOLE DATA BE W. MEYER. DIMER FINE STRUCTURES ARE
+C     SUPPRESSED. THE PROGRAM WAS WRITTEN BY ALEKSANDRA BORYSOW AND
+C     LOTHAR FROMMHOLD. THIS IS THE NOVEMBER 1985 VERSION
+C
+C     H2-H2 COMPUTATIONS REFERENCE: MEYER, FROMMHOLD AND BIRNBAUM,
+C     TO BE PUBLISHED IN PHYS.REV.A IN 1985;
+C     THE H2-H2 MODELING USED HERE IS BEING PUBLISHED: J.BORYSOW,
+C     L.TRAFTON, L.FROMMHOLD, G.BIRNBAUM, AP.J. (1985)
+C
+C     TAPE3 IS OUTPUT: HEADER PLUS ABSORPTION COEFF. ALPHA(NU)
+C     h2part used to be auxil(5)
+  
+
+      IMPLICIT DOUBLE PRECISION(A-H,O-Z)      
+      COMMON /H2PART1/  Q,WH2(2),B0,D0
+      COMMON /H2PART2/ JRANGE1,NORMAL,F
+      Y(X,A,B,C)=A*DEXP((C*X+B)*X)
+C     ---------------------------- Code Section ------------------------     
+
+      IF(FPARA.LT.0.) THEN
+       NORMAL = 0
+       F = 0.0
+      ELSE
+       NORMAL = 1
+       F = FPARA
+      ENDIF
+
+      IF(TEMP.LT.40.OR.TEMP.GT.300)THEN
+       PRINT*,'nh2h2: Temperature should be 40 < T < 300',TEMP
+      END IF
+
+      CALL NPARTSUM(TEMP)
+
+C     THE H2-H2 SPECTRA
+C     =================
+
+      X=DLOG(TEMP)
+      ALFATOT=0.0
+
+C     THE LAMBDA1,LAMBDA2,LAMBDA,L = 2023 AND 0223 COMPONENTS:
+C     (QUADRUPOLE PLUS OVERLAP INDUCED COMPONENT)
+C	sum of 2023+0223:
+      S=Y(X,2.881d-61,-1.1005d0,0.1310d0)
+      E=Y(X,7.3485d0,-1.3874d0,0.1660d0)
+      T1=Y(X,7.883d-13,-.3652d0,-.0271d0)
+      T2=Y(X,3.803d-13,-.4048d0,-.0091d0)
+      T3=Y(X,1.0922d-12,-.4810d0,-.0127d0)
+      T4=Y(X,5.174d-12,-.9841d0,0.0483d0)
+      CALL ADDSPEC (FREQ,ABSCOEF,S,E,T1,T2,T3,T4,TEMP,0,1,0,2,2,3,
+     1 0,0,1.D0)
+      ALFATOT = ALFATOT + ABSCOEF
+
+C     PARAMETERS FOR 4045 AND 0445 (PURE HEXADECAPOLE) COMPONENTS
+      S=Y(X,2.404d-64,-1.4161d0,0.1847d0)
+      E=Y(X,-.8033d0,-.4474d0,-.0235d0)
+      T1=Y(X,3.873d-13,-.4226d0,-.0183d0)
+      T2=Y(X,2.743d-13,-.3566d0,-.0140d0)
+      T3=Y(X,4.171d-13,-.5223d0,0.0097d0)
+      T4=Y(X,2.2725d-12,-1.1056d0,0.0139d0)
+      CALL ADDSPEC(FREQ,ABSCOEF,S,E,T1,T2,T3,T4,TEMP,0,1,4,0,4,5,
+     1 0,0,1.D0)
+      ALFATOT = ALFATOT + ABSCOEF
+
+C     PARAMETERS FOR 0221 AND 2021 (PURE OVERLAP) COMPONENTS
+      S=Y(X,6.393d-63,-1.5964d0,0.2359d0)
+      E=Y(X,21.414d0,-1.2511d0,0.1178d0)
+      T1=Y(X,1.876d-13,-.4615d0,-.0012d0)
+      T2=Y(X,4.839d-13,-.5158d0,0.0075d0)
+      T3=Y(X,4.550d-13,-.5507d0,0.0095d0)
+      T4=Y(X,2.045d-12,-.5266d0,-.0240d0)
+      CALL  ADDSPEC(FREQ,ABSCOEF,S,E,T1,T2,T3,T4,TEMP,0,1,0,2,2,1,
+     1 0,0,1.D0)
+      ALFATOT = ALFATOT + ABSCOEF
+
+
+C     PARAMETERS FOR 2233 QUADRUPOLE INDUCED DOUBLE TRANSITIONS
+      S=Y(X,5.965d-63,-1.0394d0,0.1184d0)
+      E=Y(X,6.674d0    ,-.9459d0,0.1124d0)
+      T1=Y(X,4.764d-13,-.1725d0,-.0450d0)
+      T2=Y(X,4.016d-13,-.3802d0,-.0134d0)
+      T3=Y(X,1.0752d-12,-.4617d0,-.0085d0)
+      T4=Y(X,1.1405d-11,-1.2991d0,0.0729d0)
+      CALL ADDSPEC(FREQ,ABSCOEF,S,E,T1,T2,T3,T4,TEMP,0,1,2,2,3,3,
+     1 0,0,1.D0)
+      ALFATOT = ALFATOT + ABSCOEF
+
+      RETURN
+
+      END
+
+
+      SUBROUTINE ADDSPEC (FREQ,ABSCOEF,G0,EP,TAU1,TAU2,TAU5,TAU6,TEMP,
+     1 MP,LIKE,LAMBDA1,LAMBDA2,LAMBDA,LVALUE,NVIB1,NVIB2,FACTOR)
+
+C     THIS SUBROUTINE GENERATES A LISTING OF THE CIA TR ALFA(OMEGA)
+C     IF BOTH LAMBDA1 AND LAMBDA2 ARE NEGATIVE: SINGLE TRANSITIONS;
+C     DOUBLE TRANSITIONS ARE ASSUMED OTHERWISE.
+C     MP=1 GIVES LISTINGS OF INTERMEDIATE RESULTS.
+C     LIKE=1 FOR LIKE SYSTEMS (AS H2-H2), SET LIKE=0 ELSE.
+
+      IMPLICIT DOUBLE PRECISION(A-H,O-Z)      
+      COMMON /H2PART1/ Q,WH2(2),B0,D0
+      COMMON /H2PART2/ JRANGE1,NORMAL,F
+      DATA CLOSCHM,BOLTZWN/2.68675484E19,.6950304/
+      DATA HBAR,PI,CLIGHT/1.054588757d-27,3.1415926535898,2.9979250E10/
+      EH2(N,I)=4395.34*(DFLOAT(N)+0.5)-117.905*(DFLOAT(N)+0.5)**2
+     2  +(60.809-
+     1  2.993*(DFLOAT(N)+0.5)+.025*(DFLOAT(N)+.5)**2)*DFLOAT(I)-
+     3 (.04648-.00134*(DFLOAT(N)+.5))*DFLOAT(I*I)
+      PH2(J,T)=DFLOAT(2*J+1)*WH2(1+MOD(J,2))*
+     1  DEXP(-1.4387859/T*EH2(0,J*(J+1)))
+
+      ABSCOEF=0.D0
+
+      TWOPIC=2.*PI*CLIGHT
+      CALIB=TWOPIC*((4.*PI**2)/(3.*HBAR*CLIGHT))*CLOSCHM**2
+      CALIB=CALIB/DFLOAT(1+LIKE)
+      BETA=1./(BOLTZWN*TEMP)
+
+C     ROTATIONAL SPECTRUM FOR THE DETAILED LISTING   *******************
+      
+      IF ((LAMBDA1.LT.0).AND.(LAMBDA2.LT.0)) GO TO 60
+      JPLUSL=JRANGE1+MAX0(LAMBDA1,LAMBDA2)
+      DO 50 I1=1,JRANGE1
+         J1=I1-1
+      DO 50 IP1=1,JPLUSL
+         JP1=IP1-1
+         CG1S=CLEBSQR(J1,LAMBDA1,JP1)
+         IF (CG1S) 50,50,10
+   10    P1=PH2(J1,TEMP)/Q
+         IF (P1.LT.0.001) GO TO 50
+         OMEGA1=EH2(NVIB1,JP1*IP1)-EH2(0,J1*I1)
+         DO 40 I2=1,JRANGE1
+            J2=I2-1
+         DO 40 IP2=1,JPLUSL
+            JP2=IP2-1
+            CG2S=CLEBSQR(J2,LAMBDA2,JP2)
+            IF (CG2S) 40,40,20
+   20       P2=PH2(J2,TEMP)/Q
+            IF (P2.LT.0.001) GO TO 40
+            OMEGA2=EH2(NVIB2,JP2*IP2)-EH2(0,J2*I2)
+            FAC=CALIB*P1*P2*CG1S*CG2S
+            FRQ=FREQ-OMEGA1-OMEGA2
+            WKI=FREQ*(1.-DEXP(-BETA*FREQ))
+            WKF=WKI*FAC
+            XBG=G0*BGAMA(FRQ,TAU1,TAU2,EP,TAU5,TAU6,TEMP)
+            ABSCOEF=ABSCOEF+XBG*WKF
+   40    CONTINUE
+   50 CONTINUE
+      GO TO 100
+   60 JPLUSL=JRANGE1+LAMBDA
+      DO 90 I=1,JRANGE1
+         J=I-1
+      DO 90 IP=1,JPLUSL
+         JP=IP-1
+         CGS=CLEBSQR(J,LAMBDA,JP)
+         IF (CGS) 90,90,70
+   70    P=PH2(J,TEMP)/Q
+         IF (P.LT.0.001) GO TO 90
+         OMEGA1=EH2(NVIB1,JP*IP)-EH2(0,J*I)
+         FAC=CALIB*P*CGS
+         FRQ=FREQ-OMEGA1
+         WKI=FREQ*(1.-DEXP(-BETA*FREQ))
+         WKF=WKI*FAC
+         XBG=G0*BGAMA(FRQ,TAU1,TAU2,EP,TAU5,TAU6,TEMP)
+         ABSCOEF=ABSCOEF+XBG*WKF
+   90 CONTINUE
+  100 CONTINUE
+      RETURN
+      END
+
+
+      FUNCTION CLEBSQR (L,LAMBDA,LP)
+C
+C     SQUARE OF CLEBSCH-GORDAN COEFFICIENT (L,LAMBDA,0,0;LP,0)
+C     FOR INTEGER ARGUMENTS ONLY
+C     NOTE THAT LAMBDA SHOULD BE SMALL, MAYBE @10 OR SO.
+C
+      IMPLICIT DOUBLE PRECISION(A-H,O-Z)      
+      FC=DFLOAT(2*LP+1)
+      GO TO 10
+C
+      ENTRY THREEJ2
+C
+C     THIS ENTRY RETURNS THE SQUARED 3-J SYMBOL   L LAMBDA LP
+C                                                 0    0    0
+C     INSTEAD OF THE CLEBSCH-GORDAN COEFFICIENT
+C     (LIMITATION TO INTEGER ARGUMENTS ONLY)
+C
+C     NOTE THAT THE THREE-J SYMBOLS ARE COMPLETELY SYMMETRIC IN THE
+C     ARGUMENTS. IT WOULD BE ADVANTAGEOUS TO REORDER THE INPUT ARGUMENT
+C     LIST SO THAT LAMBDA BECOMES THE SMALLEST OF THE 3 ARGUMENTS.
+C
+      FC=1.
+   10 CLEBSQR=0.
+      IF (((L+LAMBDA).LT.LP).OR.((LAMBDA+LP).LT.L).OR.((L+LP).LT.LAMBDA)
+     1) RETURN
+      IF (MOD(L+LP+LAMBDA,2).NE.0) RETURN
+      IF ((L.LT.0).OR.(LP.LT.0).OR.(LAMBDA.LT.0)) RETURN
+      F=1./DFLOAT(L+LP+1-LAMBDA)
+      IF (LAMBDA.EQ.0) GO TO 30
+      I1=(L+LP+LAMBDA)/2
+      I0=(L+LP-LAMBDA)/2+1
+      DO 20 I=I0,I1
+   20 F=F*DFLOAT(I)/DFLOAT(2*(2*I+1))
+   30 P=FC*F*FCTL(LAMBDA+L-LP)*FCTL(LAMBDA+LP-L)
+      CLEBSQR=P/(FCTL((LAMBDA+L-LP)/2)*FCTL((LAMBDA+LP-L)/2))**2
+      RETURN
+C
+      END
+
+
+      FUNCTION FCTL (N)
+
+      IMPLICIT DOUBLE PRECISION(A-H,O-Z)      
+      P(Z)=((((-2.294720936d-4)/Z-(2.681327160d-3))/Z+(3.472222222d-3))/
+     1Z+(8.333333333d-2))/Z+1.
+      FCTL=1.
+      IF (N.LE.1) RETURN
+      IF (N.GT.15) GO TO 20
+      J=1
+      DO 10 I=2,N
+   10 J=J*I
+      FCTL=DFLOAT(J)
+      RETURN
+   20 Z=DFLOAT(N+1)
+      FCTL=(DEXP(-Z)*(Z**(Z-0.5))*P(Z)*2.5066282746310)
+      RETURN
+      END
+
+      FUNCTION BGAMA (FNU,T1,T2,EPS,T3,T4,TEMP)
+C
+C     EQUATION 13, SO-CALLED EBC MODEL, OF BORYSOW,TRAFTON,FROMMHOLD,
+C     AND BIRNBAUM, ASTROPHYS.J., TO BE PUBLISHED (1985)
+C     NOTE THAT BGAMA REDUCES TO THE BC PROFILE FOR EPS=0.
+C
+      IMPLICIT DOUBLE PRECISION(A-H,O-Z)      
+      REAL K0
+      DATA PI,CLIGHT/3.1415926535898,2.99792458E10/
+      DATA HBAR,BOLTZ/1.0545887d-27,1.380662d-16/
+      P1(X)=((((((.0045813*X+.0360768)*X+.2659732)*X+1.2067492)*X+3.0899
+     1424)*X+3.5156229)*X+1.)
+      P2(X)=((((((.00000740*X+.00010750)*X+.00262698)*X+.03488590)*X+.23
+     1069756)*X+.42278420)*X-.57721566)
+      P3(X)=((((((.00032411*X+.00301532)*X+.02658733)*X+.15084934)*X+.51
+     1498869)*X+.87890594)*X+.5)
+      P4(X)=((((((-.00004686*X-.00110404)*X-.01919402)*X-.18156897)*X-.6
+     17278579)*X+.15443144)*X+1.)
+      P5(X)=((((((.00053208*X-.00251540)*X+.00587872)*X-.01062446)*X+.02
+     1189568)*X-.07832358)*X+1.25331414)
+      P6(X)=((((((-.00068245*X+.00325614)*X-.00780353)*X+.01504268)*X-.0
+     13655620)*X+.23498619)*X+1.25331414)
+C
+      OMEGA=2.*PI*CLIGHT*FNU
+      T0=HBAR/(2.*BOLTZ*TEMP)
+      Z=SQRT((1.+(OMEGA*T1)**2)*(T2*T2+T0*T0))/T1
+      IF (Z-2.) 10,10,20
+   10 XK1=Z*Z*DLOG(Z/2.)*P3((Z/3.75)**2)+P4((Z/2.)**2)
+      GO TO 30
+   20 XK1=SQRT(Z)*DEXP(-Z)*P6(2./Z)
+   30 IF (EPS.EQ.0.) GO TO 70
+      ZP=SQRT((1.+(OMEGA*T4)**2)*(T3*T3+T0*T0))/T4
+      IF (ZP-2.) 40,40,50
+   40 K0=-DLOG(ZP/2.)*P1((ZP/3.75)**2)+P2((ZP/2.)**2)
+      GO TO 60
+   50 K0=DEXP(-ZP)*P5(2./ZP)/SQRT(ZP)
+   60 BGAMA=((T1/PI)*DEXP(T2/T1+T0*OMEGA)*
+     2 XK1/(1.+(T1*OMEGA)**2)+EPS*(T3/
+     1PI)*DEXP(T3/T4+T0*OMEGA)*K0)/(1.+EPS)
+      RETURN
+   70 BGAMA=(T1/PI)*DEXP(T2/T1+T0*OMEGA)*XK1/(1.+(OMEGA*T1)**2)
+      RETURN
+      END

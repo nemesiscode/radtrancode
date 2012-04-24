@@ -1,0 +1,722 @@
+      subroutine N2CH4_S(temp,freqmin,freqmax,step,m,ff,al)
+C     ****************************************************************
+C     subroutine adapted from Borysow code to calculate CIA absorption
+C     of N2-CH4 collisions (for Titan atmosphere).
+C
+C     Input variables:
+C	temp		double	Temperature (K)
+C	fnumin		double	Lowest wavenumber in spectrum (cm-1)
+C	fnumax		double	Highest wavenumber in spectrum (cm-1)
+C	dnu		double	Wavenumber step (cm-1)
+C
+C     Output variables
+C	nf		integer	Number of points in spectrum
+C       ff(601)         double	Frequency grid (cm-1)
+C	al(601) 	double	Absorption coefficient (cm-1 amagat-2)
+C
+C     Increased parameter MAXX to 601 from 350 (array size)
+C
+C     C. Nixon 22-1-97
+c
+c	n.teanby 	28-6-04	fixed array sizes and definition of M
+C	Pat Irwin	2/3/12	Updated for Radtrans2.0
+C
+C ============================================================================
+C Copyright (C) 1992  Aleksandra Borysow
+C ============================================================================
+C Copyright Notice:
+C You may use this program for your scientific applications,
+C but please do not	distribute it yourself.
+C Direct all your inquires to the  author: e-mail aborysow@phy.mtu.edu
+C Final request: If you publish  your work which benefited from this
+C program, please acknowledge using this program and QUOTE 
+C the original paper describing the procedure:
+C A. Borysow and C. Tang, Icarus, (1993) vol. 105, p.175-183.
+C ============================================================================
+C
+c	This program computes the N2-CH4 CIA RT spectra 
+C     alpha(omega) at ANY temperature (70-300)K, ANY frequency !!!!
+c    *************************************************************
+c
+      implicit double precision (a-h,o-z)
+      parameter( MAXX = 601)
+      character*24 fdate
+      DIMENSION  AL(MAXX), FF(MAXX)
+      common/dat/beta,twopic,calib
+      COMMON/N2PARTA/Q,Wn2(2),B0,D0,JRANG1
+      COMMON/CHPART/Q1,WCH4(2),B01,D01,JRANG2
+
+      data clschm,bltzwn/2.68675484D19,.6950304D0/
+      data hbar,pi,clight/1.054588757D-27,3.1415926535898D0,
+     $     2.9979250D10/
+      data bn2 /1.98957d0/
+      data bch4 /5.24d0/  
+      data boltzk/1.38054d-16   /
+	
+C Check for temperature range
+      if(temp.lt.70.d0 .or. temp.gt.300.d0)  then
+         print*, 'n2ch4_s: Warning'
+         print*, 'Temperature should be 70 < T 300 K'
+      endif
+
+
+      M = int ( (freqmax - freqmin)/step)	+ 1
+      if (M.gt.MAXX) stop 9866  ! parameter MAXX = 350 max, else change  it
+
+      do 600 i=1, m
+ 600     FF(I) = freqmin + dfloat(i-1)*  step
+c
+c      M - number of data points at which spectrum will be computed
+
+         B0 = 1.98957d0
+         D0 = 0.58d-5
+         Wn2(1)=2.D0
+         Wn2(2)=1.D0
+         B01=5.24D0
+         D01=0.D0
+         WCH4(1)=1.D0
+         WCH4(2)=1.D0
+C
+C        THIS PROGRAM GENERATES THE N2-CH4
+C        CONTRIBUTIONS TO CIA SPECTRA
+C        ==================================
+C
+         CALL PRTSUM6(TEMP)
+         LIKE = 0
+         TWOPIC=2.D0*PI*CLIGHT
+         CALIB=TWOPIC*((4.D0*PI**2)/(3.D0*HBAR*CLIGHT))*(CLSCHM)**2
+         CALIB=CALIB/DFLOAT(1+LIKE)
+         BETA=1.D0/(BLTZWN*TEMP)
+         CALL ALF( M, AL, TEMP, FF)
+	  return
+          end
+
+        SUBROUTINE ALF(NF,ALFTOT,TEMP,FREQ)
+C	  This subroutine calculates total theoretical absorption 
+c	  coefficients 
+
+        implicit double precision (a-h,o-z)
+        CHARACTER*10 NOTE, LGAS,LABEL
+	  character*8 info(6)
+        COMMON/N2PARTA/Q,WN2(2),B0,D0,JRANG1
+        COMMON/CHPART/Q1,WCH4(2),B01,D01,JRANG2
+        COMMON /COMUNIC/NOTE,LGAS,LABEL
+        DIMENSION ALFTOT(NF), ABCOEF(NF), FREQ(NF)
+
+	  data info(1)/ 'Q2(N2)  ' /
+	  data info(2)/ 'Q3(CH4) ' /
+	  data info(3)/ 'Q4(CH4) ' /
+	  data info(4)/ 'Q4(N2)  ' /
+	  data info(5)/ 'Dbl.tran' /
+	  data info(6)/ 'Q6 (67) ' /
+        data hbar,pi,clight/1.054588757D-27,3.1415926535898D0,
+     $   2.9979250D10/
+        data boltzk/1.38054d-16   /
+
+        LIKE=0
+        do 10 i=1, nf
+        ALFTOT(I)=0.D0
+10      ABCOEF(I)=0.D0
+C
+	 tau0 = hbar/(2.*boltzk*temp)
+
+C      NITROGEN QUADRUPOLE:    for the N2-quadrupole induction (32)
+	G0 = z(temp,0.17597d-52,-7.6415d0,1.0231d0,-0.04168d0)
+	tau1 = z(temp,0.11562d-9,-2.0997d0,0.2653d0,-0.01539d0)
+	tau2 = z(temp,0.30061d-13,1.5022d0,-0.3237d0,0.01744d0)
+      CALL ADSPEC(G0,Tau1,Tau2,TEMP,NF,FREQ,ABCOEF,0,LIKE,2,0,2,3)
+      DO 20 I=1,NF
+ 20	ALFTOT(I)=ALFTOT(I)+ABCOEF(I)
+
+C     PARAMETERS FOR 4045 (nitrogen  HEXADECAPOLE) COMPONENTS (54n)
+	G0 = z(temp,0.89015d-54,-8.1623d0,1.0902d0,-0.04253d0)
+	tau1 = z(temp,0.48945d-10,-2.0696d0,0.2614d0,-0.01545d0)
+	tau2 = z(temp,0.55878d-13,1.1324d0,-0.2657d0,0.01428d0)
+      CALL ADSPEC(G0,Tau1,Tau2,TEMP,NF,FREQ,ABCOEF,0,LIKE,4,0,4,5)
+      DO 266 I=1,NF
+266	alftot(i) = alftot(i) +  abcoef(i)
+
+2229	format( ' N2 - hexadecapole term:',/, 50(6e11.4,/))
+
+C     METHANE-INDUCED COMPONENTS-     OCTOPOLE - INDUCED TERM (43)
+	G0 = z(temp,0.65555d-53,-8.0347d0,1.0735d0,-0.04242d0)
+	tau1 = z(temp,0.55199d-10,-1.9466d0,0.2374d0,-0.01397d0)
+	tau2 = z(temp,0.39595d-13,1.3192d0,-0.2999d0,0.01644d0)
+      CALL ADSPC1(G0,Tau1,Tau2,TEMP,NF,FREQ,ABCOEF,0,LIKE,0,3,3,4)
+      DO 66 I=1,NF
+ 66   ALFTOT(I)=ABCOEF(I)+ALFTOT(I)
+
+C     METHANE-INDUCED COMPONENTS-     Q6 - INDUCED TERM (76) 
+ 	G0 = Z(temp,0.50040d-54,-8.4210d0,1.1386d0,-0.04242d0 )
+ 	tau1 = Z(temp,0.20803d-10,-1.9758d0, 0.2403d0, -0.01378d0)
+ 	tau2 = Z(temp,0.59547d-13,1.0399d0, -0.2537d0, 0.01408d0 )
+      CALL ADSPC1(G0,Tau1,Tau2,TEMP,NF,FREQ,ABCOEF,0,LIKE,0,6,6,7)
+      DO 9966 I=1,NF
+ 9966 ALFTOT(I)=ABCOEF(I)+ALFTOT(I)
+
+C     THE CH4 (5,4) HEXADECAPOLE-INDUCED COMPONENT (54c)
+	G0 = z(temp,0.53260d-53,-8.3745d0,1.1253d0,-0.04264d0)
+	tau1 = z(temp,0.30434d-10,-1.8887d0,0.2210d0,-0.01267d0)
+	tau2 = z(temp,0.44959d-13,1.1890d0,-0.2821d0,0.01591d0)
+      CALL ADSPC1(G0,Tau1,Tau2,TEMP,NF,FREQ,ABCOEF,0,LIKE,0,4,4,5)
+      DO 776 I=1,NF
+ 776  ALFTOT(I)=ALFTOT(I)+ABCOEF(I)
+
+C	Double transitions: lambda1=2 (theta-N2);
+C	lambda2 = 3 (A - CH4); L=4
+	G0 = z(temp,0.89248d-54,-7.9551d0,1.0619d0,-0.04223d0)
+	tau1 = z(temp,0.68076d-10,-2.0506d0,0.2567d0,-0.01506d0)
+	tau2 = z(temp,0.43417d-13,1.2851d0,-0.2904d0,0.01570d0)
+      CALL ADDBL(G0,Tau1,Tau2,TEMP,NF,FREQ,ABCOEF,0,LIKE,2,3,0,4) 
+      DO 3451 I=1,NF
+3451	alftot(i) = alftot(i) +  abcoef(i)
+
+      RETURN
+      END
+
+      SUBROUTINE PRTSUM6(TEMP)
+C
+C     N2 ROTATIONAL PARTITION SUM Q = Q(T).
+C
+      IMPLICIT double precision (A-H,O-Z)
+      COMMON/n2PARTA/Q,Wn2(2),B0,D0,JRANG1
+      COMMON/CHPART/Q1,WCH(2),B01,D01,JRANG2
+C
+      EN2(I)=(B0-DFLOAT(I)*D0)*DFLOAT(I)
+      ECH4(I)=B01*DFLOAT(I)
+      PN2(J,TT)=DFLOAT(2*J+1)*Wn2(1+MOD(J,2))
+     $        *DEXP(-1.4387859D0*EN2(J*(J+1))/TT)
+      PCH4(J,TT)=DEXP(-1.4387859D0*ECH4(J*(J+1))/TT)
+C     Q,B0,D0,WN2 - PARTITION FCT., ROT.CONSTANTS, WEIGHTS FOR N2
+C     Q1,B01,D01,WCH - PARTITION FCT., ROT.CONSTANTS, WEIGHTS FOR CH4
+C
+      Q=0.D0
+      J=0
+ 50   CONTINUE
+      DQ=PN2(J,TEMP)
+      Q=Q+DQ
+      J=J+1
+      IF (DQ.GT.Q/800.D0) GO TO 50
+      j=-1
+      s=0.d0
+ 10   j=j+1
+      S=S+PN2(j,temp)/q
+      if (s.gt.0.99d0) go to 12
+      go to 10
+ 12   jrang1=J
+C
+C
+C        PARTITION FUNCTION FOR CH4
+      Q1=0.D0
+      J=0
+ 75   DQ=PCH4(J,TEMP)*DFLOAT((2*J+1)**2)
+      Q1=Q1+DQ
+      J=J+1
+      IF (DQ.GT.Q1/800.D0) GO TO 75
+      JRANG2=J
+ 80   FORMAT (' CH4 ROTATIONAL PARTITION FUNCTION: Q=',F8.2,
+     $ 10X,'JMAX=',I3/)
+      RETURN
+      END
+
+      DOUBLE PRECISION FUNCTION CLBSQR(L,LAMBDA,LP)
+C     SQUARE OF CLEBSCH-GORDAN COEFFICIENT (L,LAMBDA,0,0;LP,0)
+C     FOR INTEGER ARGUMENTS ONLY
+C     NOTE THAT LAMBDA SHOULD BE SMALL, MAYBE <10 OR SO.
+C
+      IMPLICIT  double precision (A-H,O-Z)
+C
+      FC=DFLOAT(2*LP+1)
+      CLBSQR=0.D0
+      IF (((L+LAMBDA).LT.LP).OR.((LAMBDA+LP).LT.L).OR.((L+LP).LT.
+     $LAMBDA)) RETURN
+      IF (MOD(L+LP+LAMBDA,2).NE.0) RETURN
+      IF ((L.LT.0).OR.(LP.LT.0).OR.(LAMBDA.LT.0)) RETURN
+      F=1.D0/DFLOAT(L+LP+1-LAMBDA)
+      IF (LAMBDA.EQ.0) GO TO 22
+      I1=(L+LP+LAMBDA)/2
+      I0=(L+LP-LAMBDA)/2+1
+      DO 20 I=I0,I1
+ 20   F=F*DFLOAT(I)/DFLOAT(2*(2*I+1))
+ 22   P=FC*F*FCTL6(LAMBDA+L-LP)*FCTL6(LAMBDA+LP-L)
+      CLBSQR=P/(FCTL6((LAMBDA+L-LP)/2)*FCTL6((LAMBDA+LP-L)/2))**2
+      RETURN
+      END
+
+      DOUBLE PRECISION FUNCTION FCTL6(N)
+      IMPLICIT double precision (A-H,O-Z)
+C
+      P(Z)=((((-2.294720936D-4)/Z-(2.681327160D-3))/Z+(3.472222222D-3))/
+     $Z+(8.333333333D-2))/Z+1.D0
+      FCTL6=1.D0
+      IF (N.LE.1) RETURN
+      IF (N.GT.15) GO TO 20
+      J=1
+      DO 10 I=2,N
+      J=J*I
+ 10   CONTINUE
+      FCTL6=DFLOAT(J)
+      RETURN
+ 20   CONTINUE
+      Z=DFLOAT(N+1)
+      FCTL6=(DEXP(-Z)*(Z**(Z-0.5D0))*P(Z)*2.5066282746310D0)
+      RETURN
+      END
+
+      FUNCTION BGAMA6(FNU,TAU1,TAU2,TEMP)
+C     BC LINE SHAPE MODEL (K1)
+C     NORMALIZATION SUCH THAT 0TH MOMENT EQUALS UNITY
+C     FNU IS THE FREQUENCY IN CM-1; TEMP IN KELVIN.
+	implicit double precision (a-h,o-z)
+      DATA TWOPIC,BKW,HBOK,PI/1.883651568d11,.6950304256d0,
+     1 7.638280918d-12, 3.141592654d0/
+	HT = (HBOK/(TEMP*2.))**2
+	BT = (2.d0*BKW*TEMP)
+	TAU3= DSQRT(TAU2*TAU2+ht)
+      OMEGA=TWOPIC*FNU
+      DENOM=1.d0+(OMEGA*TAU1)**2
+      X=(TAU3/TAU1)*dSQRT(DENOM)
+      AAA=TAU2/TAU1
+      BGAMA6=(TAU1/PI)*dEXP(AAA+FNU/bt)* XK16(X)/DENOM
+      RETURN
+      END
+
+      FUNCTION XK16(X)
+C     MODIFIED BESSEL FUNCTION K1(X) TIMES X
+C     PRECISION IS BETTER THAN 2.2e-7 EVERYWHERE.
+C     ABRAMOWITZ AND S,TEGUN, P.379; TABLES P.417.
+	implicit double precision (a-h,o-z)
+      IF(X-2.) 10,10,20
+   10 T=(X/3.75)**2
+      FI1=X*((((((.00032411*T+.00301532)*T+.02658733)*T+.15084934)
+     1 *T+.51498869)*T+.87890594)*T+.5)
+      T=(X/2.)**2
+      P=(((((-.00004686*T-.00110404)*T-.01919402)*T-.18156897)*T-
+     1 .67278579)*T+.15443144)*T+1.
+      XK16=X*dLOG(X/2)*FI1+P
+      RETURN
+   20  T=2./X
+      P=(((((-.00068245*T+.00325614)*T-.00780353)*T+.01504268)*T-
+     1 .03655620)*T+.23498619)*T+1.25331414
+      X=dMIN1(X,300.d0)
+      XK16=dSQRT(X)*dEXP(-X)*P
+      RETURN
+      END
+
+       SUBROUTINE ADSPEC(G0,TAU1,TAU2,TEMP,NF,FREQ,
+     $ ABCOEF,MP,LIKE,LAMBD1,LAMBD2,LAMBDA,LVALUE)
+C
+C        THIS ENTRY FOR LINEAR MOLECULES
+C        SET LAMBDA1 NONZERO, lambd2=0
+C
+C        THIS PROGRAM GENERATES LISTING OF CIA TR ALFA(OMEGA)
+C        IF EITHER LAMDA1 OR LAMDA2 EQUAL TO ZERO - SINGLE
+C         TRANSITIONS;
+C        LAMBDA1 CORRESPONDS TO N2, LAMBDA2 TO N2
+C        LIKE=1 FOR LIKE SYSTEMS (AS N2-N2), SET LIKE=0 ELSE.
+C
+       implicit double precision (a-h,o-z)
+C
+      COMMON/N2PARTA/Q,WN2(2),B0,D0,JRANG1
+      COMMON/CHPART/Q1,WCH(2),B01,D01,JRANG2
+	common/dat/beta,twopic,calib
+      DIMENSION ABCOEF(NF),FREQ(NF)
+C
+      DATA CLSCHM,BLTZWN/2.68675484D19,.6950304D0/
+      DATA HBAR,PI,CLIGHT/1.054588757D-27,3.1415926535898D0,
+     $ 2.9979250D10/
+C
+      EN2(I)=(B0-DFLOAT(I)*D0)*DFLOAT(I)
+      PN2(J,T)=DFLOAT(2*J+1)*Wn2(1+MOD(J,2))*DEXP(-1.4387859D0/T
+     $ *EN2(J*(J+1)))
+      ECH4(I)=B01*DFLOAT(I)
+      PCH4(J,T)=DEXP(-1.4387859D0/T*ECH4(J*(J+1)))
+C
+
+      LIST=NF
+      DO 88 I=1,LIST
+ 88   ABCOEF(I)=0.D0
+
+	tmpr = BGAMA6(0.d0,tau1,tau2,temp)	
+	GMAX = G0 * tmpr
+
+C     ROTATIONAL SPECTRUM FOR THE DETAILED LISTING   *******************
+C
+      IF (LAMBD1.EQ.0) STOP 6666
+C        FOR THIS ENTRY LAMBD1 HAS TO BE NONZERO
+C
+C        SINGLE TRANSITIONS ON nitrogen'S ROTATIONAL FREQUENCIES.
+C        LAMBDA IS EQUAL TO LAMBD1 FOR SINGLE TRANSITIONS
+C
+      JPLUSL=JRANG1+LAMBDA
+      DO 170 I=1,JRANG1
+      J=I-1
+      DO 170 IP=1,JPLUSL
+      JP=IP-1
+      CGS=CLBSQR(J,LAMBDA,JP)
+      IF (CGS) 170,170,160
+ 160  P=PN2(J,TEMP)/Q
+      OMEGA1=EN2(JP*IP)-EN2(J*I)
+      FAC=CALIB*P*CGS
+      DO 166 IQ=1,LIST
+      FRQ=FREQ(IQ)-OMEGA1
+      XBG=G0*BGAMA6(FRQ,TAU1,tau2,TEMP)
+	if(xbg.lt.gmax/1000.) go to 166
+      WKI=FREQ(IQ)*(1.D0-DEXP(-BETA*FREQ(IQ)))
+      WKF=WKI*FAC
+      ABCOEF(IQ)=ABCOEF(IQ)+XBG*WKF
+ 166  CONTINUE
+ 170  CONTINUE
+      RETURN
+      END
+
+       SUBROUTINE ADSPC1(G0,TAU1,TAU2,TEMP,NF,FREQ,
+     $ ABCOEF,MP,LIKE,LAMBD1,LAMBD2,LAMBDA,LVALUE)
+C
+C        FOR INDUCTION BY A TETRAHEDRAL MOLECULE
+C
+C     THIS PROGRAM GENERATES LISTING OF CIA TR ALFA(OMEGA)
+C     FOR ABSORPTION BY TETRAHEDRAL MOLECULES
+C     LAMBD1 CORRESPONDS TO N2, LAMBD2 TO CH4
+C     FOR THIS ENTRY SET LAMBD2 NONZERO
+C     LIKE=1 FOR LIKE SYSTEMS (AS N2-N2), SET LIKE=0 ELSE.
+C
+      IMPLICIT  double precision (A-H,O-Z)
+C
+      COMMON/n2PARTA/Q,Wn2(2),B0,D0,JRANG1
+      COMMON/CHPART/Q1,WCH(2),B01,D01,JRANG2
+	common/dat/beta,twopic,calib
+      DIMENSION ABCOEF(NF),FREQ(NF)
+C
+C        QUANTUM CORRECTIONS
+      DIMENSION QQW3(51,3),QQW4(51,4)
+      DIMENSION QW31(51),QW32(51),QW33(51),QW41(51),QW42(51),
+     $ QW43(51),QW44(51)
+      EQUIVALENCE (QW31(1),QQW3(1,1)),(QW32(1),QQW3(1,2)),
+     $ (QW33(1),QQW3(1,3)),(QW41(1),QQW4(1,1)),(QW42(1),QQW4(1,2)),
+     $ (QW43(1),QQW4(1,3)),(QW44(1),QQW4(1,4))
+C
+      DATA CLSCHM,BLTZWN/2.68675484D19,.6950304D0/
+      DATA HBAR,PI,CLIGHT/1.054588757D-27,3.1415926535898D0,
+     $ 2.9979250D10/
+C
+      EN2(I)=(B0-DFLOAT(I)*D0)*DFLOAT(I)
+      ECH4(I)=B01*DFLOAT(I)
+      PCH4(J,T)=DEXP(-1.4387859D0*ECH4(J*(J+1))/T)
+
+      DATA (QW31(i), i=1,51)/
+     $ 3*-1.0000D0,4.09091D0,2*-1.0000D0,.79679D0,.27141D0,
+     $ -.85139D0,.59819D0,-.00412D0,-.31878D0,.18283D0,.15133D0,
+     $ -.32477D0,.21392D0,.02191D0,-.14717D0,.07524D0,.08569D0,
+     $ -.16823D0,.10771D0,.01794D0,-.08386D0,.04014D0,.05426D0,
+     $ -.10240D0,.06447D0,.01345D0,-.05399D0,.02474D0,.03726D0,
+     $ -.06876D0,.04281D0,.01019D0,-.03761D0,.01670D0,.02711D0,
+     $ -.04932D0,.03046D0,.00792D0,-.02769D0,.01201D0,.02059D0,
+     $ -.03708D0,.02276D0,.00630D0,-.02122D0,.00904D0,.01616D0,
+     $ -.02889D0/
+      DATA (QW32(i),i=1,51)/
+     $ 4*-1.000D0,1.46154D0,-1.000D0,.52036D0,-.38246D0,.48307D0,
+     $ -.58061D0,.54775D0,-.42488D0,.32187D0,-.30004D0,.33377D0,
+     $ -.35746D0,.33367D0,-.27900D0,.23619D0,-.22949D0,.24628D0,
+     $ -.25572D0,.24034D0,-.20959D0,.18643D0,-.18371D0,.19376D0,
+     $ -.19855D0,.18803D0,-.16835D0,.15390D0,-.15262D0,.15930D0,
+     $ -.16211D0,.15451D0,-.14085D0,.13100D0,-.13033D0,.13510D0,
+     $ -.13691D0,.13118D0,-.12115D0,.11400D0,-.11364D0,.11722D0,
+     $ -.11846D0,.11400D0,-.10631D0,.10090D0,-.10070D0,.10348D0/
+      DATA (QW33(i), i=1,51)/
+     $ 1.1000D1,2*-1.000D0,1.01399D0,.09091D0,-1.000D0,.94475D0,
+     $ -.16780D0,-.51321D0,.52338D0,.01421D0,-.50745D0,.49964D0,
+     $ -.06185D0,-.34591D0,.34888D0,.00564D0,-.34073D0,.33830D0,
+     $ -.03176D0,-.26007D0,.26130D0,.00304D0,-.25650D0,.25545D0,
+     $ -.01926D0,-.20817D0,.20879D0,.00191D0,-.20566D0,.20511D0,
+     $ -.01291D0,-.17348D0,.17383D0,.00131D0,-.17164D0,.17132D0,
+     $ -.00925D0,-.14867D0,.14889D0,.00095D0,-.14727D0,.14707D0,
+     $ -.00695D0,-.13006D0,.13021D0,.00073D0,-.12896D0,.12882D0,
+     $ -.00541D0,-.11559D0/
+      DATA (QW41(i),i=1,51)/
+     $ 6*-1.000D0,1.83253D0,-1.000D0,-.00478D0,.22586D0,
+     $ .19088D0,-.58488D0,.55212D0,-.21168D0,-.06443D0,.05729D0,
+     $ .14181D0,-.28953D0,.24581D0,-.07845D0,-.04207D0,.01948D0,
+     $ .09314D0,-.16876D0,.13649D0,-.03831D0,-.02777D0,.00772D0,
+     $ .06418D0,-.10976D0,.08625D0,-.02197D0,-.01938D0,.00323D0,
+     $ .04653D0,-.07688D0,.05925D0,-.01398D0,-.01420D0,.00128D0,
+     $ .03515D0,-.05678D0,.04315D0,-.00956D0,-.01082D0,.00037D0,
+     $ .02744D0,-.04362D0,.03279D0,-.00690D0,-.00850D0/
+      DATA (QW42(i),i=1,51)/
+     $ 4*-1.000D0,2.35664D0,-1.000D0,-.43987D0,.63467D0,.00794D0,
+     $ -.53268D0,.47071D0,-.04638D0,-.25892D0,.20786D0,.05459D0,
+     $ -.23119D0,.17454D0,.01650D0,-.14054D0,.09758D0,.03999D0,
+     $ -.12597D0,.08757D0,.02020D0,-.08639D0,.05576D0,.02883D0,
+     $ -.07869D0,.05185D0,.01719D0,-.05811D0,.03585D0,.02073D0,
+     $ -.05366D0,.03404D0,.01393D0,-.04166D0,.02491D0,.01572D0,
+     $ -.03888D0,.02397D0,.01128D0,-.03129D0,.01828D0,.01229D0,
+     $ -.02945D0,.01775D0,.00924D0,-.02434D0,.01397D0,.00985D0/
+      DATA (QW43(i),i=1,51)/
+     $ 3*-1.000D0,2.16484D0,2*-1.000D0,1.60491D0,-.46218D0,-1.000D0,
+     $ 1.31017D0,-.34627D0,-.78497D0,.98223D0,-.18287D0,-.72146D0,
+     $ .84929D0,-.16187D0,-.59662D0,.69125D0,-.09565D0,-.55198D0,
+     $ .62115D0,-.09262D0,-.47526D0,.53051D0,-.05845D0,-.44470D0,
+     $ .48796D0,-.05974D0,-.39348D0,.42963D0,-.03932D0,-.37166D0,
+     $ .40124D0,-.04166D0,-.33521D0,.36069D0,-.02824D0,-.31896D0,
+     $ .34046D0,-.03069D0,-.29177D0,.31068D0,-.02125D0,-.27924D0,
+     $ .29557D0,-.02353D0,-.25819D0,.27279D0,-.01656D0,-.024825D0/
+      DATA (QW44(i),i=1,51)/
+     $ 1.100D1,2*-1.000D0,.40260D0,.62896D0,-1.000D0,.67713D0,
+     $ -.17620D0,-.04947D0,-.07182D0,.30704D0,-.40281D0,.29894D0,
+     $ -.12495D0,.04080D0,-.09160D0,.19422D0,-.23764D0,.18677D0,
+     $ -.09887D0,.05507D0,-.08289D0,.14023D0,-.16496D0,.13482D0,
+     $ -.08186D0,.05504D0,-.07257D0,.10916D0,-.12512D0,.10520D0,
+     $ -.06982D0,.05172D0,-.06377D0,.08914D0,-.10029D0,.08615D0,
+     $ -.06085D0,.04781D0,-.05661D0,.07522D0,-.08345D0,.07290D0,
+     $ -.05391D0,.04406D0,-.05077D0,.06501D0,-.071333D0,.06315D0,
+     $ -.04838D0,.04069D0/
+
+      LIST=NF
+      DO 88 I=1,LIST
+ 88   ABCOEF(I)=0.D0
+
+C     ROTATIONAL SPECTRUM *******************
+
+	GMAX = G0 * BGAMA6(0.D0,TAU1,TAU2,TEMP)
+C
+      DO 170 I=1,JRANG2
+      J=I-1
+      P=DFLOAT(2*J+1)*PCH4(J,TEMP)/Q1
+
+      DO 172 IP=1,LAMBDA
+
+C        POSITIVE DELTA J
+      JP=J+IP
+      OMEGA1=ECH4(JP*(JP+1))-ECH4(J*I)
+      CC=1.d0
+      IF (LAMBDA.EQ.3) CC=(1.D0+QQW3(I,IP)/4.D0)
+      IF (LAMBDA.EQ.4) CC=(1.D0+QQW4(I,IP)/4.D0)
+      FAC=CALIB*P*CC
+      DO 166 IQ=1,LIST
+      FRQ=FREQ(IQ)-OMEGA1
+      XBG=G0*BGAMA6(FRQ,TAU1,TAU2,TEMP)
+      IF(XBG.LT.GMAX/1000.) go to 166
+      WKF=FREQ(IQ)*(1.D0-DEXP(-BETA*FREQ(IQ)))*FAC*
+     $ (2.D0*DFLOAT(JP)+1.D0)
+      ABCOEF(IQ)=ABCOEF(IQ)+XBG*WKF/dfloat(2*lambda+1)
+ 166  CONTINUE
+C
+C        NEGATIVE DELTA J
+      JP=J-IP
+      IF (JP.LT.0) GO TO 172
+      OMEGA1=ECH4(JP*(JP+1))-ECH4(J*I)
+      FAC=CALIB*P
+      DO 177 IQ=1,LIST
+      FRQ=FREQ(IQ)- OMEGA1
+      XBG=G0*BGAMA6(FRQ,TAU1,TAU2,TEMP)
+	IF(XBG.LT.GMAX/1000.) go to 177
+       WKF=FREQ(IQ)*(1.D0-DEXP(-BETA*FREQ(IQ)))*
+     $ FAC*(2.D0*DFLOAT(JP)+1.D0)
+      ABCOEF(IQ)=ABCOEF(IQ)+XBG*WKF/dfloat(2*lambda+1)
+ 177  CONTINUE
+ 172  CONTINUE
+C
+C        DELTA J = 0
+      JP=J
+      FAC=CALIB*P
+      DO 188 IQ=1,LIST
+      FRQ=FREQ(IQ)
+      XBG=G0*BGAMA6(FRQ,TAU1,TAU2,TEMP)
+      IF(XBG.LT.GMAX/1000.) goto 188
+      WKF=FREQ(IQ)*(1.D0-DEXP(-BETA*FREQ(IQ)))*FAC*
+     $ (2.D0*DFLOAT(JP)+1.D0)
+      ABCOEF(IQ)=ABCOEF(IQ)+XBG*WKF/dfloat(2*lambda+1)
+ 188  CONTINUE
+ 170  CONTINUE
+      RETURN
+      END
+
+       SUBROUTINE ADDBL (G0,TAU1,TAU2,TEMP,NF,FREQ,
+     $ ABCOEF,MP,LIKE, LAMBD1, LAMBD2, LAMBDA,LVALUE)
+C
+C     THIS ENTRY FOR N2-Ch4 (double transitions only)
+C
+C        THIS PROGRAM GENERATES LISTING OF CIA ALFA(OMEGA)
+C        LAMBDA1 CORRESPONDS TO N2, LAMBDA2 TO  CH4
+C        LIKE=1 FOR LIKE SYSTEMS (AS N2-N2), SET LIKE=0 ELSE.
+C
+       implicit double precision (a-h,o-z)
+C
+      COMMON/N2PARTA/QN2,WN2(2),B0,D0,JRANG1
+      COMMON/CHPART/Q1,WCH(2),B01,D01,JRANG2
+	common/dat/beta,twopic, calibX
+
+      DIMENSION ABCOEF(NF), FREQ(NF)
+      DIMENSION QQW3(51,3), QQW4(51,4)
+      DIMENSION QW31(51),QW32(51),QW33(51),QW41(51),QW42(51),
+     $ QW43(51),QW44(51)
+      EQUIVALENCE (QW31(1),QQW3(1,1)),(QW32(1),QQW3(1,2)),
+     $ (QW33(1),QQW3(1,3)),(QW41(1),QQW4(1,1)),(QW42(1),QQW4(1,2)),
+     $ (QW43(1),QQW4(1,3)),(QW44(1),QQW4(1,4))
+C
+      DATA CLSCHM,BLTZWN/2.68675484D19,.6950304D0/
+      DATA HBAR,PI,CLIGHT/1.054588757D-27,3.1415926535898D0,
+     $ 2.9979250D10/
+
+      EN2(I)=(B0-DFLOAT(I)*D0)*DFLOAT(I)
+      PN2(J,T)=DFLOAT(2*J+1)*Wn2(1+MOD(J,2))*DEXP(-1.4387859D0/T
+     $ *EN2(J*(J+1)))
+      ECH4(I)=B01*DFLOAT(I)
+      PCH4(J,T)=DEXP(-1.4387859D0/T*ECH4(J*(J+1)))
+
+C      QUANTUM CORRECTIONS
+      DATA (QW31(i), i=1,51)/
+     $ 3*-1.0000D0,4.09091D0,2*-1.0000D0,.79679D0,.27141D0,
+     $ -.85139D0,.59819D0,-.00412D0,-.31878D0,.18283D0,.15133D0,
+     $ -.32477D0,.21392D0,.02191D0,-.14717D0,.07524D0,.08569D0,
+     $ -.16823D0,.10771D0,.01794D0,-.08386D0,.04014D0,.05426D0,
+     $ -.10240D0,.06447D0,.01345D0,-.05399D0,.02474D0,.03726D0,
+     $ -.06876D0,.04281D0,.01019D0,-.03761D0,.01670D0,.02711D0,
+     $ -.04932D0,.03046D0,.00792D0,-.02769D0,.01201D0,.02059D0,
+     $ -.03708D0,.02276D0,.00630D0,-.02122D0,.00904D0,.01616D0,
+     $ -.02889D0/
+      DATA (QW32(i),i=1,51)/
+     $ 4*-1.000D0,1.46154D0,-1.000D0,.52036D0,-.38246D0,.48307D0,
+     $ -.58061D0,.54775D0,-.42488D0,.32187D0,-.30004D0,.33377D0,
+     $ -.35746D0,.33367D0,-.27900D0,.23619D0,-.22949D0,.24628D0,
+     $ -.25572D0,.24034D0,-.20959D0,.18643D0,-.18371D0,.19376D0,
+     $ -.19855D0,.18803D0,-.16835D0,.15390D0,-.15262D0,.15930D0,
+     $ -.16211D0,.15451D0,-.14085D0,.13100D0,-.13033D0,.13510D0,
+     $ -.13691D0,.13118D0,-.12115D0,.11400D0,-.11364D0,.11722D0,
+     $ -.11846D0,.11400D0,-.10631D0,.10090D0,-.10070D0,.10348D0/
+      DATA (QW33(i), i=1,51)/
+     $ 1.1000D1,2*-1.000D0,1.01399D0,.09091D0,-1.000D0,.94475D0,
+     $ -.16780D0,-.51321D0,.52338D0,.01421D0,-.50745D0,.49964D0,
+     $ -.06185D0,-.34591D0,.34888D0,.00564D0,-.34073D0,.33830D0,
+     $ -.03176D0,-.26007D0,.26130D0,.00304D0,-.25650D0,.25545D0,
+     $ -.01926D0,-.20817D0,.20879D0,.00191D0,-.20566D0,.20511D0,
+     $ -.01291D0,-.17348D0,.17383D0,.00131D0,-.17164D0,.17132D0,
+     $ -.00925D0,-.14867D0,.14889D0,.00095D0,-.14727D0,.14707D0,
+     $ -.00695D0,-.13006D0,.13021D0,.00073D0,-.12896D0,.12882D0,
+     $ -.00541D0,-.11559D0/
+      DATA (QW41(i),i=1,51)/
+     $ 6*-1.000D0,1.83253D0,-1.000D0,-.00478D0,.22586D0,
+     $ .19088D0,-.58488D0,.55212D0,-.21168D0,-.06443D0,.05729D0,
+     $ .14181D0,-.28953D0,.24581D0,-.07845D0,-.04207D0,.01948D0,
+     $ .09314D0,-.16876D0,.13649D0,-.03831D0,-.02777D0,.00772D0,
+     $ .06418D0,-.10976D0,.08625D0,-.02197D0,-.01938D0,.00323D0,
+     $ .04653D0,-.07688D0,.05925D0,-.01398D0,-.01420D0,.00128D0,
+     $ .03515D0,-.05678D0,.04315D0,-.00956D0,-.01082D0,.00037D0,
+     $ .02744D0,-.04362D0,.03279D0,-.00690D0,-.00850D0/
+      DATA (QW42(i),i=1,51)/
+     $ 4*-1.000D0,2.35664D0,-1.000D0,-.43987D0,.63467D0,.00794D0,
+     $ -.53268D0,.47071D0,-.04638D0,-.25892D0,.20786D0,.05459D0,
+     $ -.23119D0,.17454D0,.01650D0,-.14054D0,.09758D0,.03999D0,
+     $ -.12597D0,.08757D0,.02020D0,-.08639D0,.05576D0,.02883D0,
+     $ -.07869D0,.05185D0,.01719D0,-.05811D0,.03585D0,.02073D0,
+     $ -.05366D0,.03404D0,.01393D0,-.04166D0,.02491D0,.01572D0,
+     $ -.03888D0,.02397D0,.01128D0,-.03129D0,.01828D0,.01229D0,
+     $ -.02945D0,.01775D0,.00924D0,-.02434D0,.01397D0,.00985D0/
+      DATA (QW43(i),i=1,51)/
+     $ 3*-1.000D0,2.16484D0,2*-1.000D0,1.60491D0,-.46218D0,-1.000D0,
+     $ 1.31017D0,-.34627D0,-.78497D0,.98223D0,-.18287D0,-.72146D0,
+     $ .84929D0,-.16187D0,-.59662D0,.69125D0,-.09565D0,-.55198D0,
+     $ .62115D0,-.09262D0,-.47526D0,.53051D0,-.05845D0,-.44470D0,
+     $ .48796D0,-.05974D0,-.39348D0,.42963D0,-.03932D0,-.37166D0,
+     $ .40124D0,-.04166D0,-.33521D0,.36069D0,-.02824D0,-.31896D0,
+     $ .34046D0,-.03069D0,-.29177D0,.31068D0,-.02125D0,-.27924D0,
+     $ .29557D0,-.02353D0,-.25819D0,.27279D0,-.01656D0,-.024825D0/
+      DATA (QW44(i),i=1,51)/
+     $ 1.100D1,2*-1.000D0,.40260D0,.62896D0,-1.000D0,.67713D0,
+     $ -.17620D0,-.04947D0,-.07182D0,.30704D0,-.40281D0,.29894D0,
+     $ -.12495D0,.04080D0,-.09160D0,.19422D0,-.23764D0,.18677D0,
+     $ -.09887D0,.05507D0,-.08289D0,.14023D0,-.16496D0,.13482D0,
+     $ -.08186D0,.05504D0,-.07257D0,.10916D0,-.12512D0,.10520D0,
+     $ -.06982D0,.05172D0,-.06377D0,.08914D0,-.10029D0,.08615D0,
+     $ -.06085D0,.04781D0,-.05661D0,.07522D0,-.08345D0,.07290D0,
+     $ -.05391D0,.04406D0,-.05077D0,.06501D0,-.071333D0,.06315D0,
+     $ -.04838D0,.04069D0/
+C
+      LIST=NF
+      DO 88 I=1,LIST
+ 88   ABCOEF(I)=0.D0
+
+	GMAX = G0 * BGAMA6(0.d0,tau1,tau2,temp)
+	DDD = 1./dfloat(2*lambd2+1)
+       TWOPIC=2.D0*PI*CLIGHT
+       CALIB=TWOPIC*((4.D0*PI**2)/(3.D0*HBAR*CLIGHT))*(CLSCHM)**2
+
+C     ROTATIONAL SPECTRUM *******************
+C
+C        Double TRANSITIONS ON nitrogen  & methane FREQUENCIES.
+C
+      JPN2max = JRANG1+ LAMBD1	! max J for J'(N2)
+
+      DO 170 I=1,JRANG1 		! N2
+      JN2=I-1			! J(N2)
+      DO 170 IP=1,JPN2max
+      JPN2=IP-1		! J'(N2)
+      CGS=CLBSQR(JN2, LAMBD1,JPN2)
+      IF (CGS) 170,170,160
+ 160  P1=PN2(JN2,TEMP)/QN2
+
+      OMEGA1=EN2(JPn2*IP)-EN2(Jn2*I)
+      FAC1 = P1 * CGS
+
+      DO 1170 I2=1,JRANG2
+      JCH4 =I2-1			! J(CH4)
+      P2 =DFLOAT(2*JCH4+1)*PCH4(JCH4,TEMP)/Q1
+
+      DO 172 IP2=1, LAMBD2
+
+C        POSITIVE DELTA J
+
+      JPch4=Jch4+IP2		! J'(Ch4)
+
+      OMEGA2=ECH4(JPch4*(JPch4+1))-ECH4(Jch4* (Jch4+1) )
+      CC=1.d0
+      IF (LAMBD2.EQ.3) CC=(1.D0+QQW3(I2,IP2)/4.D0)
+      IF (LAMBD2.EQ.4) CC=(1.D0+QQW4(I2,IP2)/4.D0)
+      FAC2= CALIB*P2*CC*DDD
+
+      DO 166 IQ=1,LIST
+      FRQ=FREQ(IQ)-OMEGA2 - omega1 
+      XBG=G0*BGAMA6(FRQ,TAU1,TAU2,TEMP)
+      WKF=FREQ(IQ)*(1.D0-DEXP(-BETA*FREQ(IQ)))* FAC2*fac1*
+     $ (2.D0*DFLOAT(JPch4)+1.D0)
+      ABCOEF(IQ)=ABCOEF(IQ)+XBG*WKF
+ 166  CONTINUE
+C
+C        NEGATIVE DELTA J
+      JPch4=Jch4-IP2
+      IF (JPch4.LT.0) GO TO 172
+      OMEGA2=ECH4(JPch4*(JPch4+1))-ECH4(Jch4* (Jch4+1))
+      FAC2= CALIB*P2*DDD
+
+      DO 177 IQ=1,LIST
+      FRQ=FREQ(IQ)-OMEGA2 - omega1 
+      XBG=G0*BGAMA6(FRQ,TAU1,TAU2,TEMP)
+       WKF=FREQ(IQ)*(1.D0-DEXP(-BETA*FREQ(IQ)))*
+     $ FAC2*fac1* (2.D0*DFLOAT(JPch4)+1.D0)
+      ABCOEF(IQ)=ABCOEF(IQ)+XBG*WKF
+ 177  CONTINUE
+
+ 172  CONTINUE
+C
+C        DELTA J = 0
+      JPch4=Jch4
+      FAC2= CALIB*P2 * DDD
+      DO 188 IQ=1,LIST
+      FRQ=FREQ(IQ) - omega1 
+      XBG=G0*BGAMA6(FRQ,TAU1,TAU2,TEMP)
+      WKF=FREQ(IQ)*(1.D0-DEXP(-BETA*FREQ(IQ)))*FAC2*fac1*
+     $ (2.D0*DFLOAT(JPch4)+1.D0)
+      ABCOEF(IQ)=ABCOEF(IQ)+XBG*WKF
+ 188  CONTINUE
+
+ 1170  CONTINUE		! end of loop J,Jp (CH4)
+ 170  CONTINUE		! end of loop J,Jp (N2)
+      RETURN
+      END
+
+	FUNCTION Z(T,a,b,c,d) 
+      implicit double precision (a-h,o-z)
+	Z = A * DEXP( B * dlog(T) + C * (dlog(T))**2 +
+     1  D * (dlog(T))**3  )
+	return
+	end

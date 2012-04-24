@@ -1,0 +1,254 @@
+directory	radtran
+purpose:        LBL, band and c-k RT routines
+
+SUBROUTINES/FUNCTIONS:
+***************************************************************************
+rdlbld.f	Reads in driving .drv file containing layers, amounts and
+		paths.
+
+gvoico2.f	Computes CO2 Voigt lineshape modified for
+		sub-lorentzian line wings and line mixing.
+
+humlic.f	Computes standard Voigt line shape
+
+gascon.f	Calculates gas continuum absorptions.
+
+ldbin.f		loads line data "bins" for Radtran
+
+loadbins.f	As above, but for use with Radtrans which does not
+		use line swapping.
+
+bboff.f 	Function to get correct position in BBBIN array
+		of genrads.f to make it a more memory-efficient array,
+
+display.f	Contains various utility routines for displaying plots
+
+dpexp.f		Stable routine for exponentiations. Prevents overflow.
+
+calc_nlte.f	Function to calculate Non Local Thermodynamic
+		Equilibrium empirical corrections to the Planck function.
+
+read_xsec.f	Reads in aerosol x-section (.xsc) files.
+
+planck.f	Calculates the planck function.
+
+interp_lbltab.f Subroutine to return interpolated LBL absorption
+		coefficient from a grid of spectra calculated by
+		lbl_table.f
+		Developed for PMIRR in 1999.
+
+interpcell.f	Subroutine to compute the wideband and sideband
+		transmission of a cell at a particukar wavenumber. Data is
+		interpolated from a table precalculated by celltrans.f
+		Developed for PMIRR in 1999.
+
+calc_pcoeff.f	Calculates the polynomial fit of order IORDER
+		to the set of points Yn(Xn) in the range XMIN to XMAX. 
+
+bright.f	Utility routine to calculate the brightness temperature.
+
+read_voigt.f	Reads in and takes the log of the Voigt EW look up table
+
+read_rodgers.f	Reads in the Rodgers and Williams (1974) data file
+		containing numerical coefficients to the Lorentz and
+		Doppler widths
+      
+calc_lor_width.f Calculates the Lorentz width of a line assuming different
+		assumptions.
+		
+calc_dop_width.f Calculates the Doppler width of a line assuming different
+                assumptions.
+
+voigt_interp.f	Interpolates the VOIGT Equivalent width look-up table 
+
+ext_tab_head.f	Subroutine to read head of an LBL look-up table
+		compiled by lbl_table.f
+		Developed for PMIRR in 1999.
+
+ext_cell_head.f	Subroutine to read in the header of a CELL PMR LBL
+		Look-up table computed by celltrans.f
+
+ch4cont.f	Returns the 'continuum methane absorption below 1um from
+	       	Karkoschka (1994), Fink et al above 1um.
+
+conray.f	Subroutine to calculate Rayleigh scattering optical depth
+		in Jovian-type atmosphere
+
+ch4nimsrad.f	As ch4cont.f, but optimised for NIMS.
+
+ch4cirsrad.f	As ch4cont.f, but optimised for CIRS 
+
+malkmus_lor.f	Calculates the equivalent width of a band using Malkmus
+		Model. Rodgers "Approx. Methods of Calculating
+		Transmission' 1976
+
+goody_lor.f	Calculates the equivalent width of a band using
+		Goody Model. Rodgers "Approx. Methods of Calculating
+		Transmission' 1976
+
+godson_lor.f	Calculates the equivalent width of a band using
+		Godson Model. Rodgers "Approx. Methods of Calculating
+		Transmission' 1976
+
+tau_mg_lor.f	Calculates the optical depth of a path using
+		malkmus-lorentz or goody-lorentz band approximations.
+
+tau_goody_voigt1.f Calculates the transmission of a path using the
+		the formulation of the Goody-Voigt random band model given
+		in Strong (1992) D.Phil.Thesis
+
+ml_lacis.f	Converts EKS Malkmus-Lorentz Parameters to those used
+		by Lacis and Oinas (1991)
+
+slvf.f		k-distribution utility routine used by kml, intrpk,
+		calc_mlk1_k, and calc_mlk2_k.
+		The function slvf calculates the function (g(ke1) - gg)  
+		given the LO parameters 'a', 'b' and 'B' 
+
+tran_ml.f	Calculates the transmission of a Malkmus-Lorentz
+		band using Lacis and Oinas conventions
+
+calc_mlk1_k.f 	Precursor version of calc_mlk2_k
+
+calc_mlk2_k.f	Calculates the mean value of k(g) in a g-interval
+		using the method described in Lacis and Oinas (LO), p9038. 
+
+convspec.f	Convolves the output of Radtran or Radtrans with smoothing
+		functions. 
+
+calc_gvk_k.f	Calculates the mean value of k(g) in a g-interval
+                using the Goody-Voigt model
+
+lbl_kdist.f	Calculates the cumulative K-Distribution for a spectral
+	        interval for a mixture of gases at a number of pressures and 
+        	temperatures. 
+
+lbl_kdists.f	As above by does not use line swapping.
+
+lbl_kcont.f	General purpose absorption coefficient and cumulative 
+	        K-Distribution calculation routine.Subroutine to calculate
+		the line continuum in the range VMIN-VMAX in bins of width
+		WING. 
+
+lbl_knew.f	General purpose absorption coefficient and cumulative
+		K-Distribution calculation routine. Calculates the
+		cumulative K-Distribution for a spectral interval vstart
+		to vend for a single gas. 
+
+lbl_kcalc.f	Calculates the absorption coefficient spectrum for a given
+		temperature, pressure. Used by Celltrans
+
+calc_kdist.f	Once a lbl absorption coefficient spectrum has ben
+		created, this routine performs the conversion to k-distribution
+
+calc_esum2.f    Subroutine to calculate an exponential-sum
+                approximation to a transmission curve defined by the
+                Goody-voigt parameters.
+
+calc_esum5.f	Fits and exponential sum series to an input transmission
+		curve using the Levenburg-Marquedt method non-lnear least
+		squares method described in Numerical recipes.
+
+esumset.f	Calculates first approximation to the k-distribution,
+		which is then improved upon by calc_esum5.f 
+
+tran_curve.f	Subroutine to calculate a transmission curve with
+		transmission varying from 0.01 to 0.99 and absorber
+		amounts equally spaced in log space
+
+kml.f		For a given input line strength (SL) and line broadening
+		(BL) parameter, returns the value of k at the supplied
+		value of g (Malkmus-Lorentz).
+
+lbl_abs.f	Calculates a LBL absorption coefficient spectrum.
+
+fit_mlband.f	Subroutine fit a Goody Voigt Band to an input
+		transmission curve
+
+read_ktable.f	Subroutine to read an absorption coefficient look-up
+		table
+
+read_scatter.f  Subroutine to read in old format .sca files
+
+read_scatter1.f Subroutine to read in the later format .sca files with
+		angles substituted for IMU0, IMU and the defunct KJ
+		removed.
+
+overlap.f	This subroutine combines the absorption coefficient
+		distributions of two overlapping gases. The overlap is
+		implicitly assumed to be random and the k-distributions
+		are assumed to have NG-1 mean values and NG-1 weights.
+		Correspondingly there are NG ordinates in total.
+
+genrads.f	Current core of general purpose RT code.
+
+subpath.f	Does the same as Path, but as a subroutine.
+
+subfor.f	Subroutine to set up driver and run Radtrans
+
+ciacon.f	Compute gaseous continuum CIA spectra from a variety of
+		gas pairs.
+
+ciaread.f	Reads in the collision-induced absorption coefficient
+		data of a variety of gas pairs from 0 to 15000 cm-1 in
+		steps  of 10 cm-1
+
+isoread.f	Reads in the collision-induced absorption coefficient  
+                of a variety of gas pairs from 0 to 1500 cm-1 in steps of
+		1 cm-1.
+
+newconv.f 	Subroutine to smooth a spectrum by a given function.
+		Modified version of convspec.f
+
+dslvf.f		double precision version of slvf.f
+
+intrpk.f	Gets estimate of g from k using linear interpolation.
+		Called by KML.
+
+EXECUTABLES:
+*************************************************************************
+Radtrans	The core of the whole thing. No line swapping allowed.
+
+Ave_table	Reads an absorption coefficient look-up table and
+		convolves with a square of user defined width.
+
+Pl_spec		Plots the binary data output by Radtrans
+
+Convert_table	Program to convert Radtran .kta binary k-coefficient
+		files into more easily read ASCII .par format
+
+Conv_spec	Program to smooth Radtrans spectra.
+
+Aground		Adds ground emission times transmission to atmospheric
+		emission. 
+		Does same job as old Addground, but works with original
+		Radtran .out files rather than intermediate ASCII files.
+
+Calc_table	Original code to calculate k-tables.
+
+Calc_ntable	Optimised version of Calc_table.
+
+Calc_ktable	Development version of Calc_ntable. Allows calculation
+		in wavelength space as well as wavenumber space.
+
+Lbl_table	Calculates the absorption coefficient look-up table for a
+		gas of the user's choice.
+
+Celltrans	Calculates the absorption coefficient table for a gas of
+		the user's choice in a PMC.
+
+Extract_table	Program to read new lbl look-up tables calculated by
+		lbl_table.f and output selected spectrum to ASCII file for
+		inspection
+
+Extractcell	Program to read PMR cell LBL look-up tables
+		calculated by celltrans.f Selected spectrum is output to
+		an ASCII file for inspection.
+
+Absorpcoeff	Calculates the absorption coefficient spectrum for a gas
+		of the user's choice.
+
+Read_table	Reads in and examines a k-table.
+
+Li_spec		Lists standard radtran output.
+

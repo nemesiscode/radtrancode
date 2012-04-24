@@ -1,0 +1,43 @@
+#! /bin/tcsh -f
+
+echo 'Compiling libraries...'
+
+cd $RADSRCX/rtm_util
+make clean
+make lib
+
+cd $RADSRCX/spec_data
+make clean
+make lib
+
+cd $RADSRCX/path
+make clean
+make lib
+
+cd $RADSRCX/scatter
+make clean
+make lib
+
+cd $RADSRCX/radtran
+make clean
+make lib
+
+cd $RADSRCX/ciatable
+make clean
+make lib
+
+cd $RADSRCX/cirsrad
+make clean
+make lib
+
+cd $RADSRCX/cirsradg
+make clean
+make lib
+
+cd $RADSRCX/matrices
+make clean
+make lib
+
+cd $RADSRCX/monteck
+make clean
+make lib

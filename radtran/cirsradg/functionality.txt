@@ -1,0 +1,73 @@
+directory	cirsrad
+purpose:        General purpose optimised c-k RT routines in wavenumber
+		space. Developed for CIRS data analysis.
+
+SUBROUTINES/FUNCTIONS:
+***************************************************************************
+
+cirsconv.f	Convolves spectra calculated with k-distribution bins with
+		a second convolution shape.
+
+cirsrad.f	Core RT routine. Analagous to genrads.f
+
+cirsrtf.f	Set up routine for cirsrad.f assuming thermal or scattering
+		calculation. Calls subcirsrtf.f and then convolves output
+		using cirsconv.f 
+
+cirswf.f	Specialised version of cirsrtf for calculating transmission
+		weighting functions using cirsrad. Used by Oxcirs retrieval
+		code.
+
+cirswfset.f	Looks like cirswf, but does not call cirsrad.f Only used to
+		run layering subroutines and thus establish the pressures,
+		heights and temperatures of the weighting functions.
+
+close_scat.f	Designed to close any opened scattering files before
+		next iteration of retrieval algorithm.
+
+findloc.f	For a given monotonic array and 2 values, finds the
+		indices of the array values contained by the passed variables. Uses 
+	      	numerical recipes subroutines.
+
+get_k.f		Reads in and interpolates to get k value at given
+		wavelength for all the layers in the RT calculation. 
+		Automatically determines wether to interpolate in
+		wavelength.
+
+get_scatter.f	Reads in scattering information from .sca file and puts into
+		common block.
+
+get_solar.f	Calculates solar flux using a look up table. The
+		table is read only once per loop through the bins, with
+		values stored in the common block.
+
+get_xsec.f	Reads in x-sections from .xsc file and rearranges variables
+		for use in common block 'dust' as opposed to 'dustspec'. 
+
+overlap.f	This subroutine combines the absorption coefficient
+		distributions of two overlapping gases.
+
+rank.f		Monotonically ranks k-coeffs. Used by overlap.f
+
+read_khead.f	Opens KTA file, reads in header,and returns record number
+		for the beginning of the range of interest as well as temp
+		and pressure ranges used. 
+
+read_klist.f	Writes variables to common block INTERPK for
+		subsequent use in CIRSRAD. 
+
+spline.f	Numerical recipes routine.
+
+subcirsrtf.f	Called by cirsrtf. Sets up normal run for cirsrad.f
+
+subcirswf.f	Called by cirswf. Sets up weighting function run for
+		cirsrad.f
+
+subpath.f	Calls Path as a subroutine. Apparently identical in function
+		to version in radtran directory.
+
+EXECUTABLES
+*****************************************************************************
+
+cirsdrv		Main driver.
+

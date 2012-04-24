@@ -1,0 +1,64 @@
+########################################################################
+#_TITL:	SVP.dat
+#
+#_DESC:	Fitted/Saturated Vapour-Pressure (SVP) curves (mainly Kaye and
+#	Laby).
+#		P = exp(A + B/T + CT + DT^2)
+#
+#	According to jupcirsref.prf, NH3 is limited by the SVP between 0.6
+#	and 0.5 bar.
+#
+#_ARGS:	NGAS	INT		Number of vapour-pressure curves.
+#	GASID	INT(NGAS)	Radtran gas identification code.
+#	A,B,C,D	REAL		Respective coefficients.
+#
+#_FRMT:	NGAS
+#	GASID(1)	A(1)	B(1)	C(1)	D(1)
+#	:		:	:	:	:
+#	:		:	:	:	:
+#	GASID(NGAS)	A(NGAS)	B(NAS)	C(NGAS)	D(NGAS)
+#
+#_HIST:	5/7/96	PGJI	Original version.
+#	29nov02	PDP	The original file (SVP.dat) was located on oxpln5,
+#			moved here immediately prior to the computer dying
+#			(in addition, changed the call sequence to utilise
+#			datarchive.f in order for it to be seen here).
+#	23jan03	PDP	Updated the original file to include CH4 and new
+#			values for the respective coefficients (aside from
+#			NH3). I actually don't know where the new file
+#			(SVP.dat3) came from but I have to presume it is
+#			more uptodate than the original file:
+#			6
+#			11   23.224   -4245.8  -2.2775E-2   0.0000E+0
+#			28   17.020   -2425.2  -2.1319E-2   0.0000E+0
+#			33   10.092   -1832.6  -7.5426E-4   0.0000E+0
+#			2    15.622   -3082.8   1.1137E-3   0.0000E+0
+#			1    17.073   -6110.6   6.8881E-4   0.0000E+0
+#			41   16.948   -2749.2  -1.8659E-2   0.0000E+0
+#			that was stored on oxpln5 for ages upon ages.
+#	29march05	NT. Added gases relevant for titan
+#			CH4,C2H2,C2H4,C2H6,C3H8,HCN,HC3N from CRC76
+#			C3H4 to a fitted expression from Reid
+#			C4H2 to a fitted expression from NIST website
+#			CH4 replaced by CRC76 fit 
+#			(previously: 13.84    -1237.9  -3.3417e-2   7.8138e-5)
+#			CO2 replaced by CRC76 fit 
+#			(previously: -10.499   -1647.8   0.15851    -3.1398E-4)
+#	11jan10	HCN replaced with LARA96 relation
+########################################################################
+15
+1    15.278   -5980.3   8.8294E-3  -1.2169E-5
+2    2.524826e+01     -3.882969e+03     -2.722391e-02      0.000000e+00
+6    1.050377e+01     -1.116966e+03     -4.633456e-03      0.000000e+00
+11   23.224   -4245.8  -2.2775E-2   0.0000E+0
+28   37.492   -3427.7  -0.15884     3.0391E-4
+33   15.850   -2108.6  -4.0205E-2   8.8775E-5
+41   38.700   -3961.2  -0.14707     2.4937E-4
+26   2.141126e+01     -3.263087e+03     -2.262256e-02      0.000000e+00
+32   1.180221e+01     -1.858863e+03     -4.911005e-03      0.000000e+00
+27   1.296829e+01     -2.148377e+03     -7.132374e-03      0.000000e+00
+34   1.347137e+01     -2.746288e+03     -6.834743e-03      0.000000e+00
+23   1.962791e+01     -5.337395e+03      0.000000e+00      0.000000e+00
+31   1.346153e+01     -4.222267e+03      0.000000e+00      0.000000e+00
+42   13.1954 -3049.57 -0.0040089  0.
+30   37.9230 -6646.29 -0.0510657  0.

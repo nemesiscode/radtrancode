@@ -82,9 +82,7 @@ C     **************************************************************
       real vem(maxsec),emissivity(maxsec),PI,h1,dh,trans
       parameter (PI=3.1415927)
 
-      real vtmp,tmp,delh,dtr,radius,radius1,stellar
-C      parameter (stellar=322712.)
-      parameter (stellar=525798.)
+      real vtmp,tmp,delh,dtr,radius,radius1
       real area,area0,area1,darea1,darea(mx)
       integer nvar,varident(mvar,3),ivar
       real varparam(mvar,mparam)
@@ -201,13 +199,15 @@ C     Now sort wavelength arrays
       if(jsurf.gt.0)then
        tsurf = xn(jsurf)
       endif
+
+C     If we're retrieving planet radius then add correction to reference
+C     radius
       if(jrad.gt.0)then
-       radius1 = xn(jrad) + 78900
+       radius1 = xn(jrad) + radius
       else
        radius1 = radius
       endif
 
-	print*,'Radius of exoplanet, R and R0 =',radius1,radius, jrad
       iscat=0
 
       xlat=flat(igeom,iav)
@@ -280,10 +280,11 @@ C     pre-calculated array
          do j=1,nx
           ioff2=nconv1*nx*(ipath-1)+(j-1)*nconv1+iconv
           y2(ipath,j)=-2.*pi*h1*gradientsL(ioff2)
-c	print*,y2(ipath,j), gradientsL(ioff2), 'forward.f'
          enddo
 205     continue        
+
         do 207 ipath=1,npath-1
+
          dh = height(ipath+1)-height(ipath)
 
          area = area + 0.5*(y1(ipath)+y1(ipath+1))*dh
@@ -295,10 +296,9 @@ c	print*,y2(ipath,j), gradientsL(ioff2), 'forward.f'
 207     continue
 
         
-c        area0 = pi*radius**2
 	area0 = pi*stellar**2
         area1 = pi*radius1**2
-c        darea1 = (pi*radius**2 - area1)
+
 	darea1 = pi*(radius+radius1)
 
 
@@ -307,8 +307,7 @@ c	print*,area1,darea1,yn(iconv),1.0
 
         do j=1,nx
              kk(iconv,j) = 100. * 
-     1  (darea1 + darea(j))/area0
-c	print*,kk(iconv,j),'kk'
+     1      (darea1 + darea(j))/area0
         enddo
 
 206   continue

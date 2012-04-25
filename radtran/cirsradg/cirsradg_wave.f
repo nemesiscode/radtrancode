@@ -828,16 +828,15 @@ C           spectrum in units are W cm-2 (cm-1)-1 or W cm-2 um-1.
 C
 C           If a solar/stellar file is present then we should multiply by
 C           the total surface area of the planet and divide by the total 
-C           stellar flux. Otherwise we should leave the factor as 2*pi
+C           stellar flux.
 
- 
             if(iread.eq.999)then
 C            Set dist to -1 to ensure we get total power spectrum of star
              xdist=-1.0
              call get_solar_wave(vwave,xdist,solar)
-             xfac=(2.*pi)*4.*pi*RADIUS1**2/solar
+             xfac=4.*pi*RADIUS1**2/solar
             else
-             xfac=2.*pi
+             xfac=1.0
             endif
 
             DO J=1,nlays
@@ -855,7 +854,7 @@ C            Set dist to -1 to ensure we get total power spectrum of star
               call e3interp(tr,e3new,e3grad)
 
               corkout(ipath,ig) = corkout(ipath,ig) + 
-     1         xfac*sngl((e3old - e3new))*bb(J,Ipath)
+     1         xfac*2.0*pi*sngl((e3old - e3new))*bb(J,Ipath)
 
               DO k1=1,nsw
                 k = isw(k1)

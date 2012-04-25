@@ -42,7 +42,7 @@ c  ** variable for reflected atmos
       REAL angle_inc,angle_rfl
       INTEGER layer_rfl
       LOGICAL fexist
-c  ** variables for solar refelcted cloud **
+c  ** variables for solar reflected cloud **
       real refl_cloud_albedo
       logical reflecting_atmos
       common /refl_cloud_params/refl_cloud_albedo,reflecting_atmos

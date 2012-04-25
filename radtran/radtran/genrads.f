@@ -2439,7 +2439,8 @@ C       must be divided by pi.
 93      CONTINUE
         LSTATM=IPATH
        ELSE IF(IMOD(IPATH).EQ.18)THEN
-C       model 18. Disc-averaged spectral irradiance. i.e. W cm-2 (cm-1)-1. 
+C       model 18. hemispherically integrated spectral irradiance. 
+C            i.e. W cm-2 (cm-1)-1. 
 C       To convert to radiance (i.e. W cm-2 sr-1 (cm-1)-1), the irradiance 
 C       must be divided by pi.
 C       As model 17 but uses Planck function at centre of bin.

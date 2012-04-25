@@ -96,7 +96,7 @@ C     **************************************************************
       real stelrad,solwave(maxbin),solrad(maxbin)
       integer solnpt
 
-      common /solardat/iread, stelrad, solwave, solrad,  solnpt/
+      common /solardat/iread, stelrad, solwave, solrad,  solnpt
 
 C     Initialise arrays
       do i=1,my

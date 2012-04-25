@@ -21,11 +21,9 @@ C     ******************************************************************
       read(5,2)opfile
 
 17    continue
-C      print*,ipfile1
-C      print*,tmpfile
+
       open(iold,file=ipfile1,status='old')
       open(inew,file=tmpfile,status='unknown')
-C      print*,'Sweep '
 
       read(unit=iold,fmt=80,end=999)buffer1(1:irecl)
       read(unit=iold,fmt=80,end=999)buffer2(1:irecl)

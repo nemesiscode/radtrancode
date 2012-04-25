@@ -65,33 +65,3 @@ wrlbld.f	Subroutine to output calculated paths, amounts,
 		calculation details etc. to RADTRAN driver file (*.drv)
 
 
-EXECUTABLES:
-***************************************************************************
-dust_profile.f 	Generates dust specific concentration profile file
-		where specific concentration is the number of dust
-		particles per gram of atmosphere.
-
-parah2_profile.f Generates a para-H2 profile file
-
-nemesisprofile.f Extracts a T or vmr profile from a .prf file and outputs
-		to a Nemesis-format a priori file
-
-mod_profile.f   Modifies a dust profile file by user-specified optical
-		depth correction factors.
-
-path.f       	Computes atmospheric absorber paths and outputs in a form
-		suitable for reading by RADTRAN software.
-		Reads commands from an input path file with extension
-		.pat and produces an output driver file of the same name
-		but extension .drv
-
-profile.f	Reads in an atmospheric profile of temperature, pressure,
-		absorber volume mixing ratios versus height and allows
-		manipulation and plotting of the profile.        
-
-write_path.f	User friendly interactive set up of *.pat files for
-		general calculations
-
-interp_prf.f    Interpolates a P/T/vmr profile on to a new pressure grid.
-
-

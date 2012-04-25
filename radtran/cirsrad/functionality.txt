@@ -66,8 +66,3 @@ subcirswf.f	Called by cirswf. Sets up weighting function run for
 subpath.f	Calls Path as a subroutine. Apparently identical in function
 		to version in radtran directory.
 
-EXECUTABLES
-*****************************************************************************
-
-cirsdrv		Main driver.
-

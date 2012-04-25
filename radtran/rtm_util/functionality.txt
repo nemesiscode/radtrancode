@@ -25,9 +25,6 @@ file.f		Forces correct VMS style file extension for a filename.
 gasdev1.f	Returns a randum number with a normal gaussian
 		distribution of unit standard deviation.
 
-gethome.c	Gets home directory for a given user, using Fortran
-		calling conventions.
-
 getquad.f	Subroutine to return Gaussian quadrature weights and
 		absissas using NAG libraries.
 
@@ -57,8 +54,4 @@ twiddleexpand.f	Expands initial home directory bit of pathnames.
 upcase.f	Forces input character string to upper case
 
 wtext.f		Simply writes text to the screen.
-
-EXECUTABLES:
-*************************************************************************
-none
 

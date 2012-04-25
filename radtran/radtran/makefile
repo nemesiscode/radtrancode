@@ -152,7 +152,7 @@ bin :   \
 	Pl_spec \
 	Radtrans \
 	Read_table \
-	Concat_table_new1 \
+	Concat_table \
 	Cut_table
 
 Aground : aground.f $(LIBRARY) $(LIB)/spec_data.a
@@ -237,8 +237,8 @@ Read_table : read_table.f $(LIBRARY) $(LIB)/spec_data.a
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
 	$(LIB)/scatter.a $(LIB)/path.a
 
-Concat_table_new1 : concat_table_new1.f $(LIBRARY) $(LIB)/spec_data.a
-	$(FC) $(FCFLAGS) -o $(BIN)/Concat_table_new1 concat_table_new1.f \
+Concat_table : concat_table.f $(LIBRARY) $(LIB)/spec_data.a
+	$(FC) $(FCFLAGS) -o $(BIN)/Concat_table concat_table.f \
 	$(LIBRARY) $(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
 	$(LIB)/scatter.a $(LIB)/path.a
 

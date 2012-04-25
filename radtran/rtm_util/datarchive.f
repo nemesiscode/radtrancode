@@ -35,12 +35,9 @@ c  ** if arcfile exists then get tname from that **
          read(67,*) tname
          close(67)
       else
-C      tname ='/home/oxpln98/plan/irwin/radtrancode/trunks/
-C     &raddata/'
-C      tname = '/Users/patirwin/radtrancode/trunks/raddata'
-
-       tname = '/Users/patirwin/radtrancode/trunks/raddata'
-
+C      tname = '/home/oxpln98/plan/irwin/blackadder/radtrancode/raddata/'      
+      tname ='/home/oxpln98/plan/irwin/radtrancode/trunks/
+     &raddata/'
       endif
       
 c      print*,'tname=',tname

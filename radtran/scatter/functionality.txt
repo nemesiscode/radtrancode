@@ -158,20 +158,3 @@ fback.f		Function to calculate fraction of backscattered
 		radiation from a single, scattering layer.
 
 
-EXECUTABLES:
-***************************************************************************
-Makephase	Calculates phase functions of spherical particles
-		according to Mie theory and outputs these to file for
-		reference by NIMSRAD. 
-		Mie scattering computations use subroutine MIESCAT (& DMIE).
-
-Readphase	Program to read in a PHASE*.DAT files
-
-Normxsc		Program for normalising aerosol x-section spectra to OD at a
-		specific wavenumber
-
-Spmat		Program to pre-calculate a fourier-decomposed phase
-		matrix table over a representative spread of
-		Henyey-Greenstein phase parameters
-
-

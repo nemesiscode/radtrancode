@@ -9,7 +9,7 @@ C_ARGS:	Input variables:
 C	aname		CHARACTER*100	Filename of files within the
 C					raddata directory.
 C
-C_FILE:	No files openned.
+C_FILE:	No files opened.
 C
 C_CALL:	No calls.
 C
@@ -35,9 +35,12 @@ c  ** if arcfile exists then get tname from that **
          read(67,*) tname
          close(67)
       else
-C      tname = '/home/oxpln98/plan/irwin/blackadder/radtrancode/raddata/'      
-      tname ='/home/oxpln98/plan/irwin/radtrancode_svn/trunks/
-     &raddata/'
+C      tname ='/home/oxpln98/plan/irwin/radtrancode/trunks/
+C     &raddata/'
+C      tname = '/Users/patirwin/radtrancode/trunks/raddata'
+
+       tname = '/Users/patirwin/radtrancode/trunks/raddata'
+
       endif
       
 c      print*,'tname=',tname

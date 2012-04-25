@@ -88,28 +88,10 @@ C     **************************************************************
       real varparam(mvar,mparam)
       logical gasgiant
 
+      real stelrad,solwave(maxbin),solrad(maxbin)
+      integer solnpt
 
-C      print*,'ForwardavfovPT'
-C      print*,runname
-C      print*,ispace,fwhm,ngeom
-C      do i=1,ngeom
-C       print*,nav(i)
-C       do j=1,nav(i)
-C        print*,wgeom(i,j),flat(i,j),(angles(i,j,k),k=1,3)
-C       enddo
-C       print*,nwave(i)
-C       print*,(vwave(i,j),j=1,nwave(i))
-C       print*,nconv(i)
-C       print*,(vconv(i,j),j=1,nconv(i))
-C       print*,gasgiant,lin,nvar
-C      enddo
-C      do i=1,nvar
-C       print*,(varident(i,j),j=1,3)     
-C       print*,(varparam(i,j),j=1,5)     
-C      enddo
-C      print*,(xn(i),i=1,nx)
-C      print*,ny
-
+      common /solardat/iread, stelrad, solwave, solrad,  solnpt/
 
 C     Initialise arrays
       do i=1,my
@@ -296,19 +278,18 @@ C     pre-calculated array
 207     continue
 
         
-	area0 = pi*stellar**2
+	area0 = pi*stelrad**2
         area1 = pi*radius1**2
 
-	darea1 = pi*(radius+radius1)
-
-
-        yn(iconv)=100. * (area1+area)/area0
-c	print*,area1,darea1,yn(iconv),1.0
+        yn(iconv)=100.0*(area1+area)/area0
 
         do j=1,nx
-             kk(iconv,j) = 100. * 
-     1      (darea1 + darea(j))/area0
+             kk(iconv,j) = 100.*darea(j)/area0
         enddo
+
+        if(jrad.gt.0)then
+           kk(iconv,jrad)=kk(iconv,jrad)+2.*pi*radius1
+        endif
 
 206   continue
 

@@ -280,9 +280,9 @@ C DABSORB: Rate of change of optical depth with: 1: H2, 2: He, 3: N2,
 C 4: CH4 and 5: CO2 amounts, 6: temperature, 7: para-H2 fraction.
 
 C     Solar reference spectrum common block
-      real swave(maxbin),srad(maxbin)
+      real swave(maxbin),srad(maxbin),solrad
       integer iread,nspt
-      common /solardat/iread,swave,srad,nspt
+      common /solardat/iread,solrad,swave,srad,nspt
 
 C Common blocks ...
       COMMON /dust/ vsec,xsec,nsec,ncont

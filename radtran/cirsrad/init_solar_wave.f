@@ -32,12 +32,12 @@ C-----------------------------------------------------------------------
         include '../includes/arrdef.f'
 
 	INTEGER		iunit, npt, I,ispace,ispace1,iread
-	REAL		wave(maxbin), rad(maxbin), y
+	REAL		wave(maxbin), rad(maxbin), y, solrad
         CHARACTER*100	aname,solfile
         CHARACTER*80    dummy
         PARAMETER (iunit=26)
 
-        common/solardat/iread,wave, rad,  npt
+        common/solardat/iread, solrad, wave, rad,  npt
 
 C        call datarchive(aname)
         solfile = aname
@@ -59,8 +59,10 @@ C       Skip header
          print*,ispace,ispace1
          stop
         endif
-
+       
+        read(iunit,*) solrad
 	npt = 0
+
         do i = 1,maxbin
   		  read (iunit,*,end=20) wave(i), rad(i)
 		  npt = npt + 1

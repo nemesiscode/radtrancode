@@ -36,7 +36,7 @@ c  ** if arcfile exists then get tname from that **
          close(67)
       else
 C      tname = '/home/oxpln98/plan/irwin/blackadder/radtrancode/raddata/'      
-      tname ='/home/oxpln98/plan/irwin/blackadder/radtrancode/trunks/
+      tname ='/home/oxpln98/plan/irwin/radtrancode_svn/trunks/
      &raddata/'
       endif
       

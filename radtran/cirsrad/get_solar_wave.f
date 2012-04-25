@@ -19,9 +19,9 @@ C-----------------------------------------------------------------------
 
 	INTEGER		npt,iread
 	REAL		x, dist, solar, wave(maxbin), rad(maxbin), y
-        REAL		area
+        REAL		area, solrad
 
-        common/solardat/iread,wave, rad, npt
+        common/solardat/iread, solrad, wave, rad, npt
 
         if(iread.ne.999)then
          print*,'GET_SOLAR_WAVE: error. No solar spectrum initialised'

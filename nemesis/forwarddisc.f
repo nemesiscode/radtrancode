@@ -94,7 +94,7 @@ C     **************************************************************
 
       common/planrad/RADIUS1
              
-c  ** variables for solar refelcted cloud **
+c  ** variables for solar reflected cloud **
       real solar,xsolar
       real refl_cloud_albedo
       logical reflecting_atmos
@@ -223,7 +223,8 @@ c         initialise solar spectrum
           if(fexist) then
            call opensol(solfile,solname)
           else
-           print*,'Error in forwardavfovX. solar flux file not defined'
+           print*,'Error in forwarddisc. solar flux file not defined'
+           print*,'for reflectivity calculation'
            stop
           endif
 
@@ -247,6 +248,7 @@ C            Get overall star spectral power
            Bg = solar*refl_cloud_albedo/pi
 
            xfac=(2.*pi)*4.*pi*RADIUS1**2/xsolar
+
            yn(ioff+j)=yn(ioff+j) + xfac*wgeom(igeom,iav)*
      1					calcout(ioff1)*Bg
 

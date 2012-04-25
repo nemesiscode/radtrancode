@@ -4,7 +4,8 @@ C     ******************************************************************
 C
 C     CIRS retrieval code utilising correlated-k, thermal emission 
 C     fast gradient radiative transfer model CIRSRADG. Extension of
-C     Nemesis to retrieve from a number of locations in a row.  
+C     Nemesis to calculated disc-averaged spectra either for standalone
+C     planets (like brown dwarfs), or exoplanets in orbit about a star.  
 C
 C     This is a special version of the code for computing disc-averaged 
 C     spectra (for thermal emission, non scattering cases only) using the
@@ -13,11 +14,23 @@ C
 C     Minimisation is achieved using a modified non-linear estimation
 C     which uses a Marquardt-Levenburg type brake.
 C
+C     Code looks to see if there is a <runname.sol> file here and in several
+C     subsequent subroutines
+C
+C     If a *.sol file exists then it is assumed that we're calculating the
+C     secondary transit of an exoplanet, in which case the code calculates
+C     the flux ratio of the integrated star and planet fluxes. 
+C
+C     If a *.sol file does not exist, then the code calculates the surface 
+C     spectral irradiace of the planet/brown-dwarf in units of W cm-2 um-1 or
+C     W cm-2 (cm-1)-1
+
 C     Pat Irwin	        Modified from NIMS retrieval code 21/3/00
 C			Updated	4/4/01
 C			Updated for continuous vmr profiles 7/10/03
 C			Updated for FOV-averaging 9/2/04
 C			disc-averaged version   27/9/10
+C			Overhauled              25/4/12
 C
 C     ******************************************************************
       implicit none

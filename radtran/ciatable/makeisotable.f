@@ -1,4 +1,4 @@
-      program isotable
+      program makeisotable
 C ====================== Rationale ===============================
 C
 C Program to create a look-up table of pressure-induced absorption
@@ -32,13 +32,11 @@ C ================================================================
 
 C variable declarations
       implicit double precision (a-h,o-z)
-
-C k is the master-table of absorption co-efficients
-      real k(9,25,1501)
+      include '../includes/ciacom.f'
 
 C f is the frequency array, alf is the absorption co-efficient array
 C and temps is the temperature array
-      dimension f(601),alf(601), temps(25)
+      dimension f(601),alf(601), temps(NUMT)
       character*100 opfile
 
 C nine gas pairs at present:
@@ -52,29 +50,32 @@ C 6............N2-CH4
 C 7............N2-N2
 C 8............CH4-CH4
 C 9............H2-CH4
-      parameter NUMPAIRS=9
 
-C set limits of calculation grid and step size
-      parameter TMIN=40.0          ! you can change this
-      parameter TSTEP=15.0         ! and this, but not
-      parameter NUMTEMPS=25        ! this.
-
-      parameter NUMWN=1501         ! don't change this
-      parameter DNU=1.0            ! or this, because then other programs
-C                                    which read the table will get confused
-      ddnu = DNU
-C can't pass a parameter to a subroutine!
 
 
       print*,'Program ISOTABLE - calculates pressure-induced'
       print*,'                   absorption co-efficients.'
       print*,' '
+
+
+      print*,'Enter Tmin and Tstep for calculation'
+
+      print*,'Setups that are currently used'
+      print*,'isotest.tab   Tmin=70, Tstep=10'
+      print*,'glenniso.tab   Tmin=70, Tstep=10'
+      print*,'isotest_lowt.tab   Tmin=57.5, Tstep=9.5'
+
+      read*,TMIN,TSTEP
+
+      print*,'Enter dnu (usually 1.0 for isotable.)'
+      read*,DNU
+
       print*,'Enter name of output file : '
       read(5,1)opfile
 1     format(a)
 
       print*, 'Temperature range is: ', TMIN, ' to ',
-     &         TMIN+(TSTEP*NUMTEMPS)
+     &         TMIN+(TSTEP*NUMT)
 
       print*, 'Enter width of slit for N2-H2, N2-N2 and H2-CH4: '
       read (5,*) slit
@@ -82,15 +83,17 @@ C can't pass a parameter to a subroutine!
 C initialise the table of absorption-co-efficients by setting
 C all entries = 0
        do 6 i1=1,NUMPAIRS
-        do 7 i2=1,NUMTEMPS
+        do 7 i2=1,NUMT
          do 8 i3=1,NUMWN
-          k(i1,i2,i3)= 0.0
+          kcia(i1,i2,i3)= 0.0
 8        continue
 7       continue
 6      continue
 
-       do 200 itemp = 1,NUMTEMPS
+       do 200 itemp = 1,NUMT
 	  temps(itemp) = TMIN + (itemp - 1)*TSTEP
+          tempk1(itemp)=SNGL(temps(itemp))
+
           print*,'temp = ',temps(itemp)
 
 C this loop for equilibrium and normal ortho:para H2
@@ -109,10 +112,10 @@ C this loop for equilibrium and normal ortho:para H2
               fnumin=0. + (istep - 1)*500.0
               fnumax=fnumin + 499.0
               nf = 0
-              call h2h2_v0s(normal,temp,fnumin,fnumax,ddnu,nf,f,alf)
+              call h2h2_v0s(normal,temp,fnumin,fnumax,dnu,nf,f,alf)
               do i=1,nf
                  j=1 + int(f(i)/DNU)
-                 k(igas,itemp,j)=k(igas,itemp,j)+sngl(alf(i))
+                 kcia(igas,itemp,j)=kcia(igas,itemp,j)+sngl(alf(i))
               end do
              enddo
              print*,'h2h2_v0 OK'
@@ -127,10 +130,10 @@ C this loop for equilibrium and normal ortho:para H2
              do istep = 1,3
               fnumin=0. + (istep-1)*500.0
               fnumax=fnumin + 499.0
-              call h2he_v0s(normal,temp,fnumin,fnumax,ddnu,nf,f,alf)
+              call h2he_v0s(normal,temp,fnumin,fnumax,dnu,nf,f,alf)
               do i=1,nf
-                 j=1 + int(f(i)/ddnu)
-                 k(igas,itemp,j)=k(igas,itemp,j)+sngl(alf(i))
+                 j=1 + int(f(i)/dnu)
+                 kcia(igas,itemp,j)=kcia(igas,itemp,j)+sngl(alf(i))
               end do
              enddo
              print*,'h2he_v0 OK'
@@ -144,10 +147,10 @@ C =========================== N2 - H2 ===========================
            fnumin=0.0 + (istep-1)*500.0
            fnumax = fnumin + 499.0
            nf = 0
-           call n2h2_sub(temp,fnumin,fnumax,ddnu,nf,f,alf,slit)
+           call n2h2_sub(temp,fnumin,fnumax,dnu,nf,f,alf,slit)
            do i=1,nf
-              j=1 + int(f(i)/ddnu)
-              k(igas,itemp,j)=k(igas,itemp,j)+sngl(alf(i))
+              j=1 + int(f(i)/dnu)
+              kcia(igas,itemp,j)=kcia(igas,itemp,j)+sngl(alf(i))
            end do
           enddo
           print*,'n2h2 OK'
@@ -159,10 +162,10 @@ C =========================== N2 - CH4 ===========================
            fnumin=0.0 + (istep-1)*500.0
            fnumax = fnumin+499.0
            nf = 0
-           call n2ch4_s(temp,fnumin,fnumax,ddnu,nf,f,alf)
+           call n2ch4_s(temp,fnumin,fnumax,dnu,nf,f,alf)
            do i=1,nf
-              j=1 + int(f(i)/ddnu)
-              k(igas,itemp,j)=k(igas,itemp,j)+sngl(alf(i))
+              j=1 + int(f(i)/dnu)
+              kcia(igas,itemp,j)=kcia(igas,itemp,j)+sngl(alf(i))
            end do
           enddo
           print*,'n2ch4 OK'
@@ -174,10 +177,10 @@ C =========================== N2 - N2 ===========================
            fnumin=0 + (istep-1)*500.0
            fnumax = fnumin + 499.0
            nf = 0
-           call n2n2_s(temp,fnumin,fnumax,ddnu,nf,f,alf,slit)
+           call n2n2_s(temp,fnumin,fnumax,dnu,nf,f,alf,slit)
            do i=1,nf
-              j=1 + int(f(i)/ddnu)
-              k(igas,itemp,j)=k(igas,itemp,j)+sngl(alf(i))
+              j=1 + int(f(i)/dnu)
+              kcia(igas,itemp,j)=kcia(igas,itemp,j)+sngl(alf(i))
            end do
           enddo
           print*,'n2n2 OK'
@@ -189,10 +192,10 @@ C =========================== CH4 - CH4 ===========================
            fnumin=0 + (istep-1)*500.0
            fnumax = fnumin + 499.0
            nf = 0
-           call ch4ch4_s(temp,fnumin,fnumax,ddnu,nf,f,alf)
+           call ch4ch4_s(temp,fnumin,fnumax,dnu,nf,f,alf)
            do i=1,nf
-              j=1 + int(f(i)/ddnu)
-              k(igas,itemp,j)=k(igas,itemp,j)+sngl(alf(i))
+              j=1 + int(f(i)/dnu)
+              kcia(igas,itemp,j)=kcia(igas,itemp,j)+sngl(alf(i))
            end do
           enddo
           print*,'ch4ch4 OK'
@@ -216,11 +219,11 @@ c with Borysows original and ouput doesn't contain spikes. NT 23/6/04
            fnumin=0 + (istep-1)*500.0
            fnumax = fnumin + 499.0
            nf = 0
-           call h2ch4_sub(temp,fnumin,fnumax,ddnu,nf,f,alf,slit)
+           call h2ch4_sub(temp,fnumin,fnumax,dnu,nf,f,alf,slit)
            do i=1,nf
-              j=1 + int(f(i)/ddnu)
+              j=1 + int(f(i)/dnu)
               
-              k(igas,itemp,j)=k(igas,itemp,j)+sngl(alf(i))
+              kcia(igas,itemp,j)=kcia(igas,itemp,j)+sngl(alf(i))
            end do
           enddo
           print*,'h2ch4 OK'

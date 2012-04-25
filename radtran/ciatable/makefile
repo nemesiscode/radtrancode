@@ -62,20 +62,16 @@ $(LIBRARY)(%.o): %.f $(INCLUDES)
 
 
 bin :   \
-	Exotable \
-	Ciatable \
-	Isotable \
-	Fparatable
+	Makeciatable \
+	Makeisotable \
+	Makefptable
 
-Exotable: exotable.f $(LIBRARY)
-	$(FC) $(FCFLAGS) -o $(BIN)/Exotable exotable.f $(LIBRARY)
+Makeciatable: makeciatable.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Makeciatable makeciatable.f $(LIBRARY)
 
-Ciatable: ciatable.f $(LIBRARY)
-	$(FC) $(FCFLAGS) -o $(BIN)/Ciatable ciatable.f $(LIBRARY)
+Makeisotable: makeisotable.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Makeisotable makeisotable.f $(LIBRARY)
 
-Isotable: isotable.f $(LIBRARY)
-	$(FC) $(FCFLAGS) -o $(BIN)/Isotable isotable.f $(LIBRARY)
-
-Fparatable: fparatable.f $(LIBRARY)
-	$(FC) $(FCFLAGS) -o $(BIN)/Fparatable fparatable.f $(LIBRARY)
+Makefptable: makefptable.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Makefptable makefptable.f $(LIBRARY)
 

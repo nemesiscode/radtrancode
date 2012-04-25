@@ -1,4 +1,4 @@
-      program fparatable
+      program makefptable
 C ====================== Rationale ===============================
 C
 C Program to create a look-up table of pressure-induced absorption
@@ -19,46 +19,42 @@ C ================================================================
 
 C variable declarations
       implicit double precision (a-h,o-z)
+      include '../includes/ciacom.f'
 
 C k is the master-table of absorption co-efficients
-      real kh2h2(12,25,1501)
-      real kh2he(12,25,1501)
       character*100 opfile
-      real temps(25),fp(12)
-
-C f is the frequency array, alf is the absorption co-efficient array
-C and temps is the temperature array
-      NUMPARA=12
-
-C set limits of calculation grid and step size
-      TMIN=50.0          ! you can change this
-      TSTEP=15.0         ! and this, but not
-      NUMTEMPS=25        ! this.
-
-      NUMWN=1501         ! don't change this
-      DNU=1.0            ! or this, because then other programs
-C                                    which read the table will get confused
-
-      FMIN = 0.25
-      DF = 0.02 
 
 
       print*,'Program FPARATABLE - calculates pressure-induced'
       print*,'                   absorption co-efficients.'
       print*,' '
+
+
+      print*,'Enter Tmin and Tstep for calculation'
+      read*,TMIN,TSTEP
+
+      print*,'Enter number if fpara fractions (12 or 24)'
+      read*,NUMPARA
+
+      FMIN = 0.25
+      DF = 0.01*FLOAT(NPARA)/FLOAT(NUMPARA) 
+
+      print*,'Enter dnu (usually 1.0 for fparatables)'
+      read*,DNU
+
       print*,'Enter name of output file : '
       read(5,1)opfile
 1     format(a)
 
       print*, 'Temperature range is: ', TMIN, ' to ',
-     &         TMIN+(TSTEP*NUMTEMPS)
+     &         TMIN+(TSTEP*NUMT)
 
 
 C initialise the table of absorption-co-efficients by setting
 C all entries = 0
 
        do 6 i1=1,NUMPARA
-        do 7 i2=1,NUMTEMPS
+        do 7 i2=1,NUMT
          do 8 i3=1,NUMWN
           kh2h2(i1,i2,i3)= 0.0
           kh2he(i1,i2,i3)= 0.0
@@ -66,10 +62,9 @@ C all entries = 0
 7       continue
 6      continue
 
-       do 200 itemp = 1,NUMTEMPS
-	  temps(itemp) = TMIN + (itemp - 1)*TSTEP
-          print*,'temp = ',temps(itemp)
-          TEMP = TEMPS(ITEMP)
+       do 200 itemp = 1,NUMT
+	  tempk2(itemp) = TMIN + (itemp - 1)*TSTEP
+          TEMP = TEMPK2(ITEMP)
 
 C this loop for equilibrium and normal ortho:para H2
           do 250 IPARA=1,NUMPARA
@@ -96,7 +91,7 @@ C this loop for equilibrium and normal ortho:para H2
 
       open(12,file=opfile,form='unformatted',status='unknown')
 
-      write(12) temps
+      write(12) tempk2
       write(12) fp
       write(12) kh2h2
       write(12) kh2he

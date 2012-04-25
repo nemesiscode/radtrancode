@@ -2,42 +2,42 @@
 
 echo 'Compiling libraries...'
 
-cd $RADSRCX/rtm_util
+cd $RADSRC/rtm_util
 make clean
 make lib
 
-cd $RADSRCX/spec_data
+cd $RADSRC/spec_data
 make clean
 make lib
 
-cd $RADSRCX/path
+cd $RADSRC/path
 make clean
 make lib
 
-cd $RADSRCX/scatter
+cd $RADSRC/scatter
 make clean
 make lib
 
-cd $RADSRCX/radtran
+cd $RADSRC/radtran
 make clean
 make lib
 
-cd $RADSRCX/ciatable
+cd $RADSRC/ciatable
 make clean
 make lib
 
-cd $RADSRCX/cirsrad
+cd $RADSRC/cirsrad
 make clean
 make lib
 
-cd $RADSRCX/cirsradg
+cd $RADSRC/cirsradg
 make clean
 make lib
 
-cd $RADSRCX/matrices
+cd $RADSRC/matrices
 make clean
 make lib
 
-cd $RADSRCX/monteck
+cd $RADSRC/monteck
 make clean
 make lib

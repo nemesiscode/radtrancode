@@ -2,39 +2,39 @@
 
 echo 'Compiling Binaries...'
 
-cd $RADSRCX/rtm_util
+cd $RADSRC/rtm_util
 make clean
 make bin
 
-cd $RADSRCX/spec_data
+cd $RADSRC/spec_data
 make clean
 make bin
 
-cd $RADSRCX/path
+cd $RADSRC/path
 make clean
 make bin
 
-cd $RADSRCX/scatter
+cd $RADSRC/scatter
 make clean
 make bin
 
-cd $RADSRCX/radtran
+cd $RADSRC/radtran
 make clean
 make bin
 
-cd $RADSRCX/ciatable
+cd $RADSRC/ciatable
 make clean
 make bin
 
-cd $RADSRCX/cirsrad
+cd $RADSRC/cirsrad
 make clean
 make bin
 
-cd $RADSRCX/cirsradg
+cd $RADSRC/cirsradg
 make clean
 make bin
 
-cd $RADSRCX/monteck
+cd $RADSRC/monteck
 make clean
 make bin
 

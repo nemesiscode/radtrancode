@@ -158,7 +158,7 @@ NemesisMC: nemesisMC.f $(LIBRARY)
 	$(LIB)/cirsradg.a $(LIB)/cirsrad.a $(LIB)/radtran.a \
 	$(LIB)/monteck.a \
 	$(LIB)/scatter.a $(LIB)/path.a \
-	$(LIB)/matrices.a $(LIB)/rtm_util.a $(LIB)/lgregfov.a \
+	$(LIB)/matrices.a $(LIB)/rtm_util.a \
 	$(FRECIPES) 
 
 Generatespx: generatespx.f $(LIBRARY)

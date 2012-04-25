@@ -3,9 +3,12 @@
      2 varident,varparam,jrad,RADIUS,nx,xn,ny,yn,kk)
 C     $Id:
 C     **************************************************************
-C     Subroutine to calculate an FOV-averaged limb spectra and
-C     KK-matrix using CIRSRADG gradient code. Uses numerical integration
-C     for cases where the limb component is also important. 
+C     Subroutine to calculate a primary transit spectrum of an exoplanet.
+C  
+C     Adapted from earlier limb observation Nemesis subroutine forwardL.f
+C
+C     Calculates the ratio of the planet area to star area and outputs
+C     result as a percentage. i.e. Result = 100*planet_area/star_area
 C     
 C     Input variables:
 C       runname(60)   character Name of run.
@@ -44,6 +47,8 @@ C     Pat Irwin	4/4/01		Original
 C     Pat Irwin 17/10/03	Tidied for Nemesis
 C     Pat Irwin 8/2/04		Modified from forward.f to integrate
 C				several observations
+C     Pat Irwin */*/11		Modified from forwardl to model primary transits
+C     Pat Irwin 25/4/12         Overhauled and tidied.
 C
 C     **************************************************************
 
@@ -287,6 +292,7 @@ C     pre-calculated array
              kk(iconv,j) = 100.*darea(j)/area0
         enddo
 
+C       Add on effect of fitting radius correction in apr file.
         if(jrad.gt.0)then
            kk(iconv,jrad)=kk(iconv,jrad)+2.*pi*radius1
         endif

@@ -38,10 +38,10 @@ C
 C_BUGS:   
 C
 C_HIST:	30.3.00		PGJI	ORIGINAL VERSION
-C       8oct2002        PDP     Removed references to "etime" and replaced
-C                               them with "gettime" due to the fact that
-C                               the Intel FORTRAN Compiler does not
-C                               recognise the etime command.
+C	26/4/12		PGJI	Updated for new radtrans/nemesis and added 
+C				option to calculate k-table for spectral 
+C				channels.
+C   
 C---------------------------------------------------------------------------
 C     note dbcom defines the linedata base variables. it is not normally stored
 C     in the same directory as the rest of the code

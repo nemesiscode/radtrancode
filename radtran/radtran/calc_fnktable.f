@@ -346,7 +346,7 @@ cc            WRITE(*,*)'Pressure, temperature: ',P1,TE1
               print*,'! esumset needs del_g setting by hand !'
               print*,'! update routine or do it manually    !'
               print*,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-              pause
+              STOP  
               CALL ESUMSET(KNU0,DELAD,Y0,EL,SFB,cb1,cb2,QROT,P1,TE1,
      1        FRAC,XE,YE,SIGE,MDATA,G_ORD,K_G,NG)
               ALAMDA1 = 2000.

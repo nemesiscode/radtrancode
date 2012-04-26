@@ -31,7 +31,8 @@ C     *********************************************************
                   ICOL=K
                 ENDIF
               ELSE IF (IPIV(K).GT.1) THEN
-                PAUSE 'Singular matrix'
+                PRINT*, 'Singular matrix'
+		STOP
               ENDIF
 12          CONTINUE
           ENDIF
@@ -51,7 +52,10 @@ C     *********************************************************
         ENDIF
         INDXR(I)=IROW
         INDXC(I)=ICOL
-        IF (A(ICOL,ICOL).EQ.0.) PAUSE 'Singular matrix.'
+        IF (A(ICOL,ICOL).EQ.0.) THEN
+          PRINT*, 'Singular matrix.'
+          STOP
+        ENDIF
         PIVINV=1./A(ICOL,ICOL)
         A(ICOL,ICOL)=1.
         DO 16 L=1,N

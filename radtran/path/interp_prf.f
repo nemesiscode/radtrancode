@@ -134,9 +134,14 @@ c  ** read header **
         read(10,*) idiso(i,1),idiso(i,2)
       enddo
 c  ** check max dimensions **
-	if (nvmr.gt.nvmr_max) pause 'ERROR: zreadprf nvmr > nvmr_max'
-	if (npro.gt.npro_max) pause 'ERROR: zreadprf npro > npro_max'
-
+	if (nvmr.gt.nvmr_max) then
+         print*, 'ERROR: zreadprf nvmr > nvmr_max'
+         stop
+        endif
+	if (npro.gt.npro_max) then
+         print*, 'ERROR: zreadprf npro > npro_max'
+         stop
+        endif
 c  ** read vmrs **      
       read(10,*) buffer
       do i=1,npro

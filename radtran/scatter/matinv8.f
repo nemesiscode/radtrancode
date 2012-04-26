@@ -65,7 +65,10 @@ C  3/5/88 ...LWK... FROM [ATMRJW.RECIPES], CONVERTED TO DOUBLE PRECISION
         DO 11 J=1,N
           IF (ABS(A(I,J)).GT.AAMAX) AAMAX=ABS(A(I,J))
 11      CONTINUE
-        IF (AAMAX.EQ.0.) PAUSE 'Singular matrix.'
+        IF (AAMAX.EQ.0.) THEN
+          PRINT*, 'Singular matrix.'
+	  STOP
+        ENDIF
         VV(I)=1.D0/AAMAX
 12    CONTINUE
       DO 19 J=1,N

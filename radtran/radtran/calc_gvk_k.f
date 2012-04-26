@@ -311,10 +311,14 @@ C
           LISTA(KK)=J
           KK=KK+1
         ELSE IF (IHIT.GT.1) THEN
-          PAUSE 'Improper set in LISTA'
+          PRINT*, 'Improper set in LISTA - IHIT.GT.1'
+          STOP
         ENDIF
 12    CONTINUE
-      IF (KK.NE.(MA+1)) PAUSE 'Improper set in LISTA'
+      IF (KK.NE.(MA+1)) THEN
+        PRINT*, 'Improper set in LISTA'
+        STOP
+      ENDIF
       DO 14 J=1,MFIT
         DO 13 K=1,MFIT
           COVAR(J,K)=0.
@@ -381,7 +385,8 @@ C
                   ICOL=K
                 ENDIF
               ELSE IF (IPIV(K).GT.1) THEN
-                PAUSE 'Singular matrix'
+                PRINT*, 'Singular matrix'
+		STOP
               ENDIF
 12          CONTINUE
           ENDIF
@@ -401,7 +406,10 @@ C
         ENDIF
         INDXR(I)=IROW
         INDXC(I)=ICOL
-        IF (A(ICOL,ICOL).EQ.0.) PAUSE 'Singular matrix.'
+        IF (A(ICOL,ICOL).EQ.0.) THEN
+          PRINT*,'Singular matrix.'
+	  STOP
+	ENDIF
         PIVINV=1./A(ICOL,ICOL)
         A(ICOL,ICOL)=1.
         DO 16 L=1,N
@@ -690,7 +698,10 @@ C      end do
       GOTO 1
       ENDIF
       H=XA(KHI)-XA(KLO)
-      IF (H.EQ.0.) PAUSE 'Bad XA input.'
+      IF (H.EQ.0.) THEN
+       PRINT*, 'Bad XA input.'
+       STOP
+      ENDIF
       A=(XA(KHI)-X)/H
       B=(X-XA(KLO))/H
       Y=A*YA(KLO)+B*YA(KHI)+

@@ -84,10 +84,14 @@ C      print*,'ALAMBDA : ',alamda
             LISTA(KK)=J
             KK=KK+1
           ELSE IF (IHIT.GT.1) THEN
-            PAUSE 'Improper permutation in LISTA'
+            PRINT*,'Improper permutation in LISTA - IHIT.GT.1'
+	    STOP
           ENDIF
 12      CONTINUE
-        IF (KK.NE.(MA+1)) PAUSE 'Improper permutation in LISTA'
+        IF (KK.NE.(MA+1)) THEN
+         PRINT*, 'Improper permutation in LISTA - KK.NE.(MA+1)'
+         STOP
+        ENDIF
         ALAMDA=2000.0
         CALL MRQCOFM(X,Y,SIG,NDATA,A,MA,LISTA,MFIT,ALPHA,BETA,NCA,CHISQ)
         OCHISQ=CHISQ

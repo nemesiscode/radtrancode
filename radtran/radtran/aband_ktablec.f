@@ -7,7 +7,6 @@ C     Pat Irwin ?/?/??  Original version
 C     Pat Irwin 26/4/12 Added comments.
 C
 C     ***************************************************************
-âˆ
 
       IMPLICIT NONE
 

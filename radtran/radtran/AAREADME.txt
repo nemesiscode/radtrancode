@@ -10,7 +10,11 @@ Aground 	Adds ground emission times transmission to atmospheric
 Ave_table	Reads an absorption coefficient look-up table and
                 convolves with a square of user defined width.
 
-Calc_fnktable	Calculates a k-table from line data.
+Calc_fnktable	Calculates a k-table from line data or band data. 
+
+Calc_fnktablec	Calculates a k-table from line data over regular grid, or
+                at range of wavelengths. Can also deal with non-square spectral
+		averaging and k-tables channel-averaged k-tables.  
 
 Calc_exotable3	Calculates a k-table from a range of line databases calculated
 		at different temperatures by Makedbloop

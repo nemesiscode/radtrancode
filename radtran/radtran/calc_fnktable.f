@@ -45,8 +45,7 @@ C			instead of using data statements. these are then
 C			passed to calc_fkdist via calc_fknew
 C		** NB I have not changed ESUMSET to have Del_g passed to it **
 C		** i left that as it was in calc_fntable **
-C	26/4/12	PGJI	Updated for new radtrans/nemesis and added option
-C			to calculate k-table for spectral channels.
+C	26/4/12	PGJI	Updated for new radtrans/nemesis
 C
 C***************************** VARIABLES *******************************
 
@@ -140,7 +139,7 @@ C     filter function
       READ*,NG
 
 c  ** calc g_ord and del_g **
-	call zgauleg(g_ord,del_g,ng,ngmax)
+      call zgauleg(g_ord,del_g,ng,ngmax)
 
 
 
@@ -318,8 +317,8 @@ C 4 Megs in size).
           ii = 0
         ENDIF
 
-        WRITE(*,*)'CALC_FNKTABLE.f :: Current Wavenumber = ',IV/DELVSF
-        WRITE(LUN1,*)'CALC_FNKTABLE.f :: Current Wavenumber = ',IV/DELVSF
+      WRITE(*,*)'CALC_FNKTABLE.f :: Current Wavenumber = ',IV/DELVSF
+      WRITE(LUN1,*)'CALC_FNKTABLE.f :: Current Wavenumber = ',IV/DELVSF
         DO 20 J=1,NP
           P1 = PRESS1(J)
           DO 30 K=1,NT

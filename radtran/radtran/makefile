@@ -139,6 +139,7 @@ bin :   \
 	Aground \
 	Ave_table \
 	Calc_fnktable \
+	Calc_fnktablec \
 	Calc_exotable3 \
 	Calc_exotable4 \
 	Aband_ktable \
@@ -166,6 +167,11 @@ Ave_table : ave_table.f $(LIBRARY) $(LIB)/spec_data.a
 
 Calc_fnktable : calc_fnktable.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Calc_fnktable calc_fnktable.f $(LIBRARY) \
+	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
+	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a
+
+Calc_fnktablec : calc_fnktablec.f $(LIBRARY) $(LIB)/spec_data.a
+	$(FC) $(FCFLAGS) -o $(BIN)/Calc_fnktablec calc_fnktablec.f $(LIBRARY) \
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
 	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a
 

@@ -2,7 +2,8 @@
 C     $Id%
 C--------------------------------------------------------------
       IMPLICIT NONE
-      INCLUDE '../includes/arrdef.f'
+      INTEGER MAXPRO,MAXVMR
+      PARAMETER(MAXPRO=300,MAXVMR=20)
 C     MAXPRO is the maximum number of vertical points which can be stored.
 C     MAXVMR is the maximum number of vertical mixing ratio profiles.
       REAL H(MAXPRO),P(MAXPRO),T(MAXPRO),VMR(MAXPRO,MAXVMR),TINY

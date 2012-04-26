@@ -28,8 +28,6 @@ C-----------------------------------------------------------------------
 
       IRECL=ISYS()
 
-C      CALL TwiddleExpand(KTAFIL,IPFILE)
-
       WRITE(*,41)KTAFIL
 41    FORMAT('Read_khead. Opening : ',A) 
 
@@ -39,7 +37,8 @@ C      CALL TwiddleExpand(KTAFIL,IPFILE)
       READ(LUN0,REC=1)IREC0
       READ(LUN0,REC=2)NPOINT
       IF(NPOINT.GT.MAXBIN)THEN
-       PRINT*,'Problem in read_khead.f. NPOINT > MAXBIN for VCEN array'
+       PRINT*,'Problem in read_khead.f. Number of points in k-table'
+       PRINT*,'is greater than the dimension, MAXBIN,of the VCEN array'
        PRINT*,NPOINT,MAXBIN
        STOP
       ENDIF

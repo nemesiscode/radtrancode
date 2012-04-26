@@ -25,7 +25,7 @@ F_SOURCES= \
 
 INCDIR = ../includes
 INCLUDES = $(INCDIR)/dbcom.f $(INCDIR)/laycom.f $(INCDIR)/laygrad.f \
-	$(INCDIR)/pathcom.f $(INCDIR)/arrdef.f
+	$(INCDIR)/pathcom.f $(INCDIR)/arrdef.f $(INCDIR)/ciacom.f
 
 OBJ = $(F_SOURCES:.f=.o)
 LIBRARY = $(LIB)/cirsradg.a

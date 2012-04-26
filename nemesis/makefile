@@ -84,7 +84,7 @@ F_SOURCES = \
 INCDIR = ../../radtran/includes
 INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/lincom.f $(INCDIR)/pathcom.f \
            $(INCDIR)/parcom.f $(INCDIR)/dbcom.f $(INCDIR)/bincoms.f \
-           $(INCDIR)/arrdef.f arraylen.f
+           $(INCDIR)/arrdef.f $(INCDIR)/ciacom.f arraylen.f
 
 OBJ= $(F_SOURCES:.f=.o)
 LIBRARY = $(LIB)/lnemesis.a

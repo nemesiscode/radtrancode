@@ -59,7 +59,7 @@ F_SOURCES = \
 
 INCDIR = ../includes
 INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/dbcom.f $(INCDIR)/laycom.f \
-	$(INCDIR)/pathcom.f $(INCDIR)/arrdef.f
+	$(INCDIR)/pathcom.f $(INCDIR)/arrdef.f $(INCDIR)/ciacom.f
 
 OBJ = $(F_SOURCES:.f=.o)
 LIBRARY = $(LIB)/cirsrad.a

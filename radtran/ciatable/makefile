@@ -34,6 +34,9 @@ F_SOURCES = \
       n2n2_s.f \
       pindex.f
 
+INCDIR = ../includes
+INCLUDES = $(INCDIR)/ciacom.f
+
 
 OBJ = $(F_SOURCES:.f=.o)
 LIBRARY = $(LIB)/ciatable.a

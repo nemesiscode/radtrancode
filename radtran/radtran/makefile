@@ -106,7 +106,7 @@ F_SOURCES = \
 
 INCDIR = ../includes
 INCLUDES = $(INCDIR)/arrdef.f $(INCDIR)/bincom.f $(INCDIR)/bincoms.f \
-	$(INCDIR)/dbcom.f \
+	$(INCDIR)/dbcom.f $(INCDIR)/ciacom.f \
 	$(INCDIR)/lincom.f $(INCDIR)/parcom.f $(INCDIR)/pathcom.f
 
 OBJ = $(F_SOURCES:.f=.o)

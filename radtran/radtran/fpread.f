@@ -44,14 +44,14 @@ C     **********************************************************************
       real deltaf
 C     input/output variables
       real vv,temp,absh2(NPARA),abshe(NPARA),dah2dT(NPARA),dahedT(NPARA)
-
+      REAL KH2H21(12,NUMT,NUMWN),KH2HE1(12,NUMT,NUMWN)
 C     Other variables
       real fp1(12)
 
       real abs11, abs12, abs21, abs22
       real bbs11, bbs12, bbs21, bbs22
       real u,t,temp1,dudt
-      integer cv,ct,pindex,i
+      integer cv,ct,pindex,i,j,k
       integer kpara
       logical fexist
 C     ----------------------------------------------------------------------
@@ -78,6 +78,7 @@ C     define the fixed parameters
             print*,i,tempk2(i)
 21       continue
          print*,'Tabulated para-H2 fractions : '
+C        Older para-h2 tables have 12 ortho/para ratios instead of 12
          if(ipara2.eq.12)then
           read(12)fp1
           do i=1,ipara2
@@ -91,9 +92,22 @@ C     define the fixed parameters
          do 22 i=1, ipara2
             print*,i,fp(i)
 22       continue
-
-         read(12)kh2h2
-         read(12)kh2he
+       
+         if(ipara2.eq.12)then
+          read(12)kh2h21
+          read(12)kh2he1
+          do 301 i=1,ipara2
+           do 302 j=1,NUMT
+            do 303 k=1,NUMWN
+             kh2h2(i,j,k)=kh2h21(i,j,k)
+             kh2he(i,j,k)=kh2he1(i,j,k)
+303         continue
+302        continue
+301       continue
+         else
+          read(12)kh2h2
+          read(12)kh2he
+         endif
          close(12)
 
 C     ----------------------------------------------------------------------

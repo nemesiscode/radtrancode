@@ -1,4 +1,12 @@
       PROGRAM ABAND_KTABLE
+C     ***************************************************************
+C     Program to calculate a k-table from band data over a regular grid 
+C     of wavelengths/wavenumbers.
+C
+C     Pat Irwin	?/?/??	Original version
+C     Pat Irwin	26/4/12	Added comments.
+C
+C     ***************************************************************
 
       IMPLICIT NONE
 

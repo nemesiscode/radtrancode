@@ -1,7 +1,7 @@
       PROGRAM CALC_FNKTABLE
 C     $Id: calc_fnktable.f,v 1.4 2011-10-26 09:44:08 irwin Exp $
 C***********************************************************************
-C_TITL:	CALC_FNTABLE.f
+C_TITL:	CALC_FNKTABLE.f
 C
 C_DESC:	Calculates the absorption coefficient look-up table for a gas of
 C	the user's choice.
@@ -45,6 +45,9 @@ C			instead of using data statements. these are then
 C			passed to calc_fkdist via calc_fknew
 C		** NB I have not changed ESUMSET to have Del_g passed to it **
 C		** i left that as it was in calc_fntable **
+C	26/4/12	PGJI	Updated for new radtrans/nemesis and added option
+C			to calculate k-table for spectral channels.
+C
 C***************************** VARIABLES *******************************
 
       IMPLICIT NONE
@@ -215,7 +218,7 @@ c  ** calc g_ord and del_g **
       OPEN(UNIT=LUN0,FILE=KTAFIL,STATUS='UNKNOWN',ACCESS='DIRECT',
      1 RECL=IRECL)
       IREC0 = 11 + 2*NG + 2 + NP*NT + 2
-cc      WRITE(*,*)' CALC_FNTABLE.f :: IREC0 = ',irec0
+cc      WRITE(*,*)' CALC_FNKTABLE.f :: IREC0 = ',irec0
       WRITE(LUN0,REC=1)IREC0
       WRITE(LUN0,REC=2)NPOINT
       WRITE(LUN0,REC=3)VMIN
@@ -315,8 +318,8 @@ C 4 Megs in size).
           ii = 0
         ENDIF
 
-        WRITE(*,*)'CALC_FNTABLE.f :: Current Wavenumber = ',IV/DELVSF
-        WRITE(LUN1,*)'CALC_FNTABLE.f :: Current Wavenumber = ',IV/DELVSF
+        WRITE(*,*)'CALC_FNKTABLE.f :: Current Wavenumber = ',IV/DELVSF
+        WRITE(LUN1,*)'CALC_FNKTABLE.f :: Current Wavenumber = ',IV/DELVSF
         DO 20 J=1,NP
           P1 = PRESS1(J)
           DO 30 K=1,NT
@@ -383,7 +386,7 @@ C If the code succeeds in completion, delete "calc_ntable_temp.dat" (LUN1)
 C since its main usefulness is when the code crashes prior to completion.
       CLOSE(UNIT=LUN1,STATUS='DELETE')
 
-      WRITE(*,*)' CALC_FNTABLE.f :: calculation complete.'
+      WRITE(*,*)' CALC_FNKTABLE.f :: calculation complete.'
       CALL GETTIME(TIME)
       TIME2 = TIME
       TOT_TIME = TIME2 - TIME1

@@ -3,8 +3,22 @@ C     $Id:
 C***********************************************************************
 C_TITL:	CALC_EXOTABLE4.f
 C
-C_DESC:	Calculates the absorption coefficient look-up table for a gas of
-C	the user's choice.
+C_DESC: Calculates the absorption coefficient look-up table for a gas of
+C       the user's choice. Code is similar to Calc_fnktable, but is modified
+C       to use a range of line databases calculated at different temperatures 
+C       by Makedbloop. This was necessary as some linedatabase, such as BT2
+C       have far too many lines to deal with efficiently. It turns out that 
+C       at different temperatures, different sets of the lines account for
+C       most of the absorption. Hence, the non-negligible lines at each 
+C       temperature are output to a separate database and the k-table for that
+C       temperature calculated from that database.
+C
+C	Calc_exotable is ALMOST same as calc_exotable3. However, to
+C       use Calc_exotable4, we need to create a blank k-table first 
+C       and then run the code and fill it up with k-coefficients for 
+C       each grid point. However,this process is totally manual, not 
+C       automated, so is probably not a usable code for all users. 
+C
 C
 C_ARGS:	See the definitions below.
 C
@@ -36,6 +50,8 @@ C 			exoplanetary line databases which have so many
 C			lines that the important lines for each table
 C			temperature must be selected first with
 C			SELECTTEMPLOOP
+C	00nnn00 JML	Adapted from calc_exotable3.f
+C	26apr12 PGJI	Updated and commented.
 C
 C***************************** VARIABLES *******************************
 

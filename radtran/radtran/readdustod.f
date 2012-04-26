@@ -1,13 +1,14 @@
       SUBROUTINE READDUSTOD(OPFILE1,NCONT1,XOD)
 C     $Id:
 C-----------------------------------------------------------------------------
-C_TITLE:  RDLBLD: reads in arrays for use by GENLBL or GENLBL output
-C         processors
+C_TITLE:  READDUSTOD
+C
 C_ARGS:
 C
 C_KEYS:   
 C
-C_DESCR:  reads in arrays as output by WRLBLD
+C_DESCR:  reads in arrays as output by WRLBLD to a driver file and
+C         extracts the dust opacity.
 C
 C_FILES:  UNIT 1: driver file, already open when called
 C
@@ -18,7 +19,10 @@ C
 C_HIST:  6feb87 SBC ORIGINAL VERSION
 C        20sep91 SBC modified to use new line data routines
 C        18nov92 SBC modified to use EMTEMP and BASET
-C          1dec92 SBC new format for layer data etc. see WRLDLD
+C        1dec92 SBC new format for layer data etc. see WRLDLD
+C        00nnn00 PGJI modified from RDLBLD to extract dust opacity
+C        24apr12 PGJI commented.
+C
 C----------------------------------------------------------------------------
 C     note dbcom defines the linedata base variables. it is not normally stored
 C     in the same directory as the rest of the code

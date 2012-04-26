@@ -1,5 +1,16 @@
       real function slvf(k,aa,bb,B,gg)
-C     $Id: slvf.f,v 1.2 2011-06-17 15:40:27 irwin Exp $
+C     $Id:
+C     **************************************************************
+C     Single precision k-distribution utility routine used by kml, intrpk,
+C     calc_mlk1_k, and calc_mlk2_k.
+C     The function dslvf calculates the function (g(ke1) - gg)
+C     given the LO parameters 'a', 'b' and 'B'
+C
+C     Pat Irwin ?/?/??  Original
+C     Pat Irwin 26/4/12 Commented
+C
+C     **************************************************************
+
       implicit none
       real k,gg
       double precision aa,bb,B,pi

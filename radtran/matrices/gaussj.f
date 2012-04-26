@@ -1,4 +1,11 @@
       SUBROUTINE GAUSSJ(A,N,NP,B,M,MP)
+C     *********************************************************
+C     Slight modification of the numerical recipes routine of the same
+C     
+C     Pat Irwin		?/?/??	Original
+C     Pat Irwin		26/4/12 Added comments
+C
+C     *********************************************************
       IMPLICIT REAL (A-H,O-Z)
       PARAMETER (NMAX=80)      
       DIMENSION A(NP,NP),B(NP,MP),IPIV(NMAX),INDXR(NMAX),INDXC(NMAX)

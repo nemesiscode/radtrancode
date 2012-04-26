@@ -1,6 +1,11 @@
       subroutine calc_mlk1_k(SL,BL,g_ord,k_g,ng)
 C     ************************************************************************
+C     Precursor version of calc_mlk2_k, which calculates the mean value 
+C     of k(g) in a g-interval using the method described in 
+C     Lacis and Oinas (LO), p9038.
 C
+C     Pat Irwin	?/?/??	Original
+C     Pat Irwin	26/4/12	Commented.
 C
 C     ************************************************************************
       implicit none

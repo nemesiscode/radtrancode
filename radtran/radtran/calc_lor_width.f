@@ -1,5 +1,13 @@
       REAL FUNCTION CALC_LOR_WIDTH(ABSCO,AL,LOR_MOD,RODGERS)
-C     $Id: calc_lor_width.f,v 1.2 2011-06-17 15:40:25 irwin Exp $
+C     $Id:
+C     ***********************************************************
+C     Calculates the Lorentz width of a line assuming different
+C     assumptions.
+C
+C     Pat Irwin	?/?/??	Original
+C     Pat Irwin	26/4/12	Commented.
+C
+C     ***********************************************************
       REAL ABSCO,AL,PI
       DOUBLE PRECISION RODGERS(4,0:7),SUM,Z
       PARAMETER (PI=3.1415927)

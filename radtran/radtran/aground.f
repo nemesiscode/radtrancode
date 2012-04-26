@@ -7,17 +7,16 @@ C_ARGS:   none
 C
 C_KEYS:   ATMO,SPEC,VMS,PROG
 C
-C_DESCR:  plots any one of the spectra in a file produced by LBL
-C
 C_CALLS:
 C
 C_BUGS:
 C
 C_DESC:	Adds ground emission times transmission to atmospheric emission.
-C	does same job as Addground, but works with original Radtran .out
-C	files rather than intermediate ASCII files.
+C	Works with original Radtran .out files rather than intermediate 
+C       ASCII files.
 C
-C	Pat Irwin	13/1/00
+C	Pat Irwin	13/1/00	Original
+C	Pat Irwin	26/4/12	Updated comments
 C
 C-----------------------------------------------------------------------------
 C     note that include is not F77 and is included only during development

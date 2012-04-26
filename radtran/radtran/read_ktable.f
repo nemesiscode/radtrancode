@@ -2,7 +2,7 @@
      1IDGAS,ISOGAS,PRESS1,TEMP1,NP,NT,G_ORD,DEL_G,NG,IREC0)
 C     $Id: read_ktable.f,v 1.4 2011-06-17 15:40:27 irwin Exp $
 C---------------------------------------------------------------------------
-C_TITLE:  CALC_TABLE
+C_TITLE:  READ_KTABLE
 C
 C_ARGS:
 C

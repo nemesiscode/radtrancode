@@ -1,5 +1,12 @@
       REAL FUNCTION CALC_DOP_WIDTH(ABSCO,AD,DOP_MOD,RODGERS)
-C     $Id: calc_dop_width.f,v 1.2 2011-06-17 15:40:25 irwin Exp $
+C     $Id:
+C     ***********************************************************
+C     Calculates the Doppler width of a line assuming different
+C     assumptions.
+C
+C     Pat Irwin	?/?/??	Original
+C
+C     ***********************************************************
       REAL ABSCO,AD,PI
       PARAMETER(PI=3.1415927)
       DOUBLE PRECISION RODGERS(4,0:7),SUM,Z

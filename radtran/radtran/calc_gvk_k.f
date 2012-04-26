@@ -1,8 +1,8 @@
       subroutine calc_gvk_k(fknu,delad,y,T,umean,lcalch,g_ord,k_g,ng)
-C
-      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-C
 C ***************************************************************************
+C
+C     Calculates the mean value of k(g) in a g-interval using the 
+C     Goody-Voigt model
 C
 C     Input variables
 C	knu		real 	knu at temperature of layer
@@ -14,6 +14,9 @@ C       g1              real	Maximum value of g in interval
 C
 C     Output variable.
 C	calc_gvk	real	mean k-coefficient from gmin to gmax
+C
+C	Pat Irwin	?/?/??	Original
+C	Pat Irwin	26/4/12	Commented.
 C
 C ***************************************************************************
 C
@@ -28,6 +31,7 @@ C Set number of points in function
 C Set number of fitting functions
 C Twenty seems to be about ok (from trial and error!)
 C
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       include '../includes/arrdef.f'
       parameter(ndata=20,ma=20,mfit=20,ncvm=20)
       double precision x(ndata),ytau(ndata),offset(ma)

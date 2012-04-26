@@ -4,7 +4,15 @@ C***********************************************************************
 C_TITL:	CALC_EXOTABLE3.f
 C
 C_DESC:	Calculates the absorption coefficient look-up table for a gas of
-C	the user's choice.
+C	the user's choice. Code is similar to Calc_fnktable, but is modified
+C       to use a range of line databases calculated at different temperatures 
+C       by Makedbloop. This was necessary as some linedatabase, such as BT2
+C       have far too many lines to deal with efficiently. It turns out that 
+C       at different temperatures, different sets of the lines account for
+C       most of the absorption. Hence, the non-negligible lines at each 
+C       temperature are output to a separate database and the k-table for that
+C       temperature calculated from that database.
+
 C
 C_ARGS:	See the definitions below.
 C
@@ -36,6 +44,7 @@ C 			exoplanetary line databases which have so many
 C			lines that the important lines for each table
 C			temperature must be selected first with
 C			SELECTTEMPLOOP
+C	26apr12	PGJI	Updated and commented.
 C
 C***************************** VARIABLES *******************************
 
@@ -47,7 +56,7 @@ C ../includes/bincom.f stores the line bin variables (including NLINES,
 C FSTLIN, LSTLIN) and band parameters.
       INCLUDE '../includes/dbcom.f'
 C ../includes/dbcom.f stores the line database variables.
-      INCLUDE 'lincoms.f'
+      INCLUDE '../includes/lincom.f'
 C ../includes/lincom.f stores the linedata variables (including MAXLIN,
 C VLIN, SLIN, ALIN, ELIN, SBLIN, TDW, TDWS and that lot).
       INCLUDE '../includes/pathcom.f'

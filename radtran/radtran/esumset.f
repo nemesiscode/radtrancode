@@ -1,5 +1,14 @@
       subroutine esumset(knu0,delad,y0,EL,SFB,c1,c2,qrot,P,T,q,x,y,
      1 sig,ndata,gabsc,k_g,ng,eml)
+C     **************************************************************
+C     Calculates first approximation to the k-distribution, which is then 
+C     improved upon by calc_esum5.f
+C
+C     Pat Irwin	?/?/??	Original
+C     Pat Irwin	26/4/12	Commented.
+C
+C     **************************************************************
+
       implicit none
       include '../includes/arrdef.f'
       real knu0,delad,y0,EL,SFB,c1,c2,qrot,P,T,q,x(20),y(20)
@@ -13,17 +22,6 @@
       double precision SL,BL
 
 
-C      print*,knu0,delad,y0,EL,SFB
-C      print*,c1,c2,qrot
-C      print*,P,T,q
-C      print*,x
-C      print*,y
-C      print*,sig
-C      print*,ndata
-C      print*,(gabsc(i),i=1,ng)
-C      print*,(k_g(i),i=1,ng)
-C      print*,ng
-C      print*,eml
 
       	U=1.
 122	if (c1.ne.0.) then
@@ -33,8 +31,7 @@ C      print*,eml
 	endif
 	tautmp = xcorr + TAU_GOODY_VOIGT1(KNU0,DELAD,Y0,EL,SFB,
      1		QROT,P,T,U,Q)
-C	tautmp = xcorr + TAU_EKS(KNU0,DELAD,Y0,EL,SFB,
-C     1		QROT,P,T,U,Q)
+
 	T1=DPEXP(-tautmp)
       	IF(T1.LT.0.5)THEN
        		U=U/2.
@@ -48,8 +45,6 @@ C     1		QROT,P,T,U,Q)
 	endif
 	tautmp = xcorr + TAU_GOODY_VOIGT1(KNU0,DELAD,Y0,EL,SFB,
      1		QROT,P,T,U,Q)
-C	tautmp = xcorr + TAU_EKS(KNU0,DELAD,Y0,EL,SFB,
-C     1		QROT,P,T,U,Q)
 	T1=DPEXP(-tautmp)
       	IF(T1.GT.0.5)THEN
        		U=U*2.
@@ -65,8 +60,6 @@ C     find upper limit of curve
 	endif
 	tautmp = xcorr + TAU_GOODY_VOIGT1(KNU0,DELAD,Y0,EL,SFB,
      1		QROT,P,T,U2,Q)
-C	tautmp = xcorr + TAU_EKS(KNU0,DELAD,Y0,EL,SFB,
-C     1		QROT,P,T,U2,Q)
 	T1=DPEXP(-tautmp)
       	IF(T1.GT.0.001)THEN
        		U2=U2*2.
@@ -82,8 +75,6 @@ C     find lower part
 	endif
 	tautmp = xcorr + TAU_GOODY_VOIGT1(KNU0,DELAD,Y0,EL,SFB,
      1		QROT,P,T,U1,Q)
-C	tautmp = xcorr + TAU_EKS(KNU0,DELAD,Y0,EL,SFB,
-C     1		QROT,P,T,U1,Q)
 	T1=DPEXP(-tautmp)
       	IF(T1.LT.0.999)THEN
        		U1=U1/2.
@@ -108,8 +99,6 @@ C     1		QROT,P,T,U1,Q)
 		endif
 		tautmp = xcorr + TAU_GOODY_VOIGT1(KNU0,DELAD,Y0,EL,SFB,
      1			QROT,P,T,U,Q)
-C		tautmp = xcorr + TAU_EKS(KNU0,DELAD,Y0,EL,SFB,
-C     1			QROT,P,T,U,Q)
 		Y(I) = DPEXP(-tautmp)
        		X(I)=U
        		SIG(I)=E_TRAN
@@ -117,40 +106,32 @@ C     1			QROT,P,T,U,Q)
 
       yv=0.25*y0/delad
 
-C      write (*,*) ' CALLING ML_LACIS'
       print*,'knu0,yv,EL,SFB,c1,c2,qrot,P,T,q,SL,BL',knu0,yv,EL,SFB,
      1		c1,c2,qrot,P,T,q,SL,BL
 
       CALL ml_lacis(knu0,yv,EL,SFB,qrot,P,T,q,SL,BL)
 
-C      print*,'SL,BL',SL,BL
 
       CALL fit_mlband(X,Y,SIG,NDATA,SL,BL)
 
-C      print*,'Fit_mlband called. New SL,BL = ',SL,BL
 
       sds = 0.
       do i=1,ndata
        U=x(i)
        tml = dexp(-0.5*PI*BL*(DSQRT(1.+4.*SL*U/(PI*BL))-1.))
        sds = sds + (y(i) - tml)**2
-C       print*,i,x(i),y(i),tml
       end do
 
       sds = sds/ndata
       sds = 100*sqrt(sds)
-C      print*,'sd of ML curve % = ',sds
 
       eml = sds
 
-C      print*,'ng,gabsc',ng,gabsc
 
       do i=1,ng
        gin=gabsc(i)
-C       print*,'calling kml : ',SL,BL,gin
        call kml(SL,BL,gin,kout)
        k_g(i)=kout
-C       print*,i,gin,kout
       end do
 
       return

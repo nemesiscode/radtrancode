@@ -1,4 +1,11 @@
       SUBROUTINE GAUSSJD(A,N,NP,B,M,MP,ERR)
+C     *********************************************************
+C     Slight modification of the numerical recipes routine of the same
+C     
+C     Pat Irwin         ?/?/??  Original
+C     Pat Irwin         26/4/12 Added comments
+C
+C     *********************************************************
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       INTEGER ERR
       PARAMETER (NMAX=50)

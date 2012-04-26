@@ -7,15 +7,17 @@ C_ARGS:
 C
 C_KEYS:   SUBR,ATMO,SPEC,VMS
 C
-C_DESCR:  
+C_DESCR:  Outputs path data to screen  
 C
 C_FILES:
 C
-C_CALLS:
+C_CALLS:  Called by Pl_spec
 C
 C_BUGS:
 C
-C_HIST:   10feb87 SBC ORIGINAL VERSION
+C_HIST:   10feb87 SBC  ORIGINAL VERSION
+C	  26apr12 PGJI Added comments and updated for new radtrancode suite.
+C
 C------------------------------------------------------------------------------
       INCLUDE '../includes/arrdef.f'
       INCLUDE '../includes/pathcom.f'

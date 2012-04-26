@@ -1,5 +1,15 @@
       double precision function dslvf(k,aa,bb,B,gg)
-C     $Id: dslvf.f,v 1.2 2011-06-17 15:40:26 irwin Exp $
+C     $Id:
+C     **************************************************************
+C     Double precision k-distribution utility routine used by kml, intrpk,
+C     calc_mlk1_k, and calc_mlk2_k.
+C     The function dslvf calculates the function (g(ke1) - gg)
+C     given the LO parameters 'a', 'b' and 'B'
+C
+C     Pat Irwin	?/?/??	Original
+C     Pat Irwin 26/4/12	Commented
+C
+C     **************************************************************
 
       implicit none
       double precision aa,bb,B,k,gg,pi,xx,yy,tmp,derf

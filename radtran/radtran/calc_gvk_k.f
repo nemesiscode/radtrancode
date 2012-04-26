@@ -49,7 +49,7 @@ C
 C Parameters for the least squares fit
 C
       double precision a(ma),covar(ncvm,ncvm),sig(ndata),yfit(ndata)
-      double precision lista(ma)
+      integer lista(ma)
 C
 C Parameters used in fitting h(g) and k(g)
 C
@@ -299,8 +299,9 @@ C
      *CHISQ,offset)
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       PARAMETER (MMAX=50)
-      DOUBLE PRECISION X(NDATA),Y(NDATA),SIG(NDATA),A(MA),LISTA(MA),
+      DOUBLE PRECISION X(NDATA),Y(NDATA),SIG(NDATA),A(MA),
      *    COVAR(NCVM,NCVM),BETA(MMAX),AFUNC(MMAX),offset(ma)
+      INTEGER LISTA(MA)
       KK=MFIT+1
       DO 12 J=1,MA
         IHIT=0
@@ -369,7 +370,7 @@ C
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       PARAMETER (NMAX=50)
       DOUBLE PRECISION A(NP,NP),B(NP,MP),IPIV(NMAX)
-      DOUBLE PRECISION INDXR(NMAX),INDXC(NMAX)
+      INTEGER INDXR(NMAX),INDXC(NMAX)
       DO 11 J=1,N
         IPIV(J)=0
 11    CONTINUE

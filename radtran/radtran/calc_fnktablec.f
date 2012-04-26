@@ -32,7 +32,6 @@ C			f(k) is then summed to give the cumulative k
 C			distribution.
 C	  WTEXT		Similar to PROMPT, or PRINT in that the argument
 C			is written to the screen.
-C	  BEEP		Sounds the computer's attention. 
 C	  REMSP		Removes leading spaces from text string.
 C
 C_BUGS:   
@@ -392,7 +391,6 @@ C the code crashes prior to completion.
 c      CLOSE(UNIT= 14, STATUS= 'DELETE')
 
       CALL WTEXT('%CALC_KTABLEC.f :: calculation complete')
-      CALL BEEP
       CALL GETTIME(TIME)
       TIME2= TIME
       TOT_TIME=TIME2-TIME1

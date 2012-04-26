@@ -58,8 +58,9 @@ C     ----------------------------------------------------------------------
 
 C     define the fixed parameters
 
-      if(iread2.eq.1)then
+      kpara=ipara2
 
+      if(iread2.eq.1)then
         call datarchive(aname2)
       
         inquire(file=aname2,exist=fexist)
@@ -87,7 +88,6 @@ C        Older para-h2 tables have 12 ortho/para ratios instead of 12
          else
           read(12)fp
          endif
-         kpara=ipara2
 
          do 22 i=1, ipara2
             print*,i,fp(i)
@@ -127,6 +127,8 @@ C        initialise the absorption array to be zero in case of failure
 
          print*,'fpread : New Data read in'
 
+         iread2=0
+
       end if
 
 C     ----------------------------------------------------------------------
@@ -161,10 +163,9 @@ C     ----------------------------------------------------------------------
 C     main section
 C     ----------------------------------------------------------------------
 
-
       deltaf=fp(2)-fp(1)
 
-
+    
 C     go away and find the plave in the table for wavenumber:
       i = NUMWN
       cv = pindex(vvk2,i,vv)
@@ -204,6 +205,7 @@ C     Loop over all tabulated para-H2 fractions
 	 dahedt(i)=dahedt(i)*dudt
 
 26    continue
+
 
       return
 

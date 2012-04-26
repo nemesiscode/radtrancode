@@ -171,7 +171,7 @@ C Calculate total path (length*(amagat)^2)
           x1 = 1.0 + (fpara - 0.25)/deltaf 
           j = INT(x1)
           f = x1 - j
-c          print*,'NPARACON: x1,deltaf,fpara,j,f: ', x1,deltaf,fpara,j,f
+C          print*,'NPARACON: x1,deltaf,fpara,j,f: ', x1,deltaf,fpara,j,f
           IF (j.LT.1) THEN
             j = 1
             f = 0.0

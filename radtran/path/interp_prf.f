@@ -204,7 +204,8 @@ c  ** ascending order **
                goto 1
              endif
            enddo
-           pause 'ERROR zlinint: interpolation error'
+           print*,'ERROR zlinint: interpolation error'
+	   stop
 1	     continue
          endif
        enddo
@@ -222,7 +223,8 @@ c  ** decending order **
                goto 2
              endif
            enddo
-           pause 'ERROR zlinint: interpolation error'
+           print*, 'ERROR zlinint: interpolation error'
+	   stop
 2	     continue
          endif
        enddo

@@ -62,7 +62,7 @@ C----------------------------------------------------------------------------
         REAL XMIN,XMAX,MODBOLTZA,PP(NGAS),tau,z
         real P0,T0,amag1
         parameter (P0=1.,T0=273.15)
-        PARAMETER (MODBOLTZA=KBOLTZMANN/1.013)
+        PARAMETER (MODBOLTZA=10.*KBOLTZMANN/1.013)
 C	MODBOLTZA = KBOLTZ/1.013 (where KBOLTZ = 1.381E-23) and multiplied
 C 	by 10. Then AMOUNT*MODBOLTZ*T(K)/P(ATM) gives path length in cm.
 C	AMAGAT = Number density at STP (1 atm, 273.15 K) 
@@ -79,7 +79,6 @@ C	DABSORB(1-5) is as above. DABSORB(6) is dtaudtemp, DABSORB(7) is
 C	dtaudfpara (only set in nparacon.f)
 C
 
-
 C       the mixing ratios
         qh2=0.
         qhe=0.
@@ -93,6 +92,17 @@ C       the mixing ratios
         ENDDO
         DABSORB(6)=0.0
         DABSORB(7)=0.0
+
+C        print*,'nciacon'
+C        print*,V0,P,T,INORMAL,NGAS
+C        print*,(IDGAS(i),i=1,ngas)
+C        print*,(ISOGAS(i),i=1,ngas)
+C        print*,(AMOUNT(i),i=1,ngas)
+C        print*,(PP(i),i=1,ngas)
+C        print*,IDUMP
+C        print*,(IABS(i),i=1,5)
+C        print*,(DABSORB(i),i=1,7)
+ 
 
 C       first of all, figure out which gases are present in the profile
 C       and get their mixing ratios

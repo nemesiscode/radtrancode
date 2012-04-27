@@ -14,13 +14,13 @@ C***********************************************************************
       INTEGER MAXLAY, MAXPAT, MAXGAS, MAXCON, MAXSEC, MAXBIN,
      1 MAXG, MAXK, MAXMU, MAXSCATPAR, MAXSCATLAY, MAXPHAS, MAXOUT, 
      2 MAXF, MAXV, MAXOUT3, MAXOUT4, MAXRANK, MAXINC,
-     3 MAXFIL, MAXPRO, IDIM
+     3 MAXFIL, MAXPRO, IDIM, IORDP1, IORDER
       PARAMETER (MAXPAT=300,MAXLAY=2*MAXPAT, MAXGAS=20, 
      1 MAXCON=10, MAXSCATPAR=10, MAXSEC=12000, MAXBIN=12000, MAXG=21,
      2 MAXK=20, MAXMU=21, MAXSCATLAY=40, MAXPHAS=50, MAXOUT=200000,
      3 MAXF=41, MAXV=401, MAXOUT3=MAXOUT, MAXOUT4=MAXOUT*10,
      4 MAXRANK=MAXG*MAXG, MAXINC=2*MAXPAT, MAXFIL=100, MAXPRO=MAXPAT,
-     5 IDIM=1024)
+     5 IDIM=1024,IORDER=2,IORDP1=IORDER+1)
 C     MAXLAY: maximum number of layers allowed.
 C     MAXPAT: maximum number of paths allowed.
 C     MAXGAS: maximum number of gases allowed.
@@ -42,3 +42,5 @@ C     MAXOUT4: maximum number of points output allowed (#4).
 C     MAXFIL: maxumum number of points in filter function.
 C     MAXPRO: maximum number of levels in prf files.
 C     IDIM: maximum array size in matrix inversion routines
+C     IORDER: order of polynomial to fit to continuum
+C     IORDP1: Number of elements of polynomial array

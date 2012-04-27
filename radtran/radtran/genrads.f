@@ -201,21 +201,22 @@ C			with voigt lineshape as default (NH3 only)
 C------------------------------------------------------------------------------
 C     Variables:
 C------------------------------------------------------------------------------
+      IMPLICIT NONE
       INCLUDE '../includes/arrdef.f'
-
+      
 C     Input variables
       INTEGER NLAYER,NPATH,NLAYIN(MAXPAT)
-      INTEGER LAYINC(MAXINC,MAXPAT),NGAS,IDGAS(NGAS),ISOGAS(NGAS)
-      INTEGER IPROC(NGAS),NPOINT,ICONV,IMOD(MAXPAT),NFILT,NCONT
+      INTEGER LAYINC(MAXINC,MAXPAT),NGAS,IDGAS(MAXGAS),ISOGAS(MAXGAS)
+      INTEGER IPROC(MAXGAS),NPOINT,ICONV,IMOD(MAXPAT),NFILT,NCONT
       INTEGER INLTE,IRAY,IPTF
-      REAL AMOUNT(MAXLAY,NGAS),PP(MAXLAY,NGAS),PRESS(NLAYER),NU
-      REAL HFP(NLAYER),LINECONTRIB,FH2,FNH3
+      REAL AMOUNT(MAXLAY,MAXGAS),PP(MAXLAY,MAXGAS),PRESS(MAXLAY),NU
+      REAL HFP(MAXLAY),LINECONTRIB,FH2,FNH3
       INTEGER JH2,JNH3
-      REAL TEMP(NLAYER),SCALE(MAXINC,MAXPAT),EMTEMP(MAXINC,MAXPAT)
+      REAL TEMP(MAXLAY),SCALE(MAXINC,MAXPAT),EMTEMP(MAXINC,MAXPAT)
       REAL VMIN,DELV,FWHM,WINGIP,VRELIP,FILTER(NFILT),VFILT(NFILT)
-      REAL CONT(MAXCON,NLAYER),DOP(NLAYER),ERRLIM(MAXPAT),DELH(NLAYER)
+      REAL CONT(MAXCON,MAXLAY),DOP(MAXLAY),ERRLIM(MAXPAT),DELH(MAXLAY)
       REAL OUTPUT(NPATH,NPOINT),ERROR(NPATH,NPOINT)
-      REAL PP1(10),MAXDV,DV1,E3,E3OLD,E3NEW
+      REAL MAXDV,DV1,E3,E3OLD,E3NEW
       REAL SOL_ANG,EMISS_ANG,APHI
       INTEGER NF
       CHARACTER*100 RADFILE1
@@ -226,8 +227,8 @@ C------------------------------------------------------------------------------
 C     Adaptive integration variables
       REAL XNEW(MAXPAT),XOLD(MAXPAT),ERR(MAXPAT),EMAX,ELMAX
       REAL SUMEND(MAXPAT),SUMEVEN(MAXPAT),SUMODD(MAXPAT)
-      INTEGER ISIMP,FLAGH2P
-      LOGICAL LCALCH,KMETH,SKIP
+      INTEGER ISIMP,FLAGH2P,KK
+      LOGICAL LCALCH,KMETH,SKIP,ADDBAND
 C------------------------------------------------------------------------------
 C     Include line record variables:
       INCLUDE '../includes/lincom.f'
@@ -236,8 +237,7 @@ C     Include spectral bin variables
       INCLUDE '../includes/bincom.f'
 C------------------------------------------------------------------------------
 C     Continuum variables
-      INTEGER IORDER,IORDP1,ISUM
-      PARAMETER (IORDER=2,IORDP1=IORDER+1)
+      INTEGER ISUM
 C     IORDER is the order of the continuum polynomial
       REAL CONTINK(IORDP1,MAXLAY,MAXBIN)
       REAL CONTIN(IORDP1,MAXLAY,MAXBIN),CONTMP(IORDP1)
@@ -276,7 +276,7 @@ C     LSTCEL the path number of the last cell path calculated
 C------------------------------------------------------------------------------
 C     Misc variables or variables defined in the code
       INTEGER I,ii,J,K,L,LINE
-      INTEGER IORD1,ISOMAX,LAYER,IPATH
+      INTEGER LAYER,IPATH
       INTEGER NSAMP,NCALC
       REAL DOPMAX,WING,VREL,VMAX,VTOP,VBOT,RANGE,XMASS,FILCUR
       REAL V1,VTMP,TAU,TR,TROLD,GETMASS
@@ -372,7 +372,13 @@ C
 C 0=equilibrium H2 (ortho:para = 2:1)
 C 1='normal' H2 (orth:para = 3:1)
 
-      integer INORMAL
+      integer INORMAL,isol,iunit,npoint1,irec,igas,igdist,ng1
+      integer miter,itmp,ioff,ntot,kl,jl,iodd,jbin,i1,lk
+      integer j1,lun0,irec0,il,nphi
+      real v0,vw1,xpw,xpd,vbmin,vbmax,del,vv,width,delwav,sums
+      real sumw,dpexp,al,calc_lor_width,calc_dop_width
+      real trantmp,xcorr,c1,c2,x1,vmin1,wing1,delv1,qu,sst,bbt
+      real vrel1,sumk,sumy,q1,q2,vc
 
       REAL BANDQ(42)
       DATA BANDQ/1.5,1.0,1.5,1.0,1.0,1.5,1.0,1.0,1.5,1.5,
@@ -382,69 +388,6 @@ C 1='normal' H2 (orth:para = 3:1)
      &		 1.5,1.5/
 
 C------------------------------------------------------------------------------
-C
-C
-C Check input parameters
-
-C      PRINT*,'NLAYER,MAXPAT,MAXLAY',NLAYER,MAXPAT,MAXLAY
-C      PRINT*,'NGAS : ',NGAS
-C      PRINT*,'IDGAS:',(IDGAS(I),I=1,NGAS)
-C      PRINT*,'ISOGAS:',(ISOGAS(I),I=1,NGAS)
-C      PRINT*,'PRESS,TEMP,DELH'
-C      DO I=1,NLAYER
-C       PRINT*,I,PRESS(I),TEMP(I),DELH(I)
-C      ENDDO
-C      PRINT*,'AMOUNT,PP'
-C      DO I=1,MAXLAY
-C       PRINT*,I,(AMOUNT(I,J),J=1,NGAS),(PP(I,J),J=1,NGAS)
-C      ENDDO
-C      PRINT*,'NLAYIN : ',(NLAYIN(J),J=1,NPATH)
-C      PRINT*,'MAXINC : ',MAXINC
-C      DO J=1,NPATH
-C       PRINT*,'PATH = ',J
-C       DO I=1,NLAYIN(J)
-C        PRINT*,I,LAYINC(I,J),SCALE(I,J),EMTEMP(I,J)
-C       ENDDO
-C      ENDDO
-C
-C      PRINT*,'INORMAL,IPROC,VMIN,DELV,NPOINT',INORMAL,IPROC,VMIN,
-C     1    DELV,NPOINT
-C
-C      PRINT*,'FWHM,ICONV,WINGIP,VRELIP,MAXDV,IMOD,INLTE',FWHM,ICONV,
-C     1     WINGIP,VRELIP,MAXDV,IMOD,INLTE
-C
-C      PRINT*,'NFILT:',NFILT
-C      DO I=1,NFILT
-C       PRINT*,I,VFILT(I),FILTER(I)
-C      ENDDO
-C      PRINT*,'MAXCON,NCONT',MAXCON,NCONT
-C
-C      DO I=1,NLAYER
-C       PRINT*,I,(CONT(J,I),J=1,MAXCON)
-C      ENDDO
-C      PRINT*,'NSEC,MAXSEC',NSEC,MAXSEC
-C
-C      DO I=1,NSEC
-C       DO J=1,NCONT
-C        PRINT*,VSEC(I),XSEC(1,J,I),XSEC(2,J,I)
-C       ENDDO
-C      ENDDO
-C
-C      PRINT*,'NPK:',NPK,(PRESSKTA(I),I=1,NPK)
-C      PRINT*,'NPT:',NPT,(TEMPKTA(I),I=1,NPK)
-C 
-C      PRINT*,'IRECK : ',(IRECK(I),I=1,10)
-C      PRINT*,'GABSC:',(GABSC(I),I=1,MAXG)
-C      PRINT*,'DELG:',(DELG(I),I=1,MAXG)
-C      PRINT*,'NG:',NG
-C      PRINT*,'DOP:',(DOP(I),I=1,NLAYER)
-C      PRINT*,'ERRLIM:',(ERRLIM(I),I=1,NPATH)
-C
-C      PRINT*,'MAXPAT:',MAXPAT
-
-C
-C------------------------------------------------------------------------------
-C
 C
 C
 C
@@ -493,11 +436,6 @@ C     checking input parameters
 53    CONTINUE
 C------------------------------------------------------------------------------
 C     Defining some useful variables
-      IORD1=IORDP1
-C     IORD1 is the number of parameters in polynomial fit
-      ISOMAX=MAXISO
-C     ISOMAX used in subroutine calls - maximum number of isotopes that
-C     can be used (per gas)
       LINMAX=MAXLIN
 C-----------------------------------------------------------------------------
 C     Reading in scattering information
@@ -511,17 +449,14 @@ C     Reading in scattering information
 
       if(scatter)then
        radfile1 = radfile
-       print*,'radfile1 = ',radfile1
        call read_scatter1(radfile,nmu,mu1,wt1,isol,dist,lowbc,
      1  galb,ncons,liscat,lnorm,lncons,lcons,scatfile,sol_ang,
      2  emiss_ang,aphi,nf)
        do i=1,ncont
         if(liscat(i).gt.3)then
          iunit=10+i
-         print*,iunit
          open(unit=iunit,file=scatfile(i),status='old',access='direct',
      1    recl=512,form='formatted')
-         print*,'Opened  OK'
          read(iunit,1,rec=1)buffer
 1        format(a512)
          if(buffer(2:2).eq.'w')then
@@ -529,7 +464,6 @@ C     Reading in scattering information
          else
           read(buffer,*)v0,v1,dv,npoint1,nphas
          end if
-         print*,v0,v1,dv,npoint1,nphas
 
          maxrec(i)=npoint1+3
          irec1(i)=3
@@ -540,7 +474,6 @@ C     Reading in scattering information
           read(buffer,*)(thet(j),j=1,nphas)
           do j=1,nphas
            cthet(j)=cos(thet(j)*0.0174532)
-           print*,thet(j),cthet(j)
           end do
          end if
         end if
@@ -783,7 +716,6 @@ C       overflow)
         ELSE
          K=ISOGAS(I)
         END IF
-C        print*,IDGAS(I),K,PARTF(IDGAS(I),K,TEMP(J),IPTF)
         TCORS1(J,I)=PARTF(IDGAS(I),K,TEMP(J),IPTF)*(AMOUNT(J,I)*1.E-20)
         TCORS1(J,I)=1.E-27*TCORS1(J,I)
         TCORDW(J,I)=4.301E-7*SQRT(TEMP(J)/XMASS)
@@ -813,8 +745,6 @@ C      Include any empirical function to account for nonLTE source function
        MXWID = MIN(MXWID,XWID)
 17    CONTINUE
 
-
-      PRINT*,'MXWID = ',MXWID
 
 CLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL
 
@@ -881,7 +811,6 @@ C       allow for finite resolution
 C--------------------------------------------------
 
 C      Set up 'bins' for BAND or CK calculations
-       print*,vmin,fwhm,delv,npoint
        VBOT=VMIN-0.5*FWHM
        VMAX=VMIN+(NPOINT-1)*DELV
        VTOP=VMAX + 0.5*FWHM
@@ -930,11 +859,9 @@ C--------------------------------------------------
       IF(LBLCALC)THEN
         DO 137 I=1,NBIN
           VBINB(I)=VBIN(I)
-         print*,'IBIN,VBINB',I,VBINB(I)
 137      CONTINUE
         NCALC=NBIN
         DV=0.5*WING
-        print*,'NCALC,DV',NCALC,DV
        ELSE
         DO 147 I=1,NPOINT
           VBINB(I)=VBOT+(I-1)*DELV
@@ -1021,7 +948,7 @@ C      calculate filter polynomial for each bin
          VBMAX=VBINB(I)+FWHM
        END IF
 
-       CALL CALC_PCOEFF(NFILT,FILTER,VFILT,VBMIN,VBMAX,IORDP1,CONTMP)
+       CALL CALC_PCOEFF(NFILT,FILTER,VFILT,VBMIN,VBMAX,CONTMP)
 
        DO 122 L=1,IORDP1
         FILCON(L,I)=CONTMP(L)
@@ -1079,17 +1006,15 @@ C     setting up matrix of wavenumbers for use in polynomial calculation
       MATRIX(J,K)=MATRIX(J-1,K)*CONWAV(K)
       DMATRIX(J,K)=DMATRIX(J-1,K)*CONWAV(K)
 19    CONTINUE
-      L=IORD1
-
-      CALL DMATINV(DMATRIX,L,IORDP1,DUNIT)
+ 
+      L=IORDP1
+      CALL DMATINV(DMATRIX,L,L,DUNIT)
 
       DO K=1,IORDP1
        DO J=1,IORDP1
         UNIT(J,K)=SNGL(DUNIT(J,K))
        ENDDO
       ENDDO
-
-      print*,'Line continua: NBIN,FSTBIN,LSTBIN = ',NBIN,FSTBIN,LSTBIN
 
       DO 13 I=1,NBIN
 C       computing continuum for all except adjacent bins
@@ -1113,7 +1038,6 @@ C            compute absorption coefficient for normal incidence
               VV=CONWAV(K)+VBIN(J)
               X=(VV-VLIN(LINE))/AD
 	      DV1 = X*AD
-C              print*,DV1,MAXDV
 C             *********** CIRS Line processing Parameters ******************
 	      IF(ABS(DV1).LE.MAXDV)THEN
 C	        Ignore lines more than MAXDV widths away
@@ -1223,7 +1147,7 @@ C-----------------------------------------------------------------------------
           DO 622 L=1,NSEC
            TSEC(L)=XSEC(1,J,L)*CONT(J,LAYER)
 622       CONTINUE
-          CALL CALC_PCOEFF(NSEC,TSEC,VSEC,VBMIN,VBMAX,IORDP1,CONTMP)
+          CALL CALC_PCOEFF(NSEC,TSEC,VSEC,VBMIN,VBMAX,CONTMP)
           DO 617 L=1,IORDP1
            CONTIN(L,LAYER,I)=CONTIN(L,LAYER,I)+CONTMP(L)
 617       CONTINUE
@@ -1236,7 +1160,7 @@ C-----------------------------------------------------------------------------
           DO 672 L=1,NSEC
            TSEC(L)=XSEC(2,J,L)*CONT(J,LAYER)
 672       CONTINUE
-          CALL CALC_PCOEFF(NSEC,TSEC,VSEC,VBMIN,VBMAX,IORDP1,CONTMP)
+          CALL CALC_PCOEFF(NSEC,TSEC,VSEC,VBMIN,VBMAX,CONTMP)
           DO 677 L=1,IORDP1
            CONSCA(J,L,LAYER,I)=CONTMP(L)
 677       CONTINUE
@@ -1261,9 +1185,7 @@ C     GASCON returns a polynomial approximation to the continuum of a
 C     particular gas over a particular bin.
 C
 C-------------------------------------------------------------------------
-      L=IORD1
 
-      print*,'IRAY = ',IRAY
       DO 312 K=1,NCALC
         IF(LBLCALC)THEN
           VBMIN=VBIN(K)
@@ -1274,7 +1196,7 @@ C-------------------------------------------------------------------------
         END IF
         DO 310 J=1,NGAS
           DO 310 I=1,NLAYER
-            CALL GASCON(VBMIN,WIDTH,IDGAS(J),ISOGAS(J),IORDP1,
+            CALL GASCON(VBMIN,WIDTH,IDGAS(J),ISOGAS(J),
      1       AMOUNT(I,J),PP(I,J),PRESS(I),TEMP(I),CONTMP)
             DO 311 L=1,IORDP1
               CONTIN(L,I,K)=CONTIN(L,I,K)+CONTMP(L)
@@ -1285,6 +1207,8 @@ C-------------------------------------------------------------------------
        DO 317 I=1,NLAYER
 C reduce the 2d arrays for gas amounts (no./unit vol.)
 C and partial pressure to 1d for passing to subroutine
+
+
              do 42 ii=1, NGAS
                 AAMOUNT(ii) = AMOUNT(I,ii)
                 PPP(ii) = PP(I,ii)
@@ -1296,13 +1220,18 @@ C and partial pressure to 1d for passing to subroutine
 
              IF(FLAGH2P.EQ.1)THEN
   	        FPARA = HFP(I)
-                CALL FPARACON(VBMIN,WIDTH,IORDP1,PRESS(I),TEMP(I),
+                CALL FPARACON(VBMIN,WIDTH,PRESS(I),TEMP(I),
      1            NGAS,IDGAS,ISOGAS,AAMOUNT,PPP,
      2		  FPARA,XLEN,CONTMP,ID1)
              ELSE
-                 CALL CIACON(VBMIN,WIDTH,IORDP1,PRESS(I),TEMP(I),
+                 DO KK=1,IORDP1
+                  CONTMP(KK)=0.0
+                 ENDDO
+
+                 CALL CIACON(VBMIN,WIDTH,PRESS(I),TEMP(I),
      1            INORMAL,NGAS,IDGAS,ISOGAS,AAMOUNT,PPP,
      2		  XLEN,CONTMP,ID1)
+
              ENDIF
 
              DO 313 L=1,IORDP1
@@ -1310,7 +1239,7 @@ C and partial pressure to 1d for passing to subroutine
  313         CONTINUE
 
              IF(IRAY.GT.0)THEN
-              CALL CONRAY(IRAY,VBMIN,WIDTH,IORDP1,PRESS(I),TEMP(I),
+              CALL CONRAY(IRAY,VBMIN,WIDTH,PRESS(I),TEMP(I),
      1		UTOTL(I),CONTMP)
 
               DO 315 L=1,IORDP1
@@ -1373,11 +1302,8 @@ C      finite resolution LBL
 1017   CONTINUE
        ELMAX = ELMAX*100
 
-       PRINT*,'For ICONV= 1: Maximum percentage error, ELMAX= ',ELMAX
-
        DO 104 I=1,NPOINT
         VCENT=DBLE(VMIN+(I-1)*DELV)
-        PRINT*,'For ICONV= 1: V = ',SNGL(VCENT)
 C       the integration limits for this interval are
         V1DP=VCENT-DBLE(DELV)/2.
         V2DP=VCENT+DBLE(DELV)/2.
@@ -1388,7 +1314,6 @@ C       the integration limits for this interval are
 C Multiply by three so as to have the center point, and one at both  VSTART
 C (= VMIN - 0.5*FWHM) and VEND (= VSTART + FWHM).
         NSAMP=3*INT(0.5*SNGL(V2DP-V1DP)/XWID)
-        print*,mxwid,xwid,nsamp
 
         IF(NSAMP.LE.4)NSAMP=3
 C        NSAMP=20
@@ -1401,17 +1326,14 @@ C        NSAMP=20
 C       -----------------------------------------------------------
 C       initialise integration variables
 
-C        print*,'NPATH = ',NPATH
         DO 233 K=1,NPATH
           SUMEND(K)=0.
           SUMEVEN(K)=0.
           SUMODD(K)=0
 233     CONTINUE
 
-C	print*,'NSAMP = ',NSAMP
         DO 105 J=0,NSAMP
          V=V1DP+DBLE(J)*DVSAMP
-C	 PRINT*,J,V,V1DP
          ASSIGN 2002 TO LABEL
          GOTO 2000
 2002     CONTINUE
@@ -1420,8 +1342,6 @@ C	 PRINT*,J,V,V1DP
          IODD = J - 2*INT(0.5*J)		!Flag for odd, even ordinates
 
          DO 211 K=1,NPATH
-C           print*,J,V,I,OUTPUT(K,I),IODD
-C           print*,J,V,OUTPUT(K,I)
            IF(J.EQ.0.OR.J.EQ.NSAMP)THEN
             SUMEND(K)=SUMEND(K)+OUTPUT(K,I)	!Sum of end values
            ELSE IF(IODD.EQ.1)THEN
@@ -1429,19 +1349,15 @@ C           print*,J,V,OUTPUT(K,I)
            ELSE
             SUMEVEN(K)=SUMEVEN(K)+OUTPUT(K,I)	!Sum of even values
            ENDIF
-C	   print*,sumeven(k),sumodd(k),sumend(k)
 211      CONTINUE
 
 105     CONTINUE
 
-        print*,'DVSAMP,V2DP,V1DP = ',DVSAMP,V2DP,V1DP
 C       Calculate averaged spectrum for each path
         DO 222 K=1,NPATH
          XOLD(K) = (DVSAMP/3.0)*(SUMEND(K)+4*SUMODD(K)+2*SUMEVEN(K))/
      &		   (V2DP-V1DP)
 
-C         print*,'k,sumend,sumodd,sumeven',K,SUMEND(K),SUMODD(K),
-C     &    SUMEVEN(K),XOLD(K)
 222     CONTINUE
 
 C       -----------------------------------------------------------
@@ -1473,7 +1389,6 @@ C       Calculate the new odd points
 
          DO K=1,NPATH
           SUMODD(K)=SUMODD(K)+OUTPUT(K,I)
-C          print*,J,V,OUTPUT(K,I)
          END DO
 
 108     CONTINUE
@@ -1481,18 +1396,15 @@ C          print*,J,V,OUTPUT(K,I)
         DVSAMP=DVSAMP*0.5	!halve the sample distance
 
 C       Calculate new averaged outputs
-        PRINT*,'DVSAMP,V2DP,V1DP : ',DVSAMP,V2DP,V1DP
 
         DO K=1,NPATH
          XNEW(K) = (DVSAMP/3.0)*(SUMEND(K)+4*SUMODD(K)+2*SUMEVEN(K))/
      &		   (V2DP-V1DP)
-         print*,'ipath,xold,xnew : ',k,xold(k),xnew(k)
          IF(XOLD(K).NE.0)THEN
           ERR(K) = 100*ABS(XNEW(K)-XOLD(K))/XOLD(K)	!% difference
          ELSEIF(XNEW(K).EQ.0)THEN			!from last step
           ERR(K)= 0.0
          ELSE
-C          print*,'WARNING: XOLD=0'
           ERR(K) = 100.0
          ENDIF
          IF(K.EQ.1)THEN
@@ -1603,26 +1515,16 @@ C      for which calculations are being made.
         CURBIN=I
        END IF
 
-C       print*,'V, CURBIN = ',V, CURBIN
-
-C       print*,'VBINB(CURBIN)',VBINB(CURBIN)
-
 C      Calculate the continuum absorption via the IORDP1 polynomial
 C      coefficients held in CONTIN
 
        TAUTMP(LAYER)=CONTIN(1,LAYER,CURBIN)
-C       print*,'VTMP = ',VTMP
-C       print*,'contin',CONTIN(1,LAYER,CURBIN)
        VTMP=SNGL(V-DBLE(VBINB(CURBIN)))-DOP(LAYER)
 
        DO 51 ISUM=2,IORDP1
-C        print*,'contin',CONTIN(ISUM,LAYER,CURBIN)
         TAUTMP(LAYER)=TAUTMP(LAYER)+CONTIN(ISUM,LAYER,CURBIN)*VTMP
         VTMP=VTMP*VTMP
 51     CONTINUE
-
-C       PRINT*,'first',LAYER,PRESS(LAYER),TEMP(LAYER),VTMP,
-C     1  TAUTMP(LAYER),V1DP,V2DP
 
        IF(TAUTMP(LAYER).LT.0.0)THEN
         PRINT*,'Error in continuum TAUTMP. TAU < 0.0!'
@@ -1644,8 +1546,6 @@ C     1  TAUTMP(LAYER),V1DP,V2DP
 571     CONTINUE
         TAUSCAT(LAYER)=TAUSCAT(LAYER)+TAUSCA(JL,LAYER)
 793    CONTINUE
-
-C       print*,'tauscat',TAUSCAT(LAYER),V1DP,V2DP
 
        IF(SCATTER)THEN
 
@@ -1672,8 +1572,6 @@ C       print*,'tauscat',TAUSCAT(LAYER),V1DP,V2DP
 
        ENDIF
 
-C       print*,'tauscat1',TAUSCAT(LAYER),V1DP,V2DP
-
 CMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 C
 C      Step though and select the spectral model required
@@ -1683,9 +1581,6 @@ C****************************************************************************
 
        IF(CURBIN.LT.2)CURBIN=2
        DO 507 JBIN=CURBIN-1, CURBIN+1
-
-C        print*,'bin',JBIN,V1DP,V2DP,FSTLIN(JBIN),LSTLIN(JBIN)
-C        print*,'jbin = ',JBIN
 
 
         DO 52 LINE=FSTLIN(JBIN),LSTLIN(JBIN)
@@ -1701,8 +1596,8 @@ C	  Ignore lines more than MAXDV away
 
           IF(IDGAS(IDLIN(LINE)).EQ.1.AND.IH2O.GT.0.AND.
      &      ABS(DV1).GT.25.0)THEN
-C          Don't calc continuum more than 25cm-1 from H2O lines
-c          print*,'Ignoring water line: ',VLIN(LINE)
+C          Don't calc continuum more than 25cm-1 from H2O lines if
+C          IH2O is turned on.
 
           ELSE
 
@@ -1736,8 +1631,6 @@ C        *********************************************************
 
 
 507     CONTINUE
-
-C        PRINT*,'second',LAYER,TAUTMP(LAYER),V1DP,V2DP
 
 C****************************************************************************
        ELSE IF(ICONV.EQ.10.OR.ICONV.EQ.11)THEN
@@ -1847,7 +1740,6 @@ C****************************************************************************
 C      Band models using Band data
 
         DO 56 J=1,NGAS
-         PRINT*,J,IDGAS(J),ISOGAS(J),BANDTYP(J)
          P = PRESS(LAYER)
          T = TEMP(LAYER)
          U = AMOUNT(LAYER,J)*1E-20
@@ -1880,51 +1772,50 @@ C	 overlap with Karkoschka continuum data
          IF(IDGAS(J).EQ.6.AND.(ISOGAS(J).EQ.0.OR.ISOGAS(J).EQ.1))THEN
           KMETH=.TRUE.
          ENDIF
-         IF(V.GE.9550.0.AND.KMETH)THEN
-C           TAUTMP(LAYER) = 0.0
-         ELSE
-            IF(VOIGT)THEN
-C             print*,J,BANDTYP(J)
-             IF(BANDTYP(J).LT.2)THEN
-CC             X1 = TAU_EKS(KNU0,DELAD,Y0,EL,SFB,QROT,P,T,U,Q)
-              X1 = TAU_GOODY_VOIGT1(KNU0,DELAD,Y0,EL,SFB,QROT,P,T,U,Q)
-C              print*,KNU0,DELAD,Y0,EL,SFB,QROT
-C              print*,P,T,U,Q,X1
-             ELSE
-              IF(BANDTYP(J).EQ.2)THEN
-               I1 = 1
-              ELSE
-               I1 = 2
-               IF(ISOGAS(J).EQ.0)THEN
-                K=1
-               ELSE
-                K=ISOGAS(J)
-               END IF
-               TPART(1)=DBQTA(K,IDGAS(J))
-               TPART(2)=DBQTB(K,IDGAS(J))
-               TPART(3)=DBQTC(K,IDGAS(J))
-               TPART(4)=DBQTD(K,IDGAS(J))
-              ENDIF
-C              print*,KNU0,DELAD,Y0,AA,E1,E2,SFB
-C              print*,I1,QROT,P,T,U,Q
-              X1 = TGV3(I1,QROT,TPART,KNU0,DELAD,Y0,AA,E1,E2,SFB,P,T,
-     1                  U,Q)
-             ENDIF
-
-C             print*,layer,tautmp(layer),x1,xcorr
-             TAUTMP(LAYER) = TAUTMP(LAYER) + X1 + XCORR
-             
-            ELSE
-             IF(DELAD.NE.0.)THEN
-              YV = ALCORR*Y0/DELAD
-              TAUTMP(LAYER) = TAUTMP(LAYER) + TAU_MG_LOR(MG,KNU0,YV,EL,
-     1        SFB,QROT,P,T,U,Q)
-             END IF
-           END IF
-
+C        IF gas is methane then KMETH=.TRUE.
+C        If the gas continuum is included in gascon, then ICH4=1
+         ADDBAND=.TRUE.
+         IF(V.GE.9550.0.AND.KMETH.AND.ICH4.EQ.1)THEN
+            ADDBAND=.FALSE.
          ENDIF
 
+         IF(ADDBAND)THEN
+          IF(VOIGT)THEN
+           IF(BANDTYP(J).LT.2)THEN
+            X1 = TAU_GOODY_VOIGT1(KNU0,DELAD,Y0,EL,SFB,QROT,P,T,U,Q)
+           ELSE
+            IF(BANDTYP(J).EQ.2)THEN
+             I1 = 1
+            ELSE
+             I1 = 2
+             IF(ISOGAS(J).EQ.0)THEN
+              K=1
+             ELSE
+              K=ISOGAS(J)
+             END IF
+             TPART(1)=DBQTA(K,IDGAS(J))
+             TPART(2)=DBQTB(K,IDGAS(J))
+             TPART(3)=DBQTC(K,IDGAS(J))
+             TPART(4)=DBQTD(K,IDGAS(J))
+            ENDIF
 
+            X1 = TGV3(I1,QROT,TPART,KNU0,DELAD,Y0,AA,E1,E2,SFB,P,T,
+     1                  U,Q)
+           ENDIF
+            
+           TAUTMP(LAYER) = TAUTMP(LAYER) + X1 + XCORR
+             
+          ELSE
+
+           IF(DELAD.NE.0.)THEN
+            YV = ALCORR*Y0/DELAD
+            TAUTMP(LAYER) = TAUTMP(LAYER) + TAU_MG_LOR(MG,KNU0,YV,EL,
+     1      SFB,QROT,P,T,U,Q)
+           END IF
+
+          END IF
+
+         ENDIF
 
 56      CONTINUE
 
@@ -1955,11 +1846,11 @@ C       CORRK: K-calculated from linedata
          ENDIF
 
          DO LK=1,NGAS
-          PP1(LK)=PP(LAYER,LK)
+          PPP(LK)=PP(LAYER,LK)
          END DO
 
 
-         CALL LBL_KDISTS(PP1,P,T,NGAS,IDGAS,ISOGAS,IPROC,VMIN1,DELV1,
+         CALL LBL_KDISTS(PPP,P,T,NGAS,IDGAS,ISOGAS,IPROC,VMIN1,DELV1,
      1 NPOINT1,GABSC,DELG,K_G,NG,LAYER,IPTF)
 
 
@@ -2244,9 +2135,6 @@ CMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 C
 CLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL
 
-c	PRINT*,' '
-c	PRINT*,'calculating the path transmissions and relevant outputs'
-
 
 CPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
 C
@@ -2302,7 +2190,6 @@ C       model 3, emission as 2 but uses planck function at bin centre
         IOFF = BBOFF(NPATH,NLAYIN,NCALC,IPATH,LAYER,CURBIN,MAXBBBIN) 
         OUTPUT(IPATH,I)=OUTPUT(IPATH,I)+
      1  BBBIN(IOFF)*(TROLD-TR)
-C        print*,TROLD-TR,BBBIN(IOFF)
         TROLD=TR
 87      CONTINUE
         LSTATM=IPATH
@@ -2354,7 +2241,6 @@ C       model 9,product of one transmission and last output
         TAU=TAUTMP(LAYINC(LAYER,IPATH))*SCALE(LAYER,IPATH)
         TR=DPEXP(-TAU)
         IOFF = BBOFF(NPATH,NLAYIN,NCALC,IPATH,LAYER,CURBIN,MAXBBBIN)
-C        print*,ipath,layer,i,ioff,bbbin(ioff)
         OUTPUT(IPATH,I)=OUTPUT(IPATH,I)+
      1  BBBIN(IOFF)*(TROLD-TR)
         TROLD=TR
@@ -2478,7 +2364,6 @@ C       As model 18 but using Curtis-Godson
         TAU=TAUTMP(LAYINC(LAYER,IPATH))*SCALE(LAYER,IPATH)
         E3NEW=E3(TAU)
         IOFF = BBOFF(NPATH,NLAYIN,NCALC,IPATH,LAYER,CURBIN,MAXBBBIN)
-C        print*,LAYER,TAU,BBBIN(IOFF),E3OLD,E3NEW
         OUTPUT(IPATH,I)=OUTPUT(IPATH,I)+
      1  2*PI*BBBIN(IOFF)*(E3OLD-E3NEW)
         E3OLD=E3NEW

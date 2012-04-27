@@ -1,4 +1,4 @@
-	SUBROUTINE GASCON(V0,DV,ID,ISO,IORDP1,AMOUNT,PPRESS,
+	SUBROUTINE GASCON(V0,DV,ID,ISO,AMOUNT,PPRESS,
      &  PRESS,TEMP,POLY)
 C     $Id: gascon.f,v 1.2 2010-10-29 12:38:43 irwin Exp $
 C----------------------------------------------------------------------------
@@ -9,7 +9,6 @@ C         V0:REAL         lowest wavenumber
 C         DV:REAL         wavenumber range
 C         ID:INTEGER      local gas identifier
 C         ISO:INTEGER     local isotope identifier
-C         ORDER1:INTEGER  order of polynomial required +1
 C         AMOUNT:REAL     absorber amount
 C         PPRESS:REAL     partial pressure of gas in atm
 C         PRESS:REAL      total pressure in atm
@@ -29,9 +28,10 @@ C		  sub-routine CONTUM.F)
 C          3feb12 Stripped down to just call NCIACON and fit polynomial 
 C----------------------------------------------------------------------------
 C
-	INTEGER ID,ISO,IORDP1,I
+        INCLUDE '../includes/arrdef.f'
+	INTEGER ID,ISO,I
 	REAL V0,DV,AMOUNT,PPRESS,PRESS,TEMP,POLY(IORDP1)
-        REAL XX(3),YY(3),ABSORB
+        REAL XX(IORDP1),YY(IORDP1),ABSORB
 
 
 
@@ -56,7 +56,7 @@ C       Convert polynomial calculations to a polynomial fit.
         XMAX=XX(IORDP1)
         NX=IORDP1
 
-        CALL CALC_PCOEFF(NX,YY,XX,XMIN,XMAX,IORDP1,POLY)
+        CALL CALC_PCOEFF(NX,YY,XX,XMIN,XMAX,POLY)
 
 C        print*,'Fitted quadratic : ',(POLY(I),I=1,IORDP1)
 

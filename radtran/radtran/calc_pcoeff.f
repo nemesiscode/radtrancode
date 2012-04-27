@@ -1,4 +1,4 @@
-      SUBROUTINE CALC_PCOEFF(NX,Y,X,XMIN,XMAX,IORDP1,COEFF)
+      SUBROUTINE CALC_PCOEFF(NX,Y,X,XMIN,XMAX,COEFF)
 C     $Id: calc_pcoeff.f,v 1.2 2011-06-17 15:40:25 irwin Exp $
 C     ***********************************************************************
 C     Calculates the polynomial fit of order IORDER (IORDP1-1) to the set
@@ -17,7 +17,6 @@ C	X(NX)	REAL	Values of X for which Y is defined
 C	Y(NX)	REAL	Corresponding values of Y
 C	XMIN	REAL	Minimum of X-range for fit
 C	XMAX	REAL	Maximum of X-range for fit
-C	IORDP1	INTEGER	IORDER+1 and dimension of array COEFF
 C     Output Variable
 C	COEFF(IORDP1)	REAL	Calculated polynomial coefficients.
 C
@@ -25,8 +24,8 @@ C_History:	07Oct94	 PGJI	Original. Adapted from code in GENLBL
 C 
 C     ***********************************************************************
       IMPLICIT NONE
-
-      INTEGER IORDP1,NMAX,IMIN,IMAX,L,NX,NPT,ISIG,IORDER,MORD,J,K,I
+      INCLUDE '../includes/arrdef.f'
+      INTEGER NMAX,IMIN,IMAX,L,NX,NPT,ISIG,MORD,J,K,I
       PARAMETER (NMAX=100,MORD=10)
       REAL X(NX),Y(NX),X1(NMAX),COEFF(IORDP1),XMIN,XMAX
       DOUBLE PRECISION AA(MORD,MORD),BB(MORD,MORD)
@@ -35,14 +34,6 @@ C     Variables used by fitting routine LFIT
       REAL SIG(NMAX),COVAR(MORD,MORD),CHISQ
       INTEGER LISTA(MORD)
 C------------------------------------------------------------------------------
-
-C      print*,nx,iordp1
-C      do i=1,nx
-C       print*,x(i),y(i)
-C      end do
-C      print*,xmin,xmax
-
-      IORDER=IORDP1-1
 
 
       IF(NX.LT.2)THEN

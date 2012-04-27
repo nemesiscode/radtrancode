@@ -71,7 +71,7 @@ C QHE: Helium mixing ratio.
 C Standard temperature and pressue (STP) equals 273.15 K, 1 atm.
 
         REAL MODBOLTZA,amag1,totam
-        PARAMETER (MODBOLTZA = KBOLTZMANN/1.013)
+        PARAMETER (MODBOLTZA = 10.*KBOLTZMANN/1.013)
 C MODBOLTZ = KBOLTZ/1.013 (where KBOLTZ = 1.381E-23) and multiplied
 C by 10. Then AMOUNT*MODBOLTZ*T(K)/P(ATM) gives path length in cm.
 C AMAGAT = Number density at STP

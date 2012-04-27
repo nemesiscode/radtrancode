@@ -1,4 +1,4 @@
-      SUBROUTINE CONRAY(IRAY,V0,DV,IORDP1,PRESS,TEMP,TOTAM,POLY)
+      SUBROUTINE CONRAY(IRAY,V0,DV,PRESS,TEMP,TOTAM,POLY)
 C     *****************************************************************
 C     Subroutine to calculate Rayleigh scattering optical depth in
 C     Jovian-type atmosphere
@@ -6,14 +6,10 @@ C
 C     Pat Irwin 	27/7/99
 C
 C     *****************************************************************
-      INTEGER IORDP1,IP,NX,IORDP,IRAY
-      PARAMETER (IORDP = 3)
+      INCLUDE '../includes/arrdef.f'
+      INTEGER IP,NX,IORDP,IRAY
       REAL V,DV,PRESS,TEMP,TOTAM,POLY(IORDP1)
-      REAL XX(IORDP),YY(IORDP),XMIN,XMAX
-
-      IF(IORDP.NE.IORDP1)THEN
-       PRINT*,'CONRAY: Error. IORDP <> IORDP1 ',IORDP,IORDP1
-      ENDIF
+      REAL XX(IORDP1),YY(IORDP1),XMIN,XMAX
 
       DO 10 IP=1,IORDP1
 
@@ -37,7 +33,7 @@ C     Convert polynomial calculations to a polynomial fit.
       XMAX=XX(IORDP1)
       NX=IORDP1
               
-      CALL CALC_PCOEFF(NX,YY,XX,XMIN,XMAX,IORDP1,POLY)
+      CALL CALC_PCOEFF(NX,YY,XX,XMIN,XMAX,POLY)
 
       RETURN
 

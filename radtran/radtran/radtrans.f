@@ -84,7 +84,7 @@ C TMAX: Temperature [Kelvin] maximum.
 C PMIN: Pressure [atm] minimum.
 C PMAX: Pressure [atm] maximum.
 
-      CHARACTER*100 DRVFIL,KTAFIL,LOGFIL,CIAFIL,CONFIL
+      CHARACTER*100 DRVFIL,KTAFIL,LOGFIL,CIAFIL,FLAFIL
 
 C DRVFIL: Driver file.
 C KTAFIL: Absorption-coefficient file.
@@ -132,6 +132,10 @@ C program since execution.
        IPARA2=IPARA
       ENDIF
 
+C     Set whether we need to read in a para-H2 profile
+      FLAGH2P=0
+      if(IPARA.NE.0)FLAGH2P=1
+
       OPEN(UNIT=ULOG,FILE=LOGFIL,STATUS='UNKNOWN')
 
       WRITE(ULOG,503)'************************************************'
@@ -147,6 +151,7 @@ C program since execution.
       WRITE(ULOG,503)'*                                              *'
       WRITE(ULOG,503)'*           Original      11/4/95              *'
       WRITE(ULOG,503)'*           Revised       20/6/96 (and since)  *'
+      WRITE(ULOG,503)'*           This version  26/4/12              *'
       WRITE(ULOG,503)'*                                              *'
       WRITE(ULOG,503)'************************************************'
       WRITE(ULOG,505)DRVFIL
@@ -158,7 +163,10 @@ C Read in arrays from LUN= 1 (i.e. DRVFIL) such as VMIN, DELV, NPOINT,
 C FWHM, WING, VREL, and KEYFIL.
       CALL RDLBLD
 
-      CALL READFLAGS(OPFILE,INORMAL,IRAY,IH2O,ICH4,IPTF)
+
+      CALL FILE(OPFILE,FLAFIL,'fla')
+
+      CALL READFLAGS(FLAFIL,INORMAL,IRAY,IH2O,ICH4,IPTF)
 
       MAXDV=VREL
 

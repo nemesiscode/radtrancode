@@ -1,5 +1,5 @@
       SUBROUTINE SUBPROFRETGPTX(IPFILE,ISPACE,ISCAT,GASGIANT,NVAR,
-     1 VARIDENT,VARPARAM,NX,XN,JPRE)
+     1 VARIDENT,VARPARAM,NX,XN,JPRE,FLAGH2P)
 C     $Id:
 C     ***********************************************************************
 C     Subroutine to modify an existing ipfile.prf T/P/vmr profile and 
@@ -171,12 +171,8 @@ C     First skip header
 31     CONTINUE
       CLOSE(1)
 
-C     See if planet is a Giant Planet. If so then then read in reference
-C     para-H2 fraction file
-      FLAGH2P = 0
-      IF(GASGIANT.AND.ISPACE.EQ.0)THEN
-C*************CCCCCCCCCCCCCCc JM ********************       
-C       FLAGH2P=1
+C     See if we need to read in a para-H2 fraction file
+      IF(FLAGH2P.EQ.1)THEN
        OPEN(1,FILE='parah2.prf',STATUS='OLD')
 C      First skip header
 56     READ(1,1)BUFFER
@@ -802,16 +798,15 @@ C        print*,H(I),(CONT(J,I),J=1,NCONT)
 41    CONTINUE
       CLOSE(2)
 
-CCCCCCCCC*************** JM ***************************
-c      IF(FLAGH2P.EQ.1)THEN
-c       OPEN(UNIT=2,FILE='parah2.prf',STATUS='UNKNOWN')
-c        BUFFER = '# parah2.prf'
-c        WRITE(2,*)NPRO
-c        DO I=1,NPRO
-c         WRITE(2,*)H(I),PARAH2(I)
-c        ENDDO
-c       CLOSE(2)
-c      ENDIF
+      IF(FLAGH2P.EQ.1)THEN
+       OPEN(UNIT=2,FILE='parah2.prf',STATUS='UNKNOWN')
+        BUFFER = '# parah2.prf'
+        WRITE(2,*)NPRO
+        DO I=1,NPRO
+         WRITE(2,*)H(I),PARAH2(I)
+        ENDDO
+       CLOSE(2)
+      ENDIF
 
       IF(ISCAT.EQ.1)THEN
        OPEN(UNIT=2,FILE='fcloud.prf',STATUS='UNKNOWN')

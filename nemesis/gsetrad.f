@@ -80,9 +80,10 @@ C     ************************************************************************
       integer jsurfx,jalbx,jtanx,jprex,nprox,icheck,icont
       double precision mu(maxmu),wtmu(maxmu)
       real dist,galb,xn(mx),xnx(mx),aphi,emiss_ang,sol_ang
-      real stx(mx,mx)
+      real stx(mx,mx),xdnu
       real xmap(maxv,maxgas+2+maxcon,maxpro)
-      character*100 runname,buffer
+      integer jpara
+      character*100 runname,buffer,aname
 
       integer nvar,ivar,varident(mvar,3),i,j,nalb,nalb1
       real varparam(mvar,mparam),alb(maxsec),valb(maxsec)
@@ -93,6 +94,20 @@ C     ************************************************************************
       REAL DUSTH(MAXLAY),DUST(MAXCON,MAXLAY)
 
       print*,'gsetrad, lin = ',lin
+
+C     Look to see if the CIA file refined has variable para-H2 or not.
+      call file(runname,runname,'cia')
+
+      open(12,FILE=runname,STATUS='OLD')
+       read(12,1) aname
+       read(12,*) xdnu
+       read(12,*) jpara
+      close(12)
+
+      flagh2p=0
+      if(jpara.ne.0)then
+       flagh2p=1
+      endif
 
       call subprofretg(runname,ispace,iscat,gasgiant,xlat,nvar,
      1  varident,varparam,nx,xn,jpre,ncont,flagh2p,xmap)
@@ -116,7 +131,7 @@ C     for wavenumbers greater than 1500cm-1
      1  nxx,xnx)
 
        call subprofretgx(runname,ispace,iscat,gasgiant,nvarx,varidentx,
-     1  varparamx,nxx,xnx,jprex)
+     1  varparamx,nxx,xnx,jprex,flagh2p)
 
        do ivarx = 1,nvarx
         if(varident(ivarx,1).eq.888)then

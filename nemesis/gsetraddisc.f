@@ -77,12 +77,12 @@ C     ************************************************************************
       real layht
       real vconv(mconv)
       integer nmu,isol,lowbc,nf,flagh2p,jalb,jtan,jpre
-      integer jsurfx,jalbx,jtanx,jprex,nprox,jradx
+      integer jsurfx,jalbx,jtanx,jprex,nprox,jradx,jpara
       double precision mu(maxmu),wtmu(maxmu)
       real dist,galb,xn(mx),xnx(mx),aphi,emiss_ang,sol_ang
-      real stx(mx,mx)
+      real stx(mx,mx),xdnu
       real xmap(maxv,maxgas+2+maxcon,maxpro)
-      character*100 runname
+      character*100 runname,aname
 
       integer nvar,ivar,varident(mvar,3),i,j,nalb,nalb1
       real varparam(mvar,mparam),alb(maxsec),valb(maxsec)
@@ -91,6 +91,22 @@ C     ************************************************************************
       logical gasgiant
 
       print*,'gsetraddisc, lin = ',lin
+
+1     format(a)
+
+C     Look to see if the CIA file refined has variable para-H2 or not.
+      call file(runname,runname,'cia')
+
+      open(12,FILE=runname,STATUS='OLD')
+       read(12,1) aname
+       read(12,*) xdnu
+       read(12,*) jpara
+      close(12)
+
+      flagh2p=0
+      if(jpara.ne.0)then
+       flagh2p=1
+      endif
 
       call subprofretgdisc(runname,ispace,iscat,gasgiant,xlat,nvar,
      1  varident,varparam,nx,xn,jpre,ncont,flagh2p,xmap)
@@ -105,7 +121,7 @@ C     ************************************************************************
      1  nxx,xnx)
 
        call subprofretgdiscx(runname,ispace,iscat,gasgiant,nvarx,
-     1  varidentx,varparamx,nxx,xnx,jprex)
+     1  varidentx,varparamx,nxx,xnx,jprex,flagh2p)
 
        do ivarx = 1,nvarx
         if(varident(ivarx,1).eq.888)then

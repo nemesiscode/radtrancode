@@ -29,9 +29,9 @@ C					scheme
 C	VARPARAM(MVAR,MPARAM) REAL	Additional parameterisation
 C	NX	INTEGER		Number if elements in state vector
 C	XN(MX)	REAL		State vector
+C	FLAGH2P INTEGER		Set to 1 if para-H2 profile is variable
 C     Output variables
 C	NCONT	INTEGER		Number of cloud particle types
-C	FLAGH2P INTEGER		Set to 1 if para-H2 profile is variable
 C	XMAP(MAXV,MAXGAS+2+MAXCON,MAXPRO) REAL Matrix relating functional
 C				derivatives calculated by CIRSRADG to the 
 C				elements of the state vector
@@ -70,7 +70,7 @@ C     ***********************************************************************
 
       INTEGER NVAR,VARIDENT(MVAR,3)
       REAL VARPARAM(MVAR,MPARAM)
-      LOGICAL GASGIANT
+      LOGICAL GASGIANT,FEXIST
 
 C----------------------------------------------------------------------------
 C
@@ -191,11 +191,16 @@ C     First skip header
 31     CONTINUE
       CLOSE(1)
 
-C     See if planet is a Giant Planet and we're working in wavenumbers. 
-C        If so then then read in reference para-H2 fraction file
-      FLAGH2P = 0
-      IF(GASGIANT.AND.ISPACE.EQ.0)THEN
-       FLAGH2P=1
+C     See if planet we need to read in a para-H2 profile
+      IF(FLAGH2P.EQ.1)THEN
+
+       inquire(file='parah2.ref',exist=fexist)
+       if(.not.fexist) then
+        print*,'Error in subprofretgPT.f - you have a variable para-H2'
+        print*,'para-H2 CIA file, but no parah2.ref file'
+        stop
+       endif
+
        OPEN(1,FILE='parah2.ref',STATUS='OLD')
 C      First skip header
 56     READ(1,1)BUFFER
@@ -283,16 +288,15 @@ C        Note if JCONT = NCONT+1 then profile contains para-H2 fraction
 C        Note if JCONT = NCONT+2 then profile contains fraction cloud  cover
          IF(JCONT.EQ.NCONT+1)THEN
 C          print*,'para-H2'
-CCCCCCCCCCCC*****************CCCCCCCCCCCCCCC********C*C*C*C*C*C*C*C*C*C*C*C*
-c          IF(FLAGH2P.EQ.1)THEN
-c           DO I=1,NPRO
-c            XREF(I)=PARAH2(I)
-c           ENDDO
-c          ELSE
-c           PRINT*,'Error in subprofretg, para-H2 fraction declared as'
-c           PRINT*,'variable but atmosphere is not Giant Planet.'
-c           STOP
-c          ENDIF
+          IF(FLAGH2P.EQ.1)THEN
+           DO I=1,NPRO
+            XREF(I)=PARAH2(I)
+           ENDDO
+          ELSE
+           PRINT*,'Error in subprofretg, para-H2 fraction declared as'
+           PRINT*,'variable but atmosphere is not Giant Planet.'
+           STOP
+          ENDIF
          ELSEIF(JCONT.EQ.NCONT+2)THEN
 C          print*,'fractional cloud cover'
           DO I=1,NPRO
@@ -932,16 +936,15 @@ C        print*,H(I),(CONT(J,I),J=1,NCONT)
 41    CONTINUE
       CLOSE(2)
 
-CCCCCCCCCCC********************CCCCCCCCCCCCC******CC***CC*CCCC*C
-c      IF(FLAGH2P.EQ.1)THEN
-c       OPEN(UNIT=2,FILE='parah2.prf',STATUS='UNKNOWN')
-c        BUFFER = '# parah2.prf'
-c        WRITE(2,*)NPRO
-c        DO I=1,NPRO
-c         WRITE(2,*)H(I),PARAH2(I)
-c        ENDDO
-c       CLOSE(2)
-c      ENDIF
+      IF(FLAGH2P.EQ.1)THEN
+       OPEN(UNIT=2,FILE='parah2.prf',STATUS='UNKNOWN')
+        BUFFER = '# parah2.prf'
+        WRITE(2,*)NPRO
+        DO I=1,NPRO
+         WRITE(2,*)H(I),PARAH2(I)
+        ENDDO
+       CLOSE(2)
+      ENDIF
 
       IF(ISCAT.EQ.1)THEN
        OPEN(UNIT=2,FILE='fcloud.prf',STATUS='UNKNOWN')

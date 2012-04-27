@@ -91,7 +91,7 @@ C     ************************************************************************
        print*,'gsetradMCS: Calling subprofretgx'
 
        call subprofretgx(runname,ispace,iscat,gasgiant,nvarx,varidentx,
-     1  varparamx,nxx,xnx,jprex)
+     1  varparamx,nxx,xnx,jprex,flagh2p)
 
        do ivarx=1,nvarx
         if(varidentx(ivarx,1).eq.777)hcorrx=xnx(jtanx)

@@ -29,9 +29,9 @@ C					scheme
 C	VARPARAM(MVAR,MPARAM) REAL	Additional parameterisation
 C	NX	INTEGER		Number if elements in state vector
 C	XN(MX)	REAL		State vector
+C	FLAGH2P INTEGER		Set to 1 if para-H2 profile is variable
 C     Output variables
 C	NCONT	INTEGER		Number of cloud particle types
-C	FLAGH2P INTEGER		Set to 1 if para-H2 profile is variable
 C	XMAP(MAXV,MAXGAS+2+MAXCON,MAXPRO) REAL Matrix relating functional
 C				derivatives calculated by CIRSRADG to the 
 C				elements of the state vector
@@ -71,7 +71,7 @@ C     ***********************************************************************
 
       INTEGER NVAR,VARIDENT(MVAR,3)
       REAL VARPARAM(MVAR,MPARAM)
-      LOGICAL GASGIANT
+      LOGICAL GASGIANT,FEXIST
 
 C----------------------------------------------------------------------------
 C
@@ -200,12 +200,16 @@ C     First skip header
 31     CONTINUE
       CLOSE(1)
 
-C     See if planet is a Giant Planet and we're working in wavenumbers. 
-C        If so then then read in reference para-H2 fraction file
-      FLAGH2P = 0
-C      print*,'Zippy : ',FLAGH2P,GASGIANT,ISPACE
-      IF(GASGIANT.AND.ISPACE.EQ.0)THEN
-       FLAGH2P=1
+C     See if we need to deal with a variable para-H2 fraction
+      IF(FLAGH2P.EQ.1)THEN
+
+       inquire(file='parah2.ref',exist=fexist)
+       if(.not.fexist) then
+        print*,'Error in subprofretg.f - you have a variable para-H2'      
+        print*,'para-H2 CIA file, but no parah2.ref file'
+        stop
+       endif
+
        OPEN(1,FILE='parah2.ref',STATUS='OLD')
 C      First skip header
 56     READ(1,1)BUFFER

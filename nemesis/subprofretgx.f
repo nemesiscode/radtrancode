@@ -1,5 +1,5 @@
       SUBROUTINE SUBPROFRETGX(IPFILE,ISPACE,ISCAT,GASGIANT,NVAR,
-     1 VARIDENT,VARPARAM,NX,XN,JPRE)
+     1 VARIDENT,VARPARAM,NX,XN,JPRE,FLAGH2P)
 C     $Id:
 C     ***********************************************************************
 C     Subroutine to modify an existing ipfile.prf T/P/vmr profile and 
@@ -175,11 +175,8 @@ C     First skip header
 31     CONTINUE
       CLOSE(1)
 
-C     See if planet is a Giant Planet. If so then then read in reference
-C     para-H2 fraction file
-      FLAGH2P = 0
-      IF(GASGIANT.AND.ISPACE.EQ.0)THEN
-       FLAGH2P=1
+C     See if we need to read in a para-H2 profile
+      IF(FLAGH2P.EQ.1)THEN
        OPEN(1,FILE='parah2.prf',STATUS='OLD')
 C      First skip header
 56     READ(1,1)BUFFER

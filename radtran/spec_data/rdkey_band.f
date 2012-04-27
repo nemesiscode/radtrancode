@@ -33,8 +33,8 @@ C--------------------------------------------------------------
 
       OPEN(UNIT=LUN,FILE=KEYFIL,STATUS='OLD')
 
-      READ(LUN,20)DPFILE
-      CALL REMSP(DPFILE)
+      READ(LUN,20)DBFILE
+      CALL REMSP(DBFILE)
       WRITE(*,20)DBFILE
 
       READ(LUN,20)GASFIL

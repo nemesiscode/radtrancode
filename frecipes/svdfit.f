@@ -1,0 +1,33 @@
+      SUBROUTINE SVDFIT(X,Y,SIG,NDATA,A,MA,U,V,W,MP,NP,CHISQ,FUNCS)
+      PARAMETER(NMAX=1000,MMAX=50,TOL=1.E-5)
+      DIMENSION X(NDATA),Y(NDATA),SIG(NDATA),A(MA),V(NP,NP),
+     *    U(MP,NP),W(NP),B(NMAX),AFUNC(MMAX)
+      DO 12 I=1,NDATA
+        CALL FUNCS(X(I),AFUNC,MA)
+        TMP=1./SIG(I)
+        DO 11 J=1,MA
+          U(I,J)=AFUNC(J)*TMP
+11      CONTINUE
+        B(I)=Y(I)*TMP
+12    CONTINUE
+      CALL SVDCMP(U,NDATA,MA,MP,NP,W,V)
+      WMAX=0.
+      DO 13 J=1,MA
+        IF(W(J).GT.WMAX)WMAX=W(J)
+13    CONTINUE
+      THRESH=TOL*WMAX
+      DO 14 J=1,MA
+        IF(W(J).LT.THRESH)W(J)=0.
+14    CONTINUE
+      CALL SVBKSB(U,W,V,NDATA,MA,MP,NP,B,A)
+      CHISQ=0.
+      DO 16 I=1,NDATA
+        CALL FUNCS(X(I),AFUNC,MA)
+        SUM=0.
+        DO 15 J=1,MA
+          SUM=SUM+A(J)*AFUNC(J)
+15      CONTINUE
+        CHISQ=CHISQ+((Y(I)-SUM)/SIG(I))**2
+16    CONTINUE
+      RETURN
+      END

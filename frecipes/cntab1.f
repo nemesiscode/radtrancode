@@ -1,0 +1,34 @@
+      SUBROUTINE CNTAB1(NN,NI,NJ,CHISQ,DF,PROB,CRAMRV,CCC)
+      PARAMETER (MAXI=100,MAXJ=100,TINY=1.E-30)
+      DIMENSION NN(NI,NJ),SUMI(MAXI),SUMJ(MAXJ)
+      SUM=0
+      NNI=NI
+      NNJ=NJ
+      DO 12 I=1,NI
+        SUMI(I)=0.
+        DO 11 J=1,NJ
+          SUMI(I)=SUMI(I)+NN(I,J)
+          SUM=SUM+NN(I,J)
+11      CONTINUE
+        IF(SUMI(I).EQ.0.)NNI=NNI-1
+12    CONTINUE
+      DO 14 J=1,NJ
+        SUMJ(J)=0.
+        DO 13 I=1,NI
+          SUMJ(J)=SUMJ(J)+NN(I,J)
+13      CONTINUE
+        IF(SUMJ(J).EQ.0.)NNJ=NNJ-1
+14    CONTINUE
+      DF=NNI*NNJ-NNI-NNJ+1
+      CHISQ=0.
+      DO 16 I=1,NI
+        DO 15 J=1,NJ
+          EXPCTD=SUMJ(J)*SUMI(I)/SUM
+          CHISQ=CHISQ+(NN(I,J)-EXPCTD)**2/(EXPCTD+TINY)
+15      CONTINUE
+16    CONTINUE
+      PROB=GAMMQ(0.5*DF,0.5*CHISQ)
+      CRAMRV=SQRT(CHISQ/(SUM*MIN(NNI-1,NNJ-1)))
+      CCC=SQRT(CHISQ/(CHISQ+SUM))
+      RETURN
+      END

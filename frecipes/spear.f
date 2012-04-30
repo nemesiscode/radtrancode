@@ -1,0 +1,27 @@
+      SUBROUTINE SPEAR(DATA1,DATA2,N,WKSP1,WKSP2,D,ZD,PROBD,RS,PROBRS)
+      DIMENSION DATA1(N),DATA2(N),WKSP1(N),WKSP2(N)
+      DO 11 J=1,N
+        WKSP1(J)=DATA1(J)
+        WKSP2(J)=DATA2(J)
+11    CONTINUE
+      CALL SORT2(N,WKSP1,WKSP2)
+      CALL CRANK(N,WKSP1,SF)
+      CALL SORT2(N,WKSP2,WKSP1)
+      CALL CRANK(N,WKSP2,SG)
+      D=0.
+      DO 12 J=1,N
+        D=D+(WKSP1(J)-WKSP2(J))**2
+12    CONTINUE
+      EN=N
+      EN3N=EN**3-EN
+      AVED=EN3N/6.-(SF+SG)/12.
+      FAC=(1.-SF/EN3N)*(1.-SG/EN3N)
+      VARD=((EN-1.)*EN**2*(EN+1.)**2/36.)*FAC
+      ZD=(D-AVED)/SQRT(VARD)
+      PROBD=ERFCC(ABS(ZD)/1.4142136)
+      RS=(1.-(6./EN3N)*(D+0.5*(SF+SG)))/FAC
+      T=RS*SQRT((EN-2.)/((1.+RS)*(1.-RS)))
+      DF=EN-2.
+      PROBRS=BETAI(0.5*DF,0.5,DF/(DF+T**2))
+      RETURN
+      END

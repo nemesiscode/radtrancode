@@ -78,6 +78,7 @@ C     ************************************************************************
       real vconv(mconv)
       integer nmu,isol,lowbc,nf,flagh2p,jalb,jtan,jpre
       integer jsurfx,jalbx,jtanx,jprex,nprox,icheck,icont
+      integer jradx
       double precision mu(maxmu),wtmu(maxmu)
       real dist,galb,xn(mx),xnx(mx),aphi,emiss_ang,sol_ang
       real stx(mx,mx),xdnu
@@ -112,7 +113,6 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
       call subprofretg(runname,ispace,iscat,gasgiant,xlat,nvar,
      1  varident,varparam,nx,xn,jpre,ncont,flagh2p,xmap)
 
-      print*,'subprofretg OK'
      
 C     Add in check to make sure we don't use variable para-H2
 C     for wavenumbers greater than 1500cm-1 
@@ -125,7 +125,7 @@ C     for wavenumbers greater than 1500cm-1
       if(lin.eq.1.or.lin.eq.3)then
 
        call readxtmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1  nxx,xnx,stx,jsurfx,jalbx,jtanx,jprex)
+     1  nxx,xnx,stx,jsurfx,jalbx,jtanx,jprex,jradx)
 
        call stripvar(nvarx,varidentx,varparamx,nprox,nvar,varident,
      1  nxx,xnx)

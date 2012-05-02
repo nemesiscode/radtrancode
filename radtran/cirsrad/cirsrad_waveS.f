@@ -50,7 +50,6 @@ C			gas identifier agrees with HITRAN id's as far as
 C			possible (Jan 1988) with extra id's for gases not
 C			in the HITRAN compilation. eg.those in the GEISA 
 C			compilation.
-C	IORDER		The order of the continuum polynomial= 3
 C       ISOGAS		The local isotopic identifier, if zero all 
 C			isotopes of the gas are included. Isotope id's 
 C			also agree as far as possible with HITRAN id's. 
@@ -187,10 +186,9 @@ C		Internal variables
 
 C		Misc variables or continuum variables
 
-	INTEGER	IOrder, ii, id1,j1, IABSORB(5)
-	PARAMETER (IOrder=3)
+	INTEGER	ii, id1,j1, IABSORB(5)
 	REAL	DelH(nlayer), AAmount(maxgas), PPP(maxgas),
-     1		XLen, AvgCONTMP, CONTMP(IOrder), DABSORB(7)
+     1		XLen, AvgCONTMP, CONTMP(IORDP1), DABSORB(7)
 
         INTEGER LUNIS,IRECL,IOFF,NLAYERF,NMUF,NWAVEF,NGF,IFLUX,NFF
 

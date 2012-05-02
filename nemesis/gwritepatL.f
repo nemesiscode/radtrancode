@@ -25,8 +25,8 @@ C     *******************************************************************
       include '../radtran/includes/arrdef.f'
       INCLUDE 'arraylen.f'
       CHARACTER*100 RUNNAME
-      REAL LAYHT,VCONV(MCONV),LAYANG,ILAYER,DELV,FWHM
-      INTEGER LAYTYP,LAYINT,NLAYER,NCONV,LAYBOT,FLAGH2P,ISCAT
+      REAL LAYHT,VCONV(MCONV),LAYANG,DELV,FWHM
+      INTEGER LAYTYP,LAYINT,NLAYER,NCONV,LAYBOT,FLAGH2P,ISCAT,ILAYER
       CHARACTER*80 TEXT
 
       CALL FILE(RUNNAME,RUNNAME,'pat')

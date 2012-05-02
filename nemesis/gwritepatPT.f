@@ -25,15 +25,11 @@ C     *******************************************************************
       include '../radtran/includes/arrdef.f'
       INCLUDE 'arraylen.f'
       CHARACTER*100 RUNNAME
-      REAL LAYHT,VCONV(MCONV),LAYANG,ILAYER,DELV,FWHM
+      REAL LAYHT,VCONV(MCONV),LAYANG,DELV,FWHM
       REAL DELH,RADIUS,XH,THETA
-      INTEGER NBASE,IBASE
+      INTEGER NBASE,IBASE,I,ILAYER
       INTEGER LAYTYP,LAYINT,NLAYER,NCONV,LAYBOT,FLAGH2P,ISCAT
       CHARACTER*80 TEXT
-
-
-
-
 
       CALL FILE(RUNNAME,RUNNAME,'pat')
 
@@ -98,7 +94,7 @@ C     *******************************************************************
       WRITE(31,1)' '
 
       DO 101 ILAYER=1,NLAYER
-
+       print*,'ILAYER = ',ILAYER
        WRITE(31,1)'atm'
        TEXT='limb'
        WRITE(31,5)TEXT,ILAYER

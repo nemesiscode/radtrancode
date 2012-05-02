@@ -74,7 +74,6 @@ c           print*,vcentral,vconv(i)
 cc           dv = 100.0*abs(vcentral-vconv(i))/vconv(i)
            dv = abs(vcentral-vconv(i))
            if(dv.lt.0.0001)then
-            print*,'TEST ',vcentral,vconv(i),dv
             do j=1,nsub
              j1=int((vfil(j)-vkstart)/vkstep)
              v1 = vkstart + j1*vkstep
@@ -87,10 +86,10 @@ cc           dv = 100.0*abs(vcentral-vconv(i))/vconv(i)
              endif
              ico=ico+1
              save(ico)=v1
-             print*,ico,save(ico)
+C             print*,ico,save(ico)
              ico=ico+1
              save(ico)=v2
-             print*,ico,save(ico)
+C             print*,ico,save(ico)
             enddo
            endif
 

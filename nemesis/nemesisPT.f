@@ -204,10 +204,10 @@ C      and if so, skipped
 C     Read in measurement vector, obs. geometry and covariances
       call readnextspavX(lspec,woff,xlat,xlon,ngeom,nav,ny,y,se,
      1  fwhm,nconv,vconv,angles,wgeom,flat,flon)
-	print*,'jm1'
+
 C     Read in forward modelling errors
       call forwarderr(ename,ngeom,nconv,vconv,woff,rerr)
-	print*,'jm2'
+
 C     Add forward errors to measurement covariances
       k=0
       DO i=1,ngeom
@@ -238,8 +238,6 @@ C     Calculate the tabulated wavelengths of c-k look up tables
 C     set up a priori of x and its covariance
       CALL readapriori(runname,lin,lpre,xlat,npro,nvar,varident,
      1  varparam,jsurf,jalb,jtan,jpre,jrad,nx,xa,sa)
-
-	print*,'Read var',varparam
 
       DO i = 1, nx
         xn(i)=xa(i)

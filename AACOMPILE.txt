@@ -16,6 +16,16 @@ If it doesn't, choose the other one!
 for the a whole load of reference files during a run. Hence, you need to update 
 datachive.f to point to the right place before compiling.
 
+To compile the whole code you need to follow the procedure:
+1) change directory to FOVgreg/ and type 'make lib'
+2) change directory to frecipes/ and type 'make lib'
+3) change directory to radtran/makefiles/ and type 'makeradtranlib'
+4) change directory to radtran/makefiles/ and type 'makeradtranbin'
+5) change directory to nemesis/ and type 'make bin'
+Note 1: if you're not doing MCS calculations you can skip step 1.
+Note 2: if you've already compile the Fortran recipes library, you can
+        skip step 2.
+
 Relevant compilation flags and environment variables used are:
 
 Linux-64 - Intel Fortran 11.1.072

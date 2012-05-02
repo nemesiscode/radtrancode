@@ -94,7 +94,6 @@ C     *******************************************************************
       WRITE(31,1)' '
 
       DO 101 ILAYER=1,NLAYER
-       print*,'ILAYER = ',ILAYER
        WRITE(31,1)'atm'
        TEXT='limb'
        WRITE(31,5)TEXT,ILAYER

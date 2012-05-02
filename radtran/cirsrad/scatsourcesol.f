@@ -25,7 +25,8 @@ c      integer maxlay
       real umip(maxmu,maxscatlay,181),uplp(maxmu,maxscatlay,181)
       real radtot,f1(maxlay),g11(maxlay),g21(maxlay)
       real basehf(maxlay),baseh1,sol_ang,aphi,refZ
-      real emiss_ang,xmusun,f0,ilayer,xf1,xf2,solar
+      real emiss_ang,xmusun,f0,xf1,xf2,solar
+      integer ilayer
       double precision taud,tr,trold
       integer nlays,nmu,ntot,nf,i,nlayerf,nhalf,j,j0,i1,k,iaz
       real theta0,phi0,sf,f,g1,g2,jsou,dtr,basehS(maxlay)

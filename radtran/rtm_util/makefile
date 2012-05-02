@@ -29,14 +29,16 @@ F_SOURCES = \
         remsp.f \
         upcase.f \
         wtext.f \
-        gettime.f \
         cspline.f \
         csplint.f \
         isys.f
 
-OBJ = $(F_SOURCES:.f=.o)
+C_SOURCES = gettime.c
+
+OBJ = $(F_SOURCES:.f=.o) $(C_SOURCES:.c=.o)
 LIBRARY = $(LIB)/rtm_util.a
 LIBCODE = $(LIBRARY)($(OBJ))
+
 
 INCDIR = ../includes
 INCLUDES = $(INCDIR)/arrdef.f
@@ -58,6 +60,12 @@ lib $(LIBRARY): $(LIBCODE)
 
 $(LIBRARY)(%.o): %.f $(INCLUDES)
 	$(FC) $(FCFLAGS) -c $<
+	ar rv $(LIBRARY) $*.o
+	ranlib $(LIBRARY)
+	-rm $*.o
+
+$(LIBRARY)(%.o): %.c
+	$(CC) $(CCFLAGS) -c $<
 	ar rv $(LIBRARY) $*.o
 	ranlib $(LIBRARY)
 	-rm $*.o

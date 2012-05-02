@@ -105,8 +105,7 @@ C------------------------------------------------------------------------------
       INCLUDE '../includes/bincom.f'
 C------------------------------------------------------------------------------
 C     continuum variables
-      INTEGER IORDER,IORDP1,ISUM
-      PARAMETER (IORDER=2,IORDP1=IORDER+1)
+      INTEGER ISUM
 C     IORDER is the order of the continuum polynomial
       REAL CONTINK(IORDP1,MAXLAY,MAXBIN)
       REAL CONTIN(IORDP1,MAXLAY,MAXBIN),CONTMP(IORDP1)

@@ -2,9 +2,6 @@ C     **********************************************************
 C     Parameters defining new continuum bins and also layer temperature
 C     properties.
 
-      INTEGER IORDER,IORDP1
-      PARAMETER (IORDER=2,IORDP1=IORDER+1)
-
       INTEGER NBIN
       REAL VBIN(MAXBIN)
       REAL CONTINK(IORDP1,MAXLAY,MAXBIN)   

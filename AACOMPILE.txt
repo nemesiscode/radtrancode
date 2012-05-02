@@ -25,6 +25,11 @@ To compile the whole code you need to follow the procedure:
 Note 1: if you're not doing MCS calculations you can skip step 1.
 Note 2: if you've already compile the Fortran recipes library, you can
         skip step 2.
+Note 3: on MacOSX, you'll need to install gfortran from somewhere such as fink. In
+	the end I just grabbed a version from a website. You'll also need f2c in 
+	order for gettime.c to compile. I got a build script from the following
+	website, whihc worked fine.
+	http://hpc.sourceforge.net/buildf2c
 
 Relevant compilation flags and environment variables used are:
 

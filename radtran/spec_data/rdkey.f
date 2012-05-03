@@ -25,7 +25,6 @@ C--------------------------------------------------------------
       INCLUDE '../includes/dbcom.f' 
 C--------------------------------------------------------------
       INTEGER LUN
-      CHARACTER*56 TMPNAM
 
       DBLUN=LUN
       CALL FILE(KEYFIL,KEYFIL,'key')
@@ -45,7 +44,7 @@ C     note not overwriting KEYFIL with original name
       WRITE(*,20)ISOFIL
 
 C     relies on size of variables to avoid comments at end of line
-20    FORMAT(A)
+20    FORMAT(A56)
 
       READ(LUN,*)DBSIZ
       READ(LUN,*)DBFORM

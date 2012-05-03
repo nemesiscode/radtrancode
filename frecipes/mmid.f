@@ -1,0 +1,25 @@
+      SUBROUTINE MMID(Y,DYDX,NVAR,XS,HTOT,NSTEP,YOUT,DERIVS)
+      PARAMETER (NMAX=10)
+      DIMENSION Y(NVAR),DYDX(NVAR),YOUT(NVAR),YM(NMAX),YN(NMAX)
+      H=HTOT/NSTEP
+      DO 11 I=1,NVAR
+        YM(I)=Y(I)
+        YN(I)=Y(I)+H*DYDX(I)
+11    CONTINUE
+      X=XS+H
+      CALL DERIVS(X,YN,YOUT)
+      H2=2.*H
+      DO 13 N=2,NSTEP
+        DO 12 I=1,NVAR
+          SWAP=YM(I)+H2*YOUT(I)
+          YM(I)=YN(I)
+          YN(I)=SWAP
+12      CONTINUE
+        X=X+H
+        CALL DERIVS(X,YN,YOUT)
+13    CONTINUE
+      DO 14 I=1,NVAR
+        YOUT(I)=0.5*(YM(I)+YN(I)+H*YOUT(I))
+14    CONTINUE
+      RETURN
+      END

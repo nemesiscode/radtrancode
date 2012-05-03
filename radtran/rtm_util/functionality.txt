@@ -1,0 +1,57 @@
+directory:	rtm_util
+purpose:	utility routines for RT codes
+
+SUBROUTINES/FUNCTIONS:
+***************************************************************************
+askyn.f		Passes a prompt to user and returns true for a Y or y input
+		or false otherwise
+
+bit.f		Returns .true. if bit I of FLAG (INTEGER) is 1
+		(Lowest significant bit is bit zero)
+
+clp.f		A simple command line processor
+		Routine simply finds all parameters in a text string and
+		returns their location (start and end) in the string
+
+ebcasc.f	Translates the character string Q from EBCDIC to ASCII
+		(Assumes a 4 byte integer in which byte BY corresponds to
+		the character)
+
+fcat.f		Subroutine to concatenate two files together        
+
+file.f		Forces correct VMS style file extension for a filename. 
+		i.e. assumes  a <4 character extension after a dot separator 
+
+gasdev1.f	Returns a randum number with a normal gaussian
+		distribution of unit standard deviation.
+
+getquad.f	Subroutine to return Gaussian quadrature weights and
+		absissas using NAG libraries.
+
+interp.f        Utility routine for performing linear interpolation.
+ 
+isys.f		Function to return the size of a unit of system storage
+		for use in unformatted direct access open statements
+
+locase.f	Forces input character string to lower case
+
+prompt.f	Prompts input from terminal.
+
+ran11.f		Random number generator (from numerical recipes) 
+
+readi.f		Function to read an integer from a text string of
+		indeterminate length
+
+readr.f		Function to read a real number from a text string of
+		indeterminate length
+
+remsp.f		Removes leading spaces from text string
+
+simp_int.f	Function to integrate array using Simpson's Rule
+
+twiddleexpand.f	Expands initial home directory bit of pathnames.
+
+upcase.f	Forces input character string to upper case
+
+wtext.f		Simply writes text to the screen.
+

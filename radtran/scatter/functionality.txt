@@ -1,0 +1,160 @@
+directory:      scatter
+purpose:        scattering routines
+
+SUBROUTINES/FUNCTIONS:
+***************************************************************************
+scloud8.f	Matrix Operator scattering routine, but now rather than
+		enter the quadrature ordinate of the solar and viewing
+		directions, the actual zenith angles are entered and the
+		output interpolated to these directions. In addition, all
+		the fourier components are summed to give a single output
+		radiance.
+
+scloud10.f	As scloud8, but scatterers assumed to be Henyey-Greenstein
+		scatterers.  Phase functions (azimuthally averaged with
+		successive fourier azimuth functions) are interpolated
+		from tables precalculated by Spmat using
+		interpspmat1.f 
+
+scloud11.f 	Modified from scloud10, to include Rayleigh air
+		scattering (Jovian air assumed)
+
+scloud11a.f	As scloud11.f, but now Rayleigh scattering can be turned
+		on/off with IRAY flag
+
+scloud12.f	As scloud11a.f, but now all imu/imu0 combinations are
+		returned for a range of zenith angles specified by new
+		azi array. Actually runs at same speed as scloud11a.f,
+		just doesn't throw away loads of stuff. 
+
+scloud12_s.f	Same format as scloud12, but now does single scattering
+		calculation as per banfield et al. papers.
+
+scloud12a.f 	As per scloud12.f, but now computes output radiation at
+		the bottom of the atmosphere (i.e. at the ground)
+
+scloud13.f	Also computes radiance at the ground. Modified to
+		calculate fourier components rather than calculate at
+		specific azimuth angles. Also added IABS flag to turn 
+		scattering on/off.
+		Also added computation of fluxes. 
+
+scloud14.f	As per scloud12. However has two more flags, jhg and
+		jinterp which allow different types of phase function to
+		be used and intercompared.
+
+scloud14a.f	As scloud14, but returns fourier coefficients of
+		radiance rather than values calculated at specified
+		azimuth angles
+
+double1.f	Current version of doubling code.
+
+matinv8.f       Double precision matrix inverter optimised for scattering
+                code.
+
+matrices.f 	Contains the matrix manipulation routines: MEQU,MADD,MMUL
+
+abend.f		Print error message and exit.
+
+phasint2.f	Returns the phase function integrated over azimuthal
+		angle, for a prespecified set of angles. Calculates all
+		fourier componenents in one go.
+
+hansen.f	Normalizes the scattering phase function using
+		the method of Hansen (1971, J.Atm.Sci., V28, 1400)
+
+phase1.f 	Subroutine to calculate the phase function P at a
+		single phase angle CALPHA. P is normalized to 1 over all
+		solid angles.
+
+refice.f	Calculates complex refractive index of Ice 1H for
+		wavelengths between 45 nm and 8.6 m.  For wavelengths
+		above 167 microns, temperature dependence is included for
+		temperatures between 213 and 272K.  Mainly intended for
+		applications in Earth ice clouds and snow, not other
+		planets or interstellar space;
+
+add.f 		Adds the reflection, transmission and source function 
+		matrices of two adjecent layers
+
+addp.f		As add.f, but has simplifying approximation if the layer
+		to be added is non-scattering
+
+iup.f		Calculates interior upward intensities in the clouds.
+
+idown.f		Calculates interior downward intensities in the clouds.
+
+interp_phase.f  This routine interpolates phase information from
+		the supplied PHASE.DAT files to the current
+		wavenumber/wavelegth.
+
+miescat.f	Calculates the phase function, scattering, and
+		extinction coefficients at a a given wavelength for a
+		specified size distribution using Mie theory.
+		The distribution can be "modified gamma", "log-normal",
+		or single particle size depending upon the input
+		parameters.   
+
+tempscat.f	Slightly modified form of miescat.f
+
+pgjiscat.f	Old and nasty version of miescat. Used by VORTEX routines
+		so maintained for now.
+
+dmie.f		Performs Mie scattering calculation (spheres)
+
+read_xsc.f	Modified routine for reading in dust cross-section
+		files. Reads in wavelengths as well so that cross-sections
+		can be interpolated
+
+calc_pmat6.f 	Subroutine to compute the P++ and P-- arrays used
+		by the Matrix Operator code.
+
+get_hg.f	Reads H-G parameters from hgphase*.dat files and
+		interpolates to required wavenumber.
+
+get_hg1.f	Very similar to get_hg. Not apparently used by anything.
+
+henyey.f	Calculates the H-G phase function from the coefficients
+		f,g1,g2
+
+henyey1.f 	Calls henyey.f and computes some sort k-matrix. Not
+		apparently used by anything.
+
+get_theta.f	Calculates scattering angle array.
+
+rayleigha.f	Function to evaluate the Rayleigh scattering cross
+		section using Atmospheric Radiation Liou (1980), p 79.
+     		Modified with new data from Handbook of Chemistry and
+		Physics 1996
+
+rayleighj.f	Function to evaluate the Rayleigh scattering cross
+		section for Jovian air using data from Allen (1976)
+		Astrophysical Quantities
+
+read_hg.f 	Very similar to get_hg but different call parameters and
+		does not compute p.
+
+interpstable.f  6-dimensional linear interpolation of precomputed
+                reflection/transmission matrices. Based on numerical
+                recipes routine polin2
+
+interpspmat1.f	Subroutine to read in and interpolate PTABLE*.DAT files
+		produced by Spmat.
+
+refindex.f 	Subroutine containing (nr,ni) for a number of candidate
+		Jovian ices.
+
+subphase.f 	Subroutine which calculates phase functions using
+		miescat.f and fits H-G parameters to them using subfithgm.f
+
+subfithgm.f	Routine to fit a phase function with H-G parameters
+
+readphlay.f 	Not apparently used by anything.
+
+psphase.f	Function to calculate H-G phase function, plus a
+		fraction F of dipole (Rayleigh).
+
+fback.f		Function to calculate fraction of backscattered
+		radiation from a single, scattering layer.
+
+

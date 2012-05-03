@@ -1,0 +1,60 @@
+      SUBROUTINE READ_DEL(QIDENT,ENERGY,ACO2,NCO2,AH2O,NH2O,AN2,
+     1 NN2,AO2,NO2)
+C     $Id: read_del.f,v 1.3 2011-06-17 15:53:03 irwin Exp $
+C     *************************************************************
+C     SUBROUTINE TO READ IN DELAYE H2O DATA SCANNED FROM PAPER
+C     BY J.T.SCHOFIELD. 'delaye.dat' HAS BEEN EDITED TO REMOVE
+C     SCANNING ERRORS.
+C
+C     PAT IRWIN  10/2/93
+C     **************************************************************
+      REAL ACO2(190),NCO2(190),AH2O(190),NH2O(190),AN2(190),NN2(190)
+      REAL AO2(190),NO2(190),ENERGY(190)
+      INTEGER QUANT(190,3),I1,I2,I3,I4,I5,I6
+      CHARACTER*10 DUMMY
+      CHARACTER*69 BUFFER
+      CHARACTER*6 QIDENT(190),QTEMP
+      CHARACTER*100 ANAME
+
+      ANAME = 'delaye.dat'
+      CALL DATARCHIVE(ANAME)
+      print*,aname
+
+      OPEN(12,FILE=ANAME,STATUS='OLD')
+      DO 10 I=1,16
+       READ(12,100)DUMMY
+10    CONTINUE
+      DO 20 I=1,187
+       READ(12,101) BUFFER
+       READ(BUFFER,105) QUANT(I,1),QUANT(I,2),QUANT(I,3),ENERGY(I),
+     1  ACO2(I),NCO2(I),AH2O(I),NH2O(I),AN2(I),NN2(I),AO2(I),NO2(I)
+       QTEMP='      '
+       I1=INT(QUANT(I,1)/10)
+       I2=QUANT(I,1) - 10*I1
+       I3=INT(QUANT(I,2)/10)
+       I4=QUANT(I,2) - 10*I3
+       I5=INT(QUANT(I,3)/10)
+       I6=QUANT(I,3) - 10*I5
+       QTEMP(2:2)=CHAR(I2+48)
+       QTEMP(4:4)=CHAR(I4+48)
+       QTEMP(6:6)=CHAR(I6+48)
+       IF(I1.GT.0) THEN 
+        QTEMP(1:1)=CHAR(I1+48)
+       END IF
+       IF(I3.GT.0) THEN 
+        QTEMP(3:3)=CHAR(I3+48)
+       END IF
+       IF(I5.GT.0) THEN 
+        QTEMP(5:5)=CHAR(I5+48)
+       END IF
+       QIDENT(I)=QTEMP
+C       WRITE(6,106) QIDENT(I),ENERGY(I),
+C     1  ACO2(I),NCO2(I),AH2O(I),NH2O(I),AN2(I),NN2(I),AO2(I),NO2(I)
+20    CONTINUE
+      CLOSE(12)
+100   FORMAT(A10)
+101   FORMAT(A69)
+105   FORMAT(I2,I3,I3,F9.2,F8.1,F5.2,F8.1,F5.2,F8.1,F5.2,F7.1,F5.2)
+106   FORMAT(A6,F9.2,F8.1,F5.2,F8.1,F5.2,F8.1,F5.2,F7.1,F5.2)
+      RETURN
+      END

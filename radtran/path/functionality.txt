@@ -1,0 +1,67 @@
+directory:      path
+purpose:        layering routines for RT codes
+
+SUBROUTINES/FUNCTIONS:
+***************************************************************************
+addgas.f	Add a gas to the array of gas IDs.
+
+atm.f		Reads atmospheric path calculation details from *.pat 
+		file and calculates path amounts etc.
+
+cell.f          Reads cell path calculation details from *.pat 
+		file and calculates path amounts etc.
+
+layer.f		Calculates the layers specified by the *.pat file.
+
+newlayer.f	As layer.f, but allows for limited range cloud decks
+		specified by top and bottom atitudes, number of sublayers,
+		and opacity in each layer.
+
+mewlayer.f	As newlayer.f, but a bimodal size distribution in each
+		cloud deck is assumed.       
+
+complayer.f	As newlayer.f, but instead of specifying opacity in each
+		cloud sublayer, a fractional scale height for the whole
+		cloud is assumed. 
+
+cloudlayer.f	As layer.f but has extra nims retrieval code
+		specific definition of parameterised cloud
+	        structure where 4 cloud constituents are assumed, wach
+		with a bimodal size distribution.
+
+clouds.f    	Subroutine to predict cloud structure in Jovian atmosphere
+		assuming a Lewis-type model.
+
+cubint.f        Subroutine using Numerical recipes routines to do cubic
+		spline interpolation of a table
+
+newgrav.f     	Sets the gravitational acceleration based on selected
+		planet and latitude. Gravity is calculated normal to the
+		surface, and corrected for rotational effects. The input
+		latitude is assumed planetographic.
+
+rddmod.f        Reads in a dust profiles for Path
+
+rdmod.f		Reads in T/P/vmr profiles for Path
+
+read_grav.f	Subroutine to read in planetary gravity data from
+		'gravity.dat'
+
+reflatm.f	Reads atmospheric path calculation details from *.pat
+                file for a reflecting layer calculation and calculates
+		path amounts etc.
+
+sngatm.f        Reads atmospheric path calculation details from *.pat
+                file for a single atmospheric path calculation and
+		calculates path amounts etc.
+
+spline.f        Fits cubic spline to input data array.
+
+splint.f        Performes cubic spline interpolation.
+
+verint.f	Simple linear interpolation routine.
+
+wrlbld.f	Subroutine to output calculated paths, amounts,
+		calculation details etc. to RADTRAN driver file (*.drv)
+
+

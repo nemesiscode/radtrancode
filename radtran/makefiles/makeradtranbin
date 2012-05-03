@@ -1,0 +1,40 @@
+#! /bin/tcsh -f
+
+echo 'Compiling Binaries...'
+
+cd $RADSRC/rtm_util
+make clean
+make bin
+
+cd $RADSRC/spec_data
+make clean
+make bin
+
+cd $RADSRC/path
+make clean
+make bin
+
+cd $RADSRC/scatter
+make clean
+make bin
+
+cd $RADSRC/radtran
+make clean
+make bin
+
+cd $RADSRC/ciatable
+make clean
+make bin
+
+cd $RADSRC/cirsrad
+make clean
+make bin
+
+cd $RADSRC/cirsradg
+make clean
+make bin
+
+cd $RADSRC/monteck
+make clean
+make bin
+

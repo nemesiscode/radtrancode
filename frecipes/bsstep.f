@@ -1,0 +1,38 @@
+      SUBROUTINE BSSTEP(Y,DYDX,NV,X,HTRY,EPS,YSCAL,HDID,HNEXT,DERIVS)
+      PARAMETER (NMAX=10,IMAX=11,NUSE=7,ONE=1.E0,SHRINK=.95E0,GROW=1.2E0
+     *)
+      DIMENSION Y(NV),DYDX(NV),YSCAL(NV),YERR(NMAX),
+     *    YSAV(NMAX),DYSAV(NMAX),YSEQ(NMAX),NSEQ(IMAX)
+      DATA NSEQ /2,4,6,8,12,16,24,32,48,64,96/
+      H=HTRY
+      XSAV=X
+      DO 11 I=1,NV
+        YSAV(I)=Y(I)
+        DYSAV(I)=DYDX(I)
+11    CONTINUE
+1     DO 10 I=1,IMAX
+        CALL MMID(YSAV,DYSAV,NV,XSAV,H,NSEQ(I),YSEQ,DERIVS)
+        XEST=(H/NSEQ(I))**2
+        CALL RZEXTR(I,XEST,YSEQ,Y,YERR,NV,NUSE)
+        ERRMAX=0.
+        DO 12 J=1,NV
+          ERRMAX=MAX(ERRMAX,ABS(YERR(J)/YSCAL(J)))
+12      CONTINUE
+        ERRMAX=ERRMAX/EPS
+        IF(ERRMAX.LT.ONE) THEN
+          X=X+H
+          HDID=H
+          IF(I.EQ.NUSE)THEN
+            HNEXT=H*SHRINK
+          ELSE IF(I.EQ.NUSE-1)THEN
+            HNEXT=H*GROW
+          ELSE
+            HNEXT=(H*NSEQ(NUSE-1))/NSEQ(I)
+          ENDIF
+          RETURN
+        ENDIF
+10    CONTINUE
+      H=0.25*H/2**((IMAX-NUSE)/2)
+      IF(X+H.EQ.X)PAUSE 'Step size underflow.'
+      GOTO 1
+      END

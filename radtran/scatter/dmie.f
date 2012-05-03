@@ -1,0 +1,225 @@
+************************************************************************
+************************************************************************
+C-----------------------------------------------------------------------
+C
+C			SUBROUTINE DMIE
+C
+C     SUBROUTINE FOR COMPUTING THE PARAMETERS OF THE ELECTROMAGNETIC
+C     RADIATION SCATTERED BY A SPHERE. ALL COMPUTATIONS CARRIED OUT IN
+C     DOUBLE PRECISION ARITHMETIC PROVIDED THAT LENGTHS PARAMETER FOR
+C     COMDEF IS SET TO E16 PRIOR TO COMPILATION USING OXF1. PROGRAM BASED
+C     ON DBMIE WRITTEN BY J.V. DAVE OF THE IBM CORPORATION. VARIABLES AS
+C     FOLLOWS:
+C     X: SIZE PARAMETER OF THE SCATTERING SPHERE
+C     RFR: REAL PART OF THE REFRACTIVE INDEX OF MATERIAL OF THE SPHERE
+C     RFI: IMAGINARY PART OF THE REFRACTIVE INDEX
+C     THETD: ONE DIMENSIONAL ARRAY CONTAINING THE VALUES OF THE
+C	     SCATTERING ANGLE FOR WHICH OUTPUT IS REQUIRED. OUTPUT FOR
+C	     DIRECTION 180-THETA AUTOMATICALLY RETURNED SO NO VALUE OF
+C	     THETD IS GREATER THAN 90.
+C     JX: NUMBER( <100 ) OF THETD'S FOR WHICH OUTPUT REQUIRED
+C     QEXT: EFFICIENCY FACTOR FOR EXTINCTION
+C     QSCAT: EFFICIENCY FACTOR FOR SCATTERING
+C     CTBRQS: AVERAGE (COS THETA) * QSCAT
+C     ELTRMX: THREE DIMENSIONAL ARRAY REPRESENTING THE FOUR ELEMENTS OF
+C	      THE TRANSFORMATION MATRIX DEFINED BY VAN DE HULST:
+C             (1,J,1) M2 FOR THETA, i.e.S2S2*
+C	      (2,J,1) M1 FOR THETA, i.e.S1S1*
+C	      (3,J,1) S21 FOR THETA
+C	      (4,J,1) D21 FOR THETA
+C	      (1,J,2) M2 FOR 180-THETA
+C	      (2,J,2) M1 FOR 180-THETA
+C	      (3,J,2) S21 FOR 180-THETA
+C	      (4,J,2) D21 FOR 180-THETA
+C
+C     TAA(1 and 2) real and imag. parts of WFN1
+C     TAB(1 and 2) real and imag. parts of WFN2
+C     TB(1 and 2) real and imag. parts of FNA
+C     TC(1 and 2) real and imag. parts of FNB
+C     TD(1 and 2) real and imag. parts of FNAP
+C     TE(1 and 2) real and imag. parts of FNBP
+C     FNAP,FNBP preceding values of FNA,FNB
+C
+C-----------------------------------------------------------------------
+
+      SUBROUTINE DMIE(X,RFR,RFI,THETD,JX,QEXT,QSCAT,CTBRQS,ELTRMX)
+
+      IMPLICIT NONE
+      INTEGER JX,JJ,J,N,M,I,NMX1,NMX2,NN,K,IR,L
+      DOUBLE PRECISION RFR,RFI,LAMBDA,AJX,R(400),ANR(400),DELR,
+     1 QEXT,QSCAT,CTBRQS,X,
+     2 ELTRMX(4,100,2),THETD(100),RX,TAA(2),TAB(2),TB(2),TC(2),
+     3 TD(2),TE(2),PI(3,100),TAU(3,100),CSTHT(100),SI2THT(100),T(5)
+      COMPLEX*16 WM1,FNA,FNB,TC1,TC2,WFN1,WFN2,ACAP(15000),
+     1 FNAP,FNBP,RF,RRF,RRFX
+      EQUIVALENCE (WFN1,TAA(1)),(WFN2,TAB(1)),(FNA,TB(1)),(FNB,TC(1)),
+     1(FNAP,TD(1)),(FNBP,TE(1))
+
+      RF=CMPLX(RFR,-RFI)
+      RRF=1.0/RF
+      RX=1.0/X
+      RRFX=RRF*RX
+      T(1)=(X*X)*(RFR*RFR+RFI*RFI)
+      T(1)=SQRT(T(1))
+      NMX1=1.1*T(1)
+      IF(NMX1.LE.14999) GOTO 21
+      WRITE(6,8)
+    8 FORMAT(1X,'THE UPPER LIMIT FOR ACAP IS NOT ENOUGH')
+      QEXT=-1
+      RETURN
+   21 NMX2=T(1)
+      IF(NMX1.GT.150) GOTO22
+      NMX1=150
+      NMX2=135
+   22 ACAP(NMX1+1)=(0.00000000,0.00000000)
+      DO 23 N=1,NMX1
+	 NN=NMX1-N+1
+	 ACAP(NN)=(NN+1)*RRFX-1.0/((NN+1)*RRFX+ACAP(NN+1))
+   23 ENDDO
+
+      DO 30 J=1,JX
+	 IF(THETD(J).LT.0.0)THETD(J)=ABS(THETD(J))
+	 IF(THETD(J).GT.0.0)GOTO 24
+	 CSTHT(J)=1.0
+	 SI2THT(J)=0.0
+	 GOTO 30
+   24	 IF(THETD(J).GE.90.0)GOTO 25
+	 T(1)=(3.1415926535897932*THETD(J))/180.0
+	 CSTHT(J)=COS(T(1))
+	 SI2THT(J)=1.0-((CSTHT(J))*(CSTHT(J)))
+	 GOTO 30
+   25	 IF(THETD(J).GT.90.0)GOTO 28
+	 CSTHT(J)=0.0
+	 SI2THT(J)=1.0
+	 GOTO 30
+   28	 WRITE(6,5) THETD(J)
+    5	 FORMAT(1X,'THE VALUE OF THE SCATTERING ANGLE IS GREATER
+     1   THAN 90.0 AND IS EQUAL TO: ',E15.4)
+	 STOP
+   30 ENDDO
+      DO 35 J=1,JX
+	 PI(1,J)=0.0
+	 PI(2,J)=1.0
+	 TAU(1,J)=0.0
+	 TAU(2,J)=CSTHT(J)
+   35 ENDDO
+      T(1)=COS(X)
+      T(2)=SIN(X)
+      WM1= CMPLX(T(1),-T(2))
+      WFN1=CMPLX(T(2),T(1))
+      WFN2=RX*WFN1-WM1
+      TC1=ACAP(1)*RRF+RX
+      TC2=ACAP(1)*RF+RX
+      FNA=(TC1*TAB(1)-TAA(1))/(TC1*WFN2-WFN1)
+      FNB=(TC2*TAB(1)-TAA(1))/(TC2*WFN2-WFN1)
+      FNAP=FNA
+      FNBP=FNB
+      T(1)=1.5
+C     FROM HERE TO STATEMENT 90 ELTRMX(I,J,K) HAS THE FOLLOWING MEANING:
+C     (1,J,K) REAL PART OF FIRST COMPLEX AMPLITUDE
+C     (2,J,K) IMAG PART OF FIRST COMPLEX AMPLITUDE
+C     (3,J,K) REAL PART OF SECOND COMPLEX AMPLITUDE
+C     (4,J,K) IMAG PART OF SECOND COMPLEX AMPLITUDE
+C     K=1 FOR THETD(J), K=2 FOR 180-THETA(J)
+      TB(1)=T(1)*TB(1)
+      TB(2)=T(1)*TB(2)
+      TC(1)=T(1)*TC(1)
+      TC(2)=T(1)*TC(2)
+      DO 60 J=1,JX
+	 ELTRMX(1,J,1)=TB(1)*PI(2,J)+TC(1)*TAU(2,J)
+	 ELTRMX(2,J,1)=TB(2)*PI(2,J)+TC(2)*TAU(2,J)
+	 ELTRMX(3,J,1)=TC(1)*PI(2,J)+TB(1)*TAU(2,J)
+	 ELTRMX(4,J,1)=TC(2)*PI(2,J)+TB(2)*TAU(2,J)
+	 ELTRMX(1,J,2)=TB(1)*PI(2,J)-TC(1)*TAU(2,J)
+	 ELTRMX(2,J,2)=TB(2)*PI(2,J)-TC(2)*TAU(2,J)
+	 ELTRMX(3,J,2)=TC(1)*PI(2,J)-TB(1)*TAU(2,J)
+	 ELTRMX(4,J,2)=TC(2)*PI(2,J)-TB(2)*TAU(2,J)
+   60 ENDDO
+      QEXT=2.0*(TB(1)+TC(1))
+      QSCAT=(((TB(1))*(TB(1)))+((TB(2))*(TB(2)))+((TC(1))*(TC(1)))+
+     1((TC(2))*(TC(2))))/0.75
+      CTBRQS=0.0
+      N=2
+   65 T(1)=2*N-1
+      T(2)=N-1
+      T(3)=2*N+1
+      DO 70 J=1,JX
+	 PI(3,J)=(T(1)*PI(2,J)*CSTHT(J)-N*PI(1,J))/T(2)
+	 TAU(3,J)=CSTHT(J)*(PI(3,J)-PI(1,J))-T(1)*SI2THT(J)*PI(2,J)+
+     1   TAU(1,J)
+   70 ENDDO
+      WM1=WFN1
+      WFN1=WFN2
+      WFN2=T(1)*RX*WFN1-WM1
+      TC1=ACAP(N)*RRF+N*RX
+      TC2=ACAP(N)*RF+N*RX
+      FNA=(TC1*TAB(1)-TAA(1))/(TC1*WFN2-WFN1)
+      FNB=(TC2*TAB(1)-TAA(1))/(TC2*WFN2-WFN1)
+C      PRINT*,'N',N
+C      PRINT*,'WFN1',WFN1
+C      PRINT*,'WFN2',WFN2
+C      PRINT*,'TC1',TC1
+C      PRINT*,'TC2',TC2
+C      PRINT*,'FNA',FNA
+C      PRINT*,'FNB',FNB
+      T(5)=N
+      T(4)=T(1)/(T(5)*T(2))
+      T(2)=(T(2)*(T(5)+1.0))/T(5)
+      CTBRQS=CTBRQS+T(2)*(TD(1)*TB(1)+TD(2)*TB(2)+TE(1)*TC(1)+
+     1TE(2)*TC(2))+T(4)*(TD(1)*TE(1)+TD(2)*TE(2))
+      QEXT=QEXT+T(3)*(TB(1)+TC(1))
+      T(4)=TB(1)*TB(1)+TC(1)*TC(1)+TB(2)*TB(2)+TC(2)*TC(2)
+      QSCAT=QSCAT+T(3)*T(4)
+      T(2)=N*(N+1)
+      T(1)=T(3)/T(2)
+      K=(N/2)*2
+      DO 80 J=1,JX
+        ELTRMX(1,J,1)=ELTRMX(1,J,1)+T(1)*(TB(1)*PI(3,J)+TC(1)*TAU(3,J))
+        ELTRMX(2,J,1)=ELTRMX(2,J,1)+T(1)*(TB(2)*PI(3,J)+TC(2)*TAU(3,J))
+        ELTRMX(3,J,1)=ELTRMX(3,J,1)+T(1)*(TC(1)*PI(3,J)+TB(1)*TAU(3,J))
+	ELTRMX(4,J,1)=ELTRMX(4,J,1)+T(1)*(TC(2)*PI(3,J)+TB(2)*TAU(3,J))
+	IF(K.EQ.N)GOTO 75
+	ELTRMX(1,J,2)=ELTRMX(1,J,2)+T(1)*(TB(1)*PI(3,J)-TC(1)*TAU(3,J))
+	ELTRMX(2,J,2)=ELTRMX(2,J,2)+T(1)*(TB(2)*PI(3,J)-TC(2)*TAU(3,J))
+	ELTRMX(3,J,2)=ELTRMX(3,J,2)+T(1)*(TC(1)*PI(3,J)-TB(1)*TAU(3,J))
+	ELTRMX(4,J,2)=ELTRMX(4,J,2)+T(1)*(TC(2)*PI(3,J)-TB(2)*TAU(3,J))
+	GOTO 80
+   75   ELTRMX(1,J,2)=ELTRMX(1,J,2)+T(1)*(-TB(1)*PI(3,J)+TC(1)*TAU(3,J))
+	ELTRMX(2,J,2)=ELTRMX(2,J,2)+T(1)*(-TB(2)*PI(3,J)+TC(2)*TAU(3,J))
+ 	ELTRMX(3,J,2)=ELTRMX(3,J,2)+T(1)*(-TC(1)*PI(3,J)+TB(1)*TAU(3,J))
+	ELTRMX(4,J,2)=ELTRMX(4,J,2)+T(1)*(-TC(2)*PI(3,J)+TB(2)*TAU(3,J))
+   80 ENDDO
+      IF(T(4).LT.1.0E-14)GOTO 100
+      N=N+1
+      DO 90 J=1,JX
+	 PI(1,J)=PI(2,J)
+	 PI(2,J)=PI(3,J)
+	 TAU(1,J)=TAU(2,J)
+	 TAU(2,J)=TAU(3,J)
+   90 ENDDO
+      FNAP=FNA
+      FNBP=FNB
+      IF(N.LE.NMX2)GOTO 65
+      WRITE(6,8)
+      QEXT=-1
+      RETURN
+  100 DO 130 J=1,JX
+        DO 120 K=1,2
+          DO 115 I=1,4
+            T(I)=ELTRMX(I,J,K)
+  115     ENDDO
+	  ELTRMX(1,J,K)=T(3)*T(3)+T(4)*T(4)
+	  ELTRMX(2,J,K)=T(1)*T(1)+T(2)*T(2)
+	  ELTRMX(3,J,K)=T(1)*T(3)+T(2)*T(4)
+ 	  ELTRMX(4,J,K)=T(2)*T(3)-T(4)*T(1)
+  120   ENDDO
+  130 ENDDO
+      T(1)=2.0*RX*RX
+      QEXT=QEXT*T(1)
+      QSCAT=QSCAT*T(1)
+      CTBRQS=2.0*CTBRQS*T(1)
+      RETURN
+      END
+
+************************************************************************
+************************************************************************

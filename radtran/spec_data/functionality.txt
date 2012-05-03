@@ -1,0 +1,67 @@
+directory:      spec_data
+purpose:        spectral data base I/O and processing code
+
+SUBROUTINES/FUNCTIONS:
+***************************************************************************
+fndwav.f	Searches line data base file for wavelength by performing 
+		a binary chop search of an already open line data base
+		file.
+
+rdgas.f		Opens gas_info.dat file which contains the IDs of the
+		gases which Radtrans can process, a list of the isotopes
+		and terrestrial relative abundances, and the 4th order 
+		polynomial coefficients of the rotational and vibrational
+		partition functions.
+ 
+rdiso.f		Opens isotope data file (file name already read into
+		common by RDKEY) and reads in isotope mapping. i.e. the N
+		isotopes of a gas are refered to by the integers 1 to N.
+		The same integers are used irrespective of data base. The
+		isotope identifiers in the data base file will generally
+		be different. The isotope data file contains the mapping
+		between the two.
+
+rdkey.f		Reads in line data base 'key' file
+
+rdkeym.f	Slightly modified version of rdkey, used by Convert_data
+
+rdkey_band.f 	Reads in band data base 'key' file
+
+rdkey_corrk.f	Reads in correlated-k data base 'key' file
+		
+edline.f	Subroutine to modify line parameters (limited options
+		listed by edset.f
+
+edset.f		Subroutine to prompt for which line parameter modification
+		scheme to use.
+
+partf.f		Uses four term polynomial fits to compute ration of total
+		partition functions for use by line by line programs.
+       		Representation is as described in Gimache et al 1990 and
+		distributed with HITRAN 91
+
+rdline.f	Reads line data parameters from a text buffer. GEISA
+		84,92 and Hitran formats all allowed.
+
+read_del.f	Subroutine to read in Delaye H2O data scanned from paper
+		by J.T. Schofield.
+
+read_yam.f	Subroutine to read in Yamamoto CO2 data scanned from paper
+		by J.T. Schofield.
+
+lblband.f	Calculates the Goody-Voigt or Malkmus-Voigt equivalent 
+	        band parameters to line data by statistical analysis of
+		the lines. 
+
+write_band.f	Routine for writing a standard band parameter output file
+
+read_band.f	Routine to read in a band parameter file.
+
+read_bands.f	Slightly modified version of read_band. Also able to
+		process the extended band parameterisation scheme adopted by Kam Sihra.
+
+lines.f		Reads line data into bins.
+
+liness.f	As above, but adapted for Radtrans method of doing line
+		binning rather than Radtran
+

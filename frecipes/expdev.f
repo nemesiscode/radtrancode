@@ -1,0 +1,4 @@
+      FUNCTION EXPDEV(IDUM)
+      EXPDEV=-LOG(RAN1(IDUM))
+      RETURN
+      END

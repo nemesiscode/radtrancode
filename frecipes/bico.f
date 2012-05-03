@@ -1,0 +1,4 @@
+      FUNCTION BICO(N,K)
+      BICO=ANINT(EXP(FACTLN(N)-FACTLN(K)-FACTLN(N-K)))
+      RETURN
+      END

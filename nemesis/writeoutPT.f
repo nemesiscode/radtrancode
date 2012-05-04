@@ -79,7 +79,7 @@ C     Output ny instead of nconv to keep format of mre file the same
       enddo
 
 C1000  format(1x,i4,1x,f9.4,1x,f9.4,1x,f9.4,1x,f6.2,1x,f9.4,1x,f6.2)
-1000  format(1x,i4,1x,f9.4,1x,e12.4,1x,f9.4,1x,f6.2,1x,e12.4,1x,f6.2)
+1000  format(1x,i4,1x,f9.4,1x,e12.6,1x,f9.4,1x,f6.2,1x,e12.6,1x,f6.2)
 
 
       write(lout,*)' '

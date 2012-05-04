@@ -56,10 +56,10 @@ C     Output ny instead of nconv to keep format of mre file the same
 901   format(1x,i4,i3,i5,i4,i5,a)
       write(lout,*)xlat,xlon,'Latitude, Longitude'
       if(ispace.eq.0) then
-       write(lout,*)'Radiances expressed as nW cm-2 sr-1 cm'
+       write(lout,*)'Units are W cm-2 (cm-1)-1 or F_plan/F_star'
        xfac = 1e9
       else
-       write(lout,*)'Radiances expressed as uW cm-2 sr-1 um-1'
+       write(lout,*)'Units are W cm-2 um-1 or F_plan/F_star'
        xfac = 1e6
       endif
       write(lout,*)

@@ -55,7 +55,7 @@ C     Output ny instead of nconv to keep format of mre file the same
      & '   ! ispec,ngeom,ny,nx,ny'
 901   format(1x,i4,i3,i5,i4,i5,a)
       write(lout,*)xlat,xlon,'Latitude, Longitude'
-      write(lout,*)'Calculated (area-pi*r0^2)/(pi*r0^2)'
+      write(lout,*)'Units are 100*Planet_area/Stellar_area (i.e. %)'
       write(lout,*)
      1  '  i  lambda  R_meas     error   %err  R_fit     Diff%'
       ioff = 0
@@ -96,11 +96,12 @@ C1000  format(1x,i4,1x,f9.4,1x,f9.4,1x,f9.4,1x,f6.2,1x,f9.4,1x,f6.2)
         if(varident(ivar,3).eq.0)np = npro
         if(varident(ivar,3).eq.1)np = 2
         if(varident(ivar,3).eq.4)np = 3
+        if(varident(ivar,3).eq.6)np = 2
+        if(varident(ivar,3).eq.7)np = 2
         if(varident(ivar,3).eq.8)np = 3
         if(varident(ivar,3).eq.9)np = 3
         if(varident(ivar,3).eq.10)np = 4
-        if(varident(ivar,3).eq.6)np = 2
-        if(varident(ivar,3).eq.7)np = 2
+        if(varident(ivar,3).eq.10)np = 2
        endif
        if(varident(ivar,1).eq.888)np = varparam(ivar,1)
        write(lout,*)
@@ -119,24 +120,26 @@ C1000  format(1x,i4,1x,f9.4,1x,f9.4,1x,f9.4,1x,f6.2,1x,f9.4,1x,f6.2)
 C        Variable is not temperature  - may need to take exponent
          if(varident(ivar,3).eq.0)iflag=1	! continuous profile
          if(varident(ivar,3).eq.1.and.i.eq.1)iflag=1 ! knee profile         
-         if(varident(ivar,3).eq.7.and.i.eq.1)iflag=1 ! extended profile         
          if(varident(ivar,3).eq.4.and.i.eq.1)iflag=1 ! variable knee profile
+         if(varident(ivar,3).eq.6.and.i.eq.1)iflag=1 ! Venus cloud profile
+         if(varident(ivar,3).eq.7.and.i.eq.1)iflag=1 ! extended profile         
          if(varident(ivar,3).eq.8.and.i.eq.1)iflag=1 ! variable knee profile
          if(varident(ivar,3).eq.9.and.i.eq.1)iflag=1 ! variable knee profile
-         if(varident(ivar,3).eq.6.and.i.eq.1)iflag=1 ! Venus cloud profile
         endif
 
         if(varident(ivar,3).eq.1.and.i.eq.2)iflag=1 ! log fsh - fixed knee
-        if(varident(ivar,3).eq.7.and.i.eq.2)iflag=1 ! log fsh - extended
         if(varident(ivar,3).eq.4.and.i.eq.2)iflag=1 ! log fsh - var. knee
-        if(varident(ivar,3).eq.8.and.i.eq.2)iflag=1 ! log fsh - var. knee
-        if(varident(ivar,3).eq.9.and.i.eq.2)iflag=1 ! log fsh - var. knee
         if(varident(ivar,3).eq.4.and.i.eq.3)iflag=1 ! variable knee profile
-        if(varident(ivar,3).eq.8.and.i.eq.3)iflag=1 ! variable knee profile
         if(varident(ivar,3).eq.6.and.i.eq.2)iflag=1 ! Venus cloud profile
+        if(varident(ivar,3).eq.7.and.i.eq.2)iflag=1 ! log fsh - extended
+        if(varident(ivar,3).eq.8.and.i.eq.2)iflag=1 ! log fsh - var. knee
+        if(varident(ivar,3).eq.8.and.i.eq.3)iflag=1 ! variable knee profile
+        if(varident(ivar,3).eq.9.and.i.eq.2)iflag=1 ! log fsh - var. knee
+        if(varident(ivar,3).eq.8.and.i.eq.3)iflag=1 ! variable knee profile
 
         if(varident(ivar,3).eq.3)iflag=1	! Log scaling factor
         if(varident(ivar,3).eq.10)iflag=1	! Log scaling factor
+        if(varident(ivar,3).eq.11)iflag=1       ! Log scaling factor
 
         if(varident(ivar,1).eq.888)iflag=1	! Surface albedo spectrum
         if(varident(ivar,1).eq.666)iflag=1	! Tangent pressure

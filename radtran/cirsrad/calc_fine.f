@@ -53,6 +53,7 @@ C     Continuum and temperature parameter variables ...
       INCLUDE '../includes/arrdef.f'
       INCLUDE '../includes/contdef.f'
       REAL TRATIO,TSTIM
+      LOGICAL NANTEST,ISNAN
 
       INTEGER NGAS,IDGAS(NGAS),ISOGAS(NGAS),IPROC(NGAS)
       INTEGER LAYER,NLAYER
@@ -75,6 +76,8 @@ C     General variables ...
 
 
 C******************************** CODE *********************************
+
+      NANTEST=.FALSE.
 
       CURBIN = 1+INT((VV-VBIN(1))/WING)
       IFCONT = 0
@@ -107,7 +110,8 @@ C         Ignore lines more than MAXDV widths away
           IF(ABS(DV).LE.MAXDV)THEN
 
             FNH3=-1.0
-            FH2=-1.0        
+            FH2=-1.0 
+C            print*,vv,line,vlin(ib,line)       
             CONVAL = LINECONTRIB(IPROC(IGAS),IDGAS(IGAS),VV,
      1       TCORDW(LAYER,IGAS),TCORS1(LAYER,IGAS),TCORS2(LAYER),
      2       PRESS(LAYER),TEMP(LAYER),FRAC(LAYER,IGAS),VLIN(IB,LINE),
@@ -115,6 +119,18 @@ C         Ignore lines more than MAXDV widths away
      4       TDW(IB,LINE),TDWS(IB,LINE),LLQ(IB,LINE),DOUBV(IB,LINE),
      5       FNH3,FH2)
 
+             NANTEST=ISNAN(CONVAL)
+
+             IF(NANTEST)THEN
+              print*,IPROC(IGAS),IDGAS(IGAS),VV,
+     1       TCORDW(LAYER,IGAS),TCORS1(LAYER,IGAS),TCORS2(LAYER),
+     2       PRESS(LAYER),TEMP(LAYER),FRAC(LAYER,IGAS),VLIN(IB,LINE),
+     3       SLIN(IB,LINE),ELIN(IB,LINE),ALIN(IB,LINE),SBLIN(IB,LINE),
+     4       TDW(IB,LINE),TDWS(IB,LINE),LLQ(IB,LINE),DOUBV(IB,LINE),    
+     5       FNH3,FH2
+ 
+              STOP
+             ENDIF
 
             XK=XK+CONVAL
 

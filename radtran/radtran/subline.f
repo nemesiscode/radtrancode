@@ -1,5 +1,5 @@
       REAL FUNCTION SUBLINE(IDGAS,PRESS,TEMP,IPROC,VV,VLIN,ABSCO,X,Y,
-     1 FNH3,FH2,LLQ,DOUBV)
+     1 AD,FNH3,FH2,LLQ,DOUBV)
 C     ****************************************************************
 C     Function to calculate the line contribution from multiple line
 C     broadening types.
@@ -14,6 +14,7 @@ C	VLIN	REAL	Line wavenumber
 C	ABSCO	REAL	Computed line strength 
 C	X	REAL	DV/AD
 C	Y	REAL	AL/AD
+C	AD	REAL 	AD i.e. Doppler width
 C	FNH3	REAL	Fraction of NH3 (needed of models 3 and 6)
 C	FH2	REAL	Fraction of H2 (needed of models 3 and 6)
 C	LLQ	CHARACTER*15 Lower state quantum numbers
@@ -52,8 +53,6 @@ C     used to renomalise the linestrengths
 
       TRATIO=296.0/TEMP
       DV=VV-VLIN
-C     X = DV/AD, so recover AD from X rather than pass separately.
-      AD=ABS(DV/X)
 
 
 C      print*,'SUBLINE',IDGAS,PRESS,TEMP,IPROC,VV,VLIN,ABSCO,X,Y,

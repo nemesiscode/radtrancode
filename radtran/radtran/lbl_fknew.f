@@ -427,7 +427,7 @@ C Compute absorption coefficient for normal incidence
           FNH3=-1.0
           FH2=-1.0
           TAUTMP=TAUTMP+SUBLINE(IDGAS,PRESS,TEMP,IPROC,V,
-     1  VLIN(LINE),ABSCO_arr(line),X,Y_arr(line),
+     1  VLIN(LINE),ABSCO_arr(line),X,Y_arr(line),ad_arr(line),
      1  FNH3,FH2,LLQ(line),DOUBV(line))
 
 52      CONTINUE

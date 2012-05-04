@@ -18,7 +18,9 @@ c
 c	n teanby	11/03/04	re-organised so clearer
 C
 C     *******************************************************************
-      REAL P,T,FNH3,FH2,BRNH3,BRH2,deltav_jk
+      IMPLICIT NONE
+
+      REAL P,T,FNH3,FH2,BRNH3,BRH2,TR,deltav_jk
       CHARACTER*15 LLQ
       INTEGER J,K
       PARAMETER (BRNH3 = -2.5E-2, BRH2 = -4.5E-3)
@@ -26,7 +28,7 @@ C     *******************************************************************
       READ(LLQ(1:2),*)J
       READ(LLQ(3:4),*)K
 
-      if (tr.eq.0) then
+      if (tr.eq.0.) then
          GETNH3 = 0.0
       else
 c	** eqn 13 from birnbaum et al 2000 **

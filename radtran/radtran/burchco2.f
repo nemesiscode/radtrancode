@@ -20,8 +20,9 @@ C***********************************************************************
 C
        
       FUNCTION BURCHCO2(X,Y,DV1)
+      IMPLICIT NONE
 
-      REAL X,Y,DV1,CHI,HUMLIC0,BURCHCO2
+      REAL X,Y,DV1,CHI,HUMLIC0,BURCHCO2,HUMLIC
 
       HUMLIC0=HUMLIC(X,Y)
 

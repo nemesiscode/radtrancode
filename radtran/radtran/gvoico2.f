@@ -55,17 +55,19 @@ C***********************************************************************
 C
 
        REAL FUNCTION GVOICO2(X,Y,T,AD)
-
+       IMPLICIT NONE
+       INTEGER MXTCH,MXREG,MXDIV
        PARAMETER (MXTCH=3, MXREG=6, MXDIV=4001)
-C
+C  
        INTEGER NREG(MXTCH)
        REAL XABS(1),FF(1)
        REAL TCH(MXTCH), WNL(MXREG,MXTCH), WNH(MXREG,MXTCH),
-     +      ACO(MXREG,MXTCH), BCO(MXREG,MXTCH)       
+     +      ACO(MXREG,MXTCH), BCO(MXREG,MXTCH),X,Y,T,AD       
        COMPLEX VT(MXDIV)
 
-       INTEGER NUM
-       REAL WIDPAR,SWN,T,STRPAR,YMIX,LCONS,DOPWID
+       INTEGER NUM,NT,IR,IC1,IC2,I,J,IP
+       REAL WIDPAR,SWN,STRPAR,YMIX,LCONS,DOPWID,REPWID,H0
+       REAL FDIF,CHI,YM,CHI1,CHI2
 C-----------------------------------------------------------------------
        DATA NT/3/ TCH/193.,238.,296./ NREG/6,4,4/
 C

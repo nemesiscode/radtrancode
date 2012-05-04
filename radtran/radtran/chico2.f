@@ -49,8 +49,9 @@ C***********************************************************************
 C
        
        FUNCTION CHICO2(X,Y,DV1)
+       IMPLICIT NONE
 
-       REAL X,Y,DV1,CHI,HUMLIC0,CHICO2
+       REAL X,Y,DV1,CHI,HUMLIC0,CHICO2,HUMLIC
 
         HUMLIC0=HUMLIC(X,Y)
 

@@ -52,7 +52,12 @@ C     used to renomalise the linestrengths
 
       TRATIO=296.0/TEMP
       DV=VV-VLIN
-      AD=DV/AD
+C     X = DV/AD, so recover AD from X rather than pass separately.
+      AD=ABS(DV/X)
+
+
+C      print*,'SUBLINE',IDGAS,PRESS,TEMP,IPROC,VV,VLIN,ABSCO,X,Y,
+C     1 FNH3,FH2,LLQ,DOUBV
 
       IF(IPROC.EQ.10)THEN
 C      IPROC=9:: Original Hartmann sub-lorentzian lineshape for methane
@@ -68,8 +73,8 @@ C 		 in hydrogen atmosphere
        ENDIF
 
        SUBLINE = ABSCO*
-     1                     HARTMANNCH4A(ABS(X),Y,ABS(DV))/AD
-       
+     1                   HARTMANNCH4A(ABS(X),Y,ABS(DV))/AD
+C       print*,X,ABS(X),Y,ABS(DV),AD,SUBLINE
 
 
       ELSE IF(IPROC.EQ.9)THEN
@@ -86,7 +91,7 @@ C      for Titan by C. de Bergh
        ENDIF
 
        SUBLINE = ABSCO*
-     1                     HARTMANNCH4(ABS(X),Y,ABS(DV))/AD
+     1                   HARTMANNCH4(ABS(X),Y,ABS(DV))/AD
        
 
       ELSEIF(IPROC.EQ.81)THEN

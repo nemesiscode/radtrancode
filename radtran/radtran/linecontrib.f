@@ -59,9 +59,14 @@ C     Stimulated emission coefficient.
       DV = VV-VLIN
       X = DV/AD
 
+C      print*,IDGAS,PRESS,TEMP,IPROC,VV,VLIN,ABSCO,X,Y,
+C     1 FNH3,FH2,LLQ,DOUBV
+
       LINECONTRIB=SUBLINE(IDGAS,PRESS,TEMP,IPROC,VV,VLIN,ABSCO,X,Y,
      1 FNH3,FH2,LLQ,DOUBV)
 
+C      print*,'LINE = ',LINECONTRIB
+      
       RETURN
 
       END

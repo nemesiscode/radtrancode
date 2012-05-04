@@ -12,6 +12,7 @@ C
 C***********************************************************************
        
       REAL FUNCTION HARTMANNCH4A(X,Y,DV1)
+      IMPLICIT NONE
 
       REAL X,Y,DV1,CHI,HUMLIC0,HUMLIC
 

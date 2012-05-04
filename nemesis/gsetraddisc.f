@@ -108,7 +108,7 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
        flagh2p=1
       endif
 
-      call subprofretgdisc(runname,ispace,iscat,gasgiant,xlat,nvar,
+      call subprofretg(runname,ispace,iscat,gasgiant,xlat,nvar,
      1  varident,varparam,nx,xn,jpre,ncont,flagh2p,xmap)
 
 
@@ -120,7 +120,7 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
        call stripvar(nvarx,varidentx,varparamx,nprox,nvar,varident,
      1  nxx,xnx)
 
-       call subprofretgdiscx(runname,ispace,iscat,gasgiant,nvarx,
+       call subprofretgx(runname,ispace,iscat,gasgiant,nvarx,
      1  varidentx,varparamx,nxx,xnx,jprex,flagh2p)
 
        do ivarx = 1,nvarx

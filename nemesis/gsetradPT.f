@@ -80,7 +80,7 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
        flagh2p=1
       endif
 
-      call subprofretgPT(runname,ispace,iscat,gasgiant,xlat,nvar,    
+      call subprofretg(runname,ispace,iscat,gasgiant,xlat,nvar,    
      1  varident,varparam,nx,xn,jpre,ncont,flagh2p,xmap)
 
       hcorrx=0.0
@@ -102,7 +102,7 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
        enddo
        print*,'gsetradPT: Calling subprofretgx'
 
-       call subprofretgPTx(runname,ispace,iscat,gasgiant,nvarx,
+       call subprofretgx(runname,ispace,iscat,gasgiant,nvarx,
      1  varidentx,varparamx,nxx,xnx,jprex,flagh2p)
 
        do ivarx=1,nvarx

@@ -852,10 +852,16 @@ C         already been set
             XMAP(NXTEMP+1,IPAR,I)=X1(I)
           ENDIF
 
+C         Now make sure that vmr does not rise again once condensation has
+C         begun. i.e. freeze vmr at the cold trap.
+
+          IF(IFLA.EQ.1.AND.X1(I).GT.X1(I-1))THEN
+           X1(I)=X1(I-1)
+           XMAP(NXTEMP+2,IPAR,I)=XMAP(NXTEMP+2,IPAR,I-1)
+          ENDIF
+
 
          ENDDO
-
-
 
 
 C        Calculate density of atmosphere (g/cm3)

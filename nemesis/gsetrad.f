@@ -114,14 +114,6 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
      1  varident,varparam,nx,xn,jpre,ncont,flagh2p,xmap)
 
      
-C     Add in check to make sure we don't use variable para-H2
-C     for wavenumbers greater than 1500cm-1 
-      if(ispace.eq.0)then
-       do j=1,nconv
-        if(vconv(j).gt.1500.)flagh2p=0
-       enddo
-      endif
-
       if(lin.eq.1.or.lin.eq.3)then
 
        call readxtmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,

@@ -28,16 +28,23 @@ C***********************************************************************
       
       arcfile = 'datapath.arc'
       
+1     format(a)
 c  ** if arcfile exists then get tname from that **
       inquire(file=arcfile,exist=fexist)
       if ( fexist ) then
          open(67,file=arcfile,status='old')
-         read(67,*) tname
+          read(67,1)tname
          close(67)
+            
+         call remsp(tname)
+         print*,'datarchive.f: override raddata directory to:'
+         write(6,1)tname
+
       else
-C      tname ='/home/oxpln98/plan/irwin/radtrancode/trunk/
-C     &raddata/'
-      tname = '/Users/patirwin/radtrancode/trunk/raddata/'
+
+      tname ='/home/oxpln98/plan/irwin/radtrancode/trunk/
+     &raddata/'
+
       endif
       
 c      print*,'tname=',tname

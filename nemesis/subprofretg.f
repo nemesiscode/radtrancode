@@ -14,7 +14,7 @@ C     Code also shifts .ref file to the required latitude and recalulates
 C     the heights from the hydrostatic equation.
 C
 C     Routine also returns the XMAP matrix which relates the functional
-C     derivatives calculated by CIRSADG with the elements of the state
+C     derivatives calculated by CIRSRADG with the elements of the state
 C     vector  
 C     
 C     Input variables
@@ -38,6 +38,7 @@ C				elements of the state vector
 C
 C     Pat Irwin	29/7/96		Original
 C     Pat Irwin 17/10/03	Revised for Nemesis
+C     Pat Irwin 9/5/12		Updated for new Nemesis
 C
 C     ***********************************************************************
       IMPLICIT NONE

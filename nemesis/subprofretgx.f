@@ -28,6 +28,7 @@ C     Output variables
 C	None
 C     Pat Irwin	29/7/96		Original
 C     Pat Irwin 17/10/03	Revised for Nemesis
+C     Pat Irwin	9/5/12		Updated for new Nemesis
 C
 C     ***********************************************************************
       IMPLICIT NONE

@@ -33,8 +33,9 @@ F_SOURCES = \
 	sngatm.f \
 	verint.f \
 	verintg.f \
+	calcmolwt.f \
+	adjustvmr.f \
 	wrlbld.f
-
 
 INCDIR = ../includes
 INCLUDES= $(INCDIR)/pathcom.f $(INCDIR)/laycom.f $(INCDIR)/laygrad.f \
@@ -98,7 +99,7 @@ Path : path.f $(LIBRARY)
 
 Profile : profile.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Profile profile.f $(LIBRARY) \
-	$(LIB)/rtm_util.a
+	$(LIB)/radtran.a $(LIB)/spec_data.a $(LIB)/rtm_util.a
 
 Interp_prf : interp_prf.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Interp_prf interp_prf.f $(LIBRARY) \

@@ -13,7 +13,7 @@ C     *********************************************************************
       CHARACTER*100 IPFILE
       CHARACTER*100 BUFFER
       CHARACTER*8 PNAME
-      INTEGER I,J,NPRO,NCONT,NVMR,ID(15),ISO(15),N,IFORM,IPLANET
+      INTEGER I,J,NPRO,NCONT,NVMR,ID(15),ISO(15),N,AMFORM,IPLANET
       REAL CONT(100,1000),VMR(1000,15),CP0,CXS,CSUM(1000)
       REAL H(1000),P(1000),T(1000),MOLWT,HC,RADIUS,H1,P1(1000)
       INTEGER IDUST,K,M,M1,M2,IP
@@ -29,8 +29,12 @@ C     *******************************************
       OPEN(UNIT=1,FILE=IPFILE,STATUS='OLD')
 54    READ(1,10)BUFFER
       IF(BUFFER(1:1).EQ.'#') GOTO 54
-      READ(BUFFER,*)IFORM
-      READ(1,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+      READ(BUFFER,*)AMFORM
+      IF(AMFORM.EQ.1)THEN
+       READ(1,*)IPLANET,LATITUDE,NPRO,NVMR
+      ELSE
+       READ(1,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+      ENDIF
       DO 20 I=1,NVMR
       READ(1,*)ID(I),ISO(I)
 20    CONTINUE
@@ -39,14 +43,7 @@ C     reading the first block of profiles
       N=MIN(NVMR,3)
 C     N is the maximum VMR which can be read in from the next block
       DO 30 I=1,NPRO
-      IF(IFORM.EQ.0)THEN
         READ(1,*)H(I),P(I),T(I),(VMR(I,J),J=1,N)
-       ELSE IF(IFORM.EQ.1)THEN
-        READ(1,*)H(I),T(I),(VMR(I,J),J=1,N)
-       ELSE
-        CALL WTEXT('invalid format')
-        STOP
-        END IF
 30    CONTINUE
 C     reading in additional blocks if any
 C     N VMR profiles have been read in so far

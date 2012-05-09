@@ -20,7 +20,7 @@ C***********************************************************************
 
       IMPLICIT NONE
 
-      INTEGER i,j,k,npro,nvmr,n,iform,iplanet
+      INTEGER i,j,k,npro,nvmr,n,amform,iplanet
 C IPLANET: Planet identification code (3= Earth, 5= Jupiter, etc.).
 
       INTEGER gasid(15),gasiso(15)
@@ -52,8 +52,8 @@ C
 C	Read in and modify the existing T/P/vmr profile to incorporate
 C	the condensed vmr data.
 C
-C	The nominal format (IFORM=0) for .ref/.prf files are:
-C	IFORM
+C	The nominal format (AMFORM=0) for .ref/.prf files are:
+C	AMFORM
 C	IPLANET,LAT,NPRO,NVMR,MOLWT
 C	GASID(1),GASISO(1)
 C	:        :
@@ -71,7 +71,8 @@ C	:         :                     :
 C	VMR(NP,4) VMR(NP,5)     ...     VMR(NP,NVMR)
 C
 C	i.e. profiles are stored in blocks of 6 columns each with a
-C	descriptive header. IFORM=1 assumes pressure profile unknown.   
+C	descriptive header. AMFORM=1 assumes that vmrs add up to 1.0
+C       and so molecular weight can be calculated at each level.
 C 
 C-----------------------------------------------------------------------  
 
@@ -84,9 +85,12 @@ C-----------------------------------------------------------------------
 C     Skip the header
 54    READ(1,10)buffer
       IF(buffer(1:1).EQ.'#')GOTO 54
-      READ(buffer,*)iform
-      READ(1,*)iplanet,latitude,npro,nvmr,molwt
-
+      READ(buffer,*)amform
+      IF(AMFORM.EQ.1)THEN
+       READ(1,*)iplanet,latitude,npro,nvmr
+      ELSE
+       READ(1,*)iplanet,latitude,npro,nvmr,molwt
+      ENDIF
 C Read in the gas-identificaiton information
       DO 20 i=1,nvmr
         READ(1,*)gasid(i),gasiso(i)
@@ -97,17 +101,7 @@ C Read the first block of profiles
       n = MIN(nvmr,3)
 C N is the maximum VMR which can be read in from the next block
       DO 30 i=1,npro
-        IF(iform.EQ.0)THEN
           READ(1,*)h(i),p(i),t(i),(vmr(i,j),j=1,n)
-        ELSE IF(IFORM.EQ.1)THEN
-          READ(1,*)h(i),t(i),(vmr(i,j),j=1,n)
-        ELSE
-          WRITE(*,*)' PARAH2_PROFILE.f :: Invalid profile format.'
-          WRITE(*,*)' Stopping program.'
-          WRITE(*,*)' '
-          WRITE(*,*)' iform = ',iform
-          STOP
-        ENDIF
 30    CONTINUE
 C Read in additional blocks if any. N VMR profiles read in so far.
 C Profiles up to VMR(?,K) to be read from this block.

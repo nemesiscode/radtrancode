@@ -10,7 +10,7 @@ c-----------------------------------------------------------------------
 
       integer nvmr_max,npro_max,nvmr,npro,npro1
       parameter (nvmr_max=30,npro_max=300)
-      integer iform,iplanet,idiso(nvmr_max,2)
+      integer amform,iplanet,idiso(nvmr_max,2)
       real latitude,molwt
       real vmrs(npro_max,nvmr_max),vmrs1(npro_max,nvmr_max)
       real vmrs_in(npro_max),vmrs_out(npro_max)
@@ -28,7 +28,7 @@ c  ** get input filename **
       read*,prffile        
 
 c  ** read .prf file **    
-	call zreadprf(prffile,nvmr_max,npro_max,
+	call zreadprf(prffile,amform,nvmr_max,npro_max,
      $  iplanet,latitude,nvmr,npro,molwt,idiso,height,press,temp,vmrs)
 	print*,'npro = ',npro
 	print*,'p1 = ',press(1)
@@ -82,7 +82,7 @@ c  ** get output filename **
       read*,prffile_out
 
 c  ** write output prf file **
-	call zwriteprf(prffile_out,nvmr_max,npro_max,
+	call zwriteprf(prffile_out,amform,nvmr_max,npro_max,
      > iplanet,latitude,nvmr,npro1,molwt,idiso,height1,press1,temp1,
      > vmrs1)
 
@@ -94,7 +94,7 @@ c  ** write output prf file **
 
 
 c-----------------------------------------------------------------------
-	subroutine zreadprf(prffile,nvmr_max,npro_max,
+	subroutine zreadprf(prffile,amform,nvmr_max,npro_max,
      $   iplanet,latitude,nvmr,npro,molwt,idiso,height,press,temp,vmrs)
 c-----------------------------------------------------------------------
 c
@@ -112,7 +112,7 @@ c-----------------------------------------------------------------------
 
       implicit none
       integer nvmr_max,npro_max,iplanet,nvmr,npro
-      integer iform,idiso(nvmr_max,2)
+      integer amform,idiso(nvmr_max,2)
       real latitude,molwt,vmrs(npro_max,nvmr_max)
       real height(npro_max),press(npro_max),temp(npro_max)
       character*100 prffile
@@ -128,8 +128,12 @@ c  ** read comments and ignore **
       backspace(10)
 
 c  ** read header **      
-	read(10,*) iform
-	read(10,*) iplanet,latitude,npro,nvmr,molwt
+	read(10,*) amform
+        if(amform.eq.1)then
+ 	 read(10,*) iplanet,latitude,npro,nvmr
+        else
+ 	 read(10,*) iplanet,latitude,npro,nvmr,molwt
+        endif
       do i=1,nvmr
         read(10,*) idiso(i,1),idiso(i,2)
       enddo
@@ -234,7 +238,7 @@ c  ** decending order **
 	end
 	
 c-----------------------------------------------------------------------
-	subroutine zwriteprf(prffile,nvmr_max,npro_max,
+	subroutine zwriteprf(prffile,amform,nvmr_max,npro_max,
      $   iplanet,latitude,nvmr,npro,molwt,idiso,height,press,temp,vmrs)
 c-----------------------------------------------------------------------
 c
@@ -252,7 +256,7 @@ c-----------------------------------------------------------------------
 
       implicit none
       integer nvmr_max,npro_max,iplanet,nvmr,npro
-      integer iform,idiso(nvmr_max,2)
+      integer idiso(nvmr_max,2),amform
       real latitude,molwt,vmrs(npro_max,nvmr_max)
       real height(npro_max),press(npro_max),temp(npro_max)
       character*100 prffile
@@ -261,9 +265,14 @@ c-----------------------------------------------------------------------
 	open(20,file=prffile,status='unknown')
     
 c  ** write header **      
-	write(20,*) '           0'
-	write(20,'(i3,2x,f8.2,2x,i5,2x,i5,2x,f8.3)')
-     >	iplanet,latitude,npro,nvmr,molwt
+	write(20,*) amform
+        if(amform.eq.1)then
+ 	 write(20,'(i3,2x,f8.2,2x,i5,2x,i5)')
+     >	  iplanet,latitude,npro,nvmr
+        else
+ 	 write(20,'(i3,2x,f8.2,2x,i5,2x,i5,2x,f8.3)')
+     >	  iplanet,latitude,npro,nvmr,molwt
+        endif
       do i=1,nvmr
         write(20,'(i5,2x,i5)') idiso(i,1),idiso(i,2)
       enddo

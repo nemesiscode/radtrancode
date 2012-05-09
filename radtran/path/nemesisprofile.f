@@ -21,7 +21,7 @@ C     each gas once or that the identifiers are valid.
 C
 C---------------------------------------------------------------------------- 
       CHARACTER*100 IPFILE,OPFILE,BUFFER
-      INTEGER I,J,K,N,IFORM,IPLANET
+      INTEGER I,J,K,N,AMFORM,IPLANET
       INTEGER IPROF,IGAS,IERR
       REAL TEMP,XERR,CLEN
       REAL LATITUDE,X1,E1
@@ -31,8 +31,8 @@ C
 C     First reading in an existing set of profiles which could have been
 C     produced using a text editor or a previous use of this program or a
 C     project specific program.
-C     The nominal format (IFORM=0) is:
-C     IFORM
+C     The nominal format (AMFORM=0) is:
+C     AMFORM
 C     IPLANET,LATITUDE,NPRO NVMR MOLWT
 C     ID(1) ISO(1)
 C     :
@@ -49,9 +49,11 @@ C      :           :             :
 C      :           :             : 
 C      VMR(NPRO,4) VMR(NPRO,5)   VMR(NPRO,NVMR)
 C     i.e. profiles are stored in blocks of 6 columns each with a descriptive
-C     header. Other value of IFORM allow minor variations to format, mainly
+C     header. Other value of AMFORM allow minor variations to format, mainly
 C     for data input.
-C     IFORM=1 assumes pressure profile unknown
+C     AMFORM=1 assumes that the vmrs add up to 1 and so the MOlecular weight 
+C     can be calculated from the composition.
+
        CALL PROMPT('Enter filename : ')
        READ(*,10)IPFILE
 10     FORMAT(A)
@@ -60,9 +62,13 @@ C     IFORM=1 assumes pressure profile unknown
 C     First skip header
 54     READ(1,1)BUFFER
        IF(BUFFER(1:1).EQ.'#') GOTO 54
-       READ(BUFFER,*)IFORM
+       READ(BUFFER,*)AMFORM
 1      FORMAT(A)
-       READ(1,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+       IF(AMFORM.EQ.1)THEN
+        READ(1,*)IPLANET,LATITUDE,NPRO,NVMR
+       ELSE
+        READ(1,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+       ENDIF
        DO 20 I=1,NVMR
        READ(1,*)ID(I),ISO(I)
 20     CONTINUE
@@ -71,14 +77,7 @@ C      reading the first block of profiles
        N=MIN(NVMR,3)
 C      N is the maximum VMR which can be read in from the next block
        DO 30 I=1,NPRO
-       IF(IFORM.EQ.0)THEN
-         READ(1,*)H(I),P(I),T(I),(VMR(I,J),J=1,N)
-        ELSE IF(IFORM.EQ.1)THEN
-         READ(1,*)H(I),T(I),(VMR(I,J),J=1,N)
-        ELSE
-         CALL WTEXT('invalid format')
-         STOP
-         END IF
+        READ(1,*)H(I),P(I),T(I),(VMR(I,J),J=1,N)
 30     CONTINUE
 C      reading in additional blocks if any
 C      N VMR profiles have been read in so far

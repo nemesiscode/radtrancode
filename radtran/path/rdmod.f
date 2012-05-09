@@ -44,7 +44,7 @@ C ILUN: File unit used for openning files.
 C G: Gravitivational acceleration [m/s^2] determined as each height above
 C the reference surface.
 C DH: differential height between layers.
-C XFMIN: How close the VMRs must add to 1.0 to pass inspection for AMFORM=2
+C XFMIN: How close the VMRs must add to 1.0 to pass inspection for AMFORM=1
       PARAMETER(XFMIN=0.001)
       CHARACTER*(*) text
       CHARACTER*8 pname
@@ -70,7 +70,7 @@ C First skip the header (if any)
 54    READ(ILUN,1)BUFFER
       IF(BUFFER(1:1).EQ.'#') GOTO 54
       READ(BUFFER,*)AMFORM
-      IF(AMFORM.NE.2)THEN
+      IF(AMFORM.EQ.0)THEN
         READ(ILUN,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
       ELSE
         READ(ILUN,*)IPLANET,LATITUDE,NPRO,NVMR
@@ -91,14 +91,7 @@ C Reading the first block of profiles
       READ(ilun,*)
       n = MIN(nvmr,3)
       DO 30 I=1,NPRO
-        IF(AMFORM.EQ.0)THEN
-          READ(ILUN,*)H(I),P(I),T(I),(VMR(I,J),J=1,N)
-        ELSE IF(AMFORM.EQ.1.OR.AMFORM.EQ.2)THEN
-          READ(ILUN,*)H(I),T(I),(VMR(I,J),J=1,N)
-        ELSE
-          WRITE(*,*)' RDMOD.f :: Invalid format. Stopping program.'
-          STOP
-        ENDIF
+        READ(ILUN,*)H(I),P(I),T(I),(VMR(I,J),J=1,N)
 30    CONTINUE
 C Reading in additional blocks if any; N VMR profiles read in so far
 33    IF(NVMR.GT.N)THEN
@@ -133,7 +126,7 @@ C Profiles up to VMR(?,K) to be read from this block
         ENDIF
 47    CONTINUE
 
-      IF(AMFORM.EQ.2)THEN
+      IF(AMFORM.EQ.1)THEN
        DO 48 I=1,NPRO
         FRAC=0.
         DO J=1,NVMR

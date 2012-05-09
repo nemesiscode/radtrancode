@@ -75,9 +75,6 @@ F_SOURCES = \
 	readdrvh.f \
 	scankkx.f \
 	stripvar.f \
-	hydrostatH.f \
-	hydrostatHmod.f \
-	hydrostatP.f \
 	rankwave.f \
 	intradfield.f
 

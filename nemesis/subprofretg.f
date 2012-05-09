@@ -63,7 +63,7 @@ C     ***********************************************************************
       REAL GASDATA(20,5)
       CHARACTER*100 IPFILE,BUFFER
       CHARACTER*100 ANAME
-      INTEGER I,J,K,N,IFORM,IPLANET,NGAS,IGAS,NX,NXTEMP,IX,ISPACE
+      INTEGER I,J,K,N,AMFORM,IPLANET,NGAS,IGAS,NX,NXTEMP,IX,ISPACE
       REAL TEMP
       REAL A,B,C,D,SVP,PP,LATITUDE
       REAL MOLWT,SCALE(MAXPRO),XMAP1
@@ -86,9 +86,13 @@ C     First read in reference ATMOSPHERIC profile
 C     First skip header
 54     READ(1,1)BUFFER
        IF(BUFFER(1:1).EQ.'#') GOTO 54
-       READ(BUFFER,*)IFORM
+       READ(BUFFER,*)AMFORM
 1      FORMAT(A)
-       READ(1,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+       IF(AMFORM.EQ.1)THEN
+        READ(1,*)IPLANET,LATITUDE,NPRO,NVMR
+       ELSE
+        READ(1,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+       ENDIF
        IF(NPRO.GT.MAXPRO)THEN
         PRINT*,'Error in subprofretg. NPRO>MAXPRO ',NPRO,MAXPRO
         STOP
@@ -107,14 +111,7 @@ C      reading the first block of profiles
        N=MIN(NVMR,3)
 C      N is the maximum VMR which can be read in from the next block
        DO 30 I=1,NPRO
-       IF(IFORM.EQ.0)THEN
          READ(1,*)H(I),P(I),T(I),(VMR(I,J),J=1,N)
-        ELSE IF(IFORM.EQ.1)THEN
-         READ(1,*)H(I),T(I),(VMR(I,J),J=1,N)
-        ELSE
-         CALL WTEXT('invalid format')
-         STOP
-         END IF
 30     CONTINUE
 C      reading in additional blocks if any
 C      N VMR profiles have been read in so far
@@ -162,27 +159,19 @@ C         enddo
 
 C **************** Modify profile via hydrostatic equation ********
       JHYDRO=0
-C     Try out new variable molecular weight
-C      JHYDRO=2
       DO I=1,NVAR
-C       print*,I,VARIDENT(I,1)
        IF(VARIDENT(I,1).EQ.666)THEN
         JHYDRO=1
         HTAN = VARPARAM(I,1)
-C        print*,'jpre,xn(jpre)',jpre,xn(jpre)
         PTAN = EXP(XN(JPRE))
        ENDIF
       ENDDO
-C      print*,'JHYDRO',JHYDRO
       IF(JHYDRO.EQ.0)THEN
-       CALL HYDROSTATH(NPRO,H,P,T,MOLWT,IPLANET,LATITUDE,SCALE)
+       CALL XHYDROSTATH(AMFORM,IPLANET,LATITUDE,NPRO,NVMR,MOLWT,
+     1  IDGAS,ISOGAS,H,P,T,VMR,SCALE)
       ELSE
-       IF(JHYDRO.EQ.1)THEN
-        CALL HYDROSTATP(NPRO,H,P,T,MOLWT,IPLANET,LATITUDE,
-     1  HTAN,PTAN,SCALE)
-       ELSE
-       CALL HYDROSTATHMOD(NPRO,H,P,T,MOLWT,IPLANET,LATITUDE,SCALE)
-       ENDIF
+       CALL XHYDROSTATP(AMFORM,IPLANET,LATITUDE,NPRO,NVMR,MOLWT,
+     1  IDGAS,ISOGAS,H,P,T,VMR,HTAN,PTAN,SCALE)
       ENDIF
 
 C     Read in reference AEROSOL profile
@@ -1156,14 +1145,11 @@ C        New section for combined cloud/gas profile
 
 C     ********  Modify profile with hydrostatic equation ********
       IF(JHYDRO.EQ.0)THEN
-       CALL HYDROSTATH(NPRO,H,P,T,MOLWT,IPLANET,LATITUDE,SCALE)
+       CALL XHYDROSTATH(AMFORM,IPLANET,LATITUDE,NPRO,NVMR,MOLWT,
+     1  IDGAS,ISOGAS,H,P,T,VMR,SCALE)
       ELSE
-       IF(JHYDRO.EQ.1)THEN
-        CALL HYDROSTATP(NPRO,H,P,T,MOLWT,IPLANET,LATITUDE,
-     1  HTAN,PTAN,SCALE)
-       ELSE
-        CALL HYDROSTATHMOD(NPRO,H,P,T,MOLWT,IPLANET,LATITUDE,SCALE)
-       ENDIF
+       CALL XHYDROSTATP(AMFORM,IPLANET,LATITUDE,NPRO,NVMR,MOLWT,
+     1  IDGAS,ISOGAS,H,P,T,VMR,HTAN,PTAN,SCALE)
       ENDIF
 
 
@@ -1214,11 +1200,14 @@ C            ENDIF
       
 C     ************* Write out modified profiles *********
 
-      IFORM=0
       CALL FILE(IPFILE,IPFILE,'prf')
       OPEN(UNIT=2,FILE=IPFILE,STATUS='UNKNOWN',ERR=52)
-      WRITE(2,*)IFORM
-      WRITE(2,501)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+      WRITE(2,*)AMFORM
+      IF(AMFORM.EQ.1)THEN
+       WRITE(2,501)IPLANET,LATITUDE,NPRO,NVMR
+      ELSE
+       WRITE(2,501)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+      ENDIF
 501   FORMAT(1X,I3,F7.2,1X,I3,I3,F8.3)
       DO 503 I=1,NVMR
 	WRITE(2,502)IDGAS(I),ISOGAS(I)
@@ -1230,13 +1219,8 @@ C     writing the first block of profiles
 504   FORMAT(1X,' height (km) ',' press (atm) ','  temp (K)   ',
      1  3(' VMR gas',I3,2X))
       DO 505 I=1,NPRO
-        IF(IFORM.EQ.0)THEN
 	  WRITE(2,506)H(I),P(I),T(I),(VMR(I,J),J=1,N)
 506       FORMAT(1X,F13.3,E13.5,F13.4,3(E13.5))
-         ELSE IF(IFORM.EQ.1)THEN
-	  WRITE(2,511)H(I),T(I),(VMR(I,J),J=1,N)
-511       FORMAT(1X,F13.3,13X,F13.4,3(E13.5))
-          END IF
 505   CONTINUE
 C     writing additional blocks if any
 C     N VMR profiles have been written so far

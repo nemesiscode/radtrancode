@@ -16,7 +16,7 @@ C
 C     ***********************************************************************
       IMPLICIT NONE
       CHARACTER*100 IPFILE,BUFFER
-      INTEGER NPRO,NVMR,IFORM,IPLANET
+      INTEGER NPRO,NVMR,AMFORM,IPLANET
       REAL LATITUDE,MOLWT,RADIUS,G,H1
       LOGICAL GASGIANT
       CHARACTER*8 PNAME
@@ -27,9 +27,13 @@ C     ***********************************************************************
 C     First skip header
 54     READ(1,1)BUFFER
        IF(BUFFER(1:1).EQ.'#') GOTO 54
-       READ(BUFFER,*)IFORM
+       READ(BUFFER,*)AMFORM
 1      FORMAT(A)
-       READ(1,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+       IF(AMFORM.EQ.1)THEN
+        READ(1,*)IPLANET,LATITUDE,NPRO,NVMR
+       ELSE
+        READ(1,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+       ENDIF
       CLOSE(UNIT=1)
 
 

@@ -101,8 +101,8 @@ F_SOURCES = \
       getavbinsc.f \
       open_k.f \
       open_kc.f \
-      write_k.f
-
+      write_k.f \
+      reservegas.f
 
 INCDIR = ../includes
 INCLUDES = $(INCDIR)/arrdef.f $(INCDIR)/bincom.f $(INCDIR)/bincoms.f \

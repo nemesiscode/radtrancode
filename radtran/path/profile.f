@@ -112,7 +112,7 @@ C     Read in reference gas information data
 10     FORMAT(A)
        CALL FILE(IPFILE,IPFILE,'prf')
        OPEN(UNIT=1,FILE=IPFILE,STATUS='OLD')
-C     First skip header
+C      First skip header
 54     READ(1,1)BUFFER
        IF(BUFFER(1:1).EQ.'#') GOTO 54
        READ(BUFFER,*)AMFORM
@@ -193,18 +193,15 @@ C	STOP
 
       ELSE
 
-       CALL PROMPT('Enter AMFORM (0 or 1) : ')
-       READ*,AMFORM
+       AMFORM=0
        NVMR=0
        CALL PROMPT('Enter planet ID : ')
        READ*,IPLANET
        PNAME = SNAME(IPLANET)
        CALL PROMPT('Enter planetocentric latitude (deg) : ')
        READ*,LATITUDE
-       IF(AMFORM.EQ.0)THEN
-        CALL PROMPT('Enter mean mol. wt of atm (g) : ')
-        READ*,MOLWT
-       ENDIF
+       CALL PROMPT('Enter mean mol. wt of atm (g) : ')
+       READ*,MOLWT
        CALL PROMPT('Enter number of levels : ')
        READ*,NPRO
        DO I=1,NPRO
@@ -212,6 +209,16 @@ C	STOP
         CALL PROMPT('Enter ht (km) and temperature (K) : ')
         READ*,H(I),T(I)
        END DO
+
+       PRINT*,'Now we need to calculate the pressure from'
+       PRINT*,'hydrostatic equilibrium, for which we need to'
+       PRINT*,'know the pressure (atm) at a particular height (km)'
+       CALL PROMPT('Please enter reference height and pressure : ')
+       READ*,HTAN,PTAN
+
+       CALL XHYDROSTATP(AMFORM,IPLANET,LATITUDE,NPRO,NVMR,MOLWT,
+     1 ID,ISO,H,P,T,VMR,HTAN,PTAN,SCALE)
+
       END IF
 C
 C     now entering main control loop
@@ -462,20 +469,6 @@ C       hydrostatic equilibrium - calculate height from pressure
 C --------------------------------------------------------------------
       ELSE IF(COMM.EQ.'K')THEN
 C       hydrostatic equilibrium - calculate pressure from height
-
-C       if AMFORM = 1, then we need to calculate the molecular weight
-C       at each level in the atmosphere
-        IF(AMFORM.EQ.1)THEN
-         DO 2071 J=1,NPRO
-          DO 2072 IVMR=1,NVMR
-           XVMR(IVMR)=VMR(J,IVMR)
-2072      CONTINUE
-
-          XXMASS(J)=CALCMOLWT(NVMR,XVMR,ID,ISO)
-
-2071     CONTINUE
-
-        ENDIF
 
 	CALL PROMPT('enter reference height and pressure : ')
 	READ*,HTAN,PTAN

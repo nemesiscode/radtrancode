@@ -22,10 +22,6 @@ F_SOURCES = \
 	assess.f \
 	subprofretg.f \
 	subprofretgx.f \
-	subprofretgdisc.f \
-	subprofretgdiscx.f \
-	subprofretgPT.f \
-	subprofretgPTx.f \
 	calc_phiret.f \
 	writextmp.f \
 	readxtmp.f \

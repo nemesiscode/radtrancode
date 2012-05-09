@@ -26,18 +26,13 @@ C     *****************************************************************
 
        RATIO(IGAS)=VMR(IGAS)/VMR(1)
 
-       IF((IGAS.GT.1).AND.(VMR(IGAS).GT.VMR(1)))THEN
-        PRINT*,'Warning from ADJUSTVMR.F - first gas does not have'
-        PRINT*,'highest abundance'
-        PRINT*,(VMR(J),J=1,NGAS)
-       ENDIF
-
        SUM=SUM+VMR(IGAS)
        IF(ISCALE(IGAS).EQ.0)THEN
         SUM1=SUM1+VMR(IGAS)
        ENDIF
 
 10    CONTINUE
+
       
       IF(SUM.NE.1.0)THEN
 C      Need to adjust the VMRs of those gases that can be scaled to 
@@ -46,12 +41,13 @@ C      fixed ratios with respect to the first gas, which is assumed to have the
 C      highest abundance.
 
        XFAC = (1.0-SUM1)/(SUM-SUM1)
-
+       SUM=0.
        DO 20 IGAS=1,NGAS
 C       Apply scaling factor to gases that can be scaled
         IF(ISCALE(IGAS).EQ.1)THEN
          VMR(IGAS)=VMR(IGAS)*XFAC
         ENDIF
+        SUM=SUM+VMR(IGAS)
 20     CONTINUE
 
       ENDIF

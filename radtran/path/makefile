@@ -35,7 +35,9 @@ F_SOURCES = \
 	verintg.f \
 	calcmolwt.f \
 	adjustvmr.f \
-	wrlbld.f
+	wrlbld.f \
+	XhydrostatP.f \
+	XhydrostatH.f
 
 INCDIR = ../includes
 INCLUDES= $(INCDIR)/pathcom.f $(INCDIR)/laycom.f $(INCDIR)/laygrad.f \

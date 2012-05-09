@@ -22,14 +22,17 @@ C_HIST:   28jun92 SBC Original version
 C
 C_END:
 C--------------------------------------------------------------
+      IMPLICIT NONE
+
       INTEGER MAXPRO,MAXVMR
       PARAMETER(MAXPRO=300,MAXVMR=20)
 C     MAXPRO is the maximum number of vertical points which can be stored.
 C     MAXVMR is the maximum number of vertical mixing ratio profiles.
       REAL H(MAXPRO),P(MAXPRO),T(MAXPRO),VMR(MAXPRO,MAXVMR),RHUM
       REAL H1(MAXPRO),P1(MAXPRO),T1(MAXPRO),VMR1(MAXPRO,MAXVMR)
-      REAL XVMR(MAXVMR)
-      INTEGER ISCALE(MAXVMR)
+      REAL XVMR(MAXVMR),PI,XSUM,HTAN,PTAN,XP1,XP2,WCOL,PX,TX,DELH
+      REAL XPR
+      INTEGER ISCALE(MAXVMR),IPLANET,JSWITCH,I1,IVMR,JW
       REAL XV(MAXPRO),XXMASS(MAXPRO),CALCMOLWT,RATIO(MAXVMR)
       INTEGER NPRO,NVMR,ID(MAXVMR),ISO(MAXVMR),NPRO1
 C     H is the height in kilometres above some NOMINAL zero.
@@ -51,7 +54,7 @@ C----------------------------------------------------------------------------
       CHARACTER COMM
       REAL VMRPRO(MAXPRO*6),VMRH(MAXPRO*6)
       INTEGER I,J,K,N,IFREEZE
-      LOGICAL VMRFIL,Q,CONMIX,NEWFILE
+      LOGICAL VMRFIL,Q,CONMIX,NEWFILE,AMFLAG
       REAL TMIN,TMAX,LGVMIN,LGVMAX,HMAX,PR,HT,TEMP,DX,DY,X(3),Y(3),X0,Y0
       REAL A,B,C,D,SVP,HMIN,PP,LATITUDE,TCORR,X1,X2
       REAL WT(NSIMP),DH,G,SUM,P0,FNORM,MOLWT,SCALE,XCORR
@@ -98,6 +101,9 @@ C     When AMFORM=1, it is assumed that the vmrs add up to 1.0 and this the
 C     molecular weight can be calculated at each level
 C
 
+C     Read in reference gas information data
+      CALL RESERVEGAS
+
       NEWFILE=ASKYN('Enter profile from an existing file?')
 
       IF(NEWFILE)THEN
@@ -111,7 +117,7 @@ C     First skip header
        IF(BUFFER(1:1).EQ.'#') GOTO 54
        READ(BUFFER,*)AMFORM
 1      FORMAT(A)
-       IF(FORM.EQ.0)THEN
+       IF(AMFORM.EQ.0)THEN
         READ(1,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
        ELSE
         READ(1,*)IPLANET,LATITUDE,NPRO,NVMR
@@ -141,6 +147,7 @@ C       profiles up to VMR(?,K) to be read from this block
        END IF
        CLOSE(UNIT=1)
 
+       AMFLAG=.TRUE.
        IF(AMFORM.EQ.1)THEN
         DO 303 I=1,NPRO
          FRAC=0.
@@ -148,9 +155,10 @@ C       profiles up to VMR(?,K) to be read from this block
           FRAC=FRAC+VMR(I,J)
 43       CONTINUE
          FRAC=ABS(FRAC-1.0)
-         IF(FRAC.GT.XFMIN)THEN
-       PRINT*,'Error in Profile.f. Sum of vmrs does not add up to 1.0'
-          STOP
+         IF(FRAC.GT.XFMIN.AND.AMFLAG)THEN
+          PRINT*,'Warning in Profile.f. AMFORM = 1, but the sum'
+          PRINT*,'of vmrs does not add up to 1.0'
+          AMFLAG=.FALSE.
          ENDIF
 303      CONTINUE 
        ENDIF
@@ -214,8 +222,8 @@ C     a simple menu list is used to ensure program will work anywhere
       WRITE(*,44)
       WRITE(*,45)
       WRITE(*,46)
-      WRITE(*,47)
       WRITE(*,1002)
+      WRITE(*,47)
       WRITE(*,77)
       WRITE(*,49)
       WRITE(*,433)
@@ -232,8 +240,8 @@ C     a simple menu list is used to ensure program will work anywhere
 44    FORMAT(' C - remove a VMR profile')
 45    FORMAT(' D - force VMR to saturation vapour pressure')
 46    FORMAT(' E - scale VMRs to add up to 1.0')
-47    FORMAT(' F - compute pressure profile from hydrostatic equil.')
-1002  FORMAT(' K - compute height profile from hydrostatic equil.')
+47    FORMAT(' K - compute pressure profile from hydrostatic equil.')
+1002  FORMAT(' F - compute height profile from hydrostatic equil.')
 49    FORMAT(' H - output profiles and exit')
 77    FORMAT(' L - add temperature offset tp T - profile')
 50    FORMAT(' Q - quit')
@@ -260,7 +268,7 @@ C --------------------------------------------------------------------
 103     CONTINUE
 
 C --------------------------------------------------------------------
-       ELSE IF(COMM.EQ.'B')THEN
+      ELSE IF(COMM.EQ.'B')THEN
 C       VMR profiles can be read in or calculated
 	VMRFIL=ASKYN('read in profile from file?')
 	IF(VMRFIL)THEN
@@ -359,7 +367,7 @@ C         heights
 	 END IF
 
 C --------------------------------------------------------------------
-       ELSE IF(COMM.EQ.'C')THEN
+      ELSE IF(COMM.EQ.'C')THEN
 	 CALL PROMPT('which profile?')
 	 READ(*,*)K
 	 IF(K.GT.NVMR.OR.K.LT.1)THEN
@@ -382,7 +390,7 @@ C --------------------------------------------------------------------
 	  END IF
 
 C --------------------------------------------------------------------
-       ELSE IF(COMM.EQ.'D')THEN
+      ELSE IF(COMM.EQ.'D')THEN
 	CALL PROMPT('which profile?')
         READ(*,*)K
         IF(K.GT.NVMR.OR.K.LT.1)THEN
@@ -428,110 +436,36 @@ C --------------------------------------------------------------------
         END IF
 
 C --------------------------------------------------------------------
-       ELSE IF(COMM.EQ.'E')THEN
+      ELSE IF(COMM.EQ.'E')THEN
 C       make the vmrs at each level add up to 1.0
-        PRINT*,'Which gas profile should be used as the reference'
-        CALL PROMPT('for calculating the ratios? : ')
- 
-        READ(*,*)K   
-        IF(K.GT.NVMR.OR.K.LT.1)THEN
-         Print*,'no such profile'
-        ELSE
          DO 1711 J=1,NPRO
           XSUM=0.0
           DO 1712 IVMR=1,NVMR
            ISCALE(IVMR)=1
            XVMR(IVMR)=VMR(J,IVMR)
 1712      CONTINUE
+
           CALL ADJUSTVMR(NVMR,XVMR,ISCALE)
+          DO 1812 IVMR=1,NVMR
+           VMR(J,IVMR)=XVMR(IVMR)
+           XSUM=XSUM+VMR(J,IVMR)
+1812      CONTINUE
 1711     CONTINUE
 
-        ENDIF
 C --------------------------------------------------------------------
-       ELSE IF(COMM.EQ.'F')THEN
-C       hydrostatic equilibrium
+      ELSE IF(COMM.EQ.'F')THEN
+C       hydrostatic equilibrium - calculate height from pressure
+
+        CALL XHYDROSTATH(AMFORM,IPLANET,LATITUDE,NPRO,NVMR,MOLWT,
+     1 ID,ISO,H,P,T,VMR,SCALE)
+
+C --------------------------------------------------------------------
+      ELSE IF(COMM.EQ.'K')THEN
+C       hydrostatic equilibrium - calculate pressure from height
 
 C       if AMFORM = 1, then we need to calculate the molecular weight
 C       at each level in the atmosphere
         IF(AMFORM.EQ.1)THEN
-         CALL PROMPT('Enter name of gasinfo.dat file : ')
-         READ(5,1)GASFIL
-         DBLUN=2
-         CALL RDGAS    
-         DO 1011 J=1,NPRO
-          DO 1012 IVMR=1,NVMR
-           XVMR(IVMR)=VMR(J,IVMR)
-1012      CONTINUE
-          
-          XXMASS(J)=CALCMOLWT(NVMR,XVMR,ID,ISO)
-
-1011     CONTINUE
-        ENDIF
-
-        CALL PROMPT('Enter level number of reference pressure')
-        READ*,JZERO
-	CALL PROMPT('enter reference pressure (atm)')
-	READ(*,*)P0
-        P(JZERO)=P0
-	SUM=0.
-	DO 405 J=2,NSIMP-1
-	IF(J.EQ.(2*(J/2)))THEN
-	  WT(J)=4.
-	 ELSE
-	  WT(J)=2.
-	  END IF
-	WT(1)=1.
-	WT(NSIMP)=1.
-405     CONTINUE
-	WRITE(*,422)
-422     FORMAT(1X,' height ',' temp   ','    g    ',' scale HT',
-     1  '   pressure  ')
-	DO 410 I=JZERO+1,NPRO
-	DH=(H(I)-H(I-1))/FLOAT(NSIMP-1)
-	FNORM=DH/3.
-	DO 420 J=1,NSIMP
-	HT=H(I-1)+FLOAT(J-1)*DH
-	CALL VERINT(H,T,NPRO,TEMP,HT)
-        CALL NEWGRAV(IPLANET,LATITUDE,HT,RADIUS,G,PNAME)
-        IF(AMFORM.EQ.0)THEN
- 	 SCALE=R*TEMP/(MOLWT*G)
-        ELSE
- 	 SCALE=R*TEMP/(XXMASS(I)*G)
-        ENDIF
-	SUM=SUM+WT(J)*FNORM/SCALE
-420     CONTINUE
-	P(I)=P0*EXP(-SUM)
-	WRITE(*,421)HT,TEMP,G,SCALE,P(I)
-421     FORMAT(1X,F8.3,F9.3,F9.3,F9.3,E13.5)
-410     CONTINUE
-
-        SUM=0.0
-
-	DO 411 I=JZERO-1,1,-1
-	DH=(H(I)-H(I+1))/FLOAT(NSIMP-1)
-	FNORM=DH/3.
-	DO 423 J=1,NSIMP
-	HT=H(I+1)+FLOAT(J-1)*DH
-	CALL VERINT(H,T,NPRO,TEMP,HT)
-        CALL NEWGRAV(IPLANET,LATITUDE,HT,RADIUS,G,PNAME)
-	SCALE=R*TEMP/(MOLWT*G)
-	SUM=SUM+WT(J)*FNORM/SCALE
-423     CONTINUE
-	P(I)=P0*EXP(-SUM)
-	WRITE(*,421)HT,TEMP,G,SCALE,P(I)
-411     CONTINUE
-
-C --------------------------------------------------------------------
-       ELSE IF(COMM.EQ.'K')THEN
-C       hydrostatic equilibrium
-
-C       if AMFORM = 1, then we need to calculate the molecular weight
-C       at each level in the atmosphere
-        IF(AMFORM.EQ.1)THEN
-         CALL PROMPT('Enter name of gasinfo.dat file : ')
-         READ(5,1)GASFIL
-         DBLUN=2
-         CALL RDGAS    
          DO 2071 J=1,NPRO
           DO 2072 IVMR=1,NVMR
            XVMR(IVMR)=VMR(J,IVMR)
@@ -543,41 +477,14 @@ C       at each level in the atmosphere
 
         ENDIF
 
-	CALL PROMPT('enter reference level and height : ')
-	READ*,JZERO,HZERO
-        CALL PROMPT('Enter fixed gravity (1), or calculate (2) ?')
-        READ*,IGRAV 
-        IF(IGRAV.EQ.1)THEN
-         CALL PROMPT('Enter gravitational acceleration (ms-2) : ')
-         READ*,G
-        ENDIF
-        H(JZERO)=HZERO
-	WRITE(*,422)
-	DO 412 I=JZERO+1,NPRO
-           TEMP = 0.5*(T(I-1) + T(I))
-           IF(IGRAV.EQ.2)THEN
-	    CALL NEWGRAV(IPLANET,LATITUDE,H(I-1),RADIUS,G,PNAME)
-           ENDIF
-           IF(AMFORM.EQ.0)THEN 
-  	    SCALE=R*TEMP/(MOLWT*G)
-           ELSE
-  	    SCALE=R*TEMP/(XXMASS(I)*G)
-           ENDIF
-           H(I) = H(I-1) - SCALE*LOG(P(I)/P(I-1))
-  	   WRITE(*,421)H(I),TEMP,G,SCALE,P(I)
-412     CONTINUE
-        DO 413 I = JZERO-1,1,-1
-           TEMP = 0.5*(T(I) + T(I+1))
-	   IF(IGRAV.EQ.2)THEN
-             CALL NEWGRAV(IPLANET,LATITUDE,H(I+1),RADIUS,G,PNAME)
-           ENDIF
-	   SCALE=R*TEMP/(MOLWT*G)
-           H(I) = H(I+1) -SCALE*LOG(P(I)/P(I+1))
-  	   WRITE(*,421)H(I),TEMP,G,SCALE,P(I)
-413     CONTINUE
+	CALL PROMPT('enter reference height and pressure : ')
+	READ*,HTAN,PTAN
+
+        CALL XHYDROSTATP(AMFORM,IPLANET,LATITUDE,NPRO,NVMR,MOLWT,
+     1 ID,ISO,H,P,T,VMR,HTAN,PTAN,SCALE)
 
 C --------------------------------------------------------------------
-       ELSE IF(COMM.EQ.'H')THEN
+      ELSE IF(COMM.EQ.'H')THEN
 53      CALL PROMPT('output filename?')
 	READ(*,10)OPFILE
 	CALL FILE(OPFILE,OPFILE,'prf')
@@ -623,7 +530,7 @@ C
 	GOTO 53
 
 C --------------------------------------------------------------------
-       ELSE IF(COMM.EQ.'I')THEN
+      ELSE IF(COMM.EQ.'I')THEN
         CALL PROMPT('Enter constant : ')
         READ*,PCONV
         DO 609 I=1,NPRO
@@ -631,7 +538,7 @@ C --------------------------------------------------------------------
 609     CONTINUE
 
 C --------------------------------------------------------------------
-       ELSE IF(COMM.EQ.'M')THEN
+      ELSE IF(COMM.EQ.'M')THEN
         CALL PROMPT('Enter vmr profile number : ')
         READ*,NCONV
         CALL PROMPT('Enter constant : ')
@@ -641,7 +548,7 @@ C --------------------------------------------------------------------
 610     CONTINUE
 
 C --------------------------------------------------------------------
-       ELSE IF(COMM.EQ.'L')THEN
+      ELSE IF(COMM.EQ.'L')THEN
         CALL PROMPT('Enter temperature offset : ')
         READ*,TCORR
         CALL PROMPT('Enter height range : ')
@@ -653,7 +560,7 @@ C --------------------------------------------------------------------
 611     CONTINUE
 
 C --------------------------------------------------------------------
-       ELSE IF(COMM.EQ.'P')THEN
+      ELSE IF(COMM.EQ.'P')THEN
         CALL PROMPT('Enter IDL filename : ')
         READ(*,10)IDFILE
         CALL FILE(IDFILE,IDFILE,'idl')

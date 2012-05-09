@@ -55,7 +55,7 @@ C       print*,taus(j),tauray(j),eps(j),(lfrac(k,j),k=1,ncont)
        taur = tauray(ilay)
 C       print*,ilay,omega,taus(ilay),tauscat,taur
 C      Calling codes now already include Rayleigh optical depth in
-C      tauscat if IRAY=1, so we need to subtract it first here
+C      tauscat if IRAY>1, so we need to subtract it first here
        tauscat=tauscat-taur
 
        sfrac=0.0

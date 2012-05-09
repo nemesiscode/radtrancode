@@ -222,7 +222,7 @@ C        Transfer matrices to those for each scattering particle
 
 
 
-       IF(IRAY.EQ.1)THEN
+       IF(IRAY.GT.0)THEN
 C       Rayleigh scattering included so we need to calculate
 C       the Rayleigh scattering phase function
 
@@ -301,7 +301,7 @@ C        ENDIF
         XF=FCOVER(L)
         if(idump.ne.0)print*,'L, FCOVER',L,XF
 
-        IF(IRAY.EQ.1)THEN
+        IF(IRAY.GT.0)THEN
 		TAUR = TAURAY(L)
 		TAUSCAT=TAUSCAT+TAUR
 		TAUT=TAUT+TAUR
@@ -400,7 +400,7 @@ C          'cloudy' areas only
         ENDDO
 
 
-        IF(IRAY.EQ.1)THEN
+        IF(IRAY.GT.0)THEN
 C         Add Rayleigh scattering from air itself to both
 C         'cloudy' and 'clear' areas
            DO JP = 1,NMU

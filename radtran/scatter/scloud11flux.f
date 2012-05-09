@@ -202,7 +202,7 @@ C        Transfer matrices to those for each scattering particle
 900     CONTINUE
        ENDDO
 
-       IF(IRAY.EQ.1)THEN
+       IF(IRAY.GT.0)THEN
 C       Rayleigh scattering included so we need to calculate
 C       the Rayleigh scattering phase function
 
@@ -250,7 +250,7 @@ C
         TAUR = TAURAY(L)
 
 C       Calling codes now already include Rayleigh optical depth in
-C       tauscat if IRAY=1, so we need to subtract it first here
+C       tauscat if IRAY>1, so we need to subtract it first here
         TAUSCAT = TAUSCAT-TAUR
 
         if(idump.gt.0)then

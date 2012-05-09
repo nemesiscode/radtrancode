@@ -133,6 +133,7 @@ C--------------------------------------------------------------------------
       end do
       endif
 
+
       LTOT = NLAY     ! Set internal number of layers
       LT1 = LTOT
 
@@ -189,7 +190,6 @@ C     Precalculate phase function arrays if new wavelength
         if(idump.gt.0)print*,'j1,vwave',j1,vwave
         CALL READ_HG(VWAVE,J1,NCONT,F,G1,G2)
         if(idump.gt.0)print*,'f,g1,g2 = ',f,g1,g2
-        
 
         ISCAT =2
         NCONS = 3
@@ -217,7 +217,7 @@ C        Transfer matrices to those for each scattering particle
 
 
 
-       IF(IRAY.EQ.1)THEN
+       IF(IRAY.GT.0)THEN
 C       Rayleigh scattering included so we need to calculate
 C       the Rayleigh scattering phase function
 
@@ -275,7 +275,7 @@ C
 
 C        print*,'scloud',L,tauscat,taur,tauscat-taur
 C       Calling codes now already include Rayleigh optical depth in 
-C       tauscat if IRAY=1, so we need to subtract it first here
+C       tauscat if IRAY>1, so we need to subtract it first here
         TAUSCAT = TAUSCAT-TAUR
 
         if(idump.gt.0)then

@@ -59,6 +59,7 @@ C
          SUM= 0
          DO I=1,NMU
            SUM=SUM+(PPLPL(I,J)+PPLMI(I,J))*CC(I,I)
+C           print*,cc(i,i),pplpl(i,j),pplmi(i,j)
          END DO
          DSUM = ABS(SUM*2.0*PI - 1.0)
          IF(DSUM.GT.0.02)THEN

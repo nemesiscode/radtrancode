@@ -70,7 +70,7 @@ C     General variables ...
       REAL DV,LINECONTRIB,VV,X,FNH3,FH2
       INTEGER I,J,K,L,LINE,IBIN,CURBIN,IGAS,IB,IBS(2),IBX
       INTEGER IFCONT,F1,L1
-      REAL DPEXP,ABSCO,Y,CONVAL,VTMP
+      REAL CONVAL,VTMP
        
 
 
@@ -83,7 +83,9 @@ C******************************** CODE *********************************
       IFCONT = 0
       XK=0.0
 
+
       DO 12 IBIN=CURBIN-1,CURBIN+1
+
        DO 200 IBX=1,2
 
         IB=IBS(IBX)
@@ -99,7 +101,6 @@ C        Pass back flag
         ENDIF
 
         IF(F1.GT.0) THEN
-        
          DO 13 LINE=F1,L1
 
           IGAS=IDLIN(IB,LINE)
@@ -111,7 +112,6 @@ C         Ignore lines more than MAXDV widths away
 
             FNH3=-1.0
             FH2=-1.0 
-C            print*,vv,line,vlin(ib,line)       
             CONVAL = LINECONTRIB(IPROC(IGAS),IDGAS(IGAS),VV,
      1       TCORDW(LAYER,IGAS),TCORS1(LAYER,IGAS),TCORS2(LAYER),
      2       PRESS(LAYER),TEMP(LAYER),FRAC(LAYER,IGAS),VLIN(IB,LINE),

@@ -110,20 +110,6 @@ C-----------------------------------------------------------------------
 
         npath1= npath
 
-        print*,'lblrtf_wave called'
-        print*,X0,X1,WING1,VREL1,MAXDV
-        print*,opfile1
-        print*,Dist,INormal, IRay,DELV1, FWHM1
-        print*,ispace,npath1,nconv
-        do i=1,nconv
-         print*,vconv(i)
-        enddo
-        print*,itype1,nem
-        do i=1,nem
-         print*,vem(i),emissivity(i)
-        enddo
-        print*,tsurf
-
 
 C-----------------------------------------------------------------------
 C
@@ -260,6 +246,7 @@ C      Read in 2 arrays of lines
      1 NGAS,IDGAS,ISOGAS,VBOT,WING,NLINR,VLIN,SLIN,ALIN,ELIN,IDLIN,
      2 SBLIN,PSHIFT,DOUBV,TDW,TDWS,LLQ,NXTREC,FSTLIN,LSTLIN)
 
+
        NLINE(IB)=NLINR
        IBD(IB)=-1
 
@@ -271,7 +258,6 @@ C      Read in 2 arrays of lines
      1 NGAS,IDGAS,ISOGAS,VBOT,WING,NLINR,VLIN,SLIN,ALIN,ELIN,IDLIN,
      2 SBLIN,PSHIFT,DOUBV,TDW,TDWS,LLQ,NXTREC,FSTLIN,LSTLIN)
 
-       
        NLINE(IB)=NLINR
        IBD(IB)=-1
 

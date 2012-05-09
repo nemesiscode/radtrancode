@@ -50,6 +50,8 @@ C     ***********************************************************************
       REAL PKNEE,HKNEE,XDEEP,XFSH,PARAH2(MAXPRO),XH,XKEEP,X2(MAXPRO)
       REAL OD(MAXPRO),ND(MAXPRO),Q(MAXPRO),RHO,F,XOD,DQDX(MAXPRO)
       REAL DNDH(MAXPRO),DQDH(MAXPRO),FCLOUD(MAXPRO)
+      REAL XVMR(MAXGAS)
+      INTEGER ISCALE(MAXGAS)
       REAL XRH,XCDEEP,P1,PS,PS1,PH,Y1,Y2,YY1,YY2
       INTEGER ICLOUD(MAXCON,MAXPRO),NCONT1,JSPEC,IFLA,I1
       INTEGER NPRO,NPRO1,NVMR,JZERO,IV,IP,IVAR,JCONT,JVMR
@@ -103,7 +105,8 @@ C      scale heights
        LATITUDE = XLAT
 
        DO 20 I=1,NVMR
-       READ(1,*)IDGAS(I),ISOGAS(I)
+        READ(1,*)IDGAS(I),ISOGAS(I)
+        ISCALE(I)=1
 20     CONTINUE
 
 C      reading the first block of profiles
@@ -319,6 +322,9 @@ C        Must be gas v.m.r., find which one
           STOP
          ENDIF
          print*,'Gas : ',IDGAS(JVMR),ISOGAS(JVMR)
+C        Set ISCALE=0 for this gas to prevent vmr being scaled to give a 
+C        total sum or vmrs=1 for AMFORM=1 format profile
+         ISCALE(JVMR)=0
          DO I=1,NPRO
           XREF(I)=VMR(I,JVMR)
          ENDDO
@@ -1142,6 +1148,25 @@ C        New section for combined cloud/gas profile
        NXTEMP = NXTEMP+NP
 
 1000  CONTINUE
+
+
+C     Now make sure the resulting VMRs add up to 1.0 for an
+C     AMFORM=1 profile
+      IF(AMFORM.EQ.1)THEN
+       DO 113 I=1,NPRO
+        DO 114 J=1,NVMR
+         XVMR(J)=VMR(I,J)
+114     CONTINUE
+
+        CALL ADJUSTVMR(NVMR,XVMR,ISCALE)
+
+        DO 115 J=1,NVMR
+         VMR(I,J) = XVMR(J)
+115     CONTINUE
+       
+113    CONTINUE
+
+      ENDIF
 
 C     ********  Modify profile with hydrostatic equation ********
       IF(JHYDRO.EQ.0)THEN

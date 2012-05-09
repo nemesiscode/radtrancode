@@ -38,7 +38,8 @@ C     ***********************************************************************
       REAL H(MAXPRO),P(MAXPRO),T(MAXPRO),VMR(MAXPRO,MAXGAS)
       REAL CONT(MAXCON,MAXPRO),X,XREF(MAXPRO),X1(MAXPRO)
       REAL PKNEE,HKNEE,XDEEP,XFSH,PARAH2(MAXPRO),XH,XKEEP
-      REAL FCLOUD(MAXPRO)
+      REAL FCLOUD(MAXPRO),XVMR(MAXGAS)
+      INTEGER ISCALE(MAXGAS)
       INTEGER ICLOUD(MAXCON,MAXPRO),ISCAT,NCONT1
       INTEGER NPRO,NPRO1,NVMR,JZERO,IV,IP,IVAR,JCONT,JVMR
       INTEGER IDGAS(MAXGAS),ISOGAS(MAXGAS),IPAR,IVMR,NP
@@ -84,6 +85,7 @@ C     First skip header
 
        DO 20 I=1,NVMR
        READ(1,*)IDGAS(I),ISOGAS(I)
+       ISCALE(I)=1
 20     CONTINUE
 
 C      reading the first block of profiles
@@ -228,15 +230,6 @@ C     First skip header
 21    CONTINUE
       CLOSE(13)
 
-c      OPEN(13,FILE='/home/jupiter/plan2/oxpln5/radtran/source/'//
-c     1 'release2/data/SVP.DAT',
-c     1 STATUS='OLD')
-c      READ(13,*)NGAS
-c      DO 21 I=1,NGAS
-c       READ(13,*)(GASDATA(I,J),J=1,5)
-c21    CONTINUE
-c      CLOSE(13)
-
       NXTEMP=0
       DO 1000 IVAR = 1,NVAR
 
@@ -299,6 +292,10 @@ C        Must hold gas v.m.r. - find which one.
           STOP
          ENDIF
 C         print*,'Gas : ',IDGAS(JVMR),ISOGAS(JVMR)
+C        Set ISCALE=0 for this gas to prevent vmr being scaled to give a
+C        total sum or vmrs=1 for AMFORM=1 format profile
+         ISCALE(JVMR)=0
+
          DO I=1,NPRO
           XREF(I)=VMR(I,JVMR)
          ENDDO
@@ -680,6 +677,25 @@ C           print*,jcont,I,X1(I)
        NXTEMP = NXTEMP+NP
 
 1000  CONTINUE
+
+C     Now make sure the resulting VMRs add up to 1.0 for an
+C     AMFORM=1 profile
+      IF(AMFORM.EQ.1)THEN
+       DO 113 I=1,NPRO
+        DO 114 J=1,NVMR
+         XVMR(J)=VMR(I,J)
+114     CONTINUE
+
+        CALL ADJUSTVMR(NVMR,XVMR,ISCALE)  
+
+        DO 115 J=1,NVMR
+         VMR(I,J) = XVMR(J)
+115     CONTINUE
+
+113    CONTINUE
+
+      ENDIF
+
 
 C     ********  Modify profile with hydrostatic equation ********
       IF(JHYDRO.EQ.0)THEN

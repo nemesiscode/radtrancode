@@ -40,20 +40,20 @@ C     Skip past header :
 30    READ(DBLUN,*,END=100)
       READ(DBLUN,*,END=100)I
       READ(DBLUN,10)GASNAM(I)
-      WRITE(*,10)GASNAM(I)
+C      WRITE(*,10)GASNAM(I)
 10    FORMAT(A)
       READ(DBLUN,*)DBNISO(I)
-      WRITE(*,*)DBNISO(I)
+C      WRITE(*,*)DBNISO(I)
       DO 20 J=1,DBNISO(I)
       READ(DBLUN,*)K,RELABU(K,I),MASSNO(K,I)
       READ(DBLUN,*)DBQTA(K,I),DBQTB(K,I),DBQTC(K,I),DBQTD(K,I)
-      WRITE(*,*)K,RELABU(K,I),MASSNO(K,I)
-      WRITE(*,*)DBQTA(K,I),DBQTB(K,I),DBQTC(K,I),DBQTD(K,I)
+C      WRITE(*,*)K,RELABU(K,I),MASSNO(K,I)
+C      WRITE(*,*)DBQTA(K,I),DBQTB(K,I),DBQTC(K,I),DBQTD(K,I)
 20    CONTINUE
       L=L+1
       GOTO 30
 100   CONTINUE
-      WRITE(*,40)L
+C      WRITE(*,40)L
 40    FORMAT(I3,' gases recognised by software')
       CLOSE(DBLUN)
       RETURN

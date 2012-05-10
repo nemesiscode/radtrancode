@@ -51,7 +51,6 @@ C     ***********************************************************************
       REAL PKNEE,HKNEE,XDEEP,XFSH,PARAH2(MAXPRO),XH,XKEEP,X2(MAXPRO)
       REAL OD(MAXPRO),ND(MAXPRO),Q(MAXPRO),RHO,F,XOD,DQDX(MAXPRO)
       REAL DNDH(MAXPRO),DQDH(MAXPRO),FCLOUD(MAXPRO)
-      REAL XVMR(MAXGAS)
       INTEGER ISCALE(MAXGAS)
       REAL XRH,XCDEEP,P1,PS,PS1,PH,Y1,Y2,YY1,YY2
       INTEGER ICLOUD(MAXCON,MAXPRO),NCONT1,JSPEC,IFLA,I1
@@ -1154,17 +1153,7 @@ C        New section for combined cloud/gas profile
 C     Now make sure the resulting VMRs add up to 1.0 for an
 C     AMFORM=1 profile
       IF(AMFORM.EQ.1)THEN
-       DO 113 I=1,NPRO
-        DO 114 J=1,NVMR
-         XVMR(J)=VMR(I,J)
-114     CONTINUE
-
-        CALL ADJUSTVMR(NVMR,XVMR,ISCALE)
-
-        DO 115 J=1,NVMR
-         VMR(I,J) = XVMR(J)
-115     CONTINUE
-       
+        CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE)
 113    CONTINUE
 
       ENDIF

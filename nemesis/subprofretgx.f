@@ -39,7 +39,7 @@ C     ***********************************************************************
       REAL H(MAXPRO),P(MAXPRO),T(MAXPRO),VMR(MAXPRO,MAXGAS)
       REAL CONT(MAXCON,MAXPRO),X,XREF(MAXPRO),X1(MAXPRO)
       REAL PKNEE,HKNEE,XDEEP,XFSH,PARAH2(MAXPRO),XH,XKEEP
-      REAL FCLOUD(MAXPRO),XVMR(MAXGAS)
+      REAL FCLOUD(MAXPRO)
       INTEGER ISCALE(MAXGAS)
       INTEGER ICLOUD(MAXCON,MAXPRO),ISCAT,NCONT1
       INTEGER NPRO,NPRO1,NVMR,JZERO,IV,IP,IVAR,JCONT,JVMR
@@ -682,19 +682,7 @@ C           print*,jcont,I,X1(I)
 C     Now make sure the resulting VMRs add up to 1.0 for an
 C     AMFORM=1 profile
       IF(AMFORM.EQ.1)THEN
-       DO 113 I=1,NPRO
-        DO 114 J=1,NVMR
-         XVMR(J)=VMR(I,J)
-114     CONTINUE
-
-        CALL ADJUSTVMR(NVMR,XVMR,ISCALE)  
-
-        DO 115 J=1,NVMR
-         VMR(I,J) = XVMR(J)
-115     CONTINUE
-
-113    CONTINUE
-
+        CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE)  
       ENDIF
 
 

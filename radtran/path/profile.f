@@ -30,7 +30,7 @@ C     MAXPRO is the maximum number of vertical points which can be stored.
 C     MAXVMR is the maximum number of vertical mixing ratio profiles.
       REAL H(MAXPRO),P(MAXPRO),T(MAXPRO),VMR(MAXPRO,MAXVMR),RHUM
       REAL H1(MAXPRO),P1(MAXPRO),T1(MAXPRO),VMR1(MAXPRO,MAXVMR)
-      REAL XVMR(MAXVMR),PI,XSUM,HTAN,PTAN,XP1,XP2,WCOL,PX,TX,DELH
+      REAL PI,XSUM,HTAN,PTAN,XP1,XP2,WCOL,PX,TX,DELH
       REAL XPR
       INTEGER ISCALE(MAXVMR),IPLANET,JSWITCH,I1,IVMR,JW
       REAL XV(MAXPRO),XXMASS(MAXPRO),CALCMOLWT,RATIO(MAXVMR)
@@ -124,7 +124,8 @@ C      First skip header
        ENDIF
        PNAME = SNAME(IPLANET)
        DO 20 I=1,NVMR
-       READ(1,*)ID(I),ISO(I)
+         READ(1,*)ID(I),ISO(I)
+         IF(AMFORM.EQ.1)ISCALE(I)=1
 20     CONTINUE
 C      reading the first block of profiles
        READ(1,*)
@@ -323,6 +324,7 @@ C         heights
 	  CALL PROMPT('enter gas and isotope identifier')
 	  NVMR=NVMR+1
 	  READ(*,*)ID(NVMR),ISO(NVMR)
+          IF(AMFORM.EQ.1)ISCALE(NVMR)=1
           CONMIX=ASKYN('Assume constant mixing ratio')
           IF(CONMIX)THEN
  	   CALL PROMPT('enter volume mixing ratio')
@@ -388,6 +390,7 @@ C --------------------------------------------------------------------
 	    DO 112 J=K+1,NVMR
 	    ID(J-1)=ID(J)
 	    ISO(J-1)=ISO(J)
+            IF(AMFORM.EQ.1)ISCALE(J-1)=ISCALE(J)
 	    DO 117 I=1,NPRO
 	    VMR(I,J-1)=VMR(I,J)
 117         CONTINUE
@@ -398,6 +401,8 @@ C --------------------------------------------------------------------
 
 C --------------------------------------------------------------------
       ELSE IF(COMM.EQ.'D')THEN
+C       Force a vmr curve to follow SVP curve
+
 	CALL PROMPT('which profile?')
         READ(*,*)K
         IF(K.GT.NVMR.OR.K.LT.1)THEN
@@ -407,6 +412,8 @@ C --------------------------------------------------------------------
 	  WRITE(*,111)K,ID(K),ISO(K)
 	  Q=ASKYN('is this the one you want to force?')
 	  IF(Q)THEN
+C          Fix this gas to not scale if we adjust the vmrs later.
+           ISCALE(K)=0
 	   WRITE(*,401)
 	   WRITE(*,402)
 	   WRITE(*,403)
@@ -440,24 +447,22 @@ C --------------------------------------------------------------------
            END IF
 404        CONTINUE
 	  END IF
+
+          IF(AMFORM.EQ.1)THEN
+
+C           Scale the other gases to add up to 1.0 for AMFORM=1 profile
+            ISCALE(K)=0
+            CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE)
+
+          ENDIF
+
         END IF
 
 C --------------------------------------------------------------------
       ELSE IF(COMM.EQ.'E')THEN
 C       make the vmrs at each level add up to 1.0
-         DO 1711 J=1,NPRO
-          XSUM=0.0
-          DO 1712 IVMR=1,NVMR
-           ISCALE(IVMR)=1
-           XVMR(IVMR)=VMR(J,IVMR)
-1712      CONTINUE
 
-          CALL ADJUSTVMR(NVMR,XVMR,ISCALE)
-          DO 1812 IVMR=1,NVMR
-           VMR(J,IVMR)=XVMR(IVMR)
-           XSUM=XSUM+VMR(J,IVMR)
-1812      CONTINUE
-1711     CONTINUE
+        CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE)
 
 C --------------------------------------------------------------------
       ELSE IF(COMM.EQ.'F')THEN
@@ -540,6 +545,10 @@ C --------------------------------------------------------------------
          VMR(I,NCONV)=VMR(I,NCONV)*VMRCONV
 610     CONTINUE
 
+        IF(AMFORM.EQ.1)THEN
+         ISCALE(NCONV)=0
+         CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE)
+        ENDIF
 C --------------------------------------------------------------------
       ELSE IF(COMM.EQ.'L')THEN
         CALL PROMPT('Enter temperature offset : ')
@@ -675,6 +684,12 @@ C        Make sure water is condensed
          DO I=1,NPRO
           VMR(I,JW)=VMR(I,JW)*XPR/WCOL
          ENDDO
+
+         IF(AMFORM.EQ.1)THEN
+          ISCALE(JW)=0
+          CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE)
+         ENDIF
+
         ENDIF
       ELSE IF(COMM.EQ.'Q')THEN
          STOP

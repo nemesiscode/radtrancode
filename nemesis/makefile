@@ -123,48 +123,51 @@ Nemesis: nemesis.f $(LIBRARY)
 
 NemesisPT: nemesisPT.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/NemesisPT nemesisPT.f $(LIBRARY) \
-	$(LIB)/cirsradg.a $(LIB)/cirsrad.a $(LIB)/radtran.a \
-	$(LIB)/scatter.a  $(LIB)/path.a \
-	$(LIB)/matrices.a $(LIB)/rtm_util.a $(FRECIPES) 
+	$(LIB)/cirsradg.a $(LIB)/cirsrad.a \
+	$(LIB)/scatter.a  $(LIB)/path.a $(LIB)/radtran.a \
+	$(LIB)/matrices.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
+	$(FRECIPES) 
 
 Nemesisdisc: nemesisdisc.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Nemesisdisc nemesisdisc.f $(LIBRARY) \
-	$(LIB)/cirsradg.a $(LIB)/cirsrad.a $(LIB)/radtran.a \
-	$(LIB)/scatter.a  $(LIB)/path.a \
-	$(LIB)/matrices.a $(LIB)/rtm_util.a $(FRECIPES)
+	$(LIB)/cirsradg.a $(LIB)/cirsrad.a \
+	$(LIB)/scatter.a  $(LIB)/path.a $(LIB)/radtran.a \
+	$(LIB)/matrices.a $(LIB)/spec_data.a \
+	$(LIB)/rtm_util.a $(FRECIPES)
 
 NemesisL: nemesisL.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/NemesisL nemesisL.f $(LIBRARY) \
-	$(LIB)/cirsradg.a $(LIB)/cirsrad.a $(LIB)/radtran.a \
-	$(LIB)/scatter.a $(LIB)/path.a \
-	$(LIB)/matrices.a $(LIB)/rtm_util.a $(FRECIPES) 
+	$(LIB)/cirsradg.a $(LIB)/cirsrad.a \
+	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a \
+	$(LIB)/radtran.a $(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) 
 
 NemesisMCS: nemesisMCS.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/NemesisMCS nemesisMCS.f $(LIBRARY) \
-	$(LIB)/cirsradg.a $(LIB)/cirsrad.a $(LIB)/radtran.a \
-	$(LIB)/scatter.a $(LIB)/path.a \
-	$(LIB)/matrices.a $(LIB)/rtm_util.a $(LIB)/lgregfov.a \
-	$(FRECIPES) 
+	$(LIB)/cirsradg.a $(LIB)/cirsrad.a \
+	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a \
+	$(LIB)/radtran.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
+	$(LIB)/lgregfov.a $(FRECIPES) 
 
 NemesisMC: nemesisMC.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/NemesisMC nemesisMC.f $(LIBRARY) \
-	$(LIB)/cirsradg.a $(LIB)/cirsrad.a $(LIB)/radtran.a \
+	$(LIB)/cirsradg.a $(LIB)/cirsrad.a \
 	$(LIB)/monteck.a \
-	$(LIB)/scatter.a $(LIB)/path.a \
-	$(LIB)/matrices.a $(LIB)/rtm_util.a \
+	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/radtran.a \
+	$(LIB)/matrices.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
 	$(FRECIPES) 
 
 Generatespx: generatespx.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Generatespx generatespx.f $(LIBRARY) \
-	$(LIB)/cirsradg.a $(LIB)/cirsrad.a $(LIB)/radtran.a \
-	$(LIB)/scatter.a $(LIB)/path.a \
-	$(LIB)/matrices.a $(LIB)/rtm_util.a $(FRECIPES)
+	$(LIB)/cirsradg.a $(LIB)/cirsrad.a \
+	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/radtran.a \
+	$(LIB)/matrices.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
+	$(FRECIPES)
 
 GenerateMCSspx: generateMCSspx.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/GenerateMCSspx generateMCSspx.f \
 	$(LIBRARY) \
-	$(LIB)/cirsradg.a $(LIB)/cirsrad.a $(LIB)/radtran.a \
-	$(LIB)/scatter.a $(LIB)/path.a \
-	$(LIB)/matrices.a $(LIB)/rtm_util.a $(LIB)/lgregfov.a \
-	$(FRECIPES)
+	$(LIB)/cirsradg.a $(LIB)/cirsrad.a \
+	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/radtran.a \
+	$(LIB)/matrices.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
+	$(LIB)/lgregfov.a $(FRECIPES)
 

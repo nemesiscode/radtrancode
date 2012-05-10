@@ -49,17 +49,18 @@ C     ************************************************************************
       include '../radtran/includes/arrdef.f'
       include 'arraylen.f'
 
-      integer nconv,lin,ispace,iscat
+      integer nconv,lin,ispace,iscat,xflag
       real xlat,fwhm,xlatx,hcorrx,tsurf
       integer nlayer,laytyp,nx,nxx,ncont,jpre
       integer layint,jsurfx,jalbx,jtanx,jprex,nprox
       real layht
       real vconv(mconv)
-      integer flagh2p
+      integer flagh2p,jpara
       double precision mu(maxmu),wtmu(maxmu)
-      real xn(mx),xnx(mx),stx(mx,mx)
+      real xn(mx),xnx(mx),stx(mx,mx),xdnu
       real xmap(maxv,maxgas+2+maxcon,maxpro)
-      character*100 runname
+      real xmapx(maxv,maxgas+2+maxcon,maxpro)
+      character*100 runname,aname
 
       integer nvar,varident(mvar,3),i,j,ivar,ivarx
       real varparam(mvar,mparam)
@@ -68,8 +69,26 @@ C     ************************************************************************
       logical gasgiant
 
 
-      call subprofretg(runname,ispace,iscat,gasgiant,xlat,nvar,
-     1  varident,varparam,nx,xn,jpre,ncont,flagh2p,xmap)
+      print*,'gsetradL, lin = ',lin
+1     format(a)
+C     Look to see if the CIA file refined has variable para-H2 or not.
+      call file(runname,runname,'cia')
+
+      open(12,FILE=runname,STATUS='OLD')   
+       read(12,1) aname
+       read(12,*) xdnu
+       read(12,*) jpara
+      close(12)
+
+      flagh2p=0
+      if(jpara.ne.0)then
+       flagh2p=1
+      endif
+
+      xflag=0
+      call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
+     1  nvar,varident,varparam,nx,xn,jpre,ncont,flagh2p,xmap)
+
 
       hcorrx=0.0
 
@@ -88,10 +107,10 @@ C     ************************************************************************
         print*,'varidentx',(varidentx(i,j),j=1,3)
         print*,'varparamx',(varparamx(i,j),j=1,mparam)
        enddo
-       print*,'gsetradL: Calling subprofretgx'
 
-       call subprofretgx(runname,ispace,iscat,gasgiant,nvarx,varidentx,
-     1  varparamx,nxx,xnx,jprex,flagh2p)
+       xflag=1
+       call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
+     1  nvarx,varidentx,varparamx,nxx,xnx,jprex,ncont,flagh2p,xmapx)
 
        do ivarx=1,nvarx
         if(varidentx(ivarx,1).eq.777)hcorrx=xnx(jtanx)

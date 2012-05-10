@@ -44,7 +44,7 @@ C     ************************************************************************
       include '../radtran/includes/arrdef.f'
       include 'arraylen.f'
 
-      integer nconv,lin,ispace,iscat
+      integer nconv,lin,ispace,iscat,xflag
       real xlat,fwhm,xlatx,hcorrx,tsurf,radius
       integer nlayer,laytyp,nx,nxx,ncont,jpara
       integer layint,jsurfx,jalbx,jtanx,jprex,jradx,nprox
@@ -54,6 +54,7 @@ C     ************************************************************************
       double precision mu(maxmu),wtmu(maxmu)
       real xn(mx),xnx(mx),stx(mx,mx)
       real xmap(maxv,maxgas+2+maxcon,maxpro)
+      real xmapx(maxv,maxgas+2+maxcon,maxpro)
       character*100 runname,aname
 
       integer nvar,varident(mvar,3),i,j,ivar,ivarx
@@ -80,8 +81,9 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
        flagh2p=1
       endif
 
-      call subprofretg(runname,ispace,iscat,gasgiant,xlat,nvar,    
-     1  varident,varparam,nx,xn,jpre,ncont,flagh2p,xmap)
+      xflag=0
+      call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
+     1  nvar,varident,varparam,nx,xn,jpre,ncont,flagh2p,xmap)
 
       hcorrx=0.0
 
@@ -100,10 +102,11 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
         print*,'varidentx',(varidentx(i,j),j=1,3)
         print*,'varparamx',(varparamx(i,j),j=1,mparam)
        enddo
-       print*,'gsetradPT: Calling subprofretgx'
 
-       call subprofretgx(runname,ispace,iscat,gasgiant,nvarx,
-     1  varidentx,varparamx,nxx,xnx,jprex,flagh2p)
+       xflag=1
+       call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
+     1  nvarx,varidentx,varparamx,nxx,xnx,jprex,ncont,flagh2p,xmapx)
+
 
        do ivarx=1,nvarx
         if(varidentx(ivarx,1).eq.777)hcorrx=xnx(jtanx)

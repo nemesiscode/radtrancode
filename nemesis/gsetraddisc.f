@@ -70,7 +70,7 @@ C     ************************************************************************
       include '../radtran/includes/arrdef.f'
       include 'arraylen.f'
 
-      integer nconv,lin,ispace
+      integer nconv,lin,ispace,xflag
       real xlat,fwhm,xlatx,tsurf
       integer nlayer,laytyp,iscat,nx,nxx,ncont
       integer layint
@@ -82,6 +82,7 @@ C     ************************************************************************
       real dist,galb,xn(mx),xnx(mx),aphi,emiss_ang,sol_ang
       real stx(mx,mx),xdnu
       real xmap(maxv,maxgas+2+maxcon,maxpro)
+      real xmapx(maxv,maxgas+2+maxcon,maxpro)
       character*100 runname,aname
 
       integer nvar,ivar,varident(mvar,3),i,j,nalb,nalb1
@@ -107,9 +108,10 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
       if(jpara.ne.0)then
        flagh2p=1
       endif
-
-      call subprofretg(runname,ispace,iscat,gasgiant,xlat,nvar,
-     1  varident,varparam,nx,xn,jpre,ncont,flagh2p,xmap)
+ 
+      xflag=0
+      call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
+     1  nvar,varident,varparam,nx,xn,jpre,ncont,flagh2p,xmap)
 
 
       if(lin.eq.1.or.lin.eq.3)then
@@ -120,8 +122,9 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
        call stripvar(nvarx,varidentx,varparamx,nprox,nvar,varident,
      1  nxx,xnx)
 
-       call subprofretgx(runname,ispace,iscat,gasgiant,nvarx,
-     1  varidentx,varparamx,nxx,xnx,jprex,flagh2p)
+       xflag=1
+       call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
+     1  nvarx,varidentx,varparamx,nxx,xnx,jprex,ncont,flagh2p,xmapx)
 
        do ivarx = 1,nvarx
         if(varident(ivarx,1).eq.888)then

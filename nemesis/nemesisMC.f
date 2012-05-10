@@ -80,6 +80,9 @@ C     *******************************************************
 C     ****************   CODE *******************************
 C     *******************************************************
 
+C     Read in reference gas information data
+      CALL RESERVEGAS
+
 C     ----------- Scattering phase function initialisation --------------
       xwave(1)=-1                       ! Reset to force read of hgphase*
 C                                         files.

@@ -1,11 +1,16 @@
-      SUBROUTINE SUBPROFRETG(IPFILE,ISPACE,ISCAT,GASGIANT,XLAT,NVAR,
-     1 VARIDENT,VARPARAM,NX,XN,JPRE,NCONT,FLAGH2P,XMAP)
+      SUBROUTINE SUBPROFRETG(XFLAG,IPFILE,ISPACE,ISCAT,GASGIANT,XLAT,
+     1 NVAR,VARIDENT,VARPARAM,NX,XN,JPRE,NCONT,FLAGH2P,XMAP)
 C     $Id:
 C     ***********************************************************************
 C     Subroutine to modify an existing ipfile.ref T/P/vmr profile and 
 C     aerosol.ref cloud density file according to the contents of the state
 C     vector XN. New profiles are written to ipfile.prf and aerosol.prf 
 C     files respectively.
+C
+C     If XFLAG=1, then it is assumed that the .ref files have already been
+C     updated to .prf files for the variables currently being retrieved,
+C     but need to be further updated for variables retrieved in a previous
+C     Nemesis run, i.e. LIN=1 or 3
 C
 C     Code also warns if vapour pressures exceeding SVP but does not
 C     reset vmrs since the temperatures could also be in error.
@@ -18,6 +23,8 @@ C     derivatives calculated by CIRSRADG with the elements of the state
 C     vector  
 C     
 C     Input variables
+C	XFLAG	INTEGER		Updates .ref file if XFLAG=0, 
+C				updates .prf file if XFLAG=1.
 C	IPFILE	CHARACTER*100	Root run name
 C	ISPACE	INTEGER		0=cm-1, 1=microns
 C	ISCAT	INTEGER		Scattering indicator
@@ -29,6 +36,8 @@ C					scheme
 C	VARPARAM(MVAR,MPARAM) REAL	Additional parameterisation
 C	NX	INTEGER		Number if elements in state vector
 C	XN(MX)	REAL		State vector
+C	JPRE	INTEGER		Level of tanget pressure for limb pressure 
+C				retrieval.
 C	FLAGH2P INTEGER		Set to 1 if para-H2 profile is variable
 C     Output variables
 C	NCONT	INTEGER		Number of cloud particle types
@@ -43,6 +52,7 @@ C
 C     ***********************************************************************
       IMPLICIT NONE
       INCLUDE '../radtran/includes/arrdef.f'
+      INCLUDE '../radtran/includes/constdef.f'
       INCLUDE 'arraylen.f'
 
       REAL XN(MX),DPEXP,DELH,XFAC,DXFAC,XTMP,SUM,PMIN
@@ -51,18 +61,16 @@ C     ***********************************************************************
       REAL PKNEE,HKNEE,XDEEP,XFSH,PARAH2(MAXPRO),XH,XKEEP,X2(MAXPRO)
       REAL OD(MAXPRO),ND(MAXPRO),Q(MAXPRO),RHO,F,XOD,DQDX(MAXPRO)
       REAL DNDH(MAXPRO),DQDH(MAXPRO),FCLOUD(MAXPRO)
-      INTEGER ISCALE(MAXGAS)
+      INTEGER ISCALE(MAXGAS),XFLAG
       REAL XRH,XCDEEP,P1,PS,PS1,PH,Y1,Y2,YY1,YY2
       INTEGER ICLOUD(MAXCON,MAXPRO),NCONT1,JSPEC,IFLA,I1
       INTEGER NPRO,NPRO1,NVMR,JZERO,IV,IP,IVAR,JCONT,JVMR
       INTEGER IDGAS(MAXGAS),ISOGAS(MAXGAS),IPAR,JPAR,IVMR,NP
       INTEGER IDAT,NCONT,FLAGH2P,JFSH,JPRE,JHYDRO,ISCAT,ICOND
-      REAL HTAN,PTAN
-      REAL G,R
-      PARAMETER (R=8.31)
-      CHARACTER*8 PNAME   
+      REAL HTAN,PTAN,R
+      REAL GASDATA(20,5),XVMR(MAXGAS),XMOLWT,XXMOLWT(MAXPRO)
+      REAL CALCMOLWT
       INTEGER JSWITCH
-      REAL GASDATA(20,5)
       CHARACTER*100 IPFILE,BUFFER
       CHARACTER*100 ANAME
       INTEGER I,J,K,N,AMFORM,IPLANET,NGAS,IGAS,NX,NXTEMP,IX,ISPACE
@@ -81,9 +89,20 @@ C     First read in reference ATMOSPHERIC profile
 
 10    FORMAT(A)
 
+C     RGAS now read in from constdef.f, so set R accordingly and in correct
+C     units
+      R=RGAS*0.001
+
       print*,'Starting subprofretg'
 
-      CALL FILE(IPFILE,IPFILE,'ref')
+C     If XFLAG = 0, then we're generating a .prf file from the .ref file
+C     If XFLAG = 1, then we further updating the .prf file with previously
+C                   retrieved parameters (LIN=1 or 3)
+      IF(XFLAG.EQ.0)THEN
+       CALL FILE(IPFILE,IPFILE,'ref')
+      ELSE
+       CALL FILE(IPFILE,IPFILE,'prf')
+      ENDIF
       OPEN(UNIT=1,FILE=IPFILE,STATUS='OLD')
 C     First skip header
 54     READ(1,1)BUFFER
@@ -128,6 +147,19 @@ C       profiles up to VMR(?,K) to be read from this block
         N=K
         GOTO 33
        END IF
+
+C      Make sure that vmrs add up to 1 if AMFORM=1
+       IF(AMFORM.EQ.1)THEN
+        CALL ADJUSTVMR(NPRO,NVMR,VMR,SCALE)
+
+        DO 301 I=1,NPRO
+         DO K=1,NGAS
+          XVMR(K)=VMR(I,K)
+         ENDDO
+         XXMOLWT(I)=CALCMOLWT(NGAS,XVMR,IDGAS,ISOGAS)
+301     CONTINUE
+       ENDIF
+
       CLOSE(UNIT=1)
 
 C     all processing below assumes that heights are in ascending order
@@ -178,7 +210,11 @@ C **************** Modify profile via hydrostatic equation ********
       ENDIF
 
 C     Read in reference AEROSOL profile
-      OPEN(UNIT=1,FILE='aerosol.ref',STATUS='OLD')
+      IF(XFLAG.EQ.0)THEN
+       OPEN(UNIT=1,FILE='aerosol.ref',STATUS='OLD')
+      ELSE
+       OPEN(UNIT=1,FILE='aerosol.prf',STATUS='OLD')
+      ENDIF
 C     First skip header
 55     READ(1,1)BUFFER
        IF(BUFFER(1:1).EQ.'#') GOTO 55
@@ -202,7 +238,11 @@ C     See if we need to deal with a variable para-H2 fraction
         stop
        endif
 
-       OPEN(1,FILE='parah2.ref',STATUS='OLD')
+       IF(XFLAG.EQ.0)THEN
+        OPEN(1,FILE='parah2.ref',STATUS='OLD')
+       ELSE
+        OPEN(1,FILE='parah2.prf',STATUS='OLD')
+       ENDIF
 C      First skip header
 56     READ(1,1)BUFFER
        IF(BUFFER(1:1).EQ.'#') GOTO 56
@@ -222,7 +262,11 @@ C      First skip header
 C     See if this is a scattering calculation. If so, read in the 
 C     fractional cloud cover file.
       IF(ISCAT.GT.0)THEN
-       OPEN(1,FILE='fcloud.ref',STATUS='OLD')
+       IF(XFLAG.EQ.0)THEN
+        OPEN(1,FILE='fcloud.ref',STATUS='OLD')
+       ELSE
+        OPEN(1,FILE='fcloud.prf',STATUS='OLD')
+       ENDIF
 C      First skip header
 58     READ(1,1)BUFFER
        IF(BUFFER(1:1).EQ.'#') GOTO 58
@@ -486,7 +530,12 @@ C        scale height (km)
          XFAC  = EXP(XN(NXTEMP+2))
 
 C        Calculate density of atmosphere (g/cm3)
-         RHO = P(NPRO)*0.1013*MOLWT/(R*T(NPRO))
+         IF(AMFORM.EQ.0)THEN
+          XMOLWT=MOLWT
+         ELSE
+          XMOLWT=XXMOLWT(NPRO)
+         ENDIF
+         RHO = P(NPRO)*0.1013*XMOLWT/(R*T(NPRO))
 
 C        Start ND(NPRO) at a random value. Will be rescaled anyway
          ND(NPRO)=1e-5
@@ -502,7 +551,14 @@ C        Q is specific density = particles/gram = particles/cm3 x g/cm3
          DO J=NPRO-1,1,-1
           DELH = H(J+1)-H(J)
 C         Calculate density of atmosphere (g/cm3)
-          RHO = (0.1013*MOLWT/R)*(P(J)/T(J))
+
+          IF(AMFORM.EQ.0)THEN
+           XMOLWT=MOLWT
+          ELSE
+           XMOLWT=XXMOLWT(J)
+          ENDIF
+
+          RHO = (0.1013*XMOLWT/R)*(P(J)/T(J))
           ND(J)=ND(J+1)*EXP(DELH/XFAC)
           DNDH(J)=-ND(J)*DELH/(XFAC**2)+EXP(DELH/XFAC)*DNDH(J+1)
           OD(J)=OD(J+1)+(ND(J) - ND(J+1))*XFAC*1E5
@@ -1154,8 +1210,6 @@ C     Now make sure the resulting VMRs add up to 1.0 for an
 C     AMFORM=1 profile
       IF(AMFORM.EQ.1)THEN
         CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE)
-113    CONTINUE
-
       ENDIF
 
 C     ********  Modify profile with hydrostatic equation ********
@@ -1168,7 +1222,7 @@ C     ********  Modify profile with hydrostatic equation ********
       ENDIF
 
 
-C     ********* Make sure nothing saturates *************
+C     ********* Check to see if anything should saturate *************
       DO 233 IGAS=1,NVMR
 
          IDAT=0

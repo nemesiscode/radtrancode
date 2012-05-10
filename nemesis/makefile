@@ -21,7 +21,6 @@ F_SOURCES = \
 	readrefhead.f \
 	assess.f \
 	subprofretg.f \
-	subprofretgx.f \
 	calc_phiret.f \
 	writextmp.f \
 	readxtmp.f \

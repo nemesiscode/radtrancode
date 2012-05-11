@@ -61,6 +61,7 @@ C     TIME2: System time at the end of program execution.
       real xnx(mx),kk(my,mx)
       real wgeom(mgeom,mav),flat(mgeom,mav),flon(mgeom,mav)
       real vwave1(mwave),vconv1(mconv)
+      integer iform
       double precision aa(mx,mx),dd(mx,my)
       real vkstart,vkend,vkstep
       integer idump,kiter,jtan,jtanx,jalbx,jpre,jrad,jradx,jprex
@@ -291,13 +292,10 @@ C     Simple errors, set to sqrt of diagonal of ST
 
 C     write output
 
-      do i=1,nconv(1)
-       print*,i,vconv(1,i),y(i),yn(i)
-      enddo
-
-      CALL writeoutdisc(ispace,lout,ispec,xlat,xlon,npro,nvar,
-     1 varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err1,ngeom,
-     2 nconv,vconv)
+      iform=1    
+      CALL writeout(iform,runname,ispace,lout,ispec,xlat,xlon,
+     1 npro,nvar,varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err1,
+     2 ngeom,nconv,vconv)
 
       CALL writeraw(lraw,ispec,xlat,xlon,npro,nvar,varident,
      1 varparam,nx,xn,st)

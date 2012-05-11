@@ -44,6 +44,7 @@ C     TIME2: System time at the end of program execution.
       real stx(mx,mx),xlonx
       integer varident(mvar,3),varidentx(mvar,3),igeom
       integer npro,nvmr,ispace,nav(mgeom),lraw,nprox,lpre
+      integer iform
       character*100 runname
       character*150 dummy
       integer ngeom, nwave(mgeom), nconv(mgeom), nx, ny, jsurf
@@ -284,9 +285,9 @@ C     Simple errors, set to sqrt of diagonal of ST
       enddo
 
 C     write output
-
-      CALL writeoutPT(ispace,lout,ispec,xlat,xlon,npro,nvar,
-     1 varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err1,ngeom,
+      iform=2
+      CALL writeout(iform,runname,ispace,lout,ispec,xlat,xlon,npro,
+     1 nvar,varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err1,ngeom,
      2 nconv,vconv)
 
       CALL writeraw(lraw,ispec,xlat,xlon,npro,nvar,varident,

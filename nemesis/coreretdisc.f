@@ -102,7 +102,7 @@ C     Set measurement vector and source vector lengths here.
       real yn1(my),s1(mx,mx),kk(my,mx)
       real wgeom(mgeom,mav),flat(mgeom,mav)
       real vwaveT(mwave),vconvT(mconv)
-      integer nwaveT,nconvT
+      integer nwaveT,nconvT,npvar
       logical gasgiant
 
       double precision s1d(mx,mx),sai(mx,mx)
@@ -351,13 +351,7 @@ C       last 'best-fit' value xn
         do ivar = 1,nvar
          np=1
          if(varident(ivar,1).le.100)then
-          if(varident(ivar,3).eq.0)np = npro
-          if(varident(ivar,3).eq.1)np = 2
-          if(varident(ivar,3).eq.4)np = 3
-          if(varident(ivar,3).eq.8)np = 3
-          if(varident(ivar,3).eq.9)np = 3
-          if(varident(ivar,3).eq.6)np = 2
-          if(varident(ivar,3).eq.7)np = 2
+          np=npvar(varident(ivar,3),npro)
          endif
          if(varident(ivar,1).eq.888)np = varparam(ivar,1)
          do j=ix,ix+np-1

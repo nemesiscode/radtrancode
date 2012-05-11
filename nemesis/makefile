@@ -43,9 +43,7 @@ F_SOURCES = \
 	setup.f \
 	gwritepat.f \
 	calc_serr.f \
-	writeoutX.f \
-	writeoutPT.f \
-	writeoutdisc.f \
+	writeout.f \
 	calcfwderr.f \
 	readsurfem.f \
 	readraw.f \
@@ -71,7 +69,9 @@ F_SOURCES = \
 	scankkx.f \
 	stripvar.f \
 	rankwave.f \
-	intradfield.f
+	intradfield.f \
+	npvar.f \
+	logflag.f
 
 INCDIR = ../../radtran/includes
 INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/lincom.f $(INCDIR)/pathcom.f \

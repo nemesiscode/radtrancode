@@ -103,7 +103,7 @@ C     Set measurement vector and source vector lengths here.
       real yn1(my),s1(mx,mx),kk(my,mx)
       real wgeom(mgeom,mav),flat(mgeom,mav)
       real vwaveT(mwave),vconvT(mconv)
-      integer nwaveT,nconvT
+      integer nwaveT,nconvT,npvar
       logical gasgiant
 
       double precision s1d(mx,mx),sai(mx,mx)
@@ -407,17 +407,10 @@ C       Now calculate next iterated xn1
         do ivar = 1,nvar
          np=1
          if(varident(ivar,1).le.100)then
-          if(varident(ivar,3).eq.0)np = npro
-          if(varident(ivar,3).eq.1)np = 2
-          if(varident(ivar,3).eq.4)np = 3
-          if(varident(ivar,3).eq.8)np = 3
-          if(varident(ivar,3).eq.6)np = 2
-          if(varident(ivar,3).eq.7)np = 2
-          if(varident(ivar,3).eq.9)np = 3
-          if(varident(ivar,3).eq.10)np = 4
-          if(varident(ivar,3).eq.11)np = 2
+          np=npvar(varident(ivar,3),npro)
          endif
          if(varident(ivar,1).eq.888)np = varparam(ivar,1)
+
          do j=ix,ix+np-1
           if(varident(ivar,1).eq.0) then
            if(xn1(j).lt.1.0) then

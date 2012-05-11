@@ -61,7 +61,7 @@ C     ***********************************************************************
       REAL PKNEE,HKNEE,XDEEP,XFSH,PARAH2(MAXPRO),XH,XKEEP,X2(MAXPRO)
       REAL OD(MAXPRO),ND(MAXPRO),Q(MAXPRO),RHO,F,XOD,DQDX(MAXPRO)
       REAL DNDH(MAXPRO),DQDH(MAXPRO),FCLOUD(MAXPRO)
-      INTEGER ISCALE(MAXGAS),XFLAG
+      INTEGER ISCALE(MAXGAS),XFLAG,NPVAR
       REAL XRH,XCDEEP,P1,PS,PS1,PH,Y1,Y2,YY1,YY2
       INTEGER ICLOUD(MAXCON,MAXPRO),NCONT1,JSPEC,IFLA,I1
       INTEGER NPRO,NPRO1,NVMR,JZERO,IV,IP,IVAR,JCONT,JVMR
@@ -379,8 +379,12 @@ C        total sum or vmrs=1 for AMFORM=1 format profile
         print*,'VARIDENT : ',VARIDENT(IVAR,1),VARIDENT(IVAR,2),
      1    VARIDENT(IVAR,3)
 
+C       Look up number of parameters needed to define this type of profile
+        NP = NPVAR(VARIDENT(IVAR,3),NPRO)
+
         IF(VARIDENT(IVAR,3).EQ.0)THEN
-         NP = NPRO
+C        Model 0. Continuous profile
+C        ***************************************************************
          DO I=1,NPRO
            IF(VARIDENT(IVAR,1).EQ.0)THEN
             X1(I) = XN(NXTEMP+I)
@@ -401,7 +405,9 @@ C        total sum or vmrs=1 for AMFORM=1 format profile
          ENDDO
 
         ELSEIF(VARIDENT(IVAR,3).EQ.1)THEN
-         NP = 2
+C        Model 1. Variable deep abundance, fixed knee pressure and variable
+C        fractional scale height.
+C        ***************************************************************
          PKNEE = VARPARAM(IVAR,1)
          IF(VARIDENT(IVAR,1).EQ.0)THEN
            XDEEP = XN(NXTEMP+1)
@@ -447,21 +453,26 @@ C        New gradient correction if fsh is held as logs
          ENDDO
 
         ELSEIF(VARIDENT(IVAR,3).EQ.2)THEN
-         NP = 1
+C        Model 2. Profile is scaled fraction of reference profile
+C        ***************************************************************
          DO J = 1,NPRO
           X1(J) = XREF(J)*XN(NXTEMP+1)
           XMAP(NXTEMP+1,IPAR,J)=XREF(J)
          ENDDO
 	
         ELSEIF(VARIDENT(IVAR,3).EQ.3)THEN
-         NP = 1
+C        Model 3. Profile is scaled fraction of reference profile, but 
+C         code uses log scaling, which is more robust
+C        ***************************************************************
          DO J = 1,NPRO
           X1(J) = XREF(J)*EXP(XN(NXTEMP+1))
           XMAP(NXTEMP+1,IPAR,J)=X1(J)
          ENDDO
 	
         ELSEIF(VARIDENT(IVAR,3).EQ.4)THEN
-         NP = 3
+C        Model 4. Variable deep abundance, variable knee pressure and variable
+C        fractional scale height.
+C        ***************************************************************
          IF(VARIDENT(IVAR,1).EQ.0)THEN
            XDEEP = XN(NXTEMP+1)
          ELSE
@@ -512,12 +523,19 @@ C        New gradient correction if fsh is held as logs
            END IF
          ENDDO
 
-        ELSEIF(VARIDENT(IVAR,3).EQ.6)THEN
-C        Venus-type cloud profile. Needs a reference height,
-C        integrated optical depth above that height and a cloud
-C        scale height (km)
+        ELSEIF(VARIDENT(IVAR,3).EQ.5)THEN
+C        Model 5. Continuous profile, but variable with latitude.
+C        Option is defunct.
+C        ***************************************************************
 
-         NP = 2
+         PRINT*,'VARIDENT(IVAR,3).EQ.5 - Model no longer supported'
+         STOP
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.6)THEN
+C        Model 6. Venus-type cloud profile represented by a fixed base height, 
+C        variable integrated optical depth above that height and variable cloud
+C        scale height (km)
+C        ***************************************************************
          HKNEE = VARPARAM(IVAR,1)
          IF(VARIDENT(IVAR,1).GE.0)THEN
           PRINT*,'Warning from SUBPROFRETG. You are using a Venusian'
@@ -565,7 +583,6 @@ C         Calculate density of atmosphere (g/cm3)
           Q(J)=ND(J)/RHO
           DQDH(J) = DNDH(J)/RHO
 
-
           IF(H(J).LE.HKNEE.AND.JFSH.LT.0)THEN
            F = (HKNEE-H(J))/DELH
            XOD = (1.-F)*OD(J) + F*OD(J+1)
@@ -591,9 +608,10 @@ C         Calculate density of atmosphere (g/cm3)
          ENDDO
 
         ELSEIF(VARIDENT(IVAR,3).EQ.7)THEN
-C        ******** profile held as a value at a certain pressure and
-C        ******** fractional scale height
-         NP = 2
+C        Model 7. Profile modelled with a variable abundance at a fixed 
+C        pressure level and variable fractional scale height above and below
+C        that level.
+C        ***************************************************************
          PKNEE = VARPARAM(IVAR,1)
          IF(VARIDENT(IVAR,1).EQ.0)THEN
            XDEEP = XN(NXTEMP+1)
@@ -663,12 +681,10 @@ C        New gradient correction if fsh is held as logs
          ENDDO
 
         ELSEIF(VARIDENT(IVAR,3).EQ.8)THEN
-C        ******** profile held as value at a VARIABLE knee pressure
-C        ******** plus a fractional scale height. Below the knee
-C        ******** pressure the profile is set to zero - a simple
-C        ******** cloud in other words!
-
-         NP = 3
+C        Model 8. Profile is represented by a value at a variable pressure level
+C        plus a fractional scale height. Below the knee pressure the profile is 
+C        set to zero - a simple cloud in other words!
+C        ***************************************************************
          IF(VARIDENT(IVAR,1).EQ.0)THEN
            XDEEP = XN(NXTEMP+1)
          ELSE
@@ -735,12 +751,12 @@ C          X1(J)=XDEEP
          ENDDO
 
         ELSEIF(VARIDENT(IVAR,3).EQ.9)THEN
-C        ******** profile held as value at a VARIABLE knee height
-C        ******** plus a fractional scale height. Below the knee
-C        ******** pressure the profile is set to zero - a simple
-C        ******** cloud in other words!
-
-         NP = 3
+C        Model 9. Similar to model 8. Profile is represented by a value 
+C        at a variable HEIGHT, rather than PRESSURE plus a fractional scale height. 
+C        Below the reference height the profile is set to zero. In addition,
+C        this model scales the profile to give the requested integrated cloud 
+C        optical depth.
+C        ***************************************************************
          IF(VARIDENT(IVAR,1).GE.0)THEN
           PRINT*,'Warning from SUBPROFRETG. You are using a'
           PRINT*,'cloud profile parameterisation for a non-cloud'
@@ -752,11 +768,14 @@ C        ******** cloud in other words!
          XFSH  = EXP(XN(NXTEMP+2))
          HKNEE = XN(NXTEMP+3)
 
-C         print*,HKNEE,XDEEP,XFSH
+         IF(AMFORM.EQ.0)THEN
+          XMOLWT=MOLWT
+         ELSE
+          XMOLWT=XXMOLWT(NPRO)
+         ENDIF
 
 C        Calculate density of atmosphere (g/cm3)
-         RHO = P(NPRO)*0.1013*MOLWT/(R*T(NPRO))
-C         print*,P(NPRO),T(NPRO),MOLWT,R,RHO
+         RHO = P(NPRO)*0.1013*XMOLWT/(R*T(NPRO))
 
 C        Start ND(NPRO) at a random value. Will be rescaled anyway
          ND(NPRO)=1e-35
@@ -774,8 +793,14 @@ C        Q is specific density = particles/gram = particles/cm3 x g/cm3
           DELH = H(J+1)-H(J)
           XFAC = SCALE(J)*XFSH
 C         Calculate density of atmosphere (g/cm3)
-C          print*,MOLWT,R,P(J),T(J),H(J)
-          RHO = (0.1013*MOLWT/R)*(P(J)/T(J))
+
+          IF(AMFORM.EQ.0)THEN
+           XMOLWT=MOLWT
+          ELSE
+           XMOLWT=XXMOLWT(J)
+          ENDIF
+
+          RHO = (0.1013*XMOLWT/R)*(P(J)/T(J))
           ND(J)=ND(J+1)*EXP(DELH/XFAC)
           DNDH(J)=-ND(J)*DELH/(XFAC**2)+EXP(DELH/XFAC)*DNDH(J+1)
 
@@ -783,19 +808,17 @@ C          print*,MOLWT,R,P(J),T(J),H(J)
           Q(J)=ND(J)/RHO
           DQDH(J) = DNDH(J)/RHO
 
-C          print*,J,DELH,RHO,ND(J),DNDH(J),OD(J),Q(J),DQDH(J)
 
           IF(H(J).LE.HKNEE.AND.JFSH.LT.0)THEN
            F = (HKNEE-H(J))/DELH
            XOD = (1.-F)*OD(J) + F*OD(J+1)
-C           PRINT*,'J,F,XOD = ',J,F,XOD 
            JFSH=1
           ENDIF
          ENDDO
 
-C        This bit doesn't really work due to misalignments at boundaries.
-C        so needs some post-processing in gsetrad.f
-
+C        The following section was found not to be as accurate as desired
+C        due to misalignments at boundaries and so needs some post-processing in 
+C        gsetrad.f
          DO J=1,NPRO
           OD(J)=XDEEP*OD(J)/XOD
           ND(J)=XDEEP*ND(J)/XOD
@@ -811,11 +834,9 @@ C        so needs some post-processing in gsetrad.f
           IF(Q(J).LT.1e-36)Q(J)=1e-36
 
           X1(J)=Q(J)
-C          print*,J,x1(J)
           DNDH(J)=DNDH(J)*XDEEP/XOD
           DQDH(J)=DQDH(J)*XDEEP/XOD
           DQDX(J)=Q(J)/XOD
-C          DQDX(J)=Q(J)
 
           IF(H(J).LT.HKNEE)THEN
            XMAP(NXTEMP+1,IPAR,J)=DQDX(J)*XDEEP
@@ -826,8 +847,12 @@ C          DQDX(J)=Q(J)
 
         
         ELSEIF(VARIDENT(IVAR,3).EQ.10)THEN
-
-         NP = 4
+C        Model 10. Profile is a condensing cloud, parameterisation contains
+C        the deep gas vmr, the required relative humidity above the condensation
+C        level, the required optical depth of the condensed cloud and the 
+C        fractional scale height of the condensed cloud. Cloud will condense
+C        in cloud profile VARPARAM(IVAR,1).
+C        ***************************************************************
 
          XDEEP = EXP(XN(NXTEMP+1))
          XRH  = EXP(XN(NXTEMP+2))
@@ -843,10 +868,8 @@ C          DQDX(J)=Q(J)
             D = GASDATA(I,5)
             IDAT=1
           ENDIF
-	 ENDDO
-    
+	 ENDDO    
 
-         print*,'IPAR = ',IPAR
          IF(IDAT.EQ.0)THEN
           print*,'Subprofretg: Gas SVP data cannot be found'
           print*,IPAR,IDGAS(IPAR)
@@ -857,7 +880,6 @@ C        Find where the gas will condense.
 
          JPAR = NVMR+1+JSPEC
 
-         PRINT*,'nvmr,jspec,jpar',NVMR,JSPEC,JPAR
          IFLA=0
          HKNEE=0.
          DO I=1,NPRO
@@ -882,16 +904,13 @@ C        Find where the gas will condense.
 
             HKNEE = H(I-1)+F*(H(I)-H(I-1))
             IFLA=1
-            print*,P(I-1)*XDEEP,P(I)*XDEEP,PS
-            print*,Y1,Y2,YY1,YY2,F
-            print*,H(I-1),H(I),HKNEE
            ENDIF
 
            X1(I)=PH/P(I)
            XMAP(NXTEMP+2,IPAR,I)=PS/P(I)
           ENDIF
 
-C         Uncomment this section to limit vmr to relative RH at
+C         This section limits the vmr to relative RH at
 C         all altitudes, not just above the condensation level. HKNEE has 
 C         already been set
 
@@ -911,12 +930,18 @@ C         begun. i.e. freeze vmr at the cold trap.
            XMAP(NXTEMP+2,IPAR,I)=XMAP(NXTEMP+2,IPAR,I-1)
           ENDIF
 
-
          ENDDO
 
+C        Now put a cloud at the condensation level
+
+         IF(AMFORM.EQ.0)THEN
+          XMOLWT=MOLWT
+         ELSE
+          XMOLWT=XXMOLWT(NPRO)
+         ENDIF
 
 C        Calculate density of atmosphere (g/cm3)
-         RHO = P(NPRO)*0.1013*MOLWT/(R*T(NPRO))
+         RHO = P(NPRO)*0.1013*XMOLWT/(R*T(NPRO))
 
 C        Start ND(NPRO) at a random value. Will be rescaled anyway
          ND(NPRO)=1e-35
@@ -927,15 +952,20 @@ C        Q is specific density = particles/gram = particles/cm3 x g/cm3
          Q(NPRO)=ND(NPRO)/RHO         
          DNDH(NPRO)=0.0
          DQDH(NPRO)=0.0
-
          
          JFSH=-1
          DO J=NPRO-1,1,-1
           DELH = H(J+1)-H(J)
           XFAC = SCALE(J)*XFSH
+
+          IF(AMFORM.EQ.0)THEN
+           XMOLWT=MOLWT
+          ELSE
+           XMOLWT=XXMOLWT(J)
+          ENDIF
+
 C         Calculate density of atmosphere (g/cm3)
-C          print*,MOLWT,R,P(J),T(J),H(J)
-          RHO = (0.1013*MOLWT/R)*(P(J)/T(J))
+          RHO = (0.1013*XMOLWT/R)*(P(J)/T(J))
           ND(J)=ND(J+1)*EXP(DELH/XFAC)
           DNDH(J)=-ND(J)*DELH/(XFAC**2)+EXP(DELH/XFAC)*DNDH(J+1)
 
@@ -943,19 +973,16 @@ C          print*,MOLWT,R,P(J),T(J),H(J)
           Q(J)=ND(J)/RHO
           DQDH(J) = DNDH(J)/RHO
 
-C          print*,J,DELH,RHO,ND(J),DNDH(J),OD(J),Q(J),DQDH(J)
-
           IF(H(J).LE.HKNEE.AND.JFSH.LT.0)THEN
            F = (HKNEE-H(J))/DELH
            XOD = (1.-F)*OD(J) + F*OD(J+1)
-C           PRINT*,'J,F,XOD = ',J,F,XOD 
            JFSH=1
           ENDIF
          ENDDO
 
-C        This bit doesn't really work due to misalignments at boundaries.
-C        so needs some post-processing in gsetrad.f
-
+C        The following section was found not to be as accurate as desired
+C        due to misalignments at boundaries and so needs some post-processing in 
+C        gsetrad.f
          DO J=1,NPRO
           OD(J)=XCDEEP*OD(J)/XOD
           ND(J)=XCDEEP*ND(J)/XOD
@@ -978,14 +1005,16 @@ C        so needs some post-processing in gsetrad.f
           IF(H(J).LT.HKNEE)THEN
            XMAP(NXTEMP+3,JPAR,J)=DQDX(J)*XCDEEP
            XMAP(NXTEMP+4,JPAR,J)=DQDH(J)*XFAC
-           print*,J,X2(J),(XMAP(I,JPAR,J),I=NXTEMP+3,NXTEMP+4)
           ENDIF
          ENDDO
 
 
         ELSEIF(VARIDENT(IVAR,3).EQ.11)THEN
-
-         NP = 2
+C        Model 11. Condensing gas, but no associated cloud. Model requires
+C        the deep gas abundance and the desired relative humidity above the 
+C        condensation level only (VARPARAM(IVAR,1))=0) or at all levels
+C        (VARPARAM(IVAR,1))=1)
+C        ***************************************************************
 
          XDEEP = EXP(XN(NXTEMP+1))
          XRH  = EXP(XN(NXTEMP+2))
@@ -1003,7 +1032,6 @@ C        so needs some post-processing in gsetrad.f
 	 ENDDO
     
 
-         print*,'IPAR = ',IPAR
          IF(IDAT.EQ.0)THEN
           print*,'Subprofretg: Gas SVP data cannot be found'
           print*,IPAR,IDGAS(IPAR)
@@ -1065,78 +1093,11 @@ C         begun. i.e. freeze vmr at the cold trap.
 
          ENDDO
 
+        ELSE
 
-
-
-C        Calculate density of atmosphere (g/cm3)
-         RHO = P(NPRO)*0.1013*MOLWT/(R*T(NPRO))
-
-C        Start ND(NPRO) at a random value. Will be rescaled anyway
-         ND(NPRO)=1e-35
-C        OD is in units of particles/cm2 = particles/cm3 x length(cm)
-C        In this case this is the scale height at the top level.
-         OD(NPRO)=ND(NPRO)*SCALE(NPRO)*1E5
-C        Q is specific density = particles/gram = particles/cm3 x g/cm3
-         Q(NPRO)=ND(NPRO)/RHO         
-         DNDH(NPRO)=0.0
-         DQDH(NPRO)=0.0
-
-         
-         JFSH=-1
-         DO J=NPRO-1,1,-1
-          DELH = H(J+1)-H(J)
-          XFAC = SCALE(J)*XFSH
-C         Calculate density of atmosphere (g/cm3)
-C          print*,MOLWT,R,P(J),T(J),H(J)
-          RHO = (0.1013*MOLWT/R)*(P(J)/T(J))
-          ND(J)=ND(J+1)*EXP(DELH/XFAC)
-          DNDH(J)=-ND(J)*DELH/(XFAC**2)+EXP(DELH/XFAC)*DNDH(J+1)
-
-          OD(J)=OD(J+1)+(ND(J) - ND(J+1))*XFAC*1E5
-          Q(J)=ND(J)/RHO
-          DQDH(J) = DNDH(J)/RHO
-
-C          print*,J,DELH,RHO,ND(J),DNDH(J),OD(J),Q(J),DQDH(J)
-
-          IF(H(J).LE.HKNEE.AND.JFSH.LT.0)THEN
-           F = (HKNEE-H(J))/DELH
-           XOD = (1.-F)*OD(J) + F*OD(J+1)
-C           PRINT*,'J,F,XOD = ',J,F,XOD 
-           JFSH=1
-          ENDIF
-         ENDDO
-
-C        This bit doesn't really work due to misalignments at boundaries.
-C        so needs some post-processing in gsetrad.f
-
-         DO J=1,NPRO
-          OD(J)=XCDEEP*OD(J)/XOD
-          ND(J)=XCDEEP*ND(J)/XOD
-          Q(J)=XCDEEP*Q(J)/XOD
-C          print*,J,od(j),ND(J),Q(J),H(J),HKNEE
-          IF(H(J).LT.HKNEE)THEN
-           IF(H(J+1).GE.HKNEE)THEN
-            Q(J)=Q(J)*(1.0 - (HKNEE-H(J))/(H(J+1)-H(J)))
-           ELSE
-            Q(J) = 0.0
-           ENDIF
-          ENDIF
-          IF(Q(J).GT.1e10)Q(J)=1e10
-          IF(Q(J).LT.1e-36)Q(J)=1e-36
-
-          X2(J)=Q(J)
-          DNDH(J)=DNDH(J)*XCDEEP/XOD
-          DQDH(J)=DQDH(J)*XCDEEP/XOD
-          DQDX(J)=Q(J)/XOD
-C          print*,J,dndh(j),dqdh(J),dqdx(J)
-C          print*,nxtemp,jpar,j
-
-          IF(H(J).LT.HKNEE)THEN
-           XMAP(NXTEMP+3,IPAR,J)=DQDX(J)*XCDEEP
-           XMAP(NXTEMP+4,IPAR,J)=DQDH(J)*XFAC
-C           print*,J,X2(J),(XMAP(I,IPAR,J),I=NXTEMP+3,NXTEMP+4)
-          ENDIF
-         ENDDO
+         PRINT*,'Subprofretg: Model parametrisation code is not defined'
+         PRINT*,(VARIDENT(IVAR,J),J=1,3)
+         STOP
 
         ENDIF
 
@@ -1173,12 +1134,14 @@ C         print*,'Tangent pressure'
           VMR(I,IPAR)=X1(I)
          ENDDO
 
-C        New section for combined cloud/gas profile
+C        Extra section for combined cloud/gas profile - Model 10.
+C        **********************************************************
          IF(JSPEC.LE.NCONT)THEN
           DO I=1,NPRO
            CONT(JSPEC,I)=X2(I)
           ENDDO
          ENDIF
+C        **********************************************************
 
         ELSEIF(IPAR.EQ.NVMR+1)THEN
          DO I=1,NPRO

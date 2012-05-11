@@ -129,12 +129,11 @@ C     Initialise s1d
        do j=1,nx
         s1d(i,j)=dble(sa(i,j))
        enddo
-C       print*,(sa(i,j),j=1,nx)
       enddo
       
 C     Calculate inverse of sa.
-c      jmod = 2
       icheck=0
+      jmod=2
       call dinvertm(jmod,icheck,s1d,nx,mx,sai)
       if(icheck.eq.1)then
        print*,'************* WARNING *************'
@@ -167,7 +166,6 @@ C     Load state vector with a priori
        xn(i)=xa(i)
       enddo
 
-      print*,'coreret: lin = ',lin
       if(lin.eq.1.or.lin.eq.3)then
 
        if(lin.eq.1) then
@@ -221,7 +219,7 @@ C       readapriori.f. Hence just read in from temporary .str file
      2   lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jtanx,jprex,
      3   nxx,xnx,ny,ynx,kkx)
        else
-        print*,'Option not supported for disc-averageing'
+        print*,'Option not supported for disc-averaging'
        endif
 
        if(lin.eq.3) then
@@ -258,7 +256,7 @@ C      Recalculate inverse of se
        enddo
 
 C      Calculate inverse of se
-c       jmod = 2
+       jmod = 2
        icheck=0
        call dinvertm(jmod,icheck,s1e,ny,my,sei)
        if(icheck.eq.1)then
@@ -271,40 +269,17 @@ c       jmod = 2
 
       endif
 
-C      print*,'OK, iscat = ',iscat
-
       if(iscat.eq.0)then
-        print*,'Calling forwarddisc - A'
-C        print*,runname,ispace,iscat,fwhm
-C        print*,ngeom
-C        do i=1,ngeom
-C         print*,nav(i)
-C         print*,(wgeom(i,j),j=1,nav(i))
-C         print*,(flat(i,j),j=1,nav(i))
-C         do j=1,nav(i)
-C          print*,(angles(i,j,k),k=1,3)
-C         enddo
-C         print*,nwave(i),nconv(i)
-C        enddo
-C        print*,gasgiant,lin
-C        print*,nvar
-C        do i=1,nvar
-C         print*,(varident(i,j),j=1,3)
-C         print*,(varparam(i,j),j=1,5)
-C        enddo
-C        print*,'jsurf,jalb,jtan,jpre',jsurf,jalb,jtan,jpre
-C        print*,nx,(xn(i),i=1,nx)
-C        print*,ny
 
         CALL forwarddisc(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,nx,xn,ny,
      3   yn,kk)
 
-C        print*,'forwarddisc OK, jpre = ',jpre
-
       else
+
          print*,'Option not supported'
+
       endif
 
       open(12,file='kk.dat',status='unknown')
@@ -315,7 +290,6 @@ C        print*,'forwarddisc OK, jpre = ',jpre
       close(12)
 
 
-C      print*,'Calling calc_gain_matrix'
 C     Now calculate the gain matrix and averaging kernels
       call calc_gain_matrix(nx,ny,kk,sa,sai,se,sei,dd,aa)
 
@@ -324,7 +298,6 @@ C     Calculate initial value of cost function phi.
       ophi = phi
       oxchi = chisq/float(ny)
 
-C      print*,'Calling assess'
 C     Assess whether retrieval is likely to be OK
       call assess(nx,ny,kk,sa,se)
  
@@ -346,8 +319,6 @@ C     vectors xn, yn
        yn1(i)=yn(i)
       enddo
 
-C      print*,'AAA jpre = ',jpre
-
       do 401 iter = 1, kiter
 
         if(ica.eq.1)then
@@ -363,7 +334,6 @@ C      print*,'AAA jpre = ',jpre
          enddo
         endif
 
-C        print*,'Calling calcnextxn'
 C       Now calculate next iterated xn1
         call calcnextxn(nx,ny,xa,xn,y,yn,dd,aa,x_out)
 
@@ -371,18 +341,10 @@ C       x_out(nx) is the next iterated value of xn using classical N-L
 C       optimal estimation. However, we want to apply a braking parameter
 C       alambda to stop the new trial vector xn1 being too far from the
 C       last 'best-fit' value xn
-C        print*,'Next xn'
 
 145     continue
         do i=1,nx
          xn1(i) = xn(i) + (x_out(i)-xn(i))/(1.0+alambda)
-C         print*,i,xn(i),xn1(i)
-C         if(xn1(i).lt.0.0)then
-C          print*,'*********** Warning ************'
-C          print*,'Possible error in coreret. Trial vector element'
-C          print*,'has gone negative.'
-C          print*,i,xa(i),xn1(i),x_out(i)
-C         endif
         enddo
 
         ix=1
@@ -444,11 +406,8 @@ C       Does trial solution fit the data better?
            enddo
           enddo
 
-C          print*,'Calculating new gain matrix and averaging kernels'
 C         Now calculate the gain matrix and averaging kernels
           call calc_gain_matrix(nx,ny,kk,sa,sai,se,sei,dd,aa)
-
-C          print*,'calc_gain_matrix OK'
 
 C         Has solution converged?
           tphi = 100.0*(ophi-phi)/ophi
@@ -498,9 +457,7 @@ C      Write out k-matrix for reference
        print*,'chisq/ny should be less than 1 if correctly retrieved'
       endif
 
-C      print*,'Calculating final covariance matrix'
       CALL calc_serr(nx,ny,sa,se,aa,dd,st,sn,sm)
-C      print*,'Matrix calculated'
 
       return
 

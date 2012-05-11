@@ -32,13 +32,13 @@ C     Set measurement vector and source vector lengths here.
 C     New compiler time
       real tot_time
       double precision time,time1,time2
-C TIME: Temporary variable returned by GETTIME containing the system time.
-C TIME1: System time at the beginning of program execution.
-C TIME2: System time at the end of program execution.
+C     TIME: Temporary variable returned by GETTIME containing the system time.
+C     TIME1: System time at the beginning of program execution.
+C     TIME2: System time at the end of program execution.
 
       character*100 buffer,ename
       integer i,j,iscat,ica,k,lspec,lout,ispec,nspec,nspecx,ioff
-      real xn(mx),se(my),err1(mx),woff,err2(mx),xdiff
+      real xn(mx),se(my),err1(mx),woff,xdiff
       real fwhm,xlat,xlon,st(mx,mx),varparam(mvar,mparam)
       real sn(mx,mx),sm(mx,mx),xlatx,varparamx(mvar,mparam)
       real stx(mx,mx),xlonx
@@ -110,8 +110,6 @@ C     Make sure input files are OK
 
       CALL readrefiplan(runname,iplanet,radius)
 
-      print*,'Files OK - plan radius = ',radius
-
 C     Read start, end and step of tables
       CALL readkkhead(runname,vkstart,vkend,vkstep)
 
@@ -173,7 +171,6 @@ C      if previous retrieval to be considered,
 C      open previous raw retrieval file (copied to .pre)
        lpre=39
        CALL file(runname,runname,'pre')
-       print*,'Nemesis: reading previous retrieval : ',runname
        open(lpre,file=runname,status='old')
        read(lpre,*)nspecx
        if(nspec+ioff-1.gt.nspecx)then
@@ -194,7 +191,6 @@ C      Look to see if previously retrieved information is to be used
 C      and if so, skipped
        if(lin.gt.0)then
       
-       print*,'Reading in previously retrieved parameters'
         call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,
      1    varparamx,jsurfx,jalbx,jtanx,jprex,jradx,nxx,xnx,stx)
       
@@ -223,17 +219,13 @@ C     Add forward errors to measurement covariances
 C     Calculate the tabulated wavelengths of c-k look up tables
       do igeom=1,ngeom
        nconv1 = nconv(igeom)
-       if(igeom.eq.1)print*,nconv1
        do j=1,nconv1
         vconv1(j)=vconv(igeom,j)
-        if(igeom.eq.1)print*,vconv1(j)
        enddo
        CALL wavesetb(runname,vkstart,vkend,vkstep,nconv1,vconv1,fwhm,
      1  nwave1,vwave1)
-       if(igeom.eq.1)print*,nwave1
        do j=1,nwave1
         vwave(igeom,j)=vwave1(j)
-        if(igeom.eq.1)print*,vwave1(j)
        enddo
        nwave(igeom)=nwave1
       enddo
@@ -277,7 +269,6 @@ C     set up a priori of x and its covariance
       jalb=-1
       jtan=-1
       jsurf=-1
-      print*,'Radius - 0 = ',jrad
       jrad=-1
 
       call coreretPT(runname,ispace,iscat,ica,kiter,phlimit,
@@ -292,12 +283,7 @@ C     Simple errors, set to sqrt of diagonal of ST
        err1(i)=sqrt(abs(st(i,i)))
       enddo
 
-C     Analyse final covariance matrix into its eigenvectors and hence get
-C     more representative estimate of the final errors
-C      call eigenerr(nx,st,err2)
-
 C     write output
-      print*,'Nemesis: Writing output'
 
       CALL writeoutPT(ispace,lout,ispec,xlat,xlon,npro,nvar,
      1 varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err1,ngeom,

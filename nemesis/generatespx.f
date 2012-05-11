@@ -32,13 +32,13 @@ C     Set measurement vector and source vector lengths here.
 C     New compiler time
       real tot_time
       double precision time,time1,time2
-C TIME: Temporary variable returned by GETTIME containing the system time.
-C TIME1: System time at the beginning of program execution.
-C TIME2: System time at the end of program execution.
+C     TIME: Temporary variable returned by GETTIME containing the system time.
+C     TIME1: System time at the beginning of program execution.
+C     TIME2: System time at the end of program execution.
 
       character*100 buffer,ename
       integer i,j,iscat,ica,k,lspec,lout,ispec,nspec,nspecx,ioff
-      real xn(mx),se(my),err1(mx),woff,err2(mx),xdiff
+      real xn(mx),se(my),err1(mx),woff,xdiff
       real fwhm,xlat,xlon,st(mx,mx),varparam(mvar,mparam)
       real sn(mx,mx),sm(mx,mx),xlatx,varparamx(mvar,mparam)
       real stx(mx,mx),xlonx
@@ -98,8 +98,6 @@ C     Make sure input files are OK
        stop
       endif
 
-      print*,'Files OK'
-
 C     Read start, end and step of tables
       CALL readkkhead(runname,vkstart,vkend,vkstep)
 
@@ -140,7 +138,6 @@ C     Open output files
 C      if previous retrieval to be considered,
 C      open previous raw retrieval file (copied to .pre)
        CALL file(runname,runname,'pre')
-       print*,'Nemesis: reading previous retrieval : ',runname
        open(lpre,file=runname,status='old')
        read(lpre,*)nspecx
        if(nspec.gt.nspecx)then
@@ -166,11 +163,8 @@ C     Calculate the tabulated wavelengths of c-k look up tables
        do j=1,nconv1
         vconv1(j)=vconv(igeom,j)
        enddo
-       print*,'fwhm = ',fwhm
-       print*,'nconv',nconv1,(vconv1(i),i=1,nconv1)
        CALL wavesetb(runname,vkstart,vkend,vkstep,nconv1,vconv1,
      1  fwhm,nwave1,vwave1)
-       print*,'nwave1',nwave1,(vwave1(i),i=1,nwave1)
        do j=1,nwave1
         vwave(igeom,j)=vwave1(j)
        enddo
@@ -214,7 +208,6 @@ C     Add forward errors to measurement covariances
      1  nx,xa,sa,xn)
 
        if(lin.gt.0) then
-C       print*,'Reading in previously retrieved parameters'
         call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,
      1   varparamx,jsurfx,jalbx,jtanx,jprex,nxx,xnx,stx)
 
@@ -245,7 +238,6 @@ C       print*,'Reading in previously retrieved parameters'
            if(varidentx(ivarx,1).eq.0.and.npx.eq.npro)then
             do i=1,npro
              xn(ioff+i)=xnx(ioffx+i)
-             print*,'modT',ioff+i,xn(ioff+i)
             enddo
            endif
            ioffx=ioffx+npx

@@ -259,7 +259,7 @@ C      Recalculate inverse of se
        enddo
 
 C      Calculate inverse of se
-c       jmod = 2
+       jmod = 2
        icheck=0
        call dinvertm(jmod,icheck,s1e,ny,my,sei)
        if(icheck.eq.1)then

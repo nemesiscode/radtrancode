@@ -136,7 +136,7 @@ C     Initialise s1d
       enddo
       
 C     Calculate inverse of sa.
-c     jmod = 2
+      jmod = 2
       icheck=0
       call dinvertm(jmod,icheck,s1d,nx,mx,sai)
       if(icheck.eq.1)then
@@ -282,7 +282,7 @@ C      Recalculate inverse of se
        enddo
 
 C      Calculate inverse of se
-c       jmod = 2
+       jmod = 2
        icheck=0
        call dinvertm(jmod,icheck,s1e,ny,my,sei)
        if(icheck.eq.1)then

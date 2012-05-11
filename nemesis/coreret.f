@@ -133,7 +133,6 @@ C     Initialise s1d
        do j=1,nx
         s1d(i,j)=dble(sa(i,j))
        enddo
-C       print*,(s1d(i,j),j=1,nx)
       enddo
       
 C     Calculate inverse of sa.
@@ -170,7 +169,6 @@ C     Load state vector with a priori
        xn(i)=xa(i)
       enddo
 
-      print*,'coreret: lin = ',lin
       if(lin.eq.1.or.lin.eq.3)then
 
        if(lin.eq.1) then
@@ -331,8 +329,6 @@ C        print*,'forwardnogX OK, jpre = ',jpre
 
        elseif(iscat.eq.2)then
 
-        print*,'testing'
-        print*,'nx = ',nx
         print*,'Calling intradfield',gasgiant
         CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1   vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
@@ -355,7 +351,6 @@ C        print*,'forwardnogX OK, jpre = ',jpre
       close(12)
 
 
-C      print*,'Calling calc_gain_matrix'
 C     Now calculate the gain matrix and averaging kernels
       call calc_gain_matrix(nx,ny,kk,sa,sai,se,sei,dd,aa)
 
@@ -364,7 +359,6 @@ C     Calculate initial value of cost function phi.
       ophi = phi
       oxchi = chisq/float(ny)
 
-C      print*,'Calling assess'
 C     Assess whether retrieval is likely to be OK
       call assess(nx,ny,kk,sa,se)
  
@@ -386,8 +380,6 @@ C     vectors xn, yn
        yn1(i)=yn(i)
       enddo
 
-C      print*,'AAA jpre = ',jpre
-
       do 401 iter = 1, kiter
 
         if(ica.eq.1)then
@@ -403,26 +395,12 @@ C      print*,'AAA jpre = ',jpre
          enddo
         endif
 
-C        print*,'Calling calcnextxn'
 C       Now calculate next iterated xn1
         call calcnextxn(nx,ny,xa,xn,y,yn,dd,aa,x_out)
-
-C       x_out(nx) is the next iterated value of xn using classical N-L
-C       optimal estimation. However, we want to apply a braking parameter
-C       alambda to stop the new trial vector xn1 being too far from the
-C       last 'best-fit' value xn
-C        print*,'Next xn'
 
 145     continue
         do i=1,nx
          xn1(i) = xn(i) + (x_out(i)-xn(i))/(1.0+alambda)
-C         print*,i,xn(i),xn1(i)
-C         if(xn1(i).lt.0.0)then
-C          print*,'*********** Warning ************'
-C          print*,'Possible error in coreret. Trial vector element'
-C          print*,'has gone negative.'
-C          print*,i,xa(i),xn1(i),x_out(i)
-C         endif
         enddo
 
         ix=1
@@ -505,11 +483,9 @@ C       Does trial solution fit the data better?
            enddo
           enddo
 
-C          print*,'Calculating new gain matrix and averaging kernels'
 C         Now calculate the gain matrix and averaging kernels
           call calc_gain_matrix(nx,ny,kk,sa,sai,se,sei,dd,aa)
 
-C          print*,'calc_gain_matrix OK'
 
 C         Has solution converged?
           tphi = 100.0*(ophi-phi)/ophi
@@ -559,9 +535,7 @@ C      Write out k-matrix for reference
        print*,'chisq/ny should be less than 1 if correctly retrieved'
       endif
 
-C      print*,'Calculating final covariance matrix'
       CALL calc_serr(nx,ny,sa,se,aa,dd,st,sn,sm)
-C      print*,'Matrix calculated'
 
       return
 

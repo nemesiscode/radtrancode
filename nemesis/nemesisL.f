@@ -32,13 +32,13 @@ C     Set measurement vector and source vector lengths here.
 C     New compiler time
       real tot_time
       double precision time,time1,time2
-C TIME: Temporary variable returned by GETTIME containing the system time.
-C TIME1: System time at the beginning of program execution.
-C TIME2: System time at the end of program execution.
+C     TIME: Temporary variable returned by GETTIME containing the system time.
+C     TIME1: System time at the beginning of program execution.
+C     TIME2: System time at the end of program execution.
 
       character*100 buffer,ename
       integer i,j,iscat,ica,k,lspec,lout,ispec,nspec,nspecx,ioff
-      real xn(mx),se(my),err1(mx),woff,err2(mx),xdiff
+      real xn(mx),se(my),err1(mx),woff,xdiff
       real fwhm,xlat,xlon,st(mx,mx),varparam(mvar,mparam)
       real sn(mx,mx),sm(mx,mx),xlatx,varparamx(mvar,mparam)
       real stx(mx,mx),xlonx
@@ -169,7 +169,6 @@ C      if previous retrieval to be considered,
 C      open previous raw retrieval file (copied to .pre)
        lpre=39
        CALL file(runname,runname,'pre')
-       print*,'Nemesis: reading previous retrieval : ',runname
        open(lpre,file=runname,status='old')
        read(lpre,*)nspecx
        if(nspec+ioff-1.gt.nspecx)then
@@ -190,7 +189,6 @@ C      Look to see if previously retrieved information is to be used
 C      and if so, skipped
        if(lin.gt.0)then
       
-C       print*,'Reading in previously retrieved parameters'
         call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,
      1    varparamx,jsurfx,jalbx,jtanx,jprex,jradx,nxx,xnx,stx)
       
@@ -281,12 +279,7 @@ C     Simple errors, set to sqrt of diagonal of ST
        err1(i)=sqrt(abs(st(i,i)))
       enddo
 
-C     Analyse final covariance matrix into its eigenvectors and hence get
-C     more representative estimate of the final errors
-C      call eigenerr(nx,st,err2)
-
 C     write output
-      print*,'Nemesis: Writing output'
 
       CALL writeoutX(ispace,lout,ispec,xlat,xlon,npro,nvar,
      1 varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err1,ngeom,

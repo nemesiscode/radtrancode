@@ -41,13 +41,13 @@ C     Set measurement vector and source vector lengths here.
 C     New compiler time
       real tot_time
       double precision time,time1,time2
-C TIME: Temporary variable returned by GETTIME containing the system time.
-C TIME1: System time at the beginning of program execution.
-C TIME2: System time at the end of program execution.
+C     TIME: Temporary variable returned by GETTIME containing the system time.
+C     TIME1: System time at the beginning of program execution.
+C     TIME2: System time at the end of program execution.
 
       character*100 buffer,ename
       integer i,j,iscat,ica,k,lspec,lout,ispec,nspec,nspecx,ioff
-      real xn(mx),se(my),err1(mx),woff,err2(mx),xdiff
+      real xn(mx),se(my),err1(mx),woff,xdiff
       real fwhm,xlat,xlon,st(mx,mx),varparam(mvar,mparam)
       real sn(mx,mx),sm(mx,mx),xlatx,varparamx(mvar,mparam)
       real stx(mx,mx),xlonx
@@ -200,7 +200,6 @@ C      Look to see if previously retrieved information is to be used
 C      and if so, read in
        if(lin.gt.0)then
       
-C       print*,'Reading in previously retrieved parameters'
         call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,
      1   varparamx,jsurfx,jalbx,jtanx,jprex,jradx,nxx,xnx,stx)
       
@@ -232,11 +231,8 @@ C     Calculate the tabulated wavelengths of c-k look up tables
        do j=1,nconv1
         vconv1(j)=vconv(igeom,j)
        enddo
-       print*,'fwhm = ',fwhm
-c       print*,'nconv',nconv1,(vconv1(i),i=1,nconv1)
        CALL wavesetb(runname,vkstart,vkend,vkstep,nconv1,vconv1,
      1  fwhm,nwave1,vwave1)
-c       print*,'nwave1',nwave1,(vwave1(i),i=1,nwave1)
        do j=1,nwave1
         vwave(igeom,j)=vwave1(j)
        enddo
@@ -248,13 +244,10 @@ C     set up a priori of x and its covariance
      1  varparam,jsurf,jalb,jtan,jpre,jrad,nx,xa,sa)
 	
 
-      print*,'Nemesis JPRE = ',JPRE
-
       DO i = 1, nx
         xn(i)=xa(i)
       ENDDO 
 
-C      print*,'JSURF: ',jsurf,xa(jsurf)
 
       idump=0	! flag for diagnostic print dumps
 
@@ -296,12 +289,7 @@ C     Simple errors, set to sqrt of diagonal of ST
        err1(i)=sqrt(abs(st(i,i)))
       enddo
 
-C     Analyse final covariance matrix into its eigenvectors and hence get
-C     more representative estimate of the final errors
-C      call eigenerr(nx,st,err2)
-
 C     write output
-      print*,'Nemesis: Writing output'
 
       do i=1,nconv(1)
        print*,i,vconv(1,i),y(i),yn(i)

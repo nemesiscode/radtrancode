@@ -32,7 +32,7 @@ C     ***********************************************************************
       integer nx,i,j,ispec,lraw,npro,ivar1
       real xn(mx),st(mx,mx),xlat,xlon,varparam(mvar,mparam)
       integer varident(mvar,3),nvar,ivar,jsurf,ioff,np,jalb,jtan
-      integer jpre, jrad
+      integer jpre, jrad, npvar
 
       read(lraw,*)ispec
       read(lraw,*)xlat,xlon
@@ -51,12 +51,7 @@ C     ***********************************************************************
         read(lraw,*)(varparam(ivar,j),j=1,mparam)
         np = 1
         if(varident(ivar,1).le.100)then
-         if(varident(ivar,3).eq.0)np=npro
-         if(varident(ivar,3).eq.1)np=2
-         if(varident(ivar,3).eq.4)np=3
-         if(varident(ivar,3).eq.8)np=3
-         if(varident(ivar,3).eq.9)np=3
-         if(varident(ivar,3).eq.10)np=4
+         np = npvar(varident(ivar,3),npro)
         endif
         if(varident(ivar,1).eq.888)np = varparam(ivar,1) 
 
@@ -65,7 +60,6 @@ C     ***********************************************************************
         if(varident(ivar,1).eq.888)jalb=ioff
         if(varident(ivar,1).eq.777)jtan=ioff
         if(varident(ivar,1).eq.666)jpre=ioff
-C *************** add radius of planet : JM
         if(varident(ivar,1).eq.555)jrad=ioff
 
       enddo

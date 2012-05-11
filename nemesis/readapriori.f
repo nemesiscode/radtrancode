@@ -76,7 +76,7 @@ C     a priori covariance matrix
       integer varident(mvar,3),ivar,nvar,nlevel,lin,jsurfx
       integer jalbx,jtanx,jprex,jradx,jlat,ilat,nlat
       integer nprox,nvarx,varidentx(mvar,3),lpre,ioffx,ivarx
-      integer npx,ioff,icond
+      integer npx,ioff,icond,npvar
       character*100 opfile,buffer,ipfile,runname
       integer nxx 
 
@@ -747,14 +747,7 @@ C	print*,jrad,ix,sx(ix,ix),'jm2'
        do 21 ivarx=1,nvarx
         npx=1
         if(varidentx(ivarx,1).le.100)then
-         if(varidentx(ivarx,3).eq.0)npx=npro
-         if(varidentx(ivarx,3).eq.1)npx=2
-         if(varidentx(ivarx,3).eq.4)npx=3
-         if(varidentx(ivarx,3).eq.8)npx=3
-         if(varidentx(ivarx,3).eq.9)npx=3
-         if(varidentx(ivarx,3).eq.10)npx=4
-         if(varidentx(ivarx,3).eq.11)npx=2         
-         if(varidentx(ivarx,3).eq.12)npx=2
+         npx=npvar(varidentx(ivarx,3),npro)
         endif
         if(varidentx(ivarx,1).eq.888)npx=int(varparamx(ivarx,1))
      
@@ -762,14 +755,7 @@ C	print*,jrad,ix,sx(ix,ix),'jm2'
         do 22 ivar=1,nvar
          np=1
          if(varident(ivar,1).le.100)then
-          if(varident(ivar,3).eq.0)np=npro
-          if(varident(ivar,3).eq.1)np=2
-          if(varident(ivar,3).eq.4)np=3
-          if(varident(ivar,3).eq.8)np=3
-          if(varident(ivar,3).eq.9)np=3
-          if(varident(ivar,3).eq.10)np=4
-          if(varident(ivar,3).eq.11)np=2
-          if(varident(ivar,3).eq.12)np=2
+          np=npvar(varident(ivar,3),npro)
          endif
          if(varident(ivar,1).eq.888)np=int(varparam(ivar,1))
 

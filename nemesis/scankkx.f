@@ -33,7 +33,7 @@ C     *****************************************************************
 C     Set measurement vector and source vector lengths here.
       include '../radtran/includes/arrdef.f'
       INCLUDE 'arraylen.f'
-      integer nprox,nvarx,varidentx(mvar,3),nxx,ivar,ivarx
+      integer nprox,nvarx,varidentx(mvar,3),nxx,ivar,ivarx,npvar
       real varparamx(mvar,mparam)
       integer npro,nvar,varident(mvar,3),ioff,ikeep,np,icopy,i,j
       real varparam(mvar,mparam)
@@ -57,15 +57,7 @@ C     **************************** CODE ********************************
       do ivarx = 1,nvarx
         np=-1
         if(varidentx(ivarx,1).le.100)then
-         if(varidentx(ivarx,3).eq.0)np = nprox
-         if(varidentx(ivarx,3).eq.1)np = 2
-         if(varidentx(ivarx,3).eq.2)np = 1
-         if(varidentx(ivarx,3).eq.3)np = 1
-         if(varidentx(ivarx,3).eq.4)np = 3
-         if(varidentx(ivarx,3).eq.8)np = 3
-         if(varidentx(ivarx,3).eq.9)np = 3
-         if(varidentx(ivarx,3).eq.10)np = 4
-         if(varidentx(ivarx,3).eq.7)np = 2
+         np = npvar(varidentx(ivarx,3),nprox)
         else
          if(varidentx(ivarx,1).eq.555)np = 1
          if(varidentx(ivarx,1).eq.999)np = 1

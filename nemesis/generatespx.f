@@ -58,7 +58,7 @@ C     TIME2: System time at the end of program execution.
       double precision aa(mx,mx),dd(mx,my)
       real vkstart,vkend,vkstep
       integer idump,kiter,jtan,jtanx,jalbx,jpre,jprex,idum,lvec
-      integer ivar
+      integer ivar,npvar
 C     ********** Scattering variables **********************
       real xwave(maxsec),xf(maxcon,maxsec),xg1(maxcon,maxsec)
       real xg2(maxcon,maxsec)
@@ -215,12 +215,7 @@ C     Add forward errors to measurement covariances
         do ivar=1,nvar
          np=1
          if(varident(ivar,1).le.100)then
-          if(varident(ivar,3).eq.0)np=npro
-          if(varident(ivar,3).eq.1)np=2
-          if(varident(ivar,3).eq.4)np=3
-          if(varident(ivar,3).eq.8)np=3
-          if(varident(ivar,3).eq.9)np=3
-          if(varident(ivar,3).eq.10)np=4
+          np=npvar(varident(ivar,3),npro)
          endif
 
          if(varident(ivar,1).eq.0.and.np.eq.npro)then
@@ -228,12 +223,7 @@ C     Add forward errors to measurement covariances
           do ivarx=1,nvarx
            npx=1
            if(varidentx(ivarx,1).le.100)then
-            if(varidentx(ivarx,3).eq.0)npx=npro
-            if(varidentx(ivarx,3).eq.1)npx=2
-            if(varidentx(ivarx,3).eq.4)npx=3
-            if(varidentx(ivarx,3).eq.8)npx=3
-            if(varidentx(ivarx,3).eq.9)npx=3
-            if(varidentx(ivarx,3).eq.10)npx=4
+            npx=npvar(varidentx(ivarx,3),npro)
            endif
            if(varidentx(ivarx,1).eq.0.and.npx.eq.npro)then
             do i=1,npro

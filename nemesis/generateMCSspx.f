@@ -38,7 +38,7 @@ C     TIME2: System time at the end of program execution.
 
       character*200 buffer,ename
       integer i,j,iscat,ica,k,lspec,lout,ispec,nspec,nspecx,ioff
-      integer linfo
+      integer linfo,npvar
       real altbore,marsradius,satrad,thetrot
       real xn(mx),se(my),err1(mx),woff,xdiff
       real fwhm,xlat,xlon,st(mx,mx),varparam(mvar,mparam)
@@ -234,12 +234,7 @@ C     Read in forward modelling errors
         do ivar=1,nvar
          np=1
          if(varident(ivar,1).le.100)then
-          if(varident(ivar,3).eq.0)np=npro
-          if(varident(ivar,3).eq.1)np=2
-          if(varident(ivar,3).eq.4)np=3
-          if(varident(ivar,3).eq.8)np=3
-          if(varident(ivar,3).eq.9)np=3
-          if(varident(ivar,3).eq.10)np=4
+          np=npvar(varident(ivar,3).eq.0,npro)
          endif
 
          if(varident(ivar,1).eq.0.and.np.eq.npro)then
@@ -247,12 +242,7 @@ C     Read in forward modelling errors
           do ivarx=1,nvarx
            npx=1
            if(varidentx(ivarx,1).le.100)then
-            if(varidentx(ivarx,3).eq.0)npx=npro
-            if(varidentx(ivarx,3).eq.1)npx=2
-            if(varidentx(ivarx,3).eq.4)npx=3
-            if(varidentx(ivarx,3).eq.8)npx=3
-            if(varidentx(ivarx,3).eq.9)npx=3
-            if(varidentx(ivarx,3).eq.10)npx=4
+            npx=npvar(varidentx(ivarx,3),npro)
            endif
            if(varidentx(ivarx,1).eq.0.and.npx.eq.npro)then
             do i=1,npro

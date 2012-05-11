@@ -1121,6 +1121,10 @@ C         print*,'Tangent height correction'
 C         print*,'Tangent pressure'
          IPAR = -1
          NP = 1
+        ELSEIF(VARIDENT(IVAR,1).EQ.555)THEN
+C         print*,'Radius of Planet'
+         IPAR = -1
+         NP = 1
         ELSE
          PRINT*,'SUBPROFRETG: VARTYPE NOT RECOGNISED'
          STOP

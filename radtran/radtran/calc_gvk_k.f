@@ -288,7 +288,7 @@ C
 180       continue
           dlkdg=(lrk(imin+1)-lrk(imin))/(gk(imin+1)-gk(imin))
           rlk=lrk(imin)+dlkdg*(gval-gk(imin))
-          k_g(i)=10.0**rlk
+          k_g(i)=SNGL(10.0**rlk)
 160     continue
       endif
 C

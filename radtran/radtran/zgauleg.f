@@ -43,9 +43,9 @@ c-----------------------------------------------------------------------
           z1=z
           z=z1-p1/pp
         if(abs(z-z1).gt.EPS)goto 1
-        x(i)=xm-xl*z
-        x(n+1-i)=xm+xl*z
-        w(i)=2.d0*xl/((1.d0-z*z)*pp*pp)
+        x(i)=sngl(xm-xl*z)
+        x(n+1-i)=sngl(xm+xl*z)
+        w(i)=sngl(2.d0*xl/((1.d0-z*z)*pp*pp))
         w(n+1-i)=w(i)
 12    continue
       return

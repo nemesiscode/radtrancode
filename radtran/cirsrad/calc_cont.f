@@ -75,7 +75,7 @@ C******************************** CODE *********************************
 
       
       DO 13 LINE=1,NLINE(IB)
-       CURBIN = 1 + (VLIN(IB,LINE)-VBIN(1))/WING
+       CURBIN = 1 + INT((VLIN(IB,LINE)-VBIN(1))/WING)
        IGAS=IDLIN(IB,LINE)
        DO 15 J=1,NBIN
 	

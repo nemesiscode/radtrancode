@@ -132,7 +132,7 @@ C-----------------------------------------------------------------------
  	INR = 1000000001
 		CONT0 = .FALSE.
        ELSE
-		INR = (RS(2)-RS(1))/RS(3)+1
+		INR = 1+INT((RS(2)-RS(1))/RS(3))
 		IF (INR.GT.1 .AND. INR/2*2.NE.INR) INR = INR+1
 		CONT0 = .TRUE. 
        ENDIF
@@ -304,15 +304,15 @@ C-----------------------------------------------------------------------
 
 10	CONTINUE
         IF(ANORM.GT.0.0)THEN
-         XSCAT = KSCAT/ANORM * 1.e-8
- 	 XEXT = KEXT/ANORM * 1.e-8
+         XSCAT = SNGL(KSCAT/ANORM * 1.e-8)
+ 	 XEXT = SNGL(KEXT/ANORM * 1.e-8)
         ELSE
          XSCAT = 0.0
          XEXT = 0.0
          KSCAT = 1.0	!Dummy to stop PHAS going silly
         END IF
 	DO J = 1, NPHAS
-		PHAS(J) = XLAM * XLAM * PHAS0(J)/(PI*KSCAT)
+		PHAS(J) = XLAM * XLAM * sngl(PHAS0(J)/(PI*KSCAT))
 	ENDDO
 
 	RETURN

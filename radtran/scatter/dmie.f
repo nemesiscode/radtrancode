@@ -61,13 +61,13 @@ C-----------------------------------------------------------------------
       RRFX=RRF*RX
       T(1)=(X*X)*(RFR*RFR+RFI*RFI)
       T(1)=SQRT(T(1))
-      NMX1=1.1*T(1)
+      NMX1=INT(1.1*T(1))
       IF(NMX1.LE.14999) GOTO 21
       WRITE(6,8)
     8 FORMAT(1X,'THE UPPER LIMIT FOR ACAP IS NOT ENOUGH')
       QEXT=-1
       RETURN
-   21 NMX2=T(1)
+   21 NMX2=INT(T(1))
       IF(NMX1.GT.150) GOTO22
       NMX1=150
       NMX2=135

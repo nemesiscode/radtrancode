@@ -494,7 +494,7 @@ C               Set vv to the current WAVENUMBER
 			  	phase(J) = sngl(dphase)
 			ENDDO	
 C                       Calculate Rayleigh scattering too
-                        phase(ncont+1)=0.75*(1+calpha*calpha)
+                        phase(ncont+1)=sngl(0.75*(1+calpha*calpha))
 		ELSE
 			DO J = 1, ncont
 				phase(J) = 0.
@@ -950,7 +950,7 @@ C     1                  ' output'
                         endif
 
 		        corkout(Ipath,Ig) = corkout(Ipath,Ig) + 
-     1                  (trold-tr) * bb(J,Ipath)
+     1                  sngl((trold-tr)) * bb(J,Ipath)
  			trold = tr
 		enddo
 
@@ -968,7 +968,7 @@ cc     1                  ' creating output'
      1			    x,emtemp(J,Ipath))
                         endif
 			corkout(Ipath,Ig) = corkout(Ipath,Ig) + 
-     1                  (trold-tr) * bb(J,Ipath)
+     1                  sngl((trold-tr)) * bb(J,Ipath)
  			trold = tr
                 enddo
 
@@ -1023,7 +1023,7 @@ C               upwelling radiation field to local temperature.
                 endif
 
                 do J=1,nmu
-                 radg(J)=radg(1)*(1.0-galb1)
+                 radg(J)=radg(1)*sngl((1.0-galb1))
                 enddo
 
 
@@ -1091,7 +1091,7 @@ C                   endif
                      xmu = cos(sol_ang*dtr)
 C                     print*,'sol_ang, xmu: ',sol_ang,xmu
                      do j=1,nmu
-                      xt1 = abs(xmu-mu1(j))
+                      xt1 = abs(xmu-sngl(mu1(j)))
                       if(xt1.lt.tmp)then
                        j0=j
                        tmp=xt1
@@ -1147,10 +1147,9 @@ C                 taud = taud + taus(J)*(1.0-omega(J))
 
                  taud = taud + taus(J)
                  tr = dexp(-taud)
-C                 print*,taud,tausun,tr
 
 		 corkout(Ipath,Ig) = corkout(Ipath,Ig) + 
-     1			(trold-tr)*ssfac*fint(J)*
+     1			sngl((trold-tr))*ssfac*fint(J)*
      2			omega(J)*solar/(4*pi)
 
 
@@ -1160,7 +1159,7 @@ C                 print*,taud,tausun,tr
                  endif
 
 	         corkout(Ipath,Ig) = corkout(Ipath,Ig) + 
-     1                  (trold-tr) * bb(J,Ipath)
+     1                  sngl((trold-tr)) * bb(J,Ipath)
 
 
                  trold = tr
@@ -1170,7 +1169,7 @@ C                stop
 
 C               Add in reflectance from the ground
                 corkout(Ipath,Ig)=corkout(Ipath,Ig) + 
-     1                          trold*solar*galb1/pi
+     1                          sngl(trold*solar*galb1)/pi
 
 C		WRITE (*,*) ' Calculated: ', Ig, corkout(Ipath,Ig)
 
@@ -1191,8 +1190,6 @@ C		Compute once for Ipath=1
 		   if(Ig.eq.1)then
 		     bb(layinc(j,npath),1)=planck_wave(ispace,
      1                  x,emtemp(j,npath))
-C		     print*,j,taus(layinc(j,npath)),emtemp(j,npath),
-C     &			layinc(j,npath),bb(layinc(j,npath),1)
 		   endif
 		  enddo
 
@@ -1201,27 +1198,19 @@ C     &			layinc(j,npath),bb(layinc(j,npath),1)
 		    fup(j,Ig)=bb(j,1)
 		   else
 		    tr = exp(-taus(j-1))
-                    fup(j,Ig)=fup(j-1,Ig)*tr + (1.0-tr)*bb(j,1)
-C		    print*,j,bb(j,1),tr,fup(j,Ig)	
+                 fup(j,Ig)=fup(j-1,Ig)*sngl(tr)+sngl((1.0-tr))*bb(j,1)
 		   endif
 		  enddo 
 
 	   	  do j=nlayin(npath),1,-1
                    tr=exp(-taus(j))
             	   if(j.eq.nlays)then
-		    fdown(j,Ig)=(1.0-tr)*bb(j,1)
+		    fdown(j,Ig)=sngl((1.0-tr))*bb(j,1)
 		   else
-                    fdown(j,Ig)=(1.0-tr)*bb(j,1)+tr*fdown(j+1,Ig)
-C		    print*,j,bb(j,1),tr,fdown(j,Ig)	
+              fdown(j,Ig)=sngl((1.0-tr))*bb(j,1)+sngl(tr)*fdown(j+1,Ig)
 		   endif
 		  enddo 
 
-                  if(Ig.eq.1)then
-                   do j=1,nlayin(npath)
-C		    print*,j,fup(j,Ig),fdown(j,Ig),
-C     &			fup(j,Ig)-fdown(j,Ig)			
-		   enddo
-                  endif
                 endif 
             
 	        corkout(Ipath,Ig) = fup(Ipath,Ig) - fdown(Ipath,Ig)
@@ -1267,7 +1256,7 @@ C                 if(Ig.eq.1)print*,x,galb1
                 endif
 
                 do J=1,nmu
-                 radg(J)=radg(1)*(1.0-galb1)
+                 radg(J)=radg(1)*sngl((1.0-galb1))
                 enddo
 
 
@@ -1337,8 +1326,6 @@ C                print*,(uplft(2,2,20,j),j=1,20)
 C                print*,(umift(2,2,20,j),j=1,20)
 
                 do J = 1, nlays
-C                        print*,J,taus(J),tautmp(layinc(J,Ipath)),
-C     1                    tauscat(layinc(J,Ipath))
                         if(Ig.eq.1)then
                          bb(J,Ipath)=planck_wave(ispace,x,
      1                     emtemp(J,Ipath))
@@ -1357,7 +1344,6 @@ C     1                    tauscat(layinc(J,Ipath))
                         scaleS(J) = scale(J,Ipath)
 			delhs(J) = delh(layinc(J,Ipath))
 
-C                        print*,J,Ipath,basehS(J),bnuS(j),epsS(J)
                 enddo
 
                 call hgaverage(nlays,ncont,taus,epsS,lfrac,
@@ -1369,19 +1355,10 @@ C                        print*,J,Ipath,basehS(J),bnuS(j),epsS(J)
      2            umif,uplf,nff,Jsource,Ig,I)
                 else
                  print*,'Calling scatsourcesol'
-C                 print*,'sol_ang = ',sol_ang
-C                 print*,'emiss_ang = ',emiss_ang
-C                 print*,'aphi = ',aphi
-C                 print*,'Solar = ',solar
                  call scatsourcesol(nlays,nmuf,wt1,mu1,epsS,bnuS,
      1            basehS,ibaseH,tautmp,emiss_ang,sol_ang,aphi,solar,
      2            f1,g11,g21,nlayerf,basehf,umift,uplft,nff,Jsource,
      3            Ig,I)
-C                 do j=1,nlays
-C                   print*,j,basehS(j),taus(j),scaleS(j),bnuS(j),
-C     1               Jsource(j)
-C                 enddo
-C                 stop
                 endif
 
                 taud = 0.
@@ -1390,7 +1367,7 @@ C                 stop
                         taud = taud + taus(J)
                         tr = dexp(-taud)
                         corkout(Ipath,Ig) = corkout(Ipath,Ig) +
-     1                  (trold-tr) * Jsource(J)
+     1                  sngl((trold-tr)) * Jsource(J)
                         trold = tr
                 enddo
 C               If surface temperature defined and bottom layer
@@ -1399,7 +1376,7 @@ C               emission from ground.
                 if(tsurf.gt.0.0.and.basehS(nlays).eq.0.0)then
                  radground = esurf*planck_wave(ispace,x,tsurf)
                  corkout(Ipath,Ig) = corkout(Ipath,Ig) +
-     1            trold * radground
+     1            sngl(trold) * radground
                 endif
                 if(Ig.eq.5.and.I.eq.1)then
                  write(49)corkout(Ipath,Ig)
@@ -1451,7 +1428,7 @@ C-----------------------------------------------------------------------
 
 1000	FORMAT (/,'***************************************************')
 1010	FORMAT (' Ending wavenumber loop',I6,' of',I6,' : ',
-     1 		F8.3,' cm^-1')
+     1   F8.3,' cm^-1')
 1020	FORMAT(' CIRSRAD_WAVE.f :: % complete : ',F5.1)
 
         IF(IFLUX.GT.0)THEN

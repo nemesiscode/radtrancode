@@ -104,7 +104,7 @@ C     MAXOUT the maximum number of output points
        IREC=IREC+1
 302   CONTINUE
  
-      N1 = 1 + (VMIN-VMIN1)/DELV
+      N1 = 1 + INT((VMIN-VMIN1)/DELV)
 
       IREC0=IREC0+NP*NT*NG*(N1-1)
       PRINT*,VMIN,VMIN1,N1,IREC0
@@ -128,7 +128,7 @@ C     *******************************************************************
 
 C     ------------------------------------------------------------------
 
-      N1 = 1 + (V - VMIN)/DELV
+      N1 = 1 + INT((V - VMIN)/DELV)
 
       IREC=IREC0+NP*NT*NG*(N1-1)
 

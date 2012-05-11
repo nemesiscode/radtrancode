@@ -497,7 +497,7 @@ C               Set vv to the current WAVENUMBER
 			  	phase(J) = sngl(dphase)
 			ENDDO	
 C                       Calculate Rayleigh scattering too
-                        phase(ncont+1)=0.75*(1+calpha*calpha)
+                        phase(ncont+1)=0.75*sngl((1.+calpha*calpha))
 		ELSE
 			DO J = 1, ncont
 				phase(J) = 0.
@@ -1002,7 +1002,7 @@ C     1                  ' output'
 			taud = taud + taus(J)
 			tr = dexp(-taud)
 		        corkout(Ipath,Ig) = corkout(Ipath,Ig) + 
-     1                  (trold-tr) * jb(J,Ipath)
+     1                  sngl((trold-tr)) * jb(J,Ipath)
  			trold = tr
 		enddo
 
@@ -1016,7 +1016,7 @@ cc     1                  ' creating output'
 			taud = taus(J)
 			tr = dexp(-taud)
 			corkout(Ipath,Ig) = corkout(Ipath,Ig) + 
-     1                  (trold-tr) * jb(J,Ipath)
+     1                  sngl((trold-tr)) * jb(J,Ipath)
  			trold = tr
                 enddo
 
@@ -1065,7 +1065,7 @@ C                 if(Ig.eq.1)print*,x,galb1
                 endif
 
                 do J=1,nmu
-                 radg(J)=radg(1)*(1.0-galb1)
+                 radg(J)=radg(1)*sngl(1.0-galb1)
                 enddo
 
                 IF (itype.EQ.11) THEN
@@ -1173,7 +1173,7 @@ C                  if(Ig.eq.1)print*,x,galb1
                         taud = taud + taus(J)
                         tr = dexp(-taud)
 			corkout(Ipath,Ig) = corkout(Ipath,Ig) + 
-     1				(trold-tr)*ssfac*fint(J)*
+     1				sngl(trold-tr)*ssfac*fint(J)*
      2				omega(J)*solar/(4*pi)
 
                         trold = tr
@@ -1181,7 +1181,7 @@ C                  if(Ig.eq.1)print*,x,galb1
 		ENDDO
 C               Add in reflectance from the ground
                 corkout(Ipath,Ig)=corkout(Ipath,Ig) + 
-     1                          trold*solar*galb1/pi
+     1                          sngl(trold*solar*galb1)/pi
 
 C		WRITE (*,*) ' Calculated: ', Ig, corkout(Ipath,Ig)
 
@@ -1207,7 +1207,7 @@ C		Compute once for Ipath=1
 		    fup(j,Ig)=bb(j1,1)
 		   else
 		    tr = exp(-taus(j-1))
-                    fup(j,Ig)=fup(j-1,Ig)*tr + (1.0-tr)*bb(j1,1)
+               fup(j,Ig)=fup(j-1,Ig)*sngl(tr) + sngl(1.0-tr)*bb(j1,1)
 C		    print*,j,bb(j1,1),tr,fup(j,Ig)	
 		   endif
 		  enddo 
@@ -1215,9 +1215,9 @@ C		    print*,j,bb(j1,1),tr,fup(j,Ig)
 	   	  do j=nlayin(npath),1,-1
                    tr=exp(-taus(j))
             	   if(j.eq.nlays)then
-		    fdown(j,Ig)=(1.0-tr)*bb(j1,1)
+		    fdown(j,Ig)=sngl(1.0-tr)*bb(j1,1)
 		   else
-                    fdown(j,Ig)=(1.0-tr)*bb(j1,1)+tr*fdown(j+1,Ig)
+             fdown(j,Ig)=sngl(1.0-tr)*bb(j1,1)+sngl(tr)*fdown(j+1,Ig)
 C		    print*,j,bb(j1,1),tr,fdown(j,Ig)	
 		   endif
 		  enddo 
@@ -1277,7 +1277,7 @@ C-----------------------------------------------------------------------
 
 1000	FORMAT (/,'***************************************************')
 1010	FORMAT (' Ending wavenumber loop',I6,' of',I6,' : ',
-     1 		F8.3,' cm^-1')
+     1   F8.3,' cm^-1')
 1020	FORMAT(' CIRSRAD_WAVES.f :: % complete : ',F5.1)
 
         IF(IFLUX.GT.0)THEN

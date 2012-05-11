@@ -10,7 +10,8 @@ C     ************************************************************
       INCLUDE '../includes/arrdef.f'
       INCLUDE '../includes/contdef.f'
       DOUBLE PRECISION DMATRIX(IORDP1,IORDP1),DUNIT(IORDP1,IORDP1)
-      NBIN=1+(VMAX-VMIN)/WING
+
+      NBIN=1+INT((VMAX-VMIN)/WING)
 
       IF(NBIN.GT.MAXBIN)THEN       
         WRITE(*,*)'INIT_CONT.f :: *ERROR* NBIN > MAXBIN'

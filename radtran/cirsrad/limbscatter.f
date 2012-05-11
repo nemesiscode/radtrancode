@@ -54,7 +54,7 @@ c      integer maxlay
 
         jsou =  sngl(eps(jlay)*bnu(jlay) + (1.0-eps(jlay))*scat)
 
-        radtot = radtot + jsou*(trold-tr)
+        radtot = radtot + jsou*sngl(trold-tr)
         trold = tr
 
 100   continue

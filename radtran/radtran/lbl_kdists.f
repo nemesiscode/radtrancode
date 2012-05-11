@@ -280,7 +280,7 @@ C     first computing normal path optical depth through each layer (TAUTMP)
 
 C     now compute absorption coefficient
 C     first continuum contribution
-      CURBIN=(SNGL(V-DBLE(VBIN(1))))/WING+1
+      CURBIN=INT((SNGL(V-DBLE(VBIN(1))))/WING)+1
       TAUTMP=CONTINK(1,LAYER1,CURBIN)
       VTMP=SNGL(V-DBLE(VBIN(CURBIN)))
       DO 51 ISUM=2,IORDP1

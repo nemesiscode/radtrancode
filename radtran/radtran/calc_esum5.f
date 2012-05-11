@@ -96,9 +96,9 @@ c      print*,'Calculating COVAR. niter = ',niter
       sumerr=0.
       do i=1,na
 	if (covar(I,I).ge.1.e30) covar(I,I) = 1.e30
-	tmp = sum + a(I)
+	tmp = sngl(sum + a(I))
        	sum=min(1.e30,tmp)
-       k_g(i)=sum
+       k_g(i)=sngl(sum)
        if(covar(i,i).lt.0.and.nerr.lt.200)then
         print*,'Esum5. Convergence error, covar < 0. nerr = ',nerr
         print*,'i,covar(i,i) ',i,covar(i,i)
@@ -106,11 +106,11 @@ c      print*,'Calculating COVAR. niter = ',niter
         nerr = nerr+1
         goto 20
        else
-	tmp = abs(covar(I,I))
-	tmp = sumerr+sngl(abs(covar(i,i)))
+	tmp = sngl(abs(covar(I,I)))
+	tmp = sngl(sumerr+sngl(abs(covar(i,i))))
         sumerr=min(1.e30,tmp)
         e1=sqrt(sumerr)
-        errk(i) = 100.*e1/k_g(i)
+        errk(i) = sngl(100.*e1/k_g(i))
        end if
       end do
 

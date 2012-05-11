@@ -193,7 +193,7 @@ C NOTE: TCORS1 includes factor of 1.e-27 for scaling of stored lines
       VTOP = VMAX + VREL
       IF(VBOT.LT.0.0)VBOT = 0.0
       RANGE = VTOP - VBOT
-      NBIN = RANGE/WING + 1
+      NBIN = INT(RANGE/WING) + 1
 
       IF(NBIN.GT.MAXBIN)THEN
         WRITE(*,*)'LBL_KCONT.f :: *ERROR* NBIN > MAXBIN'
@@ -253,8 +253,8 @@ C	for all the bins.
 C
 C=======================================================================
 
-      FSTBIN = (VMIN - VBOT)/WING
-      LSTBIN = (VMAX - VBOT)/WING + 2
+      FSTBIN = INT((VMIN - VBOT)/WING)
+      LSTBIN = INT((VMAX - VBOT)/WING) + 2
 
       DO 444 K=1,IORDP1
 C Wavenumbers to compute continuum at

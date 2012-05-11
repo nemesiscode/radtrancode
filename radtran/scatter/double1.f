@@ -115,7 +115,7 @@ C     N.b: GAMMA++ = GAMMA--
 C	   GAMMA+- = GAMMA-+
 
 C      print*,'TAUT,IPOW0 = ',TAUT,IPOW0
-      NN=DLOG(TAUT)/DLOG(2.0D0)+IPOW0
+      NN=INT(DLOG(TAUT)/DLOG(2.0D0))+IPOW0
 
       IF(NN.GE.1)THEN
        TAU0 = TAUT/(2.0D0**NN)

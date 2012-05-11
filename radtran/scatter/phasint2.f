@@ -139,10 +139,10 @@ C  	      Quality of fourier fit for worst possible case of maximum
 C 	      illumination and viewing angles    
               sum = 0.0
 	      do k=0,nphi
-		sum=sum + (phasl(k+1,2) - phasl(k+1,3))**2
+		sum=sum + sngl(phasl(k+1,2) - phasl(k+1,3))**2
               end do
               sum=sum/(1.0*(nphi+1))
-              k = 0.5*nphi
+              k = nphi/2
               write(*,1000)icont,phasl(1,2),phasl(k,2),sum
               write(*,1000)icont,phasl(1,3),phasl(k,3),sum
 1000  format(' Phasint2: Scat = ',i2,' Extreme phase = ',f7.3,f7.3,

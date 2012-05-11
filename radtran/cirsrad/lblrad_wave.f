@@ -431,7 +431,7 @@ C        print*,'lblrad_wave ispace,vv=',ispace,vv
 			  	phase(J) = sngl(dphase)
 		ENDDO	
 C               Calculate Rayleigh scattering too
-                phase(ncont+1)=0.75*(1+calpha*calpha)
+                phase(ncont+1)=0.75*sngl(1.+calpha*calpha)
 	ELSE
 		DO J = 1, ncont
 			phase(J) = 0.
@@ -895,7 +895,7 @@ C     1                  ' output'
                          bb(J,Ipath)=planck_wave(ispace,x,
      1				emtemp(J,Ipath))
 		        output(Ipath) = output(Ipath) + 
-     1                  (trold-tr) * bb(J,Ipath)
+     1                  sngl(trold-tr) * bb(J,Ipath)
  			trold = tr
 		enddo
 
@@ -913,7 +913,7 @@ cc     1                  ' creating output'
      1			    x,emtemp(J,Ipath))
 
 			output(Ipath) = output(Ipath) + 
-     1                  (trold-tr) * bb(J,Ipath)
+     1                  sngl(trold-tr) * bb(J,Ipath)
  			trold = tr
                 enddo
 
@@ -969,7 +969,7 @@ C               upwelling radiation field to local temperature.
                 endif
 
                 do J=1,nmu
-                 radg(J)=radg(1)*(1.0-galb1)
+                 radg(J)=radg(1)*sngl(1.0-galb1)
                 enddo
 
 
@@ -1040,7 +1040,7 @@ C                   endif
                      xmu = cos(sol_ang*dtr)
 C                     print*,'sol_ang, xmu: ',sol_ang,xmu
                      do j=1,nmu
-                      xt1 = abs(xmu-mu1(j))
+                      xt1 = abs(xmu-sngl(mu1(j)))
                       if(xt1.lt.tmp)then
                        j0=j
                        tmp=xt1
@@ -1099,7 +1099,7 @@ C                 taud = taud + taus(J)*(1.0-omega(J))
 C                 print*,taud,tausun,tr
 
 		 output(Ipath) = output(Ipath) + 
-     1			(trold-tr)*ssfac*fint(J)*
+     1			sngl(trold-tr)*ssfac*fint(J)*
      2			omega(J)*solar/(4*pi)
 
 
@@ -1109,7 +1109,7 @@ C                 print*,taud,tausun,tr
 
 
 	         output(Ipath) = output(Ipath) + 
-     1                  (trold-tr) * bb(J,Ipath)
+     1                  sngl(trold-tr) * bb(J,Ipath)
 
 
                  trold = tr
@@ -1118,8 +1118,8 @@ C                 print*,taud,tausun,tr
 C               Add in reflectance and emission from the ground
 		bsurf=planck_wave(ispace,x,Tsurf)
                 output(Ipath)=output(Ipath) + 
-     1                          trold*solar*galb1/pi +
-     2				trold*esurf*bsurf
+     1                          sngl(trold*solar*galb1)/pi +
+     2				sngl(trold*esurf*bsurf)
 
 
 	ELSEIF (imod(ipath).EQ.20)THEN
@@ -1146,16 +1146,16 @@ C		Compute once for Ipath=1
 		    fup(j)=bb(j,1)
 		   else
 		    tr = exp(-taus(j-1))
-                    fup(j)=fup(j-1)*tr + (1.0-tr)*bb(j,1)
+               fup(j)=fup(j-1)*sngl(tr) + sngl(1.0-tr)*bb(j,1)
 		   endif
 		  enddo 
 
 	   	  do j=nlayin(npath),1,-1
                    tr=exp(-taus(j))
             	   if(j.eq.nlays)then
-		    fdown(j)=(1.0-tr)*bb(j,1)
+		    fdown(j)=sngl(1.0-tr)*bb(j,1)
 		   else
-                    fdown(j)=(1.0-tr)*bb(j,1)+tr*fdown(j+1)
+               fdown(j)=sngl(1.0-tr)*bb(j,1)+sngl(tr)*fdown(j+1)
 C		    print*,j,bb(j,1),tr,fdown(j)	
 		   endif
 		  enddo 
@@ -1204,7 +1204,7 @@ C               upwelling radiation field to local temperature.
                 endif
 
                 do J=1,nmu
-                 radg(J)=radg(1)*(1.0-galb1)
+                 radg(J)=radg(1)*sngl(1.0-galb1)
                 enddo
 
 

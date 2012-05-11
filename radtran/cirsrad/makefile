@@ -78,7 +78,6 @@ clean:
 touch:
 	touch $(F_SOURCES)
 
-
 lib $(LIBRARY): $(LIBCODE)
 
 $(LIBRARY)(%.o): %.f $(INCLUDES)

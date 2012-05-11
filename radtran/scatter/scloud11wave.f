@@ -561,7 +561,7 @@ C ***********************************************************************
 
       CONV1 = CONV
 
-      DRAD = RADF(IC)*COS(IC*APHI*PI/180.0)
+      DRAD = RADF(IC)*COS(IC*APHI*SNGL(PI)/180.0)
       IF(IC.GT.0)DRAD=DRAD*2
 
       RAD=RAD+DRAD

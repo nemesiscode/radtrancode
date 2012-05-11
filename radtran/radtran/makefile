@@ -1,7 +1,7 @@
 ############################################################################
 #_TITL: MAKEFILE 
 #
-###########################################################################
+############################################################################
 
 #set compiler and flags
 FC = $(FCOMP)
@@ -9,100 +9,100 @@ FCFLAGS = $(FCFLAGS1) $(STATIC_FLAG)
 FRECIPES = $(LIB)/libfrecipes.a
 
 F_SOURCES = \
-      bboff.f \
-      bright.f \
-      getmass.f \
-      calc_dop_width.f \
-      chico2.f \
-      burchco2.f \
-      hartmannch4.f \
-      hartmannch4A.f \
-      calc_esum2.f \
-      calc_esum5.f \
-      calc_gvk_k.f \
-      calc_fkdist_wavec.f \
-      calc_lor_width.f \
-      calc_mlk1_k.f \
-      co2cia.f \
-      n2n2cia.f \
-      n2h2cia.f \
-      calc_mlk2_k.f \
-      calc_nlte.f \
-      calc_pcoeff.f \
-      nciacon.f \
-      ciacon.f \
-      co2cia.f \
-      e3.f \
-      e3interp.f \
-      tran_eks.f \
-      voigtf_eks.f \
-      subline.f \
-      linecontrib.f \
-      fparacon.f \
-      nparacon.f \
-      ciaread.f \
-      ch4cont.f \
-      chico2.f \
-      burchco2.f \
-      conray.f \
-      transet.f \
-      roughk.f \
-      finefitk.f \
-      display.f \
-      dpexp.f \
-      dslvf.f \
-      esumset.f \
-      fit_mlband.f \
-      gascon.f \
-      ngascon.f \
-      genrads.f \
-      godson_lor.f \
-      goody_lor.f \
-      gvoico2.f \
-      humlic.f \
-      intrpk.f \
-      fpread.f \
-      kml.f \
-      lbl_kcont.f \
-      lbl_kcont_exo3.f \
-      lbl_kdists.f \
-      lbl_fknew_exo3.f \
-      lbl_fknew.f \
-      loadbins.f \
-      malkmus_lor.f \
-      ml_lacis.f \
-      n2n2cia.f \
-      n2h2cia.f \
-      newconv.f \
-      planck.f \
-      planckg.f \
-      planck_wave.f \
-      planckg_wave.f \
-      rdlbld.f \
-      readdustod.f \
-      read_ktable.f \
-      read_rodgers.f \
-      read_scatter1.f \
-      read_xsec.f \
-      read_voigt.f \
-      slvf.f \
-      getnh3.f \
-      tau_mg_lor.f \
-      tau_goody_voigt1.f \
-      tgv3.f \
-      tau_eks.f \
-      tran_curve.f \
-      tran_ml.f \
-      voigt_interp.f \
-      vvweiss.f \
-      tkark.f \
-      zgauleg.f \
-      getavbins.f \
-      getavbinsc.f \
-      open_k.f \
-      open_kc.f \
-      write_k.f \
-      reservegas.f
+	bboff.f \
+	bright.f \
+	getmass.f \
+	calc_dop_width.f \
+	chico2.f \
+	burchco2.f \
+	hartmannch4.f \
+	hartmannch4A.f \
+	calc_esum2.f \
+	calc_esum5.f \
+	calc_gvk_k.f \
+	calc_fkdist_wavec.f \
+	calc_lor_width.f \
+	calc_mlk1_k.f \
+	co2cia.f \
+	n2n2cia.f \
+	n2h2cia.f \
+	calc_mlk2_k.f \
+	calc_nlte.f \
+	calc_pcoeff.f \
+	nciacon.f \
+	ciacon.f \
+	co2cia.f \
+	e3.f \
+	e3interp.f \
+	tran_eks.f \
+	voigtf_eks.f \
+	subline.f \
+	linecontrib.f \
+	fparacon.f \
+	nparacon.f \
+	ciaread.f \
+	ch4cont.f \
+	chico2.f \
+	burchco2.f \
+	conray.f \
+	transet.f \
+	roughk.f \
+	finefitk.f \
+	display.f \
+	dpexp.f \
+	dslvf.f \
+	esumset.f \
+	fit_mlband.f \
+	gascon.f \
+	ngascon.f \
+	genrads.f \
+	godson_lor.f \
+	goody_lor.f \
+	gvoico2.f \
+	humlic.f \
+	intrpk.f \
+	fpread.f \
+	kml.f \
+	lbl_kcont.f \
+	lbl_kcont_exo3.f \
+	lbl_kdists.f \
+	lbl_fknew_exo3.f \
+	lbl_fknew.f \
+	loadbins.f \
+	malkmus_lor.f \
+	ml_lacis.f \
+	n2n2cia.f \
+	n2h2cia.f \
+	newconv.f \
+	planck.f \
+	planckg.f \
+	planck_wave.f \
+	planckg_wave.f \
+	rdlbld.f \
+	readdustod.f \
+	read_ktable.f \
+	read_rodgers.f \
+	read_scatter1.f \
+	read_xsec.f \
+	read_voigt.f \
+	slvf.f \
+	getnh3.f \
+	tau_mg_lor.f \
+	tau_goody_voigt1.f \
+	tgv3.f \
+	tau_eks.f \
+	tran_curve.f \
+	tran_ml.f \
+	voigt_interp.f \
+	vvweiss.f \
+	tkark.f \
+	zgauleg.f \
+	getavbins.f \
+	getavbinsc.f \
+	open_k.f \
+	open_kc.f \
+	write_k.f \
+	reservegas.f
 
 INCDIR = ../includes
 INCLUDES = $(INCDIR)/arrdef.f $(INCDIR)/bincom.f $(INCDIR)/bincoms.f \
@@ -112,6 +112,7 @@ INCLUDES = $(INCDIR)/arrdef.f $(INCDIR)/bincom.f $(INCDIR)/bincoms.f \
 OBJ = $(F_SOURCES:.f=.o)
 LIBRARY = $(LIB)/radtran.a
 LIBCODE = $(LIBRARY)($(OBJ))
+
 
 # Target definitions
 
@@ -124,7 +125,6 @@ clean:
 .PHONY: touch
 touch:
 	touch $(F_SOURCES)
-
 
 lib $(LIBRARY): $(LIBCODE)
 

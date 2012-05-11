@@ -36,9 +36,9 @@ C	Revised again		24/1/04
 C
 C     ***********************************************************************
       implicit double precision (a-h,o-z)
-      integer miter,maxg,ng,ndata,imethod
-      parameter (maxg=10)
-      real alamda1
+      include '../includes/arrdef.f'
+      integer miter,ng,ndata,imethod
+      real alamda1,kout,kold
       real del_g(maxg),k_g(maxg),chistore(4),t(4)
       logical aover
       integer err,icalc,istore
@@ -55,7 +55,6 @@ C     -----------------------------------------------------------------------
        x(loop)=dble(x1(loop))
        y(loop)=dble(yy1(loop))
        sig(loop)=dble(sig1(loop))
-C       print*,loop,x(loop),y(loop),sig(loop)
       end do
 
       na=ng
@@ -91,8 +90,7 @@ C      print*,'niter = ',niter
      &    alamdaset,imethod)
     
 
-      chistore(istore)=chisq
-C      print*,istore,chistore(istore)
+      chistore(istore)=sngl(chisq)
       istore=istore+1
       if(istore.eq.5)then
        istore = 1
@@ -158,14 +156,14 @@ C      print*,'niter,dx,iconverge = ',niter,dx,iconverge
 
       if(imethod.eq.0)then
        do i=1,na
-        k_g(i)=exp(a(I))
+        k_g(i)=sngl(exp(a(I)))
        end do
       else
        sum=0.0
        do i=1,na
-        tmp = sum + a(I)
+        tmp = sngl(sum + a(I))
         sum=min(1.e30,tmp)
-        k_g(i)=sum
+        k_g(i)=sngl(sum)
        enddo
       endif
 

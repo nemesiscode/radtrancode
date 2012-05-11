@@ -313,7 +313,7 @@ c     pretabulate some line calculation parameters
 
       do i=1,npoint
         V = DBLE(VSTART + FLOAT(I - 1)*DELV)
-        CURBIN = (SNGL(V - DBLE(VBIN(1))))/WING + 1
+        CURBIN = INT((SNGL(V - DBLE(VBIN(1))))/WING) + 1
         IBIN1 = CURBIN - 1
         IBIN2 = CURBIN + 1
         IF(IBIN1.LT.1)IBIN1 = 1
@@ -368,7 +368,7 @@ C=======================================================================
 
 C First calculate continuum contribution. CURBIN is the current BIN for
 C which calculations are being made.
-      CURBIN = (SNGL(V - DBLE(VBIN(1))))/WING + 1
+      CURBIN = INT((SNGL(V - DBLE(VBIN(1))))/WING) + 1
 
 C Calculate the continuum absorption via the IORDP1 polynomial
 C coefficients held in CONTINK.

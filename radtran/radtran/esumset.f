@@ -118,7 +118,7 @@ C     find lower part
       sds = 0.
       do i=1,ndata
        U=x(i)
-       tml = dexp(-0.5*PI*BL*(DSQRT(1.+4.*SL*U/(PI*BL))-1.))
+       tml = sngl(dexp(-0.5*PI*BL*(DSQRT(1.+4.*SL*U/(PI*BL))-1.)))
        sds = sds + (y(i) - tml)**2
       end do
 

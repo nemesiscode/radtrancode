@@ -803,7 +803,7 @@ C       allow for finite resolution
        END IF
 
        RANGE=VTOP-VBOT
-       NBIN=RANGE/WING+1
+       NBIN=INT(RANGE/WING)+1
        DELWAV=WING
 
 
@@ -832,7 +832,7 @@ C      Set up 'bins' for BAND or CK calculations
 
        IF(LINEDATA)THEN
         RANGE=VTOP-VBOT
-        NBIN=RANGE/WING+1
+        NBIN=INT(RANGE/WING)+1
        ELSE
         NBIN=0
        END IF
@@ -978,14 +978,14 @@ C------------------------------------------------------------------------------
 
       IF(LBLCALC.OR.ICONV.EQ.20)THEN
       IF(ICONV.EQ.0)THEN
-       FSTBIN=(VMIN-VBOT)/WING
-       LSTBIN=(VMAX-VBOT)/WING+2
+       FSTBIN=INT((VMIN-VBOT)/WING)
+       LSTBIN=INT((VMAX-VBOT)/WING)+2
       ELSE IF(ICONV.EQ.1)THEN
-       FSTBIN=(VMIN - 0.5*DELV - VBOT)/WING
-       LSTBIN=(VMAX + 0.5*DELV - VBOT)/WING+2
+       FSTBIN=INT((VMIN - 0.5*DELV - VBOT)/WING)
+       LSTBIN=INT((VMAX + 0.5*DELV - VBOT)/WING)+2
       ELSE IF(ICONV.EQ.20)THEN
-       FSTBIN=(VMIN-0.5*FWHM - VBOT)/WING
-       LSTBIN=(VMAX+0.5*FWHM - VBOT)/WING+2
+       FSTBIN=INT((VMIN-0.5*FWHM - VBOT)/WING)
+       LSTBIN=INT((VMAX+0.5*FWHM - VBOT)/WING)+2
       END IF
       WRITE(*,71)NBIN
       WRITE(ULOG,71)NBIN
@@ -1321,7 +1321,7 @@ C        NSAMP=20
         WRITE(*,1102)NSAMP,DVSAMP
 
 1102    FORMAT(' sub dividing interval into ',I4,' intervals of ',
-     1  	F9.4,'cm^-1')
+     1   F9.4,'cm^-1')
 
 C       -----------------------------------------------------------
 C       initialise integration variables
@@ -1329,7 +1329,7 @@ C       initialise integration variables
         DO 233 K=1,NPATH
           SUMEND(K)=0.
           SUMEVEN(K)=0.
-          SUMODD(K)=0
+          SUMODD(K)=0.
 233     CONTINUE
 
         DO 105 J=0,NSAMP
@@ -1355,8 +1355,8 @@ C       initialise integration variables
 
 C       Calculate averaged spectrum for each path
         DO 222 K=1,NPATH
-         XOLD(K) = (DVSAMP/3.0)*(SUMEND(K)+4*SUMODD(K)+2*SUMEVEN(K))/
-     &		   (V2DP-V1DP)
+         XOLD(K) = SNGL((DVSAMP/3.0)*
+     &   (SUMEND(K)+4*SUMODD(K)+2*SUMEVEN(K))/(V2DP-V1DP))
 
 222     CONTINUE
 
@@ -1398,8 +1398,8 @@ C       Calculate the new odd points
 C       Calculate new averaged outputs
 
         DO K=1,NPATH
-         XNEW(K) = (DVSAMP/3.0)*(SUMEND(K)+4*SUMODD(K)+2*SUMEVEN(K))/
-     &		   (V2DP-V1DP)
+         XNEW(K) = SNGL((DVSAMP/3.0)*
+     &    (SUMEND(K)+4*SUMODD(K)+2*SUMEVEN(K))/(V2DP-V1DP))
          IF(XOLD(K).NE.0)THEN
           ERR(K) = 100*ABS(XNEW(K)-XOLD(K))/XOLD(K)	!% difference
          ELSEIF(XNEW(K).EQ.0)THEN			!from last step
@@ -1510,7 +1510,7 @@ C      Compute absorption coefficient for LAYER
 C      First calculate continuum contribution. CURBIN is the current BIN
 C      for which calculations are being made.
        IF(LBLCALC)THEN
-        CURBIN=(SNGL(V-DBLE(VBOT)))/WING+1
+        CURBIN=INT((SNGL(V-DBLE(VBOT)))/WING)+1
        ELSE
         CURBIN=I
        END IF
@@ -1905,8 +1905,8 @@ C        Extract Lorentz line width parameter
          END IF
 516     CONTINUE
 
-        SST=SS
-        BBT=BB1
+        SST=SNGL(SS)
+        BBT=SNGL(BB1)
 
         IF(CALC_MOD.LT.3)THEN
 
@@ -1924,7 +1924,7 @@ C        Extract Lorentz line width parameter
          DO 653 J=1,NGAS
            SL=PAR(J,1)
            BL=PAR(J,2)
-           U =PAR(J,3)
+           U =SNGL(PAR(J,3))
            IF(SL.GT.0.AND.BL.GT.0)THEN
             SS=SS+SL*U
             TAUD=TAUD+0.5*PI*BL*(DSQRT(1. + 4.*SL*U/(PI*BL)) - 1.)

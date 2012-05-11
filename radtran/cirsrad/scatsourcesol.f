@@ -63,16 +63,16 @@ C       print*,i,tzsun(i),tzsat(i),tphi(i)
        j0=-1
 C       print*,'i, xmusun = ',i,xmusun
 C       print*,'solar,radsol0 = ',solar,radsol0
-       if(xmusun.le.mu(1))then
-        xmusun=mu(1)
+       if(xmusun.le.sngl(mu(1)))then
+        xmusun=sngl(mu(1))
         j0=1
         f0=0.0
        endif
 C      Interpolate radiation field to local solar zenith angle.
        do j=1,nmu-1
-        if(xmusun.gt.mu(j).and.xmusun.le.mu(j+1))then
+        if(xmusun.gt.sngl(mu(j)).and.xmusun.le.sngl(mu(j+1)))then
          j0 = j
-         f0 = (xmusun-mu(j))/(mu(j+1)-mu(j))
+         f0 = (xmusun-sngl(mu(j)))/sngl((mu(j+1)-mu(j)))
         endif
        enddo
        if(j0.lt.0)then

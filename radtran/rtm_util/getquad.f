@@ -29,7 +29,7 @@ C     *************************************************************
        stop
       end if
 
-      itypg=0.
+      itypg=0
   
       if(itype.eq.1)then
        call d01bbf(d01baz,a,b,itypg,n,weight,abscis,ifail)

@@ -48,7 +48,7 @@ touch:
 lib $(LIBRARY): $(LIBCODE)
 
 $(LIBRARY)(%.o): %.f $(INCLUDES)
-	$(FC) $(FCFLAGS1) -c $<
+	$(FC) $(FCFLAGS) -c $<
 	ar rv $(LIBRARY) $*.o
 	ranlib $(LIBRARY)
 	-rm $*.o
@@ -58,7 +58,7 @@ bin :	\
 	CIRSdrvg_wave
 
 CIRSdrvg_wave : cirsdrvg_wave.f $(LIBRARY) $(LIB)/spec_data.a
-	$(FC) $(FCFLAGS1) -o $(BIN)/CIRSdrvg_wave cirsdrvg_wave.f $(LIBRARY) \
+	$(FC) $(FCFLAGS) -o $(BIN)/CIRSdrvg_wave cirsdrvg_wave.f $(LIBRARY) \
 	$(LIB)/cirsrad.a $(LIB)/radtran.a $(LIB)/path.a \
 	$(LIB)/scatter.a $(LIB)/rtm_util.a \
 	$(LIB)/radtran.a $(LIB)/spec_data.a $(FRECIPES) \

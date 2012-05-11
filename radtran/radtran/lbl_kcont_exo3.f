@@ -220,9 +220,9 @@ C
 C=======================================================================
 
 C      PRINT*,'VMIN,VBOT,WING',VMIN,VBOT,WING
-      FSTBIN = (VMIN - VBOT)/WING
+      FSTBIN = INT((VMIN - VBOT)/WING)
       IF(FSTBIN.LT.1)FSTBIN=1
-      LSTBIN = (VMAX - VBOT)/WING + 2
+      LSTBIN = INT((VMAX - VBOT)/WING) + 2
 
       print*,'LBL_KCONT_EXO3: FSTBIN,LSTBIN = ',FSTBIN,LSTBIN
 
@@ -237,7 +237,7 @@ C      PRINT*,'VMIN,VBOT,WING',VMIN,VBOT,WING
       DO 20 LINE1=1,NLIN
        LINE=FIRST+LINE1-1
        IF(LINE.GT.MAXLIN)LINE=LINE-MAXLIN
-       IBIN = 1+ (VLIN(LINE)-VBOT)/WING
+       IBIN = 1+ INT((VLIN(LINE)-VBOT)/WING)
 
        ABSCO = ABSCO_ARR(LINE)
        AD = AD_ARR(LINE)

@@ -29,7 +29,6 @@ F_SOURCES = \
 	read_yam.f \
 	write_band.f
 
-
 INCDIR = ../includes
 INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/bincoms.f $(INCDIR)/dbcom.f \
 	$(INCDIR)/lincom.f $(INCDIR)/pathcom.f $(INCDIR)/arrdef.f

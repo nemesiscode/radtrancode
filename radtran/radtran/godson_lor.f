@@ -11,13 +11,13 @@ C
 C     *****************************************************************
       implicit none
       real s,w,v,y,x,pi,i0,i1,a
-      real bessi0,bessi1
+      double precision bessi0,bessi1
       parameter (pi=3.1415927)
 
       x = 2*pi*s*s*v/w
       y = 2*pi*w*w/(s*s)
-      i0 = bessi0(y)
-      i1 = bessi1(y)
+      i0 = sngl(bessi0(y))
+      i1 = sngl(bessi1(y))
 
       a = (i0 +2.*y*(i0+i1))*exp(-y) - 1.
 
@@ -26,7 +26,7 @@ C     *****************************************************************
       return
       end
  
-      FUNCTION BESSI0(X)
+      DOUBLE PRECISION FUNCTION BESSI0(X)
 C     $Id: godson_lor.f,v 1.2 2011-06-17 15:40:26 irwin Exp $
       DOUBLE PRECISION Y,P1,P2,P3,P4,P5,P6,P7,
      *    Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9
@@ -49,7 +49,7 @@ C     $Id: godson_lor.f,v 1.2 2011-06-17 15:40:26 irwin Exp $
       END
 
 
-      FUNCTION BESSI1(X)
+      DOUBLE PRECISION FUNCTION BESSI1(X)
 C     $Id: godson_lor.f,v 1.2 2011-06-17 15:40:26 irwin Exp $
       DOUBLE PRECISION Y,P1,P2,P3,P4,P5,P6,P7,
      *    Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9

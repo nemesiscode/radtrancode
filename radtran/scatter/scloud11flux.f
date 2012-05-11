@@ -555,10 +555,10 @@ C *******************************************************
 
         DO 301 L=1,LT1
          IF(L.EQ.1)THEN 
-          UMIF(JMU,L,IC+1)=U0MI(IMU,1,1)
+          UMIF(JMU,L,IC+1)=SNGL(U0MI(IMU,1,1))
          ENDIF
          IF(L.EQ.LT1)THEN 
-          UPLF(JMU,L,IC+1)=UTPL(IMU,1,LT1)
+          UPLF(JMU,L,IC+1)=SNGL(UTPL(IMU,1,LT1))
          ENDIF
          IF(IMU0.EQ.ISOL)THEN
           UPLF(JMU,L,IC+1)=(1-FSOL)*SNGL(UPL(IMU,1,L))

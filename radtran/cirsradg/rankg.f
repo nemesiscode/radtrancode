@@ -42,12 +42,11 @@ C The input and output variables ...
       INTEGER nparam,ng,nloop
       REAL gw(maxg),k_g(maxg),dkdq(maxg,maxgas+1)
       REAL grad(maxrank,maxgas+1),cont(maxrank),weight(maxrank)
-
+      REAL tmp(maxrank)
 
 C General variables ...
       INTEGER i,ig,iparam,ico(maxrank)
-      DOUBLE PRECISION g_ord(maxg), gdist(0:maxrank), sum, frac,
-     1  tmp(maxrank)
+      DOUBLE PRECISION g_ord(maxg), gdist(0:maxrank), sum, frac
 
 C******************************** CODE *********************************
 
@@ -122,29 +121,29 @@ C=======================================================================
           sum = sum + weight(I)
         ELSE
           frac = (g_ord(ig+1) - gdist(I-1))/(gdist(I) - gdist(I-1))
-          k_g(ig) = k_g(ig) + frac*cont(I)*weight(I)
+          k_g(ig) = k_g(ig) + sngl(frac)*cont(I)*weight(I)
           DO iparam=1,nparam
             dkdq(ig,iparam) = dkdq(ig,iparam) + 
-     1      frac*grad(I,iparam)*weight(I)
+     1      sngl(frac)*grad(I,iparam)*weight(I)
           ENDDO
           sum = sum + frac*weight(I)
-          k_g(ig) = k_g(ig)/sum
+          k_g(ig) = k_g(ig)/sngl(sum)
           DO iparam=1,nparam
-            dkdq(ig,iparam) = dkdq(ig,iparam)/sum
+            dkdq(ig,iparam) = dkdq(ig,iparam)/sngl(sum)
           ENDDO
           ig = ig + 1
           sum = (1.0 - frac)*weight(I)
-          k_g(ig) = (1.0 - frac)*cont(I)*weight(I)
+          k_g(ig) = sngl(1.0 - frac)*cont(I)*weight(I)
           DO iparam=1,nparam
-            dkdq(ig,iparam) = (1.0 - frac)*grad(I,iparam)*weight(I)
+            dkdq(ig,iparam) = sngl(1.-frac)*grad(I,iparam)*weight(I)
           ENDDO
         ENDIF
       ENDDO
 
       IF(ig.EQ.ng)THEN
-         k_g(ig) = k_g(ig)/sum
+         k_g(ig) = k_g(ig)/sngl(sum)
          DO iparam=1,nparam
-           dkdq(ig,iparam) = dkdq(ig,iparam)/sum
+           dkdq(ig,iparam) = dkdq(ig,iparam)/sngl(sum)
          ENDDO
       ENDIF
 

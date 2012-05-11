@@ -48,4 +48,11 @@ setenv FCOMP "gfortran"
 setenv FCFLAGS1 ""
 setenv STATIC_FLAG ""
 
-Pat Irwin	2/5/12
+***** For additional debugging with gfortran try:
+
+setenv FCFLAGS1 "-O -finit-local-zero -m64 -fcheck=bounds -fcheck=mem -fbacktrace -Wconversion 
+-mcmodel=medium"
+setenv FCFLAGS1_FOVGREG "-O -ffree-form -finit-local-zero -m64 -fcheck=bounds -fcheck=mem -fbacktrace 
+-Wconversion -mcmodel=medium"
+
+Pat Irwin	11/5/12

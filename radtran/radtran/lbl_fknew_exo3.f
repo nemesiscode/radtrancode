@@ -316,7 +316,7 @@ C	CONTINK1 = 0.0
 
 C First calculate continuum contribution. CURBIN is the current BIN for
 C which calculations are being made.
-      CURBIN = (SNGL(V - DBLE(VBIN(1))))/WING + 1
+      CURBIN = INT((SNGL(V - DBLE(VBIN(1))))/WING) + 1
 
 C Calculate the continuum absorption via the IORDP1 polynomial
 C coefficients held in CONTINK.

@@ -42,8 +42,10 @@ c  ** if arcfile exists then get tname from that **
 
       else
 
-      tname ='/home/oxpln98/plan/irwin/radtrancode/trunk/
-     &raddata/'
+      tname = '/Users/patirwin/radtrancode/trunk/raddata/'
+
+C      tname ='/home/oxpln98/plan/irwin/radtrancode/trunk/
+C     &raddata/'
 
       endif
       

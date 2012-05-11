@@ -764,16 +764,16 @@ cc	      WRITE(*,*)' creating output ...'
               tr = trold*tlayer
 
               corkout(ipath,ig) = corkout(ipath,ig) + 
-     1        (trold - tr)*bb(J,Ipath)
+     1        sngl(trold - tr)*bb(J,Ipath)
 
 
               DO k1=1,nsw
                 k = isw(k1)
                 DO j1=1,j
                   IF(j1.LT.j)THEN
-                    dtrdq(j1,k) = dtolddq(j1,k)*tlayer
+                    dtrdq(j1,k) = dtolddq(j1,k)*sngl(tlayer)
                   ELSE
-                    dtrdq(j1,k) = -dtaudq(j1,k)*tlayer*trold
+                    dtrdq(j1,k) = -dtaudq(j1,k)*sngl(tlayer*trold)
                   ENDIF
                   dcoutdq(ipath,ig,j1,k) =
      1                 dcoutdq(ipath,ig,j1,k) + bb(j,ipath)*
@@ -781,7 +781,7 @@ cc	      WRITE(*,*)' creating output ...'
                 ENDDO
                 IF(k.EQ.ngas+1)THEN
                   dcoutdq(ipath,ig,j,k) =
-     1             dcoutdq(ipath,ig,j,k) + (trold - tr)*dbdt(j,ipath)
+     1            dcoutdq(ipath,ig,j,k)+sngl(trold-tr)*dbdt(j,ipath)
                ENDIF
               ENDDO
 
@@ -860,11 +860,11 @@ C            Set dist to -1 to ensure we get total power spectrum of star
                 k = isw(k1)
                 DO j1=1,j
                   IF(j1.LT.j)THEN
-                    dtrdq(j1,k) = dtolddq(j1,k)*tlayer
+                    dtrdq(j1,k) = dtolddq(j1,k)*sngl(tlayer)
                   ELSE
-                    dtrdq(j1,k) = -dtaudq(j1,k)*tr
+                    dtrdq(j1,k) = -dtaudq(j1,k)*sngl(tr)
                   ENDIF
-                  de3dq(j1,k)=e3grad*dtrdq(j1,k)
+                  de3dq(j1,k)=sngl(e3grad)*dtrdq(j1,k)
 
                   dcoutdq(ipath,ig,j1,k) =
      1                 dcoutdq(ipath,ig,j1,k) + bb(j,ipath)*

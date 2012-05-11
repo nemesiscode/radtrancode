@@ -235,7 +235,8 @@ C      print*,'tau_ml: ymod, dyda',ymod,(dyda(i),i=1,2)
       BL=DBLE(A1(2))
 
 
-      TRANSMITM=dexp(-0.5*PI*BL*(DSQRT(1.+4.*SL*U/(PI*BL))-1.))
+      TRANSMITM=SNGL(dexp(-0.5*PI*BL*
+     & (DSQRT(1.+4.*SL*U/(PI*BL))-1.)))
 
       return
       end

@@ -1,8 +1,8 @@
 #set compiler and flags
 FC = $(FCOMP)
-FCFLAGS = $(FCFLAGS1) $(STATIC_FLAG)
+FCFLAGS = $(FCFLAGS1_FOVGREG) $(STATIC_FLAG)
 #FCFLAGS = -mcmodel=large -i-dynamic -O -w90 -w95 -FR -cm -w
-FCFLAGS = -ffree-form
+#FCFLAGS = -ffree-form
 
 FRECIPES = $(LIB)/libfrecipes.a
 

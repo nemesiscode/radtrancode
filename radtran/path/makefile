@@ -25,6 +25,7 @@ F_SOURCES = \
 	uranlayer.f \
 	rdmod.f \
 	rddmod.f \
+	rdamform.f \
 	read_grav.f \
 	reflatm.f \
 	rfpmod.f \

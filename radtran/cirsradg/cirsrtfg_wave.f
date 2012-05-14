@@ -193,6 +193,8 @@ C Assess for which parameters a dr/dx value is actually needed
         WRITE(*,*)'CIRSRTFG_WAVE.f :: Error: nwave*npath > maxout3'
         WRITE(*,*)'Stopping program.'
         WRITE(*,*)' '
+        WRITE(*,*)'nwave : ',nwave
+        WRITE(*,*)'npath : ',npath
         WRITE(*,*)'nwave*npath = ',ntab1,' maxout = ',maxout3
         STOP
       ENDIF
@@ -200,6 +202,9 @@ C Assess for which parameters a dr/dx value is actually needed
         WRITE(*,*)'CIRSRTFG_WAVE.f :: Error: nwave*npath*nv > maxout4'
         WRITE(*,*)'Stopping program.'
         WRITE(*,*)' '
+        WRITE(*,*)'nwave : ',nwave
+        WRITE(*,*)'npath : ',npath
+        WRITE(*,*)'nv : ',nv
         WRITE(*,*)'nwave*npath*nv = ',ntab2,' maxout4 = ',maxout4
         STOP
       ENDIF

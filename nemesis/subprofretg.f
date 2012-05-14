@@ -104,6 +104,7 @@ C                   retrieved parameters (LIN=1 or 3)
        CALL FILE(IPFILE,IPFILE,'prf')
       ENDIF
       OPEN(UNIT=1,FILE=IPFILE,STATUS='OLD')
+      MOLWT=-1.
 C     First skip header
 54     READ(1,1)BUFFER
        IF(BUFFER(1:1).EQ.'#') GOTO 54
@@ -114,6 +115,7 @@ C     First skip header
        ELSE
         READ(1,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
        ENDIF
+       print*,IPLANET,LATITUDE,NPRO,NVMR,MOLWT
        IF(NPRO.GT.MAXPRO)THEN
         PRINT*,'Error in subprofretg. NPRO>MAXPRO ',NPRO,MAXPRO
         STOP
@@ -153,10 +155,10 @@ C      Make sure that vmrs add up to 1 if AMFORM=1
         CALL ADJUSTVMR(NPRO,NVMR,VMR,SCALE)
 
         DO 301 I=1,NPRO
-         DO K=1,NGAS
+         DO K=1,NVMR
           XVMR(K)=VMR(I,K)
          ENDDO
-         XXMOLWT(I)=CALCMOLWT(NGAS,XVMR,IDGAS,ISOGAS)
+         XXMOLWT(I)=CALCMOLWT(NVMR,XVMR,IDGAS,ISOGAS)
 301     CONTINUE
        ENDIF
 
@@ -168,9 +170,6 @@ C     so sorting just in case
         IF(ABS(H(I)-H(I+1)).LT.0.01)THEN
          WRITE(*,14)
 14       FORMAT(' identical height values found')
-C	 do j=1,npro
-C          print*,j,h(j),p(j),t(j)
-C         enddo
 	 STOP
         END IF
        IF(H(I).GT.H(I+1))THEN

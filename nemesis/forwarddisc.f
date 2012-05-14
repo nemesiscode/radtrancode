@@ -247,6 +247,7 @@ C            Get overall star spectral power
 
            Bg = solar*refl_cloud_albedo/pi
 
+           print*,'forwarddisc: radius = ',radius1
            xfac=(2.*pi)*4.*pi*RADIUS1**2/xsolar
 
            yn(ioff+j)=yn(ioff+j) + xfac*wgeom(igeom,iav)*

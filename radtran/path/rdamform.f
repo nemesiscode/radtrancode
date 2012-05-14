@@ -24,7 +24,7 @@ C First skip the header (if any)
 54    READ(12,1)BUFFER
       IF(BUFFER(1:1).EQ.'#') GOTO 54
       READ(BUFFER,*)AMFORM
-
+      close(12)
       rdamform=AMFORM
 
       return

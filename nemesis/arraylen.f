@@ -20,7 +20,7 @@ C     Set mconv to idim, defined in arrdef.f
       parameter (my=idim,mconv=idim,mx=maxv,mwave=maxbin)
 
 C     Set other parameters
-      parameter (mparam=5,mvar=5,mgeom=100,mav=20)
+      parameter (mparam=5,mvar=6,mgeom=100,mav=20)
 
 C     ****************************************************************
 

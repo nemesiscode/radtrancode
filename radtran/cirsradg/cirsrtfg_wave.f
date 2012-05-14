@@ -46,7 +46,7 @@ C	READ_KLIST	Reads in correlated-k files from .kls, passes
 C			variables to common block INTERPK.
 C	GET_SCATTER	Reads in scattering files (e.g. .sca).
 C	GET_XSEC	Reads in cross-sections (.xsc) file.
-C	CIRSRADG
+C	CIRSRADG_WAVE
 C	MAP2PRO		Converts the rate of change of output with respect
 C			to layer properties to the rate of change of
 C			output with .prf properties.
@@ -109,7 +109,7 @@ C     XCOMP: % complete printed in increments of 10.
       CHARACTER*100 drvfil,radfile,xscfil,runname
       CHARACTER*100 klist,solfile,solname
       INTEGER iwave,ipath,k,igas,ioff1,ioff2,iv,nv
-      INTEGER nsw,isw(maxgas+2+maxcon),iswitch
+      INTEGER nsw,isw(maxgas+2+maxcon),iswitch,rdamform
       LOGICAL scatterf,dustf,solexist
 
 C     Need simple way of passing planetary radius to nemesis/forwarddisc
@@ -206,7 +206,7 @@ C Assess for which parameters a dr/dx value is actually needed
 
 C Determine the % complete ...
       WRITE(*,*)' '
-      WRITE(*,*)' Waiting for CIRSradg etal to complete ...'
+      WRITE(*,*)' Waiting for CIRSradg_wave etal to complete ...'
       xcomp = 0.0
       DO 1000 iwave=1,nwave
         if(nwave.gt.1)then
@@ -219,14 +219,19 @@ C Determine the % complete ...
           xcomp = xcomp + 10.0
         ENDIF
 
+C       See what format the .prf file is in case we have to account for 
+C       the fact that at each level the sum of vmrs is 1.
+        AMFORM=rdamform(runname)
+
         vv = vwave(iwave)
 
 C       Pass radius of planet in units of cm for secondary transit 
 C       calculations
         RADIUS1=RADIUS*1e5
         RADIUS2=RADIUS1
+
         CALL cirsradg_wave (dist,inormal,iray,delh,nlayer,npath,ngas,
-     1  press,temp,pp,amount,iwave,ispace,vv,nlayin,
+     1  press,temp,pp,amount,iwave,ispace,AMFORM,vv,nlayin,
      2  layinc,cont,scale,imod,idgas,isogas,emtemp,itype1,
      3  nem, vem, emissivity, tsurf, gtsurf, RADIUS1,
      4  flagh2p,hfp,nsw,isw,output,doutputdq)

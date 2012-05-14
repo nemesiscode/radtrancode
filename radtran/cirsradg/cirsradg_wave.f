@@ -1,6 +1,6 @@
       SUBROUTINE cirsradg_wave (dist,inormal,iray,delh,nlayer,npath,
-     1 ngas,press,temp,pp,amount,iwave,ispace,vwave,nlayin,layinc,
-     2 cont,scale,imod,idgas,isogas,emtemp,itype,
+     1 ngas,press,temp,pp,amount,iwave,ispace,AMFORM,vwave,nlayin,
+     2 layinc,cont,scale,imod,idgas,isogas,emtemp,itype,
      3 nem, vem, emissivity, tsurf,gradtsurf,RADIUS1,flagh2p,hfp,
      4 nsw,isw,output,doutputdq)
 C***********************************************************************
@@ -34,6 +34,8 @@ C					interpolate k-table correctly).
 C       ispace          	INTEGER Indicates if wavelengths in vconv and
 C                               	vwave are in wavenumbers(0) or
 C                               	wavelengths (1)
+C	AMFORM			INTEGER	Indicates if profile is one where
+C					the sum of vmrs=1 (1). Equals 0 otherwise
 C	vwave 			REAL 	Required wavenumber.
 C	nlayin(npath)		INTEGER	Each layer defined above can be
 C					included in the calculation for
@@ -151,18 +153,16 @@ C paths, etc.)
 
 C Definition of input and output variables ...
       INTEGER inormal,iwave,ispace,itype,flagh2p
-      INTEGER nlayer,npath,ngas,nsw
+      INTEGER nlayer,npath,ngas,nsw,AMFORM
       INTEGER idgas(maxgas),isogas(maxgas),isw(maxgas+2+maxcon)
       INTEGER layinc(maxlay,maxpat),nlayin(maxpat),imod(maxpat)
-      INTEGER mgrad
-      parameter (mgrad=2000)
       REAL xdist,dist,vwave,delh(nlayer),esurf
       REAL cont(maxcon,maxlay),tsurf,bsurf,gradtsurf
       REAL press(maxlay),temp(maxlay),hfp(maxlay)
       REAL scale(maxlay,maxpat),emtemp(maxlay,maxpat)
       REAL pp(maxlay,maxgas),amount(maxlay,maxgas)
       REAL output(maxpat),doutputdq(maxpat,maxlay,maxgas+2+maxcon)
-      REAL rad1,rad1grad(mgrad),xfac,RADIUS1
+      REAL rad1,xfac,RADIUS1
 
 
 C Definition of general variables ...
@@ -668,6 +668,18 @@ C K-data contribution to gradients:
 
         ENDDO
 
+
+C      ***********************************************************
+C      If(AMFORM.EQ.1)then we need to adjust the gradients slightly, since
+C      the sum of vmrs at all levels must add up to 1.
+
+C       IF(AMFORM.EQ.1)THEN
+C        CALL ADJUSTGRAD(dtautmpdq,amount,ngas,nlayer)
+C       ENDIF
+
+
+C      ***********************************************************
+
 C=======================================================================
 C
 C	Step through the number of paths, calculating the required 
@@ -824,7 +836,7 @@ cc	      WRITE(*,*)' creating output ...'
             ENDDO
 
 C           The code below calculates the hemispherically-integrated emission 
-C           spectrum in units are W cm-2 (cm-1)-1 or W cm-2 um-1.
+C           spectrum in units of W cm-2 (cm-1)-1 or W cm-2 um-1.
 C
 C           If a solar/stellar file is present then we should multiply by
 C           the total surface area of the planet and divide by the total 

@@ -20,6 +20,7 @@ F_SOURCES= \
 	rankg.f \
 	rankk.f \
 	sort2g.f \
+	adjustgrad.f \
 	subpathg.f \
 	calcxmap.f
 

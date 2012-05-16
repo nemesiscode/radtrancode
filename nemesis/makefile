@@ -48,7 +48,6 @@ F_SOURCES = \
 	readsurfem.f \
 	readraw.f \
 	writeraw.f \
-	eigenerr.f \
 	coreretL.f \
 	coreretMCS.f \
 	forwardavfovL.f \
@@ -74,9 +73,9 @@ F_SOURCES = \
 	logflag.f
 
 INCDIR = ../../radtran/includes
-INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/lincom.f $(INCDIR)/pathcom.f \
-           $(INCDIR)/parcom.f $(INCDIR)/dbcom.f $(INCDIR)/bincoms.f \
-           $(INCDIR)/arrdef.f $(INCDIR)/ciacom.f arraylen.f
+#INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/lincom.f $(INCDIR)/pathcom.f \
+#           $(INCDIR)/parcom.f $(INCDIR)/dbcom.f $(INCDIR)/bincoms.f \
+#           $(INCDIR)/arrdef.f $(INCDIR)/ciacom.f arraylen.f
 
 OBJ= $(F_SOURCES:.f=.o)
 LIBRARY = $(LIB)/lnemesis.a

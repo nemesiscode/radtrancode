@@ -59,7 +59,7 @@ subroutine FOV_ReadIn_Sizes( ndet, narr, iv, ih )
   !   precision storage
 
   ! Look for FOV file in raddata/
-  aname='Master_FOV.dat'
+  aname='MCS_Master_FOV.dat'
   call datarchive(aname)  
   open(unit=10,file=aname,status='old')
 

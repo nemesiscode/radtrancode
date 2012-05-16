@@ -9,17 +9,16 @@
       real thint(mfov),rint1(mfov),rint2(mfov)
       double precision fovs(11,9,21,2,mfov)
       real thcentre,thbore,thetrot,fovcentre(11,9,21)
-      character*100 buffer
+      character*100 buffer,aname
       common /mcsfov/fovs,fovcentre
 
       print*,'ComputeFOVA, iread,ichan,ipixA,ipixB,thcentre,thbore'
       print*, iread,ichan,ipixA,ipixB,thcentre,thbore
       nfov=50
       if(iread.eq.1)then
-C       open(12,file='/home/jupiter/plan/irwin/MCS/FOVgreg/fov_A.dat',
-C     1  status='old')
-       open(12,file='/home/jupiter/plan/irwin/MCS/FOVgreg/fov_50.dat',
-     1  status='old')
+       aname='fov_50.dat'
+       call datarchive(aname)
+       open(12,file=aname,status='old')
        do iangle=1,11
         read(12,1)buffer
 1       format(a)

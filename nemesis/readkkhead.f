@@ -7,19 +7,16 @@ C     Pat Irwin		10/2/04
 C  
 C     ****************************************************************
       implicit none
-      character*100 runname
-      character*100 kname
-      integer lun0,npoint,idgas,isogas,np,nt,ng,irec0,mpoint
-      parameter(mpoint=12000)
-      real vcen(mpoint)
-      real vmin,delv,fwhm,press(20),temp(20),g_ord(21),del_g(21)
+      include '../radtran/includes/arrdef.f'
+      character*100 kname,runname
+      integer lun0,npoint,idgas,isogas,np,nt,ng,irec0
+      real vcen(MAXBIN)
+      real vmin,delv,fwhm,press(MAXK),temp(MAXK),g_ord(MAXG),del_g(MAXG)
       real vkstart,vkend,vkstep
 
       call file(runname,runname,'kls')
 1     format(a100)
 
-C      print*,'readkkhead: reading kta information from : '
-C      write(6,1)runname
 
       open(12,file=runname,status='old')
         read(12,1)kname

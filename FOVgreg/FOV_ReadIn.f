@@ -53,10 +53,15 @@ subroutine FOV_ReadIn_Sizes( ndet, narr, iv, ih )
 
   integer :: k 
   real*8  :: rdum(ndet*narr)
+  character*100 aname
 
   ! Open the file containing the FOV calibration data -- ascii text, double
   !   precision storage
-  open(unit=10,file='/home/jupiter/plan/teanby/mcs/FOVgreg/Master_FOV.dat',status='old')
+
+  ! Look for FOV file in raddata/
+  aname='Master_FOV.dat'
+  call datarchive(aname)  
+  open(unit=10,file=aname,status='old')
 
   ! Read one row at a time
   !   The fifth row accesses Section 5 of the file, and this is what we want

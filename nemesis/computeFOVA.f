@@ -16,7 +16,7 @@
       print*, iread,ichan,ipixA,ipixB,thcentre,thbore
       nfov=50
       if(iread.eq.1)then
-       aname='fov_50.dat'
+       aname='MCS_fov_50.dat'
        call datarchive(aname)
        open(12,file=aname,status='old')
        do iangle=1,11

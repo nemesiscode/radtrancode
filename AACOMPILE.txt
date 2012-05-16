@@ -36,16 +36,19 @@ Relevant compilation flags and environment variables used are:
 Linux-64 - Intel Fortran 11.1.072
 setenv FCOMP "ifort"
 setenv FCFLAGS1 "-mcmodel=large -i-dynamic -O2 -cm -w -zero"
+setenv FCFLAGS1_FOVGREG "-mcmodel=large -i-dynamic -O -w90 -w95 -FR -cm -w"
 setenv STATIC_FLAG ""
 
 Linux-32 - Intel Fortran 7.0
 setenv FCOMP "ifc"
 setenv FCFLAGS1 "-O2 -w90 -w95 -cm -w -zero"
+setenv FCFLAGS1_FOVGREG "-O -w90 -w95 -FR -cm -w"
 setenv STATIC_FLAG ""
 
 MacOSX - gfortran
 setenv FCOMP "gfortran"
 setenv FCFLAGS1 ""
+setenv FCFLAGS1_FOVGREG "-ffree-form"
 setenv STATIC_FLAG ""
 
 ***** For additional debugging with gfortran try:

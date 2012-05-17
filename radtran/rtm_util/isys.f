@@ -16,10 +16,12 @@ C			Compaq interpretation of "numeric units".
 C			Alternatively, specify "-assume byterecl" when
 C			compiling.
 C                      4, for GFORTRAN on Mac OSX
+C		       4, if using Intel FORTRAN compile on 32-bit machines
 C
 C	1/1/90	SBC	Original Version.
 C	3/10/94	PGJI	Updated Header.
 C	28/2/00	PGJI	This version.
+C	17/5/12 PGJI	Updated headers
 C     ********************************************************************
 
       ISYS=1

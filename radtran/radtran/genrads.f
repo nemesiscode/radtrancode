@@ -1025,7 +1025,6 @@ C       computing continuum for all except adjacent bins
 C         for each layer
           DO 18 LAYER=1,NLAYER
 C           for each line
-
             DO 22 K=1,IORDP1
               CONVAL(K)=0.
 22          CONTINUE
@@ -1034,10 +1033,9 @@ C           for each line
 C            compute absorption coefficient for normal incidence
 
              DO 21 K=1,IORDP1
- 
               VV=CONWAV(K)+VBIN(J)
-              X=(VV-VLIN(LINE))/AD
-	      DV1 = X*AD
+              DV1=(VV-VLIN(LINE))
+
 C             *********** CIRS Line processing Parameters ******************
 	      IF(ABS(DV1).LE.MAXDV)THEN
 C	        Ignore lines more than MAXDV widths away
@@ -1289,6 +1287,7 @@ C     Line by Line Models:
 C      infinite resolution
        DO 103 I=1,NPOINT
         V=DBLE(VMIN+FLOAT(I-1)*DELV)
+        VV=SNGL(V)
         ASSIGN 2001 TO LABEL
         GOTO 2000
 2001   CONTINUE
@@ -1520,7 +1519,6 @@ C      coefficients held in CONTIN
 
        TAUTMP(LAYER)=CONTIN(1,LAYER,CURBIN)
        VTMP=SNGL(V-DBLE(VBINB(CURBIN)))-DOP(LAYER)
-
        DO 51 ISUM=2,IORDP1
         TAUTMP(LAYER)=TAUTMP(LAYER)+CONTIN(ISUM,LAYER,CURBIN)*VTMP
         VTMP=VTMP*VTMP
@@ -1586,8 +1584,7 @@ C****************************************************************************
         DO 52 LINE=FSTLIN(JBIN),LSTLIN(JBIN)
 C        compute absorption coefficient for normal incidence
 
-         X=(SNGL(DBLE(V-VLIN(LINE)))-DOP(LAYER))/AD
-	 DV1 = X*AD
+         DV1=SNGL(DBLE(V-VLIN(LINE)))-DOP(LAYER)
 
 
 C        *********** Line processing Parameters ******************
@@ -1609,17 +1606,17 @@ C          IH2O is turned on.
             IF(JH2.GT.0.) FH2 = FRAC(LAYER,JH2)
 
             TAUTMP(LAYER) = TAUTMP(LAYER)+ LINECONTRIB(IPROC(J1),
-     1       IDGAS(J1),V,TCORDW(LAYER,J1),TCORS1(LAYER,J1),
+     1       IDGAS(J1),VV,TCORDW(LAYER,J1),TCORS1(LAYER,J1),
      2       TCORS2(LAYER),PRESS(LAYER),TEMP(LAYER),FRAC(LAYER,J1),
      3       VLIN(LINE),SLIN(LINE),ELIN(LINE),ALIN(LINE),SBLIN(LINE),
      4       TDW(LINE),TDWS(LINE),LLQ(LINE),DOUBV(LINE),FNH3,FH2)
-
 
           ENDIF
          ENDIF
 C        *********************************************************
 
 52      CONTINUE
+
 
         IF(TAUTMP(LAYER).LT.0.0)THEN
          PRINT*,'Error in LBL TAUTMP. TAU < 0.0!'

@@ -252,8 +252,8 @@ C Compute absorption coefficient for normal incidence
 
             DO 21 K=1,IORDP1
                 VV = VBIN(J)+CONWAV(K)
-                X = (VV - VLIN(LINE))/AD
-                DV = X*AD
+                DV = VV - VLIN(LINE)
+                X = DV/AD
                 FNH3=-1.0
                 FH2=-1.0
                 CONVAL(K)=SUBLINE(IDGAS,PRESS,TEMP,IPROC,VV,VLIN(LINE),

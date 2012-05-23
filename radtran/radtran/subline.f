@@ -59,7 +59,7 @@ C      print*,'SUBLINE',IDGAS,PRESS,TEMP,IPROC,VV,VLIN,ABSCO,X,Y,
 C     1 FNH3,FH2,LLQ,DOUBV
 
       IF(IPROC.EQ.10)THEN
-C      IPROC=9:: Original Hartmann sub-lorentzian lineshape for methane
+C      IPROC=10:: Original Hartmann sub-lorentzian lineshape for methane
 C 		 in hydrogen atmosphere
        IF(IDGAS.NE.6)THEN
         WRITE(*,*)' SUBLINE.f :: Can_t use the'

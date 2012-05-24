@@ -17,9 +17,9 @@ C     ****************************************************************
 
 1     format(a)
 
-      open(36,file=solfile,status='old')
-        read(36,1)solname
-      close(36)
+      open(46,file=solfile,status='old')
+        read(46,1)solname
+      close(46)
 
 C     Fill in path to the raddata directory
       call datarchive(solname)

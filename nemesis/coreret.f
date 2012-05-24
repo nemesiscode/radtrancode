@@ -207,7 +207,6 @@ C       Write out x-data to temporary .str file for later routines.
 C       substituting and retrieving parameters from .pre file. 
 C       Current record frrom .pre file already read in by
 C       readapriori.f. Hence just read in from temporary .str file
- 
         call readxtmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
      1   nxx,xnx,stx,jsurfx,jalbx,jtanx,jprex,jradx)
 
@@ -216,7 +215,7 @@ C       readapriori.f. Hence just read in from temporary .str file
        lin0 = 0
 
        if(ilbl.eq.1)then
-         print*,'Calling forwardnoglbl'
+         print*,'Calling forwardnoglbl - A'
          CALL forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,nconv,vconv,angles,gasgiant,lin0,
      2    nvarx,varidentx,varparamx,jsurfx,jalbx,jtanx,jprex,
@@ -299,12 +298,12 @@ C      Calculate inverse of se
 
 
       if(ilbl.eq.1)then
-         print*,'Calling forwardnoglbl - 1'
+         print*,'Calling forwardnoglbl - B'
          CALL forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,
-     1    wgeom,flat,nconv,vconv,angles,gasgiant,lin0,
+     1    wgeom,flat,nconv,vconv,angles,gasgiant,lin,
      2    nvar,varident,varparam,jsurf,jalb,jtan,jpre,
      3    nx,xn,ny,yn,kk,kiter)
-
+         print*,'call OK'
       else
 
        if(iscat.eq.0)then
@@ -428,7 +427,7 @@ C       Put output spectrum into temporary spectrum yn1 with
 C       temporary kernel matrix kk1. Does it improve the fit? 
 
         if(ilbl.eq.1)then
-         print*,'Calling forwardnoglbl'
+         print*,'Calling forwardnoglbl - C'
          CALL forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,     
      1    wgeom,flat,nconv,vconv,angles,gasgiant,lin,
      2    nvar,varident,varparam,jsurf,jalb,jtan,jpre,

@@ -392,8 +392,6 @@ C     vectors xn, yn
        yn1(i)=yn(i)
       enddo
 
-C      print*,'AAA jpre = ',jpre
-
       do 401 iter = 1, kiter
 
         if(ica.eq.1)then

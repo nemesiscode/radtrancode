@@ -92,6 +92,7 @@ C     **************************************************************
 
 
       print*,'forwardnoglbl called'
+      print*,'lin = ',lin
 
       call setup(runname,gasgiant,nmu,mu,wtmu,isol,dist,lowbc,
      1 galb,nf1,nphi,layht,tsurf,nlayer,laytyp,layint)

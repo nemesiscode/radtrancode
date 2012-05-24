@@ -117,7 +117,6 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
 
      
       if(lin.eq.1.or.lin.eq.3)then
-
        call readxtmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
      1  nxx,xnx,stx,jsurfx,jalbx,jtanx,jprex,jradx)
 

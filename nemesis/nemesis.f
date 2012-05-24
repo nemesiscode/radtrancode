@@ -167,6 +167,8 @@ C     Open output file
       write(lout,*)nspec,' ! Total number of retrievals'
       write(lraw,*)nspec,' ! Total number of retrievals'
 
+      print*,'lin = ',lin
+
       if(lin.gt.0)then
 C      if previous retrieval to be considered, 
 C      open previous raw retrieval file (copied to .pre)

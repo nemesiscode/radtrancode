@@ -60,9 +60,10 @@ C General parameters ...
       REAL YY(MPOINT),YMIN,YMAX
       REAL KMAX,KMIN,DELK,XFR,YK,SUMK
       REAL F(MAXK),ORD(MAXK),G(MAXK),DK(MAXK)
-      REAL FRAC1,DG
+      REAL FRAC1,DG,XMINK
       REAL GG,SUM
       REAL DEL_G(NGMAX)
+      PARAMETER (XMINK=-35.0)
 
 C******************************** CODE *********************************
 
@@ -105,7 +106,7 @@ C
 C=======================================================================
       YMIN = 10000.0
       ICH=0
-      YMAX = -30.0
+      YMAX = XMINK-10.
       DO 301 I=1,NPOINT
        IF(OUTPUT(I).GT.0)THEN
         YMIN = MIN(YMIN,OUTPUT(I))
@@ -115,7 +116,7 @@ C=======================================================================
       IF(ICH.EQ.1)THEN
        YMIN=ALOG10(YMIN)
       ELSE
-       YMIN=-35.
+       YMIN=XMINK
       ENDIF
       DO 304 I=1,NPOINT
         IF(OUTPUT(I).LE.0.)THEN
@@ -135,12 +136,13 @@ C=======================================================================
 
       IF(YMIN.EQ.YMAX)THEN
         DO I=1,NG
-          IF(KMIN.EQ.-35.)THEN
+          IF(KMIN.EQ.XMINK)THEN
             K_G(I) = 0.0
           ELSE
             K_G(I) = 10**KMIN
           ENDIF
         ENDDO
+C        print*,'calc_fkdist_wavec - zero spec - returning'
         RETURN
       ENDIF
 
@@ -189,6 +191,7 @@ C=======================================================================
       SUMK = 0.0
       DO 308 J=1,NG
         GG = G_ORD(J)
+
         K = 1
 243     IF(K.LT.NKINT)THEN
           IF(G(K).LE.GG.AND.G(K+1).GT.GG)THEN

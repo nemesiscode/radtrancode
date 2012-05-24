@@ -162,7 +162,7 @@ C MXWID: Root mean square of XPW, XPD.
 C Misc (and UNDOCUMENTED!!) variables defined in the code ...
       INTEGER LINE,LABEL
       REAL XMASS,VTMP
-      DOUBLE PRECISION V
+      REAL V
 c--------------------------------
 cc NT*** these  are now arrays **
 ccc      REAL ABSCO,AD,X,Y,DV
@@ -286,7 +286,7 @@ C      CALL TESTCONT(IPRESS)
 
 
       DO 103 I=1,NPOINT
-        V = DBLE(VSTART + FLOAT(I - 1)*DELV)
+        V = VSTART + FLOAT(I - 1)*DELV
         ASSIGN 2001 TO LABEL
         GOTO 2000
 
@@ -316,13 +316,13 @@ C	CONTINK1 = 0.0
 
 C First calculate continuum contribution. CURBIN is the current BIN for
 C which calculations are being made.
-      CURBIN = INT((SNGL(V - DBLE(VBIN(1))))/WING) + 1
+      CURBIN = INT((V - VBIN(1))/WING) + 1
 
 C Calculate the continuum absorption via the IORDP1 polynomial
 C coefficients held in CONTINK.
 c      print*,IPRESS,CURBIN
       TAUTMP = CONTINK1(1,IPRESS,CURBIN)
-      VTMP = SNGL(V - DBLE(VBIN(CURBIN)))
+      VTMP = V - VBIN(CURBIN)
 c      PRINT*,CONTINK1
       DO 51 ISUM=2,IORDP1
 c	print*,NPOINT,TAUTMP,CONTINK1(ISUM,IPRESS,CURBIN),VTMP,IPRESS
@@ -376,7 +376,7 @@ C=======================================================================
 C Compute absorption coefficient for normal incidence
         DO 52 LINE=FSTLIN(JBIN),LSTLIN(JBIN)
 
-          X  = abs(sngl(dble(vlin(line))-v))/ad_arr(line)
+          X  = abs(vlin(line)-v)/ad_arr(line)
           FNH3=-1.0
           FH2=-1.0
           TAUTMP=TAUTMP+SUBLINE(IDGAS,PRESS,TEMP,IPROC,V,

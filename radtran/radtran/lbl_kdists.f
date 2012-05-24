@@ -131,8 +131,7 @@ C     misc variables or variables defined in the code
       INTEGER I,J,K,LINE,IPTF
       INTEGER IORD1,ISOMAX
       REAL DOPMAX,XMASS
-      REAL VTMP
-      DOUBLE PRECISION V
+      REAL VTMP, V
       REAL ABSCO,AD,X,Y
       REAL PARTF
       INTEGER LABEL
@@ -261,7 +260,7 @@ C     layers enough lines are read in for accurate calculation
 C----------
 C     infinite resolution
       DO 103 I=1,NPOINT
-      V=DBLE(VMIN+FLOAT(I-1)*DELV)
+      V=VMIN+FLOAT(I-1)*DELV
       ASSIGN 2001 TO LABEL
       GOTO 2000
 2001  CONTINUE
@@ -280,9 +279,9 @@ C     first computing normal path optical depth through each layer (TAUTMP)
 
 C     now compute absorption coefficient
 C     first continuum contribution
-      CURBIN=INT((SNGL(V-DBLE(VBIN(1))))/WING)+1
+      CURBIN=INT((V-VBIN(1))/WING)+1
       TAUTMP=CONTINK(1,LAYER1,CURBIN)
-      VTMP=SNGL(V-DBLE(VBIN(CURBIN)))
+      VTMP=V-VBIN(CURBIN)
       DO 51 ISUM=2,IORDP1
       TAUTMP=TAUTMP+CONTINK(ISUM,LAYER1,CURBIN)*VTMP
       VTMP=VTMP*VTMP

@@ -120,7 +120,7 @@ C Output parameters ... NOTE: if you change MPOINT, the change must also
 C be reflected in calc_kdist.f
       INTEGER MPOINT
       PARAMETER (MPOINT=50000)
-      REAL OUTPUT(MPOINT)
+      REAL OUTPUT(MPOINT),TX(MPOINT)
 
       COMMON /SPECTRUM/ OUTPUT
 
@@ -171,7 +171,7 @@ C MXWID: Root mean square of XPW, XPD.
 C Misc (and UNDOCUMENTED!!) variables defined in the code ...
       INTEGER LINE,LABEL
       REAL XMASS,GETMASS,VTMP
-      DOUBLE PRECISION V
+      REAL V
 c--------------------------------
 cc NT*** these  are now arrays **
 ccc      REAL ABSCO,AD,X,Y,DV
@@ -312,8 +312,8 @@ c     pretabulate some line calculation parameters
       enddo
 
       do i=1,npoint
-        V = DBLE(VSTART + FLOAT(I - 1)*DELV)
-        CURBIN = INT((SNGL(V - DBLE(VBIN(1))))/WING) + 1
+        V = VSTART + FLOAT(I - 1)*DELV
+        CURBIN = INT((V - VBIN(1))/WING) + 1
         IBIN1 = CURBIN - 1
         IBIN2 = CURBIN + 1
         IF(IBIN1.LT.1)IBIN1 = 1
@@ -340,7 +340,7 @@ c###################################################
 
 C Infinite resolution
       DO 103 I=1,NPOINT
-        V = DBLE(VSTART + FLOAT(I - 1)*DELV)
+        V = VSTART + FLOAT(I - 1)*DELV
         ASSIGN 2001 TO LABEL
         GOTO 2000
 
@@ -368,12 +368,12 @@ C=======================================================================
 
 C First calculate continuum contribution. CURBIN is the current BIN for
 C which calculations are being made.
-      CURBIN = INT((SNGL(V - DBLE(VBIN(1))))/WING) + 1
+      CURBIN = INT((V - VBIN(1))/WING) + 1
 
 C Calculate the continuum absorption via the IORDP1 polynomial
 C coefficients held in CONTINK.
       TAUTMP = CONTINK(1,IP,IT,CURBIN)
-      VTMP = SNGL(V - DBLE(VBIN(CURBIN)))
+      VTMP = V - VBIN(CURBIN)
       DO 51 ISUM=2,IORDP1
         TAUTMP = TAUTMP + CONTINK(ISUM,IP,IT,CURBIN)*VTMP
         VTMP = VTMP*VTMP
@@ -423,7 +423,7 @@ C=======================================================================
 C Compute absorption coefficient for normal incidence
         DO 52 LINE=FSTLIN(JBIN),LSTLIN(JBIN)
 
-          X  = abs(sngl(dble(vlin(line))-v))/ad_arr(line)
+          X  = abs(vlin(line)-v)/ad_arr(line)
           FNH3=-1.0
           FH2=-1.0
           TAUTMP=TAUTMP+SUBLINE(IDGAS,PRESS,TEMP,IPROC,V,
@@ -444,7 +444,7 @@ C          STOP
 
 C Now scaling for each path
       OUTPUT(I) = TAUTMP
-
+      TX(I) = V
       GOTO LABEL
 
 3000  CONTINUE
@@ -452,6 +452,12 @@ C Now scaling for each path
 C Calculate cumulative k-distribution from LBL spectrum. NOTE: OUTPUT is
 C passed via the /SPECTRUM/ common block for speed.
 
+C      open(12,file='spectrum.out',status='unknown')
+C      write(12,*)npoint
+C      do i=1,npoint
+C       write(12,*)tx(i),output(i)
+C      enddo
+C      close(12)
 
       RETURN
 

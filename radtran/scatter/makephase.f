@@ -353,9 +353,9 @@ C-----------------------------------------------------------------------
 				hg22 = 2.0d0-hg21
 				do K = 1, nphase	
 					calpha=cos(theta(K)*pi/180)
-					phase(K) = f1 * hg11 / 
+					phase(K) = sngl(f1 * hg11 / 
      1	dsqrt( hg12 - 2.0d0*parm(2)*calpha )**3 + f2 * hg21 / 
-     2	dsqrt( hg22 - 2.0d0*parm(3)*calpha )**3
+     2	dsqrt( hg22 - 2.0d0*parm(3)*calpha )**3)
 				end do
 			endif
 

@@ -87,7 +87,7 @@ C      Band Model
           call prompt('Enter Lorentz code : ')
           read*,lor_mod
          else
-          lor_mod = 0.
+          lor_mod = 0
          end if
          if(com_mod.eq.1)then
           print*,'Enter code for calculating Doppler widths'

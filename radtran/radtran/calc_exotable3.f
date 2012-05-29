@@ -83,9 +83,8 @@ C NT: Number of temperatures.
 C K_BOLTZ: Boltzman constant [J K^-1 molecule^-1].
 C C_LIGHT: Speed of light [m sec^-1].
 C R_GAS: Universal gas constant [J K^-1 mol^-1].
-
-      INTEGER MDATA,QROT,NGMAX,NG,BOTREC,STAREC,NXTREC
-      PARAMETER (MDATA=20,QROT=1.5,NG=20)
+      INTEGER MDATA,NGMAX,NG,BOTREC,STAREC,NXTREC
+      PARAMETER (MDATA=20,NG=20)
 C NG: Number of ordinates in k-distribution.
 
       REAL TOT_TIME
@@ -283,7 +282,7 @@ C Calculate continuum absorptions
        VTOP = VMAX1 + VREL
        IF(VBOT.LT.0.0)VBOT = 0.0
        RANGE = VTOP - VBOT
-       NBIN = RANGE/WING + 1
+       NBIN = INT(RANGE/WING) + 1
        IF(NBIN.GT.MAXBIN)THEN
          WRITE(*,*)'CALC_EXOTABLE3.f :: *ERROR* NBIN > MAXBIN'
          WRITE(*,*)'Stopping program.'
@@ -409,7 +408,7 @@ C to avoid a non-integer DO loop.
 
         IBINMAX=0
 
-        IV0=(VMIN*DELVSF)
+        IV0=INT((VMIN*DELVSF))
 
         DO 10 IV=(VMIN*DELVSF),(VMAX*DELVSF),(DELV*DELVSF)
 
@@ -427,8 +426,8 @@ C to avoid a non-integer DO loop.
 c         print*,VS1,VE1
 
 C        Figure out which bins are needed here
-         FSTBIN = (VS1-VBOT)/WING
-         LSTBIN = (VE1-VBOT)/WING + 2
+         FSTBIN = INT((VS1-VBOT)/WING)
+         LSTBIN = INT((VE1-VBOT)/WING) + 2
 
          V1 = VBOT+(FSTBIN-1)*WING
          V2 = VBOT+LSTBIN*WING
@@ -535,7 +534,7 @@ c      CLOSE(LUN0)
       WRITE(*,*)' CALC_EXOTABLE3.f :: calculation complete.'
       CALL GETTIME(TIME)
       TIME2 = TIME
-      TOT_TIME = TIME2 - TIME1
+      TOT_TIME = SNGL(TIME2 - TIME1)
       WRITE(*,244)TOT_TIME
 244   FORMAT(/' Elapsed time (s) = ',F8.1)
 

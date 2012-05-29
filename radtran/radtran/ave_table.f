@@ -161,7 +161,7 @@ C program since execution.
 C     Snap FWHM0 and DELV0 to multiples of existing grid 
       FWHM0 = FWHM*INT(FWHM0/FWHM + 0.5)
       DELV0 = DELV*INT(DELV0/DELV + 0.5)
-      NBIN = FWHM0/FWHM
+      NBIN = INT(FWHM0/FWHM)
 
       WRITE(*,*)'Snapped FHWM, DELV and NBIN',FWHM0,DELV0,NBIN
       IF(NBIN.GT.MBIN)THEN
@@ -361,7 +361,7 @@ C            read(5,23)ans
       WRITE(*,*)' AVE_TABLE.F :: calculation complete.'
       CALL GETTIME(TIME)
       TIME2 = TIME
-      TOT_TIME = TIME2 - TIME1
+      TOT_TIME = SNGL(TIME2 - TIME1)
       WRITE(*,244)TOT_TIME
 244   FORMAT(/' Elapsed time (sec) = ',F8.1)
 

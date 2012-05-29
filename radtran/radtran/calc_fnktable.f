@@ -76,8 +76,8 @@ C NP: Number of pressures.
 C NT: Number of temperatures.
       INTEGER LUN,LUN0,LUN1
       PARAMETER (LUN=2,LUN0=30,LUN1=31)
-
-      INTEGER MDATA,QROT,NG,NGMAX,MFIL,NFIL
+      REAL QROT
+      INTEGER MDATA,NG,NGMAX,MFIL,NFIL
       PARAMETER (MDATA=20,QROT=1.5,NGMAX=21,MFIL=1000)
 C NG: Number of ordinates in k-distribution.
 
@@ -294,7 +294,7 @@ C to avoid a non-integer DO loop.
       jv2=int(vmax*delvsf+0.1)
       jv3=int(delv*delvsf+0.1)
       DO 10 IV=jv1,jv2,jv3
-        I=1+IV-VMIN*DELVSF
+        I=1+IV-INT(VMIN*DELVSF)
         print*,iv,i,ii
         IF(ISPEC.NE.1)THEN
           KNU0 = BANDPAR(I,1,1)
@@ -388,7 +388,7 @@ C since its main usefulness is when the code crashes prior to completion.
       WRITE(*,*)' CALC_FNKTABLE.f :: calculation complete.'
       CALL GETTIME(TIME)
       TIME2 = TIME
-      TOT_TIME = TIME2 - TIME1
+      TOT_TIME = SNGL(TIME2 - TIME1)
       WRITE(*,244)TOT_TIME
 244   FORMAT(/' Elapsed time (s) = ',F8.1)
 

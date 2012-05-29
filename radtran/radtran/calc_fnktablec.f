@@ -393,7 +393,7 @@ c      CLOSE(UNIT= 14, STATUS= 'DELETE')
       CALL WTEXT('%CALC_KTABLEC.f :: calculation complete')
       CALL GETTIME(TIME)
       TIME2= TIME
-      TOT_TIME=TIME2-TIME1
+      TOT_TIME=SNGL(TIME2-TIME1)
       WRITE(*,244)TOT_TIME
 244   FORMAT('%Elapsed time (s) = ',F8.1)
 

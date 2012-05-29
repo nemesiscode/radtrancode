@@ -382,7 +382,7 @@ C NOTE: NPOINT point output spectra are ouput in order of path
       WRITE(ULOG,*)' RADTRANS.f :: calculation complete.'
       CALL GETTIME(TIME)
       TIME2= TIME
-      TOT_TIME=TIME2-TIME1
+      TOT_TIME=SNGL(TIME2-TIME1)
       WRITE(*,244)TOT_TIME
       WRITE(ULOG,244)TOT_TIME
 244   FORMAT(' Elapsed time (s) = ',F8.1)

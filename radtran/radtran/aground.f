@@ -159,7 +159,7 @@ cc      X(I)=VMIN+(I-1)*DELV
         YMAX=Y(1)
         YMIN=YMAX
       END IF
-      XMAX=X(1)
+      XMAX=SNGL(X(1))
       XMIN=XMAX
       DO 304 I=1,NPOINT
       IF(LOG)Y(I)=PLOG10(Y(I))
@@ -167,8 +167,8 @@ cc      X(I)=VMIN+(I-1)*DELV
        YMAX=MAX(YMAX,Y(I))
        YMIN=MIN(YMIN,Y(I))
       ENDIF
-      XMAX=MAX(XMAX,X(I))
-      XMIN=MIN(XMIN,X(I))
+      XMAX=MAX(XMAX,SNGL(X(I)))
+      XMIN=MIN(XMIN,SNGL(X(I)))
 304   CONTINUE
       IF(MICRON)THEN
        WRITE(*,184)XMIN,XMAX

@@ -251,7 +251,7 @@ C compilers (notably Prospero Fortran for MS-DOS)
       
       TCORS2=1.439*(TEMP-296.)/(296.*TEMP)
 C     For each bin ...
-      NBIN = (VMAX-VMIN)/BINSIZ + 1
+      NBIN = INT((VMAX-VMIN)/BINSIZ) + 1
       
 C     First setting LSTLIN to one record before the first in the first bin
 C     (FNDWAV returns first record in DBREC) each bin then starts off at one
@@ -305,7 +305,7 @@ C     each strength decade
                   GOTO 110
                ENDIF
 
-               I = ALOG10(LNSTR1)
+               I = INT(ALOG10(LNSTR1))
                IF(I.GT.MAXSTR)THEN
                   WRITE(*,113)LNWAVE,LNSTR,LNSTR1,LNID,LNISO
  113              FORMAT('WARNING - strength too high for storage',

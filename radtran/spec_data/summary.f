@@ -48,7 +48,7 @@ C--------------------------------------------------------------
       READ(*,*)VMIN,VMAX
       CALL PROMPT('bin size?')
       READ(*,*)BINSIZ
-      NBIN=1+(VMAX-VMIN)/BINSIZ
+      NBIN=1+INT((VMAX-VMIN)/BINSIZ)
       IF(NBIN.GT.1.AND.(VMIN+FLOAT(NBIN-1)*BINSIZ-VMAX).GT.-0.1)
      1NBIN=NBIN-1
       CALL FNDWAV(VMIN)

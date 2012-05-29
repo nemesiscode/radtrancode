@@ -406,7 +406,7 @@ C-----------------------------------------------------------------------
       WRITE(*,*)'%CIRSDRV_WAVE.f :: calculation complete'
       CALL GETTIME(TIME)
       TIME2= TIME
-      TOT_TIME=TIME2-TIME1
+      TOT_TIME=SNGL(TIME2-TIME1)
       WRITE(*,200)TOT_TIME
 
 C-----------------------------------------------------------------------

@@ -10,8 +10,7 @@ C     ***************************************************************
       implicit none
       integer i,j,iout,k,iread,icheck
       real bassk(5,1900),xdum,ydum
-      character*60 buffer
-      character*80 ipfile
+      character*100 ipfile
 
       common /basstable/bassk,iread
 

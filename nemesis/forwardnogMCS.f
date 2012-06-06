@@ -77,7 +77,7 @@ C     **************************************************************
       real vwave(mgeom,mwave),interpem,height(100),vv
       real calcout(maxout3),fwhm,planck_wave,output(maxout3)
       real calcouts(maxout3)
-      integer iptf,ih2o,ich4
+      integer iptf,ih2o,ich4,io3
       real htan,thetrot,altbore,caltbore
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       integer ipixA,ipixB,ichan
@@ -279,7 +279,7 @@ C       call mradfield(fmod)
        print*,'Setting up for interpolation calculations'       
 C      Set up parameters for scattering cirsrad run.
 
-       CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IPTF)
+       CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
 
 
        itype=11			! scloud11wave
@@ -423,7 +423,7 @@ C         Set up parameters for scattering cirsrad run.
      1 dist,lowbc,galb,nf,nphi,layht,tsurf,nlayer1,laytyp,layint)
 
 
-          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IPTF)
+          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
 
           itype=11                      ! scloud11wave
           iscat1=1

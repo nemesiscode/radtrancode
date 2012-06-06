@@ -71,7 +71,7 @@ C     **************************************************************
       real xlat,planck_wave,planckg_wave,Bg,height(100),htan
       real wgeom(mgeom,mav),flat(mgeom,mav),fh,thetrot
       integer layint,inormal,iray,itype,nlayer,laytyp,ih2o,ich4
-      integer nwave(mgeom),jsurf,nem,nav(mgeom),nwave1
+      integer nwave(mgeom),jsurf,nem,nav(mgeom),nwave1,io3
       real vwave(mgeom,mwave),angles(mgeom,mav,3),vwave1(mwave)
       real calcout(maxout3),fwhm,calcoutL(maxout3)
       real calcout1(maxout3),gradients1(maxout4)
@@ -249,7 +249,7 @@ C     near-limb observations
 
 C     Set up parameters for non-scattering cirsrad run.
 
-      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IPTF)
+      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
 
       itype=12                  ! scloud12. not used here
 

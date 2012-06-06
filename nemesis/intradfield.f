@@ -50,7 +50,7 @@ C     **************************************************************
       include 'arraylen.f'
       real xlat,xref,dx
       integer layint,inormal,itype,nlayer,laytyp
-      integer iray,ih2o,ich4,iptf
+      integer iray,ih2o,ich4,io3,iptf
       integer nwave,ix,ix1,iav,nwave1
       integer nsol,iloop,i1,i2
       real vwave(mwave),interpem
@@ -114,7 +114,7 @@ C      emissivity spectrum
           emissivity(2)=1.0
       endif
          
-      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IPTF)
+      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
 
       itype=13			        ! scloud13flux
 

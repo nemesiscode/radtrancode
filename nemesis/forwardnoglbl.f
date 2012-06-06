@@ -66,7 +66,7 @@ C     **************************************************************
       include 'arraylen.f'
       real xlat,xref,dx
       integer layint,inormal,iray,itype,nlayer,laytyp,iscat
-      integer ix,ix1,iav,iptf,ih2o,ich4
+      integer ix,ix1,iav,iptf,ih2o,ich4,io3
       real interpem
       real calcout(maxout3),fwhm,planck_wave
       real gradients(maxout4)
@@ -202,7 +202,7 @@ C        we need to read in the surface emissivity spectrum
 
          
 C         Set up parameters for scattering cirsrad run.
-          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IPTF)
+          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
 
           itype=11			! scloud11wave
 

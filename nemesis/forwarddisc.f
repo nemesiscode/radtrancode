@@ -69,7 +69,7 @@ C     **************************************************************
       real wgeom(mgeom,mav),flat(mgeom,mav),pressR,delp
       integer layint,inormal,iray,itype,nlayer,laytyp,iscat
       integer nwave(mgeom),jsurf,nem,nav(mgeom),nwave1
-      integer jalb,jtan,jpre,k,iptf,ih2o,ich4
+      integer jalb,jtan,jpre,k,iptf,ih2o,ich4,io3
       real vwave(mgeom,mwave),angles(mgeom,mav,3),vwave1(mwave)
       real pi
       parameter(pi=3.1415927)
@@ -161,7 +161,7 @@ C        we need to read in the surface emissivity spectrum
          endif
 
 C        Set up parameters for non-scattering cirsrad run.
-         CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IPTF)
+         CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
          itype=11			! scloud11. not used here
 
 

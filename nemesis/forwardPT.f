@@ -68,7 +68,7 @@ C     **************************************************************
       real calcout2(maxout3),gradients2(maxout4)
       real gradients(maxout4),vv,gradientsL(maxout4)
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
-      integer ipixA,ipixB,ichan,ih2o,ich4
+      integer ipixA,ipixB,ichan,ih2o,ich4,io3
       real vconv(mgeom,mconv),vconv1(mconv)
       real layht,tsurf,esurf,pressR,delp,altbore,thbore,gtsurf
       real xn(mx),yn(my),kk(my,mx),yn1(my),caltbore
@@ -219,7 +219,7 @@ C     near-limb observations
      1    gasgiant,layht,nlayer,laytyp,layint,xlat,lin,
      3    nvar,varident,varparam,nx,xn,xmap)
 
-      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IPTF)
+      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
 
 
 C     Set up parameters for non-scattering cirsrad run.

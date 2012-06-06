@@ -67,7 +67,7 @@ C     **************************************************************
       real wgeom(mgeom,mav),flat(mgeom,mav),fh
       integer layint,inormal,iray,itype,nlayer,laytyp
       integer nwave(mgeom),jsurf,nem,nav(mgeom),nwave1
-      integer iptf,ih2o,ich4
+      integer iptf,ih2o,ich4,io3
       real vwave(mgeom,mwave),angles(mgeom,mav,3),vwave1(mwave)
       real calcout(maxout3),fwhm,calcoutL(maxout3)
       real calcout1(maxout3),gradients1(maxout3)
@@ -168,7 +168,7 @@ C     Set up all files for a direct cirsrad run of limb spectra
 
 C     Set up parameters for multi-limb cirsrad run.
 
-      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IPTF)
+      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
 
       itype=12			! scloud12. not used here
 

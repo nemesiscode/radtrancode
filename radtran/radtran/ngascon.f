@@ -15,6 +15,7 @@ C         TEMP:REAL       temp in K
 C     Input variables from common block
 C         IH2O:INTEGER    flag to turn H2O continuum on/off
 C         ICH4:INTEGER    flag to turn CH4 continuum on/off
+C	  IO3 :INTEGER    flag to turn ozone UV continuum on/off
 C     Output variable
 C	  ABSORB:REAL	  Gas continuum absorption at V0 
 C
@@ -56,7 +57,7 @@ C-----------------------------------------------------------------------
 C
 	INTEGER ID,ISO,I,ICH4,IH2O
 	REAL V0,DV,AMOUNT,PPRESS,PRESS,TEMP,ABSORB
-        REAL CH4CONT
+        REAL CH4CONT,INTERPBASS1
 C
 C --- Define COMMON blocks containing H2O continuum data ---
 C
@@ -70,7 +71,7 @@ C
 C
 C --- Define COMMON block for Continuum switches
 
-        COMMON /GASCONDEF/ ICH4,IH2O
+        COMMON /GASCONDEF/ ICH4,IH2O,IO3
 
 
 C***********************************************************************
@@ -195,6 +196,12 @@ C
 C           Karkoschka CH4 coefficients
 
             ABSORB= AMOUNT*1E-20*CH4CONT(FF)
+
+       ELSEIF ((ID.EQ.3) .AND. ((ISO.EQ.1).OR.(ISO.EQ.0))
+     &   .AND. IO3.NE.0)THEN
+C           Bass Ozone coefficients
+
+            ABSORB = AMOUNT*INTERPBASS1(FF,TEMP)
 
        ELSE
 

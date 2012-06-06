@@ -221,7 +221,7 @@ C-----------------------------------------------------------------------
       itype=11
 
 
-      CALL READFLAGS(RUNNAME,INORMAL,IRAY,IH2O,ICH4,IPTF)
+      CALL READFLAGS(RUNNAME,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
 
       CALL FILE(runname,CIAFIL,'cia')
 

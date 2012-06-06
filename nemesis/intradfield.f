@@ -47,10 +47,11 @@ C     **************************************************************
       parameter (ulog=17)
       integer ioff,lin,iscat
       include '../radtran/includes/arrdef.f'
+      include '../radtran/includes/gascom.f'
       include 'arraylen.f'
       real xlat,xref,dx
       integer layint,inormal,itype,nlayer,laytyp
-      integer iray,ih2o,ich4,io3,iptf
+      integer iray,iptf
       integer nwave,ix,ix1,iav,nwave1
       integer nsol,iloop,i1,i2
       real vwave(mwave),interpem

@@ -70,6 +70,7 @@ C     **************************************************************
       parameter (ulog=17)
       integer ngeom,ioff,igeom,lin
       include '../radtran/includes/arrdef.f'
+      include '../radtran/includes/gascom.f'
       include 'arraylen.f'
       real xlat,xref,dx
       integer layint,inormal,iray,itype,nlayer,laytyp,iscat,iscat1
@@ -77,7 +78,7 @@ C     **************************************************************
       real vwave(mgeom,mwave),interpem,height(100),vv
       real calcout(maxout3),fwhm,planck_wave,output(maxout3)
       real calcouts(maxout3)
-      integer iptf,ih2o,ich4,io3
+      integer iptf
       real htan,thetrot,altbore,caltbore
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       integer ipixA,ipixB,ichan

@@ -76,7 +76,6 @@ C     ********** Scattering variables **********************
 
 
       include '../radtran/includes/ciacom.f'
-      include '../radtran/includes/gascom.f'
 
       CHARACTER*100 ANAME
       REAL DNU

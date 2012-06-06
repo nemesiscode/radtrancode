@@ -62,12 +62,13 @@ C     **************************************************************
       integer ngeom,ioff,igeom
       real interpem
       include '../radtran/includes/arrdef.f'
+      include '../radtran/includes/gascom.f'
       include 'arraylen.f'
       real xlat,planck_wave,planckg_wave,Bg
       real wgeom(mgeom,mav),flat(mgeom,mav),pressR,delp
       integer layint,inormal,iray,itype,nlayer,laytyp,iscat
       integer nwave(mgeom),jsurf,nem,nav(mgeom),nwave1
-      integer jalb,jtan,jpre,k,iptf,ih2o,ich4,io3
+      integer jalb,jtan,jpre,k,iptf
       real vwave(mgeom,mwave),angles(mgeom,mav,3),vwave1(mwave)
       real calcout(maxout3),fwhm
       real gradients(maxout4),vv

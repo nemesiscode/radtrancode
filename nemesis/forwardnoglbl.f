@@ -63,10 +63,11 @@ C     **************************************************************
       parameter (ulog=17)
       integer ngeom,ioff,igeom,lin
       include '../radtran/includes/arrdef.f'
+      include '../radtran/includes/gascom.f'
       include 'arraylen.f'
       real xlat,xref,dx
       integer layint,inormal,iray,itype,nlayer,laytyp,iscat
-      integer ix,ix1,iav,iptf,ih2o,ich4,io3
+      integer ix,ix1,iav,iptf
       real interpem
       real calcout(maxout3),fwhm,planck_wave
       real gradients(maxout4)

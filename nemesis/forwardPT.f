@@ -57,6 +57,7 @@ C     **************************************************************
       integer ngeom,ioff,igeom,iread
       real interpem,dv
       include '../radtran/includes/arrdef.f'
+      include '../radtran/includes/gascom.f'
       include 'arraylen.f'
       real xlat,planck_wave,planckg_wave,Bg,height(100),htan
       real wgeom(mgeom,mav),flat(mgeom,mav),fh,thetrot
@@ -68,7 +69,7 @@ C     **************************************************************
       real calcout2(maxout3),gradients2(maxout4)
       real gradients(maxout4),vv,gradientsL(maxout4)
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
-      integer ipixA,ipixB,ichan,ih2o,ich4,io3
+      integer ipixA,ipixB,ichan
       real vconv(mgeom,mconv),vconv1(mconv)
       real layht,tsurf,esurf,pressR,delp,altbore,thbore,gtsurf
       real xn(mx),yn(my),kk(my,mx),yn1(my),caltbore

@@ -68,7 +68,6 @@ C     ********** Scattering variables **********************
       COMMON /scatdump/ idump
 
       INCLUDE '../radtran/includes/ciacom.f'
-      INCLUDE '../radtran/includes/gascom.f'
 
       CHARACTER*100 ANAME
       REAL DNU

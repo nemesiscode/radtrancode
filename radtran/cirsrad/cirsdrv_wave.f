@@ -307,7 +307,7 @@ C-----------------------------------------------------------------------
        IPARA2=IPARA
       ENDIF
 
-      CALL READFLAGS(OPFILE,INORMAL,IRAY,IH2O,ICH4,IPTF)
+      CALL READFLAGS(OPFILE,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
 
 
 

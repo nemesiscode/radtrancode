@@ -195,7 +195,7 @@ C-----------------------------------------------------------------------
         GOTO 40
       ENDIF
 
-      CALL READFLAGS(OPFILE,INORMAL,IRAY,IH2O,ICH4,IPTF)
+      CALL READFLAGS(OPFILE,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
 
       WRITE(*,*)'Enter surface temperature : '
       READ(*,*)tsurf

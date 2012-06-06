@@ -254,12 +254,16 @@ C Compute absorption coefficient for normal incidence
                 VV = VBIN(J)+CONWAV(K)
                 DV = VV - VLIN(LINE)
                 X = DV/AD
-                FNH3=-1.0
-                FH2=-1.0
-                CONVAL(K)=SUBLINE(IDGAS,PRESS,TEMP,IPROC,VV,VLIN(LINE),
+
+                IF(ABS(DV).LE.MAXDV)THEN
+
+                 FNH3=-1.0
+                 FH2=-1.0
+                 CONVAL(K)=SUBLINE(IDGAS,PRESS,TEMP,IPROC,VV,VLIN(LINE),
      1           ABSCO,X,Y,AD,FNH3,FH2,LLQ(LINE),DOUBV(LINE))
 
-               TAUSTORE(K,J)=TAUSTORE(K,J)+CONVAL(K)
+                TAUSTORE(K,J)=TAUSTORE(K,J)+CONVAL(K)
+               ENDIF
 
 21          CONTINUE
 

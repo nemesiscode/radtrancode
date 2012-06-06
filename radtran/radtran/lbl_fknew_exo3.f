@@ -119,7 +119,7 @@ C be reflected in calc_kdist.f
 C Continuum variables ...
       INTEGER ISUM,MP,MT,IREAD
       PARAMETER (MP=20,MT=20)
-      REAL TAUTMP
+      REAL TAUTMP,DV
       REAL CONTINK1(IORDP1,MP,MAXBIN)
       REAL CONVAL(NWAV),CONWAV(NWAV)
       REAL MATRIX(IORDP1,IORDP1),UNIT(IORDP1,IORDP1)
@@ -377,11 +377,14 @@ C Compute absorption coefficient for normal incidence
         DO 52 LINE=FSTLIN(JBIN),LSTLIN(JBIN)
 
           X  = abs(vlin(line)-v)/ad_arr(line)
-          FNH3=-1.0
-          FH2=-1.0
-          TAUTMP=TAUTMP+SUBLINE(IDGAS,PRESS,TEMP,IPROC,V,
+          DV = vlin(line)-v
+          IF(ABS(DV).LE.MAXDV)THEN
+           FNH3=-1.0
+           FH2=-1.0
+           TAUTMP=TAUTMP+SUBLINE(IDGAS,PRESS,TEMP,IPROC,V,
      1   VLIN(LINE),ABSCO_arr(line),X,Y_arr(line),ad_arr(line),
      2   FNH3,FH2,LLQ(LINE),DOUBV(LINE))
+          ENDIF
 
 52      CONTINUE
         IF(TAUTMP.LT.0.0)THEN

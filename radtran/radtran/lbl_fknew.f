@@ -121,6 +121,7 @@ C be reflected in calc_kdist.f
       INTEGER MPOINT
       PARAMETER (MPOINT=50000)
       REAL OUTPUT(MPOINT),TX(MPOINT)
+      CHARACTER*1 ANS
 
       COMMON /SPECTRUM/ OUTPUT
 
@@ -152,7 +153,7 @@ C C_LIGHT: Speed of light [m sec^-1].
 C R_GAS: Universal gas constant [J K^-1 mol^-1].
 
       INTEGER I,J,K,JBIN,IBIN1,IBIN2,NPOINT
-      REAL VMIN,DELV,WING
+      REAL VMIN,DELV,WING,DV
       REAL XPW,V0,XPD,MXWID
 C I,J,K,JBIN: Incremators.
 C IBIN1: =CURBIN - 1 
@@ -218,6 +219,7 @@ C Checking isotope included in model and setting mass for doppler width
 C calculation
       XMASS=GETMASS(IDGAS,ISOGAS)
 
+1     FORMAT(A)
 
       IPTF=0
 cc      WRITE(*,420)GASNAM(IDGAS),IDGAS,ISOGAS,XMASS
@@ -422,13 +424,15 @@ C=======================================================================
 
 C Compute absorption coefficient for normal incidence
         DO 52 LINE=FSTLIN(JBIN),LSTLIN(JBIN)
-
-          X  = abs(vlin(line)-v)/ad_arr(line)
-          FNH3=-1.0
-          FH2=-1.0
-          TAUTMP=TAUTMP+SUBLINE(IDGAS,PRESS,TEMP,IPROC,V,
+          DV=vlin(line)-v
+          IF(ABS(DV).LE.MAXDV)THEN
+           X  = abs(vlin(line)-v)/ad_arr(line)
+           FNH3=-1.0
+           FH2=-1.0
+           TAUTMP=TAUTMP+SUBLINE(IDGAS,PRESS,TEMP,IPROC,V,
      1  VLIN(LINE),ABSCO_arr(line),X,Y_arr(line),ad_arr(line),
      1  FNH3,FH2,LLQ(line),DOUBV(line))
+          ENDIF
 
 52      CONTINUE
         IF(TAUTMP.LT.0.0)THEN
@@ -458,6 +462,10 @@ C      do i=1,npoint
 C       write(12,*)tx(i),output(i)
 C      enddo
 C      close(12)
+
+C      print*,'press a key to continue'
+C      read(5,1)ans
+
 
       RETURN
 

@@ -1,8 +1,15 @@
       real function interpbass1(nu,temp)
+C     *************************************************************
+C     Function to read in and interpolate Bass UV ozone absorption data.
+C
+C     Pat Irwin		Original	1999?
+C     Pat Irwin		Checked		6/6/12
+C
+C     *************************************************************
       implicit none
-      integer i,k
+      integer i,k,iread,icheck
       real f,xabs1,xabs2,T
-      real bassk(5,1900),xl,temp,nu,iread,icheck,interpbass
+      real bassk(5,1900),xl,temp,nu
 
       common /basstable/bassk,iread
 

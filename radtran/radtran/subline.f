@@ -28,7 +28,7 @@ C     ****************************************************************
       INTEGER IPROC,IDGAS
       
       REAL HUMLIC,GVOICO2,CHICO2,BURCHCO2,BURCHCO2_NORM
-      REAL HARTMANNCH4,HARTMANNCH4A
+      REAL HARTMANNCH4,HARTMANNCH4A,HARTMANNCH4B
       REAL VV,VLIN,ABSCO,X,Y,AD,TRATIO,DOUBV,GAMMA,VVWEISS
       REAL SLIN,ALIN,SBLIN,ELIN,TDW,TDWS,TCORDW,TCORS1,TCORS2
       REAL NH2,NHE,YPH3_H2,YPH3_HE,YPH3,PI,DV,TSTIM,TS1,TS2
@@ -58,7 +58,25 @@ C     used to renomalise the linestrengths
 C      print*,'SUBLINE',IDGAS,PRESS,TEMP,IPROC,VV,VLIN,ABSCO,X,Y,
 C     1 FNH3,FH2,LLQ,DOUBV
 
-      IF(IPROC.EQ.10)THEN
+      IF(IPROC.EQ.11)THEN
+C      IPROC=11:: Modification to Hartmann sub-lorentzian lineshape for methane
+C 		 in hydrogen atmosphere recommended by Sromovsky et al. (2012)
+
+       IF(IDGAS.NE.6)THEN
+        WRITE(*,*)' SUBLINE.f :: Can_t use the'
+        WRITE(*,*)' Sromovsky CH4 Hartmann sublorentzian shape '
+        WRITE(*,*)' for gases other than CH4.'
+        WRITE(*,*)' IDGAS = ',IDGAS
+        WRITE(*,*)' '
+        WRITE(*,*)' Stopping program.'
+        STOP
+       ENDIF
+
+       SUBLINE = ABSCO*
+     1                   HARTMANNCH4B(ABS(X),Y,ABS(DV))/AD
+
+
+      ELSE IF(IPROC.EQ.10)THEN
 C      IPROC=10:: Original Hartmann sub-lorentzian lineshape for methane
 C 		 in hydrogen atmosphere
        IF(IDGAS.NE.6)THEN
@@ -73,7 +91,6 @@ C 		 in hydrogen atmosphere
 
        SUBLINE = ABSCO*
      1                   HARTMANNCH4A(ABS(X),Y,ABS(DV))/AD
-C       print*,X,ABS(X),Y,ABS(DV),AD,SUBLINE
 
 
       ELSE IF(IPROC.EQ.9)THEN

@@ -17,6 +17,7 @@ F_SOURCES = \
 	burchco2.f \
 	hartmannch4.f \
 	hartmannch4A.f \
+	hartmannch4B.f \
 	calc_esum2.f \
 	calc_esum5.f \
 	calc_gvk_k.f \

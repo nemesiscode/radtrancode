@@ -167,7 +167,8 @@ C     Checking inversion is OK
         PRINT*,'dinvertm.f: Matrix inversion OK'
       ELSE
         PRINT*,'dinvertm.f: Matrix not inverted well'
-        PRINT*,DXMAX,TINY
+        PRINT*,'DXMAX,TINY',DXMAX,TINY
+        PRINT*,'JMOD : ',JMOD
       ENDIF
 
       RETURN

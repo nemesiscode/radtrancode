@@ -55,7 +55,7 @@ C          3feb12 PGJI simplified and rationalised. Also added flag to
 C                      switch different absorptions on or off.
 C-----------------------------------------------------------------------
 C
-	INTEGER ID,ISO,I,ICH4,IH2O
+	INTEGER ID,ISO,I
 	REAL V0,DV,AMOUNT,PPRESS,PRESS,TEMP,ABSORB
         REAL CH4CONT,INTERPBASS1
 C
@@ -70,8 +70,8 @@ C
 	COMMON /COMCON/ TS,PS,C2,PI
 C
 C --- Define COMMON block for Continuum switches
-
-        COMMON /GASCONDEF/ ICH4,IH2O,IO3
+        
+        INCLUDE '../includes/gascom.f'
 
 
 C***********************************************************************

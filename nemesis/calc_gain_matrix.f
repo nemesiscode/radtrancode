@@ -108,7 +108,7 @@ C       jmod = 0 : LU decomposition
 C       jmod = 1 : Gaussian elimination
 C       jmod = 2 : Cholesky decomposition
 
-c        jmod=2 
+        jmod=2 
         print*,'Calc_gain_matrix: Inverting...'
         call dinvertm(jmod,icheck,a,ny,my,b)
         b1=ny
@@ -135,7 +135,7 @@ C       Add sxi to c
         enddo
 
 C       Invert c, put answer in a
-c        jmod = 2
+        jmod = 2
         print*,'Calc_gain_matrix: Inverting...'
         call dinvertm(jmod,icheck,c,nx,my,a)
         a1=nx

@@ -59,6 +59,7 @@ C     ***********************************************************************
       logical fexist
 
 
+
       if(iform.eq.1)then
 C      Output from Nemesisdisc - see if solar file is present
        CALL file(runname,runname,'sol')  
@@ -86,7 +87,7 @@ C      Default Nemesisdisc format
          xfac=1.0
         else
          write(lout,*)'Units are nW cm-2 (cm-1)-1'
-        xfac=1e9
+         xfac=1e9
         endif
 
 C      NemesisPT format
@@ -98,8 +99,8 @@ C      Default
        else
         print*,'Error in writeout - iform not defined. Default=0'
         write(lout,*)'Radiances expressed as nW cm-2 sr-1 cm'
+        xfac = 1e9
        endif
-       xfac = 1e9
 
       else
 C      Wavelength space
@@ -132,6 +133,9 @@ C      Default format
        endif
 
       endif
+
+
+      print*,'Writeout: ispace,iform,xfac : ',ispace,iform,xfac
 
       write(lout,*)
      1  '  i  lambda  R_meas     error   %err  R_fit     Diff%'

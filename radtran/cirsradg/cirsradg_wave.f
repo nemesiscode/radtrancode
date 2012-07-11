@@ -880,11 +880,11 @@ C            Set dist to -1 to ensure we get total power spectrum of star
 
                   dcoutdq(ipath,ig,j1,k) =
      1                 dcoutdq(ipath,ig,j1,k) + bb(j,ipath)*
-     2                     xfac*(de3olddq(j1,k) - de3dq(j1,k))
+     2                     xfac*2.0*pi*(de3olddq(j1,k) - de3dq(j1,k))
                 ENDDO
                 IF(k.EQ.ngas+1)THEN
                  dcoutdq(ipath,ig,j,k) =
-     1      dcoutdq(ipath,ig,j,k) + xfac*sngl((e3old-e3new))*
+     1      dcoutdq(ipath,ig,j,k) + xfac*2.0*pi*sngl((e3old-e3new))*
      2           dbdt(j,ipath)
                ENDIF
               ENDDO
@@ -906,10 +906,10 @@ C           We need to add on any radiation from the surface
 C *** Need to add in code to compute the gradient also and report back.
 
             corkout(ipath,ig) = corkout(ipath,ig) +
-     1        xfac*sngl(e3old)*(esurf*bsurf)
+     1        xfac*2.0*pi*sngl(e3old)*(esurf*bsurf)
 
 C           gradient wrt surface temperature
-            gradtsurf = xfac*sngl(e3old)*esurf*
+            gradtsurf = xfac*2.0*pi*sngl(e3old)*esurf*
      1        planckg_wave(ispace,vwave,Tsurf)
 
 

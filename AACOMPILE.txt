@@ -1,9 +1,15 @@
-Code compilation has been tested on Linux (32 and 64-bit) using the
-Intel Fortran compiler (currently version 11.1.072), and also on Mac OSX 
-using gfortran. 
+Code compilation has been tested on Linux (32 and 64-bit) using the Intel 
+Fortran compiler (currently version 11.1.072), and also on Mac OSX 
+using gfortran (N.B. Guidance on locating gfortran and also f2c for MacOSX is
+given below).
 
-The are two main things to look out for when compiling on different systems.
-1) You need to know that depending on the system and the Fortran 
+which can be grabbed from somewhere such as fink or from 
+any website when you google gfortran. You'll also need f2c in order for 
+gettime.c to compile. I got a build script from the following website, which 
+worked fine: http://hpc.sourceforge.net/buildf2c). 
+
+The are three main things to look out for when compiling on different systems.
+a) You need to know that depending on the system and the Fortran 
 compiler, the record length, ISYS,which is set in radtran/rtm_util/isys.f 
 needs to be set to either 1 or 4.
 For gfortran on MacOSX you need ISYS=4. 
@@ -12,50 +18,69 @@ some versions of the ifc need ISYS=4.
 If you don't know, pick either ISYS=1 or ISYS=4 and see if the code works.
 If it doesn't, choose the other one!
 
-2) The code will look in the directory defined by radtran/rtm_util/datachive.f 
+b) The code will look in the directory defined by radtran/rtm_util/datachive.f 
 for the a whole load of reference files during a run. Hence, you need to update 
 datachive.f to point to the right place before compiling.
 
-To compile the whole code you need to follow the procedure:
+c) Edit your .cshrc file to include the following set of environment variables. 
+You need to decide where to put these yourself, but for typical MacOSX compile 
+you would set:
+setenv BIN /Users/username/bin
+setenv OBJ /Users/username/obj
+setenv LIB /Users/username/lib 
+setenv RADSRC /Users/username/radtrancode/trunk/radtran
+
+You also need to make sure that the stack size is unlimited by adding the 
+following line to your .cshrc file:
+limit stacksize unlimited
+
+
+For specific platforms you also need to set the following environment variables
+as described below.
+
+
+For Linux-64 - Intel Fortran 11.1.072 add the following:
+setenv FCOMP "ifort"
+setenv FCFLAGS1 "-mcmodel=large -i-dynamic -O2 -cm -w -zero"
+setenv FCFLAGS1_FOVGREG "-mcmodel=large -i-dynamic -O -w90 -w95 -FR -cm -w"
+setenv STATIC_FLAG ""
+
+For Linux-32 - Intel Fortran 7.0 add the following:
+setenv FCOMP "ifc"
+setenv FCFLAGS1 "-O2 -w90 -w95 -cm -w -zero"
+setenv FCFLAGS1_FOVGREG "-O -w90 -w95 -FR -cm -w"
+setenv STATIC_FLAG ""
+
+For MacOSX add the following:    
+setenv FCOMP "gfortran"
+setenv FCFLAGS1 ""
+setenv FCFLAGS1_FOVGREG "-ffree-form"
+setenv STATIC_FLAG ""
+
+
+To compile the whole code you need to follow the procedure (from the trunk 
+directory):
 1) change directory to FOVgreg/ and type 'make lib'
 2) change directory to frecipes/ and type 'make lib'
 3) change directory to radtran/makefiles/ and type 'makeradtranlib'
 4) change directory to radtran/makefiles/ and type 'makeradtranbin'
 5) change directory to nemesis/ and type 'make bin'
 Note 1: if you're not doing MCS calculations you can skip step 1.
-Note 2: if you've already compile the Fortran recipes library, you can
+Note 2: if you've already compiled the Fortran recipes library, you can
         skip step 2.
-Note 3: on MacOSX, you'll need to install gfortran from somewhere such as fink. In
-	the end I just grabbed a version from a website. You'll also need f2c in 
-	order for gettime.c to compile. I got a build script from the following
-	website, whihc worked fine.
-	http://hpc.sourceforge.net/buildf2c
+Note 3: on MacOSX, you'll need to install gfortran from somewhere such as fink
+	or from any website when you google gfortran. In the end I just grabbed 
+	a version from a website. You'll also need f2c in order for gettime.c 
+	to compile. I got a build script from the following website, which 
+	worked fine - http://hpc.sourceforge.net/buildf2c
 
-Relevant compilation flags and environment variables used are:
 
-Linux-64 - Intel Fortran 11.1.072
-setenv FCOMP "ifort"
-setenv FCFLAGS1 "-mcmodel=large -i-dynamic -O2 -cm -w -zero"
-setenv FCFLAGS1_FOVGREG "-mcmodel=large -i-dynamic -O -w90 -w95 -FR -cm -w"
-setenv STATIC_FLAG ""
-
-Linux-32 - Intel Fortran 7.0
-setenv FCOMP "ifc"
-setenv FCFLAGS1 "-O2 -w90 -w95 -cm -w -zero"
-setenv FCFLAGS1_FOVGREG "-O -w90 -w95 -FR -cm -w"
-setenv STATIC_FLAG ""
-
-MacOSX - gfortran
-setenv FCOMP "gfortran"
-setenv FCFLAGS1 ""
-setenv FCFLAGS1_FOVGREG "-ffree-form"
-setenv STATIC_FLAG ""
-
-***** For additional debugging with gfortran try:
-
+N.B. For additional debugging on MacOSX with gfortran try:
 setenv FCFLAGS1 "-O -finit-local-zero -m64 -fcheck=bounds -fcheck=mem -fbacktrace -Wconversion 
 -mcmodel=medium"
 setenv FCFLAGS1_FOVGREG "-O -ffree-form -finit-local-zero -m64 -fcheck=bounds -fcheck=mem -fbacktrace 
 -Wconversion -mcmodel=medium"
 
 Pat Irwin	11/5/12
+Brigette Hesman 16/7/12
+Pat Irwin	18/7/12

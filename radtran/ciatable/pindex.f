@@ -1,6 +1,6 @@
       INTEGER FUNCTION PINDEX(X,NX,X1)
 C     **********************************************************
-C     Function for looking up closest point beliw X1 in array X(NX)
+C     Function for looking up closest point below X1 in array X(NX)
 C
 C     Pat Irwin	2/3/12	Updated for Radtrans2.0
 C

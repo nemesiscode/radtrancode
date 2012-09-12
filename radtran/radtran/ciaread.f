@@ -94,11 +94,6 @@ C        this sets up the wavenumber array
             vvk1(i) = (i-1)*dnu1
 22       continue
 
-C        initialise the absorption array to be zero in case of failure
-         do 24 i=1, NUMPAIRS
-            abs(i) = 0.0
-            dabsdT(i)=0.0
-24       continue
          print*,'ciaread : New Data read in'
 
 C        Set read flag to zero to prevent table being read again
@@ -106,30 +101,44 @@ C        Set read flag to zero to prevent table being read again
 
       end if
 
+
+C     initialise the absorption array to be zero in case of failure
+      do 24 i=1, NUMPAIRS
+            abs(i) = 0.0
+            dabsdT(i)=0.0
+24    continue
+
 C     ----------------------------------------------------------------------
 C     range checking
 C     ----------------------------------------------------------------------
 
-      if((vv.gt.vvk1(NUMWN).or.vv.lt.vvk1(1)).and.ivc.ne.1)then
-         print*,'ciaread : wavenumber out of range'
-         ivc=1
+      if((vv.gt.vvk1(NUMWN).or.vv.lt.vvk1(1)))then
+         if(ivc.ne.1)then
+           print*,'ciaread : wavenumber out of range',vv
+           print*,'Table range : ',vvk1(1),vvk1(NUMWN)
+           ivc=1
+         endif
          return
       end if
 
-      if(temp.gt.tempk1(NUMT).and.it1c.ne.1)then
-         print*,'ciaread: warning temp > MaxT ',temp
-         print*,'Setting to ',tempk1(NUMT)
+      if(temp.gt.tempk1(NUMT))then
+         if(it1c.ne.1)then
+           print*,'ciaread: warning temp > MaxT ',temp
+           print*,'Setting to ',tempk1(NUMT)
+           it1c=1
+         endif
          temp1 = tempk1(NUMT)
-         it1c=1
       else
          temp1 = temp
       end if
 
-      if(temp.lt.tempk1(1).and.it2c.ne.1)then
-         print*,'ciaread: warning temp <  MinT ',temp
-         print*,'Setting to ',tempk1(1)
+      if(temp.lt.tempk1(1))then
+         if(it2c.ne.1)then
+           print*,'ciaread: warning temp <  MinT ',temp
+           print*,'Setting to ',tempk1(1)
+           it2c=1
+         endif
          temp1 = tempk1(1)
-         it2c=1
       else
          temp1 = temp
       end if

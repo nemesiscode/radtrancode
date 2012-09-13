@@ -14,7 +14,7 @@
 9   Pluto         0.015   0.0      0.0      0.0   1151.0   0.0        -6.3872     1
 10  Sun     1989000.0     0.0      0.0      0.0 695000.0   0.0        25.38       0
 11  Titan         0.1353  0.0      0.0      0.0   2575.0   0.0        15.945      1
-12  189733b    2145.4     0.0      0.0      0.0  79021.71  0.0    100000.0        0
+12  189733b    2145.4     0.0      0.0      0.0  81966.0   0.0    100000.0        0
 13  209458b    1310.4     0.0      0.0      0.0  94369.4   0.0    100000.0        0
 14  GJ436b      138.42    0.0      0.0      0.0  25000.0   0.0    100000.0        0
 15  blank         0.0     0.0      0.0      0.0  82215.8   0.0    100000.0        0
@@ -43,3 +43,8 @@
 38  202          60.0     0.0      0.0      0.0  12000.0   0.0    1.0             1
 39  AAA	         12.0     0.0      0.0      0.0  15000.0   0.0    1.0             0
 
+# Notes. Some disagreement of radius of HD189733b. Originally set here to be 79021.71 
+# from somewhere, but this was based on an older estimate of the star radius. Current
+# estimate of plan size (via Wikipedia) is 81357.9 km, but this is still not quite 
+# big enough assuming a star size of 5.431855e5km. Hence, increased here a bit more 
+# to 81966.  

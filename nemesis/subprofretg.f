@@ -43,7 +43,15 @@ C     Output variables
 C	NCONT	INTEGER		Number of cloud particle types
 C	XMAP(MAXV,MAXGAS+2+MAXCON,MAXPRO) REAL Matrix relating functional
 C				derivatives calculated by CIRSRADG to the 
-C				elements of the state vector
+C				elements of the state vector. 
+C				Elements of XMAP are the rate of change of
+C				 the profile vectors (i.e. temperature, vmr prf
+C				 files) with respect to the change in the state
+C				 vector elements. So if X1(J) is the modified 
+C				 temperature,vmr,clouds at level J to be 
+C				 written out to runname.prf or aerosol.prf then
+C				 XMAP(K,L,J) is d(X1(J))/d(XN(K)) and where
+C				 L is the identifier (1 to NGAS+1+2*NCONT)
 C
 C     Pat Irwin	29/7/96		Original
 C     Pat Irwin 17/10/03	Revised for Nemesis
@@ -619,8 +627,6 @@ C        ***************************************************************
          ENDIF
          XFSH  = EXP(XN(NXTEMP+2))
          XFAC = (1.0-XFSH)/XFSH
-C         DXFAC = -1.0/(XFSH*XFSH)
-C        New gradient correction if fsh is held as logs
          DXFAC = -1.0/XFSH
 
          CALL VERINT(P,H,NPRO,HKNEE,PKNEE)
@@ -691,8 +697,6 @@ C        ***************************************************************
          ENDIF
          XFSH  = EXP(XN(NXTEMP+2))
          XFAC = (1.0-XFSH)/XFSH
-C         DXFAC = -1.0/(XFSH*XFSH)
-C        New gradient correction if fsh is held as logs
          DXFAC = -1.0/XFSH
          PKNEE = EXP(XN(NXTEMP+3))
 
@@ -700,13 +704,8 @@ C        New gradient correction if fsh is held as logs
          JFSH = 0
       
          DO J=1,NPRO
-C          X1(J)=XDEEP
+
           X1(J)=1e-36
-          IF(VARIDENT(IVAR,1).EQ.0)THEN
-            XMAP(NXTEMP+1,IPAR,J)=1.0
-          ELSE
-            XMAP(NXTEMP+1,IPAR,J)=X1(J)
-          ENDIF
 
           IF(P(J).LT.PKNEE)THEN  
              IF(JFSH.EQ.0)THEN
@@ -714,14 +713,15 @@ C          X1(J)=XDEEP
                XKEEP = XDEEP
 
                IF(VARIDENT(IVAR,1).EQ.0)THEN
-                XMAP1=1.0
+                XMAP1=1.
                ELSE
-                XMAP1=X1(J)
+                XMAP1=XDEEP
                ENDIF
 
                XMAP(NXTEMP+1,IPAR,J)=XMAP1*
      1                  EXP(-DELH*XFAC/SCALE(J))
              ELSE
+
                DELH=H(J)-H(J-1)
                XKEEP = X1(J-1)
                XMAP(NXTEMP+1,IPAR,J)=XMAP(NXTEMP+1,IPAR,J-1)*

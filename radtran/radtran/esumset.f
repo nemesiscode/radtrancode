@@ -11,8 +11,8 @@ C     **************************************************************
 
       implicit none
       include '../includes/arrdef.f'
-      real knu0,delad,y0,EL,SFB,c1,c2,qrot,P,T,q,x(20),y(20)
-      real sig(20), xcorr, tautmp,dpexp
+      real knu0,delad,y0,EL,SFB,c1,c2,qrot,P,T,q,x(MAXK),y(MAXK)
+      real sig(MAXK), xcorr, tautmp,dpexp
       real gabsc(maxg),k_g(maxg),eml
 
       real U,tau_eks,T1,U1,U2,DU,E_TRAN,yv,tau_goody_voigt1

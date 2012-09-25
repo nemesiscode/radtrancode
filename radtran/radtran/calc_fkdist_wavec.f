@@ -35,15 +35,13 @@ C***************************** VARIABLES *******************************
 
       IMPLICIT NONE
 
+      INCLUDE '../includes/arrdef.f'
+
 C Input parameters ...
       INTEGER NPOINT,NG,NGMAX,IWAVE,ICH,NFIL
       REAL VMIN,VMAX,DELV,VV,G_ORD(NGMAX),V1,V2
       REAL VFIL(NFIL),TFIL(NFIL),WFIL     
 
-C Output parameters ... NOTE: if you change MPOINT, the change must also  
-C be reflected in lbl_fknew.f
-      INTEGER MPOINT
-      PARAMETER (MPOINT=50000)
       REAL OUTPUT(MPOINT),K_G(NGMAX),OUTPUT1(MPOINT)
       REAL X(MPOINT),VMIN1,VMAX1,DELV1,Y1
 
@@ -54,12 +52,12 @@ C be reflected in lbl_fknew.f
 C General parameters ...
       INTEGER I,J,K,NKINT
 
-      INTEGER MAXK
-      PARAMETER (MAXK=5000)
+      INTEGER MAXKK
+      PARAMETER (MAXKK=5000)
 
       REAL YY(MPOINT),YMIN,YMAX
       REAL KMAX,KMIN,DELK,XFR,YK,SUMK
-      REAL F(MAXK),ORD(MAXK),G(MAXK),DK(MAXK)
+      REAL F(MAXKK),ORD(MAXKK),G(MAXKK),DK(MAXKK)
       REAL FRAC1,DG,XMINK
       REAL GG,SUM
       REAL DEL_G(NGMAX)
@@ -146,7 +144,7 @@ C        print*,'calc_fkdist_wavec - zero spec - returning'
         RETURN
       ENDIF
 
-      NKINT = MAXK
+      NKINT = MAXKK
       DELK = (KMAX - KMIN)/(1.0*NKINT-1.0)
       DO 315 K=1,NKINT
         F(K) = 0.0

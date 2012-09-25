@@ -328,7 +328,7 @@ C     Correlated-K variables
       PARAMETER (PI=3.1415927)
       REAL CORKOUT(IGPATH,MAXG),QACT(MAXLAY),GABSC(MAXG)
       DOUBLE PRECISION SL,BL,SS,TAUD,BB1,PAR(MAXGAS,3)
-      REAL PRESSKTA(20),TEMPKTA(20),PIN,TIN,VIN
+      REAL PRESSKTA(MAXK),TEMPKTA(MAXK),PIN,TIN,VIN
       INTEGER IRECK(10),NPK,NTK,ULOG
       PARAMETER (ULOG=17)
 C------------------------------------------------------------------------------

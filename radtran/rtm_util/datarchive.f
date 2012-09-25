@@ -20,11 +20,14 @@ C***********************************************************************
 
       IMPLICIT NONE
 
-      INTEGER i,j
-      CHARACTER*100 aname,tname,arcfile
+      INTEGER i,j,L
+      CHARACTER*200 tname,arcfile
+      CHARACTER aname*(*)
       LOGICAL skip,fexist
 
       skip = .TRUE.
+
+      L = LEN(ANAME)
       
       arcfile = 'datapath.arc'
       
@@ -42,17 +45,17 @@ c  ** if arcfile exists then get tname from that **
 
       else
 
-      tname = '/Users/patirwin/radtrancode/trunk/raddata/'
+C      tname = '/Users/patirwin/radtrancode/trunk/raddata/'
 
-C      tname ='/home/oxpln98/plan/irwin/radtrancode/trunk/
-C     &raddata/'
+      tname ='/home/oxpln98/plan/irwin/radtrancode/trunk/
+     &raddata/'
 
       endif
       
 c      print*,'tname=',tname
 
       j = 1
-      DO 10 i=1,80
+      DO 10 i=1,200
         IF(skip)THEN
           IF(tname(i:i+1).eq.'/ ') THEN
             skip = .FALSE.
@@ -64,6 +67,6 @@ c      print*,'tname=',tname
          
 10    CONTINUE
 
-      aname(1:80)=tname(1:80)
+      aname(1:L)=tname(1:L)
 
       END

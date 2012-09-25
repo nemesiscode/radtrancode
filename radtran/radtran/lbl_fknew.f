@@ -98,7 +98,7 @@ C***************************** VARIABLES *******************************
 
 C Definition of input parameters ...
       INTEGER IDGAS,ISOGAS,IPROC,IP,IT,IWAVE
-      REAL PRESS,TEMP,VSTART,VEND,MAXDV,FRAC
+      REAL PRESS,TEMP,VSTART,VEND,MAXDV,FRAC,FPOINT
 
 
 C The include files ...
@@ -116,10 +116,6 @@ C VLIN, SLIN, ALIN, ELIN, SBLIN, TDW, TDWS and that lot).
 C ../includes/parcom.f stores the parameter values such as MAXLAY,
 
 
-C Output parameters ... NOTE: if you change MPOINT, the change must also
-C be reflected in calc_kdist.f
-      INTEGER MPOINT
-      PARAMETER (MPOINT=50000)
       REAL OUTPUT(MPOINT),TX(MPOINT)
       CHARACTER*1 ANS
 
@@ -127,10 +123,9 @@ C be reflected in calc_kdist.f
 
 
 C Continuum variables ...
-      INTEGER ISUM,MP,MT,IREAD,IPTF
-      PARAMETER (MP=20,MT=20)
+      INTEGER ISUM,IREAD,IPTF
       REAL TAUTMP,PARTF
-      REAL CONTINK(IORDP1,MP,MT,MAXBIN)
+      REAL CONTINK(IORDP1,MAXK,MAXK,MAXBIN)
       REAL CONVAL(NWAV),CONWAV(NWAV)
       REAL MATRIX(IORDP1,IORDP1),UNIT(IORDP1,IORDP1)
 C IORDER: order of the continuum polynomial.
@@ -285,17 +280,20 @@ C=======================================================================
 
 C Multiply by three so as to have the center point, and one at both VSTART
 C (= VMIN - 0.5*FWHM) and VEND (= VSTART + FWHM).
-      NPOINT = 3*INT((VEND - VSTART)/MXWID)
+C      NPOINT = 3*INT((VEND - VSTART)/MXWID)
+      FPOINT = 3.*(VEND - VSTART)/MXWID
 cc      WRITE(*,*)'LBL_FKNEW.f :: NPOINT = ',NPOINT
 
-      IF(NPOINT.GT.MPOINT)THEN
+      IF(FPOINT.GE.FLOAT(MPOINT))THEN
 cc        WRITE(*,*)'LBL_FKNEW.f :: *WARNING* NPOINT > MPOINT'
 cc        WRITE(*,*)'NPOINT, MPOINT = ',NPOINT,MPOINT
 cc        WRITE(*,*)'Setting NPOINT equal to MPOINT.'
         NPOINT = MPOINT - 1
+      ELSE
+        NPOINT=INT(FPOINT)
       ENDIF
 
-      IF(NPOINT.LE.4)THEN
+      IF(FPOINT.LE.4.)THEN
 cc        WRITE(*,*)'LBL_FKNEW.f :: *WARNING* NPOINT < 4 (= ',NPOINT,').'
 cc        WRITE(*,*)'Setting NPOINT equal to 3.'
         NPOINT = 3

@@ -116,7 +116,7 @@ C PMAX: Pressure [atm] maximum.
 C TMIN: Temperature [Kelvin] minimum.
 C TMAX: Temperature [Kelbin] maximum.
 
-      REAL P1,TE1,DT,DP,XP,TEMP1(20),PRESS1(20)
+      REAL P1,TE1,DT,DP,XP,TEMP1(MAXK),PRESS1(MAXK)
 C P1: Pressure [atm] at level J.
 C TE1: Temperature [Kelvin] at level K.
 C PRESS1: Pressure [atm].

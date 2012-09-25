@@ -52,21 +52,20 @@ C--------------------------------------------------------------
       INCLUDE '../includes/bincom.f'
 C-----------------------------------------------------------------------------
       INTEGER LUN,LOOP,LUN0,LUN1,MDATA,MFIL,MPOINT,NGMAX
-      PARAMETER (LUN=2,LUN0=30,LUN1=31,MDATA=20,MFIL=1000,MPOINT=9000)
+      PARAMETER (LUN=2,LUN0=30,LUN1=31,MFIL=1000)
       PARAMETER (NGMAX=51)
       REAL X,PMIN,PMAX,TMIN,TMAX,DT,DP
       INTEGER IREC,IREC0,I,IWAVE,NFIL,IMULTI
       REAL TOT_TIME
       DOUBLE PRECISION TIME,TIME1,TIME2
-      REAL XE(MDATA),YE(MDATA),SIGE(MDATA),TFIL(MFIL),VFIL(MFIL)
-      REAL V1(MFIL),V2(MFIL),T1(MFIL)
+      REAL TFIL(MFIL),VFIL(MFIL),V1(MFIL),V2(MFIL),T1(MFIL)
       CHARACTER*100 KTAFIL,FILFILE
       CHARACTER*1 ANS
       REAL KNU0,DELAD,Y0,EL
       REAL QROT,FRAC1,MAXDV
 
-      REAL P1,TE1,TEMP1(20),PRESS1(20),VCEN(MPOINT)
-      REAL G_ORD(NGMAX),K_G(NGMAX),DEL_G(NGMAX),ERRK(NGMAX)
+      REAL P1,TE1,TEMP1(MAXK),PRESS1(MAXK),VCEN(MPOINT)
+      REAL G_ORD(MAXG),K_G(MAXG),DEL_G(MAXG),ERRK(MAXG)
 C     G_ORD: Gauss-Legendre ordinates for calculating the k-distribution.
 C     K_G: Calculated k-distribution.
 C     DEL_G: Gauss-Legendre weights for integration.

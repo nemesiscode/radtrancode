@@ -90,8 +90,8 @@ C------------------------------------------------------------------------------
       REAL TEMP,VMIN,DELV,WING
 C------------------------------------------------------------------------------
 C     general parameters
-      integer mpoint,MFIL,NFIL
-      PARAMETER (MPOINT=50000,MFIL=1000)
+      integer MFIL,NFIL
+      PARAMETER (MFIL=1000)
       REAL OUTPUT(MPOINT),VFIL(MFIL),TFIL(MFIL)
 
 C------------------------------------------------------------------------------

@@ -80,6 +80,8 @@ C     of equally spaced wavelengths
        DO I=1,NPOINT
         X(I)=VMIN+(I-1)*DELV
        ENDDO
+       
+       print*,'NPOINT,DELV=',NPOINT,DELV
 
        VMIN1 = 1E4/VMAX
        VMAX1 = 1E4/VMIN

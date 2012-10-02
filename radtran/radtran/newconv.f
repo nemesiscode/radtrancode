@@ -31,10 +31,10 @@ C     Pat Irwin		7/3/97
 C
 C     ************************************************************************
       implicit none
+      include '../includes/arrdef.f'
       integer npoint,i,j,iconv,ispace,npoint1
       real delv,vmin,vmin1,fwhm,x1,x2,v1,v2,dx,sum
-      integer mpoint,ispec,iend,istart
-      parameter (mpoint = 90000)
+      integer ispec,iend,istart
       real wid,xm,y(npoint),y1(mpoint),smooth,x(mpoint),xfac
 
 

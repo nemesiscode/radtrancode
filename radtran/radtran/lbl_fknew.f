@@ -272,11 +272,16 @@ C		XPW = 0.1*PRESS
 C		XPD = 4.301E-7*SQRT(TEMP/XMASS)
 C
 C=======================================================================
-
+C
+C      XPW = 0.1*PRESS*SQRT(TRATIO)
+C      V0 = SQRT(2*K_BOLTZ*TEMP/XMASS)
+C      XPD = (V0/C_LIGHT)*SQRT(2*PI*R_GAS*TEMP/XMASS)
+C      MXWID = SQRT(XPD**2 + XPW**2)
       XPW = 0.1*PRESS*SQRT(TRATIO)
-      V0 = SQRT(2*K_BOLTZ*TEMP/XMASS)
-      XPD = (V0/C_LIGHT)*SQRT(2*PI*R_GAS*TEMP/XMASS)
+      V0=0.5*(VSTART+VEND)
+      XPD = 4.301E-7*V0*SQRT(TEMP/XMASS)
       MXWID = SQRT(XPD**2 + XPW**2)
+      print*,'MXWID=',MXWID
 
 C Multiply by three so as to have the center point, and one at both VSTART
 C (= VMIN - 0.5*FWHM) and VEND (= VSTART + FWHM).

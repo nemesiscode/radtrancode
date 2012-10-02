@@ -40,7 +40,7 @@ C
 C
 C Input parameters
 C
-      integer ng
+      integer ng, lpoint
       real fknu,delad,y,T,g_ord(maxg),k_g(maxg),tau_goody_voigt2
       real umean
       logical lcalch
@@ -238,20 +238,20 @@ C
           stop
         end if
         dhdg1=(hk(2)-hk(1))/(gk(2)-gk(1))
-        mpoint=ndata
+        lpoint=ndata
 120     continue
-        if(abs(gk(mpoint-1)-1D0).lt.1.D-13)then
-           mpoint=mpoint-1
+        if(abs(gk(lpoint-1)-1D0).lt.1.D-13)then
+           lpoint=lpoint-1
            goto 120
         end if 
-        dhdgn=(hk(mpoint)-hk(mpoint-1))/(gk(mpoint)-gk(mpoint-1))
-        call spline_m(gk,hk,mpoint,dhdg1,dhdgn,dh2)
+        dhdgn=(hk(lpoint)-hk(lpoint-1))/(gk(lpoint)-gk(lpoint-1))
+        call spline_m(gk,hk,lpoint,dhdg1,dhdgn,dh2)
 C
         do 150 i=1,ng-1
           gmind=DBLE(g_ord(i))
           gmaxd=DBLE(g_ord(i+1))
-          call splint_m(gk,hk,dh2,mpoint,gmind,rhmin)
-          call splint_m(gk,hk,dh2,mpoint,gmaxd,rhmax)
+          call splint_m(gk,hk,dh2,lpoint,gmind,rhmin)
+          call splint_m(gk,hk,dh2,lpoint,gmaxd,rhmax)
           deltah=rhmax-rhmin
           deltag=gmaxd-gmind
 C
@@ -270,10 +270,10 @@ C
            print*,'gk(1) = gk(2) = ',gk(1)
            stop
         end if
-        mpoint=ndata
+        lpoint=ndata
 125     continue
-        if(abs(gk(mpoint-1)-1D0).lt.1D-13)then
-           mpoint=mpoint-1
+        if(abs(gk(lpoint-1)-1D0).lt.1D-13)then
+           lpoint=lpoint-1
            goto 125
         end if
         do 160 i=1,ng-1

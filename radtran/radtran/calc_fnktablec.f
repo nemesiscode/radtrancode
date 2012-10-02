@@ -51,7 +51,7 @@ C--------------------------------------------------------------
       INCLUDE '../includes/pathcom.f'
       INCLUDE '../includes/bincom.f'
 C-----------------------------------------------------------------------------
-      INTEGER LUN,LOOP,LUN0,LUN1,MDATA,MFIL,MPOINT,NGMAX
+      INTEGER LUN,LOOP,LUN0,LUN1,MDATA,MFIL,NGMAX
       PARAMETER (LUN=2,LUN0=30,LUN1=31,MFIL=1000)
       PARAMETER (NGMAX=51)
       REAL X,PMIN,PMAX,TMIN,TMAX,DT,DP

@@ -39,8 +39,7 @@ C paths, etc.)
       real MAXDX,MAXDX1
       PARAMETER (maxkfil=100,MAXDX=0.01)
 
-      INTEGER ngas,nwave,nkl,npk,ntk,ngk,i,j,i1,i2,k,mpoint,npoint
-      PARAMETER (mpoint=12000)
+      INTEGER ngas,nwave,nkl,npk,ntk,ngk,i,j,i1,i2,k,npoint
 C NPK: Number of pressure points in k-tables.
 C NTK: Number of temperature points in k-tables.
 C NGK: Number of g-ordinates in k-tables.

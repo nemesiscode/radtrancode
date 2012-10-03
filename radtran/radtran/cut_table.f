@@ -25,7 +25,7 @@ C NOTE: dbcom defines the linedata base variables. it is not normally
 C stored in the same directory as the rest of the code
       INCLUDE '../includes/pathcom.f'
 
-      INTEGER LUN,LUN0,LUN1,MPOINT      
+      INTEGER LUN,LUN0,LUN1      
       PARAMETER (LUN=2,LUN0=30,LUN1=31)
 C MAXOUT the maximum number of output points
 

@@ -148,17 +148,23 @@ C******************************** CODE *********************************
       ENDIF
 
       PRINT*,'Table1'
+      PRINT*,'Index, Wavelength or Wavenumber'
       DO I=1,NPOINT1
        PRINT*,I,VMIN1+(I-1)*DELV1
       ENDDO
-      CALL PROMPT('Enter desired I1,I2 : ')
+      PRINT*,'Enter starting and finishing wavelength indices of that'
+      PRINT*,'part of Table 1 you want to extract and concatenate,'
+      CALL PROMPT('i.e., enter indesired I1,I2 : ')
       READ*,I1,I2
 
       PRINT*,'Table2'
+      PRINT*,'Index, Wavelength or Wavenumber'
       DO I=1,NPOINT2
        PRINT*,I,VMIN2+(I-1)*DELV2
       ENDDO
-      CALL PROMPT('Enter desired J1,J2 : ')
+      PRINT*,'Enter starting and finishing wavelength indices of that'
+      PRINT*,'part of Table 2 you want to extract and concatenate,'
+      CALL PROMPT('i.e., enter desired J1,J2 : ')
       READ*,J1,J2
 
 

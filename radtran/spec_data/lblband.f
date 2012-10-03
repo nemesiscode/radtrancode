@@ -52,8 +52,8 @@ C------------------------------------------------------------------------------
       INCLUDE '../includes/lincom.f'
       INCLUDE '../includes/dbcom.f' 
 C------------------------------------------------------------------------------
-      INTEGER MPOINT,MORD
-      PARAMETER (MPOINT=11000,MORD=5)
+	INTEGER MORD
+      PARAMETER (MORD=5)
       REAL POUT(MPOINT,MAXGAS,MORD),WAVEN(MPOINT,2)
       REAL AD,V0,V,V1,DELWAV
       INTEGER GAS,NGAS1,IDGAS1(1),ISOGAS1(1)

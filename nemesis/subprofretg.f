@@ -1139,7 +1139,7 @@ C         print*,'Radius of Planet'
 
 C        Extra section for combined cloud/gas profile - Model 10.
 C        **********************************************************
-         IF(JSPEC.LE.NCONT)THEN
+         IF(JSPEC.GT.0.AND.JSPEC.LE.NCONT)THEN
           DO I=1,NPRO
            CONT(JSPEC,I)=X2(I)
           ENDDO

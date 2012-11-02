@@ -115,6 +115,13 @@ C-----------------------------------------------------------------------
           tmin = tk(1)
           tmax = tk(nt(i))
           npoint = npt(i)
+          if(npoint.gt.mpoint)then
+           print*,'Error in READ_KLIST: npoint > mpoint'
+           print*,npoint,mpoint
+           print*,'Use smaller k-tables or modify MPOINT in arrdef.f'
+           print*,'and recompile everything'
+           stop
+          endif
           npk = np(i)
           ntk = nt(i)
           ngk = ng(i)

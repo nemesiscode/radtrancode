@@ -55,7 +55,7 @@ C      tname = '/Users/patirwin/radtrancode/trunk/raddata/'
 c      print*,'tname=',tname
 
       j = 1
-      DO 10 i=1,200
+      DO 10 i=1,L
         IF(skip)THEN
           IF(tname(i:i+1).eq.'/ ') THEN
             skip = .FALSE.

@@ -116,7 +116,7 @@ C      Nemesisdisc format
          write(lout,*)'Units are F_plan/F_star'
          xfac=1.0
         else
-         write(lout,*)'Units uW cm-2 sr-1 um-1'
+         write(lout,*)'Units uW cm-2 um-1'
          xfac=1e6
         endif
 

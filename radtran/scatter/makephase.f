@@ -73,7 +73,8 @@ C-----------------------------------------------------------------------
      2		ext, phase(max_theta), omega, calpha,  x, qext, gsec,
      3		xsec(max_mode,max_wave,2), qsca, qabs, sum, du, dsum, 
      4		sparm(max_mode,3), srs(max_mode,3),
-     5		scalef,srefind(max_mode,2),f,g1,g2,rms
+     5		scalef,srefind(max_mode,2),f,g1,g2,rms,
+     6          phase1(max_theta)
 	double precision f1, f2, hg11, hg12, hg21, hg22
 	complex	nc
 
@@ -394,6 +395,7 @@ C
 C-----------------------------------------------------------------------
 
 	  	 	do K = 1, nphase
+				phase1(K)=phase(k)
 			 	phase(K) = 0.25 * phase(K)/pi
 		        enddo
 
@@ -414,8 +416,10 @@ C-----------------------------------------------------------------------
                          print*,'Renormalising : '
                          do k=1,nphase
                           phase(k)=phase(k)*1.0/sum
+                          phase1(k)=phase1(k)*1.0/sum
                          end do
                         endif
+
                         if(phase(1).ge.10000.0)then
  			 write (buffer,1095,ERR=666) 
      &			   w, ext, omega,(phase(K),K=1, nphase)
@@ -433,8 +437,10 @@ C-----------------------------------------------------------------------
 
  667			irec=irec+1
 
-
-			call subfithgm(nphase,theta,phase,f,g1,g2,rms)
+C			Subfithgm is expecting phase functions normalised
+C			to 4pi, rather than 1, so pass phase1 instead of
+C			phase.
+			call subfithgm(nphase,theta,phase1,f,g1,g2,rms)
 
                         write(14,*)w,f,g1,g2
 

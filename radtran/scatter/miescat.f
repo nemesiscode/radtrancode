@@ -88,17 +88,16 @@ C-----------------------------------------------------------------------
 
 
       
-C      IF(XLAM.EQ.8.5)THEN
 C       PRINT*,'-------------------'
 C       PRINT*,XLAM, (ISCAT(I),I=1,NMODE)
 C       PRINT*,(DSIZE(I,1),I=1,3)
 C       PRINT*,NMODE, (RS(I),I=1,3) 
 C       PRINT*,(REFINDX(I),I=1,2) 
 C       PRINT*,NTHETA,(THETA(I),I=1,NTHETA)
+C       PRINT*,NPHAS
 C       PRINT*,XSCAT,XEXT
 C       PRINT*,NPHAS,(PHAS(I),I=1,NPHAS)
 C       PRINT*,'-------------------'
-C      ENDIF
 
       IF (NTHETA.GT.MAXTH) THEN
 		WRITE (*,*) '  TOO MANY ANGLE POINTS: NTHETA = ',NTHETA,

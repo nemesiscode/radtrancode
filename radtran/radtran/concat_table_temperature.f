@@ -1,9 +1,10 @@
-      PROGRAM CONCAT_TABLE
+      PROGRAM CONCAT_TABLE_TEMPERATURE
 C     $Id:
 C***********************************************************************
 C_TITL:	CONCAT_TABLE.f
 C
-C_DESC:	Concatenates two k-look-up table
+C_DESC:	Concatenates two k-look-up tables, which have the same wavelength
+C       and pressure grids, but different temperature grids.
 C
 C_ARGS:	See the definitions below.
 C
@@ -15,6 +16,9 @@ C	remsp
 C	pindex	
 C
 C_HIST:	10feb95	PGJI	ORIGINAL VERSION
+C	 7nov12 JB	Revised from Concat_table to deal with k-tables that
+C			cover same temperature and pressure ranges, but 
+C			different temperatures.
 C***************************** VARIABLES *******************************
 
       INCLUDE '../includes/arrdef.f'

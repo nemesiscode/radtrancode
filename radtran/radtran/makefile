@@ -20,7 +20,6 @@ F_SOURCES = \
 	hartmannch4B.f \
 	calc_esum2.f \
 	calc_esum5.f \
-	calc_gvk_k.f \
 	calc_fkdist_wavec.f \
 	calc_lor_width.f \
 	calc_mlk1_k.f \
@@ -30,6 +29,7 @@ F_SOURCES = \
 	calc_mlk2_k.f \
 	calc_nlte.f \
 	calc_pcoeff.f \
+	calc_gvk_k.f \
 	nciacon.f \
 	ciacon.f \
 	co2cia.f \
@@ -105,7 +105,7 @@ F_SOURCES = \
 	write_k.f \
 	reservegas.f \
 	readbass1.f \
-	interpbass1.f
+	interpbass1.f  	
 
 INCDIR = ../includes
 #INCLUDES = $(INCDIR)/arrdef.f $(INCDIR)/bincom.f $(INCDIR)/bincoms.f \
@@ -141,7 +141,6 @@ $(LIBRARY)(%.o): %.f $(INCLUDES)
 bin :   \
 	Aground \
 	Ave_table \
-	Calc_fnktable \
 	Calc_fnktablec \
 	Calc_exotable3 \
 	Calc_exotable4 \
@@ -157,7 +156,10 @@ bin :   \
 	Radtrans \
 	Read_table \
 	Concat_table \
+	Concat_table_temperature \
 	Cut_table
+	
+#		Calc_fnktable \
 
 Aground : aground.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Aground aground.f $(LIBRARY) \
@@ -166,11 +168,6 @@ Aground : aground.f $(LIBRARY) $(LIB)/spec_data.a
 Ave_table : ave_table.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Ave_table ave_table.f $(LIBRARY) \
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES)  \
-	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a
-
-Calc_fnktable : calc_fnktable.f $(LIBRARY) $(LIB)/spec_data.a
-	$(FC) $(FCFLAGS) -o $(BIN)/Calc_fnktable calc_fnktable.f $(LIBRARY) \
-	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
 	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a
 
 Calc_fnktablec : calc_fnktablec.f $(LIBRARY) $(LIB)/spec_data.a
@@ -251,6 +248,12 @@ Concat_table : concat_table.f $(LIBRARY) $(LIB)/spec_data.a
 	$(LIBRARY) $(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
 	$(LIB)/scatter.a $(LIB)/path.a
 
+Concat_table_temperature : concat_table_temperature.f $(LIBRARY)\
+	$(LIB)/spec_data.a 
+	$(FC) $(FCFLAGS) -o $(BIN)/Concat_table_temperature concat_table_temperature.f \
+	$(LIBRARY) $(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
+	$(LIB)/scatter.a $(LIB)/path.a
+
 Cut_table : cut_table.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Cut_table cut_table.f $(LIBRARY) \
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
@@ -260,4 +263,7 @@ Scale_table : scale_table.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Scale_table scale_table.f $(LIBRARY) \
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES)
 
-
+#Calc_fnktable : calc_fnktable.f $(LIBRARY) $(LIB)/spec_data.a
+#	$(FC) $(FCFLAGS) -o $(BIN)/Calc_fnktable calc_fnktable.f $(LIBRARY) \
+#	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
+#	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a

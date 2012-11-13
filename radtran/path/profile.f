@@ -23,18 +23,18 @@ C
 C_END:
 C--------------------------------------------------------------
       IMPLICIT NONE
+      INCLUDE '../includes/arrdef.f'
+      INCLUDE '../includes/constdef.f'
 
-      INTEGER MAXPRO,MAXVMR
-      PARAMETER(MAXPRO=300,MAXVMR=20)
 C     MAXPRO is the maximum number of vertical points which can be stored.
-C     MAXVMR is the maximum number of vertical mixing ratio profiles.
-      REAL H(MAXPRO),P(MAXPRO),T(MAXPRO),VMR(MAXPRO,MAXVMR),RHUM
-      REAL H1(MAXPRO),P1(MAXPRO),T1(MAXPRO),VMR1(MAXPRO,MAXVMR)
-      REAL PI,XSUM,HTAN,PTAN,XP1,XP2,WCOL,PX,TX,DELH
-      REAL XPR
-      INTEGER ISCALE(MAXVMR),IPLANET,JSWITCH,I1,IVMR,JW
-      REAL XV(MAXPRO),XXMASS(MAXPRO),CALCMOLWT,RATIO(MAXVMR)
-      INTEGER NPRO,NVMR,ID(MAXVMR),ISO(MAXVMR),NPRO1
+C     MAXGAS is the maximum number of vertical mixing ratio profiles.
+      REAL H(MAXPRO),P(MAXPRO),T(MAXPRO),VMR(MAXPRO,MAXGAS),RHUM
+      REAL H1(MAXPRO),P1(MAXPRO),T1(MAXPRO),VMR1(MAXPRO,MAXGAS)
+      REAL XSUM,HTAN,PTAN,XP1,XP2,WCOL,PX,TX,DELH
+      REAL XPR,XSCALE(MAXPRO)
+      INTEGER ISCALE(MAXGAS),IPLANET,JSWITCH,I1,IVMR,JW
+      REAL XV(MAXPRO),XXMASS(MAXPRO),CALCMOLWT,RATIO(MAXGAS)
+      INTEGER NPRO,NVMR,ID(MAXGAS),ISO(MAXGAS),NPRO1
 C     H is the height in kilometres above some NOMINAL zero.
 C     P is the pressure in atmospheres (not bar).
 C     T is the temperature in Kelvin.
@@ -46,7 +46,7 @@ C     each gas once or that the identifiers are valid.
 C
 C----------------------------------------------------------------------------
       REAL GCONST,R,PCONV,VMRCONV,FRAC,XFMIN
-      PARAMETER (PI=3.1415927, GCONST=6.668E-11, R=8.3143)
+      PARAMETER (GCONST=6.668E-11, R=8.3143)
       PARAMETER (XFMIN=0.001)
       INTEGER NSIMP, NCONV, AMFORM
       PARAMETER (NSIMP=101)
@@ -218,7 +218,7 @@ C	STOP
        READ*,HTAN,PTAN
 
        CALL XHYDROSTATP(AMFORM,IPLANET,LATITUDE,NPRO,NVMR,MOLWT,
-     1 ID,ISO,H,P,T,VMR,HTAN,PTAN,SCALE)
+     1 ID,ISO,H,P,T,VMR,HTAN,PTAN,XSCALE)
 
       END IF
 C
@@ -469,7 +469,7 @@ C --------------------------------------------------------------------
 C       hydrostatic equilibrium - calculate height from pressure
 
         CALL XHYDROSTATH(AMFORM,IPLANET,LATITUDE,NPRO,NVMR,MOLWT,
-     1 ID,ISO,H,P,T,VMR,SCALE)
+     1 ID,ISO,H,P,T,VMR,XSCALE)
 
 C --------------------------------------------------------------------
       ELSE IF(COMM.EQ.'K')THEN
@@ -479,7 +479,7 @@ C       hydrostatic equilibrium - calculate pressure from height
 	READ*,HTAN,PTAN
 
         CALL XHYDROSTATP(AMFORM,IPLANET,LATITUDE,NPRO,NVMR,MOLWT,
-     1 ID,ISO,H,P,T,VMR,HTAN,PTAN,SCALE)
+     1 ID,ISO,H,P,T,VMR,HTAN,PTAN,XSCALE)
 
 C --------------------------------------------------------------------
       ELSE IF(COMM.EQ.'H')THEN

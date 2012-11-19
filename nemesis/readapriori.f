@@ -79,6 +79,7 @@ C     a priori covariance matrix
       integer npx,ioff,icond,npvar
       character*100 opfile,buffer,ipfile,runname
       integer nxx 
+      real xwid,ewid,y,y0
 
 C     Initialise a priori parameters
       do i=1,mx
@@ -594,13 +595,12 @@ C                                  or only above the condensation level (1)
              nx=nx+2
 
            elseif (varident(ivar,3).eq.12)then
-C            ******** profile held as deep amount, fsh and knee pressure ** 
-C            Read in xdeep, fsh, pknee, pshld
-             read(27,*)pknee,pshld
+C            ** profile held as peak amount, pressure and FWHM (Gaussian) **
+C            Read in xdeep, pknee, xwid
+
              read(27,*)xdeep,edeep
-             read(27,*)xfsh,efsh
-             varparam(ivar,1) = pknee
-             varparam(ivar,2) = pshld
+             read(27,*)pknee,eknee
+             read(27,*)xwid,ewid
              ix = nx+1
              if(varident(ivar,1).eq.0)then
 C             *** temperature, leave alone ********
@@ -617,17 +617,121 @@ C             *** vmr, para-H2 or cloud, take logs *********
               err = edeep/xdeep
              endif
              sx(ix,ix)=err**2
+
              ix = nx+2
-             if(xfsh.gt.0.0)then
-               x0(ix) = alog(xfsh)
+             x0(ix) = alog(pknee)
+             sx(ix,ix) = (eknee/pknee)**2
+
+             ix = nx+3
+             x0(ix) = alog(xwid)
+             sx(ix,ix) = (ewid/xwid)**2
+
+             nx = nx+3
+
+
+           elseif (varident(ivar,3).eq.13)then
+C            ** profile held as peak amount, pressure and FWHM (Lorentzian) **
+C            Read in xdeep, pknee, xwid
+
+             read(27,*)xdeep,edeep
+             read(27,*)pknee,eknee
+             read(27,*)xwid,ewid
+             ix = nx+1
+             if(varident(ivar,1).eq.0)then
+C             *** temperature, leave alone ********
+              x0(ix)=xdeep
+              err = edeep
              else
-               print*,'Error in readapriori - xfsh must be > 0'
-               stop
+C             *** vmr, para-H2 or cloud, take logs *********
+              if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+              else
+                print*,'Error in readapriori. xdeep must be > 0.0'
+                stop
+              endif
+              err = edeep/xdeep
              endif
-             sx(ix,ix) = (efsh/xfsh)**2
+             sx(ix,ix)=err**2
 
-             nx = nx+2
+             ix = nx+2
+             x0(ix) = alog(pknee)
+             sx(ix,ix) = (eknee/pknee)**2
 
+             ix = nx+3
+             x0(ix) = alog(xwid)
+             sx(ix,ix) = (ewid/xwid)**2
+
+             nx = nx+3
+
+
+           elseif (varident(ivar,3).eq.14)then
+C            ** profile held as peak amount, pressure and FWHM (Gaussian) **
+C            Read in xdeep, pknee, xwid
+
+             read(27,*)xdeep,edeep
+             read(27,*)hknee,eknee
+             read(27,*)xwid,ewid
+             ix = nx+1
+             if(varident(ivar,1).eq.0)then
+C             *** temperature, leave alone ********
+              x0(ix)=xdeep
+              err = edeep
+             else
+C             *** vmr, para-H2 or cloud, take logs *********
+              if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+              else
+                print*,'Error in readapriori. xdeep must be > 0.0'
+                stop
+              endif
+              err = edeep/xdeep
+             endif
+             sx(ix,ix)=err**2
+
+             ix = nx+2
+             x0(ix) = hknee
+             sx(ix,ix) = eknee**2
+
+             ix = nx+3
+             x0(ix) = alog(xwid)
+             sx(ix,ix) = (ewid/xwid)**2
+
+             nx = nx+3
+
+
+           elseif (varident(ivar,3).eq.15)then
+C            ** profile held as peak amount, pressure and FWHM (Lorentzian) **
+C            Read in xdeep, pknee, xwid
+
+             read(27,*)xdeep,edeep
+             read(27,*)hknee,eknee
+             read(27,*)xwid,ewid
+             ix = nx+1
+             if(varident(ivar,1).eq.0)then
+C             *** temperature, leave alone ********
+              x0(ix)=xdeep
+              err = edeep
+             else
+C             *** vmr, para-H2 or cloud, take logs *********
+              if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+              else
+                print*,'Error in readapriori. xdeep must be > 0.0'
+                stop
+              endif
+              err = edeep/xdeep
+             endif
+             sx(ix,ix)=err**2
+
+             ix = nx+2
+             x0(ix) = hknee
+             sx(ix,ix) = eknee**2
+
+             ix = nx+3
+             x0(ix) = alog(xwid)
+             sx(ix,ix) = (ewid/xwid)**2
+
+             nx = nx+3
 
 
            else         

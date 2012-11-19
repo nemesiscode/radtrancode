@@ -601,21 +601,16 @@ C            Read in xdeep, pknee, xwid
              read(27,*)xdeep,edeep
              read(27,*)pknee,eknee
              read(27,*)xwid,ewid
+
              ix = nx+1
-             if(varident(ivar,1).eq.0)then
-C             *** temperature, leave alone ********
-              x0(ix)=xdeep
-              err = edeep
-             else
-C             *** vmr, para-H2 or cloud, take logs *********
-              if(xdeep.gt.0.0)then
+             if(xdeep.gt.0.0)then
                 x0(ix)=alog(xdeep)
-              else
-                print*,'Error in readapriori. xdeep must be > 0.0'
-                stop
-              endif
-              err = edeep/xdeep
+             else
+               print*,'Error in readapriori. xdeep must be > 0.0'
+               stop
              endif
+
+             err = edeep/xdeep
              sx(ix,ix)=err**2
 
              ix = nx+2
@@ -636,21 +631,16 @@ C            Read in xdeep, pknee, xwid
              read(27,*)xdeep,edeep
              read(27,*)pknee,eknee
              read(27,*)xwid,ewid
+
              ix = nx+1
-             if(varident(ivar,1).eq.0)then
-C             *** temperature, leave alone ********
-              x0(ix)=xdeep
-              err = edeep
-             else
-C             *** vmr, para-H2 or cloud, take logs *********
-              if(xdeep.gt.0.0)then
+             if(xdeep.gt.0.0)then
                 x0(ix)=alog(xdeep)
-              else
-                print*,'Error in readapriori. xdeep must be > 0.0'
-                stop
-              endif
-              err = edeep/xdeep
+             else
+               print*,'Error in readapriori. xdeep must be > 0.0'
+               stop
              endif
+
+             err = edeep/xdeep
              sx(ix,ix)=err**2
 
              ix = nx+2
@@ -671,21 +661,17 @@ C            Read in xdeep, pknee, xwid
              read(27,*)xdeep,edeep
              read(27,*)hknee,eknee
              read(27,*)xwid,ewid
+
+
              ix = nx+1
-             if(varident(ivar,1).eq.0)then
-C             *** temperature, leave alone ********
-              x0(ix)=xdeep
-              err = edeep
-             else
-C             *** vmr, para-H2 or cloud, take logs *********
-              if(xdeep.gt.0.0)then
+             if(xdeep.gt.0.0)then
                 x0(ix)=alog(xdeep)
-              else
-                print*,'Error in readapriori. xdeep must be > 0.0'
-                stop
-              endif
-              err = edeep/xdeep
+             else
+               print*,'Error in readapriori. xdeep must be > 0.0'
+               stop
              endif
+
+             err = edeep/xdeep
              sx(ix,ix)=err**2
 
              ix = nx+2
@@ -706,22 +692,18 @@ C            Read in xdeep, pknee, xwid
              read(27,*)xdeep,edeep
              read(27,*)hknee,eknee
              read(27,*)xwid,ewid
+
              ix = nx+1
-             if(varident(ivar,1).eq.0)then
-C             *** temperature, leave alone ********
-              x0(ix)=xdeep
-              err = edeep
-             else
-C             *** vmr, para-H2 or cloud, take logs *********
-              if(xdeep.gt.0.0)then
+             if(xdeep.gt.0.0)then
                 x0(ix)=alog(xdeep)
-              else
-                print*,'Error in readapriori. xdeep must be > 0.0'
-                stop
-              endif
-              err = edeep/xdeep
+             else
+               print*,'Error in readapriori. xdeep must be > 0.0'
+               stop
              endif
+
+             err = edeep/xdeep
              sx(ix,ix)=err**2
+
 
              ix = nx+2
              x0(ix) = hknee

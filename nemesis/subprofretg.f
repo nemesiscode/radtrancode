@@ -1098,11 +1098,7 @@ C         begun. i.e. freeze vmr at the cold trap.
 C        Model 12. Profile is represented a Gaussian with a peak value
 C        at a variable pressure level plus a variable FWHM in log pressure.
 C        ***************************************************************
-         IF(VARIDENT(IVAR,1).EQ.0)THEN
-           XDEEP = XN(NXTEMP+1)
-         ELSE
-           XDEEP = EXP(XN(NXTEMP+1))
-         ENDIF
+         XDEEP = EXP(XN(NXTEMP+1))
          PKNEE = EXP(XN(NXTEMP+2))
          XWID  = EXP(XN(NXTEMP+3))
 
@@ -1131,11 +1127,7 @@ C        ***************************************************************
 C        Model 13. Profile is represented a Lorentzian with a peak value
 C        at a variable pressure level plus a variable FWHM in log pressure.
 C        ***************************************************************
-         IF(VARIDENT(IVAR,1).EQ.0)THEN
-           XDEEP = XN(NXTEMP+1)
-         ELSE
-           XDEEP = EXP(XN(NXTEMP+1))
-         ENDIF
+         XDEEP = EXP(XN(NXTEMP+1))
          PKNEE = EXP(XN(NXTEMP+2))
          XWID  = EXP(XN(NXTEMP+3))
 
@@ -1168,11 +1160,7 @@ C        FHWM is also folded into total opacity, but this gets renormalised
 C        by gsetrad.f anyway.
 C        ***************************************************************
 
-         IF(VARIDENT(IVAR,1).EQ.0)THEN
-           XDEEP = XN(NXTEMP+1)
-         ELSE
-           XDEEP = EXP(XN(NXTEMP+1))
-         ENDIF
+         XDEEP = EXP(XN(NXTEMP+1))
          HKNEE = XN(NXTEMP+2)
          XWID  = EXP(XN(NXTEMP+3))
 
@@ -1242,11 +1230,7 @@ C        height.
 C        FHWM is also folded into total opacity, but this gets renormalised
 C        by gsetrad.f anyway.
 C        ***************************************************************
-         IF(VARIDENT(IVAR,1).EQ.0)THEN
-           XDEEP = XN(NXTEMP+1)
-         ELSE
-           XDEEP = EXP(XN(NXTEMP+1))
-         ENDIF
+         XDEEP = EXP(XN(NXTEMP+1))
          HKNEE = XN(NXTEMP+2)
          XWID  = EXP(XN(NXTEMP+3))
 

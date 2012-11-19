@@ -226,6 +226,7 @@ C      ***************** Tangent height correction ***********
       icheck=0
       do ivar=1,nvar
        if(varident(ivar,3).eq.9.or.varident(ivar,3).eq.10)icheck=1
+       if(varident(ivar,3).eq.14.or.varident(ivar,3).eq.15)icheck=1
       enddo
 
 C     Compute the drv file to get the aerosol optical depths
@@ -291,6 +292,20 @@ C              print*,'gsetrad',od1,xod(icont),xscal(icont)
                dust(icont,j)=dust(icont,j)/xscal(icont)
               enddo
               nx1=nx1+4
+          endif
+          if(varident(ivar,3).eq.14.or.varident(ivar,3).eq.15)then
+              icont=abs(varident(ivar,1))
+              od1=exp(xn(nx1+1))
+              xscal(icont)=xod(icont)/od1
+              print*,'gsetrad - icont,od1,xscal(icont) = ',icont,
+     1          od1,xscal(icont)
+
+              do j=1,NN
+               dust(icont,j)=dust(icont,j)/xscal(icont)
+              enddo
+
+              nx1=nx1+3
+
           endif
 
          else 

@@ -84,11 +84,12 @@ C     ***********************************************************************
       INTEGER I,J,K,N,AMFORM,IPLANET,NGAS,IGAS,NX,NXTEMP,IX,ISPACE
       REAL TEMP
       REAL A,B,C,D,SVP,PP,LATITUDE
-      REAL MOLWT,SCALE(MAXPRO),XMAP1
+      REAL MOLWT,SCALE(MAXPRO),XMAP1,SCALEH
       REAL XMAP(MAXV,MAXGAS+2+MAXCON,MAXPRO)
 
       INTEGER NVAR,VARIDENT(MVAR,3)
       REAL VARPARAM(MVAR,MPARAM)
+      REAL XWID,Y,Y0,XX
       LOGICAL GASGIANT,FEXIST
 
 C----------------------------------------------------------------------------
@@ -1091,6 +1092,223 @@ C         begun. i.e. freeze vmr at the cold trap.
           ENDIF
 
          ENDDO
+
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.12)THEN
+C        Model 12. Profile is represented a Gaussian with a peak value
+C        at a variable pressure level plus a variable FWHM in log pressure.
+C        ***************************************************************
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+           XDEEP = XN(NXTEMP+1)
+         ELSE
+           XDEEP = EXP(XN(NXTEMP+1))
+         ENDIF
+         PKNEE = EXP(XN(NXTEMP+2))
+         XWID  = EXP(XN(NXTEMP+3))
+
+
+         Y0=ALOG(PKNEE)
+
+         DO J=1,NPRO
+
+          Y=ALOG(P(J))          
+          
+          X1(J)=XDEEP*EXP(-((Y-Y0)/XWID)**2)
+          print*,J,P(J),PKNEE,Y,Y0,Y-Y0,X1(J)
+          IF(VARIDENT(IVAR,1).EQ.0)THEN
+            XMAP(NXTEMP+1,IPAR,J)=X1(J)/XDEEP
+          ELSE
+            XMAP(NXTEMP+1,IPAR,J)=X1(J)
+          ENDIF
+
+          XMAP(NXTEMP+2,IPAR,J)=Y0*2.*(Y-Y0)*X1(J)/XWID**2
+          XMAP(NXTEMP+3,IPAR,J)=-2.0*((Y-Y0)**2)*X1(J)/XWID**2
+
+         ENDDO
+
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.13)THEN
+C        Model 13. Profile is represented a Lorentzian with a peak value
+C        at a variable pressure level plus a variable FWHM in log pressure.
+C        ***************************************************************
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+           XDEEP = XN(NXTEMP+1)
+         ELSE
+           XDEEP = EXP(XN(NXTEMP+1))
+         ENDIF
+         PKNEE = EXP(XN(NXTEMP+2))
+         XWID  = EXP(XN(NXTEMP+3))
+
+         Y0=ALOG(PKNEE)
+
+         DO J=1,NPRO
+
+          Y=ALOG(P(J))
+         
+          XX = (Y-Y0)**2 + XWID**2 
+          
+          X1(J)=XDEEP*(XWID**2)/XX
+
+          IF(VARIDENT(IVAR,1).EQ.0)THEN
+            XMAP(NXTEMP+1,IPAR,J)=X1(J)/XDEEP
+          ELSE
+            XMAP(NXTEMP+1,IPAR,J)=X1(J)
+          ENDIF
+         
+          XMAP(NXTEMP+2,IPAR,J)=Y0*XDEEP*2.*(Y-Y0)*(XWID**2)/XX**2
+          XMAP(NXTEMP+3,IPAR,J)=XWID*2*XDEEP*XWID*(XX - XWID**2)/XX**2
+
+         ENDDO
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.14)THEN
+C        Model 14. Profile is represented a Gaussian with a specified optical
+C        thickness centred at a variable altitude level plus a variable FWHM in 
+C        height.
+C        FHWM is also folded into total opacity, but this gets renormalised
+C        by gsetrad.f anyway.
+C        ***************************************************************
+
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+           XDEEP = XN(NXTEMP+1)
+         ELSE
+           XDEEP = EXP(XN(NXTEMP+1))
+         ENDIF
+         HKNEE = XN(NXTEMP+2)
+         XWID  = EXP(XN(NXTEMP+3))
+
+         Y0=HKNEE
+
+         print*,'Xdeep, hknee, xwid',XDEEP,HKNEE,XWID
+
+C        **** Want to normalise to get optical depth right. ***
+C        ND is the particles per cm3 (but will be rescaled)
+C        OD is in units of particles/cm2 = particles/cm3 x length(cm)
+C        OD(J)=ND(J)*SCALE(J)*1E5
+C        Q is specific density = particles/gram = particles/cm3 x g/cm3
+C        Q(J)=ND(J)/RHO         
+         
+         XOD=0.
+         DO J=1,NPRO
+
+          IF(AMFORM.EQ.0)THEN
+           XMOLWT=MOLWT
+          ELSE
+           XMOLWT=XXMOLWT(J)
+          ENDIF
+
+          RHO = (0.1013*XMOLWT/R)*(P(J)/T(J))
+
+          Y=H(J)
+                
+          Q(J) = 1./(XWID*SQRT(PI))*EXP(-((Y-Y0)/XWID)**2)
+          ND(J) = Q(J)*RHO 
+          OD(J) = ND(J)*SCALE(J)*1e5
+
+          XOD=XOD+OD(J)
+   
+          X1(J)=Q(J)
+
+         ENDDO
+
+C        Empirical correction to XOD
+         XOD = XOD*0.25
+
+         print*,'XOD = ',XOD
+
+
+         DO J=1,NPRO
+
+          X1(J)=Q(J)*XDEEP/XOD   
+
+          IF(VARIDENT(IVAR,1).EQ.0)THEN
+            XMAP(NXTEMP+1,IPAR,J)=X1(J)/XDEEP
+          ELSE
+            XMAP(NXTEMP+1,IPAR,J)=X1(J)
+          ENDIF
+
+          XMAP(NXTEMP+2,IPAR,J)=2.*(Y-Y0)*X1(J)/XWID**2
+          XMAP(NXTEMP+3,IPAR,J)=-2.0*((Y-Y0)**2)*X1(J)/XWID**3
+     &             -  X1(J)/XWID
+
+         ENDDO
+
+C        *** This renormalisation is pretty accurate, but not quite accurate
+C        *** enough and so it gets updated in gsetrad.f
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.15)THEN
+C        Model 15. Profile is represented a Lorentzian with a specified optical
+C        thickness centred at a variable altitude level plus a variable FWHM in 
+C        height.
+C        FHWM is also folded into total opacity, but this gets renormalised
+C        by gsetrad.f anyway.
+C        ***************************************************************
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+           XDEEP = XN(NXTEMP+1)
+         ELSE
+           XDEEP = EXP(XN(NXTEMP+1))
+         ENDIF
+         HKNEE = XN(NXTEMP+2)
+         XWID  = EXP(XN(NXTEMP+3))
+
+         Y0=HKNEE
+
+
+C        ND is the particles per cm3 (but will be rescaled)
+C        OD is in units of particles/cm2 = particles/cm3 x length(cm)
+C        OD(J)=ND(J)*SCALE(J)*1E5
+C        Q is specific density = particles/gram = particles/cm3 x g/cm3
+C        Q(J)=ND(J)/RHO         
+         
+         XOD=0.
+
+         DO J=1,NPRO
+
+          IF(AMFORM.EQ.0)THEN
+           XMOLWT=MOLWT
+          ELSE
+           XMOLWT=XXMOLWT(J)
+          ENDIF
+
+          RHO = (0.1013*XMOLWT/R)*(P(J)/T(J))
+
+          Y=H(J)
+
+          XX = (Y-Y0)**2 + XWID**2 
+          
+          Q(J) = (1./PI)*XWID/XX
+          ND(J) = Q(J)*RHO 
+          OD(J) = ND(J)*SCALE(J)*1e5
+
+          XOD=XOD+OD(J)
+   
+          X1(J)=Q(J)
+
+         ENDDO
+
+C        Empirical correction to XOD
+         XOD = XOD*0.25
+
+         print*,'XOD = ',XOD
+
+         DO J=1,NPRO
+         
+          X1(J)=Q(J)*XDEEP/XOD   
+
+          IF(VARIDENT(IVAR,1).EQ.0)THEN
+            XMAP(NXTEMP+1,IPAR,J)=X1(J)/XDEEP
+          ELSE
+            XMAP(NXTEMP+1,IPAR,J)=X1(J)
+          ENDIF
+         
+          XMAP(NXTEMP+2,IPAR,J)=(XDEEP/(XOD*PI))*2.*
+     &                                  (Y-Y0)*XWID/XX**2
+          XMAP(NXTEMP+3,IPAR,J)=XWID*(XDEEP/(XOD*PI))*
+     &					(XX - 2*XWID**2)/XX**2
+
+         ENDDO
+
+C        *** This renormalisation is pretty accurate, but not quite accurate
+C        *** enough and so it gets updated in gsetrad.f
 
         ELSE
 

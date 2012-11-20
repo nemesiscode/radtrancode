@@ -1439,8 +1439,8 @@ C-----------------------------------------------------------------------
 
 	subroutine table_refind(lambda, ncr, nci)
 C       *************************************************************
-C	External table should have 2 indicators in its' beginning:
-C	1) nspec = no. of wavenumbers/wavelenghts in file
+C	External table should have 2 indicators at its beginning:
+C	1) nspec = no. of wavenumbers/wavelengths in file
 C	2) idspec = 1, means wavelengths
 C		  = 2, means wavenumbers
 C

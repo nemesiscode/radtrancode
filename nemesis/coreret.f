@@ -205,7 +205,7 @@ C       Write out x-data to temporary .str file for later routines.
 
        else
 C       substituting and retrieving parameters from .pre file. 
-C       Current record frrom .pre file already read in by
+C       Current record from .pre file already read in by
 C       readapriori.f. Hence just read in from temporary .str file
         call readxtmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
      1   nxx,xnx,stx,jsurfx,jalbx,jtanx,jprex,jradx)
@@ -250,6 +250,7 @@ C       readapriori.f. Hence just read in from temporary .str file
        endif
 
        if(lin.eq.3) then
+
 C        strip out variables from kkx and stx that will be retrieved in 
 C        this run.
          call scankkx(nvarx,varidentx,varparamx,nprox,nvar,varident,
@@ -521,8 +522,12 @@ C      Write out k-matrix for reference
 
       endif
 
-      print*,'chisq/ny is equal to : ',chisq/float(ny)
-      if(chisq.gt.ny)then
+      if(phi.gt.ophi)then
+       xchi=oxchi
+      endif
+      print*,'chisq/ny is equal to : ',xchi
+
+      if(xchi.gt.1.)then
        print*,'Coreret: WARNING'
        print*,'chisq/ny should be less than 1 if correctly retrieved'
       endif

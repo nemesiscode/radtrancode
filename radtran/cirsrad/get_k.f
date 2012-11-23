@@ -91,7 +91,7 @@ C	  print*,'No data defined for gas : ',IGAS
          ENDIF
 
 C         print*,'IGAS,IREC0 : ',IGAS,IREC0
-C         print*,'delv = ',delv
+C         print*,'delv,vmin,vwave = ',delv,vmin,vwave
          IF(delv.gt.0.0)then
           N1 = int((VWAVE - VMIN)/DELV + eps)	! find nearest point in table
 C						  below current wavelength.

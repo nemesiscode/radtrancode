@@ -24,7 +24,8 @@ C     ***********************************************************************
 
       REAL XGM,XCOEFF(3),XRADIUS,XELLIP,XOMEGA
       CALL FILE(IPFILE,IPFILE,'ref')
-
+      
+      print*,'Reading reference file from : ',IPFILE
       OPEN(UNIT=1,FILE=IPFILE,STATUS='OLD')
 C     First skip header
 54     READ(1,1)BUFFER

@@ -154,6 +154,7 @@ C              **** vmr, cloud, para-H2 , fcloud, take logs ***
                  x0(ix) = alog(ref(1,i)) 
                else 
                  print*,'Error in readapriori.f. Cant take log of zero'
+                 print*,i,ref(i,i)
                  stop
                endif
                err = eref(1,i)/ref(1,i)

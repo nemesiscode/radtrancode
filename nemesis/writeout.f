@@ -176,7 +176,8 @@ C        Going back to default
        ioff = ioff+nconv(igeom)
       enddo
 
-1000  format(1x,i4,1x,f10.4,1x,f10.4,1x,f10.4,1x,f7.2,1x,f10.4,1x,f7.2)
+C1000  format(1x,i4,1x,f10.4,1x,f10.4,1x,f10.4,1x,f7.2,1x,f10.4,1x,f7.2)
+1000  format(1x,i4,1x,f10.4,1x,e15.8,1x,e15.8,1x,f7.2,1x,e15.8,1x,f9.5)
 1010  format(1x,i4,1x,f10.4,1x,e15.8,1x,e15.8,1x,f7.2,1x,e15.8,1x,f9.5)
 1020  format(1x,i4,1x,f9.4,1x,e12.6,1x,f9.4,1x,f6.2,1x,e12.6,1x,f6.2)
 

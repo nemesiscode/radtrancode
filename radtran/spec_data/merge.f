@@ -43,7 +43,7 @@ C     skip headers
 C     begin merge
 
 20    continue
-      if(irecl.eq.80)then
+      if(irecl.eq.80.or.irecl.eq.82)then
        read(buffer1,10)vv1
        read(buffer2,10)vv2
 10     format(f10.3)

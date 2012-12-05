@@ -325,7 +325,7 @@ C-----------------------------------------------------------------------
         XCOM = 100.0*(VV-VMIN)/(VMAX-VMIN)
         IF(XCOM.GE.XNEXT)THEN
             WRITE(*,1020)XCOM
-            print*,(yout(1,j),J=1,nconv)
+C            print*,(yout(1,j),J=1,nconv)
             XNEXT = XNEXT+10.0
         ENDIF
 1020    FORMAT(' lblrtf_wave.f :: % complete : ',F5.1)

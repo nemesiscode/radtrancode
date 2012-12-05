@@ -341,7 +341,7 @@ C                        print*,'ssfac',muinc,muemiss,ssfac
      2				 cos((aphi-pi)*pi/180.0) - 
      3				 muemiss*muinc
 
-			print*,'calpha',calpha
+C			print*,'calpha',calpha
 
 		endif
 	end do
@@ -965,7 +965,7 @@ C               upwelling radiation field to local temperature.
 
                 if(galb1.lt.0)then
                          galb1 = get_albedo(nalb,valb,alb,x)
-                         print*,x,galb1
+C                         print*,x,galb1
                 endif
 
                 do J=1,nmu
@@ -1074,7 +1074,7 @@ C     1                uplf,I,x,nwave,Ig,Ig,j0,xmu,solar1,taus)
                         
                 if(galb1.lt.0)then
                    galb1 = get_albedo(nalb,valb,alb,x)
-                   print*,x,galb1
+C                   print*,x,galb1
                 endif
 
                 taud = 0.

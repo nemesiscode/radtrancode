@@ -270,19 +270,19 @@ C         we need to add the radiation from the ground
      1          calcout(ioff1)*planck_wave(ispace,vconv1(j),tsurf)*esurf
             enddo
           endif
-          print*,'YTMP',(ytmp(ioff+j),j=1,10)
+C          print*,'YTMP',(ytmp(ioff+j),j=1,10)
           if(ix.eq.0)then
            do j=1,nconv1 
             yn(ioff+j)=yn(ioff+j)+wgeom(igeom,iav)*ytmp(ioff+j)
             ystore(ioff+j)=ytmp(ioff+j)
            enddo
-           print*,'YSTORE',(ytmp(ioff+j),j=1,10)
+C           print*,'YSTORE',(ytmp(ioff+j),j=1,10)
           else
            do j=1,nconv1
             kk(ioff+j,ix)=kk(ioff+j,ix)+wgeom(igeom,iav)*
      1               (ytmp(ioff+j) - ystore(ioff+j))/dx  
            enddo 
-           print*,'KK',(kk(ioff+j,ix),j=1,10)
+C           print*,'KK',(kk(ioff+j,ix),j=1,10)
            xn(ix)=xref
           endif
 

@@ -268,6 +268,8 @@ C     pre-calculated array
          do j=1,nx
           ioff2=nconv1*nx*(ipath-1)+(j-1)*nconv1+iconv
           y2(ipath,j)=-2.*pi*h1*gradientsL(ioff2)
+C          print*,height(ipath),ipath,y1(ipath),trans,j,
+C     1       y2(ipath,j),gradientsL(ioff2)
          enddo
 205     continue        
 

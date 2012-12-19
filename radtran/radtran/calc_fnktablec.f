@@ -307,6 +307,12 @@ cc            WRITE(*,*)' '
               PRINT*,'VFILC,VCEN not the same'
               PRINT*,VFILC,VCEN(IPOINT)
              ENDIF
+             IF(NFIL.GT.MFIL)THEN
+              PRINT*,'*** WARNING *** Calc_ktablec'
+              PRINT*,'Instrument Function has NFIL>MFIL'
+              PRINT*,'Aborting'
+              STOP
+             ENDIF
              DO I=1,NFIL
               READ(IFIL,*)V1(I),T1(I)
               V2(I)=V1(I)-VFILC

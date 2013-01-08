@@ -81,7 +81,7 @@ bin:     \
 
 Dust_profile : dust_profile.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Dust_profile dust_profile.f $(LIBRARY) \
-	$(LIB)/rtm_util.a
+	$(LIB)/radtran.a $(LIB)/rtm_util.a
 
 Nemesisprofile : nemesisprofile.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Nemesisprofile nemesisprofile.f $(LIBRARY) \

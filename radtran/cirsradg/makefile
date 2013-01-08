@@ -21,12 +21,11 @@ F_SOURCES= \
 	rankk.f \
 	sort2g.f \
 	adjustgrad.f \
-	subpathg.f \
-	calcxmap.f
+	subpathg.f
 
 INCDIR = ../includes
-INCLUDES = $(INCDIR)/dbcom.f $(INCDIR)/laycom.f $(INCDIR)/laygrad.f \
-	$(INCDIR)/pathcom.f $(INCDIR)/arrdef.f $(INCDIR)/ciacom.f
+#INCLUDES = $(INCDIR)/dbcom.f $(INCDIR)/laycom.f $(INCDIR)/laygrad.f \
+#	$(INCDIR)/pathcom.f $(INCDIR)/arrdef.f $(INCDIR)/ciacom.f
 
 OBJ = $(F_SOURCES:.f=.o)
 LIBRARY = $(LIB)/cirsradg.a

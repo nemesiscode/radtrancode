@@ -12,7 +12,7 @@ C     ****************************************************************
       REAL H(MAXPRO),P(MAXPRO),T(MAXPRO),VMR(MAXPRO,MAXGAS),RHUM
       REAL H1(MAXPRO),P1(MAXPRO),T1(MAXPRO),VMR1(MAXPRO,MAXGAS)
       REAL XV(MAXPRO),MOLWT,LATITUDE,TEMP
-      INTEGER NPRO,NVMR,ID(MAXGAS),ISO(MAXGAS),NPRO1,J,IFORM
+      INTEGER NPRO,NVMR,ID(MAXGAS),ISO(MAXGAS),NPRO1,J,AMFORM
       INTEGER IPLANET,I,N,K,NN,NCONT,NPARAM,NV,IV
       INTEGER IDV(MAXV),ICOL,COLV(MAXV),IPARAM,ILEN,IADD
       REAL ALTV(MAXV),XMAP(MAXV,MAXGAS+2+MAXCON,MAXPRO)
@@ -85,8 +85,12 @@ C----------------------------------------------------------------------------
 C     First skip header
 54    READ(1,1)BUFFER
       IF(BUFFER(1:1).EQ.'#') GOTO 54
-      READ(BUFFER,*)IFORM
-      READ(1,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+      READ(BUFFER,*)AMFORM
+      IF(AMFORM.EQ.0)THEN
+       READ(1,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+      ELSE
+       READ(1,*)IPLANET,LATITUDE,NPRO,NVMR
+      ENDIF  
       DO 20 I=1,NVMR
         READ(1,*)ID(I),ISO(I)
 20    CONTINUE
@@ -95,14 +99,7 @@ C     reading the first block of profiles
       N=MIN(NVMR,3)
 C     N is the maximum VMR which can be read in from the next block
       DO 30 I=1,NPRO
-      IF(IFORM.EQ.0)THEN
          READ(1,*)H(I),P(I),T(I),(VMR(I,J),J=1,N)
-      ELSE IF(IFORM.EQ.1)THEN
-         READ(1,*)H(I),T(I),(VMR(I,J),J=1,N)
-      ELSE
-         CALL WTEXT('invalid format')
-         STOP
-      END IF
 30    CONTINUE
 C     reading in additional blocks if any
 C     N VMR profiles have been read in so far

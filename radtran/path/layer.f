@@ -59,6 +59,7 @@ C     DUDS = DU/DS = the number of molecules per cm2 per km along the path
 C     DTDS = DT/DS = the dust optical depth per km
       INTEGER I,J,K,k1,L,LAYINT
       REAL HEIGHT,VMR1,X,DELS,stmp,XICNOW(MAXCON),XIFC(MAXCON,MAXPAT)
+      REAL XMOLWT,CALCMOLWT,XVMR(MAXGAS)
 C--------------------------------------------------------------
 C
 C     setting defaults for the layer parameters defined in laycom.f
@@ -229,8 +230,18 @@ C         print*,'direct',J,I,IFC(J,I)
 
         DUDS=MODBOLTZ*PRESS(I)/TEMP(I)
         TOTAM(I)=DUDS*(S1-S0)
+
+        IF(AMFORM.EQ.0)THEN
+             XMOLWT=MOLWT
+        ELSE
+            DO J=1,NVMR
+             XVMR(J)=VMR(I,J)
+            ENDDO
+            XMOLWT=CALCMOLWT(NVMR,XVMR,ID,ISO)
+        ENDIF
+
         DO 127 J=1,NCONT
-         CONT(J,I)=CONT(J,I)*TOTAM(I)*MOLWT/AVOGAD
+         CONT(J,I)=CONT(J,I)*TOTAM(I)*XMOLWT/AVOGAD
 127     CONTINUE
         DO 128 J=1,NVMR
         CALL VERINT(H,VMR(1,J),NPRO,VMR1,HEIGHT)
@@ -273,13 +284,24 @@ C        end if
         PRESS(I)=PRESS(I)+PNOW*DUDS*W(K)
         HFP(I)=HFP(I)+FPNOW*DUDS*W(K)
         HFC(I)=HFC(I)+FCNOW*DUDS*W(K)
+
+
+        IF(AMFORM.EQ.0)THEN
+             XMOLWT=MOLWT
+        ELSE
+            DO J=1,NVMR
+             XVMR(J)=VMR(I,J)
+            ENDDO
+            XMOLWT=CALCMOLWT(NVMR,XVMR,ID,ISO)
+        ENDIF
+
         DO 124 J=1,NCONT
          XIFC(J,I)=XIFC(J,I)+XICNOW(J)*DUDS*W(K)
          DO M=1,NPRO
           D(M)=DUST(J,M)
          END DO
          CALL VERINT(H,D,NPRO,DNOW,HEIGHT)
-         CONT(J,I)=CONT(J,I)+DNOW*DUDS*W(K)*MOLWT/AVOGAD
+         CONT(J,I)=CONT(J,I)+DNOW*DUDS*W(K)*XMOLWT/AVOGAD
 124     CONTINUE
         DO 123 J=1,NVMR
          CALL VERINT(H,VMR(1,J),NPRO,VMR1,HEIGHT)

@@ -58,6 +58,7 @@ C     DUDS = DU/DS = the number of molecules per cm2 per km along the path
       REAL HEIGHT,VMR1,DELS,CDENS(10,10),CLBOT(10),CLTOP(10)
       INTEGER NCLAY(10)
       REAL A,B,C,XICNOW(MAXCON),XIFC(MAXCON,MAXPAT)
+      REAL XMOLWT,CALCMOLWT,XVMR(MAXGAS)
 C--------------------------------------------------------------
 C
 C     setting defaults for the layer parameters defined in laycom.f
@@ -280,15 +281,23 @@ C       calculating the number of molecules per km per cm2
 
         HFP(I)=HFP(I)+FPNOW*DUDS*W(K)
         HFC(I)=HFC(I)+FCNOW*DUDS*W(K)
+
+        IF(AMFORM.EQ.0)THEN
+             XMOLWT=MOLWT
+        ELSE
+            DO J=1,NVMR
+             XVMR(J)=VMR(I,J)
+            ENDDO
+            XMOLWT=CALCMOLWT(NVMR,XVMR,ID,ISO)
+        ENDIF
+
         DO 124 J=1,NDUST
          XIFC(J,I)=XIFC(J,I)+XICNOW(J)*DUDS*W(K)
          DO M=1,NPRO
           D(M)=DUST(J,M)
          END DO
          CALL VERINT(H,D,NPRO,DNOW,HEIGHT)
-C         print*,I,HEIGHT,DNOW,DUDS,W(K),MOLWT,AVOGAD
-         CONT(NCLOUD+J,I)=CONT(NCLOUD+J,I)+DNOW*DUDS*W(K)*MOLWT/AVOGAD
-C         print*,cont(ncloud+J,i)
+         CONT(NCLOUD+J,I)=CONT(NCLOUD+J,I)+DNOW*DUDS*W(K)*XMOLWT/AVOGAD
 124     CONTINUE
 
         DO 123 J=1,NVMR

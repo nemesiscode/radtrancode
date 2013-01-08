@@ -69,7 +69,7 @@ C COSA: Cosine of the angle from the nadir.
 C Z0: Distance of the start of the path from the centre of the planet.
 C DUDS: Number of molecules per cm2 per km along the path
 
-      REAL HEIGHT,VMR1,X,DELS,stmp
+      REAL HEIGHT,VMR1,X,DELS,stmp,XMOLWT,CALCMOLWT,XVMR(MAXGAS)
 
       CHARACTER*(*) TEXT
 
@@ -273,11 +273,21 @@ C         Pat Irwin   2/4/07
 
           DUDS = MODBOLTZ*PRESS(I)/TEMP(I)
           TOTAM(I) = DUDS*(S1 - S0)
+
+          IF(AMFORM.EQ.0)THEN
+             XMOLWT=MOLWT
+          ELSE
+            DO J=1,NVMR
+             XVMR(J)=VMR(I,J)
+            ENDDO
+            XMOLWT=CALCMOLWT(NVMR,XVMR,ID,ISO)
+          ENDIF
+
           DO 127 J=1,NCONT
-            CONT(J,I) = CONT(J,I)*TOTAM(I)*MOLWT/AVOGAD
+            CONT(J,I) = CONT(J,I)*TOTAM(I)*XMOLWT/AVOGAD
 127       CONTINUE
 	  DO JJ=1,NPRO
-            DCO(I,JJ) = DCO(I,JJ)*TOTAM(I)*MOLWT/AVOGAD
+            DCO(I,JJ) = DCO(I,JJ)*TOTAM(I)*XMOLWT/AVOGAD
           ENDDO
           DO 128 J=1,NVMR
             CALL VERINTG(H,VMR(1,J),NPRO,VMR1,HEIGHT,JJ,F)
@@ -322,16 +332,27 @@ C Calculating the number of molecules per km per cm2
             DFP(I,JJ+1) = DFP(I,JJ+1) + F*DUDS*W(K)
             DFC(I,JJ) = DFC(I,JJ) + (1 - F1)*DUDS*W(K)
             DFC(I,JJ+1) = DFC(I,JJ+1) + F1*DUDS*W(K)
+
+
+            IF(AMFORM.EQ.0)THEN
+              XMOLWT=MOLWT
+            ELSE
+              DO J=1,NVMR
+               XVMR(J)=VMR(I,J)
+              ENDDO
+              XMOLWT=CALCMOLWT(NVMR,XVMR,ID,ISO)
+            ENDIF
+
             DO 124 J=1,NCONT
               XIFC(J,I)=XIFC(J,I)+XICNOW(J)*DUDS*W(K)
               DO M=1,NPRO
                 D(M) = DUST(J,M)
               ENDDO
               CALL VERINT(H,D,NPRO,DNOW,HEIGHT)
-              CONT(J,I) = CONT(J,I) + DNOW*DUDS*W(K)*MOLWT/AVOGAD
+              CONT(J,I) = CONT(J,I) + DNOW*DUDS*W(K)*XMOLWT/AVOGAD
 124         CONTINUE
-            DCO(I,JJ) = DCO(I,JJ) + (1 - F)*DUDS*W(K)*MOLWT/AVOGAD
-            DCO(I,JJ+1) = DCO(I,JJ+1) + F*DUDS*W(K)*MOLWT/AVOGAD
+            DCO(I,JJ) = DCO(I,JJ) + (1 - F)*DUDS*W(K)*XMOLWT/AVOGAD
+            DCO(I,JJ+1) = DCO(I,JJ+1) + F*DUDS*W(K)*XMOLWT/AVOGAD
             DO 123 J=1,NVMR
               CALL VERINT(H,VMR(1,J),NPRO,VMR1,HEIGHT)
               AMOUNT(I,J) = AMOUNT(I,J) + VMR1*DUDS*W(K)

@@ -17,7 +17,8 @@ C     *********************************************************************
       REAL CONT(100,1000),VMR(1000,15),CP0,CXS,CSUM(1000)
       REAL H(1000),P(1000),T(1000),MOLWT,HC,RADIUS,H1,P1(1000)
       INTEGER IDUST,K,M,M1,M2,IP
-      REAL DQNU,DELH,R1,R2
+      REAL DQNU,DELH,R1,R2,CALCMOLWT,XMOLWT
+      REAL XVMR(20)
       REAL SCALEH(1000),G
       REAL CLOUDFSH,CLOUDP,FACT,Q0,SUM,S(1000),CLOUDP1,CLOUDP2
       REAL D0,XM1,D,RHO(1000),LATITUDE
@@ -137,8 +138,18 @@ C     ******************************************
 C     Compute variation of scale heights and densities in atmosphere
       DO 50 I=1,NPRO
           CALL NEWGRAV(IPLANET,LATITUDE,H(I),RADIUS,G,PNAME)
-          SCALEH(I)=RGAS*T(I)/(MOLWT*G*1000.0)
-          RHO(I)=P(I)*1.013E5*1E-6*MOLWT/(8.31*T(I))
+
+          IF(AMFORM.EQ.0)THEN
+             XMOLWT=MOLWT
+          ELSE
+            DO K=1,NVMR
+             XVMR(K)=VMR(I,K)
+            ENDDO
+            XMOLWT=CALCMOLWT(NVMR,XVMR,ID,ISO)
+          ENDIF
+
+          SCALEH(I)=RGAS*T(I)/(XMOLWT*G*1000.0)
+          RHO(I)=P(I)*1.013E5*1E-6*XMOLWT/(8.31*T(I))
           CONT(J,I)=0.
  	  S(I)=0.0
 50    CONTINUE

@@ -1,5 +1,5 @@
       SUBROUTINE RDMOD(TEXT)
-C     $Id: rdmod.f,v 1.5 2002-12-03 18:32:51 parrish Exp $
+C     $Id:
 C***********************************************************************
 C_TITL:	RDMOD
 C

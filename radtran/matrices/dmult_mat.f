@@ -1,5 +1,5 @@
       SUBROUTINE dmult_mat(idim,a,a1,a2,b,b1,b2,c,c1,c2)
-C     $Id: dmult_mat.f,v 1.2 2003/04/28 17:08:32 parrish Exp $
+C     $Id:
 C***********************************************************************
 C_TITL:	DMULT_MAT.f
 C

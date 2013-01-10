@@ -161,7 +161,7 @@ C       profiles up to VMR(?,K) to be read from this block
 
 C      Make sure that vmrs add up to 1 if AMFORM=1
        IF(AMFORM.EQ.1)THEN
-        CALL ADJUSTVMR(NPRO,NVMR,VMR,SCALE)
+        CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE)
 
         DO 301 I=1,NPRO
          DO K=1,NVMR

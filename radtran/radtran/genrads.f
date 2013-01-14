@@ -660,7 +660,7 @@ C       Read in G-intervals
       END IF
 
 
-      IF(IRAY.EQ.1) THEN
+      IF(IRAY.GT.0) THEN
        PRINT*,'Setting Rayleigh scattering odepths on'
       ELSE
        PRINT*,'No Rayleigh scattering optical depths applied' 

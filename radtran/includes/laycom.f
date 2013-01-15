@@ -61,7 +61,8 @@ C RADIUS: radius of the reference sphere (i.e. height=0), typically
 C the planetary radius).
 
       COMMON /MODCOM/MODEL,H,P,T,DUST,JFP,FPH2I,JFC,FCLOUDI,ICLOUDI,
-     1 VMR,IPLANET,LATITUDE,MOLWT,NPRO,NVMR,ID,ISO,ATMGAS,NDUST,RADIUS
+     1 VMR,IPLANET,LATITUDE,MOLWT,NPRO,NVMR,ID,ISO,ATMGAS,NDUST,
+     2 RADIUS,AMFORM
 
 C-----------------------------------------------------------------------
 C

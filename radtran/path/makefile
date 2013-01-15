@@ -97,7 +97,7 @@ Mod_profile : mod_profile.f $(LIBRARY)
 
 Path : path.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Path path.f $(LIBRARY) \
-	$(LIB)/rtm_util.a
+	$(LIB)/radtran.a $(LIB)/spec_data.a $(LIB)/rtm_util.a
 
 Profile : profile.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Profile profile.f $(LIBRARY) \

@@ -86,12 +86,13 @@ C     because of the extensive use of large arrays
       INCLUDE '../includes/arrdef.f'
       INCLUDE '../includes/pathcom.f'
       INCLUDE '../includes/laycom.f'
+      INCLUDE '../includes/dbcom.f'
 C     note that laycom uses parameters defined in pathcom
 C--------------------------------------------------------------
 C     miscellaneous variables used in main code
       REAL MAXDV
       INTEGER I,J,K,L,N,ICHECK
-      CHARACTER*100 IPFILE,NMFILE
+      CHARACTER*100 IPFILA,NMFILE
       CHARACTER*80 TEXT,TEXT1
       LOGICAL ASKYN,OK,DEF,BIT,REFL
 C--------------------------------------------------------------
@@ -113,11 +114,11 @@ C     initialise flags
 
 C
       CALL PROMPT('path file')
-      READ(*,1)IPFILE
+      READ(*,1)IPFILA
 1     FORMAT(A)
-      CALL FILE(IPFILE,IPFILE,'pat')
-      OPEN(UNIT=2,FILE=IPFILE,STATUS='OLD')
-      CALL FILE(IPFILE,DRFILE,'drv')
+      CALL FILE(IPFILA,IPFILA,'pat')
+      OPEN(UNIT=2,FILE=IPFILA,STATUS='OLD')
+      CALL FILE(IPFILA,DRFILE,'drv')
 C
 C
 C     initialise layer counters and defaults
@@ -187,6 +188,13 @@ C       skipping blank lines
         IPROC(L)=K
        ELSE IF(TEXT(1:5).EQ.'MODEL')THEN
         CALL RDMOD(TEXT1(6:))
+        IF(AMFORM.EQ.1)THEN
+         print*,'AMFORM=',AMFORM
+         GASFIL='gasinfo04.dat'
+         CALL DATARCHIVE(GASFIL)
+         DBLUN=12
+         CALL RDGAS
+        ENDIF
        ELSE IF(TEXT(1:10).EQ.'DUST MODEL')THEN
         CALL RDDMOD(TEXT1(11:))
        ELSE IF(TEXT(1:13).EQ.'FPARAH2 MODEL')THEN
@@ -360,7 +368,7 @@ C
 	CALL WRLBLD
 C       creating a new file containing just the name of the driver file
 C       this is useful for running lbl in background under Unix
-        CALL FILE(IPFILE,NMFILE,'nam')
+        CALL FILE(IPFILA,NMFILE,'nam')
         OPEN(UNIT=1,FILE=NMFILE,STATUS='UNKNOWN')
          WRITE(1,3)DRFILE
 3       FORMAT(1X,A)

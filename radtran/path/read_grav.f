@@ -11,7 +11,7 @@ C
 C     **************************************************************
       integer mplanet,nplanet,iplanet,isurf
       real xgm,xcoeff(3),xradius,xellip,xomega
-      parameter (mplanet=40,pi=3.1415927,Grav=6.672E-11)
+      parameter (mplanet=50,pi=3.1415927,Grav=6.672E-11)
       real plan_mass(mplanet),Jcoeff(3,mplanet),aradius(mplanet)
       real flatten,rotation,ellip(mplanet),omega(mplanet)
       integer isurftab(mplanet)
@@ -50,6 +50,16 @@ C      Ignore first 4 spaces which are reserved for planet number
        aradius(i)=aradius(i)*1e5
 20    continue
       close(12)
+
+
+      if(iplanet.gt.nplanet)then
+       print*,'iplanet is greater than the number of planets listed'
+       print*,'in the gravity.dat file:'
+       print*,'iplanet, nplanet = ',iplanet,nplanet
+       print*,'Check planet ID or add data to gravity.dat'
+       print*,'Aborting...'
+       stop
+      endif
 
       xgm = plan_mass(iplanet)
       do 30 j=1,3

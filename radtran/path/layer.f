@@ -70,6 +70,7 @@ C     setting defaults for the layer parameters defined in laycom.f
       LAYHT=H(1)
       LAYANG=0.
       NLAY=20
+
 C     looking for keywords in file
 2     READ(2,1,END=3)TEXT
 1     FORMAT(A)
@@ -140,7 +141,7 @@ C        CALL CUBINT(P,H,NPRO,PNOW,BASEH(I))
 103     CONTINUE
        ELSE IF(LAYTYP.EQ.2)THEN
 C       splitting by equal height
-        print*,npro,layht,h(npro),nlay
+        print*,'LAYER',npro,layht,h(npro),nlay
         DO 104 I=1,NLAY
         BASEH(I)=LAYHT+FLOAT(I-1)*(H(NPRO)-LAYHT)/FLOAT(NLAY)
         print*,i,baseh(i)
@@ -285,12 +286,13 @@ C        end if
         HFP(I)=HFP(I)+FPNOW*DUDS*W(K)
         HFC(I)=HFC(I)+FCNOW*DUDS*W(K)
 
-
+C        print*,'amform = ',amform
         IF(AMFORM.EQ.0)THEN
              XMOLWT=MOLWT
         ELSE
             DO J=1,NVMR
              XVMR(J)=VMR(I,J)
+C             print*,J,XVMR(J),ID(J),ISO(J)
             ENDDO
             XMOLWT=CALCMOLWT(NVMR,XVMR,ID,ISO)
         ENDIF

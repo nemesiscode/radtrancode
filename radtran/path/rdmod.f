@@ -70,6 +70,7 @@ C First skip the header (if any)
 54    READ(ILUN,1)BUFFER
       IF(BUFFER(1:1).EQ.'#') GOTO 54
       READ(BUFFER,*)AMFORM
+      print*,'RDMOD: AMFORM = ',AMFORM
       IF(AMFORM.EQ.0)THEN
         READ(ILUN,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
       ELSE
@@ -85,6 +86,7 @@ C First skip the header (if any)
 
       DO 20 i=1,nvmr
         READ(ilun,*)id(i),iso(i)
+C        print*,id(i),iso(i)
 20    CONTINUE
 
 C Reading the first block of profiles
@@ -92,6 +94,7 @@ C Reading the first block of profiles
       n = MIN(nvmr,3)
       DO 30 I=1,NPRO
         READ(ILUN,*)H(I),P(I),T(I),(VMR(I,J),J=1,N)
+C        print*,H(I),P(I),T(I),(VMR(I,J),J=1,N)
 30    CONTINUE
 C Reading in additional blocks if any; N VMR profiles read in so far
 33    IF(NVMR.GT.N)THEN
@@ -100,6 +103,7 @@ C Profiles up to VMR(?,K) to be read from this block
         k = MIN(nvmr,(n+6))
         DO 32 I=1,NPRO
           READ(ILUN,*)(VMR(I,J),J=N+1,K)
+C          print*,(VMR(I,J),J=N+1,K)
 32      CONTINUE
         n=k
         GOTO 33

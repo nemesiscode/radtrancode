@@ -38,7 +38,6 @@ C     First find level closest to zero altitude
        ENDDO
 
        CALL NEWGRAV(IPLANET,LATITUDE,H(I),RADIUS,G,PNAME)
-
        IF(AMFORM.EQ.0)THEN
         XMOLWT=MOLWT
        ELSE

@@ -60,11 +60,11 @@ C First skip header (if any)
 54    READ(ILUN,1)BUFFER
       IF(BUFFER(1:1).EQ.'#') GOTO 54
       READ(BUFFER,*)NN,NDUST
-cc      WRITE(*,*)' RDDMOD.f :: dust-model has ',ndust,' aerosol types'
+      WRITE(*,*)' RDDMOD.f :: dust-model has ',ndust,' aerosol types'
       NCONT = NDUST
       DO 105 J=1,NN
         READ(ILUN,*)DUSTH(J),(DUST(I,J),I=1,NDUST)
-cc        WRITE(*,*)DUSTH(J),(DUST(I,J),I=1,NDUST)
+C        WRITE(*,*)DUSTH(J),(DUST(I,J),I=1,NDUST)
 105   CONTINUE
       IF(J.LT.2)THEN
         WRITE(*,*)' RDDMOD.f :: error reading dust-profile.'

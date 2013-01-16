@@ -263,7 +263,7 @@ Scale_table : scale_table.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Scale_table scale_table.f $(LIBRARY) \
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES)
 
-#Calc_fnktable : calc_fnktable.f $(LIBRARY) $(LIB)/spec_data.a
-#	$(FC) $(FCFLAGS) -o $(BIN)/Calc_fnktable calc_fnktable.f $(LIBRARY) \
-#	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
-#	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a
+Calc_fnktable : calc_fnktable.f $(LIBRARY) $(LIB)/spec_data.a
+	$(FC) $(FCFLAGS) -o $(BIN)/Calc_fnktable calc_fnktable.f $(LIBRARY) \
+	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
+	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a

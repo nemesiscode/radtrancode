@@ -1487,7 +1487,8 @@ c ** allow for presence of a cold trap if condensation occurs anywhere on the pr
 	       IF (SVPFLAG(J).EQ.1) THEN
 c		 * don't bother applying a cold trap, use simple condensation only *
 	       ELSE IF (SVPFLAG(J).EQ.2) THEN
-c		 * assume gas is sourced from interior and has no real local minima *
+c		 * assume gas is sourced from interior and has no local minima 
+c		   ie the gas can only decrease with increasing altitude *
 		   DO J=2,NPRO
 		     IF (VMR(J,IGAS).GT.VMR(J-1,IGAS))THEN
 		       VMR(J,IGAS)=VMR(J-1,IGAS)
@@ -1495,7 +1496,8 @@ c		 * assume gas is sourced from interior and has no real local minima *
 		   ENDDO
 	       ELSE IF (SVPFLAG(J).EQ.3) THEN
 c		 * assume gas is sourced from upper atmosphere 
-c		   and has no local minima for levels above the 0.05atm pressure level *
+c		   and has no local minima for levels deeper than the 0.05atm pressure level *
+c		   ie gas can only decrease with decreasing altitude for pressures higher than 0.05atm *
 		   DO J=NPRO-1,1,-1
 		     IF (VMR(J,IGAS).GT.VMR(J+1,IGAS)) THEN
 c                ** NB don't apply above far above tropopause as some photochemical profiles

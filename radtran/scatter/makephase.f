@@ -250,7 +250,7 @@ C-----------------------------------------------------------------------
 
 
 		hgfile = 'hgphaseN.DAT'
-		outfile(8:8) = char(I+48)
+		hgfile(8:8) = char(I+48)
 		open (14,file=hgfile, status='unknown')
                 
 

@@ -90,8 +90,9 @@ C     ***********************************************************************
       INTEGER NVAR,VARIDENT(MVAR,3)
       REAL VARPARAM(MVAR,MPARAM)
       REAL XWID,Y,Y0,XX
-      LOGICAL GASGIANT,FEXIST
-
+      LOGICAL GASGIANT,FEXIST,VPEXIST
+      REAL VP(MAXGAS),VP1
+      INTEGER NVP,ISWITCH(MAXGAS),IP1,IP2
 C----------------------------------------------------------------------------
 C
 C     First read in reference ATMOSPHERIC profile
@@ -1391,7 +1392,42 @@ C     ********  Modify profile with hydrostatic equation ********
 
 
 C     ********* Check to see if anything should saturate *************
+
+C     Default is that nothing condenses, even if it should. Set flags
+C     accordingly
+      DO J=1,NGAS
+       ISWITCH(J)=0
+       VP(J)=1.0
+      ENDDO
+
+C     First see if a list of gases to be forced to condense exists
+      CALL FILE(IPFILE,IPFILE,'vpf')
+      INQUIRE(FILE=IPFILE,EXIST=VPEXIST)
+
+      IF(VPEXIST)THEN
+
+       PRINT*,'Reading in svp flags from : ',IPFILE
+       OPEN(12,FILE=IPFILE,STATUS='OLD')
+        READ(12,*)NVP
+        DO I=1,NVP
+         READ(12,*)IP1,IP2,VP1
+
+         DO J=1,NGAS
+          IF(IDGAS(J).EQ.IP1.AND.ISOGAS(J).EQ.IP2) THEN
+           ISWITCH(J)=1
+           VP(J)=VP1
+          ENDIF
+         ENDDO
+
+        ENDDO
+       CLOSE(12)
+       
+      ENDIF
+
       DO 233 IGAS=1,NVMR
+
+C      Can we condense this gas if we want to?
+       IF(ISWITCH(IGAS).EQ.1)THEN
 
          IDAT=0
          DO I=1,NGAS
@@ -1407,31 +1443,37 @@ C     ********* Check to see if anything should saturate *************
          IF(IDAT.EQ.1)THEN
  	   JSWITCH=0
            DO J=1,NPRO
-            SVP=DPEXP(A+B/T(J)+C*T(J)+D*T(J)*T(J))
+C           Calculate SVP multiplied by required relative humidity
+            SVP=VP(IGAS)*DPEXP(A+B/T(J)+C*T(J)+D*T(J)*T(J))
 	    PP=VMR(J,IGAS)*P(J)
 
             IF(PP.GT.SVP)THEN
              IF(JSWITCH.EQ.0)THEN
               PRINT*,'Subprofretg: following gas predicted to condense'
               PRINT*,IDGAS(IGAS),ISOGAS(IGAS)
-              PRINT*,'However, vmr curve left unchanged'
              ENDIF 
-C             VMR(J,IGAS)=SVP/P(J)
+             VMR(J,IGAS)=SVP/P(J)
              JSWITCH=1
             ENDIF
 
-C            IF(JSWITCH.EQ.1.AND.VMR(J,IGAS).GT.VMR(J-1,IGAS))THEN
-C             VMR(J,IGAS)=VMR(J-1,IGAS)
-C            ENDIF
-C            IF(JSWITCH.EQ.1)THEN
-C             DO IX=1,NX
-C              XMAP(IX,IGAS,J)=0.0
-C             ENDDO
-C            ENDIF
+
+C           Apply the tropopause cold trap to the VMR
+            IF(JSWITCH.EQ.1.AND.VMR(J,IGAS).GT.VMR(J-1,IGAS))THEN
+             VMR(J,IGAS)=VMR(J-1,IGAS)
+            ENDIF
+
+C           Switch off gradients if VMR is limited by SVP
+            IF(JSWITCH.EQ.1)THEN
+             DO IX=1,NX
+              XMAP(IX,IGAS,J)=0.0
+             ENDDO
+            ENDIF
 
            ENDDO
 
          ENDIF
+
+       ENDIF
 
 233   ENDDO
       

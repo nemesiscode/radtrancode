@@ -159,8 +159,6 @@ bin :   \
 	Concat_table_temperature \
 	Cut_table
 	
-#		Calc_fnktable \
-
 Aground : aground.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Aground aground.f $(LIBRARY) \
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a
@@ -262,8 +260,3 @@ Cut_table : cut_table.f $(LIBRARY) $(LIB)/spec_data.a
 Scale_table : scale_table.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Scale_table scale_table.f $(LIBRARY) \
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES)
-
-Calc_fnktable : calc_fnktable.f $(LIBRARY) $(LIB)/spec_data.a
-	$(FC) $(FCFLAGS) -o $(BIN)/Calc_fnktable calc_fnktable.f $(LIBRARY) \
-	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
-	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a

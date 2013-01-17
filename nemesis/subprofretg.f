@@ -92,6 +92,7 @@ C     ***********************************************************************
       REAL XWID,Y,Y0,XX
       LOGICAL GASGIANT,FEXIST,VPEXIST
       REAL VP(MAXGAS),VP1
+      INTEGER SVPFLAG(MAXGAS),SVPFLAG1
       INTEGER NVP,ISWITCH(MAXGAS),IP1,IP2
 C----------------------------------------------------------------------------
 C
@@ -1019,7 +1020,7 @@ C        ***************************************************************
 
          XDEEP = EXP(XN(NXTEMP+1))
          XRH  = EXP(XN(NXTEMP+2))
-         ICOND = VARPARAM(IVAR,1)
+         ICOND = NINT(VARPARAM(IVAR,1))
 
          IDAT=0
          DO I=1,NGAS
@@ -1396,8 +1397,9 @@ C     ********* Check to see if anything should saturate *************
 C     Default is that nothing condenses, even if it should. Set flags
 C     accordingly
       DO J=1,NGAS
-       ISWITCH(J)=0
-       VP(J)=1.0
+       ISWITCH(J) = 0
+       VP(J)      = 1.0
+       SVPFLAG(J) = 0
       ENDDO
 
 C     First see if a list of gases to be forced to condense exists
@@ -1410,13 +1412,15 @@ C     First see if a list of gases to be forced to condense exists
        OPEN(12,FILE=IPFILE,STATUS='OLD')
         READ(12,*)NVP
         DO I=1,NVP
-         READ(12,*)IP1,IP2,VP1
-
+         READ(12,*)IP1,IP2,VP1,SVPFLAG1
          DO J=1,NGAS
-          IF(IDGAS(J).EQ.IP1.AND.ISOGAS(J).EQ.IP2) THEN
-           ISWITCH(J)=1
-           VP(J)=VP1
-          ENDIF
+           IF(IDGAS(J).EQ.IP1.AND.ISOGAS(J).EQ.IP2) THEN
+             IF (SVPFLAG1.GT.0) THEN
+               ISWITCH(J) = 1
+             ENDIF
+             VP(J)      = VP1
+             SVPFLAG(J) = SVPFLAG1
+           ENDIF
          ENDDO
 
         ENDDO
@@ -1424,11 +1428,13 @@ C     First see if a list of gases to be forced to condense exists
        
       ENDIF
 
+c  ** loop around gases **
       DO 233 IGAS=1,NVMR
 
 C      Can we condense this gas if we want to?
        IF(ISWITCH(IGAS).EQ.1)THEN
 
+c        look for SVP data on this gas
          IDAT=0
          DO I=1,NGAS
           IF(GASDATA(I,1).EQ.IDGAS(IGAS))THEN
@@ -1438,44 +1444,77 @@ C      Can we condense this gas if we want to?
             D = GASDATA(I,5)
             IDAT=1
           ENDIF
-	 ENDDO
+	   ENDDO
 
+c        if gas SVP data exists then go ahead
          IF(IDAT.EQ.1)THEN
- 	   JSWITCH=0
+ 	     JSWITCH=0
+c          loop over all pressure levels
            DO J=1,NPRO
-C           Calculate SVP multiplied by required relative humidity
-            SVP=VP(IGAS)*DPEXP(A+B/T(J)+C*T(J)+D*T(J)*T(J))
-	    PP=VMR(J,IGAS)*P(J)
+C            Calculate SVP multiplied by required relative humidity VP
+C		 Also calculate partial pressure of gas in question PP
+             SVP=VP(IGAS)*DPEXP(A+B/T(J)+C*T(J)+D*T(J)*T(J))
+	       PP=VMR(J,IGAS)*P(J)
+	      
+             IF(PP.GT.SVP)THEN
+               IF(JSWITCH.EQ.0)THEN
+                 PRINT*,'Subprofretg: gas predicted to condense'
+                 PRINT*,'setting to SVP x VP'
+                 PRINT*,IDGAS(IGAS),ISOGAS(IGAS)
+               ENDIF 
+               VMR(J,IGAS)=SVP/P(J)
+               JSWITCH=1
+             ENDIF
 
-            IF(PP.GT.SVP)THEN
-             IF(JSWITCH.EQ.0)THEN
-              PRINT*,'Subprofretg: following gas predicted to condense'
-              PRINT*,IDGAS(IGAS),ISOGAS(IGAS)
-             ENDIF 
-             VMR(J,IGAS)=SVP/P(J)
-             JSWITCH=1
-            ENDIF
-
-
-C           Apply the tropopause cold trap to the VMR
-            IF(JSWITCH.EQ.1.AND.VMR(J,IGAS).GT.VMR(J-1,IGAS))THEN
-             VMR(J,IGAS)=VMR(J-1,IGAS)
-            ENDIF
-
-C           Switch off gradients if VMR is limited by SVP
-            IF(JSWITCH.EQ.1)THEN
-             DO IX=1,NX
-              XMAP(IX,IGAS,J)=0.0
-             ENDDO
-            ENDIF
+c ** NB technically xmap should be set=0.0 if condensation occurs
+c however, this hard limit leads to undesirable retrieval behaviour such as:
+c 1: if gas drops just below condensation on one iteration it can never return
+c 2: leads to a sharp edge and erratic retrieval behaviour
+c therefore, to  solve this XMAP is scaled by svp/pp. this also has a steep dropoff
+c but gives a more gentle response and more desirable retrieval behaviour.
+	        IF(JSWITCH.EQ.1)THEN
+	          DO IX=1,NX
+cc		      XMAP(IX,IGAS,J)=0.0
+		      XMAP(IX,IGAS,J)=XMAP(IX,IGAS,J)*SVP/PP
+	          ENDDO
+	        ENDIF
 
            ENDDO
-
+           
+c ** inspect the resulting profile for this gas **
+c ** allow for presence of a cold trap if condensation occurs anywhere on the profile **
+	     IF (JSWITCH.EQ.1) THEN
+	       IF (SVPFLAG(J).EQ.1) THEN
+c		 * don't bother applying a cold trap, use simple condensation only *
+	       ELSE IF (SVPFLAG(J).EQ.2) THEN
+c		 * assume gas is sourced from interior and has no real local minima *
+		   DO J=2,NPRO
+		     IF (VMR(J,IGAS).GT.VMR(J-1,IGAS))THEN
+		       VMR(J,IGAS)=VMR(J-1,IGAS)
+		     ENDIF
+		   ENDDO
+	       ELSE IF (SVPFLAG(J).EQ.3) THEN
+c		 * assume gas is sourced from upper atmosphere 
+c		   and has no local minima for levels above the 0.05atm pressure level *
+		   DO J=NPRO-1,1,-1
+		     IF (VMR(J,IGAS).GT.VMR(J+1,IGAS)) THEN
+c                ** NB don't apply above far above tropopause as some photochemical profiles
+c			  have local minima and maxima at high altitude**		     
+		       IF ( P(J) .GE. 0.05 ) THEN
+		         VMR(J,IGAS)=VMR(J+1,IGAS)
+		       ENDIF
+		     ENDIF
+		   ENDDO
+		 ENDIF 
+	     ENDIF
+	     
+	     
          ENDIF
 
        ENDIF
 
 233   ENDDO
+c  ** end of loop around gases **
       
 C     ************* Write out modified profiles *********
 

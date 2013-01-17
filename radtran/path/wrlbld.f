@@ -106,17 +106,17 @@ C     output section
 516   FORMAT(' original name of this file: ',1A30)
       IF(ICONV.GE.0.AND.ICONV.LT.10)THEN
        WRITE(4,507)VMIN,DELV,NPOINT,FWHM
-507    FORMAT(1X,F10.3,F10.5,I10,F8.3,4X,' :Vmin dV Npoints FWHM-LBL')
+507    FORMAT(1X,F10.3,F11.6,I10,F8.3,4X,' :Vmin dV Npoints FWHM-LBL')
        WRITE(4,508)WING,VREL
 508    FORMAT(1X,2F8.3,6X,' : wing continuum limit and overall limit')
       ELSE IF(ICONV.GE.10.AND.ICONV.LT.20)THEN
        WRITE(4,607)VMIN,DELV,NPOINT,FWHM
-607    FORMAT(1X,F10.3,F10.5,I10,F8.3,4X,' :Vmin dV Npoints FWHM-BAND')
+607    FORMAT(1X,F10.3,F11.6,I10,F8.3,4X,' :Vmin dV Npoints FWHM-BAND')
        WRITE(4,608)WING,VREL
 608    FORMAT(1X,2F8.3,6X,' : Additional codes PAR1 and PAR2')
       ELSE IF(ICONV.GE.20.AND.ICONV.LT.30)THEN
        WRITE(4,707)VMIN,DELV,NPOINT,FWHM
-707    FORMAT(1X,F10.3,F10.5,I10,F8.3,4X,' :Vmin dV Npts FWHM-CORRK')
+707    FORMAT(1X,F10.3,F11.6,I10,F8.3,4X,' :Vmin dV Npts FWHM-CORRK')
        WRITE(4,708)WING,VREL
 708    FORMAT(1X,2F8.3,6X,' : Additional codes PAR1 and PAR2')
       ELSE

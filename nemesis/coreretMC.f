@@ -173,7 +173,7 @@ C        Just substituting parameters from .pre file
      1  jsurfx,jalbx,jtanx,jprex,jradx,nxx,xnx,stx)
        
         xdiff = abs(xlat-xlatx)
-        if(xdiff.gt.1.0)then
+        if(xdiff.gt.lat_tolerance)then
           print*,'CoreretMC: Aborting - latitudes inconsistent'
           print*,xlatx,xlat
           stop

@@ -59,7 +59,7 @@ C NG: Number of ordinates in k-distribution.
 
       INTEGER ntab,loop,count
       INTEGER maxc,mtab
-      PARAMETER (maxc=40,MTAB=20*20*20)
+      PARAMETER (maxc=maxg,MTAB=20*20*maxg)
       REAL TABLE(mtab),TABLE2(mtab)
 
       REAL P1,T1,tmp,eps,KTEST

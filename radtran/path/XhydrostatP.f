@@ -23,7 +23,7 @@ C     ****************************************************************
 
 C     **************** Code **************
 
-C     R no included in constdef.f (RGAS) and needs scaling for units here.
+C     R now included in constdef.f (RGAS) and needs scaling for units here.
       R = RGAS*0.001
 
 C     First find level immediately below the reference altitude

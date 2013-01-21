@@ -1484,9 +1484,9 @@ cc		      XMAP(IX,IGAS,J)=0.0
 c ** inspect the resulting profile for this gas **
 c ** allow for presence of a cold trap if condensation occurs anywhere on the profile **
 	     IF (JSWITCH.EQ.1) THEN
-	       IF (SVPFLAG(J).EQ.1) THEN
+	       IF (SVPFLAG(IGAS).EQ.1) THEN
 c		 * don't bother applying a cold trap, use simple condensation only *
-	       ELSE IF (SVPFLAG(J).EQ.2) THEN
+	       ELSE IF (SVPFLAG(IGAS).EQ.2) THEN
 c		 * assume gas is sourced from interior and has no local minima 
 c		   ie the gas can only decrease with increasing altitude *
 		   DO J=2,NPRO
@@ -1494,7 +1494,7 @@ c		   ie the gas can only decrease with increasing altitude *
 		       VMR(J,IGAS)=VMR(J-1,IGAS)
 		     ENDIF
 		   ENDDO
-	       ELSE IF (SVPFLAG(J).EQ.3) THEN
+	       ELSE IF (SVPFLAG(IGAS).EQ.3) THEN
 c		 * assume gas is sourced from upper atmosphere 
 c		   and has no local minima for levels deeper than the 0.05atm pressure level *
 c		   ie gas can only decrease with decreasing altitude for pressures higher than 0.05atm *

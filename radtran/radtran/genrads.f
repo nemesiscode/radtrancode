@@ -1331,6 +1331,7 @@ C       initialise integration variables
 
         DO 105 J=0,NSAMP
          V=V1DP+DBLE(J)*DVSAMP
+         VV=SNGL(V)
          ASSIGN 2002 TO LABEL
          GOTO 2000
 2002     CONTINUE
@@ -1379,6 +1380,7 @@ C       the last step
 C       Calculate the new odd points
         DO 108 J=0,NSAMP-1
          V=V1DP+DBLE(J+0.5)*DVSAMP
+         VV=SNGL(V)
          ASSIGN 2004 TO LABEL
          GOTO 2000
 2004     CONTINUE
@@ -1444,6 +1446,7 @@ C     Band models
 C      BAND MODELS
        DO 333 I=1,NPOINT
         V=DBLE(VMIN+FLOAT(I-1)*DELV)
+        VV=SNGL(V)
          PRINT*,'BANDCALC: V = ',SNGL(V)
          ASSIGN 2009 TO LABEL
          GOTO 2000
@@ -1462,6 +1465,8 @@ C-------------------------------------------------------------------------
        DO 431 I=1,NPOINT
 
        V=DBLE(VMIN+FLOAT(I-1)*DELV)
+       VV=SNGL(V)
+
        PRINT*,'CORKCALC: V = ',SNGL(V)
        DO 433 IGDIST=1,NG
         ASSIGN 2010 TO LABEL

@@ -59,7 +59,7 @@ C ******************** loop for each point across the bin **************
          IF(IDUMP.EQ.1)PRINT*,'I,X(I) : ',I,X(I)
          XW=X(I)
          CALL NPARACON(XW,P,T,NGAS,IDGAS,ISOGAS,AMOUNT,PP,FPARA,
-     1 XLEN,ABSORB,DABSORB,IDUMP)
+     1 XLEN,ABSORB,IABSORB,DABSORB,IDUMP)
 
          Y(I)= ABSORB
 

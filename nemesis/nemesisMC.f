@@ -42,7 +42,7 @@ C     TIME2: System time at the end of program execution.
       real fwhm,xlat,xlon,st(mx,mx),varparam(mvar,mparam)
       real sn(mx,mx),sm(mx,mx),xlatx,varparamx(mvar,mparam)
       real stx(mx,mx),xlonx
-      integer varident(mvar,3),varidentx(mvar,3)
+      integer varident(mvar,3),varidentx(mvar,3),ilbl
       integer npro,nvmr,ispace,nav(mgeom),lraw,nprox,lpre,iform
       character*100 runname
       integer ngeom, nwave(mgeom), nconv(mgeom), nx, ny, jsurf, jsurfx
@@ -114,7 +114,7 @@ C     Read start, end and step of tables
 
 C     Read in whether to calculate with wavenumbers(0) or wavelength(1)
 C     Also read in whether scattering is required (iscat)
-      READ(32,*)ispace,iscat
+      READ(32,*)ispace,iscat,ilbl
 
 C     Read any wavenumber offset to add to measured spectra
       READ(32,*)woff   
@@ -279,7 +279,7 @@ C     write output
       iform=0
       CALL writeout(iform,runname,ispace,lout,ispec,xlat,xlon,npro,
      1 nvar,varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err1,ngeom,
-     2 nconv,vconv)
+     2 nconv,vconv,gasgiant,jpre,iscat,lin)
 
       CALL writeraw(lraw,ispec,xlat,xlon,npro,nvar,varident,
      1 varparam,nx,xn,st)

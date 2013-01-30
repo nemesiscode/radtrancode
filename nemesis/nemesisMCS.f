@@ -296,7 +296,7 @@ C     write output
       iform=0
       CALL writeout(iform,runname,ispace,lout,ispec,xlat,xlon,npro,
      1 nvar,varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err1,ngeom,
-     2 nconv,vconv)
+     2 nconv,vconv,gasgiant,jpre,iscat,lin)
 
       CALL writeraw(lraw,ispec,xlat,xlon,npro,nvar,varident,
      1 varparam,nx,xn,st)

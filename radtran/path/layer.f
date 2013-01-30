@@ -31,6 +31,7 @@ C     because of the extensive use of large arrays
       INCLUDE '../includes/pathcom.f'
       INCLUDE '../includes/laycom.f'
       INCLUDE '../includes/constdef.f'
+      INCLUDE '../includes/planrad.f'
 C     note that laycom uses parameters defined in pathcom
 C--------------------------------------------------------------
 C     miscellaneous variables used in code
@@ -70,7 +71,7 @@ C     setting defaults for the layer parameters defined in laycom.f
       LAYHT=H(1)
       LAYANG=0.
       NLAY=20
-
+	  if(jradf.gt.0)radius=radius2
 C     looking for keywords in file
 2     READ(2,1,END=3)TEXT
 1     FORMAT(A)
@@ -116,6 +117,7 @@ C
       SIN2A=SIN(DTR*LAYANG)**2
       COSA=COS(DTR*LAYANG)
       Z0=RADIUS+LAYHT
+c      print*,'layer radius = ',radius
 C
 C     computing the bases of each layer
       CALL VERINT(H,P,NPRO,PBOT,LAYHT)
@@ -236,6 +238,7 @@ C         print*,'direct',J,I,IFC(J,I)
              XMOLWT=MOLWT
         ELSE
             DO J=1,NVMR
+C             print*,'J VMR =',J,VMR(1,J)
              XVMR(J)=VMR(I,J)
             ENDDO
             XMOLWT=CALCMOLWT(NVMR,XVMR,ID,ISO)
@@ -291,6 +294,7 @@ C        print*,'amform = ',amform
              XMOLWT=MOLWT
         ELSE
             DO J=1,NVMR
+C             print*,'J VMR =',J,VMR(1,J)
              XVMR(J)=VMR(I,J)
 C             print*,J,XVMR(J),ID(J),ISO(J)
             ENDDO

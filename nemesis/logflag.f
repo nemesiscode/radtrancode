@@ -54,6 +54,7 @@ C       Variable is not temperature  - may need to take exponent
 
       if(ivar.eq.888)iflag=1	! Surface albedo spectrum
       if(ivar.eq.666)iflag=1	! Tangent pressure
+      if(ivar.eq.555)iflag=0
 
       logflag=iflag
 

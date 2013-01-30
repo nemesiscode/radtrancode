@@ -66,6 +66,7 @@ C     **************************************************************
       include '../radtran/includes/arrdef.f'
       include '../radtran/includes/gascom.f'
       include 'arraylen.f'
+      INCLUDE '../radtran/includes/planrad.f'
       real xlat,planck_wave,planckg_wave,Bg
       real wgeom(mgeom,mav),flat(mgeom,mav),pressR,delp
       integer layint,inormal,iray,itype,nlayer,laytyp,iscat
@@ -92,8 +93,10 @@ C     **************************************************************
       real varparam(mvar,mparam),RADIUS1
       logical gasgiant,fexist
       real vem(maxsec),emissivity(maxsec)
+      
 
-      common/planrad/RADIUS1
+
+C      common/planrad/RADIUS1
              
 c  ** variables for solar reflected cloud **
       real solar,xsolar
@@ -247,6 +250,8 @@ C            Get overall star spectral power
              CALL get_solar_wave(vconv1(j),xdist,xsolar)
 
            Bg = solar*refl_cloud_albedo/pi
+           
+           radius1=radius2
 
            print*,'forwarddisc: radius = ',radius1
            xfac=(2.*pi)*4.*pi*RADIUS1**2/xsolar

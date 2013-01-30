@@ -233,6 +233,7 @@ C     Calculate the tabulated wavelengths of c-k look up tables
 C     set up a priori of x and its covariance
       CALL readapriori(runname,lin,lpre,xlat,npro,nvar,varident,
      1  varparam,jsurf,jalb,jtan,jpre,jrad,nx,xa,sa)
+		print*,xa(jrad),jrad,jrad,sa(jrad,jrad),'jm3'
 
       DO i = 1, nx
         xn(i)=xa(i)
@@ -269,7 +270,7 @@ C     set up a priori of x and its covariance
       jalb=-1
       jtan=-1
       jsurf=-1
-      jrad=-1
+C      jrad=-1
 
       call coreretPT(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,

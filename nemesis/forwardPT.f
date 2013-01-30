@@ -59,6 +59,7 @@ C     **************************************************************
       include '../radtran/includes/arrdef.f'
       include '../radtran/includes/gascom.f'
       include 'arraylen.f'
+      include '../radtran/includes/planrad.f'
       real xlat,planck_wave,planckg_wave,Bg,height(100),htan
       real wgeom(mgeom,mav),flat(mgeom,mav),fh,thetrot
       integer layint,inormal,iray,iptf,itype,nlayer,laytyp
@@ -99,6 +100,7 @@ C     **************************************************************
 
       common /solardat/iread, stelrad, solwave, solrad,  solnpt
 
+	  jradf=jrad
 C     Initialise arrays
       do i=1,my
        yn(i)=0.0
@@ -192,10 +194,11 @@ C     If we're retrieving planet radius then add correction to reference
 C     radius
       if(jrad.gt.0)then
        radius1 = xn(jrad) + radius
+       print*,'radius=',radius1
       else
        radius1 = radius
       endif
-
+	  radius2=radius1
       iscat=0
 
       xlat=flat(igeom,iav)
@@ -297,7 +300,7 @@ C     1       y2(ipath,j),gradientsL(ioff2)
 
 C       Add on effect of fitting radius correction in apr file.
         if(jrad.gt.0)then
-           kk(iconv,jrad)=kk(iconv,jrad)+2.*pi*radius1
+           kk(iconv,jrad)=kk(iconv,jrad)+100.*2.*pi*radius1/area0
         endif
 
 206   continue

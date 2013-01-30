@@ -446,12 +446,16 @@ C     Reading in scattering information
       end do
 
       if(scatter)then
+
        radfile1 = radfile
+
        call read_scatter1(radfile,nmu,mu1,wt1,isol,dist,lowbc,
      1  galb,ncons,liscat,lnorm,lncons,lcons,scatfile,sol_ang,
      2  emiss_ang,aphi,nf)
+
        do i=1,ncont
-        if(liscat(i).gt.3)then
+
+        if(liscat(i).eq.4)then
          iunit=10+i
          open(unit=iunit,file=scatfile(i),status='old',access='direct',
      1    recl=512,form='formatted')
@@ -475,6 +479,7 @@ C     Reading in scattering information
           end do
          end if
         end if
+
        end do
       end if
 

@@ -102,10 +102,20 @@ C of the .kta files for use during calculation.
 
       LOGICAL BIT
 
+C     Setup HG common block (if required)
+      REAL vwave
+      REAL xwave(maxsec),xf(maxcon,maxsec),xg1(maxcon,maxsec),
+     1 xg2(maxcon,maxsec)
+      REAL twave,tico,frac,tnco
+      COMMON /hgphas/ xwave,xf,xg1,xg2,tnco,twave,frac,tico
+
 C******************************** CODE *********************************
+
+      xwave(1)=-1.
 
 C Obtain the system time for use in determining the total time used by the
 C program since execution.
+
       CALL GETTIME(TIME)
       TIME1= TIME
 

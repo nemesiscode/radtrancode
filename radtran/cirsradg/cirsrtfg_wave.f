@@ -79,6 +79,7 @@ C     parameters are passed between routines mostly using common blocks
 C     because of the extensive use of large arrays. NOTE: laycom uses
 C     parameters defined in pathcom.
       INCLUDE '../includes/laygrad.f'
+      INCLUDE '../includes/planrad.f'
 C     ../includes/laygrad.f holds the variables for use in gradient 
 C     calculations.
 
@@ -89,7 +90,7 @@ C     NTAB2: = NPATH*NWAVE*NV, must be less than maxout4.
 
       INTEGER itype1,npath1,ispace,nem
       REAL fwhm1,vem(maxsec),emissivity(maxsec),tsurf,gtsurf
-      REAL RADIUS1,RADIUS2
+      REAL RADIUS1
 C     NB: The variables above have the added '1' to differentiate the 
 C     variables passed into this code from that defined in
 C     ../includes/pathcom.f. The definitions are explained above.
@@ -106,6 +107,7 @@ C     XCOMP: % complete printed in increments of 10.
       REAL calcout(maxout3),gradients(maxout4)
       REAL xmap(maxv,maxgas+2+maxcon,maxpro)
       REAL y(maxout),yout(maxout),vv
+C      xxmolwt,molwtx
       CHARACTER*100 drvfil,radfile,xscfil,runname
       CHARACTER*100 klist,solfile,solname
       INTEGER iwave,ipath,k,igas,ioff1,ioff2,iv,nv
@@ -113,11 +115,12 @@ C     XCOMP: % complete printed in increments of 10.
       LOGICAL scatterf,dustf,solexist
 
 C     Need simple way of passing planetary radius to nemesis/forwarddisc
-      COMMON /PLANRAD/RADIUS2
+C      COMMON /PLANRAD/RADIUS2
 C     ************************* CODE ***********************
 
 
 C Call subpathg to create layers, paths and the driver file.
+C	  MOLWTX = XXMOLWT
       CALL subpathg(runname)
       npath1 = npath           ! npath is initilised in subpathg, set to
                                ! npath1 here so that it can be passed out
@@ -232,10 +235,13 @@ C       the fact that at each level the sum of vmrs is 1.
 
 C       Pass radius of planet in units of cm for secondary transit 
 C       calculations
+		if(jradf.gt.0)radius1=radius2
+		if(itype1.eq.11)THEN
         RADIUS1=RADIUS*1e5
         RADIUS2=RADIUS1
-
-        CALL cirsradg_wave (dist,inormal,iray,delh,nlayer,npath,ngas,
+	    ENDIF
+C	    print*,'radii',radius1,radius2,radius
+	CALL cirsradg_wave (dist,inormal,iray,delh,nlayer,npath,ngas,
      1  press,temp,pp,amount,iwave,ispace,AMFORM,vv,nlayin,
      2  layinc,cont,scale,imod,idgas,isogas,emtemp,itype1,
      3  nem, vem, emissivity, tsurf, gtsurf, RADIUS1,

@@ -38,6 +38,7 @@ C parameters defined in pathcom.
       INCLUDE '../includes/constdef.f'
 C ../includes/laygrad.f holds the variables for use in gradient
 C calculation.
+      INCLUDE '../includes/planrad.f'
 
       INTEGER I,J,K,L,JJ,M,ICHECK
       INTEGER NINT,LAYINT
@@ -59,7 +60,7 @@ C TNOW: Temperature at current height.
       REAL D(MAXPRO),DNOW,XICNOW(MAXCON),XIFC(MAXCON,MAXPAT)
       REAL TMP(500)
 
-      REAL S,S0,S1,SMAX,SIN2A,COSA,Z0,DUDS
+      REAL S,S0,S1,SMAX,SIN2A,COSA,Z0,DUDS,conttest
 C S: Distance along the atmospheric path.
 C S0: S at the bottom of the layer.
 C S1: S at the top of the layer.
@@ -81,6 +82,9 @@ C Setting defaults for the layer parameters defined in laycom.f
       LAYHT = H(1)
       LAYANG = 0.0
       NLAY = 20
+      
+      if(jradf.gt.0)radius=radius2
+      print*,'radius layer=',radius
 
 C Looking for keywords in file
 2     READ(2,1,END=3)TEXT
@@ -122,6 +126,8 @@ C Looking for keywords in file
         PRINT*,'LAYHT < H(1)',LAYHT,H(1)
         PRINT*,'***************************'
       ENDIF
+      
+C      print*,'nlay = ',nlay
 
 C Simpsons rule weights
       DO 130 I=1,NINT
@@ -134,6 +140,7 @@ C Simpsons rule weights
       SIN2A = SIN(DTR*LAYANG)**2
       COSA = COS(DTR*LAYANG)
       Z0 = RADIUS + LAYHT
+C            print*,'layer radius = ',radius
 
 C Computing the bases of each layer
       CALL VERINT(H,P,NPRO,PBOT,LAYHT)
@@ -278,10 +285,13 @@ C         Pat Irwin   2/4/07
              XMOLWT=MOLWT
           ELSE
             DO J=1,NVMR
+C             print*,'J, I, VMR =',J,I,VMR(I,J)
              XVMR(J)=VMR(I,J)
             ENDDO
+C            print*,'NVMR,XVMR,ID,ISO',NVMR,XVMR,ID,ISO
             XMOLWT=CALCMOLWT(NVMR,XVMR,ID,ISO)
           ENDIF
+C          print*,'AMFORM,XMOLWT',AMFORM,XMOLWT
 
           DO 127 J=1,NCONT
             CONT(J,I) = CONT(J,I)*TOTAM(I)*XMOLWT/AVOGAD
@@ -338,10 +348,13 @@ C Calculating the number of molecules per km per cm2
               XMOLWT=MOLWT
             ELSE
               DO J=1,NVMR
+C                print*,'J, I, VMR =',J,I,VMR(I,J)
                XVMR(J)=VMR(I,J)
+C               print*,'NVMR,XVMR,ID,ISO',NVMR,XVMR,ID,ISO
               ENDDO
               XMOLWT=CALCMOLWT(NVMR,XVMR,ID,ISO)
             ENDIF
+C            print*,'AMFORM,XMOLWT',AMFORM,XMOLWT
 
             DO 124 J=1,NCONT
               XIFC(J,I)=XIFC(J,I)+XICNOW(J)*DUDS*W(K)
@@ -349,6 +362,7 @@ C Calculating the number of molecules per km per cm2
                 D(M) = DUST(J,M)
               ENDDO
               CALL VERINT(H,D,NPRO,DNOW,HEIGHT)
+            conttest=CONT(1,I)+conttest
               CONT(J,I) = CONT(J,I) + DNOW*DUDS*W(K)*XMOLWT/AVOGAD
 124         CONTINUE
             DCO(I,JJ) = DCO(I,JJ) + (1 - F)*DUDS*W(K)*XMOLWT/AVOGAD
@@ -361,7 +375,7 @@ C Calculating the number of molecules per km per cm2
             DAM(I,JJ) = DAM(I,JJ) + (1 - F)*DUDS*W(K)
             DAM(I,JJ+1) = DAM(I,JJ+1) + F*DUDS*W(K)
 120       CONTINUE
-
+C			print*,'MOLWT,AVOGAD=',XMOLWT,AVOGAD
           TEMP(I) = TEMP(I)/TOTAM(I)
           PRESS(I) = PRESS(I)/TOTAM(I)
           HFP(I) = HFP(I)/TOTAM(I)
@@ -375,6 +389,7 @@ C Calculating the number of molecules per km per cm2
             AMOUNT(I,J) = AMOUNT(I,J)*DELS/3.0
             PP(I,J) = PP(I,J)/TOTAM(I)
 173       CONTINUE
+C      print*,'CONTTEST=',CONTTEST
 	  DO JJ=1,NPRO
             DAM(I,JJ) = DAM(I,JJ)*DELS/3.0
           ENDDO
@@ -382,6 +397,7 @@ C Calculating the number of molecules per km per cm2
           DO 145 J=1,NCONT
             IFC(J,I)=INT(XIFC(J,I)/TOTAM(I)+0.5)
             CONT(J,I) = CONT(J,I)*DELS/3.0
+C            print*,'CONT(J,I)2=',CONT(J,I)
 145       CONTINUE
           DO JJ=1,NPRO
             DCO(I,JJ) = DCO(I,JJ)*DELS/3.0
@@ -411,6 +427,7 @@ C-----------------------------------------------------------------------
 
         DO 139 J=1,NCONT
           CONT(J,I) = CONT(J,I)/LAYSF(I)
+C         print*,'CONT(J,I)3=',CONT(J,I)
 139     CONTINUE
         DO JJ=1,NPRO
           DCO(I,JJ) = DCO(I,JJ)/LAYSF(I)

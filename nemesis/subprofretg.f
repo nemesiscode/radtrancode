@@ -12,8 +12,11 @@ C     updated to .prf files for the variables currently being retrieved,
 C     but need to be further updated for variables retrieved in a previous
 C     Nemesis run, i.e. LIN=1 or 3
 C
-C     Code also warns if vapour pressures exceeding SVP but does not
-C     reset vmrs since the temperatures could also be in error.
+C     Code looks to see if an ipfile.vpf file is present and if so reads in
+C     a list of which gas abundances are to be limited to a specified fraction
+C     of the SVP, together with whether this limit applies at all altiitudes
+C     or only in the troposphere (internal source and tropopause cold trap) or 
+C     only in the stratosphere (external source and tropopause cold trap).
 C 
 C     Code also shifts .ref file to the required latitude and recalulates
 C     the heights from the hydrostatic equation.

@@ -69,7 +69,7 @@ C VLIN, SLIN, ALIN, ELIN, SBLIN, TDW, TDWS and that lot).
       INCLUDE '../includes/pathcom.f'
 C ../includes/parcom.f stores the parameter values such as MAXLAY,
 
-      INTEGER I,II,IV,IV0,J,K,LI,LJ,IWAVE
+      INTEGER I,II,IV,IV0,IV1,IVS,IV0A,J,K,LI,LJ,IWAVE
       INTEGER IREC,IREC0,IRECL,ISYS
       INTEGER IDGAS1,ISOGAS1,IPROC1
 C IDGAS1: The local gas identifier.
@@ -442,9 +442,17 @@ C to avoid a non-integer DO loop.
 
         IBINMAX=0
 
-        IV0=INT((VMINX*DELVSF))
 
-        DO 10 IV=(VMIN*DELVSF),(VMAX*DELVSF),(DELV*DELVSF)
+C       PGJI - this looks corrupted to me. There's a difference between
+C       VMIN and VMINX and I'm not sure why. I think this code needs 
+C       revision.
+
+        IV0=INT((VMINX*DELVSF))
+        IV0A=INT((VMIN*DELVSF))
+        IV1=INT((VMAX*DELVSF))
+        IVS=INT((DELV*DELVSF))
+
+        DO 10 IV=IV0A,IV1,IVS
 
          WRITE(*,*)'CALC_EXOTABLE3.f :: Current Wavenumber = ',IV/DELVSF
 

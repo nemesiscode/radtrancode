@@ -61,7 +61,7 @@ C ../includes/lincom.f stores the linedata variables (including MAXLIN,
 C VLIN, SLIN, ALIN, ELIN, SBLIN, TDW, TDWS and that lot).
       INCLUDE '../includes/pathcom.f'
 
-      INTEGER I,II,IV,IV0,J,K,LI,LJ,IWAVE
+      INTEGER I,II,IV,IV0,IV1,IVS,J,K,LI,LJ,IWAVE
       INTEGER IREC,IREC0,IRECL,ISYS
       INTEGER IDGAS1,ISOGAS1,IPROC1
 C IDGAS1: The local gas identifier.
@@ -409,8 +409,10 @@ C to avoid a non-integer DO loop.
         IBINMAX=0
 
         IV0=INT((VMIN*DELVSF))
+        IV1=INT((VMAX*DELVSF))
+        IVS=INT((DELV*DELVSF))
 
-        DO 10 IV=(VMIN*DELVSF),(VMAX*DELVSF),(DELV*DELVSF)
+        DO 10 IV=IV0,IV1,IVS
 
          WRITE(*,*)'CALC_EXOTABLE3.f :: Current Wavenumber = ',IV/DELVSF
 

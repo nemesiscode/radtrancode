@@ -447,6 +447,7 @@ C       PGJI - this looks corrupted to me. There's a difference between
 C       VMIN and VMINX and I'm not sure why. I think this code needs 
 C       revision.
 
+
         IV0=INT((VMINX*DELVSF))
         IV0A=INT((VMIN*DELVSF))
         IV1=INT((VMAX*DELVSF))

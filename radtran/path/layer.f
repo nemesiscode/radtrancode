@@ -106,6 +106,10 @@ C
        PRINT*,'Error in layer.f NLAY > MAXLAY',NLAY,MAXLAY
        STOP
       ENDIF
+      IF(NLAY.GT.NPRO)THEN
+       PRINT*,'WARNING: layer.f: NLAY > NPRO',NLAY,NPRO
+       PRINT*,'Code may possibly be unstable.'
+      ENDIF
 C     Simpsons rule weights
       DO 130 I=1,NINT
       W(I)=2.

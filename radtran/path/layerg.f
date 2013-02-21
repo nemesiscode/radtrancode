@@ -121,6 +121,11 @@ C Looking for keywords in file
         STOP
       ENDIF
 
+      IF(NLAY.GT.NPRO)THEN
+       PRINT*,'WARNING: layerg.f: NLAY > NPRO',NLAY,NPRO 
+       PRINT*,'Code may possibly be unstable.'
+      ENDIF
+
       IF(LAYHT.LT.H(1))THEN
         PRINT*,'**** WARNING: LAYERG ******'
         PRINT*,'LAYHT < H(1)',LAYHT,H(1)

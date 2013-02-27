@@ -421,14 +421,6 @@ C      Write out k-matrix for reference
        write(52)kk
        CLOSE(52)
 
-
-       open(12,file='coreretPT.dat',status='unknown')
-       write(12,*)nx,ny
-       do i=1,ny
-        write(12,*)(kk(i,j),j=1,nx)
-       enddo
-       close(12)
-
       endif
 
       print*,'chisq/ny is equal to : ',chisq/float(ny)

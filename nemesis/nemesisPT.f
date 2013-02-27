@@ -286,9 +286,11 @@ C     Simple errors, set to sqrt of diagonal of ST
 
 C     write output
       iform=2
+      print*,'Calling writeout'
       CALL writeout(iform,runname,ispace,lout,ispec,xlat,xlon,npro,
      1 nvar,varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err1,ngeom,
-     2 nconv,vconv,jpre,iscat,lin)
+     2 nconv,vconv,gasgiant,jpre,iscat,lin)
+      print*,'writeout OK'
 
       CALL writeraw(lraw,ispec,xlat,xlon,npro,nvar,varident,
      1 varparam,nx,xn,st)

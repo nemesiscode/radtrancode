@@ -69,11 +69,11 @@ C******************************** CODE *********************************
       WRITE(*,*)' '
       WRITE(*,*)'NPOINT, IREC0 = ',NPOINT,IREC0
       IF(DELV.GT.0.0)THEN
-       WRITE(*,*)'VMIN, VMAX = ',VMIN,VMIN + (NPOINT - 1)*DELV
+       WRITE(*,*)'VMIN, VMAX = ',VMIN,dble(VMIN + (NPOINT - 1)*DELV)
       ELSE
        WRITE(*,*)'VMIN = ',VMIN
       ENDIF
-      WRITE(*,*)'DELV, FWHM = ',DELV,FWHM
+      WRITE(*,*)'DELV, FWHM = ',dble(DELV),dble(FWHM)
       WRITE(*,*)'NP, NT, NG = ',NP,NT,NG
       WRITE(*,*)'Gas ID, ISO = ',IDGAS(1),ISOGAS(1)
       WRITE(*,*)' '

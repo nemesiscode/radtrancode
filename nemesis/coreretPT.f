@@ -217,17 +217,16 @@ C       readapriori.f. Hence just read in from temporary .str file
         stop
        endif
 
-	print*, 'Radius - 1 =', jradx, jrad
+	print*, 'ForwardPT 1 =', jradx, jrad
        CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2   nvarx,varidentx,varparamx,jradx,radiusx,nxx,xnx,ny,ynx,kkx)
-
 
        if(lin.eq.3)then
 C        strip out variables from kkx that will be retrieved in this
 C        run.
          call scankkx(nvarx,varidentx,varparamx,nprox,nvar,varident,
-     1  kkx,nxx)
+     1  kkx,stx,nxx)
        endif
 
        call calcfwderr(nxx,ny,kkx,stx,sf)
@@ -272,13 +271,14 @@ C      Calculate inverse of se
 
       endif
 
+
       if(iscat.eq.1)then
        print*,'Error in coreretPT: Scattering calculations not'
        print*,'appropriate!'
        stop
       endif
 
-
+      print*,'ForwardPT 2'
       CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jrad,radius,nx,xn,ny,yn,kk)
@@ -351,6 +351,7 @@ C       Calculate test spectrum using trial state vector xn1.
 C       Put output spectrum into temporary spectrum yn1 with
 C       temporary kernel matrix kk1. Does it improve the fit? 
 c	print*,xn1(1),xn(1),x_out(1),'jm3'
+        print*,'ForwardPT 3'
         CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
      2     lin,nvar,varident,varparam,jrad,radius,nx,xn1,ny,yn1,kk1)
@@ -432,11 +433,6 @@ C      Write out k-matrix for reference
       print*,'Calculating final covariance matrix'
       CALL calc_serr(nx,ny,sa,se,aa,dd,st,sn,sm)
       print*,'Matrix calculated'
-
-        CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
-     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
-     2     lin,nvar,varident,varparam,jrad,radius,nx,xn1,ny,yn1,kk1)
-
 
       return
 

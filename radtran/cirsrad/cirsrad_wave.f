@@ -1010,22 +1010,20 @@ C               Otherwise, code assumes optical depth is large and sets
 C               upwelling radiation field to local temperature.
 
                 if(tsurf.le.0.0)then
-                 radg(1) = bb(nlays,Ipath)
+                 radground = bb(nlays,Ipath)
                 else
-                 radg(1) = esurf*planck_wave(ispace,x,tsurf)
+                 radground = esurf*planck_wave(ispace,x,tsurf)
                 endif
 
                 galb1=galb
 
                 if(galb1.lt.0)then
                          galb1 = get_albedo(nalb,valb,alb,x)
-                 if(Ig.eq.1)print*,x,galb1
                 endif
 
                 do J=1,nmu
-                 radg(J)=radg(1)*sngl((1.0-galb1))
+                 radg(J)=radground*sngl((1.0-galb1))
                 enddo
-
 
                 IF (itype.EQ.11) THEN
 

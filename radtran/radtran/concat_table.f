@@ -201,8 +201,7 @@ C      read(5,23)ans
         print*,J,G_ORD1(J)
         IREC = IREC + 1
         IF(G_ORD1(J).NE.G_ORD2(J)) THEN
-         PRINT*,'G_ORD1 <> G_ORD2',G_ORD1(J),G_ORD2(J)
-         STOP
+         PRINT*,'J, G_ORD1 <> G_ORD2',J, G_ORD1(J),G_ORD2(J)
         ENDIF
 299   CONTINUE
 
@@ -216,8 +215,7 @@ C      read(5,23)ans
         WRITE(LUN0,REC=IREC)DEL_G1(J)
         IREC=IREC+1
         IF(DEL_G1(J).NE.DEL_G2(J)) THEN
-         PRINT*,'DEL_G1 <> DEL_G2',DEL_G1(J),DEL_G2(J)
-         STOP
+         PRINT*,'J,DEL_G1 <> DEL_G2',J,DEL_G1(J),DEL_G2(J)
         ENDIF
 399   CONTINUE
 

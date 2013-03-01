@@ -144,7 +144,7 @@ C		Scattering variables
      1          lncons(maxcon), 
      2		nf, lnorm(maxcon), itype
 	REAL	lfrac(maxcon,maxlay), solar, pi, theta0, dist, 
-     1		bnu(maxscatlay), aphi, radg(maxmu), 
+     1		bnu(maxscatlay), aphi, radg(maxmu),radground, 
      2		lcons(maxcon,maxscatpar), rad1, omega(maxscatlay),
      3		tsun, v, frcscat(maxcon,maxlay), sol_ang, emiss_ang
         REAl    bnuS(maxlay)
@@ -1051,21 +1051,21 @@ C               If tsurf > 0, then code assumes bottom layer is at the
 C               surface and so uses tsurf to compute radiation upwelling.
 C               Otherwise, code assumes optical depth is large and sets
 C               upwelling radiation field to local temperature.
+
                 if(tsurf.le.0.0)then
-                 radg(1) = jb(nlays,Ipath)
+                 radground = jb(nlays,Ipath)
                 else
-                 radg(1) = esurf*planck_wave(ispace,x,tsurf)
+                 radground = esurf*planck_wave(ispace,x,tsurf)
                 endif
 
                 galb1=galb
 
                 if(galb1.lt.0)then
                          galb1 = get_albedo(nalb,valb,alb,x)
-C                 if(Ig.eq.1)print*,x,galb1
                 endif
 
                 do J=1,nmu
-                 radg(J)=radg(1)*sngl(1.0-galb1)
+                 radg(J)=radground*sngl(1.0-galb1)
                 enddo
 
                 IF (itype.EQ.11) THEN

@@ -213,7 +213,7 @@ C       readapriori.f. Hence just read in from temporary .str file
        lin0 = 0
 
        if(iscat.eq.0)then
-        print*,'Calling forwarddisc'
+        print*,'Calling forwarddisc - A'
         CALL forwarddisc(runname,ispace,iscat,fwhm,ngeom,
      1   nav,wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
      2   lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jtanx,jprex,
@@ -270,7 +270,7 @@ C      Calculate inverse of se
       endif
 
       if(iscat.eq.0)then
-
+        print*,'Calling forwarddisc - B'
         CALL forwarddisc(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,nx,xn,ny,
@@ -371,6 +371,7 @@ C       Put output spectrum into temporary spectrum yn1 with
 C       temporary kernel matrix kk1. Does it improve the fit? 
 
         if(iscat.eq.0)then
+          print*,'Calling forwarddisc - C'
           CALL forwarddisc(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
      2     lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,

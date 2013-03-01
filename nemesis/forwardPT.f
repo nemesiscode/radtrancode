@@ -178,7 +178,7 @@ C     Now sort wavelength arrays
       enddo      
       if(iswitch.eq.1)goto 41
 
-      print*,'ForwardavfovPT vconv:'
+      print*,'ForwardPT vconv:'
       do i=1,nconv1
        print*,i,vconv1(i)
       enddo
@@ -246,7 +246,7 @@ C     Read in base heights from '.drv' file
 
       if(nav(igeom).gt.1)then
        print*,'You should not be doing explicit FOV averaging with'
-       print*,'forwardavfovPT. All averaging is done implicitly.'
+       print*,'forwardPT. All averaging is done implicitly.'
        print*,'Aborting...'
        stop
       endif

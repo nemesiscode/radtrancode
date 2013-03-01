@@ -48,9 +48,8 @@ C
       end do
       dsum = abs(sum - 1.0)
       if(dsum.gt.0.02)then
-       print*,'Double1: Error - Sum of weights <> 1.0'
+       print*,'Double1: Warning - Sum of weights <> 1.0'
        print*,sum
-       stop
       endif
       
       IF(IC.EQ.0)THEN
@@ -63,10 +62,10 @@ C           print*,cc(i,i),pplpl(i,j),pplmi(i,j)
          END DO
          DSUM = ABS(SUM*2.0*PI - 1.0)
          IF(DSUM.GT.0.02)THEN
+          PRINT*,'Double1: Warning - Sum of phase function <> 1'
 	  PRINT*,'IC,L  = ',IC,L
-          PRINT*,'Double1: Error - Sum of phase function <> 1'
           PRINT*,'J,SUM = ',J,SUM*2.0*PI
-          STOP
+C          STOP
          ENDIF
         END DO
       ENDIF 

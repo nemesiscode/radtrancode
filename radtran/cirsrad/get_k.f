@@ -94,6 +94,7 @@ C         print*,'IGAS,IREC0 : ',IGAS,IREC0
 C         print*,'delv,vmin,vwave = ',delv,vmin,vwave
          IF(delv.gt.0.0)then
           N1 = int((VWAVE - VMIN)/DELV + eps)	! find nearest point in table
+C	   print*,vmin,vwave,delv,(vwave-vmin)/delv,eps,N1
 C						  below current wavelength.
 C						  Parameter eps is there 
 C						  to prevent small numerical

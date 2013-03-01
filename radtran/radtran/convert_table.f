@@ -57,6 +57,12 @@ C     MAXOUT the maximum number of output points
       READ(LUN0,REC=10)ISOGAS(1)
       IREC=11
       NGAS=1
+
+      IF(NG.NE.10.AND.NG.NE.20)THEN
+       PRINT*,'Convert_table is currently limited to NG=10 or NG=20'
+       PRINT*,'Aborting'
+       STOP
+      ENDIF
       WRITE(LUN1,*)'VMIN,DELV,FWHM = ',VMIN,DELV,FWHM
       print*,'VMIN,DELV,FWHM = ',VMIN,DELV,FWHM
       WRITE(LUN1,*)'NPOINT,VMAX = ',NPOINT,VMIN + (NPOINT-1)*DELV
@@ -136,6 +142,10 @@ C     MAXOUT the maximum number of output points
 40       CONTINUE
          WRITE(LUN1,707) PE1,(28650.0*K_G(LOOP),LOOP=1,5)
          WRITE(LUN1,708) (28650.0*K_G(LOOP),LOOP=6,10)
+         IF(NG.EQ.20)THEN
+          WRITE(LUN1,708) (28650.0*K_G(LOOP),LOOP=11,15)
+          WRITE(LUN1,708) (28650.0*K_G(LOOP),LOOP=16,20)
+         ENDIF
 20      CONTINUE
 30     CONTINUE
 

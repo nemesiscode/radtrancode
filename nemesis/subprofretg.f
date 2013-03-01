@@ -107,8 +107,6 @@ C     RGAS now read in from constdef.f, so set R accordingly and in correct
 C     units
       R=RGAS*0.001
 
-      print*,'Starting subprofretg'
-
 C     If XFLAG = 0, then we're generating a .prf file from the .ref file
 C     If XFLAG = 1, then we further updating the .prf file with previously
 C                   retrieved parameters (LIN=1 or 3)
@@ -221,7 +219,6 @@ C **************** Modify profile via hydrostatic equation ********
        CALL XHYDROSTATP(AMFORM,IPLANET,LATITUDE,NPRO,NVMR,MOLWT,
      1  IDGAS,ISOGAS,H,P,T,VMR,HTAN,PTAN,SCALE)
       ENDIF
-
 C     Read in reference AEROSOL profile
       IF(XFLAG.EQ.0)THEN
        OPEN(UNIT=1,FILE='aerosol.ref',STATUS='OLD')
@@ -1115,7 +1112,6 @@ C        ***************************************************************
           Y=ALOG(P(J))          
           
           X1(J)=XDEEP*EXP(-((Y-Y0)/XWID)**2)
-          print*,J,P(J),PKNEE,Y,Y0,Y-Y0,X1(J)
           IF(VARIDENT(IVAR,1).EQ.0)THEN
             XMAP(NXTEMP+1,IPAR,J)=X1(J)/XDEEP
           ELSE

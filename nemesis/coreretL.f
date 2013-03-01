@@ -243,7 +243,7 @@ C       endif
 C        strip out variables from kkx that will be retrieved in this
 C        run.
          call scankkx(nvarx,varidentx,varparamx,nprox,nvar,varident,
-     1  kkx,nxx)
+     1  kkx,stx,nxx)
        endif
 
        call calcfwderr(nxx,ny,kkx,stx,sf)

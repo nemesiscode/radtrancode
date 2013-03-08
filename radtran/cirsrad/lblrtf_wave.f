@@ -76,7 +76,7 @@ C         bins, paths, etc.)
         LOGICAL         scatter, dust,solexist
         double precision mu1(maxmu), wt1(maxmu), galb
 
-        CHARACTER*100   klist, opfile1, solname, solfile
+        CHARACTER*100   klist, opfile1, solname, solfile, buffer
 
         CHARACTER*100    logfil, drvfil, albfile, sfile
 
@@ -185,7 +185,10 @@ C      Precompute temperature coeffients of layers
                 if(galb.lt.0.0)then
                  call file(opfile,albfile,'alb')
                  open(9,file=albfile,status='old')
-                 read(9,*)nalb
+1                format(a)
+54               read(9,1)buffer
+                 IF(BUFFER(1:1).EQ.'#') GOTO 54
+                 read(buffer,*)nalb
                  print*,'Reading albedo file'
                  if(nalb.gt.maxsec)then
                   print*,'Error in lblrtf_wave nalb > maxsec'

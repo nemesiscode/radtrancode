@@ -84,7 +84,7 @@ C     CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       INTEGER nem
 
       REAL	XCOM,XNEXT,FPARA,XRAY
-      double precision get_albedo,dpi,draddeg
+      double precision dpi,draddeg
 
 C     Dust variables
 
@@ -155,8 +155,6 @@ C      READ*,HTAN
 C     ************* Need to change this to be more general. Precludes
 C     doing limb scattering with sunlight on ***********************
  
-      SOLZEN=180.0
-      SOLPHI=0.0
 
       IF(EMISS_ANG.LT.0.0) THEN
          HTAN = SOL_ANG
@@ -165,7 +163,9 @@ C     doing limb scattering with sunlight on ***********************
 C         PRINT*,'Enter zenith and aziumuth angle of Sun'
 C         CALL PROMPT('at tangent point : ')
 C         READ*,SOLZEN,SOLPHI        
-C        N.B. SOLPHI = 0 indicates FORWARD scattering
+C         N.B. SOLPHI = 0 indicates FORWARD scattering
+          SOLZEN=180.0
+         SOLPHI=0.0
          SOLVEC(1)=SIN(SOLZEN*DTR)*COS(SOLPHI*DTR)
          SOLVEC(2)=SIN(SOLZEN*DTR)*SIN(SOLPHI*DTR)
          SOLVEC(3)=COS(SOLZEN*DTR)
@@ -176,6 +176,8 @@ C        N.B. SOLPHI = 0 indicates FORWARD scattering
          ZANG = EMISS_ANG
          HTAN = (RADIUS+H(NPRO))*SIN(ZANG*DTR) - RADIUS
          print*,'A: HTAN,ZANG = ',HTAN,ZANG
+         SOLZEN=SOL_ANG
+         SOLPHI=APHI
 C         PRINT*,'Enter zenith and aziumuth angle of Sun'
 C         CALL PROMPT('at point where photons enter atmosphere : ')
 C         READ*,SOLZEN,SOLPHI
@@ -185,6 +187,9 @@ C        N.B. SOLPHI = 0 indicates FORWARD scattering
          SOLVEC(3)=COS(SOLZEN*DTR)
       ENDIF
         
+      print*,'SOLZEN,SOLPHI = ',SOLZEN,SOLPHI
+      print*,'SOLVEC = ',SOLVEC
+
 C      IF(IDUMP.EQ.1)THEN
 C        WRITE(34,*)'Tangent altitude, Zenith angle = ',HTAN,ZANG
 C      ENDIF
@@ -222,7 +227,7 @@ C      READ(5,1)XHGFILE
       CALL GETHG(OPFILE,NCONT1,NLAMBDA,XLAMBDA,PHASED)
 
       IF(NCONT1.NE.NCONT)THEN
-       PRINT*,'.pha file is incompatible with dust.prf file'
+       PRINT*,'.pha file is incompatible with dust.prf file'
        PRINT*,'NCONT1,NCONT = ',NCONT1,NCONT
        STOP
       ENDIF
@@ -261,16 +266,17 @@ C      Interpolate k-tables and gas continua to VV
        CALL GENTABSCK1(OPFILE,NPRO,NGAS,ID,ISO,P,T,VMR,NWAVE,VWAVE,
      1 VV,ISPACE,NG,DEL_G,TABK)
 
-       DO I=1,NPRO
+C       DO I=1,NPRO
 C        print*,I,NPRO
 C        WRITE(34,*)(TABK(J,I),J=1,NG)
 C        print*,(TABK(J,I),J=1,NG)
-       ENDDO
+C       ENDDO
 
 C      Interpolate scattering properties to VV
        CALL INTERPHG(VV,NCONT,NLAMBDA,XLAMBDA,PHASED,XSEC1,XOMEGA,XHG)
 
 C      Interpolate emissivity and albedo to VV
+
        CALL VERINT(VEM,EMISSIVITY,NEM,GEMI,VV) 
        GALB = 1.0-GEMI
        print*,'GALB, GEMI  = ',GALB,GEMI
@@ -292,7 +298,12 @@ C      Regrid phase functions to equal probability steps
        print*,'Initial position vector : ',SVEC
        print*,'Zenith angle : ',ZANG
        print*,'Initial direction vector : ',DVEC1     
-
+       print*,'Initial solar vector : ',SOLVEC     
+       print*,'Niter, IDUM',NITER,IDUM
+       print*,'DEVSUN, SOLAR',DEVSUN,SOLAR
+       print*,'NPRO,NGAS,NCONT,MOLWT,RADIUS',NPRO,NGAS,
+     1   NCONT,MOLWT,RADIUS
+       print*,'GALB,TGROUND,IRAY',GALB,TGROUND,IRAY
        CALL MCPHOTONCK(NITER,IDUM,
      1    XSEC1,XOMEGA,NPHASE,THETA,
      2    SVEC,DVEC1,SOLVEC,DEVSUN,SOLAR,TABK,NG,DEL_G,
@@ -301,6 +312,7 @@ C      Regrid phase functions to equal probability steps
      5    MSCAT,ITER,ISPACE,VV,NAB,NSOL,NGR)
 
        print*,'VV,NAB,NSOL,NGR',VV,NAB,NSOL,NGR
+
 C       IF(IDUMP.EQ.1)THEN
 C        WRITE(34,*)ITER
 C        DO I=1,ITER

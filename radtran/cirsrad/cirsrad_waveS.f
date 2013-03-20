@@ -160,8 +160,7 @@ C		Scattering variables
 
 C		Internal variables
 
-	INTEGER	I, J, K, L, Ipath, Ig, nlays,nalb
-        real	alb(maxsec),valb(maxsec)
+	INTEGER	I, J, K, L, Ipath, Ig, nlays
 	REAL	utotl(maxlay), qh(maxlay), qhe(maxlay),
      1		frac(maxlay,maxgas), qh_he(maxlay), dist1,
      2		totamh(maxlay), x, taucon(maxlay)
@@ -198,7 +197,6 @@ C		Common blocks and parameters
 	common/interpk/lun, ireck, xmink, delk, pk, npk, tk, ntk, ng, 
      1		delvk, fwhmk, g_ord, delg, kout
 	common/scatd/mu1, wt1, galb
-        common/alb/nalb,valb,alb 
 	common/scatter1/nmu, isol, dist1, lowbc, liscat, lnorm,
      1		lncons, lcons, sol_ang, emiss_ang, aphi, nf
 	common/phasesto/pplsto,pmisto
@@ -1061,7 +1059,7 @@ C               upwelling radiation field to local temperature.
                 galb1=galb
 
                 if(galb1.lt.0)then
-                         galb1 = get_albedo(nalb,valb,alb,x)
+                         galb1 = get_albedo(nem,vem,emissivity,x)
                 endif
 
                 do J=1,nmu
@@ -1151,7 +1149,7 @@ C		IF (Ig.EQ.1) WRITE(*,*)' SINGLE SCATTERING IN USE '
                 galb1 = galb
                         
                 if(galb1.lt.0)then
-                   galb1 = get_albedo(nalb,valb,alb,x)
+                   galb1 = get_albedo(nem,vem,emissivity,x)
 C                  if(Ig.eq.1)print*,x,galb1
                 endif
 

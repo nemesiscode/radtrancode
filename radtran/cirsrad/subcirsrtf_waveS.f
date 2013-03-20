@@ -74,8 +74,8 @@ C       bins, paths, etc.)
 
 	INTEGER		nwave, I, J, npath1, nout, ispace
 
-	INTEGER		INormal,iray,nalb,nem
-	REAL		Dist,valb(maxsec),alb(maxsec),tsurf
+	INTEGER		INormal,iray,nem
+	REAL		Dist,tsurf
         REAL		vem(maxsec),emissivity(maxsec)
 	REAL		vwave(nwave), output(maxout3)
 	LOGICAL		scatter, dust
@@ -84,10 +84,9 @@ C       bins, paths, etc.)
 	CHARACTER*100	klist, buffer
 	CHARACTER*100	opfile1
 
-	CHARACTER*100	logfil, drvfil, radfile, xscfil,albfile
+	CHARACTER*100	logfil, drvfil, radfile, xscfil
 
         common/scatd/mu1, wt1, galb
-        common/alb/nalb,valb,alb
 C-----------------------------------------------------------------------
 C
 C	Begin Program.
@@ -176,25 +175,6 @@ C-----------------------------------------------------------------------
 		WRITE(*,*)'     CALLING get_scatter'
 		CALL get_scatter(radfile,ncont)
 		WRITE(*,*)'     get_scatter COMPLETE'
-		WRITE(*,*)' '
-                if(galb.lt.0.0)then
-                 call file(opfile,albfile,'alb')
-                 open(9,file=albfile,status='old')
-1                format(a)
-54               read(9,1)buffer
-                 IF(BUFFER(1:1).EQ.'#') GOTO 54
-                 read(buffer,*)nalb
-                 print*,'Reading albedo file'
-                 if(nalb.gt.maxsec)then
-                  print*,'Error in subcirsrtf_waveS nalb > maxsec'
-                  print*,nalb,maxsec
-                  stop
-                 endif
-                 do i=1,nalb
-                  read(9,*)valb(i),alb(i)
-                 enddo
-                 close(9)
-                endif
 	ENDIF
 
 C-----------------------------------------------------------------------

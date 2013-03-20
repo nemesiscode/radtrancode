@@ -132,12 +132,15 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
 
 C        ********* reset surface albedo spectrum  **********
          nalb = varparamx(ivarx,1)
-         call file(runname,runname,'alb')
+         call file(runname,runname,'sur')
          open(9,file=runname,status='old')
-         read(9,*)nalb1
+54       read(9,1)buffer
+         if(buffer(1:1).eq.'#')goto 54
+         read(buffer,*)nalb1
          if(nalb1.ne.nalb)then
           print*,'Error in gsetrad nalbx <> nalb1'
           print*,nalb,nalb1
+          print*,'file : ',runname
          endif
 
          do i=1,nalb
@@ -148,7 +151,7 @@ C        ********* reset surface albedo spectrum  **********
          open(9,file=runname,status='unknown')
          write(9,*)nalb
          do i=1,nalb
-          write(9,*)valb(i),exp(xnx(jalbx+i-1))
+          write(9,*)valb(i),1-exp(xnx(jalbx+i-1))
          enddo
          close(9)
 
@@ -181,12 +184,15 @@ C       print*,ivar
        if (varident(ivar,1).eq.888)then
 C       ********* surface albedo spectrum retrieval **********
         nalb = varparam(ivar,1)
-        call file(runname,runname,'alb')
+        call file(runname,runname,'sur')
         open(9,file=runname,status='old')
-        read(9,*)nalb1
+55      read(9,1)buffer
+        if(buffer(1:1).eq.'#')goto 55
+        read(buffer,*)nalb1
         if(nalb1.ne.nalb)then
          print*,'Error in gsetrad nalb <> nalb1'
          print*,nalb,nalb1
+         print*,'file : ',runname
         endif
 
         do i=1,nalb
@@ -197,7 +203,7 @@ C       ********* surface albedo spectrum retrieval **********
         open(9,file=runname,status='unknown')
         write(9,*)nalb
         do i=1,nalb
-         write(9,*)valb(i),exp(xn(jalb+i-1))
+         write(9,*)valb(i),1.-exp(xn(jalb+i-1))
         enddo
         close(9)
 
@@ -242,9 +248,9 @@ C     Compute the drv file to get the aerosol optical depths
         enddo
 
         open(12,file='aerosol.prf',status='old')
-54       READ(12,1)BUFFER     
+56       READ(12,1)BUFFER     
 1        FORMAT(A)
-         IF(BUFFER(1:1).EQ.'#') GOTO 54
+         IF(BUFFER(1:1).EQ.'#') GOTO 56
          READ(BUFFER,*)NN,NDUST
          DO 105 J=1,NN
            READ(12,*)DUSTH(J),(DUST(I,J),I=1,NDUST)

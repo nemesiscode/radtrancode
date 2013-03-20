@@ -83,7 +83,7 @@ C     ************************************************************************
       real stx(mx,mx),xdnu
       real xmap(maxv,maxgas+2+maxcon,maxpro)
       real xmapx(maxv,maxgas+2+maxcon,maxpro)
-      character*100 runname,aname
+      character*100 runname,aname,buffer
 
       integer nvar,ivar,varident(mvar,3),i,j,nalb,nalb1
       real varparam(mvar,mparam),alb(maxsec),valb(maxsec)
@@ -131,12 +131,15 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
 
 C        ********* reset surface albedo spectrum  **********
          nalb = varparamx(ivarx,1)
-         call file(runname,runname,'alb')
+         call file(runname,runname,'sur')
          open(9,file=runname,status='old')
-         read(9,*)nalb1
+54       read(9,1)buffer
+         if(buffer(1:1).eq.'#')goto 54
+         read(buffer,*)nalb1
          if(nalb1.ne.nalb)then
           print*,'Error in gsetraddisc nalbx <> nalb1'
           print*,nalb,nalb1
+          print*,'file : ',runname
          endif
 
          do i=1,nalb
@@ -147,7 +150,7 @@ C        ********* reset surface albedo spectrum  **********
          open(9,file=runname,status='unknown')
          write(9,*)nalb
          do i=1,nalb
-          write(9,*)valb(i),exp(xnx(jalbx+i-1))
+          write(9,*)valb(i),1.-exp(xnx(jalbx+i-1))
          enddo
          close(9)
 
@@ -180,12 +183,15 @@ C       print*,ivar
        if (varident(ivar,1).eq.888)then
 C       ********* surface albedo spectrum retrieval **********
         nalb = varparam(ivar,1)
-        call file(runname,runname,'alb')
+        call file(runname,runname,'sur')
         open(9,file=runname,status='old')
-        read(9,*)nalb1
+56      read(9,1)buffer
+        if(buffer(1:1).eq.'#')goto 56
+        read(buffer,*)nalb1
         if(nalb1.ne.nalb)then
          print*,'Error in gsetraddisc nalb <> nalb1'
          print*,nalb,nalb1
+         print*,'file : ',runname
         endif
 
         do i=1,nalb
@@ -196,7 +202,7 @@ C       ********* surface albedo spectrum retrieval **********
         open(9,file=runname,status='unknown')
         write(9,*)nalb
         do i=1,nalb
-         write(9,*)valb(i),exp(xn(jalb+i-1))
+         write(9,*)valb(i),1.-exp(xn(jalb+i-1))
         enddo
         close(9)
 

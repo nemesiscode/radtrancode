@@ -110,6 +110,7 @@ C      print*,RADIUS,TGROUND,IRAY
 C      print*,ACC,MEAN,SDEVM,MSCAT,IPHOT,ISPACE,VV,NAB,NSOL,NGR
 
       SCOS = COS(DEVSUN*PI/180.0)
+      print*,'SCOS, DEVSUN',SCOS,DEVSUN
       NAB=0
       NSOL=0
       NGR=0
@@ -170,7 +171,7 @@ C1      FORMAT(A)
        IF(ALTITUDE.LE.H(1))THEN
 C          PRINT*,'Photon hits surface'
           IF(RAN11(IDUM).LE.GALB)THEN
-C           PRINT*,'Photon is reflected (LAMBERT)'           
+           PRINT*,'Photon is reflected (LAMBERT)',GALB           
            SUM=0.0
            DO I=1,3
             SUM=SUM+PVEC(I)**2
@@ -204,7 +205,7 @@ C          Reset length of PVEC (if HEIGHT < H(1))
        ENDIF
   
        IF(ALTITUDE.GT.ALT0)THEN
-C          PRINT*,'Photon leaves atmosphere',DVEC
+          PRINT*,'Photon leaves atmosphere',DVEC
 
           RES(IPHOT,1)=2
           CALL HITSUN(SOLVEC,DVEC,SCOS,IHIT)
@@ -276,7 +277,8 @@ C       print*,'RES : ',(RES(IPHOT,J),J=1,3)
 
 C       print*,'MEAN ...',MEAN,MEAN2,SDEV,SDEVM,MSCAT
 
-       IF(IPHOT.GT.1000.AND.SDEVM.LE.ACC) GOTO 1001      
+C      Abort if already sufficiently converged
+       IF(SDEVM.LE.ACC) GOTO 1001      
 
 1000  CONTINUE
 

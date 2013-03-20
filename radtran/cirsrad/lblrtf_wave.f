@@ -70,18 +70,16 @@ C         bins, paths, etc.)
 
         INTEGER         nout, IB
 
-        INTEGER         nalb,FSTREC
-        REAL            valb(maxsec),alb(maxsec)
+        INTEGER         FSTREC
 	REAL		XNEXT,XCOM
         LOGICAL         scatter, dust,solexist
         double precision mu1(maxmu), wt1(maxmu), galb
 
         CHARACTER*100   klist, opfile1, solname, solfile, buffer
 
-        CHARACTER*100    logfil, drvfil, albfile, sfile
+        CHARACTER*100    logfil, drvfil, sfile
 
         common/scatd/mu1, wt1, galb
-        common/alb/nalb,valb,alb
 
    
         INCLUDE '../includes/dbcom.f'
@@ -182,24 +180,6 @@ C      Precompute temperature coeffients of layers
                 CALL get_scatter(radfile,ncont)
                 WRITE(*,*)'     get_scatter COMPLETE'
                 WRITE(*,*)' '
-                if(galb.lt.0.0)then
-                 call file(opfile,albfile,'alb')
-                 open(9,file=albfile,status='old')
-1                format(a)
-54               read(9,1)buffer
-                 IF(BUFFER(1:1).EQ.'#') GOTO 54
-                 read(buffer,*)nalb
-                 print*,'Reading albedo file'
-                 if(nalb.gt.maxsec)then
-                  print*,'Error in lblrtf_wave nalb > maxsec'
-                  print*,nalb,maxsec
-                  stop
-                 endif
-                 do i=1,nalb
-                  read(9,*)valb(i),alb(i)
-                 enddo
-                 close(9)
-                endif
         ENDIF
 
 C-----------------------------------------------------------------------

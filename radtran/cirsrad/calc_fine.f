@@ -122,13 +122,22 @@ C         Ignore lines more than MAXDV widths away
              NANTEST=ISNAN(CONVAL)
 
              IF(NANTEST)THEN
-              print*,IPROC(IGAS),IDGAS(IGAS),VV,
-     1       TCORDW(LAYER,IGAS),TCORS1(LAYER,IGAS),TCORS2(LAYER),
-     2       PRESS(LAYER),TEMP(LAYER),FRAC(LAYER,IGAS),VLIN(IB,LINE),
-     3       SLIN(IB,LINE),ELIN(IB,LINE),ALIN(IB,LINE),SBLIN(IB,LINE),
-     4       TDW(IB,LINE),TDWS(IB,LINE),LLQ(IB,LINE),DOUBV(IB,LINE),    
-     5       FNH3,FH2
- 
+              print*,'Calc_fine.f: Code reports that calculated'
+              print*,'absorption is Not A Number'
+              print*,'CONVAL = ',CONVAL
+              print*,'LAYER,IGAS = ',LAYER,IGAS
+              print*,'IPROC,IDGAS,VV = ',IPROC(IGAS),IDGAS(IGAS),VV
+              print*,'TCORDW = ',TCORDW(LAYER,IGAS)
+              print*,'TCORS1 = ',TCORS1(LAYER,IGAS)
+              print*,'TCORS2 = ',TCORS2(LAYER)
+              print*,'PRESS, TEMP, FRAC = ',PRESS(LAYER),TEMP(LAYER),
+     1         FRAC(LAYER,IGAS)
+              print*,'VLIN, SLIN, ELIN, ALIN, SBLIN = ',VLIN(IB,LINE),
+     3         SLIN(IB,LINE),ELIN(IB,LINE),ALIN(IB,LINE),SBLIN(IB,LINE)
+              print*,'TDW, TDWS, LLQ, DOUBV = ',
+     4       TDW(IB,LINE),TDWS(IB,LINE),LLQ(IB,LINE),DOUBV(IB,LINE)
+              print*,'FNH3, FH2 = ',FNH3,FH2
+               
               STOP
              ENDIF
 

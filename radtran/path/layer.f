@@ -372,11 +372,20 @@ C     Now check that layer properties are realistic
        PRINT*,'************ WARNING ******************'
        PRINT*,'LAYER.F: LAYER PROPERTIES GONE NEGATIVE'
        PRINT*,'LAYER = ',I
-       PRINT*,BASEH(I),PRESS(I),TEMP(I),TOTAM(I),HFC(I)
-       PRINT*,(AMOUNT(I,J),J=1,NVMR) 
-       PRINT*,(PP(I,J),J=1,NVMR) 
-       PRINT*,(CONT(J,I),J=1,NCONT) 
+       PRINT*,'BASEH(I),PRESS(I),TEMP(I),TOTAM(I),HFC(I)',
+     1   BASEH(I),PRESS(I),TEMP(I),TOTAM(I),HFC(I)
+       PRINT*,'AMOUNTS = ',(AMOUNT(I,J),J=1,NVMR) 
+       PRINT*,'Partial Pressures = ',(PP(I,J),J=1,NVMR) 
+       PRINT*,'Dust opacities = ',(CONT(J,I),J=1,NCONT) 
+       PRINT*,' '
+       PRINT*,'You should check to see if you have set'
+       PRINT*,'the lowest layer height (LAYHT) in either'
+       PRINT*,'the .set or .pat file to be less than the'
+       PRINT*,'lowest height listed in the .prf file'
+       PRINT*,' '
+       PRINT*,'Aborting...'
        PRINT*,'***************************************'
+       STOP
       ENDIF
 110   CONTINUE
       

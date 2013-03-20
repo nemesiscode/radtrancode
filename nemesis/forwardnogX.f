@@ -161,10 +161,7 @@ C            nf=20
 C        If planet is not a gas giant and observation is not at limb then
 C        we need to read in the surface emissivity spectrum.
 C
-C        Note if doing a multiple scattering calculation, the emissivity
-C        is taken to be 1-albedo and so we don't need an emissivity
-C        file.
-         if(.not.gasgiant.and.emiss_ang.ge.0.and.iscat.ne.1)then
+         if(.not.gasgiant.and.emiss_ang.ge.0)then
           call readsurfem(runname,nem,vem,emissivity)
          else
            nem=2

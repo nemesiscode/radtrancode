@@ -5,8 +5,8 @@ C     by a particle.
 C
 C     Input parameters:
 C	VEC(3)		REAL	Initial vector
-C	ALPHA		REAL	Forward scattering angle
-C	PHI		REAL	Associated azimuth deflection
+C	ALPHA		REAL	Forward scattering angle (in radians)
+C	PHI		REAL	Associated azimuth deflection (in radians)
 C     Output parameters
 C	VEC(3)		REAL	Modified vector
 C

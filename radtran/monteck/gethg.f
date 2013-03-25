@@ -49,7 +49,8 @@ C     ****************************************************************
       read(iunit,*,end=106)vsec(j),(xsec(1,i,j),i=1,ncont)
       read(iunit,*,end=106)(omega(i),i=1,ncont)
       do 344 i=1,ncont
-       xsec(2,i,j)=omega(i)*xsec(1,i,j)
+C       xsec(2,i,j)=omega(i)*xsec(1,i,j)
+       xsec(2,i,j)=omega(i)
 344   continue
       goto 105
 106   continue

@@ -15,12 +15,22 @@ C
 C     ***************************************************************
 
       REAL PVEC(3),DVEC(3),PVEC1(3),RADIUS,A,B,C
-      REAL PVEC2(3),LAMBDA,LAMBDA1,LAMBDA2
+      REAL PVEC2(3),LAMBDA,LAMBDA1,LAMBDA2,XTEST
       INTEGER I
 
       A=DVEC(1)**2 + DVEC(2)**2 + DVEC(3)**2
       B=2.0*(PVEC(1)*DVEC(1)+PVEC(2)*DVEC(2)+PVEC(3)*DVEC(3))
       C=PVEC(1)**2+PVEC(2)**2+PVEC(3)**2-RADIUS**2
+
+      XTEST=B**2-4*A*C
+      IF(XTEST.LT.0.0)THEN
+       PRINT*,'Error in hitsphere. No real solution.'
+       PRINT*,'Returning start position.'
+       DO I=1,3
+        PVEC1(I)=PVEC(I)
+       ENDDO
+       RETURN
+      ENDIF
 
 C     There are two possible intercepts between a line and a sphere. Need to find the right one
       LAMBDA1 = (-B+SQRT(B**2-4*A*C))/(2*A)

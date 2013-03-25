@@ -4,8 +4,7 @@ C     $Id:
 C     ***************************************************************
 C     Subroutine to point in a spherically symmetric atmosphere which is an 
 C     optical distance of TAUREQ away from the starting position PVEC(3) in 
-C     the direction DVEC(3).
-C     Code uses Trapezium rule integration.
+C     the direction DVEC(3). Code has same function as NEWPATH but is tidier.
 C
 C     Input variables:
 C	VV		REAL	Calculated wavenumber (require to estimate
@@ -56,6 +55,7 @@ C     ***************************************************************
       REAL T1,T2,FSCAT,DTAU,DTAUSC,TAUREQ
       REAL DTAUDS,DTAUR
       INTEGER IGDIST
+C      CHARACTER*1 ANS
       REAL DUST(MAXPRO,MAXCON),CONT(MAXCON),XSEC(MAXCON)
       REAL TAUD,XOMEGA(MAXCON),TAUSCAT(MAXCON),DTAUDC(MAXCON)
       REAL DIST,OLDTAU,NEWTAU,OLDTAUGRAD,OLDTAU1,OLDDIST,OLDDIST1     
@@ -94,6 +94,7 @@ C      print*,'PVEC',PVEC
      1 K_G,HEIGHT,DTAUDS,DTAUDC,DTAUR)
 
       OLDTAUGRAD = DTAUDS
+C      print*,'AA',HEIGHT,OLDTAUGRAD
       DIST=0.0
       OLDTAU=0.0
       OLDTAU1=0.0
@@ -102,7 +103,7 @@ C      print*,'PVEC',PVEC
 
 999   DELS = 0.1/OLDTAUGRAD
       IF(DELS.GT.DELS0)DELS=DELS0
-
+C      print*,'BB',DELS
 
       IDIST=IDIST+1      
       DO I=1,3
@@ -110,7 +111,7 @@ C      print*,'PVEC',PVEC
       ENDDO
  
       HEIGHT = CALCALT(PVEC1,RADIUS)
-
+C      print*,'CC',HEIGHT
       IF(HEIGHT.LT.H(1).OR.HEIGHT.GT.H(NPRO))THEN
          DO I=1,3
           PVEC(I)=PVEC1(I)
@@ -124,8 +125,10 @@ C      print*,'PVEC',PVEC
       DIST = DIST + DELS
       NEWTAU = OLDTAU + 0.5*(DTAUDS+OLDTAUGRAD)*DELS
 
-C      print*,IDIST,HEIGHT,DIST,DELS,NEWTAU,TAUREQ
+C      print*,'DD',IDIST,HEIGHT,DIST,DELS,DTAUDS,NEWTAU,TAUREQ
 
+C      READ(5,1)ANS
+C1     FORMAT(A)
       IF(NEWTAU.LT.TAUREQ)THEN
        OLDTAU1 = OLDTAU
        OLDTAU = NEWTAU
@@ -173,7 +176,32 @@ C      print*,'HEIGHT,TEND',HEIGHT,TEND
 
       SUBROUTINE CALCTAUGRAD(NPRO,NCONT,H,P,T,DUST,MOLWT,XSEC,IRAY,VV,
      1 K_G,HEIGHT,DTAUDS,DTAUDC,DTAUR)
-
+C     **************************************************************
+C     Routine to estimate the rate of change of optical depth per km
+C     at a point in the atmosphere
+C
+C     Input parameters
+C  	NPRO	INTEGER	Number of vertical levels in profile
+C	NCONT	INTEGER	Number of aerosol types
+C	H(NPRO)	REAL	Profile heights
+C	P(NPRO)	REAL	Profile pressures
+C	T(NPRO)	REAL	Profile temperatures
+C	DUST(MAXPRO/MAXCON) REAL Dust abundances
+C	MOLWT	REAL	Atmospheric molecular weight
+C	XSEC(NCONT) REAL	Dust particle x-sections
+C	IRAY	INTEGER	Switch for Rayleigh scattering on(1) or off(0)
+C	VV	REAL	Current wavenumber
+C	K_G(NPRO) REAL	Gas Absorption coefficient at each level
+C	HEIGHT	REAL	Height in atmosphere for calculation
+C
+C     Output variables
+C	DTAUDS	REAL	Total optical depth per km
+C	DTAUDC	REAL	Total optical depth of scatterers per km
+C	DTAUR	REAL	Optical depth of Rayleigh scatteing per km
+C
+C     Pat Irwin	22/3/13
+C
+C     ************************************************************** 	
       IMPLICIT NONE
       include '../includes/arrdef.f'
       include '../includes/constdef.f'
@@ -184,6 +212,8 @@ C      print*,'HEIGHT,TEND',HEIGHT,TEND
       REAL DKDC,DTAUR,DTAUDC(MAXCON),DTAUDS
 
 
+C     Calculate position in height array and determine local
+C       temperature and pressure 
       CALL INTERP_PT(NPRO,H,P,T,HEIGHT,PNOW,TNOW,F,IFL)
 
       K1 = (1-F)*K_G(IFL) + F*K_G(IFL+1)
@@ -205,38 +235,6 @@ C      print*,'HEIGHT,TEND',HEIGHT,TEND
 
 C     Calculate optical depth/km at current conditions
       DTAUDS = DKDS + DKDC + DTAUR
-
-
-      RETURN
-
-      END
-
-      SUBROUTINE INTERP_PT(NPRO,H,P,T,HEIGHT,PNOW,TNOW,F,IFL)
-      IMPLICIT NONE
-      INTEGER NPRO,IFL,K
-      REAL HEIGHT,H(NPRO),PNOW,P(NPRO),TNOW,T(NPRO),F
-      F=-1.0
-      IFL = 0
-      DO K=1,NPRO-1
-        IF(HEIGHT.GE.H(K).AND.HEIGHT.LT.H(K+1))THEN
-         F = (HEIGHT - H(K))/(H(K+1)-H(K))
-         IFL=K
-        ENDIF
-      ENDDO
-      IF(IFL.EQ.0)THEN
-        IF(HEIGHT.LT.H(1))THEN
-         IFL=1
-         F=0.0
-        ENDIF
-        IF(HEIGHT.GE.H(NPRO))THEN
-         IFL=NPRO-1
-         F=1.0
-        ENDIF
-      ENDIF
-
-
-      PNOW = (1-F)*P(IFL) + F*P(IFL+1)
-      TNOW = (1-F)*T(IFL) + F*T(IFL+1)
 
 
       RETURN

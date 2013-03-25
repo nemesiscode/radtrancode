@@ -21,6 +21,12 @@ F_SOURCES = \
 	readdust.f \
 	readprof.f \
 	mcphotonck.f \
+	calctaugrad.f \
+	odpath.f \
+	interp_pt.f \
+	radclose.f \
+	hitsphere.f \
+	intpath.f \
 	yrotate.f
 
 INCDIR= /home/oxpln0/plan/irwin/baldrick/radtran/includes

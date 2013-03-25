@@ -61,16 +61,17 @@ C		Passed variables
       REAL TAUS,DVEC1(3),RES(MPHOT,3),SOLVEC(3),SOLRAD,DEVSUN
       REAL OMEGA1,OMEGA2,XFAC,SOLAR,GEMI
       REAL sol_ang,emiss_ang,aphi,PI
-      INTEGER NLAMBDA,MLAMBDA,ISPACE,MCONT
-      PARAMETER (PI=3.1415927,MLAMBDA=200,MCONT=10)
-      REAL XOMEGA(MCONT),XSEC1(MCONT),VV
+      INTEGER NLAMBDA,ISPACE
+      PARAMETER (PI=3.1415927)
+      REAL XOMEGA(MAXCON),XSEC1(MAXCON),VV
       REAL HTAN,TAUG,ZEN,ZANG,ALTITUDE,CALCALT,SDIST
-      REAL XLAMBDA(MLAMBDA),PHASED(MCONT,MLAMBDA,5)
+      REAL XLAMBDA(MAXSEC),PHASED(MAXCON,MAXSEC,5)
       REAL MEAN,SDEV,MSCAT
-      CHARACTER*100 XHGFILE,IPFILE,OPFILE
+      CHARACTER*100 XHGFILE,IPFILE,OPFILE,ACCFILE
+      LOGICAL ACCEXIST
 
       INTEGER NITER,IDUM,IGDIST,ITER
-      REAL XHG(MCONT,3)
+      REAL XHG(MAXCON,3)
 
       INTEGER NG
       REAL DEL_G(MAXG),TABK(MAXG,MAXPAT)
@@ -133,7 +134,22 @@ C      CALL PROMPT('Enter IDUMP : ')
 C      READ*,IDUMP
       IDUMP=1
 
-      IF(IDUMP.EQ.1)OPEN(34,FILE='monteck_dump.out',STATUS='UNKNOWN')
+      IF(IDUMP.EQ.1)THEN
+        OPEN(34,FILE='monteck_dump.out',STATUS='UNKNOWN')
+        WRITE(34,*)'Standard output on each line is : '
+        WRITE(34,*)'VV = Wavelength/wavenumber'
+        WRITE(34,*)'MEAN = Mean radiance'
+        WRITE(34,*)'SDEV = Standard deviation of radiance'
+        WRITE(34,*)'MSCAT = Mean number of scattering events'    
+        WRITE(34,*)'NAB = Number of photons absorbed in atm'
+        WRITE(34,*)'NGR = Number of photons absorbed by ground'
+        WRITE(34,*)'NSOL = Number of photons encountering Sun'
+        WRITE(34,*)'VV, MEAN, SDEV, MSCAT, NAB, NSOL, NGR, ITER, NITER,
+     1   SDEV/MEAN'
+
+        OPEN(35,FILE='cirsrad_waveMC.out',STATUS='UNKNOWN')
+        WRITE(35,*)NWAVE
+      ENDIF
 
       CALL READPROF(OPFILE,NPRO,NGAS,RADIUS,MOLWT,XG,P,T,H,VMR,ID,ISO)
 
@@ -144,6 +160,7 @@ C     Read in dust profile
 C      CALL PROMPT('Enter random -ve integer : ')
 C      READ*,IDUM
 
+      IDUM=-7
       ZEN = ASIN(RADIUS/(RADIUS+H(NPRO)))
       PRINT*,'Zenith angle of limb = ',ZEN*180.0/PI
 C      IF(IDUMP.EQ.1)WRITE(34,*)'Zenith angle of limb = ',ZEN*180.0/PI
@@ -225,6 +242,10 @@ C      CALL PROMPT('Enter name of aerosol H-G file : ')
 C      READ(5,1)XHGFILE
 
       CALL GETHG(OPFILE,NCONT1,NLAMBDA,XLAMBDA,PHASED)
+      print*,'DDD',NLAMBDA
+      do i=1,nlambda
+       print*,(phased(1,I,J),J=1,5)
+      enddo
 
       IF(NCONT1.NE.NCONT)THEN
        PRINT*,'.pha file is incompatible with dust.prf file'
@@ -237,9 +258,16 @@ C      READ(5,1)XHGFILE
 
 C      CALL PROMPT('Enter desired convergence accuracy (rad.units): ')
 C      READ*,ACC
+      CALL FILE(OPFILE,ACCFILE,'acc')
+      INQUIRE(FILE=ACCFILE,EXIST=ACCEXIST)
 
+      IF(ACCEXIST)THEN
+       OPEN(12,FILE=ACCFILE,STATUS='OLD')
+        READ(12,*)ACC
+       CLOSE(12)
+      ELSE
        ACC = 1e-32
-
+      ENDIF
 
 
 C      IF(IDUMP.EQ.1)THEN
@@ -262,6 +290,9 @@ C      Also need to correct for fact that we'll actually accept slightly
 C      larger angles for calculation.
        SOLAR=SOLAR*XFAC
  
+C      Finally need to correct for the solar zenith angle
+       SOLAR=SOLAR*COS(SOLZEN*DTR)
+
 C      Interpolate k-tables and gas continua to VV
        CALL GENTABSCK1(OPFILE,NPRO,NGAS,ID,ISO,P,T,VMR,NWAVE,VWAVE,
      1 VV,ISPACE,NG,DEL_G,TABK)
@@ -273,10 +304,22 @@ C        print*,(TABK(J,I),J=1,NG)
 C       ENDDO
 
 C      Interpolate scattering properties to VV
+       print*,'DDD_1',NLAMBDA
+       do i=1,nlambda
+        print*,xlambda(i),(phased(1,I,J),J=1,5)
+       enddo
+
        CALL INTERPHG(VV,NCONT,NLAMBDA,XLAMBDA,PHASED,XSEC1,XOMEGA,XHG)
+       PRINT*,'CCC',VV,(XSEC1(J),J=1,NCONT),(XOMEGA(J),J=1,NCONT)
+
+       print*,'DDD_2',NLAMBDA
+       do i=1,nlambda
+        print*,xlambda(i),(phased(1,I,J),J=1,5)
+       enddo
 
 C      Interpolate emissivity and albedo to VV
 
+       print*,'GALB = ',GALB
        CALL VERINT(VEM,EMISSIVITY,NEM,GEMI,VV) 
        GALB = 1.0-GEMI
        print*,'GALB, GEMI  = ',GALB,GEMI
@@ -304,6 +347,7 @@ C      Regrid phase functions to equal probability steps
        print*,'NPRO,NGAS,NCONT,MOLWT,RADIUS',NPRO,NGAS,
      1   NCONT,MOLWT,RADIUS
        print*,'GALB,TGROUND,IRAY',GALB,TGROUND,IRAY
+       print*,'XSEC,XOMEG',(XSEC1(J),J=1,NCONT),(XOMEGA(J),J=1,NCONT)
        CALL MCPHOTONCK(NITER,IDUM,
      1    XSEC1,XOMEGA,NPHASE,THETA,
      2    SVEC,DVEC1,SOLVEC,DEVSUN,SOLAR,TABK,NG,DEL_G,
@@ -313,22 +357,33 @@ C      Regrid phase functions to equal probability steps
 
        print*,'VV,NAB,NSOL,NGR',VV,NAB,NSOL,NGR
 
-C       IF(IDUMP.EQ.1)THEN
+       IF(IDUMP.EQ.1)THEN
 C        WRITE(34,*)ITER
 C        DO I=1,ITER
 C         WRITE(34,*)(RES(I,J),J=1,3)
 C        ENDDO
-C       ENDIF
 
-C       print*,'waveMC',VV,MEAN,SDEV,MSCAT,NAB,NSOL,NGR,ITER,NITER
-       WRITE(34,*)VV,MEAN,SDEV,MSCAT,NAB,NSOL,NGR,ITER,NITER
+C        print*,'waveMC',VV,MEAN,SDEV,MSCAT,NAB,NSOL,NGR,ITER,NITER
+         IF(MEAN.NE.0.0)THEN
+          WRITE(34,*)VV,MEAN,SDEV,MSCAT,NAB,NSOL,NGR,ITER,NITER,
+     1     SDEV/MEAN
+         ELSE
+          WRITE(34,*)VV,MEAN,SDEV,MSCAT,NAB,NSOL,NGR,ITER,NITER
+         ENDIF    
+
+         WRITE(35,*)VV,MEAN,SDEV
+
+       ENDIF
+
 
        OUTPUT(IWAVE)=MEAN
 
 1001  CONTINUE 
 
-      IF(IDUMP.EQ.1)CLOSE(34)
-
+      IF(IDUMP.EQ.1)THEN
+       CLOSE(34)
+       CLOSE(35)
+      ENDIF
 
       WRITE(*,*)'%cirsrad_waveMC.f :: calculation complete'
 

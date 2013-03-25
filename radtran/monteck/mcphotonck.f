@@ -80,7 +80,7 @@ C     ****************************************************************
       REAL ALT0,TABK(MAXG,MAXPRO),TAUSCAT(MAXCON),TAUTOT(MAXCON+1)
       REAL X,MSCAT,ACC,MEAN,MEAN2,ACC1,VV,PLANCK_WAVE
       REAL DEL_G(MAXG),G_ORD(MAXG),X1,GALB,TGROUND,TMEAN,SDEV
-      REAL SUM,SDEVM,TNOW,XX,SCOS
+      REAL SUM,SDEVM,TNOW,XX,SCOS,ARCTAN
       PARAMETER (PI=3.1415927)
       
       INTEGER IPHOT,NPHOT,NPHASE,IDUM,NSCAT,IHIT
@@ -109,12 +109,20 @@ C      enddo
 C      print*,RADIUS,TGROUND,IRAY
 C      print*,ACC,MEAN,SDEVM,MSCAT,IPHOT,ISPACE,VV,NAB,NSOL,NGR
 
+      IF(NPHOT.GT.MPHOT)THEN
+       PRINT*,'Error in MCPHOTONCK NPHOT > MPHOT'
+       PRINT*,NPHOT,MPHOT
+       STOP
+      ENDIF
+
       SCOS = COS(DEVSUN*PI/180.0)
       print*,'SCOS, DEVSUN',SCOS,DEVSUN
       NAB=0
       NSOL=0
       NGR=0
+      NCONT1 = NCONT+IRAY
 
+      print*,'IDUM = ',IDUM
       G_ORD(1)=0.0
       DO I=1,NG  
        G_ORD(I+1)=G_ORD(I)+DEL_G(I)
@@ -125,12 +133,17 @@ C      print*,ACC,MEAN,SDEVM,MSCAT,IPHOT,ISPACE,VV,NAB,NSOL,NGR
       MEAN = 0.0
       MSCAT = 0.0
 
+      PRINT*,'AAA',(XSEC(J),J=1,NCONT),(XOMEGA(J),J=1,NCONT)
+      DO I=1,NPRO
+       PRINT*,I,H(I),TABK(NG/2,I),(DUST(I,J),J=1,NCONT)
+      ENDDO
+
       DO 1000 IPHOT=1,NPHOT 
-       
 C       PRINT*,'IPHOT,NPHOT',IPHOT,NPHOT
 C      Select IGDIST by size of g_interval (amounts to implicit
 C               integration in g-space)
        X1 = RAN11(IDUM)
+C       print*,'X1,IDUM = ',X1,IDUM
        DO I=1,NG
         IF(X1.GE.G_ORD(I).AND.X1.LT.G_ORD(I+1))IGDIST=I
        ENDDO
@@ -147,31 +160,35 @@ C      Add one to count of IGDIST distribution
          RES(IPHOT,I)=0.0
        ENDDO
        ALTITUDE = CALCALT(PVEC,RADIUS)
-
+       PRINT*,'Initial altitude, solar = ',ALTITUDE,SOLAR
 C      Calculate random optical length to pass
 101    X1 = RAN11(IDUM)
+C       print*,'X1 = ',X1
        TAUREQ = -LOG(X1)
-       
-C      Set XX to current WAVENUMBER and pass to newpath
+C       print*,'TAUREQ = ',TAUREQ
+C      Set XX to current WAVENUMBER and pass to intpath
        IF(ISPACE.EQ.1)THEN
         XX = 1E4/VV
        ELSE
         XX=VV
        ENDIF
 
-       CALL TAUPATH(XX,IRAY,TAUREQ,PVEC,DVEC,NPRO,NGAS,NCONT,MOLWT,
+C       print*,'PVEC, TAUREQ',PVEC,TAUREQ
+       CALL INTPATH(XX,IRAY,TAUREQ,PVEC,DVEC,NPRO,NGAS,NCONT,MOLWT,
      1 RADIUS,P,T,H,DUST,TABK,IGDIST,XSEC,XOMEGA,TMEAN,FSCAT,TAUSCAT)
-
+C       print*,'PVECnew',PVEC
        ALTITUDE = CALCALT(PVEC,RADIUS)
-C       PRINT*,'ALTITUDE,TAUREQ = ',ALTITUDE,TAUREQ
-
+       PRINT*,'ALTITUDE,TAUREQ, FSCAT = ',ALTITUDE,TAUREQ,FSCAT
+C       PRINT*,'DVEC = ',DVEC
+       PRINT*,'THET = ',(180./PI)*ACOS(DVEC(3))
+       PRINT*,'PHI = ',(180./PI)*ARCTAN(DVEC(2),DVEC(1))
 C       READ(5,1)ANS
 C1      FORMAT(A)
 
        IF(ALTITUDE.LE.H(1))THEN
-C          PRINT*,'Photon hits surface'
+          PRINT*,'Photon hits surface'
           IF(RAN11(IDUM).LE.GALB)THEN
-           PRINT*,'Photon is reflected (LAMBERT)',GALB           
+           PRINT*,'Photon is reflected (LAMBERT) from surface',GALB           
            SUM=0.0
            DO I=1,3
             SUM=SUM+PVEC(I)**2
@@ -183,20 +200,29 @@ C          Reset length of PVEC (if HEIGHT < H(1))
             PVEC(I)=PVEC(I)*(RADIUS+H(1))/SUM
            ENDDO
  
+C          Calculate scattering from Lambertian surface
+C          First, PHI can be anywhere between 0 and 360 degrees
            PHI = 2*PI*RAN11(IDUM)
            
-           THET = 0.5*ACOS(1.0-2.0*RAN11(IDUM))
+C          Second, the zenith angle. Flux should be equal in terms
+C          of solid angle, which depends as 
+C          dOmeg=sin(thet).dthet.dphi=-d(cos(thet)).dphi
+           THET = ACOS(RAN11(IDUM))
 
+C          Reset the photon direction vector to be straight up
+C          from surface 
            DO I=1,3
             DVEC(I)=PVEC(I)/(RADIUS+H(1))
            ENDDO
 
+C          Modify the direction vector with the new THET and PHI
+C           print*,'THET, PHI = ',THET,PHI
            CALL MODVEC(DVEC,THET,PHI)
 
            GOTO 101
 
           ENDIF 
-
+          print*,'Photon is absorbed'
           RES(IPHOT,1)=1
           RES(IPHOT,2)=PLANCK_WAVE(ISPACE,VV,TGROUND)
           NGR=NGR+1
@@ -214,7 +240,11 @@ C          PRINT*,SOLVEC,DVEC,IHIT
            RES(IPHOT,2)=0.0
           ELSE
            PRINT*,'photon comes near the Sun'
-           RES(IPHOT,2)=SOLAR
+C          For some reason that I cannot fathom, we need to multiply the solar radiance
+C          by 2.0 to get this to match with Matrix Operator and common-sense calculations
+C          NB the solar zenith angle correction has already been incorporated
+C          in the SOLAR variable
+           RES(IPHOT,2)=2.*SOLAR
            NSOL=NSOL+1
           ENDIF
           GOTO 999
@@ -223,8 +253,7 @@ C          PRINT*,SOLVEC,DVEC,IHIT
 
 C      COMPUTE WHETHER BEAM WILL BE ABSORBED       
        IF(RAN11(IDUM).GT.FSCAT)THEN
-C         print*,'photon absorbed in atmosphere',ISPACE,VV,TMEAN,
-C     1    PLANCK_WAVE(ISPACE,VV,TMEAN)
+         print*,'photon absorbed in atmosphere'
 
          RES(IPHOT,1)=3
          RES(IPHOT,2)=PLANCK_WAVE(ISPACE,VV,TMEAN)
@@ -233,11 +262,10 @@ C     1    PLANCK_WAVE(ISPACE,VV,TMEAN)
 
        ELSE
 
-C        print*,'Photon scattered'
+        print*,'Photon scattered in atmosphere'
         NSCAT = NSCAT+1
 
         TAUTOT(1)=TAUSCAT(1)
-        NCONT1 = NCONT+IRAY
         DO I=2,NCONT1
          TAUTOT(I)=TAUTOT(I-1)+TAUSCAT(I)
         ENDDO
@@ -248,7 +276,7 @@ C        print*,'Photon scattered'
          IF(X1.LT.TAUTOT(I))ICONT=I
         ENDDO
 
-C        print*,'Particle type : ',ICONT
+C        print*,'Particle type : ',ICONT,' of ',NCONT
         DO I=1,NPHASE
          THETA1(I)=THETA(ICONT,I)
         ENDDO
@@ -277,13 +305,16 @@ C       print*,'RES : ',(RES(IPHOT,J),J=1,3)
 
 C       print*,'MEAN ...',MEAN,MEAN2,SDEV,SDEVM,MSCAT
 
-C      Abort if already sufficiently converged
-       IF(SDEVM.LE.ACC) GOTO 1001      
+C      Abort if already sufficiently converged after 200 photons
+c       at least 50 of which have hit the Sun.
+       IF(IPHOT.GT.200.AND.NSOL.GT.50.AND.SDEVM.LE.ACC) GOTO 1001      
 
 1000  CONTINUE
 
 1001  CONTINUE
 
+C     IPHOT is now actually a loop, rather than a counter, but reset 
+C     to NPHOT if necessary
       IF(IPHOT.GT.NPHOT)IPHOT=NPHOT
 
       RETURN

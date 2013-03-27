@@ -53,7 +53,8 @@ C     ***************************************************************
       REAL MOLWT,F,DELS
       REAL TNOW,PNOW,CALCALT,RADIUS,HEIGHT
       REAL P(MAXPRO),T(MAXPRO),H(MAXPRO),TAUTOT(MINT)
-      REAL TABK(MAXG,MAXPRO),K_G(MAXPRO),TAUNOW(MINT)
+      REAL TAUTOTC(MINT)
+      REAL TABK(MAXG,MAXPRO),K_G(MAXPRO),TAUNOW(MINT),TAUC(MINT)
       REAL T1,T2,DTAU,DTAUSC,TAUREQ,DIST(MINT),PEND
       REAL DTAUDS,DTAUR,XSEC(MAXCON),XOMEGA(MAXCON)
       REAL TEND,FSCAT,TAUSCAT(MAXCON),RADCLOSE,S,DTAUDC(MAXCON)
@@ -74,6 +75,8 @@ C     ------------------------------------------------------------------
        STOP
       ENDIF
 
+ 
+1000  CONTINUE
 
 C     Load up relevant k-ordinate
 C      print*,'igdist',igdist
@@ -88,15 +91,16 @@ C     First extend trajectory to see if photon is heading for ground or out to s
 C       Photon either moving upwards or is moving downwards but doesn't hit surface
 C       Find point at which it leaves the atmosphere
         CALL HITSPHERE(PVEC,DVEC,RADIUS+H(NPRO),PVEC1)
-C        print*,'photon leaves atmosphere'
+C         print*,'photon trajectory leaves atmosphere'
+C         print*,PVEC1
       ELSE
 C       Photon will strike surface, find point at which is strikes
         CALL HITSPHERE(PVEC,DVEC,RADIUS,PVEC1)
-C        print*,'photon strikes surface'
+C         print*,'photon trajectory strikes surface'
+C         print*,PVEC1
       ENDIF
      
       HEIGHT=CALCALT(PVEC1,RADIUS)
-C      PRINT*,'End altitude = ',HEIGHT
       S=0.
       DO I=1,3
        AVEC(I)=PVEC1(I)-PVEC(I)
@@ -116,23 +120,25 @@ C      PRINT*,'Length of path = ',S
 C      Find place in height array and local pressure, temperature
        CALL INTERP_PT(NPRO,H,P,T,HEIGHT,PNOW,TNOW,F,IFL)
 
+
 C      Determine optical depths/km
        CALL CALCTAUGRAD(NPRO,NCONT,H,P,T,DUST,MOLWT,XSEC,IRAY,VV,
      1 K_G,HEIGHT,DTAUDS,DTAUDC,DTAUR)
 
 C      Add optical depth element to integration array
        TAUNOW(I)=DTAUDS
-
+       TAUC(I)=DTAUDC(1)
 30    CONTINUE
 
       TAUTOT(1)=0.
+      TAUTOTC(1)=0.
       DIST(1)=0.
       DO I=2,MINT
        TAUTOT(I)=TAUTOT(I-1)+0.5*(TAUNOW(I-1)+TAUNOW(I))*DELS
+       TAUTOTC(I)=TAUTOTC(I-1)+0.5*(TAUC(I-1)+TAUC(I))*DELS
        DIST(I)=DIST(I-1)+DELS
       ENDDO
-
-      PRINT*,'TAUTOT = ',TAUTOT(MINT)
+ 
       IF(TAUTOT(MINT).LE.TAUREQ)THEN
 C       print*,'Atmosphere too thin'
 C      There is insufficient opacity in atmosphere. Photon either leaves atmosphere
@@ -145,14 +151,13 @@ C      subsequent codes realise that the photon has run out of atmosphere
       ELSE
 c      Interpolate the optical depth array to find where photon ends up.
        J=-1
+       I=1
        DO I=2,MINT
         IF(TAUREQ.GE.TAUTOT(I-1).AND.TAUREQ.LT.TAUTOT(I))THEN
          J=I
          F=(TAUREQ-TAUTOT(I-1))/(TAUTOT(I)-TAUTOT(I-1))  
         ENDIF
-C        print*,I,TAUTOT(I),TAUREQ,J,F
        ENDDO
-       
        IF(J.LT.0)THEN
 C       Error in intpath.f. Cannot find location in array
         PRINT*,'Error in INTPATH.f. Cannot find location in array'

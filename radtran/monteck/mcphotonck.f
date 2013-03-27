@@ -80,8 +80,8 @@ C     ****************************************************************
       REAL ALT0,TABK(MAXG,MAXPRO),TAUSCAT(MAXCON),TAUTOT(MAXCON+1)
       REAL X,MSCAT,ACC,MEAN,MEAN2,ACC1,VV,PLANCK_WAVE
       REAL DEL_G(MAXG),G_ORD(MAXG),X1,GALB,TGROUND,TMEAN,SDEV
-      REAL SUM,SDEVM,TNOW,XX,SCOS,ARCTAN
-      PARAMETER (PI=3.1415927)
+      REAL SUM,SDEVM,TNOW,XX,SCOS,ARCTAN,DTR
+      PARAMETER (PI=3.1415927,DTR=PI/180.)
       
       INTEGER IPHOT,NPHOT,NPHASE,IDUM,NSCAT,IHIT
       INTEGER IGDIST,NG,CIGDIST(MAXG),ISPACE,IRAY,NCONT1
@@ -89,6 +89,7 @@ C     ****************************************************************
       REAL THETA(MAXCON,100),ALPHA,PHI,THETA1(100)
       REAL RES(MPHOT,3),THET
       CHARACTER*1 ANS
+
 
 C      print*,NPHOT,IDUM,NPRO,NGAS,NCONT,MOLWT
 C      print*,XSEC(1),XOMEGA(1),NPHASE
@@ -122,7 +123,6 @@ C      print*,ACC,MEAN,SDEVM,MSCAT,IPHOT,ISPACE,VV,NAB,NSOL,NGR
       NGR=0
       NCONT1 = NCONT+IRAY
 
-      print*,'IDUM = ',IDUM
       G_ORD(1)=0.0
       DO I=1,NG  
        G_ORD(I+1)=G_ORD(I)+DEL_G(I)
@@ -133,10 +133,6 @@ C      print*,ACC,MEAN,SDEVM,MSCAT,IPHOT,ISPACE,VV,NAB,NSOL,NGR
       MEAN = 0.0
       MSCAT = 0.0
 
-      PRINT*,'AAA',(XSEC(J),J=1,NCONT),(XOMEGA(J),J=1,NCONT)
-      DO I=1,NPRO
-       PRINT*,I,H(I),TABK(NG/2,I),(DUST(I,J),J=1,NCONT)
-      ENDDO
 
       DO 1000 IPHOT=1,NPHOT 
 C       PRINT*,'IPHOT,NPHOT',IPHOT,NPHOT
@@ -160,7 +156,10 @@ C      Add one to count of IGDIST distribution
          RES(IPHOT,I)=0.0
        ENDDO
        ALTITUDE = CALCALT(PVEC,RADIUS)
-       PRINT*,'Initial altitude, solar = ',ALTITUDE,SOLAR
+C       PRINT*,'Initial altitude, solar = ',ALTITUDE,SOLAR
+C       PRINT*,'Initial theta,phi = ',ACOS(DVEC(3))/DTR,
+C     1  ARCTAN(DVEC(2),DVEC(1))/DTR
+
 C      Calculate random optical length to pass
 101    X1 = RAN11(IDUM)
 C       print*,'X1 = ',X1
@@ -178,17 +177,20 @@ C       print*,'PVEC, TAUREQ',PVEC,TAUREQ
      1 RADIUS,P,T,H,DUST,TABK,IGDIST,XSEC,XOMEGA,TMEAN,FSCAT,TAUSCAT)
 C       print*,'PVECnew',PVEC
        ALTITUDE = CALCALT(PVEC,RADIUS)
-       PRINT*,'ALTITUDE,TAUREQ, FSCAT = ',ALTITUDE,TAUREQ,FSCAT
+C       PRINT*,'ALTITUDE,TAUREQ, FSCAT = ',ALTITUDE,TAUREQ,FSCAT
+C       PRINT*,'Current theta,phi = ',ACOS(DVEC(3))/DTR,
+C     1  ARCTAN(DVEC(2),DVEC(1))/DTR
+
 C       PRINT*,'DVEC = ',DVEC
-       PRINT*,'THET = ',(180./PI)*ACOS(DVEC(3))
-       PRINT*,'PHI = ',(180./PI)*ARCTAN(DVEC(2),DVEC(1))
+C       PRINT*,'THET = ',(180./PI)*ACOS(DVEC(3))
+C       PRINT*,'PHI = ',(180./PI)*ARCTAN(DVEC(2),DVEC(1))
 C       READ(5,1)ANS
 C1      FORMAT(A)
 
        IF(ALTITUDE.LE.H(1))THEN
-          PRINT*,'Photon hits surface'
+C          PRINT*,'Photon hits surface'
           IF(RAN11(IDUM).LE.GALB)THEN
-           PRINT*,'Photon is reflected (LAMBERT) from surface',GALB           
+C           PRINT*,'Photon is reflected (LAMBERT) from surface',GALB           
            SUM=0.0
            DO I=1,3
             SUM=SUM+PVEC(I)**2
@@ -222,7 +224,7 @@ C           print*,'THET, PHI = ',THET,PHI
            GOTO 101
 
           ENDIF 
-          print*,'Photon is absorbed'
+C          print*,'Photon is absorbed'
           RES(IPHOT,1)=1
           RES(IPHOT,2)=PLANCK_WAVE(ISPACE,VV,TGROUND)
           NGR=NGR+1
@@ -231,7 +233,7 @@ C           print*,'THET, PHI = ',THET,PHI
        ENDIF
   
        IF(ALTITUDE.GT.ALT0)THEN
-          PRINT*,'Photon leaves atmosphere',DVEC
+C          PRINT*,'Photon leaves atmosphere',DVEC
 
           RES(IPHOT,1)=2
           CALL HITSUN(SOLVEC,DVEC,SCOS,IHIT)
@@ -239,7 +241,7 @@ C          PRINT*,SOLVEC,DVEC,IHIT
           IF(IHIT.EQ.0)THEN
            RES(IPHOT,2)=0.0
           ELSE
-           PRINT*,'photon comes near the Sun'
+C           PRINT*,'photon comes near the Sun'
 C          For some reason that I cannot fathom, we need to multiply the solar radiance
 C          by 2.0 to get this to match with Matrix Operator and common-sense calculations
 C          NB the solar zenith angle correction has already been incorporated
@@ -253,7 +255,7 @@ C          in the SOLAR variable
 
 C      COMPUTE WHETHER BEAM WILL BE ABSORBED       
        IF(RAN11(IDUM).GT.FSCAT)THEN
-         print*,'photon absorbed in atmosphere'
+C         print*,'photon absorbed in atmosphere'
 
          RES(IPHOT,1)=3
          RES(IPHOT,2)=PLANCK_WAVE(ISPACE,VV,TMEAN)
@@ -262,7 +264,7 @@ C      COMPUTE WHETHER BEAM WILL BE ABSORBED
 
        ELSE
 
-        print*,'Photon scattered in atmosphere'
+C        print*,'Photon scattered in atmosphere'
         NSCAT = NSCAT+1
 
         TAUTOT(1)=TAUSCAT(1)
@@ -271,12 +273,16 @@ C      COMPUTE WHETHER BEAM WILL BE ABSORBED
         ENDDO
         X1=RAN11(IDUM)
         ICONT=1
+        J=1
         DO I=1,NCONT1
          TAUTOT(I)=TAUTOT(I)/TAUTOT(NCONT1)
-         IF(X1.LT.TAUTOT(I))ICONT=I
+         IF(X1.LT.TAUTOT(I).AND.J.GT.0)THEN
+           ICONT=I
+           J=-1
+         ENDIF
         ENDDO
 
-C        print*,'Particle type : ',ICONT,' of ',NCONT
+C        print*,'Particle type : ',ICONT,' of ',NCONT1
         DO I=1,NPHASE
          THETA1(I)=THETA(ICONT,I)
         ENDDO

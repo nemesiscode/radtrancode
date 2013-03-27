@@ -12,7 +12,7 @@ C	XHG(MAXCON,3)	REAL		Combined H-G function
 C	NPHASE		INTEGER		Number of points in THETA
 C
 C     Output parameter
-C	THETA(MAXCON,100)	REAL		Scattering angles spaced
+C	THETA(MAXCON,100) REAL		Scattering angles (radians) spaced
 C					with equal probability
 C
 C     Pat Irwin		Original 	11/3/99
@@ -81,7 +81,18 @@ C	dipole phase function.
 40     CONTINUE
 
 999   CONTINUE
-      
+
+C      open(12,file='phasprob.dat',status='unknown')
+C      write(12,*)ncont,nphase
+C      do i=1,ncont
+C       write(12,*),'Type: ',i
+C       write(12,*),(xhg(i,j),j=1,3)
+C       do j=1,nphase
+C        write(12,*)j,theta(i,j)
+C       enddo
+C      enddo 
+C      close(12)
+
       RETURN
 
       END

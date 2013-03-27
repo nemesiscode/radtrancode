@@ -105,11 +105,12 @@ C
 C-----------------------------------------------------------------------
 
 
-	PRINT*,'CIRSRAD_WAVEMC calling input parameters'
+C	PRINT*,'CIRSRAD_WAVEMC calling input parameters'
 C	PRINT*,'SDist = ',SDist
 C	PRINT*,'nwave',nwave,(vwave(i),i=1,nwave)
-        PRINT*,'sol_ang, emiss_ang',sol_ang,emiss_ang
-        PRINT*,'NG = ',NG
+C        PRINT*,'sol_ang, emiss_ang',sol_ang,emiss_ang
+C        PRINT*,'NG = ',NG
+
       if (nwave.gt.maxbin) then
         write (*,*) ' CIRSRAD_WAVE: Too many bins'
         write (*,*) ' NWave = ',nwave,' Maxbin = ',maxbin
@@ -162,7 +163,7 @@ C      READ*,IDUM
 
       IDUM=-7
       ZEN = ASIN(RADIUS/(RADIUS+H(NPRO)))
-      PRINT*,'Zenith angle of limb = ',ZEN*180.0/PI
+C      PRINT*,'Zenith angle of limb = ',ZEN*180.0/PI
 C      IF(IDUMP.EQ.1)WRITE(34,*)'Zenith angle of limb = ',ZEN*180.0/PI
 
 C      PRINT*,'Enter required tangent height. ( -ve numbers indicate'
@@ -176,7 +177,7 @@ C     doing limb scattering with sunlight on ***********************
       IF(EMISS_ANG.LT.0.0) THEN
          HTAN = SOL_ANG
          ZANG = (1.0/DTR)*ASIN((HTAN+RADIUS)/(H(NPRO)+RADIUS))
-         print*,'HTAN,ZANG = ',HTAN,ZANG
+C         print*,'HTAN,ZANG = ',HTAN,ZANG
 C         PRINT*,'Enter zenith and aziumuth angle of Sun'
 C         CALL PROMPT('at tangent point : ')
 C         READ*,SOLZEN,SOLPHI        
@@ -192,7 +193,7 @@ C         N.B. SOLPHI = 0 indicates FORWARD scattering
       ELSE
          ZANG = EMISS_ANG
          HTAN = (RADIUS+H(NPRO))*SIN(ZANG*DTR) - RADIUS
-         print*,'A: HTAN,ZANG = ',HTAN,ZANG
+C         print*,'A: HTAN,ZANG = ',HTAN,ZANG
          SOLZEN=SOL_ANG
          SOLPHI=APHI
 C         PRINT*,'Enter zenith and aziumuth angle of Sun'
@@ -242,10 +243,6 @@ C      CALL PROMPT('Enter name of aerosol H-G file : ')
 C      READ(5,1)XHGFILE
 
       CALL GETHG(OPFILE,NCONT1,NLAMBDA,XLAMBDA,PHASED)
-      print*,'DDD',NLAMBDA
-      do i=1,nlambda
-       print*,(phased(1,I,J),J=1,5)
-      enddo
 
       IF(NCONT1.NE.NCONT)THEN
        PRINT*,'.pha file is incompatible with dust.prf file'
@@ -297,25 +294,9 @@ C      Interpolate k-tables and gas continua to VV
        CALL GENTABSCK1(OPFILE,NPRO,NGAS,ID,ISO,P,T,VMR,NWAVE,VWAVE,
      1 VV,ISPACE,NG,DEL_G,TABK)
 
-C       DO I=1,NPRO
-C        print*,I,NPRO
-C        WRITE(34,*)(TABK(J,I),J=1,NG)
-C        print*,(TABK(J,I),J=1,NG)
-C       ENDDO
 
 C      Interpolate scattering properties to VV
-       print*,'DDD_1',NLAMBDA
-       do i=1,nlambda
-        print*,xlambda(i),(phased(1,I,J),J=1,5)
-       enddo
-
        CALL INTERPHG(VV,NCONT,NLAMBDA,XLAMBDA,PHASED,XSEC1,XOMEGA,XHG)
-       PRINT*,'CCC',VV,(XSEC1(J),J=1,NCONT),(XOMEGA(J),J=1,NCONT)
-
-       print*,'DDD_2',NLAMBDA
-       do i=1,nlambda
-        print*,xlambda(i),(phased(1,I,J),J=1,5)
-       enddo
 
 C      Interpolate emissivity and albedo to VV
 
@@ -328,8 +309,6 @@ C      Regrid phase functions to equal probability steps
        NCONT1 = NCONT+1
        CALL PHASPROB(NCONT1,XHG,NPHASE,THETA)
 
-       print*,'RADIUS,H(NPRO)',RADIUS,H(NPRO)
-       print*,'ZANG',ZANG
        SVEC(1)=0
        SVEC(2)=0.0
        SVEC(3)=RADIUS+H(NPRO)
@@ -338,16 +317,17 @@ C      Regrid phase functions to equal probability steps
        DVEC1(2) = 0.0
        DVEC1(3) = -COS(ZANG*PI/180.0)
 
-       print*,'Initial position vector : ',SVEC
-       print*,'Zenith angle : ',ZANG
-       print*,'Initial direction vector : ',DVEC1     
-       print*,'Initial solar vector : ',SOLVEC     
-       print*,'Niter, IDUM',NITER,IDUM
-       print*,'DEVSUN, SOLAR',DEVSUN,SOLAR
-       print*,'NPRO,NGAS,NCONT,MOLWT,RADIUS',NPRO,NGAS,
-     1   NCONT,MOLWT,RADIUS
-       print*,'GALB,TGROUND,IRAY',GALB,TGROUND,IRAY
-       print*,'XSEC,XOMEG',(XSEC1(J),J=1,NCONT),(XOMEGA(J),J=1,NCONT)
+C       print*,'Initial position vector : ',SVEC
+C       print*,'Zenith angle : ',ZANG
+C       print*,'Initial direction vector : ',DVEC1     
+C       print*,'Initial solar vector : ',SOLVEC     
+C       print*,'Niter, IDUM',NITER,IDUM
+C       print*,'DEVSUN, SOLAR',DEVSUN,SOLAR
+C       print*,'NPRO,NGAS,NCONT,MOLWT,RADIUS',NPRO,NGAS,
+C     1   NCONT,MOLWT,RADIUS
+C       print*,'GALB,TGROUND,IRAY',GALB,TGROUND,IRAY
+C       print*,'XSEC,XOMEG',(XSEC1(J),J=1,NCONT),(XOMEGA(J),J=1,NCONT)
+
        CALL MCPHOTONCK(NITER,IDUM,
      1    XSEC1,XOMEGA,NPHASE,THETA,
      2    SVEC,DVEC1,SOLVEC,DEVSUN,SOLAR,TABK,NG,DEL_G,
@@ -355,7 +335,7 @@ C      Regrid phase functions to equal probability steps
      4    GALB,TGROUND,IRAY,RES,ACC,MEAN,SDEV,
      5    MSCAT,ITER,ISPACE,VV,NAB,NSOL,NGR)
 
-       print*,'VV,NAB,NSOL,NGR',VV,NAB,NSOL,NGR
+C       print*,'VV,NAB,NSOL,NGR',VV,NAB,NSOL,NGR
 
        IF(IDUMP.EQ.1)THEN
 C        WRITE(34,*)ITER

@@ -4,26 +4,25 @@ C     $Id: selecttemploop.f,v 1.3 2011-06-17 14:51:31 irwin Exp $
 ************************************************************************
 C_TITL:	SELECTTEMPLOOP.f
 C
-C_DESC:	Copies a subset of a line data base to a new data base. Copies
-C	linedata bases (eg HITRAN or GEISA) from an existing data base
-C	into a sequential ascii file for a range if temperatures which 
-C       can be turned into a new database using makedbloop. All lines or 
-C       only selected lines between given
-C	wavenumber limits are copief. Selection can be performed by gas 
-C	id, gas and isotope or by strength limit. The strength limit for a
-C	particular gas or isotope is set so that the sum of strengths of
-C	ommitted lines is less than n% of the total sum of strengths. This
-C	criteria is calculated by finding the number of lines in each 
-C	decade of strength. 
+C_DESC:Copies a subset of a line data base to a new data base. Copies
+C      linedata bases (eg HITRAN or GEISA) from an existing data base
+C      into a sequential ascii file for a range of temperatures which 
+C      can be turned into a new database using makedbloop. All lines or 
+C      only selected lines between given wavenumber limits are copied. 
+C      Selection can be performed by gas id, gas and isotope or by 
+C      strength limit. The strength limit for a particular gas or isotope 
+C      is set so that the sum of strengths of ommitted lines is less than 
+C      n% of the total sum of strengths. This criteria is calculated by 
+C      finding the number of lines in each decade of strength. 
 C
-C       A correction to the remaining lines is then made. 
+C      A correction to the remaining lines is then made. 
 C
-C	NOTE: the strength limit can be set independently for each isotope
-C	or can be set for all of the isotopes to be included. In the
-C	latter case terrestrial isotopic abundances are assumed, i.e the
-C	strengths are used uncorrected. The logic behind this is that if
-C	the isotopic abundance may vary you want to treat them
-C	independently anyway.
+C      NOTE: the strength limit can be set independently for each isotope
+C      or can be set for all of the isotopes to be included. In the 
+C      latter case terrestrial isotopic abundances are assumed, i.e the 
+C      strengths are used uncorrected. The logic behind this is that if 
+C      the isotopic abundance may vary you want to treat them 
+C      independently anyway.
 C
 C_ARGS:	See the definitions below.
 C
@@ -51,7 +50,7 @@ C***************************** VARIABLES *******************************
       IMPLICIT NONE
 
       INCLUDE '../includes/dbcom.f' 
-C ../includes/dbcom.f stores the linedata base variables.
+C     ../includes/dbcom.f stores the linedata base variables.
 
       INTEGER MINSTR,MAXSTR
       REAL LIMSTR
@@ -65,9 +64,9 @@ C      PARAMETER (MINSTR=-79,MAXSTR=38,LIMSTR=10.**MINSTR)
       INTEGER FIRST(2),LAST(2),NPAR,IERROR,READI,NLIN,NKEEP,NLOSE
 
       REAL VMIN,VMAX,BINSIZ,LIMIT(MAXISO,MAXDGAS),PERCEN,VLOW,VHIGH
-C VMIN: Wavenumber [cm-1] minimum.
-C VMAX: Wavenumber [cm-1] maximum.
-C BINSIZ: Size [cm-1] of bins for limit selection.
+C     VMIN: Wavenumber [cm-1] minimum.
+C     VMAX: Wavenumber [cm-1] maximum.
+C     BINSIZ: Size [cm-1] of bins for limit selection.
       REAL TOTSTR,SUMSTR,TCALC,LNSTR1,TCORS1,TCORS2,TSTIM,LNABSCO
       REAL ENERGY(190),ACO2(190),NCO2(190),AH2O(190),NH2O(190)
       REAL AN2(190),NN2(190),AO2(190),NO2(190)
@@ -83,14 +82,14 @@ C BINSIZ: Size [cm-1] of bins for limit selection.
       INTEGER NTEMP,ITEMP,LE,JE,I1,I2
       REAL TMIN,DELT
       LOGICAL ASKYN,INCGAS(MAXISO,MAXDGAS),ALLISO(MAXISO,MAXDGAS),INC
-C INCGAS: Flag to show if a gas is included.
-C ALLISO: Flag to show if using all isotopes for limit calculation.
+C     INCGAS: Flag to show if a gas is included.
+C     ALLISO: Flag to show if using all isotopes for limit calculation.
 
 C******************************** CODE *********************************
 
       ILOW=1
 
-C Open database ...
+C     Open database ...
       CALL PROMPT('name of data base key')
       READ(*,1)KEYFIL
       CALL REMSP(KEYFIL)
@@ -137,7 +136,7 @@ C Read in spectral parameters ...
       CALL PROMPT('Enter IPTF (Partition function flag) : ')
       READ*,IPTF
 
-C Select the gases ...
+C     Select the gases ...
 10    CONTINUE
 
       CALL WTEXT('--------------------------------------------------')
@@ -165,15 +164,24 @@ C Select the gases ...
       ENDIF
 
       IF(TEXT(1:1).EQ.'?')GOTO 15
-C NOTE: separate command line processor used below rather than internal
-C read because list directed internal read is considered not F77 by some
-C compilers (notably Prospero Fortran for MS-DOS)
+C     NOTE: separate command line processor used below rather than 
+C     internal read because list directed internal read is considered not 
+C     F77 by some compilers (notably Prospero Fortran for MS-DOS)
       NPAR = 2
       CALL CLP(TEXT,NPAR,FIRST,LAST)
       ID = READI(TEXT(FIRST(1):LAST(1)),IERROR)
-      IF(IERROR.NE.0)GOTO 15
+      IF(IERROR.NE.0)THEN
+       PRINT*,'Error reading ID'
+       print*,TEXT,NPAR,FIRST,LAST
+       STOP
+      ENDIF
       ISO = READI(TEXT(FIRST(2):LAST(2)),IERROR)
-      IF(IERROR.NE.0)GOTO 15
+      print*,'X2',ISO,IERROR
+      IF(IERROR.NE.0)THEN
+       PRINT*,'Error reading ISO'
+       print*,TEXT,NPAR,FIRST,LAST
+       STOP
+      ENDIF
       WRITE(*,*)'ID ISO = ',ID,ISO
       IF(ISO.EQ.0)THEN
         DO 14 J=1,DBNISO(ID)
@@ -237,6 +245,8 @@ C compilers (notably Prospero Fortran for MS-DOS)
        I1=INT(ITEMP/10)
        I2=ITEMP-10*I1
 
+       print*,'Temperature is ',ITEMP,TEMP
+
        PRINT*,I1,I2
        JE=LE-1         
        OPNAME(JE:JE)=CHAR(I1+48)
@@ -276,12 +286,12 @@ C compilers (notably Prospero Fortran for MS-DOS)
        DO 207 I=1,MAXDGAS
          IF(DBNISO(I).LT.1)GOTO 207
          WRITE(BUFFER,208)GASNAM(I),(INCGAS(J,I),J=1,DBNISO(I))
- 208     FORMAT(' #',1A8,' INCGAS:',20(1X,L1))
+208      FORMAT(' #',1A8,' INCGAS:',20(1X,L1))
          WRITE(3,111)BUFFER(1:DBRECL)
          WRITE(BUFFER,209)GASNAM(I),(ALLISO(J,I),J=1,DBNISO(I))
- 209     FORMAT(' #',1A8,' ALLISO:',20(1X,L1))
+209      FORMAT(' #',1A8,' ALLISO:',20(1X,L1))
          WRITE(3,111)BUFFER(1:DBRECL)
- 207   CONTINUE
+207    CONTINUE
       
       
        TCORS2=1.439*(TEMP-296.)/(296.*TEMP)
@@ -298,27 +308,27 @@ C      record after LSTLIN and then sets it to the last record in the bin.
          VLOW = VMIN + FLOAT(IBIN-1)*BINSIZ
          VHIGH = VMIN + FLOAT(IBIN)*BINSIZ
          WRITE(*,121)IBIN,VLOW,VHIGH
- 121     FORMAT(I5,F12.3,'-',F12.3)
+121      FORMAT('IBIN',I5,F12.3,'-',F12.3)
 C        Find wavenumber region in data base
          FSTLIN = LSTLIN + 1
          CALL FNDWAV(VHIGH)
          LSTLIN = DBREC - 1
 
          IF(PERCEN.GT.0.0)THEN
-C     Load NLINES array
-C     NLINES (strength decade, iso, ngas) is the number of lines in 
-C     each strength decade
+C        Load NLINES array
+C        NLINES (strength decade, iso, ngas) is the number of lines in 
+C        each strength decade
             DO 120 I=1,MAXDGAS
                DO 122 J=1,DBNISO(I)
                   DO 123 K=MINSTR,MAXSTR
                      NLINES(K,J,I) = 0
- 123              CONTINUE
- 122           CONTINUE
- 120        CONTINUE
+123               CONTINUE
+122            CONTINUE
+120         CONTINUE
             
             DO 110 LINE=FSTLIN,LSTLIN
                READ(DBLUN,111,REC=LINE)BUFFER(1:DBRECL)
- 111           FORMAT(A)
+111            FORMAT(A)
                CALL RDLINE(BUFFER)
                TS1 = 1.0-EXP(-1.439*LNWAVE/TEMP)
                TS2 = 1.0-EXP(-1.439*LNWAVE/296.0)
@@ -332,48 +342,55 @@ C     each strength decade
                LNABSCO = LOG(LNSTR)+LOG(TCORS1)+
      &         (TCORS2*LNLSE)+LOG(TSTIM)
                LNSTR1=EXP(LNABSCO)
-c	print*,line,fstlin,lstlin,DBRECL,lnstr,lnwave,'JM'
-               IF(LNSTR1.LT.LIMSTR.AND.ILOW.EQ.1)THEN
-                  WRITE(TEXT,115)LNWAVE,LNSTR,LNSTR1,LNID,LNISO
- 115              FORMAT('WARNING - strength too low for storage',
+C  	print*,line,fstlin,lstlin,DBRECL,lnstr,lnwave,'JM'
+               IF(LNSTR1.LT.LIMSTR)THEN
+                  IF(ILOW.EQ.1)THEN
+                   WRITE(TEXT,115)LNWAVE,LNSTR,LNSTR1,LNID,LNISO
+115                FORMAT('WARNING - strength too low for storage',
      1                 F12.6,E12.5,E12.5,2I3)
-                  CALL WTEXT(TEXT)
-                  print*,'Further warning messages suppressed'
-                  ILOW=0
+                   CALL WTEXT(TEXT)
+                   print*,'LIMSTR = ',LIMSTR
+                   print*,'Further warning messages suppressed'
+                   ILOW=0
+                  ENDIF
                   GOTO 110
                ENDIF
 
                I = INT(ALOG10(LNSTR1))
                IF(I.GT.MAXSTR)THEN
                   WRITE(*,113)LNWAVE,LNSTR,LNSTR1,LNID,LNISO
- 113              FORMAT('WARNING - strength too high for storage',
+113               FORMAT('WARNING - strength too high for storage',
      1                 F12.6,E12.5,E12.5,2I3)
                   STOP
                ENDIF
                
-C     see if this line is the right isotope
+C              see if this line is the right isotope
                K = -1
+C               print*,'AA',LOCID(LNID),DBNISO(LOCID(LNID)),LNISO
                DO 112 J=1,DBNISO(LOCID(LNID))
                   IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K=J
- 112           CONTINUE
-               
-C     if yes, then add 1 to count
+112            CONTINUE
+C               print*,'I,K,LOCID(LNID) = ',I,K,LOCID(LNID)
+C              if yes, then add 1 to count
                IF(K.NE.-1)THEN
                   NLINES(I,K,LOCID(LNID))=NLINES(I,K,LOCID(LNID))+1
                ENDIF
                
- 110        CONTINUE
+110         CONTINUE
             
 C count the total lines for all isotopes for this strength decade, gas id
             DO 130 I=1,MAXDGAS
                DO 132 J=MINSTR,MAXSTR
                   TOTLIN(J,I) = 0
                   DO 131 K=1,DBNISO(I)
-                     IF(INCGAS(K,I))TOTLIN(J,I) = 
-     C                    TOTLIN(J,I) + NLINES(J,K,I)
- 131              CONTINUE
- 132           CONTINUE
- 130        CONTINUE
+C                     print*,'Mm',K,I,INCGAS(K,I)
+                     IF(INCGAS(K,I))THEN
+                      TOTLIN(J,I) = TOTLIN(J,I) + NLINES(J,K,I)
+C                      print*,J,K,TOTLIN(J,I)
+                     ENDIF
+131               CONTINUE
+132            CONTINUE
+130         CONTINUE
             
 C Compute limit for each isotope ...
         DO 140 I=1,MAXDGAS
@@ -403,7 +420,7 @@ c                  print*, FLOAT(NLINES(K,J,I))*10.**K, totstr
                   SUMSTR = SUMSTR + FLOAT(NLINES(K,J,I))*10.**K
 
 c                  print*, FLOAT(NLINES(K,J,I))*10.**K, sumstr,
-c     C                 percen*totstr, totstr, limit(j,i)
+c     &                 percen*totstr, totstr, limit(j,i)
                   IF(SUMSTR.GT.PERCEN*TOTSTR)GOTO 143
                   LIMIT(J,I) = 10.**K
 142             CONTINUE
@@ -415,11 +432,11 @@ c     C                 percen*totstr, totstr, limit(j,i)
 146       CONTINUE
 140     CONTINUE
 
-C Print out computed limits for each gas ...
-C      WRITE(*,*)'Limiting strengths for each gas:'
-C      DO 134 I=1,MAXDGAS
-C        WRITE(*,*)I,DBNISO(I),(LIMIT(K,I),K=1,DBNISO(I))
-C134   CONTINUE
+C     Print out computed limits for each gas ...
+      WRITE(*,*)'Limiting strengths for each gas:'
+      DO 134 I=1,MAXDGAS
+        WRITE(*,*)I,DBNISO(I),(LIMIT(K,I),K=1,DBNISO(I))
+134   CONTINUE
 
       ENDIF
 
@@ -483,15 +500,15 @@ c	print*,lnstr,tcors1,tcors2,lnlse,tstim
 160   CONTINUE
    
       NLIN = LSTLIN-FSTLIN+1      
-      print*,NLIN,NLOSE+NKEEP
+C      print*,'BB',NLIN,NLOSE+NKEEP
 C      SCORR = 1.0+NLOSE*STRLOSE/(NKEEP*STRKEEP)
       SCORR = STRLOSE/FLOAT(NKEEP)
 
-      PRINT*,NLOSE,STRLOSE,NKEEP,STRKEEP
-      PRINT*,SCORR
+C      PRINT*,'CC',NLOSE,STRLOSE,NKEEP,STRKEEP
+C      PRINT*,'DD',SCORR
 
 
-C Copy required lines and correct for those stripped ...
+C     Copy required lines and correct for those stripped ...
       DO 150 LINE=FSTLIN,LSTLIN
         READ(DBLUN,111,REC=LINE)BUFFER(1:DBRECL)
         CALL RDLINE(BUFFER)
@@ -519,6 +536,7 @@ C Copy required lines and correct for those stripped ...
               FCORR = LNSTR2/LNSTR1
               LNSTR=LNSTR*FCORR
               IF(PERCEN.GT.0.0)THEN
+C                 print*,'EE',LNSTR1,LIMIT(K,LOCID(LNID))
                  IF (LNSTR1.GE.LIMIT(K,LOCID(LNID)))THEN
 c                    CALL EDLINE(BUFFER,QIDENT,ACO2,NCO2,AH2O,NH2O,YACO2,
 c     1                   YNCO2,YAN2,YNN2)

@@ -152,6 +152,17 @@ C     Initialise arrays
 
          xlat = flat(igeom,iav)   
 
+C        Set up parameters for non-scattering cirsrad run.
+         CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
+         itype=11			! scloud11. not used here
+
+
+C        Set up all files for a direct cirsrad run
+         call gsetraddisc(runname,iscat,nmu,mu,wtmu,isol,dist,
+     1    lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
+     2    layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
+     3    nvar,varident,varparam,nx,xn,jalb,jtan,jpre,tsurf,xmap)
+
 C        If planet is not a gas giant and observation is not at limb then
 C        we need to read in the surface emissivity spectrum
          if(.not.gasgiant.and.emiss_ang.ge.0)then
@@ -163,17 +174,6 @@ C        we need to read in the surface emissivity spectrum
            emissivity(1)=1.0
            emissivity(2)=1.0
          endif
-
-C        Set up parameters for non-scattering cirsrad run.
-         CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
-         itype=11			! scloud11. not used here
-
-
-C        Set up all files for a direct cirsrad run
-         call gsetraddisc(runname,iscat,nmu,mu,wtmu,isol,dist,
-     1    lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
-     2    layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
-     3    nvar,varident,varparam,nx,xn,jalb,jtan,jpre,tsurf,xmap)
 
 
          call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 

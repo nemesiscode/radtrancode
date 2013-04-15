@@ -229,6 +229,13 @@ C     Now sort wavelength arrays
       iscat=0
       topht = 100.0
 
+
+C     Set up all files for a direct cirsrad run of limb spectra and
+C     near-limb observations
+      call gsetradMCS(runname,nconv1,vconv1,fwhm,ispace,iscat,
+     1    gasgiant,layht,topht,nlayer,laytyp,layint,xlat,lin,hcorrx,
+     3    nvar,varident,varparam,nx,xn,jpre,tsurf,xmap)
+
 C     If planet is not a gas giant then we need to read in the surface 
 C      emissivity spectrum
       if(.not.gasgiant)then
@@ -240,13 +247,6 @@ C      emissivity spectrum
            emissivity(1)=1.0
            emissivity(2)=1.0
       endif
-
-
-C     Set up all files for a direct cirsrad run of limb spectra and
-C     near-limb observations
-      call gsetradMCS(runname,nconv1,vconv1,fwhm,ispace,iscat,
-     1    gasgiant,layht,topht,nlayer,laytyp,layint,xlat,lin,hcorrx,
-     3    nvar,varident,varparam,nx,xn,jpre,tsurf,xmap)
 
 C     Set up parameters for non-scattering cirsrad run.
 

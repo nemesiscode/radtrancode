@@ -203,6 +203,13 @@ C     radius
 
       xlat=flat(igeom,iav)
 
+
+C     Set up all files for a direct cirsrad run of limb spectra and
+C     near-limb observations
+      call gsetradPT(runname,nconv1,vconv1,fwhm,ispace,iscat,
+     1    gasgiant,layht,nlayer,laytyp,layint,xlat,lin,
+     3    nvar,varident,varparam,nx,xn,xmap)
+
 C     If planet is not a gas giant then we need to read in the surface
 C      emissivity spectrum
       if(.not.gasgiant)then
@@ -216,12 +223,6 @@ C      emissivity spectrum
       endif
 
 
-
-C     Set up all files for a direct cirsrad run of limb spectra and
-C     near-limb observations
-      call gsetradPT(runname,nconv1,vconv1,fwhm,ispace,iscat,
-     1    gasgiant,layht,nlayer,laytyp,layint,xlat,lin,
-     3    nvar,varident,varparam,nx,xn,xmap)
 
       CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
 

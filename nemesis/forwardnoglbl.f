@@ -160,18 +160,6 @@ C            nf=20
          print*,'nf = ',nf
          xlat = flat(igeom,iav)
 
-C        If planet is not a gas giant and observation is not at limb then
-C        we need to read in the surface emissivity spectrum
-         if(.not.gasgiant.and.emiss_ang.ge.0)then
-          call readsurfem(runname,nem,vem,emissivity)
-         else
-           nem=2
-           vem(1)=-100.0
-           vem(2)=1e7
-           emissivity(1)=1.0
-           emissivity(2)=1.0
-         endif
-
          if(kiter.ge.0)then
            nx2 = nx+1
          else
@@ -217,6 +205,18 @@ C         Set up all files for a direct cirsrad run
      1     lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
      2     layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
      3     nvar,varident,varparam,nx,xn,jalb,jtan,jpre,tsurf,xmap)
+
+C         If planet is not a gas giant and observation is not at limb then
+C         we need to read in the surface emissivity spectrum
+          if(.not.gasgiant.and.emiss_ang.ge.0)then
+           call readsurfem(runname,nem,vem,emissivity)
+          else
+           nem=2
+           vem(1)=-100.0
+           vem(2)=1e7
+           emissivity(1)=1.0
+           emissivity(2)=1.0
+          endif
 
 
           call file(runname,runname,'lbl')

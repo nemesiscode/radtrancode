@@ -149,6 +149,12 @@ C     NemesisL
 
       print*,'forwardnogL. iscat = ',iscat
 
+C     Set up all files for a direct cirsrad run of limb spectra
+      call gsetradL(runname,nconv1,vconv1,fwhm,ispace,iscat,
+     1    gasgiant,layht,
+     2    nlayer,laytyp,layint,xlat,lin,hcorrx,
+     3    nvar,varident,varparam,nx,xn,jpre,tsurf,xmap)
+
 C     If planet is not a gas giant then we need to read in the surface 
 C      emissivity spectrum
       if(.not.gasgiant)then
@@ -161,11 +167,6 @@ C      emissivity spectrum
            emissivity(2)=1.0
       endif
 
-C     Set up all files for a direct cirsrad run of limb spectra
-      call gsetradL(runname,nconv1,vconv1,fwhm,ispace,iscat,
-     1    gasgiant,layht,
-     2    nlayer,laytyp,layint,xlat,lin,hcorrx,
-     3    nvar,varident,varparam,nx,xn,jpre,tsurf,xmap)
 
 C     Set up parameters for multi-limb cirsrad run.
 

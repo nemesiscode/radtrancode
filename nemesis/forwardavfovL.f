@@ -168,6 +168,13 @@ C     NemesisL
        tsurf = xn(jsurf)
       endif
 
+      iscat=0
+C     Set up all files for a direct cirsrad run of limb spectra
+      call gsetradL(runname,nconv1,vconv1,fwhm,ispace,iscat,
+     1    gasgiant,layht,nlayer,laytyp,layint,xlat,lin,hcorrx,
+     3    nvar,varident,varparam,nx,xn,jpre,tsurf,xmap)
+
+
 C     If planet is not a gas giant then we need to read in the 
 C      surface emissivity spectrum
       if(.not.gasgiant)then
@@ -179,12 +186,6 @@ C      surface emissivity spectrum
            emissivity(1)=1.0
            emissivity(2)=1.0
       endif
-
-      iscat=0
-C     Set up all files for a direct cirsrad run of limb spectra
-      call gsetradL(runname,nconv1,vconv1,fwhm,ispace,iscat,
-     1    gasgiant,layht,nlayer,laytyp,layint,xlat,lin,hcorrx,
-     3    nvar,varident,varparam,nx,xn,jpre,tsurf,xmap)
 
 
 C     Set up parameters for non-scattering cirsrad run.

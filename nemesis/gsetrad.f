@@ -81,7 +81,7 @@ C     ************************************************************************
       integer jradx
       double precision mu(maxmu),wtmu(maxmu)
       real dist,galb,xn(mx),xnx(mx),aphi,emiss_ang,sol_ang
-      real stx(mx,mx),xdnu
+      real stx(mx,mx),xdnu,xtest
       real xmap(maxv,maxgas+2+maxcon,maxpro)
       real xmapx(maxv,maxgas+2+maxcon,maxpro)
       integer jpara
@@ -132,7 +132,7 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
 
 C        ********* reset surface albedo spectrum  **********
          nalb = varparamx(ivarx,1)
-         call file(runname,runname,'sur')
+         call file(runname,runname,'rsu')
          open(9,file=runname,status='old')
 54       read(9,1)buffer
          if(buffer(1:1).eq.'#')goto 54
@@ -148,10 +148,42 @@ C        ********* reset surface albedo spectrum  **********
          enddo
          close(9)
 
+         call file(runname,runname,'sur')
          open(9,file=runname,status='unknown')
          write(9,*)nalb
          do i=1,nalb
-          write(9,*)valb(i),1-exp(xnx(jalbx+i-1))
+          xtest = 1.-exp(xnx(jalbx+i-1))
+C         Stop emissivity going negative
+          if(xtest.lt.0.0)xtest=0.
+          write(9,*)valb(i),xtest
+         enddo
+         close(9)
+
+        endif
+
+
+
+        if(varident(ivarx,1).eq.889)then
+
+C        ********* reset surface albedo scaling  **********
+         call file(runname,runname,'rsu')
+         open(9,file=runname,status='old')
+57       read(9,1)buffer
+         if(buffer(1:1).eq.'#')goto 57
+         read(buffer,*)nalb
+         do i=1,nalb
+          read(9,*)valb(i),alb(i)
+         enddo
+         close(9)
+
+         call file(runname,runname,'sur')
+         open(9,file=runname,status='unknown')
+         write(9,*)nalb
+         do i=1,nalb
+          xtest = 1.0 - (1.-alb(i))*exp(xnx(jalbx))
+C         Stop emissivity going negative
+          if(xtest.lt.0.0)xtest=0.
+          write(9,*)valb(i),xtest
          enddo
          close(9)
 
@@ -184,7 +216,7 @@ C       print*,ivar
        if (varident(ivar,1).eq.888)then
 C       ********* surface albedo spectrum retrieval **********
         nalb = varparam(ivar,1)
-        call file(runname,runname,'sur')
+        call file(runname,runname,'rsu')
         open(9,file=runname,status='old')
 55      read(9,1)buffer
         if(buffer(1:1).eq.'#')goto 55
@@ -200,10 +232,41 @@ C       ********* surface albedo spectrum retrieval **********
         enddo
         close(9)
 
+        call file(runname,runname,'sur')
         open(9,file=runname,status='unknown')
         write(9,*)nalb
         do i=1,nalb
-         write(9,*)valb(i),1.-exp(xn(jalb+i-1))
+         xtest = 1.-exp(xn(jalb+i-1))
+C        Stop emissivity going negative
+         if(xtest.lt.0.0)xtest=0.0
+         write(9,*)valb(i),xtest
+        enddo
+        close(9)
+
+       endif
+
+
+
+       if (varident(ivar,1).eq.889)then
+C       ********* surface albedo spectrum multiplier retrieval **********
+        call file(runname,runname,'rsu')
+        open(9,file=runname,status='old')
+58      read(9,1)buffer
+        if(buffer(1:1).eq.'#')goto 58
+        read(buffer,*)nalb
+        do i=1,nalb
+         read(9,*)valb(i),alb(i)
+        enddo
+        close(9)
+
+        call file(runname,runname,'sur')
+        open(9,file=runname,status='unknown')
+        write(9,*)nalb
+        do i=1,nalb
+         xtest = 1.0 - (1.-alb(i))*exp(xn(jalb))
+C        Stop emissivity going negative
+         if(xtest.lt.0.0)xtest=0.0
+         write(9,*)valb(i),xtest
         enddo
         close(9)
 

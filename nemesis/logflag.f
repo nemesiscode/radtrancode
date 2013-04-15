@@ -53,6 +53,7 @@ C       Variable is not temperature  - may need to take exponent
       if(imod.eq.11)iflag=1	! Log scaling factor
 
       if(ivar.eq.888)iflag=1	! Surface albedo spectrum
+      if(ivar.eq.889)iflag=1	! Surface albedo spectrum multiplier
       if(ivar.eq.666)iflag=1	! Tangent pressure
       if(ivar.eq.555)iflag=0
 

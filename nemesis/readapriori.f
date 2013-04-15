@@ -755,6 +755,23 @@ C           Read in number of points
 
             nx = nx+np
 
+
+           elseif(varident(ivar,1).eq.889)then
+C           **** Surface albedo scaling value *******
+            jalb = nx+1
+            ix = jalb
+            read(27,*)alb,err
+            if(alb.gt.0.0)then
+               x0(ix)=alog(alb)
+            else
+               print*,'Error in readapriori - alb must be > 0'
+               stop
+            endif
+            sx(ix,ix) = (err/alb)**2
+            print*,ix,err,alb,x0(ix),sx(ix,ix)
+
+            nx = nx+1
+
            elseif(varident(ivar,1).eq.777)then
 C           **** Tangent altitude correction *******
             ix = nx+1

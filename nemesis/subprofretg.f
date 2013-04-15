@@ -1315,6 +1315,10 @@ C        no atmospheric mapping
 C         print*,'Surface albedo spectrum'
          IPAR = -1
          NP = INT(VARPARAM(IVAR,1))
+        ELSEIF(VARIDENT(IVAR,1).EQ.889)THEN
+C         print*,'Surface albedo spectrum multiplier'
+         IPAR = -1
+         NP = 1
         ELSEIF(VARIDENT(IVAR,1).EQ.777)THEN
 C         print*,'Tangent height correction'
          IPAR = -1

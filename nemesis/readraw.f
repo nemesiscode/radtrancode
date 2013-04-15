@@ -58,6 +58,7 @@ C     ***********************************************************************
         ioff=ioff+np
         if(varident(ivar,1).eq.999)jsurf=ioff
         if(varident(ivar,1).eq.888)jalb=ioff
+        if(varident(ivar,1).eq.889)jalb=ioff
         if(varident(ivar,1).eq.777)jtan=ioff
         if(varident(ivar,1).eq.666)jpre=ioff
         if(varident(ivar,1).eq.555)jrad=ioff

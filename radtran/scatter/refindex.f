@@ -941,7 +941,8 @@ C
 C			SUBROUTINE METHANE_REFIND
 C
 C	Returns the real and imaginary parts of the index of refraction 
-C	of methane ice. Data is similar to that published by Martonchik and Orton (1994) 
+C	of methane ice. Data is similar to that published by Martonchik and 
+C       Orton (1994) 
 C       Wavelengths are supplied in wavenumbers. 
 C       The table lists indices in order of 
 C	wavenumber in inverse centimetres, real, and imaginary index.
@@ -999,6 +1000,139 @@ C-----------------------------------------------------------------------
 	call locate (table, n, nu, k)
 
         frac = (nu - table(k,1))/(table(k+1,1)-table(k,1))
+
+        ncr = table(k,2) + frac*(table(k+1,2)-table(k,2))
+        nci = table(k,3) + frac*(table(k+1,3)-table(k,3))
+
+	return
+
+	end
+	
+
+
+************************************************************************
+C-----------------------------------------------------------------------
+C
+C			SUBROUTINE H2SO4_REFIND
+C
+C	Returns the real and imaginary parts of the index of refraction 
+C	of concentrated sulphuric acid with different concentrations. 
+C       Data is from Palmer and Williams 1975.
+C       Wavelengths are supplied in microns
+C       The table lists indices in order of 
+C	wavelength, real, and imaginary index for three different
+C       acid concentrations: 75, 85 and 95%
+C
+C-----------------------------------------------------------------------
+
+	subroutine h2so4_refind(lambda, ncr, nci, xconc)
+
+	implicit none
+	integer		n
+	parameter	(n=226)
+	integer		I, J, k, m
+	real		lambda, ncr, nci, nu, table(n,7), tmp, frac
+        real		xr(3),xi(3),xp(3),x1,xconc
+        data (xp(j),j=1,3) / 75.,85.,96./
+        character*200   ipfile,buffer
+
+        ipfile='palmer_williams_wl.dat'
+
+        call datarchive(ipfile)
+
+        open(55,file=ipfile,status='old')
+        read(55,1)buffer
+        read(55,1)buffer
+1       format(a)   
+        do i=1,n
+         read(55,*)(table(i,j),j=1,7)
+        enddo        
+        close(55)
+
+
+	if ((lambda.lt.table(1,1)).or.(lambda.gt.table(n,1))) then
+		write (*,*) ' Wavelength range exceeded in H2SO4 lookup'
+		write (*,*) ' lambda: ', lambda, ' Limits: ', 
+     1			table(1,1), ' to', table(n,1)
+		stop
+	endif
+
+	call locate (table, n, lambda, k)
+
+        frac = (lambda - table(k,1))/(table(k+1,1)-table(k,1))
+       
+        do i=1,3
+          j=2+2*(i-1)
+          xr(i)=table(k,j) + frac*(table(k+1,j)-table(k,j))
+          j=3+2*(i-1)
+          xi(i)=table(k,j) + frac*(table(k+1,j)-table(k,j))
+        enddo
+
+
+        x1=xconc
+        if(xconc.lt.xp(1))x1=xp(1)
+        if(xconc.gt.xp(3))x1=xp(3)
+
+        call locate (xp, 3, x1, k)
+
+        frac = (x1-xp(k))/(xp(k+1)-xp(k))
+
+        ncr = xr(k) + frac*(xr(k+1)-xr(k))
+        nci = xi(k) + frac*(xi(k+1)-xi(k))
+
+	return
+
+	end
+	
+
+
+************************************************************************
+C-----------------------------------------------------------------------
+C
+C			SUBROUTINE MARS_REFIND
+C
+C	Returns the real and imaginary parts of the index of refraction 
+C	of Mars basalts from Wolff et al. 2006
+C       Wavelengths are supplied in microns.
+C       The table lists indices in order of wavelength, real, and 
+C       imaginary index.
+C
+C-----------------------------------------------------------------------
+
+	subroutine mars_refind(lambda, ncr, nci)
+
+	implicit none
+	integer		n
+	parameter	(n=450)
+	integer		I, J, k, m
+	real		lambda, ncr, nci, nu, table(n,3), tmp, frac
+        character*200   ipfile,buffer
+
+
+        ipfile = 'wolff06dust_bandfieldbasalt.um'
+
+        call datarchive(ipfile)
+
+        open(55,file=ipfile,status='old')
+        read(55,1)buffer
+        read(55,1)buffer
+1       format(a)   
+        do i=1,n
+         read(55,*)(table(i,j),j=1,3)
+        enddo        
+        close(55)
+
+
+	if ((lambda.lt.table(1,1)).or.(lambda.gt.table(n,1))) then
+		write (*,*) ' Wavelength range exceeded in Mars lookup'
+		write (*,*) ' lambda: ', lambda, ' Limits: ', 
+     1			table(1,1), ' to', table(n,1)
+		stop
+	endif
+
+	call locate (table, n, lambda, k)
+
+        frac = (lambda - table(k,1))/(table(k+1,1)-table(k,1))
 
         ncr = table(k,2) + frac*(table(k+1,2)-table(k,2))
         nci = table(k,3) + frac*(table(k+1,3)-table(k,3))

@@ -292,6 +292,12 @@ C-----------------------------------------------------------------------
 			        call hydra_refind(lambda, refind(1), 
      1                                 refind(2))
 			elseif (iref.eq.9) then
+			        call h2so4_refind(lambda, refind(1), 
+     1                                 refind(2), scalef)
+			elseif (iref.eq.10) then
+			        call mars_refind(lambda, refind(1), 
+     1                                 refind(2))
+			elseif (iref.eq.11) then
 			        call table_refind(lambda, refind(1), 
      1                                 refind(2))
 			endif
@@ -636,10 +642,12 @@ C-----------------------------------------------------------------------
             	print*,'(6) Methane look-up table'
      		print*,'(7) NH4SH look-up table'
      		print*,'(8) Hydrazine look-up table'
-     		print*,'(9) read from external RI table'
+     		print*,'(9) H2SO4 look-up table'
+     		print*,'(10) Mars dust look-up table'
+     		print*,'(11) read from external RI table'
      		call prompt('Select one : ')
 		read (*,*) iref
-		if ((iref.lt.1).and.(iref.gt.9)) goto 30
+		if ((iref.lt.1).and.(iref.gt.11)) goto 30
 	endif
 
 C allow optional scaling of tholin refractive index to match Titan
@@ -648,6 +656,12 @@ C haze:
 	if (iref.eq.5) then
 	   write (*,*) 'Enter scale factor for tholin imaginary',
      &                 ' refractive index:'
+	   read(*,*) scalef
+	endif
+
+	if (iref.eq.9) then
+	   write (*,*) 'Enter %acid concentration (between 75',
+     &                 ' and 96% :'
 	   read(*,*) scalef
 	endif
 

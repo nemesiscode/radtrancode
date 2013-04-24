@@ -19,10 +19,10 @@ C
 C     ****************************************************************
       IMPLICIT NONE
       INTEGER NGAS,ID(NGAS),ISO(NGAS),IGAS
-      REAL VMR(NGAS),XMASS,GETMASS,SUM,XTEST,TEST,XXMASS
+      REAL VMR(NGAS),GETMASS,SUM,XTEST,TEST,XXMASS
       PARAMETER(XTEST=0.001)
 
-      XMASS=0.0
+      XXMASS=0.0
       SUM=0.0
    
       DO 100 IGAS=1,NGAS

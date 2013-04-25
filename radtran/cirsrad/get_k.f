@@ -10,14 +10,15 @@ C	been read in.
 C
 C-----------------------------------------------------------------------
       	SUBROUTINE GET_K(NLAYER,PRESS,TEMP,NGAS,IWAVE,VWAVE)
-
 	IMPLICIT NONE
+
+        INCLUDE '../includes/arrdef.f'
 
 	INTEGER	NP, NT, NG, CP, CT, I, I1, I2, I3, I4, N1,IREC
 	INTEGER IWAVE,NGAS,NLAYER,IGAS,LAYER,LUN0,IREC0,maxc
         INTEGER NTAB,loop,count,MTAB,J
 	LOGICAL COINC
-        parameter (maxc=40,MTAB=20*20*20)
+        parameter (maxc=2*maxg,MTAB=maxk*maxk*maxg)
         REAL TABLE(MTAB),TABLE2(MTAB)
 
 	REAL	P1, T1,DELV,VMIN, tmp, eps, KTEST,
@@ -33,8 +34,6 @@ C					  'aligned'.
 
 C       Defines the maximum values for a series of variables (layers, 
 C       bins, paths, etc.)
-        INCLUDE '../includes/arrdef.f'
-
         integer lun(maxbin,maxgas), ireck(maxbin,maxgas)
         real xmin(maxbin,maxgas), delx(maxbin,maxgas)
 	REAL KOUT(MAXLAY,MAXGAS,MAXG),K_G(MAXG),G_ORD(MAXG)
@@ -115,7 +114,7 @@ C	 print*,'igas,lun0,irec0,irec',IGAS,' ',lun0,' ',irec0,' ',irec
          READ(LUN0,REC=IREC)KTEST
 
          IF(KTEST.EQ.0.0)THEN
-          print*,'GET_K: Zero k-data for GAS: ',IGAS
+C          print*,'GET_K: Zero k-data for GAS: ',IGAS
           DO LAYER=1,NLAYER
            DO I=1,NG
             KOUT(LAYER,IGAS,I)=0.0

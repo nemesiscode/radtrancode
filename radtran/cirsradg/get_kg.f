@@ -59,7 +59,7 @@ C NG: Number of ordinates in k-distribution.
 
       INTEGER ntab,loop,count
       INTEGER maxc,mtab
-      PARAMETER (maxc=maxg,MTAB=20*20*maxg)
+      PARAMETER (maxc=2*maxg,MTAB=20*20*maxg)
       REAL TABLE(mtab),TABLE2(mtab)
 
       REAL P1,T1,tmp,eps,KTEST
@@ -268,12 +268,19 @@ C=======================================================================
             ENDDO
           ELSE
             WRITE(*,*)'GET_KG :: *WARNING* Wavenumber does not'
-            WRITE(*,*)'coincide with tabulated value.'
+            WRITE(*,*)'coincide with tabulated value.',delv
 
             weight(2) = ((vwave - tmp)/delv)
             IF(weight(2).GT.1.0)weight(2) = 1.0
             IF(weight(2).LT.0.0)weight(2) = 0.0
             weight(1) = 1.0 - weight(2)
+
+c Fletcher: Initialised cont and dcont arrays, and the parameter X.
+	    DO I=1,MAXC
+		cont(i)=0.0
+		dcont(i)=0.0
+            ENDDO
+	    X=0.0
 
             NTAB = np*nt*ng
             count = 0
@@ -291,14 +298,15 @@ C=======================================================================
                   Y4 = TABLE2(I4+I)
                 ENDIF
 
-                k_g(i) = (1.0 - V)*(1.0 - U)*Y1 + V*(1.0 - U)*Y2 +
+                X = (1.0 - V)*(1.0 - U)*Y1 + V*(1.0 - U)*Y2 +
      1          V*U*Y3 + (1.0 - V)*U*Y4
+c     		write(*,*)i,k_g(i),u,v,y1,y2,y3,y4
 
                 DXDT = (-(1.0 - V)*Y1 - V*Y2 + V*Y3 + 
      1            (1 - V)*Y4)*DUDT
 
                 count = count + 1
-                cont(count) = k_g(I)
+                cont(count) = X
                 dcont(count) = DXDT
                 fac(count) = delg(I) * weight(loop)
               ENDDO
@@ -308,8 +316,10 @@ C=======================================================================
             DO I=1,count
               sum = sum + fac(I)
             ENDDO
-
+c	    write(*,*)'Before rankk (count):',count
+c	    write(*,*)'Before rankk:',cont
             CALL rankk(delg,ng,cont,dcont,fac,count,k_g,dkdt)
+c	    write(*,*)'After rankk:',k_g
 
           ENDIF
 
@@ -317,6 +327,7 @@ C=======================================================================
             KOUT(ilayer,IGAS,I) = K_G(I)
             DKOUTDT(ilayer,IGAS,I) = DKDT(I)
           ENDDO
+c 	  write(*,*)'End of get_kg:',k_g
 
 1050    CONTINUE
 

@@ -358,6 +358,7 @@ C     Calculate initial value of cost function phi.
       phi = calc_phiret(ny,y,yn,sei,nx,xn,xa,sai,chisq)
       ophi = phi
       oxchi = chisq/float(ny)
+c      write(*,*)ophi,oxchi
 
 C     Assess whether retrieval is likely to be OK
       call assess(nx,ny,kk,sa,se)
@@ -525,9 +526,10 @@ C      Write out k-matrix for reference
 
       endif
 
-      if(phi.gt.ophi)then
+      if(phi.ge.ophi)then
        xchi=oxchi
       endif
+c      print*,'Fletcher:',phi,ophi,oxchi,xchi
       print*,'chisq/ny is equal to : ',xchi
 
       if(xchi.gt.1.)then

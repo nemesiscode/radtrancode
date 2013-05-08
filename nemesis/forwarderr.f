@@ -32,6 +32,12 @@ C     Set measurement vector and source vector lengths here.
 
       OPEN(12,FILE=IPFILE,STATUS='OLD')
       READ(12,*)NP
+      IF(NP.GT.MCONV)THEN
+       PRINT*,'Error in forwarderr.f. File has too many wavelengths'
+       PRINT*,NP,MCONV
+       STOP
+      ENDIF
+
       DO I=1,NP
         READ(12,*)V1(I),R1(I)
         V1(I)=V1(I)+WOFF

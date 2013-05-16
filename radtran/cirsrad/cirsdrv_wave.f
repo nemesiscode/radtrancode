@@ -164,7 +164,8 @@ C Calculate number of points in output array
       endif
 
 
-10    WRITE(*,*)'Select a planet (1-9) to look up solar dist: '
+10    WRITE(*,*)'Select a planet (1-9) to look up solar distance: '
+      WRITE(*,*)'(Enter 10 to enter this distance manually)'
       READ (*,*) Planet
       IF (Planet.EQ.1) Dist= 0.39	! Mercury
       IF (Planet.EQ.2) Dist= 0.72	! Venus

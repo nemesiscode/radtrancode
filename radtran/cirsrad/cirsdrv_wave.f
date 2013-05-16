@@ -252,7 +252,7 @@ C account for the end point if FWHM <> 0.0
         NWave= NConv + 2
         VWave(1)= VConv(1) - DELV
         VWave(NWave)= VConv(NConv) + DELV
-        DO i= 1, NWave
+        DO i= 1, NConv
           VWave(i+1)= VConv(i)
         ENDDO
       ENDIF

@@ -201,7 +201,7 @@ C account for the end point
 	nwave= nconv + 2
 	vwave(1)= vconv(1) - delv
 	vwave(nwave)= vconv(nconv) + delv
-	DO i= 1, nwave
+	DO i= 1, nconv
 	  vwave(i+1)= vconv(i)
 	ENDDO
       ENDIF

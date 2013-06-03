@@ -62,7 +62,7 @@ C dummy: Character variable, used for reading-in header on info file
       double precision aa(mx,mx),dd(mx,my)
       real vkstart,vkend,vkstep
       integer idump,kiter,jtan,jtanx,jalbx,jpre,jprex,idum,lvec
-      integer ivar
+      integer ivar,jrad
 C     ********** Scattering variables **********************
       real xwave(maxsec),xf(maxcon,maxsec),xg1(maxcon,maxsec)
       real xg2(maxcon,maxsec)
@@ -201,7 +201,7 @@ C     Calculate the tabulated wavelengths of c-k look up tables
 C     set up a priori of x and its covariance
       lin1=0
       CALL readapriori(runname,lin1,lpre,xlat,npro,nvar,varident,
-     1  varparam,jsurf,jalb,jtan,jpre,nx,xa,sa)
+     1  varparam,jsurf,jalb,jtan,jpre,jrad,nx,xa,sa)
 	
       write(lvec,*)nvar,'   ! nvar'     ! Number of variable profiles
 

@@ -9,7 +9,7 @@ C     KK-matrix using CIRSRADG gradient code. Uses numerical integration
 C     for cases where the limb component is also important. 
 C     
 C     Input variables:
-C       runname(60)   character Name of run.
+C       runname(100)   character Name of run.
 C       ispace           integer Indicates if wavelengths in vconv and
 C                               vwave are in wavenumbers(0) or
 C                               wavelengths (1)

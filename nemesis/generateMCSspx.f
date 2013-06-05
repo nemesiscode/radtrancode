@@ -71,6 +71,14 @@ C     ********** Scattering variables **********************
       logical gasgiant
       COMMON /hgphas/xwave,xf,xg1,xg2,tnco,twave,frac,tico
       COMMON /scatdump/ idump
+
+      include '../radtran/includes/ciacom.f'
+
+      CHARACTER*100 ANAME
+      REAL DNU
+      INTEGER IPARA
+
+
 C     ******************************************************
 
 C     ******* xlat Mod Variables (see code for info) *******
@@ -220,6 +228,23 @@ C     Read in forward modelling errors
       print*, 'ename: (', ename, ')' 
       call forwarderr(ename,ngeom,nconv,vconv,woff,rerr)
 
+      CALL FILE(runname,runname,'cia')
+
+      OPEN(12,FILE=runname,STATUS='OLD')
+       READ(12,1)ANAME
+       READ(12,*) DNU
+       READ(12,*) IPARA
+      CLOSE(12)
+      IREAD1=1
+      IREAD2=1
+      IF(IPARA.EQ.0)THEN
+       ANAME1=ANAME
+       DNU1=DNU
+      ELSE
+       ANAME2=ANAME
+       DNU2=DNU
+       IPARA2=IPARA
+      ENDIF
 
       do 2999 ispec=1,nspec
 

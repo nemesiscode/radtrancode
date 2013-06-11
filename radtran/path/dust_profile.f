@@ -23,6 +23,9 @@ C     *********************************************************************
       REAL CLOUDFSH,CLOUDP,FACT,Q0,SUM,S(1000),CLOUDP1,CLOUDP2
       REAL D0,XM1,D,RHO(1000),LATITUDE
 C     *******************************************
+
+      CALL RESERVEGAS
+
       CALL PROMPT('Enter name of temp/press profile file?')
       READ(*,10)IPFILE
 10    FORMAT(A)
@@ -119,9 +122,12 @@ C     ******************************************
        PRINT*,'Enter base P(atm) top P and frac. scale height'
        CALL PROMPT('of cloud : ')
        READ*,CLOUDP1,CLOUDP2,CLOUDFSH
-       CALL PROMPT('Enter required OD and reference base pressure : ')
+       PRINT*,'Enter required OD and base pressure above which you'
+       CALL PROMPT('want the cloud density to be integrated : ')
        READ*,D0,CP0
-       CALL PROMPT('Enter reference cloud-xsection : ')
+       PRINT*,'Enter the cloud x-section in the .xsc file at the '
+       PRINT*,'wavelength where you want the cloud to have the' 
+       CALL PROMPT('required optical depth : ')
        READ*,CXS
       END IF
 
@@ -137,6 +143,7 @@ C     ******************************************
 
 C     Compute variation of scale heights and densities in atmosphere
       DO 50 I=1,NPRO
+
           CALL NEWGRAV(IPLANET,LATITUDE,H(I),RADIUS,G,PNAME)
 
           IF(AMFORM.EQ.0)THEN

@@ -1,4 +1,4 @@
-      real function calc_chi(ny,y,yn,se1,chisq)
+      real function calc_chi(ny,y,yn,se1)
 C     $Id:
 C     *******************************************************************
 C     Function to calculate the retrieval cost function which combines
@@ -31,7 +31,7 @@ C     *******************************************************************
 
 
       do i=1,ny
-       chisq=chisq+(yn(i)-y(i)/se1(i))**2
+       chisq=chisq+(yn(i)-y(i))**2/se1(i)
       enddo
 
       calc_chi = chisq

@@ -7,6 +7,7 @@ FRECIPES = $(LIB)/libfrecipes.a
 F_SOURCES = \
 	coreret.f \
 	coreretMC.f \
+	coreretMCMC.f \
 	coreretPT.f \
 	coreretdisc.f \
 	coreret.f \
@@ -22,10 +23,13 @@ F_SOURCES = \
 	assess.f \
 	subprofretg.f \
 	calc_phiret.f \
+	calc_phiprior.f \
+	calc_chi.f \
 	writextmp.f \
 	readxtmp.f \
 	readapriori.f \
 	rmodapriori.f \
+	modxvecMCMC.f \
 	wavesetb.f \
 	mod_scatter.f \
 	readkkhead.f \
@@ -108,6 +112,7 @@ bin :   \
 	NemesisL \
 	NemesisMCS \
 	NemesisMC \
+	NemesisMCMC \
 	NemesisPT \
 	Nemesisdisc \
 	Generatespx \
@@ -115,6 +120,12 @@ bin :   \
 
 Nemesis: nemesis.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Nemesis nemesis.f $(LIBRARY) \
+	$(LIB)/cirsradg.a $(LIB)/cirsrad.a $(LIB)/radtran.a \
+	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a \
+	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) 
+
+NemesisMCMC: nemesisMCMC.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/NemesisMCMC nemesisMCMC.f $(LIBRARY) \
 	$(LIB)/cirsradg.a $(LIB)/cirsrad.a $(LIB)/radtran.a \
 	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a \
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) 

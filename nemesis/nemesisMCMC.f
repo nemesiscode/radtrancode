@@ -146,8 +146,6 @@ C     Open output file
       write(lout,*)nspec,' ! Total number of fitted spectra'
       write(lout,*)miter,' ! Total number of reporting steps'
       write(lout,*)niter,' ! Number of iterations between reports'
-      write(lout,*)nx,' ! nx'
-      write(lout,*)ny,' ! ny'
 
 C     skip first ioff-1 spectra
       do ispec=1,ioff-1
@@ -196,13 +194,21 @@ C     set up a priori of x and its covariance
      1  varparam,jsurf,jalb,jtan,jpre,jrad,nx,xa,sa)
 	
 
+      write(lout,*)nx,' ! nx'
+      write(lout,*)ny,' ! ny'
+
       DO i = 1, nx
         xn(i)=xa(i)
       ENDDO 
 
       idump=0	! flag for diagnostic print dumps
 
-      ica=0     ! flag for intermediate iterations reports
+      ica=1     ! flag for intermediate iterations reports
+      if(ica.eq.1)then
+       CALL FILE(runname,runname,'itm')
+       open(39,file=runname,status='unknown')
+       write(39,*)nx,ny,niter,miter
+      endif
 
       CALL FILE(runname,runname,'cia')
 
@@ -228,10 +234,13 @@ C     set up a priori of x and its covariance
      2  gasgiant,nvar,varident,varparam,npro,jsurf,jalb,jtan,
      3  jpre,jrad,wgeom,flat,nx,xa,sa,ny,y,se,idum)
 
+      if(ica.eq.1)close(39)
+ 
 2999  continue
 
       close(lspec)
       close(lout)
+      
 
 C     New compiler time
       call gettime(time)

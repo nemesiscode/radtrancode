@@ -76,7 +76,7 @@ C     Set measurement vector and source vector lengths here.
       CHARACTER*100 runname,itname,abort
 
       real xn(mx),se1(my),calc_chi,kk(my,mx),calc_phiprior
-      real fwhm,xlat,xn1(mx),ran11
+      real fwhm,xlat,xn1(mx),ran11,test
       integer ix,np,npro,lout
       real alpha,alpha_chi,alpha_phi
       logical accept
@@ -143,7 +143,6 @@ C     Set lin=0 to prevent code looking for previous retrievals
      1    wgeom,flat,nconv,vconv,angles,gasgiant,lin,
      2    nvar,varident,varparam,jsurf,jalb,jtan,jpre,
      3    nx,xn,ny,yn,kk,kiter)
-         print*,'call OK'
       else
 
        if(iscat.ne.2)then
@@ -152,7 +151,6 @@ C     Set lin=0 to prevent code looking for previous retrievals
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,nx,xn,ny,
      3   yn,kk,kiter)
-
        else
 
         CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
@@ -168,17 +166,23 @@ C     Set lin=0 to prevent code looking for previous retrievals
       endif
 
 C     Calculate initial value of cost function chisq.
+      open(12,file='test.dat',status='unknown')
+       write(12,*)nx,ny
+       write(12,*)(xn(i),i=1,nx)
+       do i=1,ny
+        write(12,*)y(i),se1(i),yn(i)
+       enddo
+      close(12)
+
       chisq = calc_chi(ny,y,yn,se1)
       ochisq = chisq
       oxchi = chisq/float(ny)
+      
+      print*,'Initial chisq/ny = ',oxchi
       phi = calc_phiprior(nx,xn,xa,sai)
+
       ophi = phi
 
-      if(ica.eq.1)then       ! Open and write all output only if ica.eq.1
-       call file(runname,itname,'itm')
-       open(39,file=itname,status='unknown')
-       write(39,*)nx,ny,niter,miter
-      endif
       lout=38
 
 C     Set the trial vectors xn1, and yn1 to be the same as the initial
@@ -204,9 +208,15 @@ C     Set proposal distribution to be same as a priori distribution (for now)
 
        do 402 itry = 1,niter
 
+        print*,'iter,itry',iter,itry
+
 C       Now calculate next iterated xn
         call modxvecMCMC(idum,npro,nvar,varident,varparam,
      1   nx,xn,sx,xn1)
+
+C        do i=1,nx
+C         xn1(i)=xn(i)
+C        enddo
 
 C       Calculate test spectrum using trial state vector xn1. 
 C       Put output spectrum into temporary spectrum yn1.
@@ -236,27 +246,57 @@ C       Put output spectrum into temporary spectrum yn1.
 C       Calculate the cost function for this trial solution.
         chisq = calc_chi(ny,y,yn1,se1)
 
+C        open(12,file='test1.dat',status='unknown')
+C         write(12,*)nx,ny
+C         write(12,*)(xn1(i),i=1,nx)
+C         do i=1,ny
+C          write(12,*)y(i),se1(i),yn1(i)
+C         enddo
+C        close(12)
+
         phi = calc_phiprior(nx,xn,xa,sai)
 
         xchi = chisq/float(ny)
         print*,'chisq/ny = ',xchi
 
+C        stop
+
 C       Does trial solution fit the data better?
 
 C       Calculate probability of acceptance
         alpha_chi = exp(-0.5*(chisq-ochisq))
+        print*,'A',chisq,ochisq,alpha_chi
         alpha_phi = exp(-0.5*(phi-ophi))
+        print*,'B',phi,ophi,alpha_phi
+C       XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+C       Benneke and Seager include the probability of the solution as
+C       determined from apriori information. I'm not yet sure how to do
+C       this and my first attempt calc_phiprior seems to screw things up
+C       so here I force the code not to worry about phi!
+        alpha_phi = 1.
+        ophi=1.
+        phi=1.
+C       XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
         alpha = alpha_chi*alpha_phi
-
+        print*,'Alpha',alpha
         accept=.false.
 C       If fit is better and the solution is closer to the priori then accept
-        if(chisq.lt.ochisq.and.phi.lt.ophi)then
+        if(chisq.lt.ochisq.and.phi.le.ophi)then
+         print*,'XX'
          accept=.true.
         else
 C        If not automatically accepted then choose depending on combined
 C        probability
-         if(alpha.ge.ran11(idum))accept=.true.
+         test=ran11(idum)
+         print*,'YY',alpha,test
+         if(alpha.ge.test)then
+          accept=.true.
+          print*,'YYX'
+         endif
         endif
+
+        print*,'Accept = ',accept
+
         if(accept)then
          do i=1,nx
           xn(i)=xn1(i)         		! update xn to new value
@@ -283,8 +323,6 @@ C        probability
        write(lout,*)chisq
 
 401   continue       
-
-      if (ica.eq.1)close(39)
 
       if(chisq.ge.ochisq)then
        xchi=oxchi

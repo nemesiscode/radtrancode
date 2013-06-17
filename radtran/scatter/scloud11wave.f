@@ -1,6 +1,6 @@
       subroutine scloud11wave( rad, sol_ang, emiss_ang, aphi, radg, 
      1 solar, lowbc, galb, iray, mu1, wt1, nmu, nf, igdist, vwave, vv,
-     2 eps, bnu, tau,tauray,nlay, ncont, lfrac)
+     2 eps, bnu, tau, tauray, nlay, ncont, lfrac)
 C     $Id: scloud11wave.f,v 1.11 2011-06-17 15:57:54 irwin Exp $
 C     ***********************************************************************
 C     Compute emergent intensity at top of multilayer cloud using the
@@ -273,10 +273,20 @@ C
         TAUSCAT = TAUT*OMEGA
         TAUR = TAURAY(L)
 
+        if(idump.ne.0)then
+         print*,L
+         print*,TAU(L),TAUT
+         print*,BNU(L),BC
+         print*,EPS(L),OMEGA
+         print*,TAUSCAT,TAUR,TAURAY(L)
+        endif
 C        print*,'scloud',L,tauscat,taur,tauscat-taur
 C       Calling codes now already include Rayleigh optical depth in 
-C       tauscat if IRAY>1, so we need to subtract it first here
+C       tauscat if IRAY>0, so we need to subtract it first here
         TAUSCAT = TAUSCAT-TAUR
+
+C       Add in an error trap to counter single-double subtraction overflows 
+        IF(TAUSCAT.LT.0.)TAUSCAT=0.
 
         if(idump.gt.0)then
          print*,'L,TAUT,BC,OMEGA = ',L,TAUT,BC,OMEGA
@@ -367,7 +377,7 @@ C         print*,'Ray ',FRAC,SFRAC
      1      MAXMU,MAXMU)
          ENDIF
 
-         TAUT = TAUT + TAUR
+C         TAUT = TAUT + TAUR
          OMEGA = (TAUSCAT+TAUR)/TAUT
          
          if(idump.gt.0)then

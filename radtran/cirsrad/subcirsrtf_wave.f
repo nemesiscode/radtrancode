@@ -204,9 +204,9 @@ C-----------------------------------------------------------------------
 
         print*,'Calling cirsrad_wave'
 	CALL cirsrad_wave (Dist, INormal, Iray, ispace, DelH, nlayer, 
-     1    npath,ngas, maxlay, maxcon, press, temp, pp, amount, nwave,
-     2    vwave, nlayin, maxinc, layinc, cont, scale, imod, idgas,
-     3    isogas,emtemp,iphi,nem,vem,emissivity,tsurf,
+     1    npath,ngas, maxlay, maxcon, totam, press, temp, pp, amount,
+     2    nwave, vwave, nlayin, maxinc, layinc, cont, scale, imod, 
+     3    idgas, isogas,emtemp,iphi,nem,vem,emissivity,tsurf,
      4    flagh2p,hfp,flagc, hfc, ifc, basep, baseh, output)
 	WRITE(*,*)'Subcirsrtf_wave: cirsrad_wave COMPLETE'
 c	WRITE(*,*)' '

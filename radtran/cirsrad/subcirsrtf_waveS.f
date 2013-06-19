@@ -202,8 +202,8 @@ C
 C-----------------------------------------------------------------------
 
 	CALL cirsrad_waveS (Dist,INormal,Iray,ispace,DelH,nlayer,npath,
-     1	  ngas, maxlay, maxcon, press, temp, pp, amount, nwave, vwave,
-     2    nlayin, maxinc, layinc, cont, scale, imod, idgas,
+     1	  ngas, maxlay, maxcon, totam, press, temp, pp, amount, nwave,
+     2    vwave, nlayin, maxinc, layinc, cont, scale, imod, idgas,
      3    isogas,emtemp,iphi,nem,vem,emissivity,tsurf, flagh2p, 
      4    hfp,flagc, hfc, ifc, basep, baseh, output)
 	WRITE(*,*)'Subcirsrtf_waveS: cirsrad COMPLETE'

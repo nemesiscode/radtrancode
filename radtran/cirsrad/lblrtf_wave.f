@@ -283,7 +283,7 @@ C-----------------------------------------------------------------------
 
         CALL lblrad_wave (X, WING, VMIN, VMAX, VREL, MAXDV, IBS, 
      1    IBD, Dist, INormal, Iray, ispace, DelH, nlayer, npath,
-     1    ngas, maxlay, maxcon, press, temp, pp, amount,
+     1    ngas, maxlay, maxcon, totam, press, temp, pp, amount,
      2    nlayin, maxinc, layinc, cont, scale, imod, idgas,
      3    isogas,iproc,emtemp,iphi,nem,vem,emissivity,tsurf,
      4    flagh2p,hfp,flagc, hfc, ifc, basep, baseh, output)

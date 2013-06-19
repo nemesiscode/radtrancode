@@ -79,8 +79,8 @@ C_HIST:
 C-----------------------------------------------------------------------
 
       SUBROUTINE cirsrad_wave (Dist, INormal, Iray, ispace,DelH,nlayer,
-     1    npath, ngas, limlay, limcont, press, temp, pp, amount, nwave,
-     2    vwave, nlayin, incdim, layinc, cont, scale, imod,
+     1    npath, ngas, limlay, limcont, totam, press, temp, pp, amount, 
+     2    nwave, vwave, nlayin, incdim, layinc, cont, scale, imod,
      3    idgas, isogas, emtemp, itype, nem, vem, emissivity, tsurf, 
      4    flagh2p,hfp, flagc, hfc, ifc, basep, baseh, output)
 
@@ -105,7 +105,7 @@ C		Passed variables
      2		scale(incdim,npath), emtemp(incdim,npath), hfp(nlayer), 
      3		output(npath,nwave),bb(maxlay,maxpat),xf,tsurf,dv,
      4          hfc(nlayer),vwavef(maxbin),basep(nlayer),baseh(nlayer),
-     5          esurf,radground
+     5          esurf,radground,totam(nlayer)
         REAL    vem(MAXSEC),emissivity(MAXSEC),interpem
         REAL	xmu,dtr,xt1
         INTEGER ifc(limcont,nlayer),nem,j0
@@ -155,7 +155,7 @@ C		Internal variables
 	INTEGER	I, J, K, L, Ipath, Ig, nlays
 	REAL	utotl(maxlay), qh(maxlay), qhe(maxlay),
      1		frac(maxlay,maxgas), qh_he(maxlay), dist1,
-     2		totamh(maxlay), x, taucon(maxlay)
+     2		x, taucon(maxlay)
         REAL    taugas(maxlay), tauscat(maxlay), p, t
         REAL    taugasc(maxlay),xp
         REAL    tau, tau2, asec(maxsec), bsec(maxsec),
@@ -321,7 +321,7 @@ C                        print*,'ssfac',muinc,muemiss,ssfac
      2				 cos((aphi-pi)*pi/180.0) - 
      3				 muemiss*muinc
 
-			print*,'calpha',calpha
+C			print*,'calpha',calpha
 
 		endif
 	end do
@@ -333,17 +333,13 @@ c	Isec = min(4,nsec)
 C-----------------------------------------------------------------------
 C
 C	Precompute volume fractions. The factor of 1e-20 applied to
-C	utotl arises for the following reason. In order to avoid 
+C	utotl and totam arises for the following reason. In order to avoid 
 C	underflow, RADTRAN (and CIRSRAD) routines multiply line strengths
 C	by a factor of 1.e47. Thus, when final calculation routines get 
 C	hold of the strengths, they must correct by 1.e-47. This is broken
 C	into two factors, 1.e-27 applied directly in calculating the K
 C	tables, and 1.e-20 applied to the amounts where they are used in
 C	conjunction with the K tables.
-C
-C	Totamh is the mass (number?) of molecules per cm^2 for H + He
-C	and is used later in calculating the CIA opacity of H2. Because
-C	it is not used with K tables, no 1.e-20 factor is needed.
 C
 C-----------------------------------------------------------------------
 
@@ -354,6 +350,7 @@ C-----------------------------------------------------------------------
 			utotl(I) = utotl(I) + amount(I,J)
 		ENDDO
 		utotl(I) = utotl(I) * 1.e-20
+		totam(I) = totam(I) * 1.e-20
 	ENDDO
 
 C-----------------------------------------------------------------------
@@ -487,7 +484,7 @@ C               Set vv to the current WAVENUMBER
 
 		IF (single) THEN
 			DO J = 1, ncont
-	                        print*,'Calling get_hg'
+C	                        print*,'Calling get_hg'
 				CALL get_hg(x,calpha,ncont,J,dphase)
 			  	phase(J) = sngl(dphase)
 			ENDDO	
@@ -632,6 +629,7 @@ C-----------------------------------------------------------------------
                            taucloud(K,J) = tau
                            tauclscat(K,J) = tau2   
 			   tausc(K) = tau2
+C                           print*,'CCC',J,taucon(J)
 C                          ##### f(J) is average phase function ######
   			   f(J) = f(J)+phase(K)*tau2
 C                           print*,'J,phase(K),F(J)',J,phase(K),f(J)
@@ -681,7 +679,7 @@ C			    edge of Karkoschka CH4 data.
                           endif
 
 			ENDDO
-
+C                        print*,'CCCX',J,taucon(J)
 C-----------------------------------------------------------------------
 C
 C	CIACON: to compute gaseous continuum spectra from a variety of gas
@@ -719,6 +717,7 @@ C                        print*,'FLAGH2P = ',FLAGH2P
      1			     NGas,idgas,isogas,AAmount,PPP,
      2			     XLen,AvgCONTMP,IABSORB,DABSORB,id1)
              		ENDIF
+C                        print*,'FFF',J,taucon(J)
 			taucon(J)= taucon(J) + AvgCONTMP
 			taugasc(J)= taugasc(J) + AvgCONTMP
 
@@ -738,7 +737,7 @@ C               Set vv to the current WAVENUMBER
                  xray = RAYLEIGHA(vv,p,t)*1E20
 		endif
 
-                avgcontmp = utotl(j)*xray
+                avgcontmp = totam(j)*xray
                 tauray(J)=avgcontmp
 
                 if(AvgCONTMP.ge.0.0)then
@@ -759,6 +758,7 @@ C             if(j.eq.10) then
 C              print*,'tauray : ',tauray(j)              
 C              print*,'f',f(j)
 C             endif
+C              print*,'DDD',J,taucon(J)
        
 
 C       ### renormalise f(J) to be tau-averaged phase function
@@ -798,11 +798,13 @@ C-----------------------------------------------------------------------
 				DO L = 1, ng
 					k_g(L) = k_g2(L)
 				ENDDO
+C                     if(j.eq.22)print*,'X1',x,k,q1,k_g(9),k_g(10)
 			 ELSE
 				q2 = frac(J,K)
 				DO L = 1, ng
 					k_g1(L) = k_g(L)
 				ENDDO
+C                   if(j.eq.22)print*,'X2',k,q2,k_g1(9),k_g1(10)
 
 C	This subroutine combines the absorption coefficient distributions
 C	of two overlapping gases. The overlap is implicitly assumed to be 
@@ -812,14 +814,17 @@ C	total.
 				CALL overlap(delg,ng,k_g1,q1,
      1					k_g2,q2,k_g)
 				q1 = q1 + q2
+C                          if(j.eq.22)print*,'X3',k,q1,k_g(9),k_g(10)
 			 ENDIF
 			ENDDO
 
 			DO K = 1, ng
 				kl_g(K,J) = k_g(K)
 			ENDDO
-C			print*,'Layer : ',J
-C			print*,'K = ',(kl_g(K,J),K=1,NG)
+C                        if(J.EQ.22)then
+C  		 	  print*,'Layer : ',J
+C			  print*,'K = ',(kl_g(K,J),K=1,NG)
+C                        endif
 		ENDDO
 
 
@@ -843,8 +848,11 @@ C-----------------------------------------------------------------------
 				taugas(J) = taugasc(J) + kl_g(Ig,J) 
      1					* utotl(J)
 
-C                                print*,J,Ig,kl_g(Ig,J)
-
+C                         if(ig.eq.9)then
+C                           print*,'AAA',J,Ig,taucon(j),kl_g(Ig,J),
+C     1				utotl(J),utotl(J)*kl_g(Ig,J)
+C                           print*,'AA1',tautmp(J),taugas(J)
+C                         endif
 			ENDDO
 C-----------------------------------------------------------------------
 C
@@ -879,7 +887,10 @@ C-----------------------------------------------------------------------
 		taus(J) = tautmp(layinc(J,ipath)) * scale(J,ipath)
 		taur(J) = tauray(layinc(J,ipath)) * scale(J,ipath)
 
+
 C                print*,'J,taus,taur',J,taus(J),taur(J)
+C                print*,layinc(J,ipath),tautmp(layinc(J,ipath)),
+C     1 tauray(layinc(J,ipath)),scale(J,ipath)
 
 C               New arrays for scloud12wave. taucl holds the extinction
 C		optical depth of each cloud type. taucs holds the 
@@ -1031,8 +1042,13 @@ C                        print*,sol_ang,solar
 C                        print*,emiss_ang,aphi
 C                        print*,radg
 C                        print*,lowbc,galb1
+C                        do j=1,nlays
+C                         print*,j,eps(j),bnu(j),taus(j),taur(j),
+C     1                           taus(j)-taur(j)
+C                        enddo
+C                        print*,'iray = ',iray
 
-		  	call scloud11wave(rad1, sol_ang, emiss_ang,
+      		  	call scloud11wave(rad1, sol_ang, emiss_ang,
      1                          aphi, radg, solar, lowbc, galb1, iray,
      2				mu1, wt1, nmu,   
      3				nf, Ig, x, vv, eps, bnu, taus, taur,

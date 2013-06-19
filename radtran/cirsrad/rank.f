@@ -10,13 +10,12 @@ C
 C-----------------------------------------------------------------------
 
 	subroutine rank(gw,ng,cont,weight,nloop,k_g)
-
 	implicit none
-	integer		ngmax, nmax
-	parameter	(ngmax=21, nmax=10000)
+        include '../includes/arrdef.f'
+
 	integer		ng, nloop, I, ig
-	real		gw(ng),cont(nloop), weight(nloop), k_g(ngmax), 
-     1			g_ord(ngmax), gdist(0:nmax), sum, frac
+	real		gw(ng),cont(nloop), weight(nloop), k_g(maxg), 
+     1			g_ord(maxg), gdist(0:maxrank), sum, frac
 
 C-----------------------------------------------------------------------
 C

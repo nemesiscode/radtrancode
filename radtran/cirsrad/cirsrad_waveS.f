@@ -87,8 +87,8 @@ C			FORTRAN compiler.
 C-----------------------------------------------------------------------
 
       SUBROUTINE cirsrad_waveS (Dist, INormal,iray,ispace,DelH,nlayer,
-     1    npath, ngas, limlay, limcont, press, temp, pp, amount, nwave,
-     2    vwave, nlayin, incdim, layinc, cont, scale, imod,
+     1    npath, ngas, limlay, limcont, totam, press, temp, pp,amount,
+     2    nwave, vwave, nlayin, incdim, layinc, cont, scale, imod,
      3    idgas, isogas, emtemp, itype, nem, vem, emissivity, tsurf, 
      4    flagh2p, hfp, flagc, hfc, ifc, basep, baseh, output)
 
@@ -113,7 +113,7 @@ C		Passed variables
      2		scale(incdim,npath), emtemp(incdim,npath), hfp(nlayer), 
      3		output(npath,nwave),bb(maxlay,maxpat),xf,tsurf,dv,
      4          hfc(nlayer),vwavef(maxbin),basep(nlayer),baseh(nlayer),
-     5          jb(maxlay,maxpat),esurf
+     5          jb(maxlay,maxpat),esurf,totam(nlayer)
         REAL    vem(MAXSEC),emissivity(MAXSEC),interpem
         INTEGER ifc(limcont,nlayer),nem
         LOGICAL modsource
@@ -163,7 +163,7 @@ C		Internal variables
 	INTEGER	I, J, K, L, Ipath, Ig, nlays
 	REAL	utotl(maxlay), qh(maxlay), qhe(maxlay),
      1		frac(maxlay,maxgas), qh_he(maxlay), dist1,
-     2		totamh(maxlay), x, taucon(maxlay)
+     2		x, taucon(maxlay)
         REAL    taugas(maxlay), tauscat(maxlay), p, t
         REAL    taugasc(maxlay),xp
         REAL    tau, tau2, asec(maxsec), bsec(maxsec),
@@ -380,17 +380,13 @@ c	Isec = min(4,nsec)
 C-----------------------------------------------------------------------
 C
 C	Precompute volume fractions. The factor of 1e-20 applied to
-C	utotl arises for the following reason. In order to avoid 
+C	utotl and totam arises for the following reason. In order to avoid 
 C	underflow, RADTRAN (and CIRSRAD) routines multiply line strengths
 C	by a factor of 1.e47. Thus, when final calculation routines get 
 C	hold of the strengths, they must correct by 1.e-47. This is broken
 C	into two factors, 1.e-27 applied directly in calculating the K
 C	tables, and 1.e-20 applied to the amounts where they are used in
 C	conjunction with the K tables.
-C
-C	Totamh is the mass (number?) of molecules per cm^2 for H + He
-C	and is used later in calculating the CIA opacity of H2. Because
-C	it is not used with K tables, no 1.e-20 factor is needed.
 C
 C-----------------------------------------------------------------------
 
@@ -402,6 +398,7 @@ C-----------------------------------------------------------------------
 C                        print*,i,j,amount(i,j),utotl(i)
 		ENDDO
 		utotl(I) = utotl(I) * 1.e-20
+		totam(I) = totam(I) * 1.e-20
 	ENDDO
 
 C-----------------------------------------------------------------------
@@ -744,7 +741,7 @@ C               Set vv to the current WAVENUMBER
                 else
                  xray = RAYLEIGHA(vv,p,t)*1E20
                 endif
-                avgcontmp = utotl(j)*xray
+                avgcontmp = totam(j)*xray
                 tauray(J)=avgcontmp
 
                 if(AvgCONTMP.ge.0.0)then

@@ -15,7 +15,7 @@ C-----------------------------------------------------------------------
 
 	integer		ng, nloop, I, ig
 	real		gw(ng),cont(nloop), weight(nloop), k_g(maxg), 
-     1			g_ord(maxg), gdist(0:maxrank), sum, frac
+     1			g_ord(maxg+1), gdist(0:maxrank), sum, frac
 
 C-----------------------------------------------------------------------
 C
@@ -24,11 +24,11 @@ C	arrays in ascending order of k (i.e. cont values).
 C
 C-----------------------------------------------------------------------
 
-C        print*,'cirsrad rank'
 	g_ord(1)=0.
 	do I = 1, ng
 		g_ord(I+1) = g_ord(I) + gw(I)
 	end do
+        if(g_ord(ng+1).lt.1.)g_ord(ng+1)=1.
 
 	call sort2(nloop, cont, weight)
 

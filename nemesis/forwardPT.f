@@ -194,11 +194,11 @@ C     If we're retrieving planet radius then add correction to reference
 C     radius
       if(jrad.gt.0)then
        radius1 = xn(jrad) + radius
-       print*,'radius=',radius1
       else
        radius1 = radius
       endif
-	  radius2=radius1
+      print*,'radius=',radius1
+      radius2=radius1
       iscat=0
 
       xlat=flat(igeom,iav)
@@ -269,6 +269,7 @@ C     pre-calculated array
          ioff1=nconv1*(ipath-1)+iconv
          trans = calcoutL(ioff1)
          y1(ipath) = 2.*pi*h1*(1.-trans)
+C         print*,radius1,height(ipath),h1,trans,y1(ipath)
          do j=1,nx
           ioff2=nconv1*nx*(ipath-1)+(j-1)*nconv1+iconv
           y2(ipath,j)=-2.*pi*h1*gradientsL(ioff2)
@@ -282,7 +283,7 @@ C     1       y2(ipath,j),gradientsL(ioff2)
          dh = height(ipath+1)-height(ipath)
 
          area = area + 0.5*(y1(ipath)+y1(ipath+1))*dh
-
+C         print*,ipath,dh,area
          do j=1,nx
           darea(j)=darea(j)+0.5*(y2(ipath,j)+y2(ipath+1,j))*dh
          enddo
@@ -291,9 +292,12 @@ C     1       y2(ipath,j),gradientsL(ioff2)
 
         
 	area0 = pi*stelrad**2
-        area1 = pi*radius1**2
+        area1 = pi*(radius1+height(1))**2
 
         yn(iconv)=100.0*(area1+area)/area0
+
+        print*,'Areas',area0,area1,area,area1+area,yn(iconv),
+     1    100*area1/area0
 
         do j=1,nx
              kk(iconv,j) = 100.*darea(j)/area0

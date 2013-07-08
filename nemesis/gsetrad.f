@@ -200,7 +200,7 @@ C       ************ reset tangent heights   ***********
 
         endif
 
-        if(varidentx(ivar,1).eq.999)then
+        if(varidentx(ivarx,1).eq.999)then
 C       ***************** Surface temperature correction ***********
          tsurf = xnx(jsurfx)
         endif

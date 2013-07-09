@@ -1416,7 +1416,7 @@ C     First see if a list of gases to be forced to condense exists
         READ(12,*)NVP
         DO I=1,NVP
          READ(12,*)IP1,IP2,VP1,SVPFLAG1
-         DO J=1,NGAS
+         DO J=1,NVMR
            IF(IDGAS(J).EQ.IP1.AND.ISOGAS(J).EQ.IP2) THEN
              IF (SVPFLAG1.GT.0) THEN
                ISWITCH(J) = 1

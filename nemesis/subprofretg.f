@@ -1477,8 +1477,9 @@ c therefore, to  solve this XMAP is scaled by svp/pp. this also has a steep drop
 c but gives a more gentle response and more desirable retrieval behaviour.
 	        IF(JSWITCH.EQ.1)THEN
 	          DO IX=1,NX
+cc Neither of these work very well. best to leave unaltered
 cc		      XMAP(IX,IGAS,J)=0.0
-		      XMAP(IX,IGAS,J)=XMAP(IX,IGAS,J)*SVP/PP
+cc		      XMAP(IX,IGAS,J)=XMAP(IX,IGAS,J)*SVP/PP
 	          ENDDO
 	        ENDIF
 

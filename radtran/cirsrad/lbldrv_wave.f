@@ -103,6 +103,9 @@ C                                         files for scloud10-11
       WRITE(*,*)'           WELCOME TO lbldrv_WAVE'
       WRITE(*,*)' '
 
+C     Read in reference gas information data
+      CALL RESERVEGAS
+
       IDUMP=0
 C-----------------------------------------------------------------------
 C

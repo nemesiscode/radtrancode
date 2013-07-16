@@ -108,6 +108,10 @@ C                                         files for scloud11-13
       WRITE(*,*)'           WELCOME TO CIRSDRV_WAVE'
       WRITE(*,*)' '
 
+
+C     Read in reference gas information data
+      CALL RESERVEGAS
+
       IDUMP=0
 C-----------------------------------------------------------------------
 C

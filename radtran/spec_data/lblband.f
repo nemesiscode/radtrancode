@@ -52,9 +52,7 @@ C------------------------------------------------------------------------------
       INCLUDE '../includes/lincom.f'
       INCLUDE '../includes/dbcom.f' 
 C------------------------------------------------------------------------------
-	INTEGER MORD
-      PARAMETER (MORD=5)
-      REAL POUT(MPOINT,MAXGAS,MORD),WAVEN(MPOINT,2)
+      REAL POUT(MAXOUT,MAXGAS,7),WAVEN(MAXOUT,2)
       REAL AD,V0,V,V1,DELWAV
       INTEGER GAS,NGAS1,IDGAS1(1),ISOGAS1(1)
       REAL WR,SR,SSFB,SEL,ABSCO,AL,SFB,EL
@@ -141,7 +139,6 @@ C        print*,gas
         SEL=0.
 
         DO 55 LINE=1,NLIN
-C         print*,VLIN(LINE),SLIN(LINE),IDLIN(LINE),ELIN(LINE)
          IF(IDLIN(LINE).EQ.GAS)THEN    
 C         Extra section to stop very small strengths coming in. Here limit
 C         to S > 1e-36
@@ -155,6 +152,7 @@ C          END IF
           SFB = (ALIN(LINE)-SBLIN(LINE))/ALIN(LINE)
           EL = ELIN(LINE)
 C         Test to discard lines with negative LSE
+
           IF(EL.LT.0.0)ABSCO=0.0
           IF(ABSCO.GT.0)THEN
            WR=WR+ABSCO
@@ -162,6 +160,7 @@ C         Test to discard lines with negative LSE
            SSFB=SSFB+SFB*ABSCO
            SEL=SEL+EL*ABSCO
           ENDIF
+
          ENDIF
 55      CONTINUE
  

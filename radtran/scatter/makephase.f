@@ -270,8 +270,8 @@ C-----------------------------------------------------------------------
 
 			if (iref.eq.2) then
 				write (*,'('' Give real and imaginary''
-     1					'' parts of refractive'',
-     2					'' index: '',$)')
+     1                                  '' parts of refractive'',
+     2                                  '' index: '',$)')
 				read (*,*)  refind(1), refind(2)
 			elseif (iref.eq.3) then
 				call h2o_refind(lambda, refind(1),
@@ -303,7 +303,7 @@ C-----------------------------------------------------------------------
 			endif
 	
 			print*, 'Refractive index: ', refind(1),
-     1				 refind(2)
+     1                   refind(2)
 
 C-----------------------------------------------------------------------
 C
@@ -341,7 +341,7 @@ C-----------------------------------------------------------------------
      1						' Wavenumber is: ', w
 				endif
   				write (*,'('' Give extinction'',
-     1	'' cross-section (cm2) and single scattering albedo: '',$)')
+     1  '' cross-section (cm2) and single scattering albedo: '',$)')
 				read (*,*) ext, omega
 			endif
 
@@ -482,18 +482,18 @@ C-----------------------------------------------------------------------
 1000	format (a512)
 1010	format (1x, a10, 2(2x, f8.2), 2x, f8.4, 2(2x, i4))
 1020	format (' Mie, standard gamma, A = ',0pf7.2, ' B = ',0pf7.2,
-     1		' alpha = ',0pf7.2, ' rmin = ', 0pf7.3, ' rmax = ',
-     2		0pf7.2, ' rstep = ', 0pf7.3)
+     1   ' alpha = ',0pf7.2, ' rmin = ', 0pf7.3, ' rmax = ',
+     2   0pf7.2, ' rstep = ', 0pf7.3)
 1035	format (' Mie, MCS gamma, A = ',0pf7.2, ' B = ',0pf7.2,
-     1		' C = ',0pf7.2, ' rmin = ', 0pf7.3, ' rmax = ',
-     2		0pf7.2, ' rstep = ', 0pf7.3)
+     1   ' C = ',0pf7.2, ' rmin = ', 0pf7.3, ' rmax = ',
+     2   0pf7.2, ' rstep = ', 0pf7.3)
 1030	format (' Mie, log normal ', ' R0 = ',0pf7.2, ' Sig = ',0pf7.2,
-     1		' rmin = ', 0pf7.3, ' rmax = ',0pf7.2, ' rstep = ', 
-     2		0pf7.3)	
+     1   ' rmin = ', 0pf7.3, ' rmax = ',0pf7.2, ' rstep = ', 
+     2   0pf7.3)	
 1040	format (' Mie, single particle ', ' R0 = ',0pf7.2)	
 1050	format (' Isotropic scattering')
 1060	format (' Henyey-Greenstein, f = ', 0pf7.2, ' g1 = ',0pf7.2,
-     1		' g2 = ',0pf7.2)
+     1   ' g2 = ',0pf7.2)
 1070	format (' Dipole, R0 = ', 0pf7.2)
 1080	format (100(1x,f8.3))
 1090    format (1x,f8.2,1x,e12.5,1X,e12.5,50(1x,f10.5))

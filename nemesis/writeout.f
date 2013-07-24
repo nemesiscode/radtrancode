@@ -210,7 +210,7 @@ C1000  format(1x,i4,1x,f10.4,1x,f10.4,1x,f10.4,1x,f7.2,1x,f10.4,1x,f7.2)
        if(varident(ivar,1).le.100)then
         np = npvar(varident(ivar,3),npro)
        endif
-       if(varident(ivar,1).eq.888)np = varparam(ivar,1)
+       if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
 
        write(lout,*)
      &  '   i, ix, xa          sa_err       xn          xn_err'

@@ -128,7 +128,7 @@ C     a lot more modification
  
       do 1000 iloop=1,nsol
        if(fintrad.eq.1)then
-        sol_ang = acos(mu(iloop))/dtr
+        sol_ang = acos(sngl(mu(iloop)))/dtr
         fintname = 'internal**.fld'
         i1=int(iloop/10)
         i2=iloop-i1*10

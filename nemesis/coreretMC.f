@@ -435,7 +435,7 @@ C         endif
          if(varident(ivar,1).le.100)then
           np=npvar(varident(ivar,3),npro)
          endif
-         if(varident(ivar,1).eq.888)np = varparam(ivar,1)
+         if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
 
          do j=ix,ix+np-1
           if(varident(ivar,1).eq.0) then

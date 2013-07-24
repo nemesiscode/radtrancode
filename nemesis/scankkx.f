@@ -61,7 +61,7 @@ C     **************************** CODE ********************************
         else
          if(varidentx(ivarx,1).eq.555)np = 1
          if(varidentx(ivarx,1).eq.999)np = 1
-         if(varidentx(ivarx,1).eq.888)np = varparamx(ivarx,1)
+         if(varidentx(ivarx,1).eq.888)np = int(varparamx(ivarx,1))
          if(varidentx(ivarx,1).eq.777)np = 1
          if(varidentx(ivarx,1).eq.666)np = 1
         endif

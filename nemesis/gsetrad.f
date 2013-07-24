@@ -131,7 +131,7 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
         if(varident(ivarx,1).eq.888)then
 
 C        ********* reset surface albedo spectrum  **********
-         nalb = varparamx(ivarx,1)
+         nalb = int(varparamx(ivarx,1))
          call file(runname,runname,'rsu')
          open(9,file=runname,status='old')
 54       read(9,1)buffer
@@ -215,7 +215,7 @@ C       ***************** Surface temperature correction ***********
 C       print*,ivar
        if (varident(ivar,1).eq.888)then
 C       ********* surface albedo spectrum retrieval **********
-        nalb = varparam(ivar,1)
+        nalb = int(varparam(ivar,1))
         call file(runname,runname,'rsu')
         open(9,file=runname,status='old')
 55      read(9,1)buffer

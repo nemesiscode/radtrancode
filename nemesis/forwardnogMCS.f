@@ -320,7 +320,7 @@ C       listed, assume that channels are in usual order
          vv = vconv(igeom,i)
          if (vv.lt.350.)then
 C         Get B pixel numbers
-          ipixB = 100*(0.001+vv*10-int(vv*10))
+          ipixB = int(100*(0.001+vv*10-int(vv*10)))
           goto 646
          endif
         enddo

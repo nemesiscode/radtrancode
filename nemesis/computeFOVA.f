@@ -58,10 +58,10 @@
      1  f*fovcentre(jangle+1,ichan,ipix)
 
       do i1=1,nfov 
-       th1(i1)= fovs(jangle,ichan,ipix,1,i1)
-       th2(i1)= fovs(jangle+1,ichan,ipix,1,i1)
-       r1(i1) = fovs(jangle,ichan,ipix,2,i1)
-       r2(i1) = fovs(jangle+1,ichan,ipix,2,i1)
+       th1(i1)= sngl(fovs(jangle,ichan,ipix,1,i1))
+       th2(i1)= sngl(fovs(jangle+1,ichan,ipix,1,i1))
+       r1(i1) = sngl(fovs(jangle,ichan,ipix,2,i1))
+       r2(i1) = sngl(fovs(jangle+1,ichan,ipix,2,i1))
 
 C      angle arrays may not be identical so we need to interpolate one 
 C      FOV array on to the other. Set angles to array with greatest

@@ -95,13 +95,12 @@ CIRSdrv_wave : cirsdrv_wave.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/CIRSdrv_wave cirsdrv_wave.f $(LIBRARY) \
 	$(LIB)/radtran.a $(LIB)/path.a \
 	$(LIB)/scatter.a $(LIB)/rtm_util.a $(LIB)/radtran.a \
-	$(LIB)/spec_data.a $(FRECIPES) $(LIB)/matrices.a \
-	$(LIB)/ciatable.a
+	$(LIB)/spec_data.a $(FRECIPES) $(LIB)/matrices.a
 
 Lbldrv_wave : lbldrv_wave.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Lbldrv_wave lbldrv_wave.f $(LIBRARY) \
 	$(LIB)/radtran.a $(LIB)/path.a \
 	$(LIB)/scatter.a $(LIB)/rtm_util.a $(LIB)/radtran.a \
 	$(LIB)/spec_data.a $(FRECIPES) $(LIB)/matrices.a \
-	$(LIB)/ciatable.a $(LIB)/rtm_util.a
+	$(LIB)/rtm_util.a
 

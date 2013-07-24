@@ -63,8 +63,8 @@ C all entries = 0
 6      continue
 
        do 200 itemp = 1,NUMT
-	  tempk2(itemp) = TMIN + (itemp - 1)*TSTEP
-          TEMP = TEMPK2(ITEMP)
+	  TEMP = TMIN + (itemp - 1)*TSTEP
+          TEMPK2(ITEMP) = SNGL(TEMP)
 
 C this loop for equilibrium and normal ortho:para H2
           do 250 IPARA=1,NUMPARA

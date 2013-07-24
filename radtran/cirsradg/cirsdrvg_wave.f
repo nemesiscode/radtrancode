@@ -284,7 +284,7 @@ C-----------------------------------------------------------------------
       WRITE(*,*)' CIRSDRVG_WAVE.f :: calculation complete.'
       CALL GETTIME(time)
       time2 = time
-      tot_time = time2-time1
+      tot_time = sngl(time2-time1)
       WRITE(*,200)tot_time
 200   FORMAT(' Elapsed time including convolution (sec)= ',F8.1)
 

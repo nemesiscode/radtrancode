@@ -201,6 +201,9 @@ C     radius
       radius2=radius1
       iscat=0
 
+      igeom=1
+      iav=1
+
       xlat=flat(igeom,iav)
 
 
@@ -239,7 +242,6 @@ C     Set up parameters for non-scattering cirsrad run.
 C     Read in base heights from '.drv' file
       call readdrvh(runname,height)
 
-      igeom=1
       print*,'Nav = ',nav(igeom)
 
       nconv1 = nconv(igeom)
@@ -251,7 +253,6 @@ C     Read in base heights from '.drv' file
        print*,'Aborting...'
        stop
       endif
-      iav=1
          
       print*,'Iav,nconv1 = ',iav,nconv1
 

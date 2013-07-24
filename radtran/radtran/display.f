@@ -150,7 +150,7 @@ C     note that include is not F77 and is included only during development
       INCLUDE '../includes/pathcom.f'
 C-----------------------------------------------------------------------------
 C     local variables (used only in this program)
-      INTEGER I,J
+      INTEGER I,J,FSTCEL
       LOGICAL BIT
       CHARACTER*40 TEXT
 C-----------------------------------------------------------------------------

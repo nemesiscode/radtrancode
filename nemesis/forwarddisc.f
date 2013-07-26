@@ -94,9 +94,6 @@ C     **************************************************************
       logical gasgiant,fexist
       real vem(maxsec),emissivity(maxsec)
       
-
-
-C      common/planrad/RADIUS1
              
 c  ** variables for solar reflected cloud **
       real solar,xsolar

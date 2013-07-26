@@ -48,12 +48,12 @@ C	XMAP(MAXV,MAXGAS+2+MAXCON,MAXPRO) REAL Matrix relating functional
 C				derivatives calculated by CIRSRADG to the 
 C				elements of the state vector. 
 C				Elements of XMAP are the rate of change of
-C				 the profile vectors (i.e. temperature, vmr prf
-C				 files) with respect to the change in the state
-C				 vector elements. So if X1(J) is the modified 
-C				 temperature,vmr,clouds at level J to be 
-C				 written out to runname.prf or aerosol.prf then
-C				 XMAP(K,L,J) is d(X1(J))/d(XN(K)) and where
+C				the profile vectors (i.e. temperature, vmr prf
+C				files) with respect to the change in the state
+C				vector elements. So if X1(J) is the modified 
+C				temperature,vmr,clouds at level J to be 
+C				written out to runname.prf or aerosol.prf then
+C				XMAP(K,L,J) is d(X1(J))/d(XN(K)) and where
 C				 L is the identifier (1 to NGAS+1+2*NCONT)
 C
 C     Pat Irwin	29/7/96		Original
@@ -70,8 +70,9 @@ C     ***********************************************************************
       REAL H(MAXPRO),P(MAXPRO),T(MAXPRO),VMR(MAXPRO,MAXGAS)
       REAL CONT(MAXCON,MAXPRO),XLAT,X,XREF(MAXPRO),X1(MAXPRO)
       REAL PKNEE,HKNEE,XDEEP,XFSH,PARAH2(MAXPRO),XH,XKEEP,X2(MAXPRO)
-      REAL OD(MAXPRO),ND(MAXPRO),Q(MAXPRO),RHO,F,XOD,DQDX(MAXPRO)
+      REAL RHO,F,DQDX(MAXPRO),DX
       REAL DNDH(MAXPRO),DQDH(MAXPRO),FCLOUD(MAXPRO)
+      DOUBLE PRECISION Q(MAXPRO),OD(MAXPRO),ND(MAXPRO),XOD
       INTEGER ISCALE(MAXGAS),XFLAG,NPVAR
       REAL XRH,XCDEEP,P1,PS,PS1,PH,Y1,Y2,YY1,YY2
       INTEGER ICLOUD(MAXCON,MAXPRO),NCONT1,JSPEC,IFLA,I1
@@ -81,7 +82,7 @@ C     ***********************************************************************
       REAL HTAN,PTAN,R
       REAL GASDATA(20,5),XVMR(MAXGAS),XMOLWT,XXMOLWT(MAXPRO)
       REAL CALCMOLWT
-      INTEGER JSWITCH
+      INTEGER JSWITCH,ITEST
       CHARACTER*100 IPFILE,BUFFER
       CHARACTER*100 ANAME
       INTEGER I,J,K,N,AMFORM,IPLANET,NGAS,IGAS,NX,NXTEMP,IX,ISPACE
@@ -766,10 +767,6 @@ C        ***************************************************************
           STOP 
          ENDIF
 
-         XDEEP = EXP(XN(NXTEMP+1))
-         XFSH  = EXP(XN(NXTEMP+2))
-         HKNEE = XN(NXTEMP+3)
-
          IF(AMFORM.EQ.0)THEN
           XMOLWT=MOLWT
          ELSE
@@ -789,64 +786,87 @@ C        Q is specific density = particles/gram = particles/cm3 x g/cm3
          DNDH(NPRO)=0.0
          DQDH(NPRO)=0.0
 
+
+         DO 22 ITEST=1,4
+
+          XDEEP = EXP(XN(NXTEMP+1))
+          XFSH  = EXP(XN(NXTEMP+2))
+          HKNEE = XN(NXTEMP+3)
+
+          DX=0.05*XN(NXTEMP+ITEST-1)
+          IF(DX.EQ.0.)DX=0.1
+
+          print*,'ITEST,IPAR,DX = ',ITEST,IPAR,DX
+          print*,'XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
+          IF(ITEST.EQ.2)THEN
+            XDEEP=EXP(XN(NXTEMP+1)+DX)
+          ENDIF
+          IF(ITEST.EQ.3)THEN
+            XFSH  = EXP(XN(NXTEMP+2)+DX)
+          ENDIF
+          IF(ITEST.EQ.4)THEN
+            HKNEE = XN(NXTEMP+3)+DX
+          ENDIF
+          print*,'XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
+
          
-         JFSH=-1
-         DO J=NPRO-1,1,-1
-          DELH = H(J+1)-H(J)
-          XFAC = SCALE(J)*XFSH
-C         Calculate density of atmosphere (g/cm3)
+          JFSH=-1
+          DO J=NPRO-1,1,-1
+           DELH = H(J+1)-H(J)
+           XFAC = SCALE(J)*XFSH
+C          Calculate density of atmosphere (g/cm3)
 
-          IF(AMFORM.EQ.0)THEN
-           XMOLWT=MOLWT
-          ELSE
-           XMOLWT=XXMOLWT(J)
-          ENDIF
-
-          RHO = (0.1013*XMOLWT/R)*(P(J)/T(J))
-          ND(J)=ND(J+1)*EXP(DELH/XFAC)
-          DNDH(J)=-ND(J)*DELH/(XFAC**2)+EXP(DELH/XFAC)*DNDH(J+1)
-
-          OD(J)=OD(J+1)+(ND(J) - ND(J+1))*XFAC*1E5
-          Q(J)=ND(J)/RHO
-          DQDH(J) = DNDH(J)/RHO
-
-
-          IF(H(J).LE.HKNEE.AND.JFSH.LT.0)THEN
-           F = (HKNEE-H(J))/DELH
-           XOD = (1.-F)*OD(J) + F*OD(J+1)
-           JFSH=1
-          ENDIF
-         ENDDO
-
-C        The following section was found not to be as accurate as desired
-C        due to misalignments at boundaries and so needs some post-processing in 
-C        gsetrad.f
-         DO J=1,NPRO
-          OD(J)=XDEEP*OD(J)/XOD
-          ND(J)=XDEEP*ND(J)/XOD
-          Q(J)=XDEEP*Q(J)/XOD
-          IF(H(J).LT.HKNEE)THEN
-           IF(H(J+1).GE.HKNEE)THEN
-            Q(J)=Q(J)*(1.0 - (HKNEE-H(J))/(H(J+1)-H(J)))
+           IF(AMFORM.EQ.0)THEN
+            XMOLWT=MOLWT
            ELSE
-            Q(J) = 0.0
+            XMOLWT=XXMOLWT(J)
            ENDIF
-          ENDIF
-          IF(Q(J).GT.1e10)Q(J)=1e10
-          IF(Q(J).LT.1e-36)Q(J)=1e-36
 
-          X1(J)=Q(J)
-          DNDH(J)=DNDH(J)*XDEEP/XOD
-          DQDH(J)=DQDH(J)*XDEEP/XOD
-          DQDX(J)=Q(J)/XOD
+           RHO = (0.1013*XMOLWT/R)*(P(J)/T(J))
+           ND(J)=ND(J+1)*EXP(DELH/XFAC)
+           DNDH(J)=-ND(J)*DELH/(XFAC**2)+EXP(DELH/XFAC)*DNDH(J+1)
 
-          IF(H(J).LT.HKNEE)THEN
-           XMAP(NXTEMP+1,IPAR,J)=DQDX(J)*XDEEP
-           XMAP(NXTEMP+2,IPAR,J)=DQDH(J)*XFAC
-          ENDIF
+           OD(J)=OD(J+1)+(ND(J) - ND(J+1))*XFAC*1E5
+           Q(J)=ND(J)/RHO
+           DQDH(J) = DNDH(J)/RHO
 
-         ENDDO
+           IF(H(J).LE.HKNEE.AND.JFSH.LT.0)THEN
+            F = (HKNEE-H(J))/DELH
+            XOD = (1.-F)*OD(J) + F*OD(J+1)
+            JFSH=1
+           ENDIF
+          ENDDO
 
+C         The following section was found not to be as accurate as
+C         desired due to misalignments at boundaries and so needs some 
+C         post-processing in gsetrad.f
+          DO J=1,NPRO
+           OD(J)=XDEEP*OD(J)/XOD
+           ND(J)=XDEEP*ND(J)/XOD
+           Q(J)=XDEEP*Q(J)/XOD
+           IF(H(J).LT.HKNEE)THEN
+            IF(H(J+1).GE.HKNEE)THEN
+             Q(J)=Q(J)*(1.0 - (HKNEE-H(J))/(H(J+1)-H(J)))
+            ELSE
+             Q(J) = 0.0
+            ENDIF
+           ENDIF
+           IF(Q(J).GT.1e10)Q(J)=1e10
+           IF(Q(J).LT.1e-36)Q(J)=1e-36
+
+           IF(ITEST.EQ.1)THEN
+            X1(J)=Q(J)
+           ELSE
+            XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
+           ENDIF
+
+           DNDH(J)=DNDH(J)*XDEEP/XOD
+           DQDH(J)=DQDH(J)*XDEEP/XOD
+           DQDX(J)=Q(J)/XOD
+
+          ENDDO
+
+22       CONTINUE
         
         ELSEIF(VARIDENT(IVAR,3).EQ.10)THEN
 C        Model 10. Profile is a condensing cloud, parameterisation contains

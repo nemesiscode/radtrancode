@@ -1,8 +1,8 @@
       subroutine coreretPT(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jtan,
-     3  jpre,jrad,radius,wgeom,flat,nx,xa,sa,ny,y,se1,xn,sm,sn,st,yn,
-     4  kk,aa,dd)
+     3  jpre,jrad,radius,wgeom,flat,nx,xa,sa,ny,y,se1,inumeric,xn,sm,
+     4  sn,st,yn,kk,aa,dd)
 C     $Id:
 C     ******************************************************************
 C
@@ -60,6 +60,8 @@ C	sa(mx,mx)	real 	A priori covariance matrix
 C	ny	integer	Number of elements in measured spectra array
 C	y(my)	real	Measurement vector
 C	se1(my)	real	Measured radiance variances
+C       inumeric integer Set to 1 to calculate gradients numerically
+C                        rather than implicitly.
 C
 C     Output variables
 C	xn(mx)	real	best fit state vector
@@ -79,6 +81,7 @@ C     Set measurement vector and source vector lengths here.
       INCLUDE 'arraylen.f'
       integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,jsurf
       integer jalb,jalbx,jtan,jpre,jtanx,jprex,jrad,jradx,iscat1,i1,k1
+      integer inumeric
       real phlimit,alambda,xtry,tphi
       CHARACTER*100 runname,itname,abort
 
@@ -217,11 +220,19 @@ C       readapriori.f. Hence just read in from temporary .str file
         stop
        endif
 
+       if(inumeric.eq.0)then
 	print*, 'ForwardPT 1 =', jradx, jrad
-       CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
+        CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
-     2   nvarx,varidentx,varparamx,jradx,radiusx,nxx,xnx,ny,ynx,kkx)
-
+     2   nvarx,varidentx,varparamx,jradx,radiusx,nxx,xnx,ny,ynx,kkx,
+     3   kiter)
+       else
+	print*, 'ForwardnogPT 1 =', jradx, jrad
+        CALL forwardnogPT(runname,ispace,fwhm,ngeom,nav,
+     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
+     2   nvarx,varidentx,varparamx,jradx,radiusx,nxx,xnx,ny,ynx,kkx,
+     3   kiter)
+       endif
        if(lin.eq.3)then
 C        strip out variables from kkx that will be retrieved in this
 C        run.
@@ -278,11 +289,19 @@ C      Calculate inverse of se
        stop
       endif
 
-      print*,'ForwardPT 2'
-      CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
+      if(inumeric.eq.0)then
+       print*,'ForwardPT 2'
+       CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jrad,radius,nx,xn,ny,yn,kk)
+     2   nvar,varident,varparam,jrad,radius,nx,xn,ny,yn,kk,kiter)
 	print*, 'Radius - 1 =', jrad,radius
+      else
+       print*,'ForwardnogPT 2'
+       CALL forwardnogPT(runname,ispace,fwhm,ngeom,nav,
+     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     2   nvar,varident,varparam,jrad,radius,nx,xn,ny,yn,kk,kiter)
+	print*, 'Radius - 1 =', jrad,radius
+      endif
 
       print*,'Calling calc_gain_matrix'
 C     Now calculate the gain matrix and averaging kernels
@@ -351,11 +370,20 @@ C       Calculate test spectrum using trial state vector xn1.
 C       Put output spectrum into temporary spectrum yn1 with
 C       temporary kernel matrix kk1. Does it improve the fit? 
 c	print*,xn1(1),xn(1),x_out(1),'jm3'
-        print*,'ForwardPT 3'
-        CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
-     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
-     2     lin,nvar,varident,varparam,jrad,radius,nx,xn1,ny,yn1,kk1)
 
+        if(inumeric.eq.0)then
+         print*,'ForwardPT 3'
+         CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
+     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
+     2     lin,nvar,varident,varparam,jrad,radius,nx,xn1,ny,yn1,kk1,
+     3     kiter)
+        else
+         print*,'ForwardnogPT 3'
+         CALL forwardnogPT(runname,ispace,fwhm,ngeom,nav,
+     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
+     2     lin,nvar,varident,varparam,jrad,radius,nx,xn1,ny,yn1,kk1,
+     3     kiter)
+        endif
 
 C       Calculate the cost function for this trial solution.
         phi = calc_phiret(ny,y,yn1,sei,nx,xn1,xa,sai,chisq)

@@ -57,7 +57,7 @@ C     TIME2: System time at the end of program execution.
       double precision aa(mx,mx),dd(mx,my)
       real vkstart,vkend,vkstep
       integer idump,kiter,jtan,jalb,jalbx,jpre,jtanx,jprex,iplanet
-      integer jrad,jradx
+      integer jrad,jradx,inumeric
 C     ********** Scattering variables **********************
       real xwave(maxsec),xf(maxcon,maxsec),xg1(maxcon,maxsec)
       real xg2(maxcon,maxsec)
@@ -110,6 +110,7 @@ C     Make sure input files are OK
 
       CALL readrefiplan(runname,iplanet,radius)
 
+      print*,'AA radius = ',radius
 C     Read start, end and step of tables
       CALL readkkhead(runname,vkstart,vkend,vkstep)
 
@@ -118,7 +119,7 @@ C     Read start, end and step of tables
 
 C     Read in whether to calculate with wavenumbers(0) or wavelength(1)
 C     Also read in whether scattering is required (iscat)
-      READ(32,*)ispace,iscat
+      READ(32,*)ispace,iscat,inumeric
 
 C     Read any wavenumber offset to add to measured spectra
       READ(32,*)woff   
@@ -224,8 +225,10 @@ C     Calculate the tabulated wavelengths of c-k look up tables
        enddo
        CALL wavesetb(runname,vkstart,vkend,vkstep,nconv1,vconv1,fwhm,
      1  nwave1,vwave1)
+       print*,nwave1
        do j=1,nwave1
         vwave(igeom,j)=vwave1(j)
+        print*,vwave1(j)
        enddo
        nwave(igeom)=nwave1
       enddo
@@ -275,8 +278,8 @@ C      jrad=-1
       call coreretPT(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jtan,
-     3  jpre,jrad,radius,wgeom,flat,nx,xa,sa,ny,y,se,xn,sm,sn,st,
-     4  yn,kk,aa,dd)
+     3  jpre,jrad,radius,wgeom,flat,nx,xa,sa,ny,y,se,inumeric,xn,sm,
+     4  sn,st,yn,kk,aa,dd)
 
 C     Calculate retrieval errors.
 C     Simple errors, set to sqrt of diagonal of ST

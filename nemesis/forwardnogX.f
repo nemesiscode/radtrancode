@@ -91,6 +91,32 @@ C     **************************************************************
       logical gasgiant
       real vem(maxsec),emissivity(maxsec)
 
+
+
+C      print*,'-----------------'
+C      print*,runname
+C      print*,ispace,iscat,fwhm,ngeom
+C      print*,(nav(i),i=1,ngeom)
+C      do j=1,ngeom
+C       print*,(wgeom(j,i),i=1,nav(j))
+C       print*,(flat(j,i),i=1,nav(j))
+C       do i=1,nav(j)
+C        print*,j,i,(angles(j,i,k),k=1,3)  
+C       enddo
+C      enddo
+C      do j=1,ngeom
+C       print*,nwave(j),(vwave(j,i),i=1,nwave(j))
+C       print*,nconv(j),(vconv(j,i),i=1,nconv(j))
+C      enddo
+C      print*,gasgiant,lin,nvar
+C      do i=1,nvar
+C       print*,(varident(i,j),j=1,3)
+C       print*,(varparam(i,j),j=1,mparam)
+C      enddo
+C      print*,jsurf,jalb,jtan,jpre
+C      print*,nx,ny
+C      print*,(xn(i),i=1,nx)
+
       call setup(runname,gasgiant,nmu,mu,wtmu,isol,dist,lowbc,
      1 galb,nf1,nphi,layht,tsurf,nlayer,laytyp,layint)
 
@@ -237,7 +263,7 @@ C         is not a gas giant)
               print*,'Error in forwardnogX iconv < 0'
               stop
              endif
-             ioff1=nconv1*(ipath-1)+iconv
+             ioff1 = ipath + (iconv-1)*npath
              ytmp(ioff+j)=calcout(ioff1)
           enddo
 
@@ -254,7 +280,7 @@ C         we need to add the radiation from the ground
               if(vv.eq.vconv1(k))iconv=k
              enddo
              esurf = interpem(nem,vem,emissivity,vv)
-             ioff1=nconv1*(ipath-1)+iconv
+             ioff1 = ipath + (iconv-1)*npath
              ytmp(ioff+j)=ytmp(ioff+j)+
      1          calcout(ioff1)*planck_wave(ispace,vconv1(j),tsurf)*esurf
             enddo

@@ -22,10 +22,12 @@ C       bins, paths, etc.)
 	INTEGER		nstep
 	PARAMETER	(nstep=20)
 
-        INTEGER		nwave, nconv, nc, I, J,nconv1,nsub,k
+        INTEGER		nwave, nconv, nc, I, J,nconv1,nsub,k,nc1
+        LOGICAL		FLAGNAN
 	REAL		vwave(nwave), y(maxout), vconv(nconv),
      1			yout(maxout), xc(maxbin), yc(maxbin),
-     2			y2(maxbin), x1, x2, delx, xi, dv, y1
+     2			y2(maxbin), x1, x2, delx, xi, dv, y1,
+     3 			xc1(maxbin),yc1(maxbin)
 	REAL		vfil(1000),fil(1000),yy,delv
 	REAL		vcentral,ytmp(maxout)
         DOUBLE PRECISION sum,sumf,yi,yold
@@ -94,6 +96,30 @@ C
 C	Robust integrator based on brute force.
 C
 C-----------------------------------------------------------------------
+
+C         Check to make sure spectrum has no NaN's
+          nc1=0
+          FLAGNAN=.FALSE.
+          do i=1,nc
+           if(.not.isnan(yc(i)))then
+            nc1=nc1+1
+            xc1(nc1)=xc(i)
+            yc1(nc1)=yc(i)
+            FLAGNAN=.TRUE.
+           endif
+          enddo
+
+C          IF(FLAGNAN)THEN
+C           print*,'Warning from cirsconv.f: Input spectrum contains'
+C           print*,'a NaN'
+C          ENDIF
+
+C         Delete the NaNs and fit output spectrum to remaining points
+          nc=nc1
+          do i=1,nc
+           xc(i)=xc1(i)
+           yc(i)=yc1(i)
+          enddo
 
 	  CALL cspline (xc, yc, nc, 5.e30, 5.e30, y2)
 

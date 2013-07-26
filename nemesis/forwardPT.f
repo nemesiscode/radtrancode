@@ -74,7 +74,7 @@ C     **************************************************************
       real vconv(mgeom,mconv),vconv1(mconv)
       real layht,tsurf,esurf,pressR,delp,altbore,thbore,gtsurf
       real xn(mx),yn(my),kk(my,mx),yn1(my),caltbore
-      real y1(mconv),y2(mconv,mx)
+      double precision y1(mconv),y2(mconv,mx)
       integer ny,iscat
       integer nphi,ipath
       integer nmu,isol,lowbc,nf
@@ -90,7 +90,7 @@ C     **************************************************************
       parameter (PI=3.1415927)
 
       real vtmp,tmp,delh,dtr,radius,radius1
-      real area,area0,area1,darea1,darea(mx)
+      double precision area,area0,area1,darea1,darea(mx)
       integer nvar,varident(mvar,3),ivar
       real varparam(mvar,mparam)
       logical gasgiant
@@ -100,7 +100,10 @@ C     **************************************************************
 
       common /solardat/iread, stelrad, solwave, solrad,  solnpt
 
-	  jradf=jrad
+C     jradf is passed via tha planrad common block
+
+      jradf=jrad
+
 C     Initialise arrays
       do i=1,my
        yn(i)=0.0
@@ -198,7 +201,10 @@ C     radius
        radius1 = radius
       endif
       print*,'radius=',radius1
+
+C     radius2 is passed via the planrad common block.
       radius2=radius1
+
       iscat=0
 
       igeom=1
@@ -258,6 +264,7 @@ C     Read in base heights from '.drv' file
 
 C     Now run through wavelengths and find right wavelength in 
 C     pre-calculated array
+
       do 206 iconv=1,nconv1
         area = 0.0
         do j=1,nx
@@ -295,18 +302,19 @@ C         print*,ipath,dh,area
 	area0 = pi*stelrad**2
         area1 = pi*(radius1+height(1))**2
 
-        yn(iconv)=100.0*(area1+area)/area0
+        yn(iconv)=sngl(100.0*(area1+area)/area0)
 
         print*,'Areas',area0,area1,area,area1+area,yn(iconv),
      1    100*area1/area0
 
         do j=1,nx
-             kk(iconv,j) = 100.*darea(j)/area0
+             kk(iconv,j) = sngl(100.*darea(j)/area0)
         enddo
 
 C       Add on effect of fitting radius correction in apr file.
         if(jrad.gt.0)then
-           kk(iconv,jrad)=kk(iconv,jrad)+100.*2.*pi*radius1/area0
+           kk(iconv,jrad)=kk(iconv,jrad)+
+     &			sngl(100.*2.*pi*radius1/area0)
         endif
 
 206   continue

@@ -79,7 +79,6 @@ C     parameters are passed between routines mostly using common blocks
 C     because of the extensive use of large arrays. NOTE: laycom uses
 C     parameters defined in pathcom.
       INCLUDE '../includes/laygrad.f'
-      INCLUDE '../includes/planrad.f'
 C     ../includes/laygrad.f holds the variables for use in gradient 
 C     calculations.
 
@@ -115,7 +114,7 @@ C      xxmolwt,molwtx
       LOGICAL scatterf,dustf,solexist
 
 C     Need simple way of passing planetary radius to nemesis/forwarddisc
-C      COMMON /PLANRAD/RADIUS2
+      INCLUDE '../includes/planrad.f'
 C     ************************* CODE ***********************
 
 

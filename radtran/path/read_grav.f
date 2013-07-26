@@ -17,7 +17,7 @@ C     **************************************************************
       integer isurftab(mplanet)
       character*100 xbuffer,buffer,aname
       character*8 pname(mplanet),pname1
-
+      include '../includes/planrad.f'
 1     format(a)
 
       aname = 'gravity.dat'
@@ -66,6 +66,12 @@ C      Ignore first 4 spaces which are reserved for planet number
        xcoeff(j)=Jcoeff(j,iplanet)
 30    continue
       xradius=aradius(iplanet)
+      if(radius2.gt.0.0.and.jradf.ge.0)then
+       print*,'read_grav: updating radius with radius2 from planrad'
+       print*,'common block'
+       xradius=radius2
+      endif
+      
       xellip = ellip(iplanet)
       xomega = omega(iplanet)
       pname1 = pname(iplanet)

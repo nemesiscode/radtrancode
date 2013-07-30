@@ -120,6 +120,7 @@ C     Read in whether to calculate with wavenumbers(0) or wavelength(1)
 C     Also read in whether scattering is required (iscat)
       READ(32,*)ispace,iscat,inumeric
 
+
 C     Read any wavenumber offset to add to measured spectra
       READ(32,*)woff   
 

@@ -91,7 +91,7 @@ C     Set measurement vector and source vector lengths here.
       integer nprox,nvarx,varidentx(mvar,3),jsurfx,nxx,ix,np,npro
       real st(mx,mx),varparamx(mvar,mparam)
       real sn(mx,mx),sm(mx,mx),xnx(mx),stx(mx,mx),ynx(my)
-      real radius,radiusx
+      real radius
 
       integer nvar,varident(mvar,3),lin,lin0,lpre,ispace,nav(mgeom)
       real varparam(mvar,mparam)
@@ -102,7 +102,7 @@ C     Set measurement vector and source vector lengths here.
       real kkx(my,mx),yn1(my),s1(mx,mx),altbore,altborex
       real wgeom(mgeom,mav),flat(mgeom,mav)
       real vconvT(mconv),vwaveT(mwave)
-      integer nwaveT,nconvT
+      integer nwaveT,nconvT,ineg
       logical gasgiant
 
       double precision s1d(mx,mx),sai(mx,mx)
@@ -224,13 +224,12 @@ C       readapriori.f. Hence just read in from temporary .str file
 	print*, 'ForwardPT 1 =', jradx, jrad
         CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
-     2   nvarx,varidentx,varparamx,jradx,radiusx,nxx,xnx,ny,ynx,kkx,
-     3   kiter)
+     2   nvarx,varidentx,varparamx,jradx,radius,nxx,xnx,ny,ynx,kkx)
        else
 	print*, 'ForwardnogPT 1 =', jradx, jrad
         CALL forwardnogPT(runname,ispace,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
-     2   nvarx,varidentx,varparamx,jradx,radiusx,nxx,xnx,ny,ynx,kkx,
+     2   nvarx,varidentx,varparamx,jradx,radius,nxx,xnx,ny,ynx,kkx,
      3   kiter)
        endif
        if(lin.eq.3)then
@@ -293,7 +292,7 @@ C      Calculate inverse of se
        print*,'ForwardPT 2'
        CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jrad,radius,nx,xn,ny,yn,kk,kiter)
+     2   nvar,varident,varparam,jrad,radius,nx,xn,ny,yn,kk)
 	print*, 'Radius - 1 =', jrad,radius
       else
        print*,'ForwardnogPT 2'
@@ -371,12 +370,22 @@ C       Put output spectrum into temporary spectrum yn1 with
 C       temporary kernel matrix kk1. Does it improve the fit? 
 c	print*,xn1(1),xn(1),x_out(1),'jm3'
 
+        call check_iteration(nvar,varident,xn,npro,ineg)
+        if(ineg.eq.1)then
+C        Temperature gone negative. Increase brakes and try again
+         xchi=-1.
+         phi=-1.
+         print*,'chisq/ny = ',xchi
+         print*,'it.,al.,ophi.,phi.',
+     1    iter,alambda,ophi,phi
+         goto 901
+        endif
+
         if(inumeric.eq.0)then
          print*,'ForwardPT 3'
          CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
-     2     lin,nvar,varident,varparam,jrad,radius,nx,xn1,ny,yn1,kk1,
-     3     kiter)
+     2     lin,nvar,varident,varparam,jrad,radius,nx,xn1,ny,yn1,kk1)
         else
          print*,'ForwardnogPT 3'
          CALL forwardnogPT(runname,ispace,fwhm,ngeom,nav,
@@ -426,7 +435,7 @@ C         Has solution converged?
           endif
         else
 C	  Leave xn and kk alone and try again with more braking
-          alambda = alambda*10.0		! increase Marquardt brake
+901       alambda = alambda*10.0		! increase Marquardt brake
           if(alambda.gt.1e10)alambda=1e10
         endif
 

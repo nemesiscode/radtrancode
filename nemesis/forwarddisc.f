@@ -1,7 +1,7 @@
       subroutine forwarddisc(runname,ispace,iscat,fwhm,ngeom,
      1 nav,wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
-     2 lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,nx,xn,ny,
-     3 yn,kk)
+     2 lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,nx,xn,
+     3 ny,yn,kk)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate an FOV-averaged spectrum and
@@ -41,6 +41,8 @@ C	jtan		integer	Position of tangent height correction in
 C				xn (if included)
 C	jpre		integer	Position of tangent pressure in
 C				xn (if included)
+C     	jrad		integer Position of radius in
+C                               xn (if included)
 C       nx              integer Number of elements in state vector
 C       xn(mx)          real	State vector
 C       ny      	integer Number of elements in measured spectra array
@@ -61,7 +63,7 @@ C     **************************************************************
 
       implicit none
       integer i,j,lin,ispace,iav,ispace1
-      integer ngeom,ioff,igeom
+      integer ngeom,ioff,igeom,jrad
       real interpem
       include '../radtran/includes/arrdef.f'
       include '../radtran/includes/gascom.f'
@@ -193,6 +195,10 @@ C        we need to read in the surface emissivity spectrum
 	  ioff1=nconv1*(ipath-1)+iconv
           yn(ioff+j)=yn(ioff+j)+wgeom(igeom,iav)*calcout(ioff1)
          enddo
+
+C       Get planetary radius from planrad common block
+        radius1=radius2
+
     
          do i=1,nx
            do j=1,nconv1
@@ -207,6 +213,12 @@ C        we need to read in the surface emissivity spectrum
             else
              kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*
      1		gtsurf
+            endif
+C           Analytical calculation of dradiance/dradius (see forwardnogX.f
+C           for explanation). What the units to be dradiance/dkm and radius1
+C           is in units of cm, so need factor of 1e-5 to convert this to km.
+            if(i.eq.jrad)then
+             kk(ioff+j,i)=kk(ioff+j,i)+yn(ioff+j)*2./(radius1*1e-5)
             endif
            enddo
 

@@ -94,6 +94,31 @@ c  ** variables for solar refelcted cloud **
       real refl_cloud_albedo
       logical reflecting_atmos
       common /refl_cloud_params/refl_cloud_albedo,reflecting_atmos
+
+
+C      print*,runname
+C      print*,ispace,iscat,fwhm,ngeom
+C      print*,(nav(i),i=1,ngeom)
+C      do j=1,ngeom
+C       print*,(wgeom(j,i),i=1,nav(j))
+C       print*,(flat(j,i),i=1,nav(j))
+C       do i=1,nav(j)
+C        print*,j,i,angles(j,i,k),k=1,3)  
+C       enddo
+C      enddo
+C      do j=1,ngeom
+C       print*,nwave(j),(vwave(j,i),i=1,nwave(j))
+C       print*,nconv(j),(vconv(j,i),i=1,nconv(j))
+C      enddo
+C      print*,gasgiant,lin,nvar
+C      do i=1,nvar
+C       print*,(varident(i,j),j=1,3)
+C       print*,(varparam(i,j),j=1,mparam)
+C      enddo
+C      print*,jsurf,jalb,jtan,jpre
+C      print*,nx,ny
+C      print*,(xn(i),i=1,nx)
+
              
 C     Initialise arrays
       do i=1,my

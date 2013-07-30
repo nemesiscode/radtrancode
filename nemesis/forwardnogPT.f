@@ -73,7 +73,8 @@ C     **************************************************************
       real vconv(mgeom,mconv),vconv1(mconv)
       real layht,tsurf,esurf,pressR,delp,altbore,thbore,gtsurf
       real xn(mx),yn(my),kk(my,mx),yn1(my),caltbore
-      double precision y1(mconv),y2(mconv,mx)
+      real ytrans(maxpat),yarea(maxpat)
+      double precision y1(maxpat),y2(maxpat,mx)
       integer ny,iscat,kiter,nx2,ix1
       integer nphi,ipath
       integer nmu,isol,lowbc,nf
@@ -217,6 +218,8 @@ C     Now sort wavelength arrays
          stop
       endif
 
+      open(9,file='forwardPTtrans.txt',status='unknown')
+
       do 111 ix1=1,nx2
 
          ix=ix1-1
@@ -273,15 +276,28 @@ C        Set up parameters for non-scattering cirsrad run.
      1    vwave1,nwave1,npath,output,vconv1,nconv1, itype, 
      2    nem, vem, emissivity, tsurf, calcout)
 
+
+C        Get base heights of layers
+         print*,'Calling readdrv'
+         print*,runname
+         call readdrvh(runname,height)        
+         area0 = pi*stelrad**2
+         area1 = pi*(radius1+height(1))**2
+
+         print*,'AA',runname
+         print*,'AA',pi,stelrad,radius1,height(1)
+         print*,'AA',area0,area1
+
+
+         print*,'areas = ',area0,area1
+   
          if(ix.eq.0)then
-C         Read in base heights from '.drv' file
-          call readdrvh(runname,height)        
-          area0 = pi*stelrad**2
+          write(9,*)nconv1,npath
+          write(9,*)(vconv1(j),j=1,nconv1)
+          write(9,*)(height(j),j=1,npath)
+          write(9,*)area0,area1
          endif
 
-         area1 = pi*(radius1+height(1))**2
-         print*,area0,area1
-   
          do 206 iconv=1,nconv1
  
           area = 0.0
@@ -291,18 +307,29 @@ C         Read in base heights from '.drv' file
            h1 = radius1 + height(ipath)
            ioff1=ipath+(iconv-1)*npath
            trans = calcout(ioff1)
+           ytrans(ipath)=trans
            y1(ipath) = 2.*pi*h1*(1.-trans)
 205       continue        
+
+          if(ix.eq.0) then
+           write(9,*)(ytrans(j),j=1,npath)
+           write(9,*)(sngl(y1(j)),j=1,npath)
+          endif
 
           do 207 ipath=1,npath-1
            dh = height(ipath+1)-height(ipath)
            area = area + 0.5*(y1(ipath)+y1(ipath+1))*dh
+           yarea(ipath)=0.5*(y1(ipath)+y1(ipath+1))*dh
 207       continue
+          yarea(npath)=0.
+
+          if(ix.eq.0)write(9,*)(yarea(j),j=1,npath)
 
         
           yn1(iconv)=sngl(100.0*(area1+area)/area0)
           if(ix.eq.0)then
            yn(iconv)=yn1(iconv)
+           write(9,*)area,yn(iconv)
           else
            kk(iconv,ix)=(yn1(iconv)-yn(iconv))/dx
           endif
@@ -313,6 +340,8 @@ C       Set a priori element back to original value
         if(ix.gt.0) xn(ix)=xref
         
 111   continue
+
+      close(9)
 
       return
 

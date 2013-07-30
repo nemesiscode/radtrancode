@@ -6,6 +6,7 @@ C     the require parameterisation scheme.
 C
 C     Input variable
 C	imod	integer	Require parameterisation scheme ID.
+C  	npro	integer	Number of vertical levels in .ref file
 C
 C     Output variable
 C	npvar	integer	Number of elements in xn required.

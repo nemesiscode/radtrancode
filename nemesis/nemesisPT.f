@@ -110,7 +110,6 @@ C     Make sure input files are OK
 
       CALL readrefiplan(runname,iplanet,radius)
 
-      print*,'AA radius = ',radius
 C     Read start, end and step of tables
       CALL readkkhead(runname,vkstart,vkend,vkstep)
 

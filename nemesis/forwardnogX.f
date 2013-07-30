@@ -1,7 +1,7 @@
       subroutine forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1 wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
-     2 lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,
-     3 nx,xn,ny,yn,kk,kiter)
+     2 lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
+     3 nx,xn,ny,yn,kk,kiter,icheck)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate a synthetic spectrum and KK-matrix using
@@ -45,13 +45,19 @@ C	jtan		integer position of tangent ht. correction element in
 C				xn (if included)
 C	jpre		integer position of tangent pressure element in
 C				xn (if included)
+C       jrad		integer position radius element in
+C                               xn (if included)
+C       RADIUS		real    Planetary radius at 0km altitude
 C       nx              integer Number of elements in state vector
 C       xn(mx)          real	State vector
 C       ny      	integer Number of elements in measured spectra array
+C	kiter		integer Number of iterations of Nemesis
 C
 C     Output variables
 C       yn(my)          real    Synthetic radiances
 C       kk(my,mx)       real    dR/dx matrix
+C	icheck		integer	Check to see if temperature, vmr or dust has
+C				gone negative
 C
 C     Pat Irwin	4/4/01		Original
 C     Pat Irwin 17/10/03	Tidied for Nemesis
@@ -69,10 +75,11 @@ C     **************************************************************
       include 'arraylen.f'
       real xlat,xref,dx
       integer layint,inormal,iray,itype,nlayer,laytyp,iscat
-      integer nwave(mgeom),ix,ix1,iav,nwave1,iptf
-      real vwave(mgeom,mwave),interpem
+      integer nwave(mgeom),ix,ix1,iav,nwave1,iptf,jrad
+      real vwave(mgeom,mwave),interpem,RADIUS
       real calcout(maxout3),fwhm,planck_wave,output(maxout3)
       real gradients(maxout4)
+      integer check_profile,icheck
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       real vconv(mgeom,mconv),wgeom(mgeom,mav),flat(mgeom,mav)
       real layht,tsurf,esurf,angles(mgeom,mav,3)
@@ -210,6 +217,10 @@ C            nf=20
             xn(ix)=xn(ix)+dx
           endif
 
+          if(jsurf.gt.0)then
+           tsurf = xn(jsurf)
+          endif
+
          
 C         Set up parameters for scattering cirsrad run.
 
@@ -242,6 +253,20 @@ C         Read in emissivity file
            emissivity(2)=1.0
           endif
 
+C         Check to see if any temperatures or vmrs have gone
+C         negative and if so abort
+          icheck = check_profile(runname)
+          print*,'forwardnogX, icheck = ',icheck
+C         Check also to see if surface temperature has gone negative
+          if(tsurf.lt.0.0)icheck=1   
+          print*,tsurf,icheck
+
+          if(icheck.eq.1)then
+           print*,'Profiles have gone awry. Abort, increase brakes and'
+           print*,'try again'
+           return
+          endif
+          
           print*,'forwardnogX',runname,runname
 
           call CIRSrtf_wave(runname, dist, inormal, iray,fwhm, ispace,
@@ -300,7 +325,24 @@ C         we need to add the radiation from the ground
           endif
 
 111      continue
+
+C       Add on effect of fitting radius correction in apr file.
+C       Analytical gradient. R_tot=R_TOA*4*!pi*radius^2
+C       d_R_tot/dradius = R_TOA*8*!pi*radius
+C       hence
+C       dR_TOA/dradius = R_TOA*2/radius 
+C       No need for 1e5 factor (to convert between cm and km) as we want the
+C       units to be dRadiance/dRadius (km)
+
+         if(jrad.gt.0) then
+           do j=1,nconv1
+            kk(ioff+j,jrad)=kk(ioff+j,jrad)+wgeom(igeom,iav)*
+     1         2.*ystore(ioff+j)/RADIUS
+           enddo
+         endif 
+
 110     continue
+
        ioff = ioff + nconv1
 
 100   continue

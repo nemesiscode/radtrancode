@@ -69,7 +69,9 @@ C      Ignore first 4 spaces which are reserved for planet number
       if(radius2.gt.0.0.and.jradf.ge.0)then
        print*,'read_grav: updating radius with radius2 from planrad'
        print*,'common block'
-       xradius=radius2
+       print*,'Old radius = ',xradius
+       print*,'New radius = ',radius2*1e5
+       xradius=radius2*1e5
       endif
       
       xellip = ellip(iplanet)

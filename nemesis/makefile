@@ -29,7 +29,7 @@ F_SOURCES = \
 	readxtmp.f \
 	readapriori.f \
 	rmodapriori.f \
-	modxvecMCMC.f \
+	modxvecMCMCA.f \
 	wavesetb.f \
 	mod_scatter.f \
 	readkkhead.f \
@@ -39,6 +39,7 @@ F_SOURCES = \
 	forwardnogX.f \
 	forwardnoglbl.f \
 	forwardPT.f \
+	forwardnogPT.f \
 	forwarddisc.f \
 	forwardnogMC.f \
 	forwardnogL.f \
@@ -74,12 +75,14 @@ F_SOURCES = \
 	rankwave.f \
 	intradfield.f \
 	npvar.f \
-	logflag.f
+	logflag.f \
+	check_iteration.f \
+	check_profile.f
 
 INCDIR = ../../radtran/includes
-#INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/lincom.f $(INCDIR)/pathcom.f \
-#           $(INCDIR)/parcom.f $(INCDIR)/dbcom.f $(INCDIR)/bincoms.f \
-#           $(INCDIR)/arrdef.f $(INCDIR)/ciacom.f arraylen.f
+INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/lincom.f $(INCDIR)/pathcom.f \
+           $(INCDIR)/parcom.f $(INCDIR)/dbcom.f $(INCDIR)/bincoms.f \
+           $(INCDIR)/arrdef.f $(INCDIR)/ciacom.f arraylen.f
 
 OBJ= $(F_SOURCES:.f=.o)
 LIBRARY = $(LIB)/lnemesis.a

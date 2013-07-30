@@ -217,7 +217,7 @@ C       readapriori.f. Hence just read in from temporary .str file
         CALL forwarddisc(runname,ispace,iscat,fwhm,ngeom,
      1   nav,wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
      2   lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jtanx,jprex,
-     3   nxx,xnx,ny,ynx,kkx)
+     3   jradx,nxx,xnx,ny,ynx,kkx)
        else
         print*,'Option not supported for disc-averaging'
        endif
@@ -273,8 +273,8 @@ C      Calculate inverse of se
         print*,'Calling forwarddisc - B'
         CALL forwarddisc(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,nx,xn,ny,
-     3   yn,kk)
+     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,nx,xn,
+     3   ny,yn,kk)
 
       else
 
@@ -374,7 +374,7 @@ C       temporary kernel matrix kk1. Does it improve the fit?
           print*,'Calling forwarddisc - C'
           CALL forwarddisc(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
-     2     lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,
+     2     lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,
      3     nx,xn1,ny,yn1,kk1)
         else
           print*,'Option not supported'

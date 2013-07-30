@@ -38,8 +38,8 @@ C     TIME2: System time at the end of program execution.
 
       character*200 buffer,ename
       integer i,j,iscat,ica,k,lspec,lout,ispec,nspec,nspecx,ioff
-      integer linfo,npvar
-      real altbore,marsradius,satrad,thetrot
+      integer linfo,npvar,iplanet
+      real altbore,marsradius,satrad,thetrot,RADIUS
       real xn(mx),se(my),err1(mx),woff,xdiff
       real fwhm,xlat,xlon,st(mx,mx),varparam(mvar,mparam)
       real sn(mx,mx),sm(mx,mx),xlatx,varparamx(mvar,mparam)
@@ -126,6 +126,8 @@ C     Read start, end and step of tables
 C     Read in whether to calculate with wavenumbers(0) or wavelength(1)
 C     Also read in whether scattering is required (iscat)
       READ(32,*)ispace,iscat
+
+      CALL readrefiplan(runname,iplanet,RADIUS)
 
       kiter=0
       woff=0.0
@@ -293,8 +295,8 @@ C     Read in forward modelling errors
       elseif(iscat.eq.1)then 
        CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,nx,xn,ny,
-     3   yn,kk,kiter)
+     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
+     3   nx,xn,ny,yn,kk,kiter)
       elseif(iscat.eq.2)then
        CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1   vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
@@ -302,14 +304,14 @@ C     Read in forward modelling errors
        iscat1=1
        CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,nx,xn,ny,
-     3   yn,kk,kiter)
+     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
+     3   nx,xn,ny,yn,kk,kiter)
       else
        iscat1=1
        CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,nx,xn,ny,
-     3   yn,kk,kiter)
+     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
+     3   nx,xn,ny,yn,kk,kiter)
       endif
 
 C     Mod to make sure XLAT is set to LMB value (also checks all LMB values the same)	

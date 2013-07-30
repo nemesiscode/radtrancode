@@ -84,12 +84,13 @@ C     Set measurement vector and source vector lengths here.
       INCLUDE 'arraylen.f'
       integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,jsurf
       integer jalb,jalbx,jtan,jtanx,jpre,jprex,ilbl,jrad,jradx
+      integer iprfcheck,iplanet
       real phlimit,alambda,xtry,tphi
       CHARACTER*100 runname,itname,abort
 
       real xn(mx),se1(my),se(my,my),calc_phiret,sf(my,my)
       real fwhm,xlat,xlatx,xdiff,xn1(mx),x_out(mx)
-      real xlonx
+      real xlonx,RADIUS
       integer nprox,nvarx,varidentx(mvar,3),jsurfx,nxx,ix,np,npro
       real st(mx,mx),varparamx(mvar,mparam)
       real sn(mx,mx),sm(mx,mx),xnx(mx),stx(mx,mx),ynx(my)
@@ -162,6 +163,9 @@ C     Initialise s1e and se
       enddo
 
 
+      CALL readrefiplan(runname,iplanet,RADIUS)
+
+
 C     Calculate first spectrum and k-matrix
 
 C     Load state vector with a priori
@@ -232,7 +236,7 @@ C       readapriori.f. Hence just read in from temporary .str file
          CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2    nvarx,varidentx,varparamx,jsurfx,jalbx,jtanx,jprex,
-     3    nxx,xnx,ny,ynx,kkx,kiter)
+     3    jradx,RADIUS,nxx,xnx,ny,ynx,kkx,kiter,iprfcheck)
         elseif(iscat.eq.2)then
          print*,'Calling intradfield - A'
          CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
@@ -242,7 +246,7 @@ C       readapriori.f. Hence just read in from temporary .str file
          CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2    nvarx,varidentx,varparamx,jsurfx,jalbx,jtanx,jprex,
-     3    nxx,xnx,ny,ynx,kkx,kiter)
+     3    jradx,RADIUS,nxx,xnx,ny,ynx,kkx,kiter,iprfcheck)
         else
          print*,'Coreret: iscat invalid',iscat
          stop
@@ -322,8 +326,8 @@ C        print*,'forwardavfovX OK, jpre = ',jpre
  
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,nx,xn,ny,
-     3   yn,kk,kiter)
+     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
+     3   nx,xn,ny,yn,kk,kiter,iprfcheck)
 
 C        print*,'forwardnogX OK, jpre = ',jpre
 
@@ -337,8 +341,8 @@ C        print*,'forwardnogX OK, jpre = ',jpre
 
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,nx,xn,ny,
-     3   yn,kk,kiter)
+     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
+     3   nx,xn,ny,yn,kk,kiter,iprfcheck)
 
        endif
       endif
@@ -424,6 +428,8 @@ C       Now calculate next iterated xn1
          enddo
          ix=ix+np
         enddo
+
+
 C       Calculate test spectrum using trial state vector xn1. 
 C       Put output spectrum into temporary spectrum yn1 with
 C       temporary kernel matrix kk1. Does it improve the fit? 
@@ -445,8 +451,8 @@ C       temporary kernel matrix kk1. Does it improve the fit?
          print*,'Calling forwardnogX - C'
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,
-     3     nx,xn1,ny,yn1,kk1,kiter)
+     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
+     3     nx,xn1,ny,yn1,kk1,kiter,iprfcheck)
          elseif(iscat.eq.2)then
          print*,'Calling intradfield - C'
           CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
@@ -454,9 +460,18 @@ C       temporary kernel matrix kk1. Does it improve the fit?
      2     jtan,jpre,nx,xn1)
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,
-     3     nx,xn1,ny,yn1,kk1,kiter)
+     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
+     3     nx,xn1,ny,yn1,kk1,kiter,iprfcheck)
          endif
+        endif
+
+        if(iprfcheck.eq.1)then
+C        iteration has led to negative temperatures, vmrs or dust amounts
+C        Increase brake and try again.
+         print*,'Profile gone wobbly, increase brake and try again'
+         alambda = alambda*10.0              ! increase Marquardt brake
+         if(alambda.gt.1e10)alambda=1e10
+         goto 145
         endif
 
 C       Calculate the cost function for this trial solution.

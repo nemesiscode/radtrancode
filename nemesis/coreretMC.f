@@ -79,8 +79,8 @@ C     Set measurement vector and source vector lengths here.
       INCLUDE 'arraylen.f'
       integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,jsurf
       integer jalb,jalbx,jtan,jtanx,jpre,jprex,iscat1
-      integer jrad,jradx,npvar
-      real phlimit,alambda,xtry,tphi
+      integer jrad,jradx,npvar,iplanet
+      real phlimit,alambda,xtry,tphi, RADIUS
       CHARACTER*100 runname,itname,abort
 
       real xn(mx),se1(my),se(my,my),calc_phiret,sf(my,my)
@@ -155,6 +155,8 @@ C     Initialise s1e and se
         se(i,i)=se1(i)
         sei(i,i)=1.0/dble(se1(i))
       enddo
+
+      CALL readrefiplan(runname,iplanet,RADIUS)
 
 
 C     Calculate first spectrum and k-matrix
@@ -232,8 +234,8 @@ C       readapriori.f. Hence just read in from temporary .str file
         iscat1=1
         CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
-     2   nvarx,varidentx,varparamx,jsurfx,jalbx,jtanx,jprex,
-     3   nxx,xnx,ny,ynx,kkx,kiter)
+     2   nvarx,varidentx,varparamx,jsurfx,jalbx,jtanx,jprex,jradx,
+     3   RADIUS,nxx,xnx,ny,ynx,kkx,kiter)
        else
         print*,'CoreretMC: iscat invalid',iscat
         stop
@@ -340,15 +342,15 @@ C        print*,'forwardnogMC OK, jpre = ',jpre
 C       print*,'Calling forwardnogX'
        CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,nx,xn,ny,
-     3   yn,kk,kiter)
+     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,
+     3   RADIUS,nx,xn,ny,yn,kk,kiter)
 
       else
        iscat1=1
        CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,nx,xn,ny,
-     3   yn,kk,kiter)
+     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
+     3   nx,xn,ny,yn,kk,kiter)
 
 C        print*,'forwardnogX OK, jpre = ',jpre
       endif
@@ -461,7 +463,7 @@ C       temporary kernel matrix kk1. Does it improve the fit?
         elseif(iscat.eq.1)then
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,
+     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
      3     nx,xn1,ny,yn1,kk1,kiter)
         elseif(iscat.eq.2)then
           CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
@@ -470,13 +472,13 @@ C       temporary kernel matrix kk1. Does it improve the fit?
           iscat1=1
           CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,
+     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
      3     nx,xn1,ny,yn1,kk1,kiter)
         else
           iscat1=1
           CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,
+     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
      3     nx,xn1,ny,yn1,kk1,kiter)
         endif
 

@@ -69,12 +69,13 @@ C     **************************************************************
       real calcout1(maxout3),gradients1(maxout4)
       real calcout2(maxout3),gradients2(maxout4)
       real gradients(maxout4),vv,gradientsL(maxout4)
+      real ytrans(maxpat),yarea(maxpat)
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       integer ipixA,ipixB,ichan
       real vconv(mgeom,mconv),vconv1(mconv)
       real layht,tsurf,esurf,pressR,delp,altbore,thbore,gtsurf
       real xn(mx),yn(my),kk(my,mx),yn1(my),caltbore
-      double precision y1(mconv),y2(mconv,mx)
+      double precision y1(maxpat),y2(maxpat,mx)
       integer ny,iscat
       integer nphi,ipath
       integer nmu,isol,lowbc,nf
@@ -232,6 +233,10 @@ C      emissivity spectrum
       endif
 
 
+C     Check to see if any temperatures or vmrs have gone negative. If so
+C     abort and return
+
+
 
       CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
 
@@ -265,6 +270,15 @@ C     Read in base heights from '.drv' file
 C     Now run through wavelengths and find right wavelength in 
 C     pre-calculated array
 
+      open(9,file='forwardPTtrans.txt',status='unknown')
+      write(9,*)nconv1,npath
+      write(9,*)(vconv1(j),j=1,nconv1)
+      write(9,*)(height(j),j=1,npath)
+
+      area0 = pi*stelrad**2
+      area1 = pi*(radius1+height(1))**2
+      write(9,*)area0,area1
+
       do 206 iconv=1,nconv1
         area = 0.0
         do j=1,nx
@@ -276,6 +290,7 @@ C     pre-calculated array
          h1 = radius1 + height(ipath)
          ioff1=nconv1*(ipath-1)+iconv
          trans = calcoutL(ioff1)
+         ytrans(ipath)=trans
          y1(ipath) = 2.*pi*h1*(1.-trans)
 C         print*,radius1,height(ipath),h1,trans,y1(ipath)
          do j=1,nx
@@ -286,23 +301,28 @@ C     1       y2(ipath,j),gradientsL(ioff2)
          enddo
 205     continue        
 
+        write(9,*)(ytrans(j),j=1,npath)
+        write(9,*)(sngl(y1(j)),j=1,npath)
+
         do 207 ipath=1,npath-1
 
          dh = height(ipath+1)-height(ipath)
 
          area = area + 0.5*(y1(ipath)+y1(ipath+1))*dh
 C         print*,ipath,dh,area
+         yarea(ipath)=0.5*(y1(ipath)+y1(ipath+1))*dh
          do j=1,nx
           darea(j)=darea(j)+0.5*(y2(ipath,j)+y2(ipath+1,j))*dh
          enddo
 
 207     continue
+        yarea(npath)=0.
+        write(9,*)(yarea(j),j=1,npath)
 
         
-	area0 = pi*stelrad**2
-        area1 = pi*(radius1+height(1))**2
-
         yn(iconv)=sngl(100.0*(area1+area)/area0)
+
+        write(9,*)area,yn(iconv)
 
         print*,'Areas',area0,area1,area,area1+area,yn(iconv),
      1    100*area1/area0
@@ -318,6 +338,8 @@ C       Add on effect of fitting radius correction in apr file.
         endif
 
 206   continue
+
+      close(9)
 
       return
 

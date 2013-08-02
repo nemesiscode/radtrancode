@@ -88,6 +88,14 @@ C paths, etc.)
       REAL DNU
       INTEGER IPARA
 
+C     Solar spectrum variables and flags      
+      integer iform,iread,solnpt
+      real solwave(maxbin),solrad(maxbin),solradius
+      character*100 solfile,solname
+      logical solexist
+      common/solardat/iread, iform, solradius, solwave, solrad,  solnpt
+
+
 C-----------------------------------------------------------------------
 C
 C	Write a header
@@ -228,6 +236,17 @@ C-----------------------------------------------------------------------
        IPARA2=IPARA
       ENDIF
 
+
+
+C     See if there is a solar or stellar reference spectrum and read in
+C     if present.  
+      call file(opfile,solfile,'sol')
+      inquire(file=solfile,exist=solexist)    
+      if(solexist)then
+         call opensol(solfile,solname)
+         CALL init_solar_wave(ispace,solname)
+      endif
+      iform=0
 
 C-----------------------------------------------------------------------
 C

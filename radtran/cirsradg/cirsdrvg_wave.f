@@ -30,7 +30,7 @@ C (layers, bins, paths, etc.)
 
       REAL vconv(maxbin),vwave(maxbin)
       REAL vref,delvk,vmin,vmax,vem(MAXSEC),emissivity(MAXSEC),tsurf
-      REAL dist,wnumbot,wnumtop,delv,fwhm,gtsurf
+      REAL dist,wnumbot,wnumtop,delv,fwhm,gradtsurf(maxout3)
 
       REAL tot_time
       DOUBLE PRECISION time,time1,time2
@@ -52,6 +52,13 @@ C (layers, bins, paths, etc.)
       CHARACTER*100 ANAME
       REAL DNU
       INTEGER IPARA
+
+C     Solar spectrum variables and flags
+      integer iform,iread,solnpt
+      real solwave(maxbin),solrad(maxbin),solradius
+      character*100 solfile,solname
+      logical solexist
+      common/solardat/iread, iform, solradius, solwave, solrad,  solnpt
 
 
 C-----------------------------------------------------------------------
@@ -248,14 +255,26 @@ C	Call CIRSrtfg_wave
 C
 C-----------------------------------------------------------------------
 	
+
+
+C     See if there is a solar or stellar reference spectrum and read in
+C     if present.
+      call file(runname,solfile,'sol')
+      inquire(file=solfile,exist=solexist)
+      if(solexist)then
+         call opensol(solfile,solname)
+         CALL init_solar_wave(ispace,solname)
+      endif
+      iform=0
+
       nv=1
       DO i=1,300
         xmap(1,12,i)=1.0
       ENDDO
 
       CALL cirsrtfg_wave (runname, dist, inormal, iray, fwhm, ispace, 
-     1 vwave,nwave,itype, nem, vem, emissivity, tsurf, gtsurf, nv, xmap, 
-     2 vconv, nconv, npath, calcout, gradients)
+     1 vwave,nwave,itype, nem, vem, emissivity, tsurf, gradtsurf, nv, 
+     1 xmap, vconv, nconv, npath, calcout, gradients)
 
       CALL FILE(runname,outfile,'out')
       OPEN(2,FILE=outfile,STATUS='unknown')

@@ -71,7 +71,9 @@ C     setting defaults for the layer parameters defined in laycom.f
       LAYHT=H(1)
       LAYANG=0.
       NLAY=20
-	  if(jradf.gt.0)radius=radius2
+C     If radius is being retrieved then we need to use this radius when
+C     calculating the layers
+      if(jradf.gt.0)radius=radius2
 C     looking for keywords in file
 2     READ(2,1,END=3)TEXT
 1     FORMAT(A)

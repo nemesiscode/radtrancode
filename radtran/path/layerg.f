@@ -83,7 +83,10 @@ C Setting defaults for the layer parameters defined in laycom.f
       LAYANG = 0.0
       NLAY = 20
       
+C     If radius is being retrieved then we need to use this radius when
+C     calculating the layers 
       if(jradf.gt.0)radius=radius2
+
       print*,'radius layer=',radius
 
 C Looking for keywords in file

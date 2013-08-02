@@ -220,6 +220,22 @@ C     Now sort wavelength arrays
 
       open(9,file='forwardPTtrans.txt',status='unknown')
 
+
+C     If planet is not a gas giant then we need to read in the surface
+C     emissivity spectrum
+      if(.not.gasgiant)then
+          call readsurfem(runname,nem,vem,emissivity)
+      else
+           nem=2
+           vem(1)=-100.0
+           vem(2)=1e7
+           emissivity(1)=1.0
+           emissivity(2)=1.0
+      endif
+
+      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
+
+
       do 111 ix1=1,nx2
 
          ix=ix1-1
@@ -250,20 +266,6 @@ C        near-limb observations
          call gsetradPT(runname,nconv1,vconv1,fwhm,ispace,iscat,
      1    gasgiant,layht,nlayer,laytyp,layint,xlat,lin,
      3    nvar,varident,varparam,nx,xn,xmap)
-
-C        If planet is not a gas giant then we need to read in the surface
-C         emissivity spectrum
-         if(.not.gasgiant)then
-          call readsurfem(runname,nem,vem,emissivity)
-         else
-           nem=2
-           vem(1)=-100.0
-           vem(2)=1e7
-           emissivity(1)=1.0
-           emissivity(2)=1.0
-         endif
-
-         CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
 
 
 C        Set up parameters for non-scattering cirsrad run.

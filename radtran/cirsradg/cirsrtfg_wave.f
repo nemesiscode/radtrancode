@@ -1,6 +1,6 @@
       SUBROUTINE cirsrtfg_wave(runname,dist,inormal,iray,fwhm1,
-     1 ispace,vwave,nwave,itype1, nem, vem, emissivity,tsurf,gtsurf,
-     2 nv,xmap,vconv,nconv,npath1,calcout,gradients)
+     1 ispace,vwave,nwave,itype1, nem, vem, emissivity,tsurf,
+     2 gradtsurf,nv,xmap,vconv,nconv,npath1,calcout,gradients)
 C***********************************************************************
 C_TITL:	CIRSRTFG_WAVE.f
 C
@@ -88,7 +88,8 @@ C     NTAB2: = NPATH*NWAVE*NV, must be less than maxout4.
       INTEGER nwave,i,j,nparam,jj,icont,nconv
 
       INTEGER itype1,npath1,ispace,nem
-      REAL fwhm1,vem(maxsec),emissivity(maxsec),tsurf,gtsurf
+      REAL fwhm1,vem(maxsec),emissivity(maxsec),tsurf
+      real gtsurf(maxpat)
       REAL RADIUS1
 C     NB: The variables above have the added '1' to differentiate the 
 C     variables passed into this code from that defined in
@@ -101,19 +102,19 @@ C     XCOMP: % complete printed in increments of 10.
       REAL vwave(nwave),output(maxpat),vconv(nconv)
       REAL doutputdq(maxpat,maxlay,maxgas+2+maxcon)
       REAL doutmoddq(maxpat,maxgas+2+maxcon,maxpro)
-      REAL doutdx(maxpat,maxv)
+      REAL doutdx(maxpat,maxv),gradtsurf(maxout3)
+      REAL tempgtsurf(maxout3)
       REAL tempout(maxout3),tgrad(maxout4)
       REAL calcout(maxout3),gradients(maxout4)
       REAL xmap(maxv,maxgas+2+maxcon,maxpro)
-      REAL y(maxout),yout(maxout),vv
-C      xxmolwt,molwtx
+      REAL y(maxout),yout(maxout),vv,ygt(maxout),youtgt(maxout)
       CHARACTER*100 drvfil,radfile,xscfil,runname
-      CHARACTER*100 klist,solfile,solname
+      CHARACTER*100 klist
       INTEGER iwave,ipath,k,igas,ioff1,ioff2,iv,nv
       INTEGER nsw,isw(maxgas+2+maxcon),iswitch,rdamform
       LOGICAL scatterf,dustf,solexist
 
-C     Need simple way of passing planetary radius to nemesis/forwarddisc
+C     Need simple way of passing planetary radius to nemesis
       INCLUDE '../includes/planrad.f'
 C     ************************* CODE ***********************
 
@@ -149,19 +150,6 @@ C ... and the xsc files likewise.
         CALL file(runname, xscfil, 'xsc')
         CALL get_xsec(xscfil, ncont)
       ENDIF
-
-C     See if there is a solar or stellar reference spectrum and read in 
-C     if present.
-
-      call file(runname,solfile,'sol')
-
-      inquire(file=solfile,exist=solexist)
-
-      if(solexist)then
-         call opensol(solfile,solname)
-         CALL init_solar_wave(ispace,solname)
-      endif
-
 
       PRINT*,'NPATH = ',NPATH
 
@@ -232,14 +220,11 @@ C       the fact that at each level the sum of vmrs is 1.
 
         vv = vwave(iwave)
 
-C       Pass radius of planet in units of cm for secondary transit 
-C       calculations
-		if(jradf.gt.0)radius1=radius2
-		if(itype1.eq.11)THEN
-        RADIUS1=RADIUS*1e5
-        RADIUS2=RADIUS1
-	    ENDIF
-C	    print*,'radii',radius1,radius2,radius
+C       Pass radius of planet to cirsradg_wave
+C       radius2 is radius held in planrad common block. Pass this to
+C       cirsradg_wave, in case it's been updated.
+        radius1=radius2
+
 	CALL cirsradg_wave (dist,inormal,iray,delh,nlayer,npath,ngas,
      1  press,temp,pp,amount,iwave,ispace,AMFORM,vv,nlayin,
      2  layinc,cont,scale,imod,idgas,isogas,emtemp,itype1,
@@ -256,10 +241,15 @@ C Convert from rates of change of .prf profile variables to rates of
 C change of desired variables.
         CALL map2xvec(nparam,npro,npath,nv,xmap,doutmoddq,doutdx)
 
-
         DO ipath=1,npath
           ioff1 = nwave*(ipath - 1) + iwave
           tempout(ioff1) = output(ipath)
+
+C         Store ROC of surface temperature too
+          tempgtsurf(ioff1)=gtsurf(ipath)
+C          print*,'YYY',iwave,ipath,ioff1,tempout(ioff1),
+C     1      tempgtsurf(ioff1)
+
           DO iv=1,nv
             ioff2 = nwave*nv*(ipath - 1) + (iv - 1)*nwave + iwave
             tgrad(ioff2) = doutdx(ipath,iv)
@@ -270,16 +260,22 @@ C change of desired variables.
 C Convolve output calculation spectra with a square bin of width FWHM to
 C get convoluted spectra.
       DO ipath=1,npath
+
         DO iwave=1,nwave
            ioff1 = nwave*(ipath - 1) + iwave
            y(iwave) = tempout(ioff1)
-        ENDDO
-		
-        CALL cirsconv(runname,fwhm1,nwave,vwave,y,nconv,vconv,yout)
-		
+           ygt(iwave) = tempgtsurf(ioff1)
+        ENDDO		
+
+        CALL cirsconv(runname,fwhm1,nwave,vwave,y,nconv,vconv,yout)	
+        CALL cirsconv(runname,fwhm1,nwave,vwave,ygt,nconv,vconv,
+     1			youtgt)	
         DO iconv=1,nconv
           ioff1 = nconv*(ipath - 1) + iconv
           calcout(ioff1) = yout(iconv)
+          gradtsurf(ioff1) = youtgt(iconv)
+C          print*,'ZZZ',iconv,ipath,ioff1,calcout(ioff1),
+C     1     gradtsurf(ioff1)
         ENDDO
 
         DO iv=1,nv

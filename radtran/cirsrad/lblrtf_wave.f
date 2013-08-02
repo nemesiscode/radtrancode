@@ -55,7 +55,7 @@ C         bins, paths, etc.)
 
         INTEGER         nconv, npath1, itype1, I, J, K, mconv
  	INTEGER		MAXLIN1,ISHAPE
-        PARAMETER       (mconv=2000)
+        PARAMETER       (mconv=6000)
 	INTEGER		INormal,Iray, ispace,nem,IBS(2),IBD(2), IFLAG
 	REAL		Dist, FWHM1,X0,X1,WING1,VREL1,MAXDV
         REAL		VMAX,VBOT,DELV1,VV,X
@@ -258,15 +258,6 @@ C-----------------------------------------------------------------------
           YNOR(I,J)=0.0
          ENDDO
         ENDDO
-
-        call file(opfile1,solfile,'sol')
-
-        inquire(file=solfile,exist=solexist)
-
-        if(solexist)then
-         call opensol(solfile,solname)
-         CALL init_solar_wave(ispace,solname)
-        endif
 
         XNEXT=0.0
 

@@ -72,13 +72,15 @@ C     **************************************************************
       integer ngeom,ioff,igeom,lin
       include '../radtran/includes/arrdef.f'
       include '../radtran/includes/gascom.f'
+      include '../radtran/includes/planrad.f'
       include 'arraylen.f'
       real xlat,xref,dx
       integer layint,inormal,iray,itype,nlayer,laytyp,iscat
       integer nwave(mgeom),ix,ix1,iav,nwave1,iptf,jrad
       real vwave(mgeom,mwave),interpem,RADIUS
       real calcout(maxout3),fwhm,planck_wave,output(maxout3)
-      real gradients(maxout4)
+      real gradients(maxout4),pi
+      parameter (pi=3.1415927)
       integer check_profile,icheck
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       real vconv(mgeom,mconv),wgeom(mgeom,mav),flat(mgeom,mav)
@@ -97,6 +99,14 @@ C     **************************************************************
       real varparam(mvar,mparam)
       logical gasgiant
       real vem(maxsec),emissivity(maxsec)
+
+      real stelrad,solwave(maxbin),solrad(maxbin)
+      integer solnpt,iform,iread
+
+      common /solardat/iread, iform, stelrad, solwave, solrad,  solnpt
+
+C     jradf is passed via tha planrad common block
+      jradf=jrad
 
 
 
@@ -124,8 +134,17 @@ C      print*,jsurf,jalb,jtan,jpre
 C      print*,nx,ny
 C      print*,(xn(i),i=1,nx)
 
+
+
+      if(iform.eq.2) then
+       print*,'forwardnogx.f cannot be used to calculate A_plan/A_star'
+       stop
+      endif
+
       call setup(runname,gasgiant,nmu,mu,wtmu,isol,dist,lowbc,
      1 galb,nf1,nphi,layht,tsurf,nlayer,laytyp,layint)
+
+
 
       call file(runname,logname,'log')
 
@@ -197,6 +216,7 @@ C            nf=20
            nx2 = 1
          endif
 
+
          do 111 ix1=1,nx2
 
           ix = ix1-1
@@ -207,6 +227,7 @@ C            nf=20
             xref = xn(ix)
             dx = 0.05*xref
             if(dx.eq.0)dx = 0.1
+            if(ix.eq.jrad)dx=10.
             if(ix.eq.jtan)then
              if(emiss_ang.lt.0)then
                dx=1.0
@@ -221,8 +242,18 @@ C            nf=20
            tsurf = xn(jsurf)
           endif
 
+C        If we're retrieving planet radius then add correction to reference
+C        radius
+C        N.B.radius2 is passed via the planrad common block.
+         if(jrad.gt.0)then
+          radius2 = xn(jrad) + radius
+         else      
+          radius2 = radius
+         endif
+
+
          
-C         Set up parameters for scattering cirsrad run.
+C        Set up parameters for scattering cirsrad run.
 
          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
 
@@ -325,21 +356,6 @@ C         we need to add the radiation from the ground
           endif
 
 111      continue
-
-C       Add on effect of fitting radius correction in apr file.
-C       Analytical gradient. R_tot=R_TOA*4*!pi*radius^2
-C       d_R_tot/dradius = R_TOA*8*!pi*radius
-C       hence
-C       dR_TOA/dradius = R_TOA*2/radius 
-C       No need for 1e5 factor (to convert between cm and km) as we want the
-C       units to be dRadiance/dRadius (km)
-
-         if(jrad.gt.0) then
-           do j=1,nconv1
-            kk(ioff+j,jrad)=kk(ioff+j,jrad)+wgeom(igeom,iav)*
-     1         2.*ystore(ioff+j)/RADIUS
-           enddo
-         endif 
 
 110     continue
 

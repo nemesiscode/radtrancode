@@ -81,7 +81,8 @@ C     **************************************************************
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       integer ipixA,ipixB,ichan,iptf
       real vconv(mgeom,mconv),vconv1(mconv)
-      real layht,tsurf,esurf,gtsurf,pressR,delp,altbore,thbore
+      real layht,tsurf,esurf,gradtsurf(maxout3),pressR
+      real delp,altbore,thbore
       real xn(mx),yn(my),kk(my,mx),yn1(my),caltbore
       integer ny,iscat,jalb,jtan,jpre
       integer nphi,ipath
@@ -257,7 +258,7 @@ C     Set up parameters for non-scattering cirsrad run.
       print*,'hcorrx = ',hcorrx
 
       call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
-     1  vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gtsurf, 
+     1  vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf, 
      2  nx, xmap, vconv1, nconv1, npath,calcoutL, gradientsL)
 
 
@@ -275,7 +276,7 @@ C       Set up all files to recalculate limb spectra
      3    nvar,varident,varparam,nx,xn,jpre,tsurf,xmap)
 
         call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace,
-     1   vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gtsurf, 
+     1   vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf, 
      2   nx, xmap, vconv1, nconv1, npath, calcout1, gradients1)
 
          xn(jpre)=pressR
@@ -433,8 +434,9 @@ C          pre-calculated array
       
 
            call CIRSrtfg_wave(runname,dist,inormal,iray,fwhm,ispace,
-     1      vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gtsurf, 
-     2      nx, xmap, vconv1, nconv1, npath, calcout, gradients)
+     1      vwave1,nwave1,itype, nem, vem, emissivity, tsurf, 
+     2      gradtsurf, nx, xmap, vconv1, nconv1, npath, calcout, 
+     3      gradients)
 
 C          Need to assume order of paths. First path is assumed to be
 C          thermal emission, 2nd path is transmission to ground (if planet
@@ -582,8 +584,9 @@ C          pre-calculated array
 
 
            call CIRSrtfg_wave(runname,dist,inormal,iray,fwhm,ispace,
-     1      vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gtsurf, 
-     2      nx, xmap, vconv1, nconv1, npath, calcout2, gradients2)
+     1      vwave1,nwave1,itype, nem, vem, emissivity, tsurf, 
+     2      gradtsurf, nx, xmap, vconv1, nconv1, npath, calcout2, 
+     3      gradients2)
 
 C          Need to assume order of paths. First path is assumed to be
 C          thermal emission, 2nd path is transmission to ground (if planet

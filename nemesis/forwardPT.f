@@ -73,7 +73,8 @@ C     **************************************************************
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       integer ipixA,ipixB,ichan
       real vconv(mgeom,mconv),vconv1(mconv)
-      real layht,tsurf,esurf,pressR,delp,altbore,thbore,gtsurf
+      real layht,tsurf,esurf,pressR,delp,altbore,thbore
+      real gradtsurf(maxout3)
       real xn(mx),yn(my),kk(my,mx),yn1(my),caltbore
       double precision y1(maxpat),y2(maxpat,mx)
       integer ny,iscat
@@ -90,19 +91,18 @@ C     **************************************************************
       real vem(maxsec),emissivity(maxsec),PI,h1,dh,trans
       parameter (PI=3.1415927)
 
-      real vtmp,tmp,delh,dtr,radius,radius1
+      real vtmp,tmp,delh,dtr,radius
       double precision area,area0,area1,darea1,darea(mx)
       integer nvar,varident(mvar,3),ivar
       real varparam(mvar,mparam)
       logical gasgiant
 
       real stelrad,solwave(maxbin),solrad(maxbin)
-      integer solnpt
+      integer solnpt,iform
 
-      common /solardat/iread, stelrad, solwave, solrad,  solnpt
+      common /solardat/iread, iform, stelrad, solwave, solrad,  solnpt
 
 C     jradf is passed via tha planrad common block
-
       jradf=jrad
 
 C     Initialise arrays
@@ -196,15 +196,12 @@ C     Now sort wavelength arrays
 
 C     If we're retrieving planet radius then add correction to reference
 C     radius
-      if(jrad.gt.0)then
-       radius1 = xn(jrad) + radius
-      else
-       radius1 = radius
-      endif
-      print*,'radius=',radius1
-
 C     radius2 is passed via the planrad common block.
-      radius2=radius1
+      if(jrad.gt.0)then
+       radius2 = xn(jrad) + radius
+      else
+       radius2 = radius
+      endif
 
       iscat=0
 
@@ -245,8 +242,9 @@ C     Set up parameters for non-scattering cirsrad run.
       itype=12                  ! scloud12. not used here
 
       call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
-     1   vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gtsurf,
-     2    nx, xmap, vconv1, nconv1, npath,calcoutL, gradientsL)
+     1   vwave1,nwave1,itype, nem, vem, emissivity, tsurf, 
+     2   gradtsurf, nx, xmap, vconv1, nconv1, npath,calcoutL, 
+     3   gradientsL)
 
 
 
@@ -276,7 +274,7 @@ C     pre-calculated array
       write(9,*)(height(j),j=1,npath)
 
       area0 = pi*stelrad**2
-      area1 = pi*(radius1+height(1))**2
+      area1 = pi*(radius2+height(1))**2
       write(9,*)area0,area1
 
       do 206 iconv=1,nconv1
@@ -287,12 +285,12 @@ C     pre-calculated array
 
         do 205 ipath=1,npath        
 
-         h1 = radius1 + height(ipath)
+         h1 = radius2 + height(ipath)
          ioff1=nconv1*(ipath-1)+iconv
          trans = calcoutL(ioff1)
          ytrans(ipath)=trans
          y1(ipath) = 2.*pi*h1*(1.-trans)
-C         print*,radius1,height(ipath),h1,trans,y1(ipath)
+C         print*,radius2,height(ipath),h1,trans,y1(ipath)
          do j=1,nx
           ioff2=nconv1*nx*(ipath-1)+(j-1)*nconv1+iconv
           y2(ipath,j)=-2.*pi*h1*gradientsL(ioff2)
@@ -334,7 +332,7 @@ C         print*,ipath,dh,area
 C       Add on effect of fitting radius correction in apr file.
         if(jrad.gt.0)then
            kk(iconv,jrad)=kk(iconv,jrad)+
-     &			sngl(100.*2.*pi*radius1/area0)
+     &			sngl(100.*2.*pi*radius2/area0)
         endif
 
 206   continue

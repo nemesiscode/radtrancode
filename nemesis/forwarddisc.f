@@ -1,7 +1,7 @@
       subroutine forwarddisc(runname,ispace,iscat,fwhm,ngeom,
      1 nav,wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
-     2 lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,nx,xn,
-     3 ny,yn,kk)
+     2 lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
+     3 nx,xn,ny,yn,kk)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate an FOV-averaged spectrum and
@@ -43,6 +43,7 @@ C	jpre		integer	Position of tangent pressure in
 C				xn (if included)
 C     	jrad		integer Position of radius in
 C                               xn (if included)
+C	RADIUS		real	Radius of planet (km) 
 C       nx              integer Number of elements in state vector
 C       xn(mx)          real	State vector
 C       ny      	integer Number of elements in measured spectra array
@@ -64,7 +65,7 @@ C     **************************************************************
       implicit none
       integer i,j,lin,ispace,iav,ispace1
       integer ngeom,ioff,igeom,jrad
-      real interpem
+      real interpem,RADIUS
       include '../radtran/includes/arrdef.f'
       include '../radtran/includes/gascom.f'
       include 'arraylen.f'
@@ -81,8 +82,8 @@ C     **************************************************************
       real gradients(maxout4),vv
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       real vconv(mgeom,mconv),vconv1(mconv),xfac
-      real layht,tsurf,esurf,gtsurf
-      real xn(mx),yn(my),kk(my,mx),yn1(my)
+      real layht,tsurf,esurf,gradtsurf(maxout3)
+      real xn(mx),yn(my),kk(my,mx),yn1(my),ytmp(my)
       integer ny,iconv
       integer nphi,ipath
       integer nmu,isol,lowbc,nf
@@ -92,7 +93,7 @@ C     **************************************************************
       real xmap(maxv,maxgas+2+maxcon,maxpro)
 
       integer nvar,varident(mvar,3)
-      real varparam(mvar,mparam),RADIUS1
+      real varparam(mvar,mparam)
       logical gasgiant,fexist
       real vem(maxsec),emissivity(maxsec)
       
@@ -102,6 +103,16 @@ c  ** variables for solar reflected cloud **
       real refl_cloud_albedo
       logical reflecting_atmos
       common /refl_cloud_params/refl_cloud_albedo,reflecting_atmos
+
+C     Solar reference spectrum common block
+      real swave(maxbin),srad(maxbin),solrad
+      integer iread,nspt,iform
+      common /solardat/iread,iform,solrad,swave,srad,nspt
+
+C     jradf, radius2 is passed via tha planrad common block
+
+      jradf=jrad
+      radius2=radius
 
 C     Initialise arrays
       do i=1,my
@@ -125,6 +136,15 @@ C     Initialise arrays
       if(jsurf.gt.0)then
        tsurf = xn(jsurf)
        print*,'tsurf = ',tsurf
+      endif
+
+C     If we're retrieving planet radius then add correction to reference
+C     radius
+C     N.B.radius2 is passed via the planrad common block.
+      if(jrad.gt.0)then
+        radius2 = xn(jrad) + radius
+      else
+        radius2 = radius
       endif
 
       ioff = 0
@@ -176,7 +196,7 @@ C        we need to read in the surface emissivity spectrum
 
 
          call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
-     1    vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gtsurf,
+     1    vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf,
      2    nx, xmap, vconv1, nconv1, npath, calcout, gradients)
 
 
@@ -194,10 +214,9 @@ C        we need to read in the surface emissivity spectrum
 
 	  ioff1=nconv1*(ipath-1)+iconv
           yn(ioff+j)=yn(ioff+j)+wgeom(igeom,iav)*calcout(ioff1)
-         enddo
+          ytmp(ioff+j)=wgeom(igeom,iav)*calcout(ioff1)
 
-C       Get planetary radius from planrad common block
-        radius1=radius2
+         enddo
 
     
          do i=1,nx
@@ -207,21 +226,22 @@ C       Get planetary radius from planrad common block
              if(vconv(igeom,j).eq.vconv1(k))iconv=k
             enddo
             ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + iconv
-            if(i.ne.jsurf)then 
-             kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*
-     1		gradients(ioff2)
-            else
-             kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*
-     1		gtsurf
-            endif
-C           Analytical calculation of dradiance/dradius (see forwardnogX.f
-C           for explanation). What the units to be dradiance/dkm and radius1
-C           is in units of cm, so need factor of 1e-5 to convert this to km.
-            if(i.eq.jrad)then
-             kk(ioff+j,i)=kk(ioff+j,i)+yn(ioff+j)*2./(radius1*1e-5)
-            endif
-           enddo
+            kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*
+     1	     gradients(ioff2)
 
+            if(i.eq.jsurf)then 
+ 	     ioff1=nconv1*(ipath-1)+iconv
+             kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*
+     1		gradtsurf(ioff1)
+            endif
+
+            if(i.eq.jrad)then
+ 	     ioff1=nconv1*(ipath-1)+iconv
+             kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*
+     1		2.*calcout(ioff1)/RADIUS             
+            endif
+
+           enddo
          enddo
 
          if (reflecting_atmos) then
@@ -230,19 +250,6 @@ C           is in units of cm, so need factor of 1e-5 to convert this to km.
 
           ipath = 2
 
-c         initialise solar spectrum
-          CALL FILE(runname,solfile,'sol')
-          inquire(file=solfile,exist=fexist)
-          if(fexist) then
-           call opensol(solfile,solname)
-          else
-           print*,'Error in forwarddisc. solar flux file not defined'
-           print*,'for reflectivity calculation'
-           stop
-          endif
-
-          CALL init_solar_wave(ispace,solname)
-
           do j=1,nconv1
            vv = vconv(igeom,j)
            iconv=-1
@@ -250,23 +257,35 @@ c         initialise solar spectrum
             if(vv.eq.vconv1(k))iconv=k
            enddo
 
-             ioff1=nconv1*(ipath-1)+iconv
-C            Get star flux at planet's radius
-             CALL get_solar_wave(vconv1(j),dist,solar)
-
-C            Get overall star spectral power
-             xdist=-1.
-             CALL get_solar_wave(vconv1(j),xdist,xsolar)
+           ioff1=nconv1*(ipath-1)+iconv
+C          Get star flux at planet's radius
+           CALL get_solar_wave(vconv1(j),dist,solar)
 
            Bg = solar*refl_cloud_albedo/pi
            
-           radius1=radius2
 
-           print*,'forwarddisc: radius = ',radius1
-           xfac=(2.*pi)*4.*pi*RADIUS1**2/xsolar
+C          Get overall star spectral power
+           xdist=-1.
+           CALL get_solar_wave(vconv1(j),xdist,xsolar)
+
+           xfac=1.
+           if(iform.eq.1.or.iform.eq.3)then
+C           Not sure why its 2*pi below. It should be just pi.
+            xfac=xfac*(2.*pi)*4.*pi*(RADIUS*1e5)**2
+           endif
+           if(iform.eq.1)then
+            xfac=xfac/xsolar
+           endif
+C          If doing integrated flux from planet need a factor to stop the
+C          matrix inversion crashing
+           if(iform.eq.3)xfac=xfac*1e-18
 
            yn(ioff+j)=yn(ioff+j) + xfac*wgeom(igeom,iav)*
      1					calcout(ioff1)*Bg
+           if(jrad.gt.0)then
+            kk(ioff+j,jrad)=kk(ioff+j,jrad) +
+     1         (2*xfac/RADIUS)*wgeom(igeom,iav)*calcout(ioff1)*Bg
+           endif
 
            do i=1,nx
             ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + iconv

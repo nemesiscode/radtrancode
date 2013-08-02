@@ -1,7 +1,7 @@
       subroutine forwardavfovX(runname,ispace,iscat,fwhm,ngeom,
      1 nav,wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
-     2 lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,nx,xn,ny,
-     3 yn,kk)
+     2 lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
+     3 nx,xn,ny,yn,kk)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate an FOV-averaged spectrum and
@@ -41,6 +41,9 @@ C	jtan		integer	Position of tangent height correction in
 C				xn (if included)
 C	jpre		integer	Position of tangent pressure in
 C				xn (if included)
+C       jrad            integer position radius element in
+C                               xn (if included)
+C       RADIUS          real    Planetary radius at 0km altitude
 C       nx              integer Number of elements in state vector
 C       xn(mx)          real	State vector
 C       ny      	integer Number of elements in measured spectra array
@@ -63,18 +66,19 @@ C     **************************************************************
       real interpem
       include '../radtran/includes/arrdef.f'
       include '../radtran/includes/gascom.f'
+      include '../radtran/includes/planrad.f'
       include 'arraylen.f'
       real xlat,planck_wave,planckg_wave,Bg
       real wgeom(mgeom,mav),flat(mgeom,mav),pressR,delp
       integer layint,inormal,iray,itype,nlayer,laytyp,iscat
       integer nwave(mgeom),jsurf,nem,nav(mgeom),nwave1
-      integer jalb,jtan,jpre,k,iptf
+      integer jalb,jtan,jpre,k,iptf,jrad
       real vwave(mgeom,mwave),angles(mgeom,mav,3),vwave1(mwave)
-      real calcout(maxout3),fwhm
+      real calcout(maxout3),fwhm,RADIUS
       real gradients(maxout4),vv
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       real vconv(mgeom,mconv),vconv1(mconv)
-      real layht,tsurf,esurf,gtsurf
+      real layht,tsurf,esurf,gradtsurf(maxout3)
       real xn(mx),yn(my),kk(my,mx),yn1(my)
       integer ny,iconv
       integer nphi,ipath
@@ -82,7 +86,8 @@ C     **************************************************************
       real dist,galb,sol_ang,emiss_ang,aphi
       double precision mu(maxmu),wtmu(maxmu)
       character*100 runname,solfile,solname
-      real xmap(maxv,maxgas+2+maxcon,maxpro)
+      real xmap(maxv,maxgas+2+maxcon,maxpro),xfac,pi,xdist
+      parameter (pi=3.1415927)
 
       integer nvar,varident(mvar,3)
       real varparam(mvar,mparam)
@@ -94,6 +99,15 @@ c  ** variables for solar refelcted cloud **
       real refl_cloud_albedo
       logical reflecting_atmos
       common /refl_cloud_params/refl_cloud_albedo,reflecting_atmos
+
+      real stelrad,solwave(maxbin),solrad(maxbin)
+      integer solnpt,iform,iread
+
+      common /solardat/iread, iform, stelrad, solwave, solrad,  solnpt
+
+C     jradf is passed via tha planrad common block
+      jradf=jrad
+
 
 
 C      print*,runname
@@ -145,6 +159,16 @@ C     Initialise arrays
        print*,'tsurf = ',tsurf
       endif
 
+
+C     If we're retrieving planet radius then add correction to reference
+C     radius
+C     N.B.radius2 is passed via the planrad common block.
+      if(jrad.gt.0)then
+        radius2 = xn(jrad) + radius
+      else
+        radius2 = radius
+      endif
+
       ioff = 0
       do 100 igeom=1,ngeom
        print*,'ForwardavfovX. Spectrum ',igeom,' of ',ngeom
@@ -194,7 +218,7 @@ C        Set up all files for a direct cirsrad run
 
 
          call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
-     1    vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gtsurf, 
+     1    vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf, 
      2    nx, xmap, vconv1, nconv1, npath, calcout, gradients)
 
 C        Need to assume order of paths. First path is assumed to be
@@ -217,7 +241,8 @@ C        is not a gas giant)
          enddo
     
          do i=1,nx
-          if(i.ne.jtan.and.i.ne.jpre)then
+
+          if(i.ne.jtan.and.i.ne.jpre.and.i.ne.jrad)then
            do j=1,nconv1
             iconv=-1
             do k = 1,nconv1
@@ -225,6 +250,18 @@ C        is not a gas giant)
             enddo
             ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + iconv
             kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*gradients(ioff2)
+           enddo
+          endif
+
+          if(i.eq.jrad)then
+           do j=1,nconv1
+            iconv=-1
+            do k = 1,nconv1
+             if(vconv(igeom,j).eq.vconv1(k))iconv=k
+            enddo
+  	    ioff1=nconv1*(ipath-1)+iconv
+            kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*
+     1          2.*calcout(ioff1)/RADIUS
            enddo
           endif
          enddo
@@ -245,20 +282,45 @@ C        we need to add the radiation from the ground
 	   ioff1=nconv1*(ipath-1)+iconv
 
            Bg = planck_wave(ispace,vconv1(j),tsurf)*esurf
-           yn(ioff+j)=yn(ioff+j) + wgeom(igeom,iav)*calcout(ioff1)*Bg
+           xfac=1.
+           if(iform.eq.1.or.iform.eq.3)then
+            xfac=xfac*pi*4.*pi*(RADIUS*1e5)**2
+           endif
+C          If a solar file exists and iform=1 we should divide the planet
+C          flux by the solar flux
+           if(iread.eq.999.and.iform.eq.1)then
+C            Set dist to -1 to get total power spectrum of star     
+             xdist=-1.0
+             call get_solar_wave(vconv1(j),xdist,solar)
+             xfac=xfac/solar
+           endif
+C          If doing integrated flux from planet need a factor to stop the
+C          matrix inversion crashing
+           if(iform.eq.3)xfac=xfac*1e-18
+
+           yn(ioff+j)=yn(ioff+j) + xfac*wgeom(igeom,iav)*
+     1 		calcout(ioff1)*Bg
 
            do i=1,nx
 
+            ioff1=nconv1*(ipath-1)+iconv
             ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + iconv
-            if(i.eq.jsurf)then
-              kk(ioff+j,i)=kk(ioff+j,i)+
-     1    wgeom(igeom,iav)*calcout(ioff1)*esurf*planckg_wave(ispace,
-     2    vconv1(j),tsurf)
-            else 
-              kk(ioff+j,i)=kk(ioff+j,i) + 
+
+            kk(ioff+j,i)=kk(ioff+j,i) + 
      1               wgeom(igeom,iav)*gradients(ioff2)*Bg
+
+            if(i.eq.jsurf)then
+             kk(ioff+j,i)=kk(ioff+j,i)+
+     1    wgeom(igeom,iav)*calcout(ioff1)*esurf*xfac*
+     1    planckg_wave(ispace,vconv1(j),tsurf) 
             endif
             
+            if(i.eq.jrad)then
+             kk(ioff+j,i)=kk(ioff+j,i)+xfac*wgeom(igeom,iav)*
+     1          2.*calcout(ioff1)*Bg/RADIUS
+            endif
+
+
            enddo
 
           enddo
@@ -342,7 +404,7 @@ C        Set up all files for a direct cirsrad run
 
 
          call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
-     1    vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gtsurf, 
+     1    vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf, 
      2    nx, xmap, vconv1, nconv1, npath, calcout, gradients)
 
 C        Need to assume order of paths. First path is assumed to be

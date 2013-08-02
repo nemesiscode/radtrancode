@@ -57,6 +57,7 @@ C	The variables defined here are those normally used when
 C	calculating atmospheric paths. ! nptah. itype declared within
 	INCLUDE '../includes/arrdef.f'
 	INCLUDE '../includes/pathcom.f'
+        INCLUDE '../includes/laycom.f'
 C       Defines the maximum values for a series of variables (layers,
 C       bins, paths, etc.)
 
@@ -66,10 +67,10 @@ C       bins, paths, etc.)
 	INTEGER		nwave, I, J, npath1, nout, ispace
 
 	INTEGER		INormal,Iray,nem
-	REAL		Dist,tsurf
+	REAL		Dist,tsurf,radius1
         REAL		vem(maxsec),emissivity(maxsec)
 	REAL		vwave(nwave), output(maxout3)
-	LOGICAL		scatter, dust, solexist
+	LOGICAL		fscatter, fdust, solexist
         double precision mu1(maxmu), wt1(maxmu), galb
 
 	CHARACTER*100	klist,buffer
@@ -78,6 +79,9 @@ C       bins, paths, etc.)
 	CHARACTER*100	logfil, drvfil, radfile, xscfil,albfile
 
         common/scatd/mu1, wt1, galb
+C       Need simple way of passing planetary radius to nemesis
+        INCLUDE '../includes/planrad.f'
+
 C-----------------------------------------------------------------------
 C
 C	Begin Program.
@@ -89,11 +93,14 @@ C-----------------------------------------------------------------------
 				! declarations in pathcom.f which is
 				! needed for other bits of this code.
 
+
 C-----------------------------------------------------------------------
 C
 C	Run path file to create driver file.
 C
 C-----------------------------------------------------------------------
+
+
 
 	CALL subpath(opfile)
 
@@ -155,13 +162,13 @@ C	Now read the scattering files if required.
 C
 C-----------------------------------------------------------------------
 
-	scatter= .false.
+	fscatter= .false.
 	DO I= 1, npath
-		IF (imod(I).EQ.15.OR.imod(I).EQ.16) scatter= .true.
-                IF (imod(I).EQ.21.OR.imod(I).eq.22) scatter = .true.
+		IF (imod(I).EQ.15.OR.imod(I).EQ.16) fscatter= .true.
+                IF (imod(I).EQ.21.OR.imod(I).eq.22) fscatter = .true.
 	ENDDO
 
-	IF (scatter) THEN
+	IF (fscatter) THEN
 		CALL file(opfile, radfile, 'sca')
 		WRITE(*,*)'     CALLING get_scatter'
 		CALL get_scatter(radfile,ncont)
@@ -174,9 +181,9 @@ C	And the xsc files likewise
 C
 C-----------------------------------------------------------------------
 
-	dust= .false.
-	IF (ncont.gt.0) dust= .true.
-	IF (dust) THEN
+	fdust= .false.
+	IF (ncont.gt.0) fdust= .true.
+	IF (fdust) THEN
 		CALL file(opfile, xscfil, 'xsc')
 		WRITE(*,*)'Subcirsrtf_wave: CALLING get_xsec. ncont = ', ncont
 		CALL get_xsec(xscfil, ncont)
@@ -185,29 +192,24 @@ c		WRITE(*,*)' '
 		
 	ENDIF
  
-        call file(opfile1,solfile,'sol')
-     
-        inquire(file=solfile,exist=solexist)
-        print*,'solexist = ',solexist
-
-        if(solexist)then
-         print*,'Initiating solar reference file'
-         call opensol(solfile,solname)
-         CALL init_solar_wave(ispace,solname)
-        endif
-
 C-----------------------------------------------------------------------
 C
 C	Call CIRSrad_wave.	
 C
 C-----------------------------------------------------------------------
 
+C       Pass radius of planet to cirsradg
+C       radius2 is radius held in planrad common block. Pass this to
+C       cirsrad_wave in case it's been updated.      
+        radius1=radius2
+
+
         print*,'Calling cirsrad_wave'
 	CALL cirsrad_wave (Dist, INormal, Iray, ispace, DelH, nlayer, 
      1    npath,ngas, maxlay, maxcon, totam, press, temp, pp, amount,
      2    nwave, vwave, nlayin, maxinc, layinc, cont, scale, imod, 
      3    idgas, isogas,emtemp,iphi,nem,vem,emissivity,tsurf,
-     4    flagh2p,hfp,flagc, hfc, ifc, basep, baseh, output)
+     4    flagh2p,hfp,flagc, hfc, ifc, basep, baseh, RADIUS1,output)
 	WRITE(*,*)'Subcirsrtf_wave: cirsrad_wave COMPLETE'
 c	WRITE(*,*)' '
 

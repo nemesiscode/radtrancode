@@ -1,7 +1,7 @@
       SUBROUTINE cirsradg_wave (dist,inormal,iray,delh,nlayer,npath,
      1 ngas,press,temp,pp,amount,iwave,ispace,AMFORM,vwave,nlayin,
      2 layinc,cont,scale,imod,idgas,isogas,emtemp,itype,
-     3 nem, vem, emissivity, tsurf,gradtsurf,RADIUS1,flagh2p,hfp,
+     3 nem, vem, emissivity, tsurf,gtsurf,RADIUS1,flagh2p,hfp,
      4 nsw,isw,output,doutputdq)
 C***********************************************************************
 C_TITL:	CIRSRADG
@@ -80,6 +80,12 @@ C					calculations.
 C	itype			INTEGER	Value designating the chosen
 C					scattering routine (currently not
 C					implemented).
+C       nem			integer	Number of points in surface
+C					emissivity spectrum
+C	vem(nem)		real	Wavelengths of emissivity spectrum
+C	emissivity(nem)		real	Tabulated emissivities
+C	tsurf			real	Surface temperature (K)
+C	RADIUS1			real	Planetary radius (km)
 C	flagh2p			INTEGER	FLAGH2P=1 if a para-H2 fraction
 C					profile has been read.
 C	hfp(nlayer)		REAL	Para-H2 fractions in each layer if
@@ -104,6 +110,8 @@ C	doutputdq(npath,nlayer,ngas+1+ncont+flagf2p)	...
 C				REAL	Calculated rate of change of 
 C					output with gas vmr, T, dust and
 C					para-H2 fraction in each level.
+C	gtsurf(npath)		real	Rate of change of output with surface
+C					temperature for each path
 C
 C_CALL:	check_limits	Checks that array sizes are not exceeded.
 C	spline		Returns an array that contains the second
@@ -157,7 +165,8 @@ C Definition of input and output variables ...
       INTEGER idgas(maxgas),isogas(maxgas),isw(maxgas+2+maxcon)
       INTEGER layinc(maxlay,maxpat),nlayin(maxpat),imod(maxpat)
       REAL xdist,dist,vwave,delh(nlayer),esurf
-      REAL cont(maxcon,maxlay),tsurf,bsurf,gradtsurf
+      REAL cont(maxcon,maxlay),tsurf,bsurf,gtsurf(maxpat)
+      REAL tempgtsurf(maxpat,maxg)
       REAL press(maxlay),temp(maxlay),hfp(maxlay)
       REAL scale(maxlay,maxpat),emtemp(maxlay,maxpat)
       REAL pp(maxlay,maxgas),amount(maxlay,maxgas)
@@ -253,7 +262,7 @@ C EMISS_ANG: Viewing zenith angle.
 C APHI: Azimuth angle.
       REAL bnu(maxlay),bnug(maxlay),radg(maxmu)
       REAL tauscatl(maxcon,maxlay),tauscat1(maxcon,maxlay)
-      REAL lcons(maxcon,maxscatpar)
+      REAL lcons(maxcon,maxscatpar),xsolar
       INTEGER NALB
       real alb(maxsec),valb(maxsec)
       INTEGER nem,nbase,ioff
@@ -281,8 +290,8 @@ C 4: CH4 and 5: CO2 amounts, 6: temperature, 7: para-H2 fraction.
 
 C     Solar reference spectrum common block
       real swave(maxbin),srad(maxbin),solrad
-      integer iread,nspt
-      common /solardat/iread,solrad,swave,srad,nspt
+      integer iread,nspt,iform
+      common /solardat/iread,iform,solrad,swave,srad,nspt
 
 C Common blocks ...
       COMMON /dust/ vsec,xsec,nsec,ncont
@@ -699,6 +708,7 @@ C=======================================================================
         DO ipath=1,npath
           nlays = nlayin(ipath)
           corkout(ipath,ig) = 0.0
+          tempgtsurf(ipath,ig) = 0.0
           DO j=1,nlays
             DO k=1,nparam
               dcoutdq(ipath,ig,j,k) = 0.0
@@ -763,6 +773,28 @@ cc	      WRITE(*,*)' creating output ...'
               ENDDO
             ENDDO
 
+
+C           The code below calculates the radiance
+C           spectrum in units of W cm-2 sr-1 (cm-1)-1 or W cm-2 sr-1 um-1.
+C
+            xfac=1.
+C           If iform = 1 or iform = 3 we need to calculate the total 
+C           spectral flux from the planet.
+            if(iform.eq.1.or.iform.eq.3)then
+             xfac=xfac*pi*4.*pi*(RADIUS1*1e5)**2
+            endif
+C           If a solar file exists and iform=1 we should divide the planet
+C           flux by the solar flux
+            if(iread.eq.999.and.iform.eq.1)then
+C            Set dist to -1 to get total power spectrum of star
+             xdist=-1.0
+             call get_solar_wave(vwave,xdist,xsolar)
+             xfac=xfac/xsolar
+            endif
+C           If doing integrated flux from planet need a factor to stop the
+C           matrix inversion crashing
+            if(iform.eq.3)xfac=xfac*1e-18
+
             DO J=1,nlays
               IF(ig.EQ.1)THEN
                  bb(j,ipath) = planck_wave(ispace,vwave,
@@ -776,7 +808,7 @@ cc	      WRITE(*,*)' creating output ...'
               tr = trold*tlayer
 
               corkout(ipath,ig) = corkout(ipath,ig) + 
-     1        sngl(trold - tr)*bb(J,Ipath)
+     1        xfac*sngl(trold - tr)*bb(J,Ipath)
 
 
               DO k1=1,nsw
@@ -788,12 +820,12 @@ cc	      WRITE(*,*)' creating output ...'
                     dtrdq(j1,k) = -dtaudq(j1,k)*sngl(tlayer*trold)
                   ENDIF
                   dcoutdq(ipath,ig,j1,k) =
-     1                 dcoutdq(ipath,ig,j1,k) + bb(j,ipath)*
+     1                 dcoutdq(ipath,ig,j1,k) + xfac*bb(j,ipath)*
      2                     (dtolddq(j1,k) - dtrdq(j1,k))
                 ENDDO
                 IF(k.EQ.ngas+1)THEN
                   dcoutdq(ipath,ig,j,k) =
-     1            dcoutdq(ipath,ig,j,k)+sngl(trold-tr)*dbdt(j,ipath)
+     1       dcoutdq(ipath,ig,j,k)+xfac*sngl(trold-tr)*dbdt(j,ipath)
                ENDIF
               ENDDO
 
@@ -838,18 +870,23 @@ cc	      WRITE(*,*)' creating output ...'
 C           The code below calculates the hemispherically-integrated emission 
 C           spectrum in units of W cm-2 (cm-1)-1 or W cm-2 um-1.
 C
-C           If a solar/stellar file is present then we should multiply by
-C           the total surface area of the planet and divide by the total 
-C           stellar flux.
-
-            if(iread.eq.999)then
-C            Set dist to -1 to ensure we get total power spectrum of star
-             xdist=-1.0
-             call get_solar_wave(vwave,xdist,solar)
-             xfac=4.*pi*RADIUS1**2/solar
-            else
-             xfac=1.0
+            xfac=1.
+C           If iform = 1 or iform = 3 we need to calculate the total 
+C           spectral flux from the planet.
+            if(iform.eq.1.or.iform.eq.3)then
+             xfac=xfac*4.*pi*(RADIUS1*1e5)**2
             endif
+C           If a solar file exists and iform=1 we should divide the planet
+C           flux by the solar flux
+            if(iread.eq.999.and.iform.eq.1)then
+C            Set dist to -1 to get total power spectrum of star
+             xdist=-1.0
+             call get_solar_wave(vwave,xdist,xsolar)
+             xfac=xfac/xsolar
+            endif
+C           If doing integrated flux from planet need a factor to stop the
+C           matrix inversion crashing
+            if(iform.eq.3)xfac=xfac*1e-18
 
             DO J=1,nlays
               IF(ig.EQ.1)THEN
@@ -909,9 +946,11 @@ C *** Need to add in code to compute the gradient also and report back.
      1        xfac*2.0*pi*sngl(e3old)*(esurf*bsurf)
 
 C           gradient wrt surface temperature
-            gradtsurf = xfac*2.0*pi*sngl(e3old)*esurf*
+            tempgtsurf(ipath,ig) = xfac*2.0*pi*sngl(e3old)*esurf*
      1        planckg_wave(ispace,vwave,Tsurf)
 
+C            print*,'XXX',vwave,Tsurf,
+C     1       planckg_wave(ispace,vwave,Tsurf),gradtsurf(ipath)
 
           ELSE
             WRITE(*,*)' CIRSRADG.f :: Error: model not defined.'
@@ -932,6 +971,7 @@ C=======================================================================
 
       DO ipath=1,npath
         output(ipath) = 0.0
+        gtsurf(ipath) = 0.0
         DO j=1,nlayin(ipath)
           DO k=1,nparam
             doutputdq(ipath,j,k) = 0.0
@@ -940,6 +980,8 @@ C=======================================================================
 
         DO ig=1,ng
           output(ipath) = output(ipath) + corkout(ipath,ig)*delg(ig)
+          gtsurf(ipath) = gtsurf(ipath) + 
+     1			tempgtsurf(ipath,ig)*delg(ig)
           DO j=1,nlayin(ipath)
             DO k=1,nparam
               doutputdq(ipath,j,k) = doutputdq(ipath,j,k) +

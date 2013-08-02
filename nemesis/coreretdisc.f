@@ -94,7 +94,8 @@ C     Set measurement vector and source vector lengths here.
       real sn(mx,mx),sm(mx,mx),xnx(mx),stx(mx,mx),ynx(my)
 
       integer nvar,varident(mvar,3),lin,lin0,lpre,ispace,nav(mgeom),k
-      real varparam(mvar,mparam)
+      real varparam(mvar,mparam),RADIUS
+      integer iplanet
 
       integer ngeom, nwave(mgeom), nconv(mgeom), nx, ny, nxf,ivar,ivarx
       real vwave(mgeom,mwave),vconv(mgeom,mconv),angles(mgeom,mav,3)
@@ -158,6 +159,7 @@ C     Initialise s1e and se
         sei(i,i)=1.0/dble(se1(i))
       enddo
 
+      CALL readrefiplan(runname,iplanet,RADIUS)
 
 C     Calculate first spectrum and k-matrix
 
@@ -217,7 +219,7 @@ C       readapriori.f. Hence just read in from temporary .str file
         CALL forwarddisc(runname,ispace,iscat,fwhm,ngeom,
      1   nav,wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
      2   lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jtanx,jprex,
-     3   jradx,nxx,xnx,ny,ynx,kkx)
+     3   jradx,RADIUS,nxx,xnx,ny,ynx,kkx)
        else
         print*,'Option not supported for disc-averaging'
        endif
@@ -273,8 +275,8 @@ C      Calculate inverse of se
         print*,'Calling forwarddisc - B'
         CALL forwarddisc(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,nx,xn,
-     3   ny,yn,kk)
+     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
+     3   nx,xn,ny,yn,kk)
 
       else
 
@@ -375,7 +377,7 @@ C       temporary kernel matrix kk1. Does it improve the fit?
           CALL forwarddisc(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
      2     lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,
-     3     nx,xn1,ny,yn1,kk1)
+     3     RADIUS,nx,xn1,ny,yn1,kk1)
         else
           print*,'Option not supported'
         endif

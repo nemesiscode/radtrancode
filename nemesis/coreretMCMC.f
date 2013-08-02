@@ -76,8 +76,8 @@ C     Set measurement vector and source vector lengths here.
       CHARACTER*100 runname,itname,abort
 
       real xn(mx),se1(my),calc_chi,kk(my,mx),calc_phiprior
-      real fwhm,xlat,xn1(mx),ran11,test
-      integer ix,np,npro,lout
+      real fwhm,xlat,xn1(mx),ran11,test,RADIUS
+      integer ix,np,npro,lout,iplanet
       real alpha,alpha_chi,alpha_phi
       logical accept
       integer nvar,varident(mvar,3),ispace,nav(mgeom),k
@@ -93,8 +93,10 @@ C     Set measurement vector and source vector lengths here.
       logical gasgiant
       double precision s1d(mx,mx),sai(mx,mx)
 
-      real chisq,xchi,ochisq,oxchi,phi,ophi
+      real chisq,xchi,ochisq,oxchi,phi,ophi,xphi
 C     **************************** CODE ********************************
+
+      open(41,file='testxtry.dat',status='unknown')
 
       if(ilbl.eq.0)then
 C      Find all the calculation and convolution wavelengths and rank
@@ -104,6 +106,8 @@ C      in order
      1  nconvT,vconvT)
 
       endif
+
+      CALL readrefiplan(runname,iplanet,RADIUS)
 
 C     Calculate first spectrum
 
@@ -149,8 +153,8 @@ C     Set lin=0 to prevent code looking for previous retrievals
  
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,nx,xn,ny,
-     3   yn,kk,kiter)
+     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
+     3   nx,xn,ny,yn,kk,kiter)
        else
 
         CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
@@ -159,8 +163,8 @@ C     Set lin=0 to prevent code looking for previous retrievals
 
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,nx,xn,ny,
-     3   yn,kk,kiter)
+     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
+     3   nx,xn,ny,yn,kk,kiter)
 
        endif
       endif
@@ -180,7 +184,6 @@ C     Calculate initial value of cost function chisq.
       
       print*,'Initial chisq/ny = ',oxchi
       phi = calc_phiprior(nx,xn,xa,sai)
-
       ophi = phi
 
       lout=38
@@ -211,12 +214,9 @@ C     Set proposal distribution to be same as a priori distribution (for now)
         print*,'iter,itry',iter,itry
 
 C       Now calculate next iterated xn
-        call modxvecMCMC(idum,npro,nvar,varident,varparam,
+        call modxvecMCMCA(idum,npro,nvar,varident,varparam,
      1   nx,xn,sx,xn1)
 
-C        do i=1,nx
-C         xn1(i)=xn(i)
-C        enddo
 
 C       Calculate test spectrum using trial state vector xn1. 
 C       Put output spectrum into temporary spectrum yn1.
@@ -230,7 +230,7 @@ C       Put output spectrum into temporary spectrum yn1.
          if(iscat.ne.2)then
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,
+     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
      3     nx,xn1,ny,yn1,kk,kiter)
          else
           CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
@@ -238,7 +238,7 @@ C       Put output spectrum into temporary spectrum yn1.
      2     jtan,jpre,nx,xn1)
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,
+     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
      3     nx,xn1,ny,yn1,kk,kiter)
          endif
         endif
@@ -258,21 +258,29 @@ C        close(12)
 
         xchi = chisq/float(ny)
         print*,'chisq/ny = ',xchi
+        xphi = phi/float(nx)
+        print*,'phi,phi/nx = ',xphi
 
-C        stop
+        print*,'XXX',nx
+        do i=1,nx
+         print*,xa(i),xn(i),xn(i)-xa(i),sqrt(sa(i,i)),
+     1  (xn(i)-xa(i))/sqrt(sa(i,i))
+        enddo
 
 C       Does trial solution fit the data better?
 
 C       Calculate probability of acceptance
         alpha_chi = exp(-0.5*(chisq-ochisq))
-        print*,'A',chisq,ochisq,alpha_chi
+        print*,'AAA',chisq,ochisq,alpha_chi
         alpha_phi = exp(-0.5*(phi-ophi))
-        print*,'B',phi,ophi,alpha_phi
+        print*,'BBB',phi,ophi,alpha_phi
 C       XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 C       Benneke and Seager include the probability of the solution as
 C       determined from apriori information. I'm not yet sure how to do
 C       this and my first attempt calc_phiprior seems to screw things up
 C       so here I force the code not to worry about phi!
+C        alpha_phi = exp(-0.5*(phi-ophi)/float(nx))
+C        print*,'CCC',phi,ophi,alpha_phi
         alpha_phi = 1.
         ophi=1.
         phi=1.
@@ -281,7 +289,7 @@ C       XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
         print*,'Alpha',alpha
         accept=.false.
 C       If fit is better and the solution is closer to the priori then accept
-        if(chisq.lt.ochisq.and.phi.le.ophi)then
+        if(chisq.le.ochisq.and.phi.le.ophi)then
          print*,'XX'
          accept=.true.
         else
@@ -333,6 +341,8 @@ C        probability
        print*,'Coreret: WARNING'
        print*,'chisq/ny should be less than 1 if correctly retrieved'
       endif
+
+      close(41)
 
       return
 

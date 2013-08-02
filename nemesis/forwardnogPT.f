@@ -89,16 +89,16 @@ C     **************************************************************
       real vem(maxsec),emissivity(maxsec),PI,h1,dh,trans
       parameter (PI=3.1415927)
 
-      real vtmp,tmp,delh,dtr,radius,radius1
+      real vtmp,tmp,delh,dtr,radius
       double precision area,area0,area1
       integer nvar,varident(mvar,3),ivar
       real varparam(mvar,mparam)
       logical gasgiant
 
       real stelrad,solwave(maxbin),solrad(maxbin)
-      integer solnpt
+      integer solnpt,iform
 
-      common /solardat/iread, stelrad, solwave, solrad,  solnpt
+      common /solardat/iread, iform, stelrad, solwave, solrad,  solnpt
  
 C     jradf is passed via the planrad common block
       jradf=jrad
@@ -237,15 +237,12 @@ C     Now sort wavelength arrays
 
 C        If we're retrieving planet radius then add correction to reference
 C        radius
-         if(jrad.gt.0)then
-          radius1 = xn(jrad) + radius
-         else
-          radius1 = radius
-         endif
-         print*,'radius=',radius1
-
 C        radius2 is passed via the planrad common block
-         radius2=radius1
+         if(jrad.gt.0)then
+          radius2 = xn(jrad) + radius
+         else
+          radius2 = radius
+         endif
 
 
 C        Set up all files for a direct cirsrad run of limb spectra and
@@ -282,10 +279,10 @@ C        Get base heights of layers
          print*,runname
          call readdrvh(runname,height)        
          area0 = pi*stelrad**2
-         area1 = pi*(radius1+height(1))**2
+         area1 = pi*(radius2+height(1))**2
 
          print*,'AA',runname
-         print*,'AA',pi,stelrad,radius1,height(1)
+         print*,'AA',pi,stelrad,radius2,height(1)
          print*,'AA',area0,area1
 
 
@@ -304,7 +301,7 @@ C        Get base heights of layers
 
           do 205 ipath=1,npath        
 
-           h1 = radius1 + height(ipath)
+           h1 = radius2 + height(ipath)
            ioff1=ipath+(iconv-1)*npath
            trans = calcout(ioff1)
            ytrans(ipath)=trans

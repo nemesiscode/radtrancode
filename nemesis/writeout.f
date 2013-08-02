@@ -7,9 +7,11 @@ C     Output the results of retrieval code
 C
 C     Input variables
 C	runname		character*100	run name
-C	iform		integer		Output format: 0 = regular
-C						       1 = nemesisdisc
-C						       2 = nemesisPT
+C	iform		integer		Output format: 0 = radiance
+C						       1 = F_plan/F_star
+C						       2 = 100*A_plan/A_star
+C						       3 = planet spectral flux
+C							    i.e. F_plan
 C	ispace		integer		0=cm-1,1=microns
 C	lout		integer		Output unit number
 C	ispec		integer		Spectrum ID
@@ -70,16 +72,10 @@ C     ***********************************************************************
       integer nxx,xnx(mx),nvarx,nprox,jtanx,jprex,jradx
       integer jsurfx,jalbx
       character*100 runname,aname,buffer
-      logical fexist,gasgiant
+      logical gasgiant
 
 
 1     FORMAT(A)
-
-      if(iform.eq.1)then
-C      Output from Nemesisdisc - see if solar file is present
-       CALL file(runname,runname,'sol')  
-       inquire(file=runname,exist=fexist)
-      endif
 
 C     Output ny instead of nconv to keep format of mre file the same
       write(lout,901) ispec,ngeom,ny,nx,ny,
@@ -95,19 +91,19 @@ C      Default format
         write(lout,*)'Radiances expressed as nW cm-2 sr-1 cm'
         xfac=1e9
 
-C      Default Nemesisdisc format
+C      F_plan/F_star format
        elseif(iform.eq.1)then
-        if(fexist)then
-         write(lout,*)'Units are F_plan/F_star'
+         write(lout,*)'F_plan/F_star Ratio of planet'
          xfac=1.0
-        else
-         write(lout,*)'Units are nW cm-2 (cm-1)-1'
-         xfac=1e9
-        endif
+
+C      Spectral power format
+       elseif(iform.eq.3)then
+      write(lout,*)'Spectral Radiation of planet: W (cm-1)-1'
+         xfac=1e18
 
 C      NemesisPT format
        elseif(iform.eq.2) then
-        write(lout,*)'Units are 100*Planet_area/Stellar_area (i.e. %)'
+        write(lout,*)'Transit depth: 100*Planet_area/Stellar_area'
         xfac=1.
 
 C      Default
@@ -125,19 +121,19 @@ C      Default format
         write(lout,*)'Radiances expressed as uW cm-2 sr-1 um-1'
         xfac = 1e6
 
-C      Nemesisdisc format
+C      F_plan/F_star format
        elseif(iform.eq.1)then
-        if(fexist)then
-         write(lout,*)'Units are F_plan/F_star'
+         write(lout,*)'F_plan/F_star Ratio of planet'
          xfac=1.0
-        else
-         write(lout,*)'Units uW cm-2 um-1'
-         xfac=1e6
-        endif
+
+C      Spectral irradiance format
+       elseif(iform.eq.3)then
+      write(lout,*)'Spectral Radiation of planet: W um-1'
+         xfac=1e18
 
 C      NemesisPT format
        elseif(iform.eq.2)then
-        write(lout,*)'Units are 100*Planet_area/Stellar_area (i.e. %)'
+        write(lout,*)'Transit depth: 100*Planet_area/Stellar_area'
         xfac=1.
 
 C      Default format
@@ -181,6 +177,10 @@ C      Default format
          write(lout,1020)i,vconv(igeom,j),y(i)*xfac,err1*xfac,
      & xerr1,yn(i)*xfac,relerr
 
+        elseif(iform.eq.3)then
+         write(lout,1030)i,vconv(igeom,j),y(i)*xfac,err1*xfac,
+     & xerr1,yn(i)*xfac,relerr
+
         else
 C        Going back to default
          write(lout,1000)i,vconv(igeom,j),y(i)*xfac,err1*xfac,
@@ -191,10 +191,10 @@ C        Going back to default
        ioff = ioff+nconv(igeom)
       enddo
 
-C1000  format(1x,i4,1x,f10.4,1x,f10.4,1x,f10.4,1x,f7.2,1x,f10.4,1x,f7.2)
 1000  format(1x,i4,1x,f10.4,1x,e15.8,1x,e15.8,1x,f7.2,1x,e15.8,1x,f9.5)
 1010  format(1x,i4,1x,f10.4,1x,e15.8,1x,e15.8,1x,f7.2,1x,e15.8,1x,f9.5)
 1020  format(1x,i4,1x,f9.4,1x,e12.6,1x,e12.6,1x,f6.2,1x,e12.6,1x,f6.2)
+1030  format(1x,i4,1x,f10.4,1x,e15.8,1x,e15.8,1x,f7.2,1x,e15.8,1x,f9.5)
 
 
       write(lout,*)' '

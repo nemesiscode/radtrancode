@@ -72,7 +72,7 @@ C     **************************************************************
       real gradients(maxout4),vv,gradientsL(maxout3)
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       real vconv(mgeom,mconv),vconv1(mconv)
-      real layht,tsurf,esurf,gtsurf,pressR,delp
+      real layht,tsurf,esurf,gradtsurf(maxout3),pressR,delp
       real xn(mx),yn(my),kk(my,mx),yn1(my)
       integer ny,iscat,jalb,jtan,jpre
       integer nphi,ipath
@@ -197,7 +197,7 @@ C     Set up parameters for non-scattering cirsrad run.
       print*,'hcorrx = ',hcorrx
 
       call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
-     1  vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gtsurf, 
+     1  vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf, 
      2  nx, xmap, vconv1, nconv1, npath, calcoutL, gradientsL)
 
       print*,'hcorrx = ',hcorrx
@@ -293,8 +293,9 @@ C     Read in base heights from '.drv' file
       
 
            call CIRSrtfg_wave(runname,dist,inormal,iray,fwhm,ispace,
-     1      vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gtsurf, 
-     2      nx, xmap, vconv1, nconv1, npath, calcout, gradients)
+     1      vwave1,nwave1,itype, nem, vem, emissivity, tsurf, 
+     2      gradtsurf, nx, xmap, vconv1, nconv1, npath, calcout, 
+     3 	    gradients)
 
 C          Need to assume order of paths. First path is assumed to be
 C          thermal emission, 2nd path is transmission to ground (if planet
@@ -365,7 +366,7 @@ C       Set up all files to recalculate limb spectra
      3    nvar,varident,varparam,nx,xn,jpre,tsurf,xmap)
 
         call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
-     1   vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gtsurf, 
+     1   vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf, 
      2   nx, xmap, vconv1, nconv1, npath, calcout1, gradients1)
 
 

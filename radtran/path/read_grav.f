@@ -67,10 +67,10 @@ C      Ignore first 4 spaces which are reserved for planet number
 30    continue
       xradius=aradius(iplanet)
       if(radius2.gt.0.0.and.jradf.ge.0)then
-       print*,'read_grav: updating radius with radius2 from planrad'
-       print*,'common block'
-       print*,'Old radius = ',xradius
-       print*,'New radius = ',radius2*1e5
+C       print*,'read_grav: updating radius with radius2 from planrad'
+C       print*,'common block'
+C       print*,'Old radius = ',xradius
+C       print*,'New radius = ',radius2*1e5
        xradius=radius2*1e5
       endif
       

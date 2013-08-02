@@ -31,13 +31,13 @@ C-----------------------------------------------------------------------
 	IMPLICIT NONE
         include '../includes/arrdef.f'
 
-	INTEGER		iunit, npt, I,ispace,ispace1,iread
+	INTEGER		iunit, npt, I,ispace,ispace1,iread,iform
 	REAL		wave(maxbin), rad(maxbin), y, solrad
         CHARACTER*100	aname,solfile
         CHARACTER*80    dummy
         PARAMETER (iunit=26)
 
-        common/solardat/iread, solrad, wave, rad,  npt
+        common/solardat/iread, iform, solrad, wave, rad,  npt
 
 C        call datarchive(aname)
         solfile = aname

@@ -57,17 +57,22 @@ C			Similar (1,2,3...n) id's have been defined for
 C			additional gases.
 C       EMTEMP		Temperatures to use in emission calculations.
 C       ITYPE		Value designating the chosen scattering routine
+C       NEM             integer Number of points in surface
+C                                       emissivity spectrum    
+C       VEM(NEM)        Wavelengths of emissivity spectrum
+C       EMISSIVITY(NEM) Tabulated emissivities
+C       TSURF           Surface temperature (K)     
+C       RADIUS1         Planetary radius (km)      
+C       FLAGH2P         FLAGH2P=1 if a para-H2 fraction
+C                                 profile has been read.
+C	HFP(NLAYER)	Para-H2 fraction in each layer (if FLAGH2P=1)
+C       FLAGC		FLAGC=1 if variable fractional cloud cover profile
+C			        is defined
+C       HFC(NLAYER)     Fractional cloud cover in each layer (if FLAGC=1)
+C	IFC(NLAYER)	integer to state if cloud is uniform or broken.
+C	BASEP(NLAYER)	Base pressure of each layer (atm)
+C	BASEH(NLAYER)	Base height of each layer (km)
 C
-C
-C	Dust variables
-C
-C	NCONT		Number of dust types included
-C       CONT		The number of dust particles/cm2 through each 
-C			layer (vertical path).
-C       NSEC		Number of wavelengths for which the dust cross-
-C			sections are defined.
-C	XSEC		Dust cross sections for each dust type
-C	VSEC		Corresponding wavelengths for dust x-sections
 C
 C
 C	Output variables
@@ -82,7 +87,7 @@ C-----------------------------------------------------------------------
      1    npath, ngas, limlay, limcont, totam, press, temp, pp, amount, 
      2    nwave, vwave, nlayin, incdim, layinc, cont, scale, imod,
      3    idgas, isogas, emtemp, itype, nem, vem, emissivity, tsurf, 
-     4    flagh2p,hfp, flagc, hfc, ifc, basep, baseh, output)
+     4    flagh2p,hfp, flagc, hfc, ifc, basep, baseh, RADIUS1, output)
 
       IMPLICIT NONE
 
@@ -105,7 +110,7 @@ C		Passed variables
      2		scale(incdim,npath), emtemp(incdim,npath), hfp(nlayer), 
      3		output(npath,nwave),bb(maxlay,maxpat),xf,tsurf,dv,
      4          hfc(nlayer),vwavef(maxbin),basep(nlayer),baseh(nlayer),
-     5          esurf,radground,totam(nlayer)
+     5          esurf,radground,totam(nlayer),RADIUS1,xdist,xfac
         REAL    vem(MAXSEC),emissivity(MAXSEC),interpem
         REAL	xmu,dtr,xt1
         INTEGER ifc(limcont,nlayer),nem,j0
@@ -139,7 +144,7 @@ C		Scattering variables
      1		bnu(maxscatlay), aphi, radg(maxmu), solar1, 
      2		lcons(maxcon,maxscatpar), rad1, omega(maxscatlay),
      3		tsun, v, frcscat(maxcon,maxlay), sol_ang, emiss_ang
-        REAL    bnuS(maxlay),fcover(maxscatlay)
+        REAL    bnuS(maxlay),fcover(maxscatlay),xsolar
         REAL    umif(maxmu,maxscatlay,maxf)
         REAL    uplf(maxmu,maxscatlay,maxf)	
         REAL    umift(maxmu,maxmu,maxscatlay,maxf)
@@ -186,6 +191,12 @@ C		Misc variables or continuum variables
         integer fintrad
         character*100 fintname
 C		Common blocks and parameters
+
+C       Solar reference spectrum common block
+        real swave(maxbin),srad(maxbin),solrad
+        integer iread,nspt,iform
+        common /solardat/iread,iform,solrad,swave,srad,nspt
+
 
 	common/dust/vsec,xsec,nsec,ncont
 	common/interpk/lun, ireck, xmink, delk, pk, npk, tk, ntk, ng, 
@@ -948,6 +959,27 @@ cc     1                  ' output'
 C		WRITE(*,*) 'CIRSRAD_WAVE: Imod= 3 =Emission, creating',
 C     1                  ' output'
 
+C               The code below calculates the radiance
+C               spectrum in units of W cm-2 sr-1 (cm-1)-1 or W cm-2 sr-1 um-1.
+C
+                xfac=1.
+C               If iform = 1 or iform = 3 we need to calculate the total
+C               spectral flux from the planet.
+                if(iform.eq.1.or.iform.eq.3)then
+                 xfac=xfac*pi*4.*pi*(RADIUS1*1e5)**2
+                endif
+C               If a solar file exists and iform=1 we should divide the planet
+C               flux by the solar flux
+                if(iread.eq.999.and.iform.eq.1)then
+C                Set dist to -1 to get total power spectrum of star
+                 xdist=-1.0
+                 call get_solar_wave(x,xdist,xsolar)
+                 xfac=xfac/xsolar
+                endif
+C               If doing integrated flux from planet need a factor to stop the
+C               matrix inversion crashing
+                if(iform.eq.3)xfac=xfac*1e-18
+
 		taud = 0.
 		trold = 1.
 		do J = 1, nlays
@@ -959,7 +991,7 @@ C     1                  ' output'
                         endif
 
 		        corkout(Ipath,Ig) = corkout(Ipath,Ig) + 
-     1                  sngl((trold-tr)) * bb(J,Ipath)
+     1                  xfac*sngl((trold-tr)) * bb(J,Ipath)
  			trold = tr
 		enddo
 
@@ -1034,6 +1066,30 @@ C               upwelling radiation field to local temperature.
                  radg(J)=radground*sngl((1.0-galb1))
                 enddo
 
+C               The codes below calculates the radiance
+C               spectrum in units of W cm-2 sr-1 (cm-1)-1 or W cm-2 sr-1 um-1.
+C
+                xfac=1.
+C               If iform = 1 or iform = 3 we need to calculate the total
+C               spectral flux from the planet.
+                if(iform.eq.1.or.iform.eq.3)then
+                 xfac=xfac*pi*4.*pi*(RADIUS1*1e5)**2
+                endif
+C               If a solar file exists and iform=1 we should divide the planet
+C               flux by the solar flux
+                if(iread.eq.999.and.iform.eq.1)then
+C                Set dist to -1 to get total power spectrum of star
+                 xdist=-1.0
+                 call get_solar_wave(x,xdist,xsolar)
+                 xfac=xfac/xsolar
+                endif
+C               If doing integrated flux from planet need a factor to stop the
+C               matrix inversion crashing
+                if(iform.eq.3)xfac=xfac*1e-18
+
+C                print*,'cirsrad_wave: vwave,iform,radius1,solar,xfac',
+C     1 x,iform,radius1, solar, xfac
+
                 IF (itype.EQ.11) THEN
 
 C                        WRITE (*,*) '     CALLING scloud11wave'
@@ -1054,7 +1110,9 @@ C                        print*,'iray = ',iray
      3				nf, Ig, x, vv, eps, bnu, taus, taur,
      4                          nlays, ncont,lfrac)
 
- 		  	corkout(Ipath,Ig) = rad1
+
+ 		  	corkout(Ipath,Ig) = xfac*rad1
+C                        print*,rad1,corkout(Ipath,Ig)
 
 
                 ELSEIF (itype.EQ.12) THEN
@@ -1078,7 +1136,7 @@ C                        print*,'lowbc,galb1',lowbc,galb1
      4                          icloud, fcover, taug, taur, nlays, 
      5                          ncont)
 
- 		  	corkout(Ipath,Ig) = rad1
+ 		  	corkout(Ipath,Ig) = xfac*rad1
 
                 ELSEIF (itype.EQ.13) THEN
 
@@ -1143,6 +1201,30 @@ C                  if(Ig.eq.1)print*,x,galb1
                 taud = 0.
                 tausun=0.0
                 trold = 1.
+
+
+C               This code below calculates the radiance
+C               spectrum in units of W cm-2 sr-1 (cm-1)-1 or W cm-2 sr-1 um-1.
+C
+                xfac=1.
+C               If iform = 1 or iform = 3 we need to calculate the total
+C               spectral flux from the planet.
+                if(iform.eq.1.or.iform.eq.3)then
+                 xfac=xfac*pi*4.*pi*(RADIUS1*1e5)**2
+                endif
+C               If a solar file exists and iform=1 we should divide the planet
+C               flux by the solar flux
+                if(iread.eq.999.and.iform.eq.1)then
+C                Set dist to -1 to get total power spectrum of star
+                 xdist=-1.0
+                 call get_solar_wave(vwave,xdist,xsolar)
+                 xfac=xfac/xsolar
+                endif
+C               If doing integrated flux from planet need a factor to stop the
+C               matrix inversion crashing
+                if(iform.eq.3)xfac=xfac*1e-18
+
+
 		DO J= 1, nlays
 
                  IF(TAUSCAT(layinc(J,Ipath)).GT.0.0) THEN
@@ -1161,7 +1243,7 @@ C                 taud = taud + taus(J)*(1.0-omega(J))
                  tr = dexp(-taud)
 
 		 corkout(Ipath,Ig) = corkout(Ipath,Ig) + 
-     1			sngl((trold-tr))*ssfac*fint(J)*
+     1			xfac*sngl((trold-tr))*ssfac*fint(J)*
      2			omega(J)*solar/(4*pi)
 
 
@@ -1171,7 +1253,7 @@ C                 taud = taud + taus(J)*(1.0-omega(J))
                  endif
 
 	         corkout(Ipath,Ig) = corkout(Ipath,Ig) + 
-     1                  sngl((trold-tr)) * bb(J,Ipath)
+     1                  xfac*sngl((trold-tr)) * bb(J,Ipath)
 
 
                  trold = tr
@@ -1181,7 +1263,7 @@ C                stop
 
 C               Add in reflectance from the ground
                 corkout(Ipath,Ig)=corkout(Ipath,Ig) + 
-     1                          sngl(trold*solar*galb1)/pi
+     1                          xfac*sngl(trold*solar*galb1)/pi
 
 C		WRITE (*,*) ' Calculated: ', Ig, corkout(Ipath,Ig)
 

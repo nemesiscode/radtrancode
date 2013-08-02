@@ -187,16 +187,6 @@ c		WRITE(*,*)' '
 		
 	ENDIF
 
-
-        call file(opfile1,solfile,'sol')
-
-        inquire(file=solfile,exist=solexist)
-
-        if(solexist)then
-         call opensol(solfile,solname)
-         CALL init_solar_wave(ispace,solname)
-        endif
-
 C-----------------------------------------------------------------------
 C
 C	Call CIRSrad.	

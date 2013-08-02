@@ -81,6 +81,13 @@ C     ********** Scattering variables **********************
       REAL DNU
       INTEGER IPARA
 
+C     Solar spectrum variables and flags
+      integer iform1,iread,solnpt
+      real solwave(maxbin),solrad(maxbin),solradius
+      character*100 solfile,solname
+      logical solexist
+      common/solardat/iread, iform, solradius, solwave, solrad,  solnpt
+
 
 C     ******************************************************
 
@@ -128,6 +135,11 @@ C     Read in whether to calculate with wavenumbers(0) or wavelength(1)
 C     Also read in whether scattering is required (iscat)
       READ(32,*)ispace,iscat
 
+      if(iscat.ne.0)then
+       print*,'Nemesisdisc does not work for iscat <> 0'
+       stop
+      endif
+
 C     Read any wavenumber offset to add to measured spectra
       READ(32,*)woff   
 
@@ -157,7 +169,28 @@ C              used to fix all other parameters (including effect of
 C              propagation of retrieval errors).
       READ(32,*)lin
 
+
+      iform1=1
+      READ(32,*,END=999)iform1
+999   continue
       CLOSE(32)
+
+      print*,'iform1 = ',iform1
+      if(iform1.ne.1.and.iform1.ne.3)then
+       print*,'Error in input file. Iform can be 1 or 3 for Nemesisdisc'
+       stop
+      endif
+
+C     See if there is a solar or stellar reference spectrum and read in
+C     if present.
+      call file(runname,solfile,'sol')
+      inquire(file=solfile,exist=solexist)
+      if(solexist)then
+         call opensol(solfile,solname)      
+         CALL init_solar_wave(ispace,solname)
+      endif
+      iform=iform1
+
 
 C     Open spectra file
       lspec=37
@@ -291,7 +324,6 @@ C     Simple errors, set to sqrt of diagonal of ST
 
 C     write output
 
-      iform=1    
       CALL writeout(iform,runname,ispace,lout,ispec,xlat,xlon,
      1 npro,nvar,varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err1,
      2 ngeom,nconv,vconv,gasgiant,jpre,iscat,lin)

@@ -73,6 +73,14 @@ C     ********** Scattering variables **********************
       REAL DNU
       INTEGER IPARA
 
+C     Solar spectrum variables and flags
+      integer iread,solnpt
+      real solwave(maxbin),solrad(maxbin),solradius
+      character*100 solfile,solname
+      logical solexist
+      common/solardat/iread, iform, solradius, solwave, solrad,  solnpt
+
+
 C     ******************************************************
 
 
@@ -151,6 +159,17 @@ C              propagation of retrieval errors).
       READ(32,*)lin
 
       CLOSE(32)
+
+C     See if there is a solar or stellar reference spectrum and read in
+C     if present.
+      call file(runname,solfile,'sol')
+      inquire(file=solfile,exist=solexist)
+      if(solexist)then
+         call opensol(solfile,solname)
+         CALL init_solar_wave(ispace,solname)
+      endif
+      iform=2
+
 
 C     Open spectra file
       lspec=37
@@ -288,7 +307,6 @@ C     Simple errors, set to sqrt of diagonal of ST
       enddo
 
 C     write output
-      iform=2
       print*,'Calling writeout'
       CALL writeout(iform,runname,ispace,lout,ispec,xlat,xlon,npro,
      1 nvar,varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err1,ngeom,

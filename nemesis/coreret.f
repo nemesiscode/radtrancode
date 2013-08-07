@@ -230,7 +230,7 @@ C       readapriori.f. Hence just read in from temporary .str file
          CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,
      1    nav,wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
      2    lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jtanx,jprex,
-     3    nxx,xnx,ny,ynx,kkx)
+     3    jradx,RADIUS,nxx,xnx,ny,ynx,kkx)
         elseif(iscat.eq.1.or.iscat.eq.3)then
          print*,'Calling forwardnogX - A'
          CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
@@ -316,8 +316,8 @@ C      Calculate inverse of se
 
         CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,nx,xn,ny,
-     3   yn,kk)
+     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
+     3   nx,xn,ny,yn,kk)
 
 C        print*,'forwardavfovX OK, jpre = ',jpre
 
@@ -446,7 +446,7 @@ C       temporary kernel matrix kk1. Does it improve the fit?
           CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
      2     lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,
-     3     nx,xn1,ny,yn1,kk1)
+     3     jrad,RADIUS,nx,xn1,ny,yn1,kk1)
          elseif(iscat.eq.1.or.iscat.eq.3)then
          print*,'Calling forwardnogX - C'
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,

@@ -378,6 +378,8 @@ C        Temperature gone negative. Increase brakes and try again
          print*,'chisq/ny = ',xchi
          print*,'it.,al.,ophi.,phi.',
      1    iter,alambda,ophi,phi
+         alambda=alambda*10.
+         if(alambda.gt.1e10)alambda=1e10
          goto 901
         endif
 
@@ -435,11 +437,11 @@ C         Has solution converged?
           endif
         else
 C	  Leave xn and kk alone and try again with more braking
-901       alambda = alambda*10.0		! increase Marquardt brake
+          alambda = alambda*10.0		! increase Marquardt brake
           if(alambda.gt.1e10)alambda=1e10
         endif
 
-        call file(runname,runname,'abo')
+901     call file(runname,runname,'abo')
         open(83,file=runname,status='old')
         read(83,'(A)')abort
         close(83)

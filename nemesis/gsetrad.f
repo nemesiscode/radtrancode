@@ -73,7 +73,7 @@ C     ************************************************************************
       integer nconv,lin,ispace,ncont1,xflag
       real xlat,fwhm,xlatx,tsurf
       integer nlayer,laytyp,iscat,nx,nxx,ncont,nx1
-      integer layint
+      integer layint,iprfcheck,check_profile
       real layht,xod(maxcon),xscal(maxcon)
       real vconv(mconv)
       integer nmu,isol,lowbc,nf,flagh2p,jalb,jtan,jpre
@@ -115,7 +115,6 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
       call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
      1  nvar,varident,varparam,nx,xn,jpre,ncont,flagh2p,xmap)
 
-     
       if(lin.eq.1.or.lin.eq.3)then
        call readxtmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
      1  nxx,xnx,stx,jsurfx,jalbx,jtanx,jprex,jradx)
@@ -298,8 +297,14 @@ C      ***************** Tangent height correction ***********
        if(varident(ivar,3).eq.14.or.varident(ivar,3).eq.15)icheck=1
       enddo
 
+
+C     Check to see if anything bad has happened in the .prf file before 
+C     running subpath
+      iprfcheck=check_profile(runname)
+     
+
 C     Compute the drv file to get the aerosol optical depths
-      if(icheck.eq.1) then
+      if(icheck.eq.1.and.iprfcheck.eq.0) then
 
         print*,'Check',runname,runname
         call subpath(runname)

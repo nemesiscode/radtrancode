@@ -1,4 +1,3 @@
-C     $Id: molwtcom.f,v 1.5 2011-06-17 14:47:50 irwin Exp $
 C***********************************************************************
 C_TITL: PLANRAD
 C
@@ -19,4 +18,4 @@ C
 C-----------------------------------------------------------------------
 	  REAL RADIUS2
 	  INTEGER jradf
-      COMMON /PLANRAD/RADIUS2,jradf
+          COMMON /PLANRAD/RADIUS2,jradf

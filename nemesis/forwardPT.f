@@ -330,9 +330,11 @@ C         print*,ipath,dh,area
         enddo
 
 C       Add on effect of fitting radius correction in apr file.
+C       To first order, output = pi*radius^2. 
+C           Hence, d_output/d_radius = 2*pi*radius = 2*output/radius
+
         if(jrad.gt.0)then
-           kk(iconv,jrad)=kk(iconv,jrad)+
-     &			sngl(100.*2.*pi*radius2/area0)
+           kk(iconv,jrad)=kk(iconv,jrad)+2*yn(iconv)/radius2
         endif
 
 206   continue

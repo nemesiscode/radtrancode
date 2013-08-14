@@ -76,6 +76,7 @@ C
 C      *******************************************************************
 
        implicit none
+       INCLUDE '../includes/planrad.f'
        integer       iplanet, I, isurf
        real        lat, g, pi, latc, thetagc, slatc, r, legpol,
      2               clatc, gtheta, pol(6), Rr, radius,lat_in
@@ -103,6 +104,8 @@ C-------------------------------------------------------------------------------
        latc = thetagc(lat, xellip)
        slatc = sin(latc)
        clatc = cos(latc)
+       
+       if(jradf.gt.0)xradius=radius2*1.e5
 
 C      Rr is the ratio of radius at equator to radius at current latitude
        Rr = sqrt(clatc**2 + (xellip**2 * slatc**2))

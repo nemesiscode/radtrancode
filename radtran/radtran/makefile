@@ -185,12 +185,13 @@ Calc_exotable4 : calc_exotable4.f $(LIBRARY) $(LIB)/spec_data.a
 
 Aband_ktable : aband_ktable.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Aband_ktable aband_ktable.f $(LIBRARY) \
-	$(LIB)/rtm_util.a $(LIB)/cirsrad.a $(FRECIPES) $(LIB)/matrices.a
+	$(LIB)/rtm_util.a $(LIB)/cirsrad.a $(LIB)/lnemesis.a \
+	$(FRECIPES) $(LIB)/matrices.a
 
 Aband_ktablec : aband_ktablec.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Aband_ktablec aband_ktablec.f \
-	$(LIBRARY) $(LIB)/rtm_util.a $(LIB)/cirsrad.a $(FRECIPES) \
-	$(LIB)/matrices.a
+	$(LIBRARY) $(LIB)/rtm_util.a $(LIB)/cirsrad.a $(LIB)/lnemesis.a \
+	$(FRECIPES) $(LIB)/matrices.a
 
 Direct_ktable : direct_ktable.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Direct_ktable direct_ktable.f \

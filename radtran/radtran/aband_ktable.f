@@ -19,7 +19,7 @@ C     ***************************************************************
       REAL P(MPAR),T(MPAR),PRESS,TEMP,LPMIN,LPMAX,TMIN,TMAX
       REAL KNU0,DELAD,Y0,EL,SFB,C1,C2,VSTART,VEND
       REAL VMIN,DELV,FWHM,STEP,TMP,QROT,ALAMBDA,ERR,Q
-      REAL DP,DT,X,BDUM(9),TPART(4)
+      REAL DP,DT,X,BDUM(9),TPART(4),XFAC
       INTEGER NG,JGAS,NP,NT,NTRAN,IMOD,IAV(MBIN),IFORM
       INTEGER IP,IT,K,ISTEP,IMETHOD,IBIN,NAV,BANDTYP(MGAS)
       LOGICAL IODD
@@ -326,30 +326,19 @@ C        print*,i,iav(i),fbin(i)
             ERR = 0.0
           ELSE 
 
-            print*,'Calling TRANSET'
-
             CALL TRANSET(BANDTYP,TPOUT,JGAS,NAV,IAV,FBIN,QROT,TPART,
      1       PRESS,TEMP,Q,U,TRAN,SIG,NTRAN)
 
-            print*,'TRANSET called OK'
-            print*,jgas,nav
-            do k=1,nav
-             print*,k,iav(k),fbin(k)
-            enddo
-            print*,qrot,PRESS,TEMP,q
-            print*,ntran
-            do k=1,ntran
-             print*,k,u(k),tran(k),sig(k)
-            enddo
-            print*,imod
-
             CALL ROUGHK(NTRAN,U,TRAN,NG,DEL_G,K_G)
 
-            print*,'Rough OK'
+            CALL FINEFITK(NTRAN,U,TRAN,SIG,NG,DEL_G,K_G,ICALC)
 
-            IMETHOD=0
-            CALL FINEFITK(IMETHOD,NTRAN,U,TRAN,SIG,NG,DEL_G,K_G,
-     1         ALAMBDA,ICALC)
+
+C           Add in nasty check for weird things happening for K_G(NG)
+            XFAC=K_G(NG)/K_G(NG-1)
+            IF(XFAC.GT.1E7)THEN
+             K_G(NG)=K_G(NG-1)+(K_G(NG-1)-K_G(NG-2))
+            ENDIF
 
             CHISQ=0.0
             DO J=1,NTRAN
@@ -361,20 +350,6 @@ C        print*,i,iav(i),fbin(i)
             ENDDO
             ERR = SQRT(CHISQ/FLOAT(NTRAN))
 
-            print*,'FINEFITK called OK'
-            print*,imethod,ntran
-            do k=1,ntran
-             print*,k,u(k),tran(k),sig(k),tfit(k)
-            enddo
-            print*,ng
-            do k=1,ng
-             print*,k,g_ord(k),k_g(k)
-            enddo
-            print*,alambda,icalc,err
-
-C            stop
-            
-
           ENDIF
 
           WRITE(12,*)(K_G(K),K=1,NG)
@@ -383,7 +358,6 @@ C            stop
           WRITE(13,*)(TFIT(K),K=1,NTRAN)
           WRITE(12,*)ERR,IMOD,ICALC
           WRITE(13,*)ERR,IMOD,ICALC
-C          PRINT*,I,IP,IT,100*ERR,ICALC
 200     CONTINUE
 150    CONTINUE
 100   CONTINUE

@@ -3,8 +3,9 @@ C     ***************************************************************
 C     Program to calculate a k-table from band data at a set of output 
 C     wavelengths/wavenumbers read in from an input file.
 C
-C     Pat Irwin ?/?/??  Original version
-C     Pat Irwin 26/4/12 Added comments.
+C     Pat Irwin ?/?/??   Original version
+C     Pat Irwin 26/4/12  Added comments.
+C     SPH       15/08/13 Read from filter file include
 C
 C     ***************************************************************
 
@@ -24,13 +25,21 @@ C     ***************************************************************
       INTEGER IP,IT,K,ISTEP,IMETHOD,IBIN,NAV,BANDTYP(MGAS)
       LOGICAL IODD
       INTEGER NODD,NEVEN
-      INTEGER IWAVE,KWAVE,NBIN,ISHAPE
+      INTEGER IWAVE,KWAVE,NBIN,ISHAPE,ISHAPE1
       REAL WMIN,WMAX,WFWHM,WCENTRAL
       REAL WAVEIN(MBIN),FWHMIN(MBIN)
       REAL FBIN(MBIN)
       CHARACTER*100 IPFILE,OPFILE1,OPFILE2,GFILE
       CHARACTER*20 HEAD
       CHARACTER*10 BUFFER
+
+c ------------------------------------------------------
+c Added by SPH. New variables, please put in a more 
+c sensible place after debugging.
+c ------------------------------------------------------
+      INTEGER NFILBIN
+      REAL WFIL(MBIN), TFIL(MBIN)
+c ------------------------------------------------------
 
       DATA G_ORD/0.013047, 0.067468, 0.160295, 0.283302, 0.425563,
      1          0.574437, 0.716698, 0.839705, 0.932532, 0.986953/
@@ -197,15 +206,48 @@ C      READ*,ALAMBDA
       CALL PROMPT('k-table (0=wavenumber, 1=wavelength (um) : ')
       READ*,IWAVE
 
-      CALL PROMPT('Enter name of wavelengths file ')
+      PRINT*,'Enter instrument line shape code'
+      PRINT*,'0 = square'
+      PRINT*,'1 = triangular'
+      PRINT*,'2 = gaussian'
+      PRINT*,'3 = individual filters'
+      CALL PROMPT('Enter code : ')
+      READ*,ISHAPE
+      CALL PROMPT('Enter name of wavelengths or filter file ')
       READ(5,1)GFILE
       OPEN(12,FILE=GFILE,STATUS='OLD')
-       READ(12,*)NBIN,WFWHM,ISHAPE
+      IF(ISHAPE.LT.3)THEN
+       READ(12,*)NBIN,WFWHM,ISHAPE1
+       IF(ISHAPE.NE.ISHAPE1)THEN
+        PRINT*,'ISHAPE <> ISHAPE1'
+        PRINT*,ISHAPE,ISHAPE1
+        STOP
+       ENDIF
        DO I=1,NBIN
         READ(12,*)WCEN(I)
        ENDDO
-      CLOSE(12)
+       CLOSE(12)
 
+      ELSE
+       WFWHM=-1.
+       READ(12,*)NBIN
+C      Read in the central wavelengths. Need to read through file, close 
+C      and then open again.
+       DO I=1,NBIN
+        READ(12,*)WCEN(I)
+        READ(12,*)NFILBIN
+        DO J=1,NFILBIN
+         READ(12,1)BUFFER
+        ENDDO
+       ENDDO
+       CLOSE(12)
+       OPEN(12,FILE=GFILE,STATUS='OLD')
+       READ(12,*)NBIN
+
+      ENDIF
+c ---------------------------------------------------------------------
+
+      IMOD=0 
       IF(BANDTYP(JGAS).LT.4)THEN
        CALL PROMPT('Enter trans. model. -1=EKS,0=others : ')
        READ*,IMOD
@@ -220,27 +262,26 @@ C      READ*,ALAMBDA
       READ(5,1)OPFILE2
       CALL FILE(OPFILE2,OPFILE2,'tra')
 
-      OPEN(12,FILE=OPFILE1,STATUS='UNKNOWN')
+      OPEN(14,FILE=OPFILE1,STATUS='UNKNOWN')
       OPEN(13,FILE=OPFILE2,STATUS='UNKNOWN')
 
-      WRITE(12,1)IPFILE
-      WRITE(12,*)IMOD,' ! IMOD (-1=EKS, 0=others)'
-      WRITE(12,*)BANDTYP(JGAS),' ! Band type'
-      WRITE(12,*)IDGAS(JGAS),ISOGAS(JGAS),' ! ID,ISO'
-      WRITE(12,*)NP,' ! Number of pressures'
-      WRITE(12,*)(P(I),I=1,NP)
-      WRITE(12,*)NT,' ! Number of temperatures'
-      WRITE(12,*)(T(I),I=1,NT)
-      WRITE(12,*)NG,' ! Number of g-ordinates'
-      WRITE(12,*)(DEL_G(I),I=1,NG)
-      WRITE(12,*)NTRAN,' ! Number of transmission points'
-      WRITE(12,*)QROT,Q,' ! QROT,Q'
-      WRITE(12,*)(TPART(I),I=1,4),' ! Tpart'
-      WRITE(12,*)NBIN,WFWHM,ISHAPE
+      WRITE(14,1)IPFILE
+      WRITE(14,*)IMOD,' ! IMOD (-1=EKS, 0=others)'
+      WRITE(14,*)BANDTYP(JGAS),' ! Band type'
+      WRITE(14,*)IDGAS(JGAS),ISOGAS(JGAS),' ! ID,ISO'
+      WRITE(14,*)NP,' ! Number of pressures'
+      WRITE(14,*)(P(I),I=1,NP)
+      WRITE(14,*)NT,' ! Number of temperatures'
+      WRITE(14,*)(T(I),I=1,NT)
+      WRITE(14,*)NG,' ! Number of g-ordinates'
+      WRITE(14,*)(DEL_G(I),I=1,NG)
+      WRITE(14,*)NTRAN,' ! Number of transmission points'
+      WRITE(14,*)QROT,Q,' ! QROT,Q'
+      WRITE(14,*)(TPART(I),I=1,4),' ! Tpart'
+      WRITE(14,*)NBIN,WFWHM,ISHAPE,' ! NBIN, WFWHM, ISHAPE'
       DO I=1,NBIN
-        WRITE(12,*)WCEN(I)
+        WRITE(14,*)WCEN(I)
       ENDDO
-
 
       WRITE(13,1)IPFILE
       WRITE(13,*)IMOD,' ! IMOD (-1=EKS, 0=others)'
@@ -254,9 +295,9 @@ C      READ*,ALAMBDA
       WRITE(13,*)NTRAN,' ! Number of transmission points'
       WRITE(13,*)QROT,Q,' ! QROT,Q'
       WRITE(13,*)(TPART(I),I=1,4),' ! Tpart'
-      WRITE(13,*)NBIN,WFWHM,ISHAPE
+      WRITE(13,*)NBIN,WFWHM,ISHAPE,' ! NBIN, WFWHM, ISHAPE'
       DO I=1,NBIN
-        WRITE(13,*)WCEN(I)
+       WRITE(13,*)WCEN(I)
       ENDDO
 
       DO I=1,9
@@ -264,40 +305,53 @@ C      READ*,ALAMBDA
       ENDDO
 
       DO 100 IBIN = 1,NBIN
+c ---------------------------------------------------------------------
+c Added by SPH. Reading the filter file has been moved here for ishape=3.
+C Remember to then close unit 12 if ishape=3 (otherwise it is already closed).
+c ---------------------------------------------------------------------     
+       print*,'IBIN',IBIN
+       IF (ISHAPE.EQ. 3) THEN
+         READ(12,*)WCEN(IBIN)
+         READ(12,*)NFILBIN
+         print*,WCEN(IBIN),NFILBIN
+         IF (NFILBIN.GT.MBIN) THEN
+            PRINT*,'***Error: NFILBIN > MBIN',NFILBIN, MBIN
+            STOP
+         ENDIF
+         DO J=1,NFILBIN
+            READ(12,*)WFIL(J),TFIL(J)
+            print*,WFIL(J),TFIL(J)
+         ENDDO
+         IF (IBIN.EQ.NBIN) CLOSE(12)
+       ENDIF
+ 
        WCENTRAL = WCEN(IBIN)
        print*,'IBIN,WCEN',IBIN,WCENTRAL
 
        CALL GETAVBINSC(NPOINT,KWAVE,WAVEIN,FWHMIN,DELV,WCENTRAL,
-     1 WFWHM,ISHAPE,IWAVE,NAV,IAV,FBIN)
+     1     WFWHM,ISHAPE,NFILBIN,WFIL,TFIL,IWAVE,NAV,IAV,FBIN)
 
-       WRITE(12,*)I,WCENTRAL,'! IPOINT, WAVE'
-       WRITE(12,934)(BDUM(J),J=1,9)
+       WRITE(14,*)I,WCENTRAL,'! IPOINT, WAVE'
+       WRITE(14,934)(BDUM(J),J=1,9)
        WRITE(13,*)I,WCENTRAL,'! IPOINT, WAVE'
        WRITE(13,934)(BDUM(J),J=1,9)
 
-C       do i=1,nav
-C        print*,i,iav(i),fbin(i),fbin(iav(i))
-C       enddo
-C       stop
-
        KNU0 = 0.0
-C       print*,nav
        DO I=1,NAV 
         IF(TPOUT(IAV(I),JGAS,1).GT.KNU0)THEN
          KNU0 = TPOUT(IAV(I),JGAS,1)
         ENDIF
-C        print*,i,iav(i),fbin(i)
        ENDDO      
 
        DO 150 IP=1,NP
          PRESS = P(IP)
 C         WRITE(6,*)IP,PRESS,' ! IP,PRESS'
-         WRITE(12,*)IP,PRESS,' ! IP,PRESS'
+         WRITE(14,*)IP,PRESS,' ! IP,PRESS'
          WRITE(13,*)IP,PRESS,' ! IP,PRESS'
          DO 200 IT=1,NT
           TEMP=T(IT)
 C          WRITE(6,*)IT,TEMP,' ! IT,TEMP'
-          WRITE(12,*)IT,TEMP,' ! IT,TEMP'
+          WRITE(14,*)IT,TEMP,' ! IT,TEMP'
           WRITE(13,*)IT,TEMP,' ! IT,TEMP'
 
           IF(KNU0.EQ.0.0)THEN
@@ -315,25 +369,9 @@ C          WRITE(6,*)IT,TEMP,' ! IT,TEMP'
             CALL TRANSET(BANDTYP,TPOUT,JGAS,NAV,IAV,FBIN,QROT,TPART,
      1       PRESS,TEMP,Q,U,TRAN,SIG,NTRAN)
 
-C            stop
-
-C            print*,'TRANSET called OK'
-C            print*,jgas,nav
-C            do k=1,nav
-C             print*,k,iav(k),fbin(k)
-C            enddo
-C            print*,qrot,PRESS,TEMP,q
-C            print*,ntran
-C            do k=1,ntran
-C             print*,k,u(k),tran(k),sig(k)
-C            enddo
-C            print*,imod
-
             CALL ROUGHK(NTRAN,U,TRAN,NG,DEL_G,K_G)
 
-            IMETHOD=0
-            CALL FINEFITK(IMETHOD,NTRAN,U,TRAN,SIG,NG,DEL_G,K_G,
-     1         ALAMBDA,ICALC)
+            CALL FINEFITK(NTRAN,U,TRAN,SIG,NG,DEL_G,K_G,ICALC)
 
             CHISQ=0.0
             DO J=1,NTRAN
@@ -345,34 +383,19 @@ C            print*,imod
             ENDDO
             ERR = SQRT(CHISQ/FLOAT(NTRAN))
 
-C            print*,'FINEFITK called OK'
-C            print*,imethod,ntran
-C            do k=1,ntran
-C             print*,k,u(k),tran(k),sig(k),tfit(k)
-C            enddo
-C            print*,ng
-C            do k=1,ng
-C             print*,k,g_ord(k),k_g(k)
-C            enddo
-C            print*,alambda,icalc,err
-
-C            stop
-            
-
           ENDIF
 
-          WRITE(12,*)(K_G(K),K=1,NG)
+          WRITE(14,*)(K_G(K),K=1,NG)
           WRITE(13,*)(U(K),K=1,NTRAN)
           WRITE(13,*)(TRAN(K),K=1,NTRAN)
           WRITE(13,*)(TFIT(K),K=1,NTRAN)
-          WRITE(12,*)ERR,IMOD,ICALC
+          WRITE(14,*)ERR,IMOD,ICALC
           WRITE(13,*)ERR,IMOD,ICALC
-C          PRINT*,I,IP,IT,100*ERR,ICALC
 200     CONTINUE
 150    CONTINUE
 100   CONTINUE
 
-      CLOSE(12)
+      CLOSE(14)
       CLOSE(13)
 
       PRINT*,'Aband_ktablec. Run OK'

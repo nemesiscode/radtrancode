@@ -49,10 +49,12 @@ openr,1,itname
   readf,1,yn1
   readf,1,yn
   print,strcompress(string('Iteration ',iter,'  xa     xn'))
+  print,'i,xa(i),exp(xa(i)),xn(i),exp(xn(i)'
   for i=0,nx-1 do begin
-   if(i le npro-1) then begin
-    print,i,press(i),xa(i),exp(xa(i)),xn(i),exp(xn(i))
-   endif else print,i,press(0),xa(i),exp(xa(i)),xn(i),exp(xn(i))
+    print,i,xa(i),exp(xa(i)),xn(i),exp(xn(i))
+;   if(i le npro-1) then begin
+;    print,i,press(i),xa(i),exp(xa(i)),xn(i),exp(xn(i))
+;   endif else print,i,press(0),xa(i),exp(xa(i)),xn(i),exp(xn(i))
    
   endfor
   for i=0,nx-1 do begin
@@ -61,7 +63,10 @@ openr,1,itname
   endfor
 
   !p.multi=[0,1,2]
-  plot,y(*),title='Measured and fitted y-vector',ytitle='Radiance'
+  a = min([y(*)-sqrt(se(*)),yn(*)])
+  b = max([y(*)+sqrt(se(*)),yn(*)])
+  plot,y(*),title='Measured and fitted y-vector',ytitle='Radiance',$
+    yrange=[a,b]
   oplot,y(*)+sqrt(se(*)),linestyle=1
   oplot,y(*)-sqrt(se(*)),linestyle=1
   oplot,yn(*),linestyle=2
@@ -104,16 +109,28 @@ openr,1,itname
      9: np=3
      10: np=4
      11: np=2
+     12: np=3
+     13: np=3
+     555:np=1
+     666:np=1
      888:np=long(varparam(ivar,0))
+     889:np=1
      999:np=1
      777:np=1
     endcase
 
     if(itype eq 0) then begin
-     plot_io,xn(istart:(istart+np-1)),press,yrange=[10,0.01],$
-      ytitle='Pressure (atm)',$
-      title=string(varident(ivar,0),varident(ivar,1),varident(ivar,2))
-     oplot,xa(istart:(istart+np-1)),press,linestyle=1
+     if(varident(ivar,0) ne 0) then begin
+      plot_io,exp(xn(istart:(istart+np-1))),press,yrange=[10,0.01],$
+       ytitle='Pressure (atm)',$
+       title=string(varident(ivar,0),varident(ivar,1),varident(ivar,2))
+       oplot,exp(xa(istart:(istart+np-1))),press,linestyle=1
+     endif else begin
+      plot_io,xn(istart:(istart+np-1)),press,yrange=[10,0.01],$
+       ytitle='Pressure (atm)',$
+       title=string(varident(ivar,0),varident(ivar,1),varident(ivar,2))
+       oplot,xa(istart:(istart+np-1)),press,linestyle=1
+     endelse
     endif
 
     istart=istart+np
@@ -131,7 +148,7 @@ openr,1,itname
 ;    ikeep = where(wave ge xr(0) and wave le xr(1))
 ;    a = max([y(ikeep),yn(ikeep)])
 
-     plot,y,ytitle='Radiance',title='Measured and fitted radiances'
+     plot,y,ytitle='Radiance',title='Measured and fitted radiances',yrange=[a,b]
      oplot,yn,linestyle=1
 
      plot,yn-y,ytitle='Radiance',title='Fitted - Measured radiances'
@@ -140,13 +157,15 @@ openr,1,itname
 
 
      plot,yn(*),$
-      ytitle='Radiance',title='Radiance +/- 0.1,0.3,0.5*kk'
+      ytitle='Radiance',title='Radiance +/- 0.1,1,10,100*kk',yrange=[a,b]
      oplot,yn(*)+0.1*kk(*,i),linestyle=1
-     oplot,yn(*)+0.3*kk(*,i),linestyle=2
-     oplot,yn(*)+0.5*kk(*,i),linestyle=3
+     oplot,yn(*)+kk(*,i),linestyle=2
+     oplot,yn(*)+10*kk(*,i),linestyle=3
+     oplot,yn(*)+100*kk(*,i),linestyle=4
      oplot,yn(*)-0.1*kk(*,i),linestyle=1
-     oplot,yn(*)-0.3*kk(*,i),linestyle=2
-     oplot,yn(*)-0.5*kk(*,i),linestyle=3
+     oplot,yn(*)-kk(*,i),linestyle=2
+     oplot,yn(*)-10*kk(*,i),linestyle=3
+     oplot,yn(*)-100*kk(*,i),linestyle=4
   
      read,ans
 

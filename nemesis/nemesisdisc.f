@@ -188,7 +188,14 @@ C     if present.
       if(solexist)then
          call opensol(solfile,solname)      
          CALL init_solar_wave(ispace,solname)
+      else
+       if(iform1.eq.1)then
+        print*,'Error in Nemesisdisc. Flux-ratio calculation defined'
+        print*,'or assumed, but no solar file present'
+        stop
+       endif
       endif
+
       iform=iform1
 
 

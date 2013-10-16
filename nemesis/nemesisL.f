@@ -148,6 +148,8 @@ C              propagation of retrieval errors).
 
       CLOSE(32)
 
+      iform=0
+
 C     Open spectra file
       lspec=37
       CALL file(runname,runname,'spx')
@@ -181,7 +183,7 @@ C      open previous raw retrieval file (copied to .pre)
 C     skip first ioff-1 spectra
       do ispec=1,ioff-1
 
-       call readnextspavX(lspec,woff,xlat,xlon,ngeom,nav,ny,y,se,
+       call readnextspavX(lspec,iform,woff,xlat,xlon,ngeom,nav,ny,y,se,
      & fwhm,nconv,vconv,angles,wgeom,flat,flon)
 
 C      Look to see if previously retrieved information is to be used
@@ -198,7 +200,7 @@ C      and if so, skipped
       do 2999 ispec=ioff,ioff-1+nspec
 
 C     Read in measurement vector, obs. geometry and covariances
-      call readnextspavX(lspec,woff,xlat,xlon,ngeom,nav,ny,y,se,
+      call readnextspavX(lspec,iform,woff,xlat,xlon,ngeom,nav,ny,y,se,
      1  fwhm,nconv,vconv,angles,wgeom,flat,flon)
 
 C     Read in forward modelling errors
@@ -280,7 +282,6 @@ C     Simple errors, set to sqrt of diagonal of ST
 
 C     write output
 
-      iform=0
       CALL writeout(iform,runname,ispace,lout,ispec,xlat,xlon,npro,
      1 nvar,varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err1,ngeom,
      2 nconv,vconv,gasgiant,jpre,iscat,lin)

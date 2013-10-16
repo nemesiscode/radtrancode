@@ -52,7 +52,7 @@ C     TIME2: System time at the end of program execution.
       real kk(my,mx),xa(mx),rerr(mgeom,mconv),sa(mx,mx)
       real y(my),yn(my),xnx(mx),marsradius,satrad,thetrot
       real wgeom(mgeom,mav),flat(mgeom,mav),flon(mgeom,mav)
-      real vconv1(mconv),vwave1(mwave),altbore
+      real vconv1(mconv),vwave1(mwave),altbore,xerr
       double precision aa(mx,mx),dd(mx,my)
       real vkstart,vkend,vkstep
       integer idump,kiter,jtan,jalb,jalbx,jpre,jtanx,jprex
@@ -149,6 +149,8 @@ C              propagation of retrieval errors).
 
       CLOSE(32)
 
+      iform=0
+
 C     Open spectra file
       lspec=37
       CALL file(runname,runname,'spx')
@@ -194,7 +196,7 @@ C      open previous raw retrieval file (copied to .pre)
 C     skip first ioff-1 spectra
       do ispec=1,ioff-1
 
-       call readnextspavX(lspec,woff,xlat,xlon,ngeom,nav,ny,y,se,
+       call readnextspavX(lspec,iform,woff,xlat,xlon,ngeom,nav,ny,y,se,
      & fwhm,nconv,vconv,angles,wgeom,flat,flon)
 
        call readnextinfo(linfo,altbore,marsradius,satrad,thetrot)
@@ -213,7 +215,7 @@ C      and if so, skipped
       do 2999 ispec=ioff,ioff-1+nspec
 
 C     Read in measurement vector, obs. geometry and covariances
-      call readnextspavX(lspec,woff,xlat,xlon,ngeom,nav,ny,y,se,
+      call readnextspavX(lspec,iform,woff,xlat,xlon,ngeom,nav,ny,y,se,
      1  fwhm,nconv,vconv,angles,wgeom,flat,flon)
 
       call readnextinfo(linfo,altbore,marsradius,satrad,thetrot)
@@ -226,7 +228,9 @@ C     Add forward errors to measurement covariances
       DO i=1,ngeom
        do j=1,nconv(i)
         k = k+1
-        se(k)=se(k)+(rerr(i,j))**2
+        xerr=rerr(i,j)
+        if(iform.eq.3)xerr=xerr*1e-18
+        se(k)=se(k)+xerr**2
        enddo
       ENDDO
 
@@ -293,7 +297,6 @@ C     Simple errors, set to sqrt of diagonal of ST
       enddo
 
 C     write output
-      iform=0
       CALL writeout(iform,runname,ispace,lout,ispec,xlat,xlon,npro,
      1 nvar,varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err1,ngeom,
      2 nconv,vconv,gasgiant,jpre,iscat,lin)

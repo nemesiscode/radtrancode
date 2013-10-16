@@ -147,10 +147,12 @@ C     Open output file
       write(lout,*)miter,' ! Total number of reporting steps'
       write(lout,*)niter,' ! Number of iterations between reports'
 
+      iform=0
+
 C     skip first ioff-1 spectra
       do ispec=1,ioff-1
 
-       call readnextspavX(lspec,woff,xlat,xlon,ngeom,nav,ny,y,se,
+       call readnextspavX(lspec,iform,woff,xlat,xlon,ngeom,nav,ny,y,se,
      & fwhm,nconv,vconv,angles,wgeom,flat,flon)
 
       enddo
@@ -158,7 +160,7 @@ C     skip first ioff-1 spectra
       do 2999 ispec=ioff,ioff-1+nspec
 
 C     Read in measurement vector, obs. geometry and covariances
-      call readnextspavX(lspec,woff,xlat,xlon,ngeom,nav,ny,y,se,
+      call readnextspavX(lspec,iform,woff,xlat,xlon,ngeom,nav,ny,y,se,
      1  fwhm,nconv,vconv,angles,wgeom,flat,flon)
 
 C     Read in forward modelling errors

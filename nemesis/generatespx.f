@@ -52,13 +52,13 @@ C     TIME2: System time at the end of program execution.
       real vwave(mgeom,mwave),vconv(mgeom,mconv),angles(mgeom,mav,3)
       real vwaveT(mgeom,mwave),vconvT(mgeom,mconv)
       real xa(mx),rerr(mgeom,mconv),sa(mx,mx),y(my),yn(my)
-      real xnx(mx),kk(my,mx)
+      real xnx(mx),kk(my,mx),xerr
       real wgeom(mgeom,mav),flat(mgeom,mav),flon(mgeom,mav)
       real vwave1(mwave),vconv1(mconv)
       double precision aa(mx,mx),dd(mx,my)
       real vkstart,vkend,vkstep
       integer idump,kiter,jtan,jtanx,jalbx,jpre,jprex,idum,lvec
-      integer ivar,npvar,jrad
+      integer ivar,npvar,jrad,iform
 C     ********** Scattering variables **********************
       real xwave(maxsec),xf(maxcon,maxsec),xg1(maxcon,maxsec)
       real xg2(maxcon,maxsec)
@@ -138,6 +138,7 @@ C     Read in lin identifier in case want to use retrieved T
 
       CLOSE(32)
 
+      iform=0
      
 C     Open output files
       lout=38
@@ -165,7 +166,7 @@ C     Open spectra file
       write(6,1)runname
       open(lspec,file=runname,status='old')
 C     Read in sample measurement vector, obs. geometry and covariances
-       call readnextspavX(lspec,woff,xlat,xlon,ngeom,nav,ny,y,se,
+       call readnextspavX(lspec,iform,woff,xlat,xlon,ngeom,nav,ny,y,se,
      1  fwhm,nconv,vconv,angles,wgeom,flat,flon)
       close(lspec)
 
@@ -210,7 +211,9 @@ C     Add forward errors to measurement covariances
       DO i=1,ngeom
        do j=1,nconv(i)
         k = k+1
-        se(k)=se(k)+(rerr(i,j))**2
+        xerr=rerr(i,j)
+        if(iform.eq.3)xerr=xerr*1e-18
+        se(k)=se(k)+xerr**2
        enddo
       ENDDO
 
@@ -298,8 +301,8 @@ C     Add forward errors to measurement covariances
      3   nx,xn,ny,yn,kk,kiter)
       endif
 
-      call writenextspavX(lout,idum,woff,xlat,xlon,ngeom,nav,ny,yn,se,
-     1  fwhm,nconv,vconv,angles,wgeom,flat,flon)
+      call writenextspavX(lout,iform,idum,woff,xlat,xlon,ngeom,nav,
+     1  ny,yn,se,fwhm,nconv,vconv,angles,wgeom,flat,flon)
 
       call writemvec(lvec,npro,nvar,varident,varparam,jsurf,
      1  nx,xa,xn)

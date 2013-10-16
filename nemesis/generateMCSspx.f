@@ -50,7 +50,7 @@ C     TIME2: System time at the end of program execution.
       character*150 dummy	
 C dummy: Character variable, used for reading-in header on info file   
       integer ngeom, nwave(mgeom), nconv(mgeom), nx, ny, jsurf, jsurfx
-      integer np,lin1,ioffx,ivarx,npx
+      integer np,lin1,ioffx,ivarx,npx,iform
       integer nwaveT(mgeom), nconvT(mgeom)
       integer ngas,ncont,nvar,nvarx,lin,nxx,igeom,nconv1,nwave1,jalb
       real vwave(mgeom,mwave),vconv(mgeom,mconv),angles(mgeom,mav,3)
@@ -147,6 +147,7 @@ C     Read in lin identifier in case want to use retrieved T
 
       CLOSE(32)
 
+      iform=0
      
 C     Open output files
       lout=38
@@ -186,7 +187,7 @@ C     Skip header lines of info file
       backspace(linfo)
 
 C     Read in sample measurement vector, obs. geometry and covariances
-       call readnextspavX(lspec,woff,xlat,xlon,ngeom,nav,ny,y,se,
+       call readnextspavX(lspec,iform,woff,xlat,xlon,ngeom,nav,ny,y,se,
      1  fwhm,nconv,vconv,angles,wgeom,flat,flon)
 
        call readnextinfo(linfo,altbore,marsradius,satrad,thetrot)
@@ -343,8 +344,8 @@ C      Write out k-matrix for reference
        write(52)kk
        close(52)
 
-      call writenextspavX(lout,idum,woff,xlat,xlon,ngeom,nav,ny,yn,se,
-     1  fwhm,nconv,vconv,angles,wgeom,flat,flon)
+      call writenextspavX(lout,iform,idum,woff,xlat,xlon,ngeom,nav,ny,
+     1  yn,se,fwhm,nconv,vconv,angles,wgeom,flat,flon)
 
       call writemvec(lvec,npro,nvar,varident,varparam,jsurf,
      1  nx,xa,xn)

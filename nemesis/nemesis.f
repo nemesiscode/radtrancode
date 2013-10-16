@@ -49,7 +49,7 @@ C     TIME2: System time at the end of program execution.
       integer ngas,ncont,nvar,nvarx,lin,nxx,igeom,nconv1,nwave1,jalb
       real vwave(mgeom,mwave),vconv(mgeom,mconv),angles(mgeom,mav,3)
       real xa(mx),rerr(mgeom,mconv),sa(mx,mx),y(my),yn(my)
-      real xnx(mx),kk(my,mx)
+      real xnx(mx),kk(my,mx),xerr
       real wgeom(mgeom,mav),flat(mgeom,mav),flon(mgeom,mav)
       real vwave1(mwave),vconv1(mconv)
       double precision aa(mx,mx),dd(mx,my)
@@ -223,7 +223,7 @@ C      open previous raw retrieval file (copied to .pre)
 C     skip first ioff-1 spectra
       do ispec=1,ioff-1
 
-       call readnextspavX(lspec,woff,xlat,xlon,ngeom,nav,ny,y,se,
+       call readnextspavX(lspec,iform,woff,xlat,xlon,ngeom,nav,ny,y,se,
      & fwhm,nconv,vconv,angles,wgeom,flat,flon)
 
 C      Look to see if previously retrieved information is to be used
@@ -240,7 +240,7 @@ C      and if so, read in
       do 2999 ispec=ioff,ioff-1+nspec
 
 C     Read in measurement vector, obs. geometry and covariances
-      call readnextspavX(lspec,woff,xlat,xlon,ngeom,nav,ny,y,se,
+      call readnextspavX(lspec,iform,woff,xlat,xlon,ngeom,nav,ny,y,se,
      1  fwhm,nconv,vconv,angles,wgeom,flat,flon)
 
 C     Read in forward modelling errors
@@ -251,7 +251,9 @@ C     Add forward errors to measurement covariances
       DO i=1,ngeom
        do j=1,nconv(i)
         k = k+1
-        se(k)=se(k)+(rerr(i,j))**2
+        xerr=rerr(i,j)
+        if(iform.eq.3)xerr=xerr*1e-18
+        se(k)=se(k)+xerr**2
        enddo
       ENDDO
 

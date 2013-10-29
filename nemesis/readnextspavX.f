@@ -1,5 +1,5 @@
-      subroutine readnextspavX(lspec,woff,xlat,xlon,ngeom,nav,ny,y,
-     1 se,fwhm,nconv,vconv,angles,wgeom,flat,flon)
+      subroutine readnextspavX(lspec,iform,woff,xlat,xlon,ngeom,nav,
+     1 ny,y,se,fwhm,nconv,vconv,angles,wgeom,flat,flon)
 C     $Id:
 C     ****************************************************************
 C
@@ -8,6 +8,7 @@ C     matrix from the associated .spe file (assumed to be already open)
 C
 C     Input variables
 C	lspec		integer		file unit number (already open)
+C	iform		integer		Required spectral output type
 C       woff            real            Additional wavlength offset (if
 C                                               required)
 C     Output variables
@@ -48,10 +49,13 @@ C     ****************************************************************
 
       real y(my),se(my),err,vconv(mgeom,mconv),yx,angles(mgeom,mav,3)
       real xlat,xlon,woff,x,wgeom(mgeom,mav),flat(mgeom,mav),fwhm
-      real flon(mgeom,mav)
-      integer nconv(mgeom),lspec,ngeom,igeom,nav(mgeom)
+      real flon(mgeom,mav),xfac
+      integer nconv(mgeom),lspec,ngeom,igeom,nav(mgeom),iform
 
 1     format(a)
+
+      xfac=1.
+      if(iform.eq.3)xfac=1e-18
 
       do i=1,my
         se(i)=0.0
@@ -96,6 +100,10 @@ C     ****************************************************************
          print*,igeom,i,ny,my
          stop
         endif
+ 
+        yx=yx*xfac
+        err=err*xfac
+
         y(ny)=yx
         se(ny)=err**2    
 

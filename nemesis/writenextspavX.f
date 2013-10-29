@@ -1,4 +1,4 @@
-      subroutine writenextspavX(lspec,idum,woff,xlat,xlon,ngeom,
+      subroutine writenextspavX(lspec,iform,idum,woff,xlat,xlon,ngeom,
      1 nav,ny,y,se,fwhm,nconv,vconv,angles,wgeom,flat,flon)
 C     $Id:
 C     ****************************************************************
@@ -8,6 +8,7 @@ C     matrix from the associated .spe file (assumed to be already open)
 C
 C     Input variables
 C	lspec		integer		file unit number (already open)
+C	iform		integer		Output unit format
 C	idum		integer		seed for random number
 C       woff            real            Additional wavlength offset (if
 C                                               required)
@@ -45,11 +46,11 @@ C     ****************************************************************
       include '../radtran/includes/arrdef.f'
       include 'arraylen.f'
 
-      integer i,j,ny,idum
+      integer i,j,ny,idum,iform
 
       real y(my),se(my),err,vconv(mgeom,mconv),yx,angles(mgeom,mav,3)
       real xlat,xlon,woff,x,wgeom(mgeom,mav),flat(mgeom,mav),fwhm
-      real flon(mgeom,mav),gasdev1
+      real flon(mgeom,mav),gasdev1,xfac
       integer nconv(mgeom),lspec,ngeom,igeom,nav(mgeom),ioff
 
 1     format(a)
@@ -70,8 +71,10 @@ C     ****************************************************************
        do 10 i=1,nconv(igeom)
         x = vconv(igeom,i)
         ioff=ioff+1
-        yx = y(ioff)
-        err = sqrt(se(ioff))
+        xfac=1.
+        if(iform.eq.3)xfac=1e18
+        yx = y(ioff)*xfac
+        err = xfac*sqrt(se(ioff))
         write(lspec,*)x,yx+err*gasdev1(idum),err
 
 10     continue

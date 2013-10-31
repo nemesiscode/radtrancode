@@ -58,6 +58,13 @@ C	Read in g ordinates, deltag, pressures and temperatures.
 C
 C-----------------------------------------------------------------------
 
+C     Check to see if NG is within limits
+      IF(NG.GT.MAXG-1)THEN
+       print*,'Error in read_khead.f: NG is greater than allowed'
+       print*,'maximum value MAXG, defined in arrdef.f'
+       print*,NG,MAXG
+       stop
+      ENDIF
       IREC=11
       DO 299 J=1,NG
        READ(LUN0,REC=IREC)G_ORD(J)

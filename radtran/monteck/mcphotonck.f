@@ -92,14 +92,14 @@ C     ****************************************************************
 
 
 C      print*,NPHOT,IDUM,NPRO,NGAS,NCONT,MOLWT
-C      print*,XSEC(1),XOMEGA(1),NPHASE
+C      print*,XSEC(1),XOMEGA(1),NPHASE,'NPHASE'
 C      print*,(THETA(1,J),J=1,NPHASE)
 C      print*,SVEC
 C      print*,DVEC1
 C      print*,SOLVEC
 C      print*,DEVSUN
 C      print*,SOLAR
-C      print*,NG
+C      print*,NG,'NG'
 C      do i=1,npro
 C       print*,(TABK(j,i),j=1,NG)
 C      enddo
@@ -107,8 +107,9 @@ C      print*,(DEL_G(J),J=1,NG)
 C      do i=1,npro
 C       print*,H(i),P(i),T(i),(DUST(i,j),j=1,NCONT)
 C      enddo
-C      print*,RADIUS,TGROUND,IRAY
+C      print*,RADIUS,TGROUND,IRAY,'IRAY'
 C      print*,ACC,MEAN,SDEVM,MSCAT,IPHOT,ISPACE,VV,NAB,NSOL,NGR
+C      print*,GALB
 
       IF(NPHOT.GT.MPHOT)THEN
        PRINT*,'Error in MCPHOTONCK NPHOT > MPHOT'
@@ -117,7 +118,7 @@ C      print*,ACC,MEAN,SDEVM,MSCAT,IPHOT,ISPACE,VV,NAB,NSOL,NGR
       ENDIF
 
       SCOS = COS(DEVSUN*PI/180.0)
-      print*,'SCOS, DEVSUN',SCOS,DEVSUN
+C      print*,'SCOS, DEVSUN',SCOS,DEVSUN
       NAB=0
       NSOL=0
       NGR=0
@@ -308,8 +309,6 @@ C       print*,'RES : ',(RES(IPHOT,J),J=1,3)
        SDEV = SQRT(ABS(MEAN2 - MEAN**2))       
 
        SDEVM = SDEV/SQRT(FLOAT(IPHOT))
-
-C       print*,'MEAN ...',MEAN,MEAN2,SDEV,SDEVM,MSCAT
 
 C      Abort if already sufficiently converged after 200 photons
 c       at least 50 of which have hit the Sun.

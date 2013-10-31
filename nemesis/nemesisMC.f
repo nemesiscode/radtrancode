@@ -2,13 +2,8 @@
 C     $Id:
 C     ******************************************************************
 C
-C     CIRS retrieval code utilising correlated-k, thermal emission 
-C     fast gradient radiative transfer model CIRSRADG. Extension of
-C     Nemesis to retrieve from a number of locations in a row.  
-C
-C     CIRSRADG cannot currently deal with scattering calculations so this
-C     gas to be done with CIRSRAD if a scattering calculation is required.
-C     It is intended to upgrade CIRSRADG later.  
+C     CIRS retrieval code utilising correlated-k, MonteCarlo
+C     radiative transfer model.
 C
 C     Minimisation is achieved using a modified non-linear estimation
 C     which uses a Marquardt-Levenburg type brake.
@@ -22,6 +17,7 @@ C     Pat Irwin	        Modified from NIMS retrieval code 21/3/00
 C			Updated	4/4/01
 C			Updated for continuous vmr profiles 7/10/03
 C			Updated for FOV-averaging 9/2/04
+C			Updated for MC 31/10/13
 C
 C     ******************************************************************
       implicit none
@@ -70,6 +66,13 @@ C     ********** Scattering variables **********************
       CHARACTER*100 ANAME
       REAL DNU
       INTEGER IPARA
+
+C     Solar spectrum variables and flags
+      integer iform1,iread,solnpt
+      real solwave(maxbin),solrad(maxbin),solradius
+      character*100 solfile,solname
+      logical solexist
+      common/solardat/iread, iform, solradius, solwave, solrad,  solnpt
 
 
 C     ******************************************************
@@ -146,6 +149,15 @@ C              propagation of retrieval errors).
       READ(32,*)lin
 
       CLOSE(32)
+
+C     See if there is a solar or stellar reference spectrum and read in
+C     if present.
+      call file(runname,solfile,'sol')
+      inquire(file=solfile,exist=solexist)
+      if(solexist)then
+         call opensol(solfile,solname)
+         CALL init_solar_wave(ispace,solname)
+      endif
 
       iform=0
 

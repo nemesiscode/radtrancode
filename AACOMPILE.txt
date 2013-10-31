@@ -18,9 +18,9 @@ some versions of the ifc need ISYS=4.
 If you don't know, pick either ISYS=1 or ISYS=4 and see if the code works.
 If it doesn't, choose the other one!
 
-b) The code will look in the directory defined by radtran/rtm_util/datachive.f 
+b) The code will look in the directory defined by radtran/rtm_util/datarchive.f 
 for the a whole load of reference files during a run. Hence, you need to update 
-datachive.f to point to the right place before compiling.
+datarchive.f to point to the right place before compiling.
 
 c) Edit your .cshrc file to include the following set of environment variables. 
 You need to decide where to put these yourself, but for typical MacOSX compile 
@@ -63,8 +63,9 @@ directory):
 1) change directory to FOVgreg/ and type 'make lib'
 2) change directory to frecipes/ and type 'make lib'
 3) change directory to radtran/makefiles/ and type 'makeradtranlib'
-4) change directory to radtran/makefiles/ and type 'makeradtranbin'
-5) change directory to nemesis/ and type 'make bin'
+4) change directory to nemesis/ and type 'make lib'
+5) change directory to radtran/makefiles/ and type 'makeradtranbin'
+6) change directory to nemesis/ and type 'make bin'
 Note 1: if you're not doing MCS calculations you can skip step 1.
 Note 2: if you've already compiled the Fortran recipes library, you can
         skip step 2.

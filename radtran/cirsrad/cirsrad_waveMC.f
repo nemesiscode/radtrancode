@@ -215,16 +215,15 @@ C      ENDIF
 C      CALL PROMPT('Enter distance from Sun (AU) : ')
 C      READ*,SDIST
 
-C     Calculate angular radius of Sun
+C     Calculate angular radius of Sun in degrees
       SOLRAD = 0.5*0.533128/SDIST
 
 C      CALL PROMPT('Enter acceptable deviation from Sun (deg) : ')
 C      READ*,DEVSUN
       DEVSUN=10.0
 
-      OMEGA1 = 2*PI*(1.0-cos(SOLRAD*DTR))
-      OMEGA2 = 2*PI*(1.0-cos(DEVSUN*DTR))
-
+      OMEGA1 = 4*PI*(sin(SOLRAD*DTR*0.5)**2)
+      OMEGA2 = 4*PI*(sin(DEVSUN*DTR*0.5)**2)
 C     Calculate ratio of projected areas
       XFAC= OMEGA1/OMEGA2
 
@@ -233,14 +232,11 @@ C      CALL PROMPT('Enter max. number of photons : ')
 C      READ*,NITER
 
       IF(NITER.GT.MPHOT)THEN
-       Print*,'Monteck. NITER must be less than or equal to MPHOT'
-       Print*,'MPHOT = ',MPHOT
+       Print*,'cirsrad_waveMC. NITER must be less than or equal'
+       print*,'to MPHOT. MPHOT = ',MPHOT
        STOP
       ENDIF
 
-C     Read in scattering properties of dust
-C      CALL PROMPT('Enter name of aerosol H-G file : ')
-C      READ(5,1)XHGFILE
 
       CALL GETHG(OPFILE,NCONT1,NLAMBDA,XLAMBDA,PHASED)
 
@@ -278,17 +274,22 @@ C      ENDIF
        VV = VWAVE(IWAVE)
 
 C      Get solar flux at this wavelength/wavenumber
+     
        CALL GET_SOLAR_WAVE(VV,SDIST,SOLAR)
+
 C      Output from get_solar_wave is W cm-2 um-1 or W cm-1 (cm-1)-1. Need
 C      to convert this to surface radiance of sun.
        SOLAR=SOLAR/OMEGA1
+C       print*,'A',solar,omega1
 
 C      Also need to correct for fact that we'll actually accept slightly
 C      larger angles for calculation.
        SOLAR=SOLAR*XFAC
+C       print*,'B',solar,xfac
  
 C      Finally need to correct for the solar zenith angle
        SOLAR=SOLAR*COS(SOLZEN*DTR)
+C       print*,'C',solar,solzen,dtr
 
 C      Interpolate k-tables and gas continua to VV
        CALL GENTABSCK1(OPFILE,NPRO,NGAS,ID,ISO,P,T,VMR,NWAVE,VWAVE,
@@ -300,10 +301,10 @@ C      Interpolate scattering properties to VV
 
 C      Interpolate emissivity and albedo to VV
 
-       print*,'GALB = ',GALB
+C       print*,'GALB = ',GALB
        CALL VERINT(VEM,EMISSIVITY,NEM,GEMI,VV) 
        GALB = 1.0-GEMI
-       print*,'GALB, GEMI  = ',GALB,GEMI
+C       print*,'GALB, GEMI  = ',GALB,GEMI
 
 C      Regrid phase functions to equal probability steps
        NCONT1 = NCONT+1

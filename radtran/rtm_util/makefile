@@ -18,6 +18,7 @@ F_SOURCES = \
         fcat.f \
         file.f \
         readflags.f \
+        hamming.f \
         gasdev1.f \
         getquad.f \
 	interp.f \

@@ -28,7 +28,7 @@ C       bins, paths, etc.)
      2			y2(maxbin), x1, x2, delx, xi, yi, yold, dv
 	REAL		vfil(1000),fil(1000),yy,sumf,delv
 	REAL		vcentral,ytmp(maxout),vcen
-	REAL		v1,v2,f1,f2,vt
+	REAL		v1,v2,f1,f2,vt,XOFF,HAMMING
 	CHARACTER*100	runname
 
         IF(fwhm.gt.0.0)THEN
@@ -60,10 +60,13 @@ C         Find limits of instrument width in wavenumbers
           ELSEIF(ISHAPE.EQ.1)THEN
            V1=VCONV(J)-FWHM
            V2=VCONV(J)+FWHM
-          ELSE
+          ELSEIF(ISHAPE.EQ.2)THEN
            SIG = 0.5*FWHM/SQRT(ALOG(2.0))
            V1=VCONV(J)-3.*SIG
            V2=VCONV(J)+3.*SIG
+          ELSE
+           V1=VCONV(J)-0.5*FWHM/0.5264
+           V1=VCONV(J)+0.5*FWHM/0.5264
           ENDIF
           VCEN=VCONV(J)
 
@@ -77,12 +80,12 @@ C         Find limits of instrument width in wavenumbers
           F2=0.0
 
           IF(ISHAPE.EQ.0)THEN
-
+C          Square Instrument Shape
            IF(VWAVE.GE.V1.AND.VWAVE.LE.V2)F2=1.0
            IF(VWAVE1.GE.V1.AND.VWAVE1.LE.V2)F1=1.0
 
           ELSEIF(ISHAPE.EQ.1)THEN
-
+C          Triangular Instrument Shape
            IF(VWAVE.GE.V1.AND.VWAVE.LE.V2)THEN
             IF(ISPACE.EQ.0)THEN
              F2=1.0 - ABS(VWAVE-VCEN)/FWHM
@@ -99,8 +102,8 @@ C         Find limits of instrument width in wavenumbers
             ENDIF
            ENDIF           
 
-          ELSE
-
+          ELSEIF(ISHAPE.EQ.2)THEN
+C          Gaussian Instrument Shape
            IF(VWAVE.GE.V1.AND.VWAVE.LE.V2)THEN
             IF(ISPACE.EQ.0)THEN
              F2=EXP(-((VWAVE-VCEN)/SIG)**2)
@@ -116,6 +119,25 @@ C         Find limits of instrument width in wavenumbers
             ENDIF
            ENDIF           
 
+          ELSE
+C          Hamming Instrument Shape
+           IF(VWAVE.GE.V1.AND.VWAVE.LE.V2)THEN
+            IF(ISPACE.EQ.0)THEN
+             XOFF = VWAVE-VCEN
+            ELSE
+             XOFF = 1E4/VWAVE - VCEN
+            ENDIF
+            F2=HAMMING(FWHM,XOFF)
+           ENDIF
+
+           IF(VWAVE1.GE.V1.AND.VWAVE1.LE.V2)THEN
+            IF(ISPACE.EQ.0)THEN
+             XOFF = VWAVE1-VCEN
+            ELSE
+             XOFF = 1E4/VWAVE1-VCEN
+            ENDIF
+            F1=HAMMING(FWHM,XOFF)
+           ENDIF           
 
           ENDIF
 

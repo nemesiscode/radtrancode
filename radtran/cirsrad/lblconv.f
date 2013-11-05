@@ -22,15 +22,15 @@ C       bins, paths, etc.)
 	INTEGER		nstep,mconv,npath,ispace,ishape
 	PARAMETER	(nstep=20, mconv=2000)
 
-        INTEGER		nconv, nc, I, J,nconv1,nsub,k
+        INTEGER		nconv, nc, I, J,nconv1,nsub,k,NMAX
 	REAL		vwave, y(maxpat,2), vconv(nconv),vwave1,
      1			yout(maxpat,mconv), ynor(maxpat,mconv),
      2			y2(maxbin), x1, x2, delx, xi, yi, yold, dv
 	REAL		vfil(1000),fil(1000),yy,sumf,delv
 	REAL		vcentral,ytmp(maxout),vcen
-	REAL		v1,v2,f1,f2,vt,XOFF,HAMMING
+	REAL		v1,v2,f1,f2,vt,XOFF,HAMMING,NFW,FMIN,STEST
 	CHARACTER*100	runname
-
+        PARAMETER (NMAX=10001)
         IF(fwhm.gt.0.0)THEN
 
 C         print*,vwave,delv,fwhm,npath
@@ -51,6 +51,25 @@ C        vwave, delv are in wavenumbers
 
 C         print*,vwave,vwave1,delv,delx
 
+         IF(ISHAPE.EQ.3)THEN
+C         Choose how many FWHMs to cover and find minumum of Hamming function
+C         in this window to subtract later to make sure instrument function
+C         never goes negative.
+
+          NFW = 3.
+          V1 = -NFW*FWHM
+
+          FMIN=3.
+          DO I=0,NMAX-1
+           XOFF = V1+2*NFW*FWHM*FLOAT(I)/FLOAT(NMAX-1)
+           STEST = HAMMING(FWHM,XOFF)
+           IF(STEST.LT.FMIN)THEN
+            FMIN=STEST
+           ENDIF
+          ENDDO
+
+         ENDIF
+
          DO J=1,NCONV
 
 C         Find limits of instrument width in wavenumbers
@@ -65,8 +84,8 @@ C         Find limits of instrument width in wavenumbers
            V1=VCONV(J)-3.*SIG
            V2=VCONV(J)+3.*SIG
           ELSE
-           V1=VCONV(J)-0.5*FWHM/0.5264
-           V1=VCONV(J)+0.5*FWHM/0.5264
+           V1=VCONV(J)-NFW*FWHM
+           V2=VCONV(J)+NFW*FWHM
           ENDIF
           VCEN=VCONV(J)
 
@@ -127,7 +146,7 @@ C          Hamming Instrument Shape
             ELSE
              XOFF = 1E4/VWAVE - VCEN
             ENDIF
-            F2=HAMMING(FWHM,XOFF)
+            F2 = HAMMING(FWHM,XOFF)-FMIN
            ENDIF
 
            IF(VWAVE1.GE.V1.AND.VWAVE1.LE.V2)THEN
@@ -136,7 +155,7 @@ C          Hamming Instrument Shape
             ELSE
              XOFF = 1E4/VWAVE1-VCEN
             ENDIF
-            F1=HAMMING(FWHM,XOFF)
+            F1 = HAMMING(FWHM,XOFF)-FMIN
            ENDIF           
 
           ENDIF

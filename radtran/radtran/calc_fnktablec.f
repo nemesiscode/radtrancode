@@ -318,9 +318,9 @@ cc            WRITE(*,*)' '
               V2(I)=V1(I)-VFILC
               IF(T1(I).LT.0.0)THEN
                PRINT*,'*** WARNING *** Calc_ktablec'
-               PRINT*,'Instrument Function has negative elements'
-               PRINT*,'Aborting'
-               STOP
+C               PRINT*,'Instrument Function has negative elements'
+C               PRINT*,'Aborting'
+C               STOP
               ENDIF 
              ENDDO
             ENDIF 

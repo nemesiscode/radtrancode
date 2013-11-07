@@ -105,8 +105,14 @@ C          Triangular Instrument Shape
              F1=1.0 - ABS(1E4/VWAVE1-VCEN)/FWHM
             ENDIF
            ENDIF           
-           IF(F2.LT.0.0)F2=0.0
-           IF(F1.LT.0.0)F1=0.0
+           IF(F2.LT.0.0)THEN
+            PRINT*,'F2 gone slightly negative. Fixing at 0.',F2
+            F2=0.0
+           ENDIF
+           IF(F1.LT.0.0)THEN
+            PRINT*,'F1 gone slightly negative. Fixing at 0.',F1
+            F1=0.0
+           ENDIF
 
           ELSEIF(ISHAPE.EQ.2)THEN
 C          Gaussian Instrument Shape

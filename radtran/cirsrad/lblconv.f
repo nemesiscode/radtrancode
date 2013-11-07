@@ -105,6 +105,8 @@ C          Triangular Instrument Shape
              F1=1.0 - ABS(1E4/VWAVE1-VCEN)/FWHM
             ENDIF
            ENDIF           
+           IF(F2.LT.0.0)F2=0.0
+           IF(F1.LT.0.0)F1=0.0
 
           ELSEIF(ISHAPE.EQ.2)THEN
 C          Gaussian Instrument Shape
@@ -145,7 +147,7 @@ C          Hamming Instrument Shape
 
           ENDIF
 
-          IF(F1.LT.0.0.OR.F2.LT.0.0)THEN
+          IF((F1.LT.0.0.OR.F2.LT.0.0).AND.ISHAPE.NE.3)THEN
            print*,'Warning: lblconv. F1 or F2 < 0.0'
            print*,F1,F2
            stop

@@ -10,8 +10,9 @@ C
 C     *********************************************************************
       IMPLICIT NONE
       INCLUDE '../includes/constdef.f'
-      CHARACTER*100 IPFILE
-      CHARACTER*100 BUFFER
+      INCLUDE '../includes/dbcom.f'
+C      CHARACTER*100 IPFILE
+      CHARACTER*200 BUFFER
       CHARACTER*8 PNAME
       INTEGER I,J,NPRO,NCONT,NVMR,ID(15),ISO(15),N,AMFORM,IPLANET
       REAL CONT(100,1000),VMR(1000,15),CP0,CXS,CSUM(1000)
@@ -149,6 +150,10 @@ C     Compute variation of scale heights and densities in atmosphere
           IF(AMFORM.EQ.0)THEN
              XMOLWT=MOLWT
           ELSE
+	    GASFIL='gasinfo04.dat'
+	    CALL DATARCHIVE(GASFIL)
+	    DBLUN=12
+	    CALL RDGAS
             DO K=1,NVMR
              XVMR(K)=VMR(I,K)
             ENDDO
@@ -254,56 +259,33 @@ C       Calculate air density in g/cm3
        END IF
 
 C      Now integrate the specific dust concentrations to estimate the total
-C      optical depth. This section uses a nifty integration scheme which
-C      is more accurate than the straight trapezium rule integration.
+C      optical depth. This section used to use a nifty integration scheme which
+C      was mathematically more accurate than the straight trapezium rule 
+C      integration. Unfortunately, it was not very compatible with the subsequent
+C      layer property calculations which just read the aerosol.prf file and assumed
+C      a linear interpolation between layers. Hence, the trapezium rule calculation
+C      is actually more appropriate here! 
 C      Since we know that the the number density of particles drops as
 C      S = S0exp(-z/H), then integrating from z1 to z2 we find that 
 C      the integral is H(S(z1)-S(z2)) where H is the scale height. 
 
        SUM=0
        DO 59 I=NPRO,1,-1
-         IF(IDUST.LT.3)THEN
-C         need to calculate fractional scale height
-          IF(I.EQ.NPRO)THEN
-           R1 = P(I)/P(I-1)
-           IF(S(I-1).NE.0.0)THEN
-            R2 = S(I)/S(I-1)
-           ELSE
-            R2 = R1
-           ENDIF
-          ELSE
-           R1 = P(I+1)/P(I)
-           IF(S(I).NE.0.0)THEN
-            R2 = S(I+1)/S(I)
-           ELSE
-            R2=R1
-           ENDIF
-          ENDIF
-          CLOUDFSH = LOG(R1)/LOG(R2)
-         ENDIF
 
  	 IF(I.EQ.NPRO)THEN
-           H1 = CLOUDFSH*SCALEH(I)
-           SUM = SUM + S(I)*H1*1E5
+C          Find optical depth above top layer, using the scale height
+           SUM = SUM + S(I)*SCALEH(I)*1E5
+
          ELSE
-c           print*,'DIAG 274: ',H(I),I,NPRO
-c           print*,'DIAG 275: ',H(I-1),I,NPRO
-c           DELH = H(I)-H(I-1)
-c LNF: corrected to stop problems with H(1)-H(0)
-            
-           if(i.eq.1)then
-             DELH=H(I+1)-H(I)
-           else
-            DELH = H(I)-H(I-1)
-           endif
-           
-           H1 = CLOUDFSH*(SCALEH(I)+SCALEH(I+1))*0.5
-           IF(S(I).GT.0)THEN
-             SUM = SUM + H1*(S(I)-S(I+1))*1E5
-           ENDIF
+
+           DELH = H(I+1)-H(I)
+           SUM = SUM + DELH*(S(I)+S(I+1))*0.5*1E5
+
          ENDIF
+
          CSUM(NPRO-I+1)=SUM
          P1(NPRO-I+1)=P(I)
+
 59     CONTINUE
 
        PRINT*,'Integration from space to bottom of atmosphere '

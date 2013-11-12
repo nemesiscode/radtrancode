@@ -316,5 +316,17 @@ C          Find optical depth above top layer, using the scale height
         WRITE(1,*) H(I),(CONT(J,I),J=1,NCONT)
 31    CONTINUE
       CLOSE(UNIT=1)
-      STOP
+
+      PRINT*,'*************** PLEASE NOTE **********************'
+      PRINT*,'Please note that the normalisation scheme used to' 
+      PRINT*,'calculate integrated opacities in this program are'
+      PRINT*,'not entirely consistent with the the final mean'
+      PRINT*,'layer properties calculated in the radiative transfer'
+      PRINT*,'programs - Radtrans and Nemesis.'
+      PRINT*,'   You should check that the aerosol column amounts'
+      PRINT*,'reported by these programs (or Path) match your'
+      PRINT*,'expectations! If not, then you will need to scale the'
+      PRINT*,'aerosol profile accordingly'
+      PRINT*,'**************************************************'
+
       END

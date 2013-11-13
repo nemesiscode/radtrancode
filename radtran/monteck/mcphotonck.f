@@ -95,8 +95,8 @@ C      print*,NPHOT,IDUM,NPRO,NGAS,NCONT,MOLWT
 C      print*,XSEC(1),XOMEGA(1),NPHASE,'NPHASE'
 C      print*,(THETA(1,J),J=1,NPHASE)
 C      print*,SVEC
-C      print*,DVEC1
-C      print*,SOLVEC
+      print*,'DVEC = ',DVEC1
+      print*,'SOLVEC = ',SOLVEC
 C      print*,DEVSUN
 C      print*,SOLAR
 C      print*,NG,'NG'

@@ -297,7 +297,7 @@ C      Regrid phase functions to equal probability steps
       WRITE(*,*)'%Monteck.f :: calculation complete'
       CALL GETTIME(TIME)
       TIME2= TIME
-      TOT_TIME=TIME2-TIME1
+      TOT_TIME=SNGL(TIME2-TIME1)
       WRITE(*,200)TOT_TIME
 200   FORMAT(' Elapsed time (sec)= ',F8.1)
 

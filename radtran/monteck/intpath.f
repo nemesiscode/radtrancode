@@ -10,7 +10,7 @@ C     Input variables:
 C	VV		REAL	Calculated wavenumber (require to estimate
 C				Rayleigh scattering)
 C	IRAY		INTEGER 0=Rayleigh scatt off, 1 = on
-C	TAUREQ		REAL	Required transmission
+C	TAUREQ		REAL	Required opacity
 C	PVEC(3)		REAL	Starting position. Convention is that
 C				z-azis is the zenith at the point where
 C				the photon enters the atmosphere
@@ -143,7 +143,7 @@ C      Add optical depth element to integration array
 C       print*,'Atmosphere too thin'
 C      There is insufficient opacity in atmosphere. Photon either leaves atmosphere
 C      entirely or strikes surface. Add on 10km to finishing position to make sure
-C      subsequent codes realise that the photon has run out of atmosphere
+C      subsequent codes realises that the photon has run out of atmosphere
        DO I=1,3
         PVEC(I)=PVEC1(I)+DVEC(I)*10.
        ENDDO

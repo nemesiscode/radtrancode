@@ -9,7 +9,7 @@ C
 C     k-distributions are then combined assuming uncorrelated lines and
 C     using the vmr's as the weight. 
 C
-C     Finally, gas contunuum absorption and CIA is added on.
+C     Finally, gas contunuum absorption is added on.
 C
 C     Input variables
 C	KEYFIL		character*100  	Run name
@@ -41,7 +41,7 @@ C     ****************************************************************
       INTEGER NPRO,NGAS,I,J,K
       REAL P(MAXPAT),T(MAXPAT),VMR(MAXPAT,MAXGAS)
       INTEGER ID(MAXGAS),ISO(MAXGAS),ISPACE
-      REAL VV,X,QH,QHe,TAU1,TAU2,QH_He,PP,TOTAMH,TAUTMP      
+      REAL VV,X,QH,QHe,TAU1,QH_He,PP,TOTAMH,TAUTMP      
       
       INTEGER IWAVE
 
@@ -74,7 +74,6 @@ C     ****************************************************************
        QH=0.0
        QHe=0.0
        TAU1=0.0
-       TAU2=0.0
        DO 243 J=1,NGAS
 
           IF(ID(J).EQ.39) QH=VMR(I,J)
@@ -105,16 +104,17 @@ C      Make sure we pass wavenumbers to NGASCON
        DO K=1,NGAS
         PP = VMR(I,K)*P(I)
         CALL NGASCON(X,ID(K),ISO(K),1.0,PP,P(I),T(I),TAUTMP)
-        TAU1=TAU1+TAUTMP
+C       Can occasionally get -ve AvCONTMPs at edge of Karkoschka
+C       CH4 data.
+        IF(TAUTMP.GE.0.0)THEN
+         TAU1=TAU1+TAUTMP
+        ENDIF
        ENDDO
 
-       TAU2=0.0
-
        TAU1=TAU1*1E20
-       TAU2=TAU2*1E20
 
        DO K=1,NG
-        TABK(K,I)= K_G(K) + TAU1 + TAU2
+        TABK(K,I)= K_G(K) + TAU1
        ENDDO
 
 1000  CONTINUE

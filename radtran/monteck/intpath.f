@@ -47,13 +47,12 @@ C     ***************************************************************
       INCLUDE '../includes/arrdef.f'
       INCLUDE '../includes/constdef.f'
 
-      REAL PVEC(3),DVEC(3),TAUREC,VV,TVEC(3),PVEC1(3),AVEC(3)
+      REAL PVEC(3),DVEC(3),VV,TVEC(3),PVEC1(3),AVEC(3)
       INTEGER NPRO,NGAS,J,NCONT,I,K,IFL,IRAY,IDIST,MINT
-      PARAMETER (MINT=201)
+      PARAMETER (MINT=801)
       REAL MOLWT,F,DELS
       REAL TNOW,PNOW,CALCALT,RADIUS,HEIGHT
       REAL P(MAXPRO),T(MAXPRO),H(MAXPRO),TAUTOT(MINT)
-      REAL TAUTOTC(MINT)
       REAL TABK(MAXG,MAXPRO),K_G(MAXPRO),TAUNOW(MINT),TAUC(MINT)
       REAL T1,T2,DTAU,DTAUSC,TAUREQ,DIST(MINT),PEND
       REAL DTAUDS,DTAUR,XSEC(MAXCON),XOMEGA(MAXCON)
@@ -79,7 +78,8 @@ C     ------------------------------------------------------------------
 1000  CONTINUE
 
 C     Load up relevant k-ordinate
-C      print*,'igdist',igdist
+C      print*,'igdist,taureq',igdist,taureq
+      if(taureq.gt.1000.)print*,'igdist,taureq',igdist,taureq
       DO I=1,NPRO
        K_G(I)=TABK(IGDIST,I)
 C       print*,igdist,k_g(i)
@@ -126,17 +126,20 @@ C      Determine optical depths/km
      1 K_G,HEIGHT,DTAUDS,DTAUDC,DTAUR)
 
 C      Add optical depth element to integration array
-       TAUNOW(I)=DTAUDS
-       TAUC(I)=DTAUDC(1)
+       TAUNOW(I)=DTAUDS+DTAUR
+       DO J=1,NCONT
+        TAUNOW(I)=TAUNOW(I)+DTAUDC(J)
+       ENDDO
+
 30    CONTINUE
 
       TAUTOT(1)=0.
-      TAUTOTC(1)=0.
       DIST(1)=0.
+C      print*,TAUTOT(1),DIST(1)
       DO I=2,MINT
        TAUTOT(I)=TAUTOT(I-1)+0.5*(TAUNOW(I-1)+TAUNOW(I))*DELS
-       TAUTOTC(I)=TAUTOTC(I-1)+0.5*(TAUC(I-1)+TAUC(I))*DELS
        DIST(I)=DIST(I-1)+DELS
+C       print*,TAUTOT(I),DIST(I)
       ENDDO
  
       IF(TAUTOT(MINT).LE.TAUREQ)THEN

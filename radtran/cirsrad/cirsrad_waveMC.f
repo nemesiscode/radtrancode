@@ -336,12 +336,13 @@ C       AvgCONTMP contains opacity of a 1 km-long path. Need to convert to
 C       same units as TABK, namely (molecule/cm2)-1 and add to each
 C       element of the TABK array at this level.  
 
-        DO IG=1,NG
-         print*,'XX',I,IG,TABK(IG,I),TOTAM,AvgCONTMP,
+        IF(I.EQ.1.OR.I.EQ.10)THEN
+         DO IG=1,NG
+          print*,'XX',X,VV,I,IG,TABK(IG,I),TOTAM,AvgCONTMP,
      &		1e20*AvgCONTMP/TOTAM
-         TABK(IG,I)=TABK(IG,I)+1e20*AvgCONTMP/TOTAM
-        ENDDO
-
+          TABK(IG,I)=TABK(IG,I)+1e20*AvgCONTMP/TOTAM
+         ENDDO
+        ENDIF
 
 
 102    CONTINUE

@@ -13,7 +13,7 @@ C	T(NPRO)	REAL	Profile temperatures
 C	DUST(MAXPRO/MAXCON) REAL Dust abundances
 C	MOLWT	REAL	Atmospheric molecular weight
 C	XSEC(NCONT) REAL	Dust particle x-sections
-C	IRAY	INTEGER	Switch for Rayleigh scattering on(1) or off(0)
+C	IRAY	INTEGER	Switch for Rayleigh scattering
 C	VV	REAL	Current wavenumber
 C	K_G(NPRO) REAL	Gas Absorption coefficient at each level
 C	HEIGHT	REAL	Height in atmosphere for calculation
@@ -34,6 +34,7 @@ C     **************************************************************
       REAL HEIGHT,H(NPRO),PNOW,P(NPRO),TNOW,T(NPRO),F
       REAL K_G(NPRO),K1,RAYLEIGHJ,VV,C,TOTAM,DKDS,DNOW
       REAL DKDC,DTAUR,DTAUDC(MAXCON),DTAUDS
+      REAL RAYLEIGHV,RAYLEIGHA
 
 
 C     Calculate position in height array and determine local
@@ -42,6 +43,8 @@ C       temperature and pressure
 
       K1 = (1-F)*K_G(IFL) + F*K_G(IFL+1)
       TOTAM = MODBOLTZ*(PNOW/TNOW)
+C     TOTAM is molecules/cm2 for a 1km-long path
+
       DKDS = TOTAM*K1*1E-20	! optical depth of gas/km
 
       DKDC = 0.0		! optical depth of aerosol/km
@@ -51,10 +54,17 @@ C       temperature and pressure
         DKDC = DKDC+DTAUDC(J)
       ENDDO
 
-      IF(IRAY.EQ.1)THEN
-       DTAUR = TOTAM*RAYLEIGHJ(VV,PNOW,TNOW)
-      ELSE
-       DTAUR = 0.0
+      DTAUR = 0.0
+      IF(IRAY.GT.0)THEN
+
+       IF(IRAY.EQ.1)THEN
+        DTAUR = TOTAM*RAYLEIGHJ(VV,PNOW,TNOW)
+       ELSEIF(IRAY.EQ.2)THEN
+        DTAUR = TOTAM*RAYLEIGHV(VV,PNOW,TNOW)
+       ELSE
+        DTAUR = TOTAM*RAYLEIGHA(VV,PNOW,TNOW)
+       ENDIF
+
       ENDIF
 
 C     Calculate optical depth/km at current conditions

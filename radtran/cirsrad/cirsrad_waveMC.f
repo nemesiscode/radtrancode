@@ -43,27 +43,27 @@ C		Internal dimensions
 C     Defines the maximum values for a series of variables (layers,
 C     bins, paths, etc.)
       INCLUDE '../includes/arrdef.f'
-
+      INCLUDE '../includes/constdef.f'
 C		Passed variables
 
       INTEGER	Inormal,IRAY,flagh2p
-      INTEGER	nwave
-      REAL OUTPUT(NWAVE)
+      INTEGER	nwave,IABSORB(5)
+      REAL OUTPUT(NWAVE),DABSORB(7)
 
       INTEGER NPRO,NGAS,NCONT,NCONT1,I,MPHOT,J
       PARAMETER (MPHOT=100000)
       REAL P(MAXPAT),T(MAXPAT),H(MAXPAT),VMR(MAXPAT,MAXGAS),VREF,ACC
       INTEGER ID(MAXGAS),ISO(MAXGAS),ISTEP,IDUMP,NAB,NSOL,NGR
-      REAL RADIUS,MOLWT,DUST(MAXPAT,maxcon),XG
-      REAL TOTAM,PRESS,TEMP,AMOUNT(MAXGAS),PP(MAXGAS),CONT(maxcon)
+      REAL RADIUS,MOLWT,DUST(MAXPAT,maxcon),XG,TOTAM
+      REAL AMOUNT(MAXGAS),PP(MAXGAS),AvgCONTMP
+      REAL XLEN,PRESS,TEMP,CONT(maxcon)
       REAL DTR,SOLZEN,SOLPHI,GAMMA,SOLZEN1
       REAL AVEC(3),SVEC(3),PVEC(3),TAUA,GALB,TGROUND,THETA(maxcon,100)
       REAL TAUS,DVEC1(3),RES(MPHOT,3),SOLVEC(3),SOLRAD,DEVSUN
       REAL OMEGA1,OMEGA2,XFAC,SOLAR,GEMI
-      REAL sol_ang,emiss_ang,aphi,PI
-      INTEGER NLAMBDA,ISPACE
-      PARAMETER (PI=3.1415927)
-      REAL XOMEGA(MAXCON),XSEC1(MAXCON),VV
+      REAL sol_ang,emiss_ang,aphi
+      INTEGER NLAMBDA,ISPACE,id1,IGAS
+      REAL XOMEGA(MAXCON),XSEC1(MAXCON),VV,X
       REAL HTAN,TAUG,ZEN,ZANG,ALTITUDE,CALCALT,SDIST
       REAL XLAMBDA(MAXSEC),PHASED(MAXCON,MAXSEC,5)
       REAL MEAN,SDEV,MSCAT
@@ -138,14 +138,14 @@ C      READ*,IDUMP
       IF(IDUMP.EQ.1)THEN
         OPEN(34,FILE='monteck_dump.out',STATUS='UNKNOWN')
         WRITE(34,*)'Standard output on each line is : '
-        WRITE(34,*)'VV = Wavelength/wavenumber'
+        WRITE(34,*)'X = Wavelength/wavenumber'
         WRITE(34,*)'MEAN = Mean radiance'
         WRITE(34,*)'SDEV = Standard deviation of radiance'
         WRITE(34,*)'MSCAT = Mean number of scattering events'    
         WRITE(34,*)'NAB = Number of photons absorbed in atm'
         WRITE(34,*)'NGR = Number of photons absorbed by ground'
         WRITE(34,*)'NSOL = Number of photons encountering Sun'
-        WRITE(34,*)'VV, MEAN, SDEV, MSCAT, NAB, NSOL, NGR, ITER, NITER,
+        WRITE(34,*)'X, MEAN, SDEV, MSCAT, NAB, NSOL, NGR, ITER, NITER,
      1   SDEV/MEAN'
 
         OPEN(35,FILE='cirsrad_waveMC.out',STATUS='UNKNOWN')
@@ -271,11 +271,16 @@ C      ENDIF
 
       DO 1001 IWAVE=1,NWAVE
 
-       VV = VWAVE(IWAVE)
+       X = VWAVE(IWAVE)
+C      Set vv to the current WAVENUMBER
+       vv = x
+       if(ispace.eq.1)then
+          vv=1e4/x
+       endif
 
 C      Get solar flux at this wavelength/wavenumber
      
-       CALL GET_SOLAR_WAVE(VV,SDIST,SOLAR)
+       CALL GET_SOLAR_WAVE(X,SDIST,SOLAR)
 
 C      Output from get_solar_wave is W cm-2 um-1 or W cm-1 (cm-1)-1. Need
 C      to convert this to surface radiance of sun.
@@ -291,18 +296,62 @@ C      Finally need to correct for the solar zenith angle
        SOLAR=SOLAR*COS(SOLZEN*DTR)
 C       print*,'C',solar,solzen,dtr
 
-C      Interpolate k-tables and gas continua to VV
+C      Interpolate k-tables and gas continua to X
        CALL GENTABSCK1(OPFILE,NPRO,NGAS,ID,ISO,P,T,VMR,NWAVE,VWAVE,
-     1 VV,ISPACE,NG,DEL_G,TABK)
+     1 X,ISPACE,NG,DEL_G,TABK)
+
+C      Interpolate scattering properties to X
+       CALL INTERPHG(X,NCONT,NLAMBDA,XLAMBDA,PHASED,XSEC1,XOMEGA,XHG)
 
 
-C      Interpolate scattering properties to VV
-       CALL INTERPHG(VV,NCONT,NLAMBDA,XLAMBDA,PHASED,XSEC1,XOMEGA,XHG)
+       DO 102 I=1,NPRO
 
-C      Interpolate emissivity and albedo to VV
+C       Calculate CIA and continuum absorption in a 1km-long path
+
+
+C       TOTAM is the number of molecules/cm2 along a path of 1km length.
+        TOTAM=MODBOLTZ*P(I)/T(I)
+        XLEN=1.0
+
+C       NCIACON diagnostic
+        id1=0
+
+        DO IGAS=1,NGAS
+         AMOUNT(IGAS)=TOTAM*VMR(I,IGAS)
+         PP(IGAS)=P(I)*VMR(I,IGAS)
+        ENDDO
+
+        print*,'FLAGH2P = ',FLAGH2P
+        AvgCONTMP=0.
+        IF(FLAGH2P.EQ.1)THEN
+          FPARA = HFP(I)
+          CALL NPARACON(VV,P(I),T(I),NGAS,id,iso,Amount,PP,FPARA,      
+     1     XLen,AvgCONTMP,IABSORB,DABSORB,id1)
+        ELSE
+          CALL NCIACON(vv,P(I),T(I),INormal,NGas,id,iso,Amount,PP,
+     1     XLen,AvgCONTMP,IABSORB,DABSORB,id1)
+        ENDIF
+
+C       AvgCONTMP contains opacity of a 1 km-long path. Need to convert to
+C       same units as TABK, namely (molecule/cm2)-1 and add to each
+C       element of the TABK array at this level.  
+
+        DO IG=1,NG
+         print*,'XX',I,IG,TABK(IG,I),TOTAM,AvgCONTMP,
+     &		1e20*AvgCONTMP/TOTAM
+         TABK(IG,I)=TABK(IG,I)+1e20*AvgCONTMP/TOTAM
+        ENDDO
+
+
+
+102    CONTINUE
+
+
+
+C      Interpolate emissivity and albedo to X
 
 C       print*,'GALB = ',GALB
-       CALL VERINT(VEM,EMISSIVITY,NEM,GEMI,VV) 
+       CALL VERINT(VEM,EMISSIVITY,NEM,GEMI,X) 
        GALB = 1.0-GEMI
 C       print*,'GALB, GEMI  = ',GALB,GEMI
 
@@ -334,9 +383,9 @@ C       print*,'XSEC,XOMEG',(XSEC1(J),J=1,NCONT),(XOMEGA(J),J=1,NCONT)
      2    SVEC,DVEC1,SOLVEC,DEVSUN,SOLAR,TABK,NG,DEL_G,
      3    NPRO,NGAS,NCONT,MOLWT,RADIUS,P,T,H,DUST,
      4    GALB,TGROUND,IRAY,RES,ACC,MEAN,SDEV,
-     5    MSCAT,ITER,ISPACE,VV,NAB,NSOL,NGR)
+     5    MSCAT,ITER,ISPACE,X,NAB,NSOL,NGR)
 
-C       print*,'VV,NAB,NSOL,NGR',VV,NAB,NSOL,NGR
+C       print*,'X,NAB,NSOL,NGR',X,NAB,NSOL,NGR
 
        IF(IDUMP.EQ.1)THEN
 C        WRITE(34,*)ITER
@@ -344,15 +393,15 @@ C        DO I=1,ITER
 C         WRITE(34,*)(RES(I,J),J=1,3)
 C        ENDDO
 
-C        print*,'waveMC',VV,MEAN,SDEV,MSCAT,NAB,NSOL,NGR,ITER,NITER
+C        print*,'waveMC',X,MEAN,SDEV,MSCAT,NAB,NSOL,NGR,ITER,NITER
          IF(MEAN.NE.0.0)THEN
-          WRITE(34,*)VV,MEAN,SDEV,MSCAT,NAB,NSOL,NGR,ITER,NITER,
+          WRITE(34,*)X,MEAN,SDEV,MSCAT,NAB,NSOL,NGR,ITER,NITER,
      1     SDEV/MEAN
          ELSE
-          WRITE(34,*)VV,MEAN,SDEV,MSCAT,NAB,NSOL,NGR,ITER,NITER
+          WRITE(34,*)X,MEAN,SDEV,MSCAT,NAB,NSOL,NGR,ITER,NITER
          ENDIF    
 
-         WRITE(35,*)VV,MEAN,SDEV
+         WRITE(35,*)X,MEAN,SDEV
 
        ENDIF
 

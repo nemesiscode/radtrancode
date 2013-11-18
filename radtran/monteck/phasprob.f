@@ -37,9 +37,9 @@ C     ******************************************************************
         THG(I)=XHG(ICONT,I)
        ENDDO
 
-       IF(THG(1).LT.0.0)THEN
-        PRINT*,'PHASPROB: Set exact dipole scattering'
-       ENDIF
+C       IF(THG(1).LT.0.0)THEN
+C        PRINT*,'PHASPROB: Set exact dipole scattering'
+C       ENDIF
 
        
        DO 10 I=1,MPHASE

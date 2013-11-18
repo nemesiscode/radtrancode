@@ -1,5 +1,6 @@
-      SUBROUTINE INTPATH(VV,IRAY,TAUREQ,PVEC,DVEC,NPRO,NGAS,NCONT,MOLWT,
-     1 RADIUS,P,T,H,DUST,TABK,IGDIST,XSEC,XOMEGA,TEND,FSCAT,TAUSCAT)
+      SUBROUTINE INTPATH(VV,IRAY,TRANSREQ,PVEC,DVEC,NPRO,NGAS,NCONT,
+     1 MOLWT,RADIUS,P,T,H,DUST,TABK,IGDIST,XSEC,XOMEGA,TEND,FSCAT,
+     2 TAUSCAT)
 C     $Id:
 C     ***************************************************************
 C     Subroutine to calculate equivalent CG path between two points
@@ -10,7 +11,7 @@ C     Input variables:
 C	VV		REAL	Calculated wavenumber (require to estimate
 C				Rayleigh scattering)
 C	IRAY		INTEGER 0=Rayleigh scatt off, 1 = on
-C	TAUREQ		REAL	Required opacity
+C	TRANSREQ	REAL	Required transmission
 C	PVEC(3)		REAL	Starting position. Convention is that
 C				z-azis is the zenith at the point where
 C				the photon enters the atmosphere
@@ -19,7 +20,7 @@ C	NPRO		INTEGER	Number of points in atm profile.
 C	NGAS		INTEGER	Number of gases
 C	NCONT		INTEGER	Number of dust types 
 C	MOLWT		REAL	Molecular weight of atmosphere
-C	RADIUS		REAL	Radius of planet
+C	RADIUS		REAL	Radius of planet (at reference level)
 C	P(MAXPRO)		REAL	Pressure (prf)
 C	T(MAXPRO)		REAL	Temperature (prf)
 C	H(MAXPRO)		REAL	Heights (prf)
@@ -49,12 +50,12 @@ C     ***************************************************************
 
       REAL PVEC(3),DVEC(3),VV,TVEC(3),PVEC1(3),AVEC(3)
       INTEGER NPRO,NGAS,J,NCONT,I,K,IFL,IRAY,IDIST,MINT
-      PARAMETER (MINT=801)
-      REAL MOLWT,F,DELS
-      REAL TNOW,PNOW,CALCALT,RADIUS,HEIGHT
+      PARAMETER (MINT=201)
+      REAL MOLWT,F,DELS,TRANSREQ,RADGROUND
+      REAL TNOW,PNOW,CALCALT,RADIUS,HEIGHT,TRANS(MINT)
       REAL P(MAXPRO),T(MAXPRO),H(MAXPRO),TAUTOT(MINT)
       REAL TABK(MAXG,MAXPRO),K_G(MAXPRO),TAUNOW(MINT),TAUC(MINT)
-      REAL T1,T2,DTAU,DTAUSC,TAUREQ,DIST(MINT),PEND
+      REAL T1,T2,DTAU,DTAUSC,DIST(MINT),PEND
       REAL DTAUDS,DTAUR,XSEC(MAXCON),XOMEGA(MAXCON)
       REAL TEND,FSCAT,TAUSCAT(MAXCON),RADCLOSE,S,DTAUDC(MAXCON)
       INTEGER IGDIST
@@ -75,19 +76,19 @@ C     ------------------------------------------------------------------
       ENDIF
 
  
-1000  CONTINUE
-
 C     Load up relevant k-ordinate
-C      print*,'igdist,taureq',igdist,taureq
-      if(taureq.gt.1000.)print*,'igdist,taureq',igdist,taureq
+C      print*,'igdist,transreq',igdist,transreq
       DO I=1,NPRO
        K_G(I)=TABK(IGDIST,I)
 C       print*,igdist,k_g(i)
       ENDDO
 
+      RADGROUND=RADIUS+H(1)
+
 C     First extend trajectory to see if photon is heading for ground or out to space
+C     RADCLOSE returns -1 if photon is moving upwards
       RADIUS1 = RADCLOSE(PVEC,DVEC)
-      IF(RADIUS1.LT.0.0.OR.(RADIUS1.GT.RADIUS))THEN
+      IF(RADIUS1.LT.0.0.OR.(RADIUS1.GT.RADGROUND))THEN
 C       Photon either moving upwards or is moving downwards but doesn't hit surface
 C       Find point at which it leaves the atmosphere
         CALL HITSPHERE(PVEC,DVEC,RADIUS+H(NPRO),PVEC1)
@@ -95,12 +96,13 @@ C         print*,'photon trajectory leaves atmosphere'
 C         print*,PVEC1
       ELSE
 C       Photon will strike surface, find point at which is strikes
-        CALL HITSPHERE(PVEC,DVEC,RADIUS,PVEC1)
+        CALL HITSPHERE(PVEC,DVEC,RADGROUND,PVEC1)
 C         print*,'photon trajectory strikes surface'
 C         print*,PVEC1
       ENDIF
      
-      HEIGHT=CALCALT(PVEC1,RADIUS)
+C      HEIGHT=CALCALT(PVEC1,RADIUS)
+
       S=0.
       DO I=1,3
        AVEC(I)=PVEC1(I)-PVEC(I)
@@ -117,9 +119,6 @@ C      PRINT*,'Length of path = ',S
 25     CONTINUE
 
        HEIGHT = CALCALT(TVEC,RADIUS)
-C      Find place in height array and local pressure, temperature
-       CALL INTERP_PT(NPRO,H,P,T,HEIGHT,PNOW,TNOW,F,IFL)
-
 
 C      Determine optical depths/km
        CALL CALCTAUGRAD(NPRO,NCONT,H,P,T,DUST,MOLWT,XSEC,IRAY,VV,
@@ -134,15 +133,18 @@ C      Add optical depth element to integration array
 30    CONTINUE
 
       TAUTOT(1)=0.
+      TRANS(1)=1.0
       DIST(1)=0.
 C      print*,TAUTOT(1),DIST(1)
       DO I=2,MINT
        TAUTOT(I)=TAUTOT(I-1)+0.5*(TAUNOW(I-1)+TAUNOW(I))*DELS
        DIST(I)=DIST(I-1)+DELS
 C       print*,TAUTOT(I),DIST(I)
+       TRANS(I)=EXP(-TAUTOT(I))
+C       print*,I,TRANS(I),TRANSREQ
       ENDDO
  
-      IF(TAUTOT(MINT).LE.TAUREQ)THEN
+      IF(TRANS(MINT).GE.TRANSREQ)THEN
 C       print*,'Atmosphere too thin'
 C      There is insufficient opacity in atmosphere. Photon either leaves atmosphere
 C      entirely or strikes surface. Add on 10km to finishing position to make sure
@@ -156,22 +158,24 @@ c      Interpolate the optical depth array to find where photon ends up.
        J=-1
        I=1
        DO I=2,MINT
-        IF(TAUREQ.GE.TAUTOT(I-1).AND.TAUREQ.LT.TAUTOT(I))THEN
+        IF(TRANSREQ.LE.TRANS(I-1).AND.TRANSREQ.GT.TRANS(I))THEN
          J=I
-         F=(TAUREQ-TAUTOT(I-1))/(TAUTOT(I)-TAUTOT(I-1))  
+         F=(TRANS(I-1)-TRANSREQ)/(TRANS(I-1)-TRANS(I))  
         ENDIF
        ENDDO
+C       print*,'AA',J,F,TRANS(J-1),TRANS(J),TRANSREQ
        IF(J.LT.0)THEN
 C       Error in intpath.f. Cannot find location in array
         PRINT*,'Error in INTPATH.f. Cannot find location in array'
-        PRINT*,TAUREQ
-        PRINT*,(TAUTOT(I),I=1,MINT)
+        PRINT*,TRANSREQ
+        PRINT*,(TRANS(I),I=1,MINT)
         STOP    
        ELSE
         DO I=1,3
-         TVEC(I)=PVEC(I)+(DIST(J)+F*DELS)*DVEC(I)
+         TVEC(I)=PVEC(I)+(DIST(J-1)+F*DELS)*DVEC(I)
         ENDDO
         HEIGHT = CALCALT(TVEC,RADIUS)
+C        print*,'height',height
 C       Find place in height array and local pressure, temperature
         CALL INTERP_PT(NPRO,H,P,T,HEIGHT,PEND,TEND,F,IFL)
 
@@ -184,7 +188,7 @@ C       Determine optical depths/km at this point in the atmosphere
          TAUSCAT(J)=DTAUDC(J)*XOMEGA(J)
          DTAUSC = DTAUSC + TAUSCAT(J)
         ENDDO
-        IF(IRAY.EQ.1)THEN
+        IF(IRAY.GT.0)THEN
          TAUSCAT(NCONT+1)=DTAUR
          DTAUSC = DTAUSC + DTAUR
         ENDIF

@@ -1,7 +1,7 @@
       SUBROUTINE MCPHOTONCK(NPHOT,IDUM,XSEC,XOMEGA,NPHASE,THETA,
      1 SVEC,DVEC1,SOLVEC,DEVSUN,SOLAR,TABK,NG,DEL_G,
      3 NPRO,NGAS,NCONT,MOLWT,RADIUS,P,T,H,DUST,GALB,TGROUND,IRAY,
-     4 RES,ACC,MEAN,SDEVM,MSCAT,IPHOT,ISPACE,VV,NAB,NSOL,NGR)
+     4 RES,ACC,MEAN,SDEVM,MSCAT,IPHOT,ISPACE,XX,NAB,NSOL,NGR)
 C     $Id: 
 C     ****************************************************************
 C     Subroutine to perform monte-carlo multiple scattering 
@@ -35,7 +35,7 @@ C	NGAS	INTEGER		Number of gases
 C	NCONT	INTEGER		Number of aerosol types (terminates if
 C				NCONT>1)
 C	MOLWT	REAL		Molecular weight of atmosphere
-C	RADIUS	REAL		Planetary radius
+C	RADIUS	REAL		Planetary radius (at 0km altitude reference level)
 C	P(MAXPRO) REAL		Pressure profile
 C	T(MAXPRO) REAL		Temperature profile
 C	H(MAXPRO) REAL		height profile
@@ -45,7 +45,7 @@ C	TGROUND REAL		Ground temperature (K)
 C	IRAY	INTEGER		0=Rayleigh scattering off, 1=on.
 C	ACC	REAL		Required absolute accuracy
 C	ISPACE 	INTEGER		0=wavelength, 1=wavenumber
-C	VV	REAL		Required wavelength/wavenumber
+C	XX	REAL		Required wavelength/wavenumber
 C	
 C		
 C     Output variables
@@ -76,7 +76,7 @@ C     ****************************************************************
       REAL RADIUS,MOLWT,DUST(MAXPRO,MAXCON)
       REAL SVEC(3),DVEC(3),PVEC(3)
       REAL RAN11,ALTITUDE,DVEC1(3),SOLVEC(3),DEVSUN,SOLAR
-      REAL XOMEGA(MAXCON),XSEC(MAXCON),CALCALT,PI,TAUREQ,FSCAT
+      REAL XOMEGA(MAXCON),XSEC(MAXCON),CALCALT,PI,TRANSREQ,FSCAT
       REAL ALT0,TABK(MAXG,MAXPRO),TAUSCAT(MAXCON),TAUTOT(MAXCON+1)
       REAL X,MSCAT,ACC,MEAN,MEAN2,ACC1,VV,PLANCK_WAVE
       REAL DEL_G(MAXG),G_ORD(MAXG),X1,GALB,TGROUND,TMEAN,SDEV
@@ -90,13 +90,19 @@ C     ****************************************************************
       REAL RES(MPHOT,3),THET
       CHARACTER*1 ANS
 
-
+      MEAN=0.
+      SDEV=0.
+      MSCAT=0.
+      IPHOT=0
+      NAB=0
+      NSOL=0
+      NGR=0
 C      print*,NPHOT,IDUM,NPRO,NGAS,NCONT,MOLWT
 C      print*,XSEC(1),XOMEGA(1),NPHASE,'NPHASE'
 C      print*,(THETA(1,J),J=1,NPHASE)
 C      print*,SVEC
-      print*,'DVEC = ',DVEC1
-      print*,'SOLVEC = ',SOLVEC
+C      print*,'DVEC = ',DVEC1
+C      print*,'SOLVEC = ',SOLVEC
 C      print*,DEVSUN
 C      print*,SOLAR
 C      print*,NG,'NG'
@@ -108,7 +114,7 @@ C      do i=1,npro
 C       print*,H(i),P(i),T(i),(DUST(i,j),j=1,NCONT)
 C      enddo
 C      print*,RADIUS,TGROUND,IRAY,'IRAY'
-C      print*,ACC,MEAN,SDEVM,MSCAT,IPHOT,ISPACE,VV,NAB,NSOL,NGR
+C      print*,ACC,MEAN,SDEVM,MSCAT,IPHOT,ISPACE,XX,NAB,NSOL,NGR
 C      print*,GALB
 
       IF(NPHOT.GT.MPHOT)THEN
@@ -119,10 +125,11 @@ C      print*,GALB
 
       SCOS = COS(DEVSUN*PI/180.0)
 C      print*,'SCOS, DEVSUN',SCOS,DEVSUN
-      NAB=0
-      NSOL=0
-      NGR=0
-      NCONT1 = NCONT+IRAY
+      IF(IRAY.GT.0)THEN
+       NCONT1 = NCONT+1
+      ELSE
+       NCONT1 = NCONT
+      ENDIF
 
       G_ORD(1)=0.0
       DO I=1,NG  
@@ -147,7 +154,8 @@ C       print*,'X1,IDUM = ',X1,IDUM
        IF(X1.EQ.1.0)IGDIST=NG
 
 C       print*,'IGDIST = ',IGDIST
-C      Add one to count of IGDIST distribution
+C      Add one to count of IGDIST distribution (to make sure g-space is uniformly
+C      sampled.
        CIGDIST(IGDIST)=CIGDIST(IGDIST)+1
 
        NSCAT = 0
@@ -161,32 +169,25 @@ C       PRINT*,'Initial altitude, solar = ',ALTITUDE,SOLAR
 C       PRINT*,'Initial theta,phi = ',ACOS(DVEC(3))/DTR,
 C     1  ARCTAN(DVEC(2),DVEC(1))/DTR
 
-C      Calculate random optical length to pass
-101    X1 = RAN11(IDUM)
-C       print*,'X1 = ',X1
-       TAUREQ = -LOG(X1)
-C       print*,'TAUREQ = ',TAUREQ
-C      Set XX to current WAVENUMBER and pass to intpath
+C      Calculate random transmission to pass
+101    TRANSREQ = RAN11(IDUM)
+
+C      Set VV to current WAVENUMBER and pass to intpath
        IF(ISPACE.EQ.1)THEN
-        XX = 1E4/VV
+        VV = 1E4/XX
        ELSE
-        XX=VV
+        VV=XX
        ENDIF
 
-C       print*,'PVEC, TAUREQ',PVEC,TAUREQ
-       CALL INTPATH(XX,IRAY,TAUREQ,PVEC,DVEC,NPRO,NGAS,NCONT,MOLWT,
+       CALL INTPATH(VV,IRAY,TRANSREQ,PVEC,DVEC,NPRO,NGAS,NCONT,MOLWT,
      1 RADIUS,P,T,H,DUST,TABK,IGDIST,XSEC,XOMEGA,TMEAN,FSCAT,TAUSCAT)
-C       print*,'PVECnew',PVEC
+
        ALTITUDE = CALCALT(PVEC,RADIUS)
-C       PRINT*,'ALTITUDE,TAUREQ, FSCAT = ',ALTITUDE,TAUREQ,FSCAT
+
+C       PRINT*,'ALTITUDE,TRANSREQ, FSCAT = ',ALTITUDE,TRANSREQ,FSCAT
 C       PRINT*,'Current theta,phi = ',ACOS(DVEC(3))/DTR,
 C     1  ARCTAN(DVEC(2),DVEC(1))/DTR
 
-C       PRINT*,'DVEC = ',DVEC
-C       PRINT*,'THET = ',(180./PI)*ACOS(DVEC(3))
-C       PRINT*,'PHI = ',(180./PI)*ARCTAN(DVEC(2),DVEC(1))
-C       READ(5,1)ANS
-C1      FORMAT(A)
 
        IF(ALTITUDE.LE.H(1))THEN
 C          PRINT*,'Photon hits surface'
@@ -227,7 +228,7 @@ C           print*,'THET, PHI = ',THET,PHI
           ENDIF 
 C          print*,'Photon is absorbed'
           RES(IPHOT,1)=1
-          RES(IPHOT,2)=PLANCK_WAVE(ISPACE,VV,TGROUND)
+          RES(IPHOT,2)=PLANCK_WAVE(ISPACE,XX,TGROUND)
           NGR=NGR+1
           GOTO 999
 
@@ -243,11 +244,7 @@ C          PRINT*,SOLVEC,DVEC,IHIT
            RES(IPHOT,2)=0.0
           ELSE
 C           PRINT*,'photon comes near the Sun'
-C          For some reason that I cannot fathom, we need to multiply the solar radiance
-C          by 2.0 to get this to match with Matrix Operator and common-sense calculations
-C          NB the solar zenith angle correction has already been incorporated
-C          in the SOLAR variable
-           RES(IPHOT,2)=2.*SOLAR
+           RES(IPHOT,2)=SOLAR
            NSOL=NSOL+1
           ENDIF
           GOTO 999
@@ -259,7 +256,7 @@ C      COMPUTE WHETHER BEAM WILL BE ABSORBED
 C         print*,'photon absorbed in atmosphere'
 
          RES(IPHOT,1)=3
-         RES(IPHOT,2)=PLANCK_WAVE(ISPACE,VV,TMEAN)
+         RES(IPHOT,2)=PLANCK_WAVE(ISPACE,XX,TMEAN)
          NAB=NAB+1
          GOTO 999
 
@@ -312,7 +309,7 @@ C       print*,'RES : ',(RES(IPHOT,J),J=1,3)
 
 C      Abort if already sufficiently converged after 200 photons
 c       at least 50 of which have hit the Sun.
-       IF(IPHOT.GT.200.AND.NSOL.GT.50.AND.SDEVM.LE.ACC) GOTO 1001      
+C       IF(IPHOT.GT.200.AND.NSOL.GT.50.AND.SDEVM.LE.ACC) GOTO 1001      
 
 1000  CONTINUE
 

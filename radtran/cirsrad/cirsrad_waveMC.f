@@ -75,6 +75,7 @@ C		Passed variables
 
       INTEGER NG
       REAL DEL_G(MAXG),TABK(MAXG,MAXPAT)
+      REAL T1,TRANSREQ,TACTUAL
 
       INTEGER K,IWAVE,NPHASE
 
@@ -205,8 +206,8 @@ C        N.B. SOLPHI = 0 indicates FORWARD scattering
          SOLVEC(3)=COS(SOLZEN*DTR)
       ENDIF
         
-      print*,'SOLZEN,SOLPHI = ',SOLZEN,SOLPHI
-      print*,'SOLVEC = ',SOLVEC
+C      print*,'SOLZEN,SOLPHI = ',SOLZEN,SOLPHI
+C      print*,'SOLVEC = ',SOLVEC
 
 C      IF(IDUMP.EQ.1)THEN
 C        WRITE(34,*)'Tangent altitude, Zenith angle = ',HTAN,ZANG
@@ -222,12 +223,14 @@ C      CALL PROMPT('Enter acceptable deviation from Sun (deg) : ')
 C      READ*,DEVSUN
       DEVSUN=10.0
 
-      OMEGA1 = 4*PI*(sin(SOLRAD*DTR*0.5)**2)
-      OMEGA2 = 4*PI*(sin(DEVSUN*DTR*0.5)**2)
-C     Calculate ratio of projected areas
-      XFAC= OMEGA1/OMEGA2
+C      OMEGA1 = 4*PI*(sin(SOLRAD*DTR*0.5)**2)
 
+C     OMEGA2 is solid angle of Sun dor assumed inflated angular radius
+      OMEGA2 = 4*PI*(sin(DEVSUN*DTR*0.5)**2)
+
+C      NITER=20
       NITER=10000
+C      NITER=1000
 C      CALL PROMPT('Enter max. number of photons : ')
 C      READ*,NITER
 
@@ -268,6 +271,7 @@ C       WRITE(34,*)NITER,'   ! Number of iterations'
 C       WRITE(34,*)NWAVE,'    ! NWAVE'
 C       WRITE(34,*)(VWAVE(I),I=1,NWAVE)
 C      ENDIF
+   
 
       DO 1001 IWAVE=1,NWAVE
 
@@ -278,32 +282,39 @@ C      Set vv to the current WAVENUMBER
           vv=1e4/x
        endif
 
-C      Get solar flux at this wavelength/wavenumber
-     
+C      Get solar flux at this wavelength/wavenumber     
        CALL GET_SOLAR_WAVE(X,SDIST,SOLAR)
 
 C      Output from get_solar_wave is W cm-2 um-1 or W cm-1 (cm-1)-1. Need
-C      to convert this to surface radiance of sun.
-       SOLAR=SOLAR/OMEGA1
-C       print*,'A',solar,omega1
+C      to convert this to surface radiance of sun for the assumed solar size.
+       SOLAR=SOLAR/OMEGA2
 
-C      Also need to correct for fact that we'll actually accept slightly
-C      larger angles for calculation.
-       SOLAR=SOLAR*XFAC
-C       print*,'B',solar,xfac
- 
+C      Need extra correction factor of 2.0. Don't know why!!
+       SOLAR=SOLAR*0.5
+
 C      Finally need to correct for the solar zenith angle
-       SOLAR=SOLAR*COS(SOLZEN*DTR)
-C       print*,'C',solar,solzen,dtr
+C      print*,'C',solar,solzen,dtr
+C      Actually, I'm not sure we do!!
+C      SOLAR=SOLAR*COS(SOLZEN*DTR)
 
 C      Interpolate k-tables and gas continua to X
        CALL GENTABSCK1(OPFILE,NPRO,NGAS,ID,ISO,P,T,VMR,NWAVE,VWAVE,
      1 X,ISPACE,NG,DEL_G,TABK)
 
+C       print*,'WT',(TABK(I,4),I=1,NG)
+
 C      Interpolate scattering properties to X
        CALL INTERPHG(X,NCONT,NLAMBDA,XLAMBDA,PHASED,XSEC1,XOMEGA,XHG)
 
+C      Regrid phase functions to equal probability steps
+C      Also add in extra dust 'type' to deal with Rayleigh
+C      scattering, by setting XHG(NCONT+1,1) to be negative
+       NCONT1 = NCONT+1
+       XHG(NCONT1,1)=-1
+       CALL PHASPROB(NCONT1,XHG,NPHASE,THETA)
 
+      
+C       print*,'DD',(TABK(1,I),I=1,NPRO)
        DO 102 I=1,NPRO
 
 C       Calculate CIA and continuum absorption in a 1km-long path
@@ -321,7 +332,7 @@ C       NCIACON diagnostic
          PP(IGAS)=P(I)*VMR(I,IGAS)
         ENDDO
 
-        print*,'FLAGH2P = ',FLAGH2P
+C        print*,'FLAGH2P = ',FLAGH2P
         AvgCONTMP=0.
         IF(FLAGH2P.EQ.1)THEN
           FPARA = HFP(I)
@@ -336,37 +347,51 @@ C       AvgCONTMP contains opacity of a 1 km-long path. Need to convert to
 C       same units as TABK, namely (molecule/cm2)-1 and add to each
 C       element of the TABK array at this level.  
 
-        IF(I.EQ.1.OR.I.EQ.10)THEN
-         DO IG=1,NG
-          print*,'XX',X,VV,I,IG,TABK(IG,I),TOTAM,AvgCONTMP,
-     &		1e20*AvgCONTMP/TOTAM
+        DO IG=1,NG
+C          IF(I.EQ.4)THEN
+C           print*,'XX',X,VV,I,IG,TABK(IG,I),TOTAM,AvgCONTMP,
+C     &		1e20*AvgCONTMP/TOTAM
+C          ENDIF
+
           TABK(IG,I)=TABK(IG,I)+1e20*AvgCONTMP/TOTAM
-         ENDDO
-        ENDIF
+
+        ENDDO
 
 
 102    CONTINUE
+C       print*,'DE',(TABK(1,I),I=1,NPRO)
+
 
 
 
 C      Interpolate emissivity and albedo to X
-
 C       print*,'GALB = ',GALB
        CALL VERINT(VEM,EMISSIVITY,NEM,GEMI,X) 
        GALB = 1.0-GEMI
 C       print*,'GALB, GEMI  = ',GALB,GEMI
 
-C      Regrid phase functions to equal probability steps
-       NCONT1 = NCONT+1
-       CALL PHASPROB(NCONT1,XHG,NPHASE,THETA)
 
-       SVEC(1)=0
-       SVEC(2)=0.0
-       SVEC(3)=RADIUS+H(NPRO)
 
-       DVEC1(1) = SIN(ZANG*PI/180.0)
-       DVEC1(2) = 0.0
-       DVEC1(3) = -COS(ZANG*PI/180.0)
+
+C      Use MonteCarlo optical depth code to compute transmission
+C      to ground to check all is well.
+       T1=0.
+       TRANSREQ=0.0
+       DO IG=1,NG
+
+        SVEC(1)=0
+        SVEC(2)=0.0
+        SVEC(3)=RADIUS+H(NPRO)
+
+        DVEC1(1) = SIN(ZANG*PI/180.0)
+        DVEC1(2) = 0.0
+        DVEC1(3) = -COS(ZANG*PI/180.0)
+
+C        CALL TMPPATH(VV,IRAY,TRANSREQ,SVEC,DVEC1,NPRO,NGAS,NCONT,
+C     1 MOLWT,RADIUS,P,T,H,DUST,TABK,IG,XSEC,XOMEGA,TACTUAL)
+C        T1=T1+DEL_G(IG)*TACTUAL
+C        print*,X,VV,IG,DEL_G(IG),TACTUAL
+       ENDDO
 
 C       print*,'Initial position vector : ',SVEC
 C       print*,'Zenith angle : ',ZANG
@@ -378,6 +403,17 @@ C       print*,'NPRO,NGAS,NCONT,MOLWT,RADIUS',NPRO,NGAS,
 C     1   NCONT,MOLWT,RADIUS
 C       print*,'GALB,TGROUND,IRAY',GALB,TGROUND,IRAY
 C       print*,'XSEC,XOMEG',(XSEC1(J),J=1,NCONT),(XOMEGA(J),J=1,NCONT)
+
+C       print*,'FF',(TABK(I,4),I=1,NG)
+
+       SVEC(1)=0
+       SVEC(2)=0.0
+       SVEC(3)=RADIUS+H(NPRO)
+
+       DVEC1(1) = SIN(ZANG*PI/180.0)
+       DVEC1(2) = 0.0
+       DVEC1(3) = -COS(ZANG*PI/180.0)
+
 
        CALL MCPHOTONCK(NITER,IDUM,
      1    XSEC1,XOMEGA,NPHASE,THETA,
@@ -402,7 +438,7 @@ C        print*,'waveMC',X,MEAN,SDEV,MSCAT,NAB,NSOL,NGR,ITER,NITER
           WRITE(34,*)X,MEAN,SDEV,MSCAT,NAB,NSOL,NGR,ITER,NITER
          ENDIF    
 
-         WRITE(35,*)X,MEAN,SDEV
+         WRITE(35,*)X,MEAN,SDEV,VV,T1
 
        ENDIF
 
@@ -411,6 +447,7 @@ C        print*,'waveMC',X,MEAN,SDEV,MSCAT,NAB,NSOL,NGR,ITER,NITER
 
 1001  CONTINUE 
 
+      CLOSE(12)
       IF(IDUMP.EQ.1)THEN
        CLOSE(34)
        CLOSE(35)

@@ -48,6 +48,9 @@ C     TOTAM is molecules/cm2 for a 1km-long path
       DKDS = TOTAM*K1*1E-20	! optical depth of gas/km
 
       DKDC = 0.0		! optical depth of aerosol/km
+
+C     DUST() is in units of particles/gram. Need to multiply by g/cm2 
+C     of a 1km-long path to get optical depth/km.
       DO J=1,NCONT
         DNOW = (1-F)*DUST(IFL,J) + F*DUST(IFL+1,J)
         DTAUDC(J)=XSEC(J)*DNOW*TOTAM*MOLWT/AVOGAD

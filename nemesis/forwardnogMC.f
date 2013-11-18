@@ -189,17 +189,8 @@ C         Set up all files for a direct cirsrad run
      2     layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
      3     nvar,varident,varparam,nx,xn,jalb,jtan,jpre,tsurf,xmap)
 
-C         If planet is not a gas giant and observation is not at limb then
-C         we need to read in the surface emissivity spectrum
-          if(.not.gasgiant.and.emiss_ang.ge.0)then
+C         MonteCarlo code needs surface emissivity to be read in here.
           call readsurfem(runname,nem,vem,emissivity)
-           else
-           nem=2
-           vem(1)=-100.0
-           vem(2)=1e7
-           emissivity(1)=1.0
-           emissivity(2)=1.0
-          endif
 
 
           print*,'runname = ',runname

@@ -53,7 +53,7 @@ C		Passed variables
       INTEGER NPRO,NGAS,NCONT,NCONT1,I,MPHOT,J
       PARAMETER (MPHOT=100000)
       REAL P(MAXPAT),T(MAXPAT),H(MAXPAT),VMR(MAXPAT,MAXGAS),VREF,ACC
-      INTEGER ID(MAXGAS),ISO(MAXGAS),ISTEP,IDUMP,NAB,NSOL,NGR
+      INTEGER ID(MAXGAS),ISO(MAXGAS),ISTEP,IDUMP,NAB,NSOL,NGR,NGS
       REAL RADIUS,MOLWT,DUST(MAXPAT,maxcon),XG,TOTAM
       REAL AMOUNT(MAXGAS),PP(MAXGAS),AvgCONTMP
       REAL XLEN,PRESS,TEMP,CONT(maxcon)
@@ -96,9 +96,9 @@ C     Dust variables
 C     Internal variables
 
       INTEGER	L, Ig
-
+      DOUBLE PRECISION mu1(maxmu), wt1(maxmu), galb1
       common/dust/vsec,xsec,nsec,ncont
-
+      common/scatd/mu1, wt1, galb1
 C-----------------------------------------------------------------------
 C
 C	Check input parameters for possible problems.
@@ -145,9 +145,10 @@ C      READ*,IDUMP
         WRITE(34,*)'MSCAT = Mean number of scattering events'    
         WRITE(34,*)'NAB = Number of photons absorbed in atm'
         WRITE(34,*)'NGR = Number of photons absorbed by ground'
+        WRITE(34,*)'NGS = Number of photons reaching the ground'
         WRITE(34,*)'NSOL = Number of photons encountering Sun'
-        WRITE(34,*)'X, MEAN, SDEV, MSCAT, NAB, NSOL, NGR, ITER, NITER,
-     1   SDEV/MEAN'
+        WRITE(34,*)'X, MEAN, SDEV, MSCAT, NAB, NSOL, NGR, NGS, 
+     1   ITER, NITER,SDEV/MEAN'
 
         OPEN(35,FILE='cirsrad_waveMC.out',STATUS='UNKNOWN')
         WRITE(35,*)NWAVE
@@ -226,7 +227,18 @@ C      READ*,DEVSUN
 C      OMEGA1 = 4*PI*(sin(SOLRAD*DTR*0.5)**2)
 
 C     OMEGA2 is solid angle of Sun dor assumed inflated angular radius
-      OMEGA2 = 4*PI*(sin(DEVSUN*DTR*0.5)**2)
+C      OMEGA2 = 4*PI*(sin(DEVSUN*DTR*0.5)**2)
+
+
+C      XFAC is scaling factor to apply to solar spectral irradiance
+C      (W cm-2 um-1 or W cm-1 cm) to get the right normalisation between 
+C      Regular Nemesis and NemesisMC
+C       XFAC=COS(SOLZEN*DTR)/(2.*PI*(sin(DEVSUN*DTR*0.5))**2)
+
+C      Should actually scale by zenith angle of photon leaving a plane 
+C      surface rather than the solar zenith angle at the point
+C      where the LOS from the observer meets the ALTITUDE=0 level.
+       XFAC=1./(2.*PI*(sin(DEVSUN*DTR*0.5))**2)
 
 C      NITER=20
       NITER=10000
@@ -287,15 +299,14 @@ C      Get solar flux at this wavelength/wavenumber
 
 C      Output from get_solar_wave is W cm-2 um-1 or W cm-1 (cm-1)-1. Need
 C      to convert this to surface radiance of sun for the assumed solar size.
-       SOLAR=SOLAR/OMEGA2
+C       SOLAR=SOLAR/OMEGA2
 
 C      Need extra correction factor of 2.0. Don't know why!!
-       SOLAR=SOLAR*0.5
+C       SOLAR=SOLAR*0.5
 
-C      Finally need to correct for the solar zenith angle
-C      print*,'C',solar,solzen,dtr
-C      Actually, I'm not sure we do!!
-C      SOLAR=SOLAR*COS(SOLZEN*DTR)
+C      New correction definition
+       SOLAR=SOLAR*XFAC
+
 
 C      Interpolate k-tables and gas continua to X
        CALL GENTABSCK1(OPFILE,NPRO,NGAS,ID,ISO,P,T,VMR,NWAVE,VWAVE,
@@ -366,8 +377,11 @@ C       print*,'DE',(TABK(1,I),I=1,NPRO)
 
 C      Interpolate emissivity and albedo to X
 C       print*,'GALB = ',GALB
-       CALL VERINT(VEM,EMISSIVITY,NEM,GEMI,X) 
-       GALB = 1.0-GEMI
+       galb=sngl(galb1)
+       if(galb.lt.0.)then
+        CALL VERINT(VEM,EMISSIVITY,NEM,GEMI,X) 
+        GALB = 1.0-GEMI
+       endif
 C       print*,'GALB, GEMI  = ',GALB,GEMI
 
 
@@ -414,15 +428,14 @@ C       print*,'FF',(TABK(I,4),I=1,NG)
        DVEC1(2) = 0.0
        DVEC1(3) = -COS(ZANG*PI/180.0)
 
-
        CALL MCPHOTONCK(NITER,IDUM,
      1    XSEC1,XOMEGA,NPHASE,THETA,
      2    SVEC,DVEC1,SOLVEC,DEVSUN,SOLAR,TABK,NG,DEL_G,
      3    NPRO,NGAS,NCONT,MOLWT,RADIUS,P,T,H,DUST,
      4    GALB,TGROUND,IRAY,RES,ACC,MEAN,SDEV,
-     5    MSCAT,ITER,ISPACE,X,NAB,NSOL,NGR)
+     5    MSCAT,ITER,ISPACE,X,NAB,NSOL,NGR,NGS)
 
-C       print*,'X,NAB,NSOL,NGR',X,NAB,NSOL,NGR
+C       print*,'X,NAB,NSOL,NGR,NGS',X,NAB,NSOL,NGR,NGS
 
        IF(IDUMP.EQ.1)THEN
 C        WRITE(34,*)ITER
@@ -430,12 +443,12 @@ C        DO I=1,ITER
 C         WRITE(34,*)(RES(I,J),J=1,3)
 C        ENDDO
 
-C        print*,'waveMC',X,MEAN,SDEV,MSCAT,NAB,NSOL,NGR,ITER,NITER
+C        print*,'waveMC',X,MEAN,SDEV,MSCAT,NAB,NSOL,NGR,NGS,ITER,NITER
          IF(MEAN.NE.0.0)THEN
-          WRITE(34,*)X,MEAN,SDEV,MSCAT,NAB,NSOL,NGR,ITER,NITER,
+          WRITE(34,*)X,MEAN,SDEV,MSCAT,NAB,NSOL,NGR,NGS,ITER,NITER,
      1     SDEV/MEAN
          ELSE
-          WRITE(34,*)X,MEAN,SDEV,MSCAT,NAB,NSOL,NGR,ITER,NITER
+          WRITE(34,*)X,MEAN,SDEV,MSCAT,NAB,NSOL,NGR,NGS,ITER,NITER
          ENDIF    
 
          WRITE(35,*)X,MEAN,SDEV,VV,T1

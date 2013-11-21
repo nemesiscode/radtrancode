@@ -1,7 +1,7 @@
       SUBROUTINE MCPHOTONCK(NPHOT,IDUM,XSEC,XOMEGA,NPHASE,THETA,
      1 SVEC,DVEC1,SOLVEC,DEVSUN,SOLAR,TABK,NG,DEL_G,
      3 NPRO,NGAS,NCONT,MOLWT,RADIUS,P,T,H,DUST,GALB,TGROUND,IRAY,
-     4 RES,ACC,MEAN,SDEVM,MSCAT,IPHOT,ISPACE,XX,NAB,NSOL,NGR)
+     4 RES,ACC,MEAN,SDEVM,MSCAT,IPHOT,ISPACE,XX,NAB,NSOL,NGR,NGS)
 C     $Id: 
 C     ****************************************************************
 C     Subroutine to perform monte-carlo multiple scattering 
@@ -61,8 +61,9 @@ C	SDEVM	REAL		Standard deviation of radiance
 C	MSCAT	REAL		Mean number of scattering events
 C	IPHOT	INTEGER		Number of photons actually fired
 C	NAB	INTEGER		Number of photons absorbed in atm
-C	NGR	INTEGER		Number of photons absorbed by ground
 C	NSOL	INTEGER		Number of photons encountering Sun
+C	NGR	INTEGER		Number of photons absorbed by ground
+C	NGS	INTEGER		Number of photons reaching the ground
 C
 C     Pat Irwin    	Original	13/11/01
 C			Revised		22/7/05
@@ -72,7 +73,7 @@ C     ****************************************************************
       INCLUDE '../includes/arrdef.f'
       INTEGER NPRO,NGAS,NCONT,I,J,MPHOT,ICONT
       PARAMETER (MPHOT = 100000)
-      REAL P(MAXPRO),T(MAXPRO),H(MAXPRO)
+      REAL P(MAXPRO),T(MAXPRO),H(MAXPRO),TRANTOT
       REAL RADIUS,MOLWT,DUST(MAXPRO,MAXCON)
       REAL SVEC(3),DVEC(3),PVEC(3)
       REAL RAN11,ALTITUDE,DVEC1(3),SOLVEC(3),DEVSUN,SOLAR
@@ -85,7 +86,7 @@ C     ****************************************************************
       
       INTEGER IPHOT,NPHOT,NPHASE,IDUM,NSCAT,IHIT
       INTEGER IGDIST,NG,CIGDIST(MAXG),ISPACE,IRAY,NCONT1
-      INTEGER NAB,NSOL,NGR
+      INTEGER NAB,NSOL,NGR,NGS
       REAL THETA(MAXCON,100),ALPHA,PHI,THETA1(100)
       REAL RES(MPHOT,3),THET
       CHARACTER*1 ANS
@@ -97,6 +98,7 @@ C     ****************************************************************
       NAB=0
       NSOL=0
       NGR=0
+      NGS=0
 C      print*,NPHOT,IDUM,NPRO,NGAS,NCONT,MOLWT
 C      print*,XSEC(1),XOMEGA(1),NPHASE,'NPHASE'
 C      print*,(THETA(1,J),J=1,NPHASE)
@@ -114,7 +116,7 @@ C      do i=1,npro
 C       print*,H(i),P(i),T(i),(DUST(i,j),j=1,NCONT)
 C      enddo
 C      print*,RADIUS,TGROUND,IRAY,'IRAY'
-C      print*,ACC,MEAN,SDEVM,MSCAT,IPHOT,ISPACE,XX,NAB,NSOL,NGR
+C      print*,ACC,MEAN,SDEVM,MSCAT,IPHOT,ISPACE,XX,NAB,NSOL,NGR,NGS
 C      print*,GALB
 
       IF(NPHOT.GT.MPHOT)THEN
@@ -179,18 +181,25 @@ C      Set VV to current WAVENUMBER and pass to intpath
         VV=XX
        ENDIF
 
-       CALL INTPATH(VV,IRAY,TRANSREQ,PVEC,DVEC,NPRO,NGAS,NCONT,MOLWT,
-     1 RADIUS,P,T,H,DUST,TABK,IGDIST,XSEC,XOMEGA,TMEAN,FSCAT,TAUSCAT)
+C       print*,'PVEC',(PVEC(I),I=1,3)
+C       print*,'DVEC',(DVEC(I),I=1,3)
 
+       CALL INTPATH(VV,IRAY,TRANSREQ,PVEC,DVEC,NPRO,NGAS,NCONT,MOLWT,
+     1 RADIUS,P,T,H,DUST,TABK,IGDIST,XSEC,XOMEGA,TRANTOT,TMEAN,FSCAT,
+     2 TAUSCAT)
+  
        ALTITUDE = CALCALT(PVEC,RADIUS)
 
+C       print*,'ALTITUDE, H(1), TRANTOT',ALTITUDE,H(1),TRANTOT
+    
 C       PRINT*,'ALTITUDE,TRANSREQ, FSCAT = ',ALTITUDE,TRANSREQ,FSCAT
 C       PRINT*,'Current theta,phi = ',ACOS(DVEC(3))/DTR,
 C     1  ARCTAN(DVEC(2),DVEC(1))/DTR
 
 
        IF(ALTITUDE.LE.H(1))THEN
-C          PRINT*,'Photon hits surface'
+C          PRINT*,'Photon hits surface of reflectance',GALB
+          NGS=NGS+1
           IF(RAN11(IDUM).LE.GALB)THEN
 C           PRINT*,'Photon is reflected (LAMBERT) from surface',GALB           
            SUM=0.0

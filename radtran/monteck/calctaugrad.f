@@ -36,7 +36,6 @@ C     **************************************************************
       REAL DKDC,DTAUR,DTAUDC(MAXCON),DTAUDS
       REAL RAYLEIGHV,RAYLEIGHA
 
-
 C     Calculate position in height array and determine local
 C       temperature and pressure 
       CALL INTERP_PT(NPRO,H,P,T,HEIGHT,PNOW,TNOW,F,IFL)
@@ -59,7 +58,7 @@ C     of a 1km-long path to get optical depth/km.
 
       DTAUR = 0.0
       IF(IRAY.GT.0)THEN
-
+C       print*,IRAY,VV,PNOW,TNOW,TOTAM
        IF(IRAY.EQ.1)THEN
         DTAUR = TOTAM*RAYLEIGHJ(VV,PNOW,TNOW)
        ELSEIF(IRAY.EQ.2)THEN
@@ -67,10 +66,21 @@ C     of a 1km-long path to get optical depth/km.
        ELSE
         DTAUR = TOTAM*RAYLEIGHA(VV,PNOW,TNOW)
        ENDIF
+C       print*,TOTAM,RAYLEIGHJ(VV,PNOW,TNOW),
+C     1  RAYLEIGHV(VV,PNOW,TNOW),
+C     2  RAYLEIGHA(VV,PNOW,TNOW)
 
+C       print*,TOTAM*RAYLEIGHJ(VV,PNOW,TNOW),
+C     1  TOTAM*RAYLEIGHV(VV,PNOW,TNOW),
+C     2  TOTAM*RAYLEIGHA(VV,PNOW,TNOW)
+   
+C       print*,DTAUR
+
+C       stop
+       
       ENDIF
 
-C     Calculate optical depth/km at current conditions
+C     Calculate total optical depth/km at current conditions
       DTAUDS = DKDS + DKDC + DTAUR
 
 

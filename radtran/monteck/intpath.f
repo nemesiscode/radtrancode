@@ -1,11 +1,11 @@
       SUBROUTINE INTPATH(VV,IRAY,TRANSREQ,PVEC,DVEC,NPRO,NGAS,NCONT,
-     1 MOLWT,RADIUS,P,T,H,DUST,TABK,IGDIST,XSEC,XOMEGA,TEND,FSCAT,
-     2 TAUSCAT)
+     1 MOLWT,RADIUS,P,T,H,DUST,TABK,IGDIST,XSEC,XOMEGA,TRANTOT,TEND,
+     2 FSCAT,TAUSCAT)
 C     $Id:
 C     ***************************************************************
-C     Subroutine to calculate equivalent CG path between two points
-C     in a  spherically symmetric atmosphere. Code is based on the
-C     RADTRAN layer.f routine and uses Simpson's rule integration.
+C     Subroutine to calculate the position in an atmosphere which is
+C     at a certain optical depth away from the starting position in a
+C     given direction in a  spherically symmetric atmosphere. 
 C
 C     Input variables:
 C	VV		REAL	Calculated wavenumber (require to estimate
@@ -32,11 +32,12 @@ C	XSEC(MAXCON)	REAL	Aerosol x-sections
 C	XOMEGA(MAXCON)	REAL	Particle single scattering albedos
 C
 C     Output variables:
+C	TRANTOT		REAL	Total transmission of path
 C	TEND		REAL	Temperature at end of path
 C	PVEC(3)		REAL	Final position vector
-C	FSCAT		REAL	Probability of scattering
+C	FSCAT		REAL	Probability of scattering at the end point
 C	TAUSCAT(MAXCON)	REAL	Scattering opacity of path for each
-C				of NCONT particles. If IRAY=1, then 
+C				of NCONT particles. If IRAY>0, then 
 C				TAU(NCONT+1) contains the rayleigh
 C				scattering opacity.
 C
@@ -48,7 +49,7 @@ C     ***************************************************************
       INCLUDE '../includes/arrdef.f'
       INCLUDE '../includes/constdef.f'
 
-      REAL PVEC(3),DVEC(3),VV,TVEC(3),PVEC1(3),AVEC(3)
+      REAL PVEC(3),DVEC(3),VV,TVEC(3),PVEC1(3),AVEC(3),TRANTOT
       INTEGER NPRO,NGAS,J,NCONT,I,K,IFL,IRAY,IDIST,MINT
       PARAMETER (MINT=201)
       REAL MOLWT,F,DELS,TRANSREQ,RADGROUND
@@ -121,14 +122,12 @@ C      PRINT*,'Length of path = ',S
        HEIGHT = CALCALT(TVEC,RADIUS)
 
 C      Determine optical depths/km
+
        CALL CALCTAUGRAD(NPRO,NCONT,H,P,T,DUST,MOLWT,XSEC,IRAY,VV,
      1 K_G,HEIGHT,DTAUDS,DTAUDC,DTAUR)
 
 C      Add optical depth element to integration array
-       TAUNOW(I)=DTAUDS+DTAUR
-       DO J=1,NCONT
-        TAUNOW(I)=TAUNOW(I)+DTAUDC(J)
-       ENDDO
+       TAUNOW(I)=DTAUDS
 
 30    CONTINUE
 
@@ -141,10 +140,11 @@ C      print*,TAUTOT(1),DIST(1)
        DIST(I)=DIST(I-1)+DELS
 C       print*,TAUTOT(I),DIST(I)
        TRANS(I)=EXP(-TAUTOT(I))
-C       print*,I,TRANS(I),TRANSREQ
+C       print*,I,DIST(I),TRANS(I),TRANSREQ
       ENDDO
  
-      IF(TRANS(MINT).GE.TRANSREQ)THEN
+      TRANTOT=TRANS(MINT)
+      IF(TRANTOT.GE.TRANSREQ)THEN
 C       print*,'Atmosphere too thin'
 C      There is insufficient opacity in atmosphere. Photon either leaves atmosphere
 C      entirely or strikes surface. Add on 10km to finishing position to make sure

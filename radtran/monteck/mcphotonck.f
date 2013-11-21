@@ -81,7 +81,7 @@ C     ****************************************************************
       REAL ALT0,TABK(MAXG,MAXPRO),TAUSCAT(MAXCON),TAUTOT(MAXCON+1)
       REAL X,MSCAT,ACC,MEAN,MEAN2,ACC1,VV,PLANCK_WAVE
       REAL DEL_G(MAXG),G_ORD(MAXG),X1,GALB,TGROUND,TMEAN,SDEV
-      REAL SUM,SDEVM,TNOW,XX,SCOS,ARCTAN,DTR
+      REAL SUM,SDEVM,TNOW,XX,SCOS,ARCTAN,DTR,GALB1
       PARAMETER (PI=3.1415927,DTR=PI/180.)
       
       INTEGER IPHOT,NPHOT,NPHASE,IDUM,NSCAT,IHIT
@@ -102,10 +102,10 @@ C     ****************************************************************
 C      print*,NPHOT,IDUM,NPRO,NGAS,NCONT,MOLWT
 C      print*,XSEC(1),XOMEGA(1),NPHASE,'NPHASE'
 C      print*,(THETA(1,J),J=1,NPHASE)
-C      print*,SVEC
-C      print*,'DVEC = ',DVEC1
-C      print*,'SOLVEC = ',SOLVEC
-C      print*,DEVSUN
+      print*,'SVEC',SVEC
+      print*,'DVEC = ',DVEC1
+      print*,'SOLVEC = ',SOLVEC
+      print*,'DEVSUN',DEVSUN
 C      print*,SOLAR
 C      print*,NG,'NG'
 C      do i=1,npro
@@ -143,6 +143,7 @@ C      print*,'SCOS, DEVSUN',SCOS,DEVSUN
       MEAN = 0.0
       MSCAT = 0.0
 
+      open(37,file='test.dat',status='unknown')
 
       DO 1000 IPHOT=1,NPHOT 
 C       PRINT*,'IPHOT,NPHOT',IPHOT,NPHOT
@@ -200,8 +201,22 @@ C     1  ARCTAN(DVEC(2),DVEC(1))/DTR
        IF(ALTITUDE.LE.H(1))THEN
 C          PRINT*,'Photon hits surface of reflectance',GALB
           NGS=NGS+1
-          IF(RAN11(IDUM).LE.GALB)THEN
-C           PRINT*,'Photon is reflected (LAMBERT) from surface',GALB           
+C         Calculate the angle that the photon will go off into if
+C         reflected from a Lambertian surface
+C         First, PHI can be anywhere between 0 and 360 degrees
+          PHI = 2*PI*RAN11(IDUM)
+           
+C         Second, the zenith angle. Flux should be equal in terms
+C         of solid angle, which depends as 
+C         dOmeg=sin(thet).dthet.dphi=-d(cos(thet)).dphi
+          THET = ACOS(RAN11(IDUM))
+
+C         Less photons are arriving per unit area at higher reflection 
+C         angles, so incorporate this into effective reflectivity
+          GALB1=COS(THET)
+
+          IF(RAN11(IDUM).LE.GALB1)THEN
+C           PRINT*,'Photon is reflected (LAMBERT) from surface',GALB,GALB1           
            SUM=0.0
            DO I=1,3
             SUM=SUM+PVEC(I)**2
@@ -213,14 +228,6 @@ C          Reset length of PVEC (if HEIGHT < H(1))
             PVEC(I)=PVEC(I)*(RADIUS+H(1))/SUM
            ENDDO
  
-C          Calculate scattering from Lambertian surface
-C          First, PHI can be anywhere between 0 and 360 degrees
-           PHI = 2*PI*RAN11(IDUM)
-           
-C          Second, the zenith angle. Flux should be equal in terms
-C          of solid angle, which depends as 
-C          dOmeg=sin(thet).dthet.dphi=-d(cos(thet)).dphi
-           THET = ACOS(RAN11(IDUM))
 
 C          Reset the photon direction vector to be straight up
 C          from surface 
@@ -248,7 +255,12 @@ C          PRINT*,'Photon leaves atmosphere',DVEC
 
           RES(IPHOT,1)=2
           CALL HITSUN(SOLVEC,DVEC,SCOS,IHIT)
+C          print*,'----------------'
+C          print*,(SOLVEC(I),I=1,3)
+C          print*,(DVEC(I),I=1,3)
+C          print*,SCOS,IHIT
 C          PRINT*,SOLVEC,DVEC,IHIT
+           write(37,*)(SOLVEC(I),I=1,3),(DVEC(J),J=1,3),IHIT
           IF(IHIT.EQ.0)THEN
            RES(IPHOT,2)=0.0
           ELSE
@@ -327,6 +339,8 @@ C       IF(IPHOT.GT.200.AND.NSOL.GT.50.AND.SDEVM.LE.ACC) GOTO 1001
 C     IPHOT is now actually a loop, rather than a counter, but reset 
 C     to NPHOT if necessary
       IF(IPHOT.GT.NPHOT)IPHOT=NPHOT
+
+      close(37)
 
       RETURN
 

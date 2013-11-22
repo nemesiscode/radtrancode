@@ -145,6 +145,7 @@ C      print*,'SCOS, DEVSUN',SCOS,DEVSUN
 
       open(37,file='test.dat',status='unknown')
 
+      GALB1=1.0
       DO 1000 IPHOT=1,NPHOT 
 C       PRINT*,'IPHOT,NPHOT',IPHOT,NPHOT
 C      Select IGDIST by size of g_interval (amounts to implicit
@@ -201,27 +202,32 @@ C     1  ARCTAN(DVEC(2),DVEC(1))/DTR
        IF(ALTITUDE.LE.H(1))THEN
 C          PRINT*,'Photon hits surface of reflectance',GALB
           NGS=NGS+1
-C         Calculate the angle that the photon will go off into if
-C         reflected from a Lambertian surface
-C         First, PHI can be anywhere between 0 and 360 degrees
-          PHI = 2*PI*RAN11(IDUM)
-           
-C         Second, the zenith angle. Flux should be equal in terms
-C         of solid angle, which depends as 
-C         dOmeg=sin(thet).dthet.dphi=-d(cos(thet)).dphi
-          THET = ACOS(RAN11(IDUM))
 
-C         Less photons are arriving per unit area at higher reflection 
-C         angles, so incorporate this into effective reflectivity
-          GALB1=COS(THET)
-
-          IF(RAN11(IDUM).LE.GALB1)THEN
-C           PRINT*,'Photon is reflected (LAMBERT) from surface',GALB,GALB1           
+          IF(RAN11(IDUM).LE.GALB)THEN
+C           PRINT*,'Photon is reflected (LAMBERT) from surface',GALB
            SUM=0.0
            DO I=1,3
             SUM=SUM+PVEC(I)**2
            ENDDO
            SUM=SQRT(SUM)
+
+
+C          Calculate the angle that the photon will go off into if
+C          reflected from a Lambertian surface
+C          First, PHI can be anywhere between 0 and 360 degrees
+           PHI = 2*PI*RAN11(IDUM)
+           
+C          Second, the zenith angle. Flux should be equal in terms
+C          of solid angle, which depends as 
+C          dOmeg=sin(thet).dthet.dphi=-d(cos(thet)).dphi
+           THET = ACOS(RAN11(IDUM))
+
+C          Less photons are arriving per unit area at higher reflection 
+C          angles, so incorporate this into effective reflectivity correction
+           GALB1=COS(THET)
+
+C          Also Correct for surface albedo radiance/irradiance
+           GALB1=PI*GALB1
 
 C          Reset length of PVEC (if HEIGHT < H(1))
            DO I=1,3
@@ -265,7 +271,10 @@ C          PRINT*,SOLVEC,DVEC,IHIT
            RES(IPHOT,2)=0.0
           ELSE
 C           PRINT*,'photon comes near the Sun'
-           RES(IPHOT,2)=SOLAR
+
+C
+
+           RES(IPHOT,2)=SOLAR*GALB1/PI
            NSOL=NSOL+1
           ENDIF
           GOTO 999

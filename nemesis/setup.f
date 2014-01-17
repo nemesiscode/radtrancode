@@ -81,6 +81,12 @@ C     ******************************************************************
       read(lun,1)buffer
       tsurf = realbuf(buffer)		! Surface temperature
 
+      if(tsurf.le.0.0)then
+       print*,'Error in nemesis/setup.f. Surface temperature must'
+       print*,'be greater than 0.0'
+       stop
+      endif
+
       read(lun,1)buffer			! Header
 
       read(lun,1)buffer

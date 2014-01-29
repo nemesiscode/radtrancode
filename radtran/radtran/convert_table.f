@@ -109,7 +109,7 @@ C     MAXOUT the maximum number of output points
       CALL PROMPT('Data tab. by wavenumber (0) or wavelength (1)? : ')
       READ*,ITAB
 
-      WRITE(LUN1,*)'Absorption coefficients  (km/amagat) : '
+      WRITE(LUN1,*)'Absorption coefficients  (km.amagat)-1 : '
 
       DO 1000 I=1,NPOINT
 

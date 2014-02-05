@@ -103,7 +103,7 @@ c  ** variables for solar refelcted cloud **
       ENDIF
           
 2     format(a,i3)
-3     format(a,f7.2)
+3     format(a,f8.2)
 
       LAYHT1 = LAYHT
       LAYANG = 0.0

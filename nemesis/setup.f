@@ -144,7 +144,7 @@ C     rewrite .set file to keep correctly formatted
       write(lun,1)buffer
 
       write(lun,109)layht
-109   format(1x,'Alt. at base of bot.layer (not limb) : ',f8.3)
+109   format(1x,'Alt. at base of bot.layer (not limb) : ',f8.2)
 
       write(lun,111)nlayer
 111   format(1x,'Number of atm layers : ',i3)

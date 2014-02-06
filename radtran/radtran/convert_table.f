@@ -19,7 +19,7 @@ C-----------------------------------------------------------------------------
 C     MAXOUT the maximum number of output points
       INTEGER IREC,IREC0,I,ITAB
       CHARACTER*100 KTAFIL,PARFIL
-      REAL TE1,TEMP1(MAXK),PRESS1(MAXK)
+      REAL TE1,TEMP1(MAXK),PRESS1(MAXK),TABLE(MAXK,MAXK,MAXG)
       REAL G_ORD(MAXG),K_G(MAXG),DEL_G(MAXG)
 
 
@@ -113,12 +113,21 @@ C     MAXOUT the maximum number of output points
 
       DO 1000 I=1,NPOINT
 
-      VV = VMIN + (I-1)*DELV
+       VV = VMIN + (I-1)*DELV
 
 
-      IREC=IREC0+NP*NT*NG*(I-1)
+       IREC=IREC0+NP*NT*NG*(I-1)
 
-       DO 30 K=1,NT
+       DO 20 J=1,NP
+        DO 30 K=1,NT
+          DO 40 LOOP=1,NG
+            READ(LUN0,REC=IREC)TABLE(J,K,LOOP)
+            IREC = IREC + 1
+40        CONTINUE
+30      CONTINUE
+20     CONTINUE
+
+       DO 31 K=1,NT
 
          TE1=TEMP1(K)
          IF(ITAB.EQ.0)THEN
@@ -134,20 +143,16 @@ C     MAXOUT the maximum number of output points
 
         WRITE(LUN1,*)'Pressure, and fitted K-Coefficients'
 
-        DO 20 J=1,NP
+        DO 21 J=1,NP
          PE1 = PRESS1(J)
-         DO 40 LOOP=1,NG
-          READ(LUN0,REC=IREC)K_G(LOOP)
-          IREC=IREC+1
-40       CONTINUE
-         WRITE(LUN1,707) PE1,(28650.0*K_G(LOOP),LOOP=1,5)
-         WRITE(LUN1,708) (28650.0*K_G(LOOP),LOOP=6,10)
+         WRITE(LUN1,707) PE1,(26850.0*TABLE(J,K,LOOP),LOOP=1,5)
+         WRITE(LUN1,708) (26850.0*TABLE(J,K,LOOP),LOOP=6,10)
          IF(NG.EQ.20)THEN
-          WRITE(LUN1,708) (28650.0*K_G(LOOP),LOOP=11,15)
-          WRITE(LUN1,708) (28650.0*K_G(LOOP),LOOP=16,20)
+          WRITE(LUN1,708) (26850.0*TABLE(J,K,LOOP),LOOP=11,15)
+          WRITE(LUN1,708) (26850.0*TABLE(J,K,LOOP),LOOP=16,20)
          ENDIF
-20      CONTINUE
-30     CONTINUE
+21      CONTINUE
+31     CONTINUE
 
 1000  CONTINUE
 

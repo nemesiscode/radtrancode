@@ -30,7 +30,7 @@ C     search gas arrays to see if gas already included
         GOTO 406
         END IF
 405   CONTINUE
-C     if can"t fing gas then insert it into gas arrays
+C     if can"t find gas then insert it into gas arrays
       NGAS=NGAS+1
       LOCID=NGAS
       IDGAS(NGAS)=ID

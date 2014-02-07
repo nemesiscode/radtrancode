@@ -27,6 +27,7 @@ C     R now included in constdef.f (RGAS) and needs scaling for units here.
       R = RGAS*0.001
 
 C     First find level immediately below the reference altitude
+      JTAN=1
       DO I=1,NPRO
        IF(H(I).LT.HTAN)THEN
         JTAN=I

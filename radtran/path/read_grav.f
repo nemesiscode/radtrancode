@@ -11,7 +11,7 @@ C
 C     **************************************************************
       integer mplanet,nplanet,iplanet,isurf
       real xgm,xcoeff(3),xradius,xellip,xomega
-      parameter (mplanet=50,pi=3.1415927,Grav=6.672E-11)
+      parameter (mplanet=60,pi=3.1415927,Grav=6.672E-11)
       real plan_mass(mplanet),Jcoeff(3,mplanet),aradius(mplanet)
       real flatten,rotation,ellip(mplanet),omega(mplanet)
       integer isurftab(mplanet)

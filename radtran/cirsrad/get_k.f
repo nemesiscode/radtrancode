@@ -16,7 +16,7 @@ C-----------------------------------------------------------------------
 
 	INTEGER	NP, NT, NG, CP, CT, I, I1, I2, I3, I4, N1,IREC
 	INTEGER IWAVE,NGAS,NLAYER,IGAS,LAYER,LUN0,IREC0,maxc
-        INTEGER NTAB,loop,count,MTAB,J
+        INTEGER NTAB,loop,count,MTAB,J,NTEST,ISNAN
 	LOGICAL COINC
         parameter (maxc=2*maxg,MTAB=maxk*maxk*maxg)
         REAL TABLE(MTAB),TABLE2(MTAB)
@@ -168,7 +168,8 @@ C        If not in-line, read in k-coeffs for next bin also
 
 C	 Now interpolate k-coefficients for conditions in each layer
          DO 1050 LAYER=1,NLAYER
-C          print*,'LAYER = ',LAYER,PRESS(LAYER),TEMP(LAYER)
+C          print*,'LAYER = ',LAYER,PRESS(LAYER),
+C     1    TEMP(LAYER)
 
 C        IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
 C           Work out where P,T for each layer lies in the tables
@@ -198,7 +199,7 @@ C-----------------------------------------------------------------------
 
 C            PRINT*,'CP,P(CP),P(CP+1),P1',CP,P(CP),P(CP+1),P1
 C            PRINT*,'CT,T(CT),T(CT+1),T1',CT,T(CT),T(CT+1),T1
-           
+
  	    VT(LAYER)=(P1-P(CP))/(P(CP+1)-P(CP))
 	    UT(LAYER)=(T1-T(CT))/(T(CT+1)-T(CT))
 
@@ -300,10 +301,15 @@ C           print*,'Wavenumber does not coincide with tabulated value'
 
          ENDIF
 
-
          DO I=1,NG
-           KOUT(LAYER,IGAS,I)=K_G(I)
-C           print*,K_G(I)
+C           print*,igas,K_G(I)
+           NTEST=ISNAN(K_G(I))
+           IF(NTEST)THEN
+            KOUT(LAYER,IGAS,I)=1e-37
+            PRINT*,'Warning, NAN returned by get_k.f for gas',igas
+           ELSE
+            KOUT(LAYER,IGAS,I)=K_G(I)
+           ENDIF
          ENDDO
 
 1050     CONTINUE

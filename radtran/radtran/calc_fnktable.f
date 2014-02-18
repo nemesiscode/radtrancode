@@ -266,7 +266,7 @@ C        print*,vmin1,vmax1
             WRITE(*,*)'Calculating Continua: IP, IT = ',J,K
 C            print*,press1(j),temp1(k)
             CALL LBL_KCONT(VMIN1,VMAX1,WING,VREL,PRESS1(J),TEMP1(K),
-     1      IDGAS1,ISOGAS1,FRAC,IPROC1,J,K,MAXDV)
+     1      IDGAS1,ISOGAS1,FRAC,IPROC1,J,K,MAXDV,IPTF)
 102       CONTINUE
 105     CONTINUE
       ENDIF
@@ -334,7 +334,7 @@ cc            WRITE(*,*)'Pressure, temperature: ',P1,TE1
                VEND=1E4/V1
               ENDIF
               CALL LBL_FKNEW(IWAVE,VSTART,VEND,P1,TE1,IDGAS1,ISOGAS1,
-     1        IPROC1,J,K,FRAC,MAXDV,NPOINT)
+     1        IPROC1,J,K,FRAC,MAXDV,IPTF,NPOINT)
 
               DELV=(VEND-VSTART)/FLOAT(NPOINT)
 

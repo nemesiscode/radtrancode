@@ -1,5 +1,5 @@
       SUBROUTINE LBL_FKNEW(IWAVE,VSTART,VEND,PRESS,TEMP,IDGAS,ISOGAS,
-     1 IPROC,IP,IT,FRAC,MAXDV,NPOINT)
+     1 IPROC,IP,IT,FRAC,MAXDV,IPTF,NPOINT)
 C     $Id: lbl_fknew.f,v 1.7 2011-09-06 15:32:20 irwin Exp $
 C***********************************************************************
 C_TITL:	LBL_FKNEW.f
@@ -48,6 +48,7 @@ C	MAXDV		REAL	Line wing cut-off parameter: The maximum
 C				wavenumber-distance away within which to
 C				consider the contribution of the line
 C				wings.
+C	IPTF		INTEGER Partition function flag for CH4
 C
 C	../includes/*.f variables:
 C	VLIN(MAXLIN)	REAL	Line position [cm^-1].
@@ -216,7 +217,6 @@ C calculation
 
 1     FORMAT(A)
 
-      IPTF=0
 cc      WRITE(*,420)GASNAM(IDGAS),IDGAS,ISOGAS,XMASS
 cc420   FORMAT('LBL_FKNEW.f :: ',1A6,'(',I2,',',I2,') has mass = ',F7.2)
 
@@ -286,7 +286,9 @@ C      MXWID = SQRT(XPD**2 + XPW**2)
 C Multiply by three so as to have the center point, and one at both VSTART
 C (= VMIN - 0.5*FWHM) and VEND (= VSTART + FWHM).
 C      NPOINT = 3*INT((VEND - VSTART)/MXWID)
-      FPOINT = 3.*(VEND - VSTART)/MXWID
+C Actually a factor of 3 still gives quite a jumpy spectrum. Increase
+C to 6.
+      FPOINT = 6.*(VEND - VSTART)/MXWID
 cc      WRITE(*,*)'LBL_FKNEW.f :: NPOINT = ',NPOINT
 
       IF(FPOINT.GE.FLOAT(MPOINT))THEN

@@ -1,5 +1,5 @@
       SUBROUTINE LBL_KCONT(VMIN,VMAX,WING,VREL,PRESS,TEMP,IDGAS,ISOGAS,
-     1 FRAC,IPROC,IP,IT,MAXDV)
+     1 FRAC,IPROC,IP,IT,MAXDV,IPTF)
 C     $Id: lbl_kcont.f,v 1.17 2011-09-06 15:35:54 irwin Exp $
 C***********************************************************************
 C_TITL:	LBL_KCONT.f
@@ -44,6 +44,7 @@ C	 MAXDV		REAL	Line wing cut-off parameter: The maximum
 C				wavenumber-distance away within which to
 C				consider the contribution of the line 
 C				wings.
+C	 IPTF		INTEGER	Partition function flag for CH4.
 C
 C	../includes/*.f variables:
 C	VLIN(MAXLIN)	REAL	Line position [cm^-1].
@@ -177,8 +178,6 @@ cc      WRITE(*,420)GASNAM(IDGAS),IDGAS,ISOGAS,XMASS
 cc420   FORMAT('LBL_KCONT.f :: ',1A6,'(',I2,',',I2,') has mass = ',F7.2)
 
 C NOTE: TCORS1 includes factor of 1.e-27 for scaling of stored lines
-
-      IPTF=0
 
       IF(ISOGAS.EQ.0)THEN
         K = 1

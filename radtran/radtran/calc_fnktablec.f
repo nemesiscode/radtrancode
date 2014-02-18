@@ -21,7 +21,7 @@ C	  RDKEY
 C	  RDGAS
 C	  RDISO
 C	  LBL_CONT
-C	  LBL_KNEWC	calculates the cumulative K-Distribution for a
+C	  LBL_FKNEW	calculates the cumulative K-Distribution for a
 C			spectral interval for a mixture of gases at a
 C			number of pressures and temperatures. This is done
 C			by first generating the lbl absorption coefficient
@@ -56,15 +56,17 @@ C-----------------------------------------------------------------------------
       PARAMETER (NGMAX=51)
       REAL X,PMIN,PMAX,TMIN,TMAX,DT,DP
       INTEGER IREC,IREC0,I,IWAVE,NFIL,IMULTI
+      INTEGER IEXO,IPTF
       REAL TOT_TIME
       DOUBLE PRECISION TIME,TIME1,TIME2
       REAL TFIL(MFIL),VFIL(MFIL),V1(MFIL),V2(MFIL),T1(MFIL)
-      CHARACTER*100 KTAFIL,FILFILE
+      CHARACTER*100 KTAFIL,FILFILE,OPFILE1
       CHARACTER*1 ANS
       REAL KNU0,DELAD,Y0,EL
       REAL QROT,FRAC1,MAXDV
 
       REAL P1,TE1,TEMP1(MAXK),PRESS1(MAXK),VCEN(MPOINT)
+      REAL TABLE(MAXK,MAXK,MAXG)
       REAL G_ORD(MAXG),K_G(MAXG),DEL_G(MAXG),ERRK(MAXG)
 C     G_ORD: Gauss-Legendre ordinates for calculating the k-distribution.
 C     K_G: Calculated k-distribution.
@@ -74,6 +76,8 @@ C     **** all these are now defined by zgauleg.f ***
       CALL GETTIME(TIME)
       TIME1= TIME
 
+      CALL PROMPT('Enter IEXO, IPTF : ')
+      READ*,IEXO,IPTF
 
       CALL PROMPT('Enter NG : ')
       READ*,NG
@@ -193,13 +197,20 @@ C      Read min/max wavelength/wavenumbers for continuum calculation
       CALL PROMPT('Enter line wing cut-off (cm^-1) : ')
       READ*,MAXDV
 
-      CALL PROMPT('Enter database name: ')
-      READ(5,23)OPFILE
-23    FORMAT(A)
-      CALL FILE(OPFILE,KEYFIL,'key')
-      CALL RDKEY(LUN)
-      CALL RDGAS
-      CALL RDISO
+      IF(IEXO.EQ.0)THEN
+       CALL PROMPT('Enter database name: ')
+       READ(5,23)OPFILE
+23     FORMAT(A)
+       CALL FILE(OPFILE,KEYFIL,'key')
+       CALL RDKEY(LUN)
+       CALL RDGAS
+       CALL RDISO
+      ELSE
+C      If IEXO<>0, then we need to read in temperature-dependent database
+C      (for exoplanet k-tables)
+       CALL PROMPT('Enter database root name: ')
+       READ(5,23)OPFILE1
+      ENDIF
       
 
       CALL PROMPT('Enter output filename : ')
@@ -250,21 +261,42 @@ C     Write out central wavelengths if non-uniform grid
 303    CONTINUE
       ENDIF
 
-C     Calculate continuum absorptions
+C     Calculate continuum absorption for all pressures/temperatures
 
       PRINT*,'Calculating Continuum' 
       PRINT*,'VMIN1,VMAX1,WING,VREL',VMIN1,VMAX1,WING,VREL
-      DO 105 J=1,NP
-          DO 102 K=1,NT
+
+      DO 102 K=1,NT
+
+         IF(IEXO.NE.0)THEN
+C          Read in temperature specific linedata file.
+           OPFILE=OPFILE1
+           DO I=1,LEN(OPFILE)
+            IF(OPFILE(I:I).NE.' ')KK=I
+           ENDDO
+           I1 = INT(K/10)
+           I2 = K-10*I1 
+           OPFILE(KK+1:KK+1)=CHAR(I1+48)
+           OPFILE(KK+2:KK+2)=CHAR(I2+48)
+    
+           CALL FILE(OPFILE,KEYFIL,'key')
+           CALL RDKEY(LUN)
+           CALL RDGAS
+           CALL RDISO
+         ENDIF
+
+         DO 105 J=1,NP
+
             PRINT*,'Continuum. J,K = ',J,K,' P = ',PRESS1(J),' T = ',
      & 	    TEMP1(K)
+   
 cc            WRITE(*,*)'CALLING lbl_kcont'
             CALL LBL_KCONT(VMIN1,VMAX1,WING,VREL,PRESS1(J),TEMP1(K),
-     1      IDGAS(1),ISOGAS(1),FRAC1,IPROC(1),J,K,MAXDV)
+     1      IDGAS(1),ISOGAS(1),FRAC1,IPROC(1),J,K,MAXDV,IPTF)
 cc            WRITE(*,*)'lbl_kcont COMPLETE'
 cc            WRITE(*,*)' '
-102       CONTINUE
-105     CONTINUE
+105      CONTINUE
+102   CONTINUE
  
       PRINT*,'Continuum OK'
 
@@ -274,6 +306,9 @@ cc            WRITE(*,*)' '
       WRITE(LUN1,*)VMIN,VMAX,DELV
       WRITE(LUN1,*)NP,(PRESS1(J),J=1,NP)
       WRITE(LUN1,*)NT,(TEMP1(J),J=1,NT)
+
+      PRINT*,'Calculating LBL spectra and k-distribution'
+
       DO 10 IPOINT=1,NPOINT
         WRITE(*,*)'Current Wave: ',VCEN(IPOINT)
         WRITE(LUN1,*)'Current Wave: ',VCEN(IPOINT)
@@ -354,33 +389,68 @@ C        DO I=1,NFIL
 C         PRINT*,VFIL(I),TFIL(I)
 C        ENDDO
            
-        DO 20 J=1,NP
-          P1=PRESS1(J)
-          DO 30 K=1,NT
+        DO 30 K=1,NT
+
+          IF(IEXO.NE.0)THEN
+C            Read in temperature specific line data file
+             OPFILE=OPFILE1
+             DO I=1,LEN(OPFILE)
+              IF(OPFILE(I:I).NE.' ')KK=I
+             ENDDO
+             I1 = INT(K/10)
+             I2 = K-10*I1 
+             OPFILE(KK+1:KK+1)=CHAR(I1+48)
+             OPFILE(KK+2:KK+2)=CHAR(I2+48)
+    
+             CALL FILE(OPFILE,KEYFIL,'key')
+             CALL RDKEY(LUN)
+             CALL RDGAS
+             CALL RDISO
+          ENDIF
+
+          DO 20 J=1,NP
+            P1=PRESS1(J)
             TE1=TEMP1(K)
 
             WRITE(*,*)'Pressure, temperature: ',P1,TE1
             WRITE(LUN1,*)'Pressure, temperature: ',P1,TE1
 
             CALL LBL_FKNEW(IWAVE,VSTART,VEND,P1,TE1,
-     1          IDGAS(1),ISOGAS(1),IPROC(1),J,K,FRAC1,MAXDV,NPOINT)
+     1          IDGAS(1),ISOGAS(1),IPROC(1),J,K,FRAC1,MAXDV,IPTF,
+     2		NPOINT)
 
             DELV=(VEND-VSTART)/FLOAT(NPOINT)
 
             CALL CALC_FKDIST_WAVEC(IWAVE,VSTART,DELV,NPOINT,
      1    NFIL,VFIL,TFIL,G_ORD,DEL_G,K_G,NGMAX,NG)
 
-
-	    WRITE(LUN1,*)(K_G(LOOP),LOOP=1,NG)
+            WRITE(LUN1,*)(K_G(LOOP),LOOP=1,NG)
 
             DO 40 LOOP=1,NG
-              WRITE(LUN0,REC=IREC)K_G(LOOP)
-              IREC=IREC+1
+             TABLE(J,K,LOOP)=K_G(LOOP)          
 40          CONTINUE
 
-30        CONTINUE
-20      CONTINUE
-        I=I+1
+20        CONTINUE
+30      CONTINUE
+
+
+C       K-tables assume the loop is pressure followed by temperature
+C       unlike the order we have followed here, which is temperature
+C       followed by pressure. Hence, we need to reverse the order for 
+C       output
+
+        DO J=1,NP
+         DO K=1,NT
+
+          DO LOOP=1,NG
+           K_G(LOOP)=TABLE(J,K,LOOP)
+           WRITE(LUN0,REC=IREC)K_G(LOOP)
+           IREC=IREC+1
+          ENDDO
+
+         ENDDO
+        ENDDO
+
 10    CONTINUE
 
 
@@ -389,11 +459,9 @@ C
 C	Close files and shut down the program.
 C
 C-------------------------------------------------------------------------
-C If the code succeeds in completion, delete both the "tempk.dat" and
-C OUTPUT.DAT (UNIT= 14) files since their main resourcefullness is when
-C the code crashes prior to completion.
+C If the code succeeds in completion, delete the "tempk.dat" file since 
+C its main usefulness is when the code crashes prior to completion.
       CLOSE(UNIT= LUN1,STATUS= 'DELETE')
-c      CLOSE(UNIT= 14, STATUS= 'DELETE')
 
       CALL WTEXT('%CALC_KTABLEC.f :: calculation complete')
       CALL GETTIME(TIME)

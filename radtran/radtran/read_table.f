@@ -173,12 +173,21 @@ C     Read in central wavelengths if non-uniform grid
 
       WRITE(*,*)'Pressure index (CP), temperature index (CT) = ',CP,CT
       WRITE(*,*)' '
-      T = (P1 - PRESS1(CP))/(PRESS1(CP+1) - PRESS1(CP))
-      U = (T1 - TEMP1(CT))/(TEMP1(CT+1) - TEMP1(CT))
+      IF(PRESS1(CP+1).NE.PRESS1(CP))THEN
+       T = (P1 - PRESS1(CP))/(PRESS1(CP+1) - PRESS1(CP))
+      ELSE
+       T=0.
+      ENDIF
+      IF(TEMP1(CT+1).NE.TEMP1(CT))THEN
+       U = (T1 - TEMP1(CT))/(TEMP1(CT+1) - TEMP1(CT))
+      ELSE
+       U=0.
+      ENDIF
       WRITE(*,*)'(P - PRESS1(CP))/(PRESS1(CP+1) - PRESS1(CP)) = ',T
       WRITE(*,*)'(T - TEMP1(CT))/(TEMP1(CT+1) - TEMP1(CT)) = ',U
       WRITE(*,*)' '
       WRITE(*,*)'    G_ORD    |      K_G     |   K_G*26850'
+
       IF(TABLE(CP,CT,NG).GT.0.0)THEN
         DO 80 LOOP=1,NG
 C          print*,EXP(PRESS1(CP)),26850.0*TABLE(CP,CT,LOOP),
@@ -198,119 +207,13 @@ C     1     EXP(PRESS1(CP+1)),26850.0*TABLE(CP+1,CT,LOOP)
 81      CONTINUE
       ENDIF
 
+      OPEN(12,FILE='read_table.dat',form='unformatted', 
+     1   status='unknown')
+       WRITE(12)G_ORD
+       WRITE(12)TABLE
+      CLOSE(12)
+        
       END
 C***********************************************************************
 C***********************************************************************
 
-
-
-      SUBROUTINE FILE(NAME1,NAME2,EXT)
-C     $Id: read_table.f,v 1.12 2007-06-28 15:29:12 irwin Exp $
-C***********************************************************************
-C     Forces correct VMS style file extension for a filename. i.e. assumes 
-C     a <4 character extension after a dot separator. 
-C
-C     1/1/90    Original Version:       SBC
-C     3/10/94   Updated Header          PGJI
-C
-C***********************************************************************
-      INTEGER I,L,LE
-      CHARACTER*(*) NAME1,NAME2,EXT
-
-C First copy the file name to the second array and remove any leading
-C spaces
-      NAME2 = NAME1
-      CALL REMSP(NAME2)
-C Now stepping back from the end of the name through the last four
-C characters
-      LE = LEN(NAME2)
-      IF(LE.LT.1)RETURN
-      DO 40 L=LE,1,-1
-      IF(NAME2(L:L).NE.' ')THEN
-        LE=L
-        GOTO 50
-        END IF
-40    CONTINUE
-      RETURN
-50    CONTINUE
-      L=LE-3
-      IF(L.LT.1)L=1
-      DO 10 I=LE,L,-1
-C If a directory tree delimeter is found just add the extension to the end
-C of the name
-      IF(NAME2(I:I).EQ.'/'.OR.NAME2(I:I).EQ.']')GOTO 30
-C If a dot is found overwrite any existsing extension
-      IF(NAME2(I:I).EQ.'.')THEN
-        NAME2(I+1:I+3)=EXT
-        GOTO 20
-        END IF
-10    CONTINUE
-C If no dot is found in last four characters add the extension to the end
-C of the filename
-30    NAME2(LE+1:LE+1) = '.'
-      NAME2(LE+2:LE+4) = EXT
-
-20    RETURN
-
-      END 
-C***********************************************************************
-C***********************************************************************
-
-
-
-      SUBROUTINE REMSP(TEXT)
-C     $Id: read_table.f,v 1.12 2007-06-28 15:29:12 irwin Exp $
-C***********************************************************************
-C     Removes leading spaces from text string
-C
-C	1/1/90	SBC	Original Version
-C	3/10/94	PGJI	Added $Id: read_table.f,v 1.12 2007-06-28 15:29:12 irwin Exp $
-C
-C***********************************************************************
-      CHARACTER TEXT*(*)
-      INTEGER I,J,K,L
-      J = LEN(TEXT)
-      DO 100 I=1,J
-        IF(TEXT(I:I).NE.' ')GOTO 10
-100   CONTINUE
-      RETURN
-10    CONTINUE
-      IF(I.EQ.1)RETURN
-      DO 20 K=I,J
-        L = K - I + 1
-        TEXT(L:L)=TEXT(K:K)
-20    CONTINUE
-      DO 30 K=J-I+2,J
-        TEXT(K:K) = ' '
-30    CONTINUE
-
-      END
-
-
-      INTEGER FUNCTION PINDEX(X,NX,X1)
-      INTEGER NX
-      REAL X(NX),X1
-      IF(X1.GT.X(NX))THEN
-        PRINT*,'Warning in INDEX. X1>XMAX'
-        X1 = X(NX)
-      ENDIF
-      IF(X1.LT.X(1))THEN
-        PRINT*,'Warning in INDEX. X1>XMIN'
-        X1 = X(1)
-      ENDIF
- 
-      J = 0
-      DO 10 I=1,NX-1
-        IF(X1.GE.X(I))THEN
-          J = I
-        ELSE
-          GOTO 20
-        ENDIF
-10      CONTINUE
-20    CONTINUE
-
-      PINDEX = J
-
-      END
-C***********************************************************************
-C***********************************************************************

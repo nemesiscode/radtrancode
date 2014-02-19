@@ -58,7 +58,11 @@ C     used to renomalise the linestrengths
 C      print*,'SUBLINE',IDGAS,PRESS,TEMP,IPROC,VV,VLIN,ABSCO,X,Y,
 C     1 FNH3,FH2,LLQ,DOUBV
 
-      IF(IPROC.EQ.11)THEN
+      IF(IPROC.EQ.12)THEN
+C      IPROC=12::Doppler broadening only
+       SUBLINE = ABSCO*EXP(-X**2)/(AD*SQRT(PI))
+
+      ELSE IF(IPROC.EQ.11)THEN
 C      IPROC=11:: Modification to Hartmann sub-lorentzian lineshape for methane
 C 		 in hydrogen atmosphere recommended by Sromovsky et al. (2012)
 
@@ -230,10 +234,14 @@ C      IPROC=2 :: VanVleck-Weisskopf lineshape
 C      IPROC=1 :: Sub-Lorentzian Lineshape
        SUBLINE = ABSCO*GVOICO2(ABS(X),Y,TEMP,AD)/AD
 
-      ELSE  
+      ELSE IF(IPROC.EQ.0)THEN  
 C      IPROC=0 :: Default to Voigt lineshape
        SUBLINE = ABSCO*HUMLIC(ABS(X),Y)/AD
 
+      ELSE
+       PRINT*,'Line processing code not recognised in subline.f'
+       PRINT*,'Requested IPROC = ',IPROC
+       STOP
       ENDIF
 
 

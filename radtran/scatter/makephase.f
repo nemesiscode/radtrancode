@@ -249,7 +249,7 @@ C-----------------------------------------------------------------------
 		irec = irec + 1
 
 
-		hgfile = 'hgphaseN.DAT'
+		hgfile = 'hgphaseN.dat'
 		hgfile(8:8) = char(I+48)
 		open (14,file=hgfile, status='unknown')
                 

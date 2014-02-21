@@ -221,7 +221,7 @@ C            nf=20
 
           ix = ix1-1
 
-          print*,'forwardnocgX, ix,nx = ',ix,nx
+          print*,'forwardnogX, ix,nx = ',ix,nx
 
           if(ix.gt.0)then
             xref = xn(ix)

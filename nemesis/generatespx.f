@@ -44,6 +44,7 @@ C     TIME2: System time at the end of program execution.
       real stx(mx,mx),xlonx,RADIUS
       integer varident(mvar,3),varidentx(mvar,3),iscat1,iplanet
       integer npro,nvmr,ispace,nav(mgeom),lraw,nprox,lpre
+      integer lx(mx)
       character*100 runname
       integer ngeom, nwave(mgeom), nconv(mgeom), nx, ny, jsurf, jsurfx
       integer np,lin1,ioffx,ivarx,npx
@@ -187,7 +188,7 @@ C     Calculate the tabulated wavelengths of c-k look up tables
 C     set up a priori of x and its covariance
       lin1=0
       CALL readapriori(runname,lin1,lpre,xlat,npro,nvar,varident,
-     1  varparam,jsurf,jalb,jtan,jpre,jrad,nx,xa,sa)
+     1  varparam,jsurf,jalb,jtan,jpre,jrad,nx,xa,sa,lx)
 	
       write(lvec,*)nvar,'   ! nvar'     ! Number of variable profiles
 

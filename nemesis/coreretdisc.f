@@ -1,8 +1,8 @@
       subroutine coreretdisc(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jtan,
-     3  jpre,jrad,wgeom,flat,nx,xa,sa,ny,y,se1,xn,sm,sn,st,yn,kk,aa,
-     4  dd)
+     3  jpre,jrad,wgeom,flat,nx,lx,xa,sa,ny,y,se1,xn,sm,sn,st,yn,kk,
+     4  aa,dd)
 C     $Id:
 C     ******************************************************************
 C
@@ -59,6 +59,7 @@ C				xa (if included)
 C	wgeom(mgeom,mav) real	Integration weights 
 C	flat(mgeom,mav)	real	Integration point latitudes 
 C	nx		integer	Number of elements in measurement vector
+C       lx(mx)          integer 1 if log, 0 otherwise
 C	xa(mx)		real	a priori state vector
 C	sa(mx,mx)	real 	A priori covariance matrix
 C	ny	integer	Number of elements in measured spectra array
@@ -83,6 +84,7 @@ C     Set measurement vector and source vector lengths here.
       INCLUDE 'arraylen.f'
       integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,jsurf
       integer jalb,jalbx,jtan,jtanx,jpre,jprex,jrad,jradx
+      integer lx(mx)
       real phlimit,alambda,xtry,tphi
       CHARACTER*100 runname,itname,abort
 
@@ -347,6 +349,17 @@ C       last 'best-fit' value xn
 145     continue
         do i=1,nx
          xn1(i) = xn(i) + (x_out(i)-xn(i))/(1.0+alambda)
+C        Check to see if log numbers have gone out of range
+         if(lx(i).eq.1)then
+          if(xn1(i).gt.85.or.xn1(i).lt.-85)then
+           print*,'Coreret - log(number gone out of range)'
+           print*,'Increasing brake'
+           alambda = alambda*10.0               ! increase Marquardt brake
+           if(alambda.gt.1e10)alambda=1e10
+           goto 145
+          endif
+         endif
+
         enddo
 
         ix=1

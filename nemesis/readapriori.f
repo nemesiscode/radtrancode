@@ -1,5 +1,5 @@
       subroutine readapriori(opfile,lin,lpre,xlat,npro,nvar,varident,
-     1  varparam,jsurf,jalb,jtan,jpre,jrad,nx,x0,sx)
+     1  varparam,jsurf,jalb,jtan,jpre,jrad,nx,x0,sx,lx)
 C     $Id:
 C     ****************************************************************
 C     Subroutine to read in apriori vector and covariance matrix
@@ -36,6 +36,8 @@ C       jrad            integer         Position of radius of planet
 C	nx 		integer 	number of elements in state vector
 C	x0(mx)		real		a priori vector
 C	sx(mx,mx)	real		a priori covariance matrix
+C	lx(mx)		integer		Log flag. 0 if real number
+C						  1 if log number 
 C
 C     N.B. In this code, the apriori and retrieved vectors x are usually 
 C     converted to logs, all except for temperature and fractional scale
@@ -74,7 +76,7 @@ C     a priori covariance matrix
       parameter (SXMINFAC = 0.001)
       real varparamx(mvar,mparam),xnx(mx),sxx(mx,mx),xdiff
       integer varident(mvar,3),ivar,nvar,nlevel,lin,jsurfx
-      integer jalbx,jtanx,jprex,jradx,jlat,ilat,nlat
+      integer jalbx,jtanx,jprex,jradx,jlat,ilat,nlat,lx(mx)
       integer nprox,nvarx,varidentx(mvar,3),lpre,ioffx,ivarx
       integer npx,ioff,icond,npvar
       character*100 opfile,buffer,ipfile,runname
@@ -84,6 +86,7 @@ C     a priori covariance matrix
 C     Initialise a priori parameters
       do i=1,mx
        x0(i)=0.0
+       lx(i)=0
        do j=1,mx
         sx(j,i)=0.
        end do
@@ -152,6 +155,7 @@ C              *** temperature, leave alone ****
 C              **** vmr, cloud, para-H2 , fcloud, take logs ***
                if(ref(1,i).gt.0.0) then
                  x0(ix) = alog(ref(1,i)) 
+                 lx(ix)=1
                else 
                  print*,'Error in readapriori.f. Cant take log of zero'
                  print*,i,ref(i,i)
@@ -205,6 +209,7 @@ C             *** temperature, leave alone ********
 C             *** vmr, para-H2 or cloud, take logs *********
               if(xdeep.gt.0.0)then
                 x0(ix)=alog(xdeep)
+                lx(ix)=1
               else
                 print*,'Error in readapriori. xdeep must be > 0.0'
                 stop
@@ -215,6 +220,7 @@ C             *** vmr, para-H2 or cloud, take logs *********
              ix = nx+2
              if(xfsh.gt.0.0)then
                x0(ix) = alog(xfsh)
+	       lx(ix)=1
              else
                print*,'Error in readapriori - xfsh must be > 0'
                stop
@@ -239,6 +245,7 @@ C            Read in scaling factor
              read(27,*)xfac,err
              if(xfac.gt.0.0)then
                x0(ix)=alog(xfac)
+               lx(ix)=1
              else
                print*,'Error in readpriori - xfac must be > 0'
                stop
@@ -263,6 +270,7 @@ C             *** temperature, leave alone ********
 C             *** vmr, fcloud, para-H2 or cloud, take logs *********
               if(xdeep.gt.0.0)then
                 x0(ix)=alog(xdeep)
+                lx(ix)=1
               else
                 print*,'Error in readapriori. xdeep must be > 0.0'
                 stop
@@ -273,6 +281,7 @@ C             *** vmr, fcloud, para-H2 or cloud, take logs *********
              ix = nx+2
              if(xfsh.gt.0.0)then
                x0(ix) = alog(xfsh)
+               lx(ix)=1
              else
                print*,'Error in readapriori - xfsh must be > 0'
                stop
@@ -280,6 +289,8 @@ C             *** vmr, fcloud, para-H2 or cloud, take logs *********
              sx(ix,ix) = (efsh/xfsh)**2
              ix = nx+3
              x0(ix) = alog(pknee)
+             lx(ix)=1
+
              sx(ix,ix) = (eknee/pknee)**2
 
              nx = nx+3
@@ -332,6 +343,7 @@ C              *** temperature, leave alone ****
 C              **** vmr, cloud, para-H2 , fcloud, take logs ***
                if(ref1.gt.0)then
                   x0(ix) = alog(ref1)
+                  lx(ix)=1
                else
                   print*,'Error in readapriori - ref1 must be > 0'
                   stop
@@ -379,6 +391,7 @@ C             *** temperature, leave alone ********
 C             *** vmr, para-H2 or cloud, take logs *********
               if(xdeep.gt.0.0)then
                 x0(ix)=alog(xdeep)
+                lx(ix)=1
               else
                 print*,'Error in readapriori. xdeep must be > 0.0'
                 stop
@@ -389,6 +402,7 @@ C             *** vmr, para-H2 or cloud, take logs *********
              ix = nx+2
              if(xfsh.gt.0.0)then
                x0(ix) = alog(xfsh)
+               lx(ix)=1
              else
                print*,'Error in readapriori - xfsh must be > 0'
                stop
@@ -414,6 +428,7 @@ C             *** temperature, leave alone ********
 C             *** vmr, fcloud, para-H2 or cloud, take logs *********
               if(xknee.gt.0)then
                 x0(ix)=alog(xknee)
+                lx(ix)=1
               else
                 print*,'Error in readapriori - xknee must be > 0'
                 stop
@@ -424,6 +439,7 @@ C             *** vmr, fcloud, para-H2 or cloud, take logs *********
              ix = nx+2
              if(xfsh.gt.0.0)then
                x0(ix) = alog(xfsh)
+               lx(ix)=1
              else
                print*,'Error in readapriori - xfsh must be > 0'
                stop
@@ -450,6 +466,7 @@ C             *** temperature, leave alone ********
 C             *** vmr, fcloud, para-H2 or cloud, take logs *********
               if(xdeep.gt.0.0)then
                 x0(ix)=alog(xdeep)
+                lx(ix)=1
               else
                 print*,'Error in readapriori. xdeep must be > 0.0'
                 stop
@@ -460,6 +477,7 @@ C             *** vmr, fcloud, para-H2 or cloud, take logs *********
              ix = nx+2
              if(xfsh.gt.0.0)then
                x0(ix) = alog(xfsh)
+               lx(ix)=1
              else
                print*,'Error in readapriori - xfsh must be > 0'
                stop
@@ -468,6 +486,7 @@ C             *** vmr, fcloud, para-H2 or cloud, take logs *********
              ix = nx+3
              if(pknee.gt.0)then
                 x0(ix)=alog(pknee)
+                lx(ix)=1
              else
                 print*,'Error in readapriori - pknee must be > 0'
                 stop
@@ -494,6 +513,7 @@ C             *** temperature, leave alone ********
 C             *** vmr, fcloud, para-H2 or cloud, take logs *********
               if(xdeep.gt.0.0)then
                 x0(ix)=alog(xdeep)
+                lx(ix)=1
               else
                 print*,'Error in readapriori. xdeep must be > 0.0'
                 stop
@@ -504,6 +524,7 @@ C             *** vmr, fcloud, para-H2 or cloud, take logs *********
              ix = nx+2
              if(xfsh.gt.0.0)then
                x0(ix) = alog(xfsh)
+               lx(ix)=1
              else
                print*,'Error in readapriori - xfsh must be > 0'
                stop
@@ -526,6 +547,7 @@ C            Variable condensible gas and associated cloud
              ix = nx+1
              if(xdeep.gt.0.0)then
                 x0(ix)=alog(xdeep)
+                lx(ix)=1
              else
                print*,'Error in readapriori. xdeep must be > 0.0'
                stop
@@ -536,6 +558,7 @@ C            Variable condensible gas and associated cloud
              ix = nx+2
              if(xrh.gt.0.0)then
                x0(ix) = alog(xrh)
+               lx(ix)=1
              else
                print*,'Error in readapriori - xrh must be > 0'
                stop
@@ -545,6 +568,7 @@ C            Variable condensible gas and associated cloud
              ix = nx+3
              if(xcdeep.gt.0.0)then
                 x0(ix)=alog(xcdeep)
+                lx(ix)=1
              else
                 print*,'Error in readapriori. xcdeep must be > 0.0'
                 stop
@@ -555,6 +579,7 @@ C            Variable condensible gas and associated cloud
              ix = nx+4
              if(xfsh.gt.0.0)then
                x0(ix) = alog(xfsh)
+               lx(ix)=1
              else
                print*,'Error in readapriori - xfsh must be > 0'
                stop
@@ -577,6 +602,7 @@ C                                  or only above the condensation level (1)
              ix = nx+1
              if(xdeep.gt.0.0)then
                 x0(ix)=alog(xdeep)
+                lx(ix)=1
              else
                print*,'Error in readapriori. xdeep must be > 0.0'
                stop
@@ -587,6 +613,7 @@ C                                  or only above the condensation level (1)
              ix = nx+2
              if(xrh.gt.0.0)then
                x0(ix) = alog(xrh)
+               lx(ix)=1
              else
                print*,'Error in readapriori - xrh must be > 0'
                stop
@@ -606,6 +633,7 @@ C            Read in xdeep, pknee, xwid
              ix = nx+1
              if(xdeep.gt.0.0)then
                 x0(ix)=alog(xdeep)
+                lx(ix)=1
              else
                print*,'Error in readapriori. xdeep must be > 0.0'
                stop
@@ -616,10 +644,14 @@ C            Read in xdeep, pknee, xwid
 
              ix = nx+2
              x0(ix) = alog(pknee)
+             lx(ix)=1
+
              sx(ix,ix) = (eknee/pknee)**2
 
              ix = nx+3
              x0(ix) = alog(xwid)
+             lx(ix)=1
+
              sx(ix,ix) = (ewid/xwid)**2
 
              nx = nx+3
@@ -636,6 +668,7 @@ C            Read in xdeep, pknee, xwid
              ix = nx+1
              if(xdeep.gt.0.0)then
                 x0(ix)=alog(xdeep)
+                lx(ix)=1
              else
                print*,'Error in readapriori. xdeep must be > 0.0'
                stop
@@ -646,10 +679,14 @@ C            Read in xdeep, pknee, xwid
 
              ix = nx+2
              x0(ix) = alog(pknee)
+             lx(ix)=1
+
              sx(ix,ix) = (eknee/pknee)**2
 
              ix = nx+3
              x0(ix) = alog(xwid)
+             lx(ix)=1
+
              sx(ix,ix) = (ewid/xwid)**2
 
              nx = nx+3
@@ -667,6 +704,7 @@ C            Read in xdeep, pknee, xwid
              ix = nx+1
              if(xdeep.gt.0.0)then
                 x0(ix)=alog(xdeep)
+                lx(ix)=1
              else
                print*,'Error in readapriori. xdeep must be > 0.0'
                stop
@@ -681,6 +719,8 @@ C            Read in xdeep, pknee, xwid
 
              ix = nx+3
              x0(ix) = alog(xwid)
+             lx(ix)=1
+
              sx(ix,ix) = (ewid/xwid)**2
 
              nx = nx+3
@@ -697,6 +737,7 @@ C            Read in xdeep, pknee, xwid
              ix = nx+1
              if(xdeep.gt.0.0)then
                 x0(ix)=alog(xdeep)
+                lx(ix)=1
              else
                print*,'Error in readapriori. xdeep must be > 0.0'
                stop
@@ -712,6 +753,8 @@ C            Read in xdeep, pknee, xwid
 
              ix = nx+3
              x0(ix) = alog(xwid)
+             lx(ix)=1
+
              sx(ix,ix) = (ewid/xwid)**2
 
              nx = nx+3
@@ -745,6 +788,7 @@ C           Read in number of points
              read(27,*)valb,alb,err
              if(alb.gt.0.0)then
                x0(ix)=alog(alb)
+               lx(ix)=1
              else
                print*,'Error in readapriori - alb must be > 0'
                stop
@@ -763,6 +807,7 @@ C           **** Surface albedo scaling value *******
             read(27,*)alb,err
             if(alb.gt.0.0)then
                x0(ix)=alog(alb)
+               lx(ix)=1
             else
                print*,'Error in readapriori - alb must be > 0'
                stop
@@ -789,6 +834,7 @@ C           **** Pressure at given altitude
             varparam(ivar,1) = htan
             if(pre.gt.0.0)then
               x0(ix)=alog(pre)
+              lx(ix)=1
             else
               print*,'Error in readapriori - pre must be > 0'
               stop

@@ -1,7 +1,7 @@
       subroutine coreretMCMC(runname,ispace,iscat,ilbl,ica,miter,
      1  niter,fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,
      2  angles,gasgiant,nvar,varident,varparam,npro,jsurf,jalb,jtan,
-     3  jpre,jrad,wgeom,flat,nx,xa,sa,ny,y,se1,idum)
+     3  jpre,jrad,wgeom,flat,nx,lx,xa,sa,ny,y,se1,idum)
 C     $Id:
 C     ******************************************************************
 C
@@ -55,6 +55,7 @@ C				xa (if included)
 C	wgeom(mgeom,mav) real	Integration weights 
 C	flat(mgeom,mav)	real	Integration point latitudes 
 C	nx		integer	Number of elements in measurement vector
+C       lx(mx)          integer 1 if log, 0 otherwise
 C	xa(mx)		real	a priori state vector
 C	sa(mx,mx)	real 	A priori covariance matrix
 C	ny	integer	Number of elements in measured spectra array
@@ -77,7 +78,7 @@ C     Set measurement vector and source vector lengths here.
 
       real xn(mx),se1(my),calc_chi,kk(my,mx),calc_phiprior
       real fwhm,xlat,xn1(mx),ran11,test,RADIUS
-      integer ix,np,npro,lout,iplanet
+      integer ix,np,npro,lout,iplanet,lx(mx)
       real alpha,alpha_chi,alpha_phi
       logical accept
       integer nvar,varident(mvar,3),ispace,nav(mgeom),k

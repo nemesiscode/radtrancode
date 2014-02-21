@@ -46,6 +46,7 @@ C     TIME2: System time at the end of program execution.
       real stx(mx,mx),xlonx
       integer varident(mvar,3),varidentx(mvar,3),iscat1
       integer npro,nvmr,ispace,nav(mgeom),lraw,nprox,lpre
+      integer lx(mx)
       character*100 runname    
       character*150 dummy	
 C dummy: Character variable, used for reading-in header on info file   
@@ -212,7 +213,7 @@ C     Calculate the tabulated wavelengths of c-k look up tables
 C     set up a priori of x and its covariance
       lin1=0
       CALL readapriori(runname,lin1,lpre,xlat,npro,nvar,varident,
-     1  varparam,jsurf,jalb,jtan,jpre,jrad,nx,xa,sa)
+     1  varparam,jsurf,jalb,jtan,jpre,jrad,nx,xa,sa,lx)
 	
       write(lvec,*)nvar,'   ! nvar'     ! Number of variable profiles
 

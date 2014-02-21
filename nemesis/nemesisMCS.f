@@ -44,6 +44,7 @@ C     TIME2: System time at the end of program execution.
       real stx(mx,mx),xlonx
       integer varident(mvar,3),varidentx(mvar,3),igeom,iform
       integer npro,nvmr,ispace,nav(mgeom),lraw,nprox,lpre,linfo
+      integer lx(mx)
       character*100 runname
       character*150 dummy
       integer ngeom, nwave(mgeom), nconv(mgeom), nx, ny, jsurf
@@ -250,7 +251,7 @@ C     Calculate the tabulated wavelengths of c-k look up tables
 
 C     set up a priori of x and its covariance
       CALL readapriori(runname,lin,lpre,xlat,npro,nvar,varident,
-     1  varparam,jsurf,jalb,jtan,jpre,jrad,nx,xa,sa)
+     1  varparam,jsurf,jalb,jtan,jpre,jrad,nx,xa,sa,lx)
 
       DO i = 1, nx
         xn(i)=xa(i)
@@ -287,8 +288,8 @@ C     set up a priori of x and its covariance
       call coreretMCS(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,jsurf,jalb,jtan,
-     3  jpre,jrad,marsradius,satrad,thetrot,altbore,wgeom,flat,nx,xa,
-     4  sa,ny,y,se,xn,sm,sn,st,yn,kk,aa,dd)
+     3  jpre,jrad,marsradius,satrad,thetrot,altbore,wgeom,flat,nx,lx,
+     4  xa,sa,ny,y,se,xn,sm,sn,st,yn,kk,aa,dd)
 
 C     Calculate retrieval errors.
 C     Simple errors, set to sqrt of diagonal of ST

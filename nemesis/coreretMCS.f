@@ -1,8 +1,8 @@
       subroutine coreretMCS(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,jsurf,jalb,jtan,
-     3  jpre,jrad,marsradius,satrad,thetrot,altbore,wgeom,flat,nx,xa,
-     4  sa,ny,y,se1,xn,sm,sn,st,yn,kk,aa,dd)
+     3  jpre,jrad,marsradius,satrad,thetrot,altbore,wgeom,flat,nx,lx,
+     4  xa,sa,ny,y,se1,xn,sm,sn,st,yn,kk,aa,dd)
 C     $Id:
 C     ******************************************************************
 C
@@ -60,6 +60,7 @@ C	altbore		real	Altitude of boresight
 C	wgeom(mgeom,mav) real	Integration weights 
 C	flat(mgeom,mav)	real	Integration point latitudes 
 C	nx		integer	Number of elements in measurement vector
+C       lx(mx)          integer 1 if log, 0 otherwise
 C	xa(mx)		real	a priori state vector
 C	sa(mx,mx)	real 	A priori covariance matrix
 C	ny	integer	Number of elements in measured spectra array
@@ -84,7 +85,7 @@ C     Set measurement vector and source vector lengths here.
       INCLUDE 'arraylen.f'
       integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,jsurf
       integer jalb,jalbx,jtan,jpre,jtanx,jprex,iscat1,i1,k1
-      integer jrad,jradx
+      integer jrad,jradx,lx(mx)
       real phlimit,alambda,xtry,tphi
       CHARACTER*100 runname,itname,abort
 
@@ -378,12 +379,26 @@ C     vectors xn, yn
 C       Now calculate next iterated xn1
         call calcnextxn(nx,ny,xa,xn,y,yn,dd,aa,x_out)
 
+145     continue
 C       x_out(nx) is the next iterated value of xn using classical N-L
 C       optimal estimation. However, we want to apply a braking parameter
 C       alambda to stop the new trial vector xn1 being too far from the
 C       last 'best-fit' value xn
         do i=1,nx
          xn1(i) = xn(i) + (x_out(i)-xn(i))/(1.0+alambda)
+
+C        Check to see if log numbers have gone out of range
+         if(lx(i).eq.1)then
+          if(xn1(i).gt.85.or.xn1(i).lt.-85)then
+           print*,'Coreret - log(number gone out of range)'
+           print*,'Increasing brake'
+           alambda = alambda*10.0               ! increase Marquardt brake
+           if(alambda.gt.1e10)alambda=1e10
+           goto 145
+          endif
+         endif
+
+
         enddo
 
 C       Calculate test spectrum using trial state vector xn1. 

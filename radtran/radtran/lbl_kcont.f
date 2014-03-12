@@ -199,6 +199,7 @@ C NOTE: TCORS1 includes factor of 1.e-27 for scaling of stored lines
         WRITE(*,*)'Stopping program.'
         WRITE(*,*)' '
         WRITE(*,*)'NBIN, MAXBIN = ',NBIN,MAXBIN
+        WRITE(*,*)'VBOT,VTOP,RANGE,WING = ',VBOT,VTOP,RANGE,WING
 	STOP
       ENDIF
 	

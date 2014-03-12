@@ -24,7 +24,7 @@ C*********************************************************************
 C ../includes/arrdef.f defines the maximum values for a series of variables
 C (layers, bins, paths, etc.)
 
-      INTEGER intmod,nconv,nwave,i,j,itype
+      INTEGER intmod,nconv,nwave,i,j,itype,imie,imie1
       INTEGER iconv,ioff1,ioff2,iv,nv,iwave,ipath,ispace
       INTEGER npoints,planet,inormal,iray,iptf,npath,ichannel,nem
 
@@ -45,6 +45,7 @@ C (layers, bins, paths, etc.)
       REAL xwave(100),xf(10,100),xg1(10,100),xg2(10,100)
       REAL tnco,twave,frac,tico
       COMMON /hgphas/ xwave,xf,xg1,xg2,tnco,twave,frac,tico
+      COMMON /imiescat/imie1
 
       INCLUDE '../includes/ciacom.f'
       INCLUDE '../includes/gascom.f'
@@ -228,7 +229,8 @@ C-----------------------------------------------------------------------
       itype=11
 
 
-      CALL READFLAGS(RUNNAME,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
+      CALL READFLAGS(RUNNAME,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+      IMIE1=IMIE
 
       CALL FILE(runname,CIAFIL,'cia')
 

@@ -82,7 +82,7 @@ cc      WRITE(*,*)' LOADBINS.f :: First, last line= ',FIRST,LAST
           TDW(J)= TINW(IDLIN(J))
           IF(WARNTD)THEN
             WRITE(*,*)' LOADBINS.f :: Warning: setting default line'
-            WRITE(*,*)' widths.'
+            WRITE(*,*)' width temperature exponents.'
             WARNTD= .FALSE.
           ENDIF
         ENDIF
@@ -91,7 +91,7 @@ cc      WRITE(*,*)' LOADBINS.f :: First, last line= ',FIRST,LAST
           TDWS(J)= TINW(IDLIN(J))
           IF(WARNTD)THEN
             WRITE(*,*)' LOADBINS.f :: Warning: setting default line'
-            WRITE(*,*)' widths.'
+            WRITE(*,*)' width temperature exponents.'
             WARNTD= .FALSE.
           ENDIF
         ENDIF

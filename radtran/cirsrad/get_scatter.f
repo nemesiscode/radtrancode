@@ -15,7 +15,7 @@ C-----------------------------------------------------------------------
 	integer	nmu, isol, lowbc, liscat(maxcon), lnorm(maxcon), 
      1		lncons(maxcon), nf, npoint1, nphas, 
      2		maxrec(maxcon), iunit, irec1(maxcon), I, J,
-     3		nc, ncont
+     3		nc, ncont,first
 	real	dist, aphi, v0, v1, dv, thet(maxphas), cthet(maxphas),
      1		phas(maxcon,3,maxphas), lcons(maxcon,maxscatpar),
      2		head(maxcon,3,3), sol_ang, emiss_ang
@@ -28,6 +28,7 @@ C-----------------------------------------------------------------------
 
 C - Common blocks
 
+	common/interp_phase_initial/first
 	common/scatd/mu1, wt1, galb 
 	common/scatter1/nmu, isol, dist, lowbc, liscat, lnorm, 
      1		lncons, lcons, sol_ang, emiss_ang, aphi, nf
@@ -85,6 +86,7 @@ C-----------------------------------------------------------------------
 	do I = 1, nc
 		if (liscat(I).eq.4) then 
 			iunit = 10 + I
+                        print*,I,scatfile(i),iunit
 			open (iunit,file=scatfile(I),status='old', 
      1				access='direct', recl=512, form=
      2				'formatted')
@@ -93,6 +95,7 @@ C-----------------------------------------------------------------------
      1				npoint1, nphas
 			maxrec(I) = npoint1 + 3
 			irec1(I) = 3
+                        first=0
 
 			if (nphas.gt.maxphas) then
 				write (*,*) ' GET_SCATTER: Too many',
@@ -109,6 +112,7 @@ C-----------------------------------------------------------------------
 				cthet(J) = cos(thet(J)*0.0174532)
 				enddo
 			endif
+			close(iunit)
 		endif
 	enddo
 

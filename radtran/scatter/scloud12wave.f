@@ -23,6 +23,8 @@ C     which is not actually used for NIMS retrieval runs.
 C
 C     Modified from scloud10 to now include rayleigh air scattering
 C
+C     Modified from scloud11wave to include broken clouds.
+C
 C	Input variables
 C       radg(maxmu)     real  Incident intensity at the bottom of the atm
 C	sol_ang		real  solar zenith angle (degrees)

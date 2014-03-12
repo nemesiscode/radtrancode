@@ -16,7 +16,8 @@ C-----------------------------------------------------------------------
 
 	INTEGER	NP, NT, NG, CP, CT, I, I1, I2, I3, I4, N1,IREC
 	INTEGER IWAVE,NGAS,NLAYER,IGAS,LAYER,LUN0,IREC0,maxc
-        INTEGER NTAB,loop,count,MTAB,J,NTEST,ISNAN
+        INTEGER NTAB,loop,count,MTAB,J
+        LOGICAL NTEST,ISNAN
 	LOGICAL COINC
         parameter (maxc=2*maxg,MTAB=maxk*maxk*maxg)
         REAL TABLE(MTAB),TABLE2(MTAB)

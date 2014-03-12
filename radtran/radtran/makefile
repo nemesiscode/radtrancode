@@ -142,8 +142,6 @@ bin :   \
 	Aground \
 	Ave_table \
 	Calc_fnktablec \
-	Calc_exotable3 \
-	Calc_exotable4 \
 	Aband_ktable \
 	Aband_ktablec \
 	Conv_spec \
@@ -171,16 +169,6 @@ Ave_table : ave_table.f $(LIBRARY) $(LIB)/spec_data.a
 Calc_fnktablec : calc_fnktablec.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Calc_fnktablec calc_fnktablec.f $(LIBRARY) \
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
-	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a
-
-Calc_exotable3 : calc_exotable3.f $(LIBRARY) $(LIB)/spec_data.a
-	$(FC) $(FCFLAGS) -o $(BIN)/Calc_exotable3 calc_exotable3.f \
-	$(LIBRARY) $(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
-	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a
-
-Calc_exotable4 : calc_exotable4.f $(LIBRARY) $(LIB)/spec_data.a
-	$(FC) $(FCFLAGS) -o $(BIN)/Calc_exotable4 calc_exotable4.f \
-	$(LIBRARY) $(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
 	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a
 
 Aband_ktable : aband_ktable.f $(LIBRARY)

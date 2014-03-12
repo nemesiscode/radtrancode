@@ -17,6 +17,8 @@ F_SOURCES = \
 	dmie.f \
 	get_hg.f \
 	get_theta.f \
+	get_input.f \
+	get_xsecA.f \
 	hansen.f \
 	henyey.f \
 	fluxint.f \
@@ -28,6 +30,7 @@ F_SOURCES = \
 	idown.f \
 	interp_phase.f \
 	iup.f \
+	kk_new_sub.f \
 	matinv8.f \
 	matrices.f \
 	miescat.f \
@@ -47,11 +50,13 @@ F_SOURCES = \
 	scloud11wave.f \
 	scloud12wave.f \
 	scloud11flux.f \
-	subfithgm.f
+	subfithgm.f \
+	modmakephase.f \
+	lob.f
 
 
 INCDIR = ../includes
-INCLUDES = $(INCDIR)/pathcom.f $(INCDIR)/arrdef.f
+#INCLUDES = $(INCDIR)/pathcom.f $(INCDIR)/arrdef.f
 
 OBJ = $(F_SOURCES:.f=.o)
 LIBRARY = $(LIB)/scatter.a
@@ -81,7 +86,13 @@ $(LIBRARY)(%.o): %.f $(INCLUDES)
 bin :    \
         Makephase \
 	Normxsc \
-        Readphase
+        Readphase \
+	Testray \
+	Testlob \
+	Testkk \
+	Testsubphase \
+	Testmodphase \
+	Testphase
 
 Makephase : makephase.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Makephase makephase.f $(LIBRARY) \
@@ -94,4 +105,24 @@ Normxsc : normxsc.f $(LIBRARY)
 Readphase : readphase.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Readphase readphase.f $(LIBRARY) \
 	$(LIB)/rtm_util.a $(FRECIPES)
+
+Testray : testray.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Testray testray.f $(LIBRARY) \
+	$(LIB)/rtm_util.a $(FRECIPES)
+
+Testmodphase : testmodphase.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Testmodphase testmodphase.f $(LIBRARY) \
+	$(LIB)/rtm_util.a $(FRECIPES)
+
+Testphase : testphase.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Testphase testphase.f $(LIBRARY) \
+	$(LIB)/rtm_util.a $(LIB)/path.a $(FRECIPES)
+
+Testlob : testlob.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Testlob testlob.f $(LIBRARY) \
+	$(LIB)/rtm_util.a $(FRECIPES) -libnag
+
+Testkk : testkk.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Testkk testkk.f $(LIBRARY) \
+	$(LIB)/path.a $(LIB)/rtm_util.a $(FRECIPES)
 

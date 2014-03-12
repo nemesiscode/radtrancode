@@ -1,5 +1,5 @@
       subroutine readflags(runname,inormal,iray,ih2o,ich4,io3,
-     &  iptf)
+     &  iptf,imie)
 C     ********************************************************************
 C     Subroutine to read in the runname.fla file, which contains a number
 C     of spectral processing flags.
@@ -14,12 +14,14 @@ C	ih2o	integer	Include H2O continuum (1)
 C	ich4	integer	Include Karkoschka methane continuum (1)
 C	io3	integer	Include Bass UV ozone absorption (1)
 C	iptf	integer	Use modified CH4 high-T part. func. (1)
+C       imie	integer	Use PHASEN.DAT phase file (1) or hgphaseN.dat phase
+C			file otherwise
 C
 C     Pat Irwin	21/2/12
 C
 C     ********************************************************************
       character*(*) runname
-      integer inormal,iray,ih2o,ich4,io3,iptf
+      integer inormal,iray,ih2o,ich4,io3,iptf,imie
 
       call file(runname,runname,'fla')
 
@@ -30,6 +32,7 @@ C     ********************************************************************
       read(12,*)ich4
       read(12,*)io3
       read(12,*)iptf
+      read(12,*)imie
       close(12)
 
       return

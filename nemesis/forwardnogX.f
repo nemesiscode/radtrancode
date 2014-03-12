@@ -81,7 +81,7 @@ C     **************************************************************
       real calcout(maxout3),fwhm,planck_wave,output(maxout3)
       real gradients(maxout4),pi
       parameter (pi=3.1415927)
-      integer check_profile,icheck
+      integer check_profile,icheck,imie,imie1
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       real vconv(mgeom,mconv),wgeom(mgeom,mav),flat(mgeom,mav)
       real layht,tsurf,esurf,angles(mgeom,mav,3)
@@ -94,6 +94,7 @@ C     **************************************************************
       double precision mu(maxmu),wtmu(maxmu)
       character*100 runname,logname
       real xmap(maxv,maxgas+2+maxcon,maxpro)
+      common /imiescat/imie1
 
       integer nvar,varident(mvar,3)
       real varparam(mvar,mparam)
@@ -255,8 +256,8 @@ C        N.B.radius2 is passed via the planrad common block.
          
 C        Set up parameters for scattering cirsrad run.
 
-         CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
-
+         CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+         IMIE1=IMIE
           itype=11			! scloud11wave
 
           print*,'************** FORWARDNOGX ***********'

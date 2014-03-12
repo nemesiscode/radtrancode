@@ -79,7 +79,7 @@ C     **************************************************************
       real calcout2(maxout3),gradients2(maxout4)
       real gradients(maxout4),vv,gradientsL(maxout4)
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
-      integer ipixA,ipixB,ichan,iptf
+      integer ipixA,ipixB,ichan,iptf,imie,imie1
       real vconv(mgeom,mconv),vconv1(mconv)
       real layht,tsurf,esurf,gradtsurf(maxout3),pressR
       real delp,altbore,thbore
@@ -92,6 +92,7 @@ C     **************************************************************
       character*100 runname
       real xmap(maxv,maxgas+2+maxcon,maxpro)
       real hcorr,hcorrx
+      common /imiescat/imie1
 
       integer nconvtmp,nwavetmp,iflag,i1,iswitch
       integer nview,mview,iconv,nfov,mfov
@@ -251,7 +252,8 @@ C      emissivity spectrum
 
 C     Set up parameters for non-scattering cirsrad run.
 
-      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
+      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+      IMIE1=IMIE
 
       itype=12                  ! scloud12. not used here
 

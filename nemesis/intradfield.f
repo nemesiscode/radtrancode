@@ -51,7 +51,7 @@ C     **************************************************************
       include 'arraylen.f'
       real xlat,xref,dx
       integer layint,inormal,itype,nlayer,laytyp
-      integer iray,iptf
+      integer iray,iptf,imie,imie1
       integer nwave,ix,ix1,iav,nwave1
       integer nsol,iloop,i1,i2
       real vwave(mwave),interpem
@@ -68,6 +68,7 @@ C     **************************************************************
       double precision mu(maxmu),wtmu(maxmu)
       character*100 runname,logname,intname
       real xmap(maxv,maxgas+2+maxcon,maxpro),xrad
+      common /imiescat/imie1
 
       integer nvar,varident(mvar,3)
       real varparam(mvar,mparam)
@@ -115,7 +116,8 @@ C      emissivity spectrum
           emissivity(2)=1.0
       endif
          
-      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
+      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+      IMIE1=IMIE
 
       itype=13			        ! scloud13flux
 

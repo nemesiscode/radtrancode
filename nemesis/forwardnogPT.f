@@ -69,7 +69,7 @@ C     **************************************************************
       real calcout(maxout3),fwhm,output(maxout3)
       real vv,xref,dx
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
-      integer ipixA,ipixB,ichan,ix
+      integer ipixA,ipixB,ichan,ix,imie,imie1
       real vconv(mgeom,mconv),vconv1(mconv)
       real layht,tsurf,esurf,pressR,delp,altbore,thbore,gtsurf
       real xn(mx),yn(my),kk(my,mx),yn1(my),caltbore
@@ -83,6 +83,7 @@ C     **************************************************************
       character*100 runname
       real xmap(maxv,maxgas+2+maxcon,maxpro)
       real hcorr,hcorrx
+      common /imiescat/imie1
 
       integer nconvtmp,nwavetmp,iflag,i1,iswitch
       integer nview,iconv,nfov
@@ -233,8 +234,8 @@ C     emissivity spectrum
            emissivity(2)=1.0
       endif
 
-      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
-
+      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+      IMIE1=IMIE
 
       do 111 ix1=1,nx2
 

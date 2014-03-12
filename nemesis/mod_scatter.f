@@ -28,32 +28,52 @@ C     *******************************************************************
       include '../radtran/includes/arrdef.f'
       include 'arraylen.f'
       integer lowbc,liscat(maxcon),lncons(maxcon),lnorm(maxcon)
-      integer isol,ncont,nf,i
+      integer isol,ncont,nf,i,imie
       double precision mu(maxmu), wt(maxmu)
       real galb,dist,lcons(maxcon,maxscatpar),aphi,sol_ang,emiss_ang
       character*30 header
-      character*30 scatfile(maxcon)
+      character*30 scatfile(maxcon),scatfile1(maxcon),scatfile0(maxcon)
       character*100 radfile
+      common /imiescat/imie
 
-      data scatfile/'hgphase1.dat','hgphase2.dat','hgphase3.dat',
+      data scatfile0/'hgphase1.dat','hgphase2.dat','hgphase3.dat',
      1	'hgphase4.dat','hgphase5.dat','hgphase6.dat','hgphase7.dat',
      2  'hgphase8.dat','hgphase9.dat','hgphase10.dat'/
+
+      data scatfile1/'PHASE1.DAT','PHASE2.DAT','PHASE3.DAT',
+     1 'PHASE4.DAT','PHASE5.DAT','PHASE6.DAT','PHASE7.DAT',
+     2 'PHASE8.DAT','PHASE9.DAT','PHASE10.DAT'/
 
 1     format(a)
 3     format(1X,a30)
 
       call file(radfile,radfile,'sca')
  
+      if(imie.eq.1)then
 
-      do i=1,ncont
-       liscat(i)=5
-       lnorm(i)=1
-       lncons(i)=0
-       do j=1,10
-        lcons(i,j)=0.0
+       do i=1,ncont
+        liscat(i)=4
+        lnorm(i)=1
+        lncons(i)=0
+        scatfile(i)=scatfile1(i)
+        do j=1,10
+         lcons(i,j)=0.0
+        enddo
        enddo
-      end do
 
+      else
+
+       do i=1,ncont
+        liscat(i)=5
+        lnorm(i)=1
+        lncons(i)=0
+        scatfile(i)=scatfile0(i)
+        do j=1,10
+        lcons(i,j)=0.0
+        enddo
+       enddo
+
+      endif
 
       open(49,file=radfile,status='unknown')
       header = 'Output from NEMESIS mod_scatter'

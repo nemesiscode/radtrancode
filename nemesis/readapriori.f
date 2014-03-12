@@ -81,8 +81,8 @@ C     a priori covariance matrix
       integer npx,ioff,icond,npvar
       character*100 opfile,buffer,ipfile,runname
       integer nxx 
-      real xwid,ewid,y,y0
-
+      real xwid,ewid,y,y0,lambda0
+      real r0,er0,dr,edr,vm,nm,v1,nimag,delv
 C     Initialise a priori parameters
       do i=1,mx
        x0(i)=0.0
@@ -176,7 +176,7 @@ C              **** vmr, cloud, para-H2 , fcloud, take logs ***
                  print*,'must be on pressure grid '
                  stop
                endif            
-c               print*,'DIAG1',pref(i),pref(j),log(pref(j))
+c               print*,'DIAG1',pref(i),pref(j),alog(pref(j))
                delp = log(pref(j))-log(pref(i))
 c               print*,'168: CLEN:',clen
 c               print*,'169: DELP:',delp
@@ -759,7 +759,6 @@ C            Read in xdeep, pknee, xwid
 
              nx = nx+3
 
-
            else         
             print*,'vartype profile parametrisation not recognised'
             stop
@@ -854,6 +853,69 @@ C           **** Radius of planet *******
 C	print*,jrad,ix,sx(ix,ix),'jm2'
 
             nx = nx+1
+
+           elseif (varident(ivar,1).eq.444)then
+C            ** Variable cloud particle size distribution and composition
+             
+C            Read mean radius and error
+             read(27,*)r0,er0
+             ix=nx+1
+             x0(ix)=alog(r0)
+             sx(ix,ix)=(er0/r0)**2
+             lx(ix)=1
+C            Read radius variance and error
+             read(27,*)dr,edr
+             ix=nx+2
+             x0(ix)=alog(dr)
+             sx(ix,ix)=(edr/dr)**2
+             lx(ix)=1
+
+C            Read number of pressures and correlation length (wavelength/
+C				wavenumbers)
+             read(27,*)np,clen
+             varparam(ivar,1)=np
+             varparam(ivar,2)=clen
+
+C            read reference wavelength and nr at that wavelength
+             read(27,*)vm,nm
+             varparam(ivar,3)=vm
+             varparam(ivar,4)=nm
+
+C            read x-section normalising wavelength (-1 to not normalise)
+             read(27,*)lambda0
+             varparam(ivar,5)=lambda0
+
+             if(np.gt.mparam-5)then
+              print*,'Error in readapriori.f - too many wavelengths'
+              print*,'in imaginary RI spectrum'
+	      print*,'mparam-5,np : ',mparam-5,np
+              stop
+             endif
+
+             do i=1,np             
+              read(27,*)v1,nimag,err
+              varparam(ivar,5+i)=v1
+              ix=nx+2+i
+              x0(ix)=alog(nimag)
+              sx(ix,ix)=(err/nimag)**2
+              lx(ix)=1
+             enddo
+
+             do i=1,np
+              do j=i+1,np
+               delv = varparam(ivar,5+i)-varparam(ivar,5+j)
+               arg = abs(delv/clen)
+C               xfac = exp(-arg)
+               xfac = exp(-arg*arg)
+               if(xfac.ge.SXMINFAC)then  
+                sx(nx+2+i,nx+2+j)=
+     & sqrt(sx(nx+2+i,nx+2+i)*sx(nx+2+j,nx+2+j))*xfac
+                sx(nx+2+j,nx+2+i)=sx(nx+2+i,nx+2+j)
+               endif
+              enddo
+             enddo
+
+             nx = nx+2+np
  
            else
             print*,'vartype not recognised'
@@ -897,17 +959,19 @@ C	print*,jrad,ix,sx(ix,ix),'jm2'
        do 21 ivarx=1,nvarx
         npx=1
         if(varidentx(ivarx,1).le.100)then
-         npx=npvar(varidentx(ivarx,3),npro)
+          npx=npvar(varidentx(ivarx,3),npro)
         endif
         if(varidentx(ivarx,1).eq.888)npx=int(varparamx(ivarx,1))
+        if(varidentx(ivarx,1).eq.444)npx=2+int(varparamx(ivarx,1))
      
         ioff=0
         do 22 ivar=1,nvar
          np=1
          if(varident(ivar,1).le.100)then
-          np=npvar(varident(ivar,3),npro)
+           np=npvar(varident(ivar,3),npro)
          endif
          if(varident(ivar,1).eq.888)np=int(varparam(ivar,1))
+         if(varident(ivar,1).eq.444)np=2+int(varparam(ivar,1))
 
 
          if(varidentx(ivarx,1).eq.varident(ivar,1))then

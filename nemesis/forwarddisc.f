@@ -74,7 +74,7 @@ C     **************************************************************
       real wgeom(mgeom,mav),flat(mgeom,mav),pressR,delp
       integer layint,inormal,iray,itype,nlayer,laytyp,iscat
       integer nwave(mgeom),jsurf,nem,nav(mgeom),nwave1
-      integer jalb,jtan,jpre,k,iptf
+      integer jalb,jtan,jpre,k,iptf,imie,imie1
       real vwave(mgeom,mwave),angles(mgeom,mav,3),vwave1(mwave)
       real pi
       parameter(pi=3.1415927)
@@ -91,6 +91,7 @@ C     **************************************************************
       double precision mu(maxmu),wtmu(maxmu)
       character*100 runname,solfile,solname
       real xmap(maxv,maxgas+2+maxcon,maxpro)
+      common /imiescat/imie1
 
       integer nvar,varident(mvar,3)
       real varparam(mvar,mparam)
@@ -172,7 +173,9 @@ C     N.B.radius2 is passed via the planrad common block.
          xlat = flat(igeom,iav)   
 
 C        Set up parameters for non-scattering cirsrad run.
-         CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
+         CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+         IMIE1=IMIE
+
          itype=11			! scloud11. not used here
 
 

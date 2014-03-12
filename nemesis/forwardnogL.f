@@ -68,7 +68,7 @@ C     **************************************************************
       real wgeom(mgeom,mav),flat(mgeom,mav),fh
       integer layint,inormal,iray,itype,nlayer,laytyp
       integer nwave(mgeom),jsurf,nem,nav(mgeom),nwave1
-      integer iptf
+      integer iptf,imie,imie1
       real vwave(mgeom,mwave),angles(mgeom,mav,3),vwave1(mwave)
       real calcout(maxout3),fwhm,calcoutL(maxout3)
       real calcout1(maxout3),gradients1(maxout3)
@@ -85,7 +85,7 @@ C     **************************************************************
       character*100 runname
       real xmap(maxv,maxgas+2+maxcon,maxpro)
       real hcorr,hcorrx
-
+      common /imiescat/imie1
       integer nvar,varident(mvar,3),ivar
       real varparam(mvar,mparam)
       logical gasgiant
@@ -170,7 +170,8 @@ C      emissivity spectrum
 
 C     Set up parameters for multi-limb cirsrad run.
 
-      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
+      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+      IMIE1=IMIE
 
       itype=12			! scloud12. not used here
 

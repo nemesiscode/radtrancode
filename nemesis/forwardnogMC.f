@@ -7,9 +7,7 @@ C     **************************************************************
 C     Subroutine to calculate a synthetic spectrum and KK-matrix using
 C     FINITE DIFFERENCES. The routine is identical in operation to 
 C     forwardavfovX.f but calculates the K-matrix using old-fashioned 
-C     finite differences. Routine exists to check that forwardavfovX.f, 
-C     using the internal gradients is operating correctly, and also for
-C     scattering calculations.
+C     finite differences. 
 C
 C     Based on forwardnogX.f
 C
@@ -69,7 +67,7 @@ C     **************************************************************
       include 'arraylen.f'
       real xlat,xref,dx
       integer layint,inormal,iray,itype,nlayer,laytyp,iscat
-      integer nwave(mgeom),ix,ix1,iav,nwave1,iptf
+      integer nwave(mgeom),ix,ix1,iav,nwave1,iptf,imie,imie1
       real vwave(mgeom,mwave),interpem
       real calcout(maxout3),fwhm,planck_wave,output(maxout3)
       real gradients(maxout4)
@@ -85,7 +83,7 @@ C     **************************************************************
       double precision mu(maxmu),wtmu(maxmu)
       character*100 runname,logname
       real xmap(maxv,maxgas+2+maxcon,maxpro)
-
+      common /imiescat/imie1
       integer nvar,varident(mvar,3)
       real varparam(mvar,mparam)
       logical gasgiant
@@ -176,7 +174,8 @@ C     Initialise arrays
          
 C         Set up parameters for scattering cirsrad run.
 
-          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
+          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+          IMIE1=IMIE
 
 
           print*,'************** FORWARDNOGMC ***********'

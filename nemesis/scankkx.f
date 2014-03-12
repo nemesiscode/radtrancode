@@ -57,11 +57,12 @@ C     **************************** CODE ********************************
       do ivarx = 1,nvarx
         np=-1
         if(varidentx(ivarx,1).le.100)then
-         np = npvar(varidentx(ivarx,3),nprox)
+          np = npvar(varidentx(ivarx,3),nprox)
         else
          if(varidentx(ivarx,1).eq.555)np = 1
          if(varidentx(ivarx,1).eq.999)np = 1
          if(varidentx(ivarx,1).eq.888)np = int(varparamx(ivarx,1))
+         if(varidentx(ivarx,1).eq.444)np = 2+int(varparamx(ivarx,1))
          if(varidentx(ivarx,1).eq.777)np = 1
          if(varidentx(ivarx,1).eq.666)np = 1
         endif

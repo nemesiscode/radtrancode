@@ -28,6 +28,7 @@ C       Variable is not temperature  - may need to take exponent
         if(imod.eq.7.and.ip.eq.1)iflag=1 ! extended profile         
         if(imod.eq.8.and.ip.eq.1)iflag=1 ! variable knee profile
         if(imod.eq.9.and.ip.eq.1)iflag=1 ! variable knee profile
+        if(imod.eq.16.and.ip.gt.2)iflag=1 ! variable imaginary ref. index.
       endif
 
       if(imod.eq.1.and.ip.eq.2)iflag=1 ! log fsh - fixed knee
@@ -55,8 +56,8 @@ C       Variable is not temperature  - may need to take exponent
       if(ivar.eq.888)iflag=1	! Surface albedo spectrum
       if(ivar.eq.889)iflag=1	! Surface albedo spectrum multiplier
       if(ivar.eq.666)iflag=1	! Tangent pressure
-      if(ivar.eq.555)iflag=0
-
+      if(ivar.eq.555)iflag=0	! Planet radius
+      if(ivar.eq.444)iflag=1	! Particle size and ref. index
       logflag=iflag
 
       return

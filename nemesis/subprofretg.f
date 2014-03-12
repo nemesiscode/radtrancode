@@ -1351,6 +1351,10 @@ C         print*,'Tangent pressure'
 C         print*,'Radius of Planet'
          IPAR = -1
          NP = 1
+        ELSEIF(VARIDENT(IVAR,1).EQ.444)THEN
+C         print*,'Variable size and RI'
+         IPAR = -1
+         NP = 2+INT(VARPARAM(IVAR,1))
         ELSE
          PRINT*,'SUBPROFRETG: VARTYPE NOT RECOGNISED'
          STOP

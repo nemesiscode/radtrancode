@@ -71,7 +71,7 @@ C     **************************************************************
       real gradients(maxout4),vv,gradientsL(maxout4)
       real ytrans(maxpat),yarea(maxpat)
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
-      integer ipixA,ipixB,ichan
+      integer ipixA,ipixB,ichan,imie,imie1
       real vconv(mgeom,mconv),vconv1(mconv)
       real layht,tsurf,esurf,pressR,delp,altbore,thbore
       real gradtsurf(maxout3)
@@ -85,6 +85,7 @@ C     **************************************************************
       character*100 runname
       real xmap(maxv,maxgas+2+maxcon,maxpro)
       real hcorr,hcorrx
+      common /imiescat/imie1
 
       integer nconvtmp,nwavetmp,iflag,i1,iswitch
       integer nview,iconv,nfov
@@ -235,8 +236,8 @@ C     abort and return
 
 
 
-      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
-
+      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+      IMIE1=IMIE
 
 C     Set up parameters for non-scattering cirsrad run.
       itype=12                  ! scloud12. not used here

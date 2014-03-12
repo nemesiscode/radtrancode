@@ -64,7 +64,7 @@ C     **************************************************************
       real xlat,planck_wave,planckg_wave,Bg,height(100),htan
       real wgeom(mgeom,mav),flat(mgeom,mav),fh
       integer layint,inormal,iray,itype,nlayer,laytyp
-      integer iptf
+      integer iptf,imie,imie1
       integer nwave(mgeom),jsurf,nem,nav(mgeom),nwave1
       real vwave(mgeom,mwave),angles(mgeom,mav,3),vwave1(mwave)
       real calcout(maxout3),fwhm,calcoutL(maxout3)
@@ -82,7 +82,7 @@ C     **************************************************************
       character*100 runname
       real xmap(maxv,maxgas+2+maxcon,maxpro)
       real hcorr,hcorrx
-
+      common /imiescat/ imie1
       integer nvar,varident(mvar,3),ivar
       real vem(maxsec),emissivity(maxsec)
       real varparam(mvar,mparam)
@@ -190,7 +190,8 @@ C      surface emissivity spectrum
 
 C     Set up parameters for non-scattering cirsrad run.
 
-      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
+      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+      IMIE1=IMIE
 
       itype=12			! scloud12. not used here
 

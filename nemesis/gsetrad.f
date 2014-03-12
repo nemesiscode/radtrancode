@@ -70,15 +70,24 @@ C     ************************************************************************
       include '../radtran/includes/arrdef.f'
       include 'arraylen.f'
 
-      integer nconv,lin,ispace,ncont1,xflag
-      real xlat,fwhm,xlatx,tsurf
+      integer max_mode, max_wave,iwave,imode
+      parameter (max_mode = 10)
+      parameter (max_wave = 1000)
+
+      integer nconv,lin,ispace,ncont1,xflag,nwave,np
+      real xlat,fwhm,xlatx,tsurf,wave(max_wave)
+      real xsec(max_mode,max_wave,2),nimag(max_wave)
+      real nreal(max_wave),k(mx),vi(mx),r0,v0,clen,k2(mx)
+      real srefind(max_wave,2),parm(3),rs(3),vm,nm
+      real v1(max_wave),k1(max_wave),vm1,n1(max_wave)
       integer nlayer,laytyp,iscat,nx,nxx,ncont,nx1
-      integer layint,iprfcheck,check_profile
+      integer layint,iprfcheck,check_profile,nmode,inorm
       real layht,xod(maxcon),xscal(maxcon)
-      real vconv(mconv)
+      real vconv(mconv),minlam,lambda0
       integer nmu,isol,lowbc,nf,flagh2p,jalb,jtan,jpre
       integer jsurfx,jalbx,jtanx,jprex,nprox,icheck,icont
       integer jradx
+      real x,y
       double precision mu(maxmu),wtmu(maxmu)
       real dist,galb,xn(mx),xnx(mx),aphi,emiss_ang,sol_ang
       real stx(mx,mx),xdnu,xtest
@@ -367,6 +376,9 @@ C              print*,'gsetrad',od1,xod(icont),xscal(icont)
               enddo
               nx1=nx1+4
           endif
+          if(varident(ivar,3).eq.11)nx1=nx1+2
+          if(varident(ivar,3).eq.12)nx1=nx1+3
+          if(varident(ivar,3).eq.13)nx1=nx1+3
           if(varident(ivar,3).eq.14.or.varident(ivar,3).eq.15)then
               icont=abs(varident(ivar,1))
               od1=exp(xn(nx1+1))
@@ -384,7 +396,140 @@ C              print*,'gsetrad',od1,xod(icont),xscal(icont)
 
          else 
 
-          nx1=nx1+1
+          if(varident(ivar,1).eq.444)then
+
+           iwave=ispace
+           if(iwave.eq.0)iwave=2
+
+           imode=varident(ivar,2)
+C           print*,'ix,xn : ',nx1+1,xn(nx1+1)
+C           print*,'ix,xn : ',nx1+2,xn(nx1+2)
+
+           r0 = exp(xn(nx1+1))
+           v0 = exp(xn(nx1+2))
+           np = int(varparam(ivar,1))
+           clen = varparam(ivar,2)           
+           vm = varparam(ivar,3)
+           nm = varparam(ivar,4)
+           lambda0 = varparam(ivar,5)
+C           print*,'AA0'
+           do i=1,np
+            k(i)=exp(xn(nx1+2+i))
+C            print*,'ix,xn : ',nx1+2+i,xn(nx1+2+i)
+            vi(i)=varparam(ivar,5+i)
+C            print*,i,vi(i),k(i)
+           enddo
+
+C           print*,'AA1,np',np
+           call get_xsecA(runname,nmode,nwave,wave,xsec)
+C           print*,'AA2, nwave',nwave
+C           do i=1,nwave
+C            print*,wave(i),(xsec(j,i,1),j=1,nmode)
+C            print*,(xsec(j,i,2),j=1,nmode)
+C           enddo
+
+C          interpolate k onto .xsc wavelength/wavenumber array
+C           call cspline(vi,k,np,1.e30,1.e30,k2)
+ 
+C           print*,'AA3,np',np
+C           do i=1,np
+C            print*,vi(i),k(i),k2(i)
+C           enddo
+           if(vi(1).gt.wave(1).or.vi(np).lt.wave(nwave))then
+            print*,'Error in gsetrad.f - imaginary refractive index'
+            print*,'array does not cover same space as .xsc file'
+            print*,vi(1),vi(np)
+            print*,wave(1),wave(nwave)
+            stop
+           endif
+
+           do i=1,nwave
+            x=wave(i)
+C            call csplint(vi,k,k2,np,x,y)
+C            print*,i,x
+C            print*,(vi(j),j=1,np)
+C            print*,(k(j),j=1,np)
+            call verint(vi,k,np,y,x)
+C            print*,y
+            nimag(i)=y
+C            print*,i,wave(i),nimag(i)
+           enddo
+C           print*,'AA4, nwave',nwave
+
+C          Compute nreal from KK
+C          If nimag is in wavelength space, need to convert to wavenumbers
+           if(ispace.eq.0)then
+            do i=1,nwave
+             v1(i)=wave(i)
+             k1(i)=nimag(i)
+             vm1=vm
+            enddo
+           else
+            do i=1,nwave
+             v1(i)=1e4/wave(nwave+1-i)
+             k1(i)=nimag(nwave+1-i)
+             vm1=1e4/vm
+            enddo
+           endif
+C           print*,'AA5'
+
+C           print*,nwave
+C           do i=1,nwave
+C            print*,v1(i),k1(i),n1(i)
+C           enddo
+C           print*,'vm1,nm',vm1,nm
+
+           call kk_new_sub(nwave,v1,k1,vm1,nm,n1)
+C           print*,'AA6, nwave',nwave
+C           do i=1,nwave
+C            print*,i,v1(i),n1(i),k1(i)
+C           enddo
+
+           if(ispace.eq.0)then
+            do i=1,nwave
+             nreal(i)=n1(i)
+            enddo
+           else
+            do i=1,nwave
+             nreal(i)=n1(nwave+1-i)
+            enddo
+           endif
+
+           inorm=1
+           iscat=1
+           if(ispace.eq.0)then
+            minlam=1e4/wave(nwave)
+           else
+            minlam=wave(1)
+           endif
+
+           do i=1,nwave
+            srefind(i,1)=nreal(i)
+            srefind(i,2)=nimag(i)
+           enddo
+
+           parm(1)=r0
+           parm(2)=v0
+           parm(3)=(1. - 3 * parm(2))/parm(2)
+
+           rs(1)=0.015*minlam
+           rs(2)=0.
+           rs(3)=rs(1)
+C           print*,'AA7'
+
+           call modmakephase(iwave,imode,inorm,iscat,
+     1   parm,rs,srefind,runname,lambda0)
+C           print*,'AA8'
+
+
+           nx1=nx1+2+np
+
+
+          else
+
+           nx1=nx1+1
+
+          endif
 
          endif
 

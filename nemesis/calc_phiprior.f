@@ -1,8 +1,8 @@
       real function calc_phiprior(nx,xn,xa,sai)
 C     $Id:
 C     *******************************************************************
-C     Function to calculate the retrieval cost function which combines
-C     departure from a priori and closeness to spectrum.
+C     Function to calculate the retrieval cost function in terms of 
+C     departure from a priori.
 C
 C     Input variables
 C	nx	integer	Number if elements of state vector
@@ -15,7 +15,7 @@ C	calc_phiprior real Departure from a priori
 C
 C     Pat Irwin		Original	18/7/00
 C     Pat Irwin		Tidied		17/10/03
-C     Pat Irwin		Computes departure of a prioir only  11/6/11	
+C     Pat Irwin		Computes departure of a priori only  11/6/11	
 C
 C     *******************************************************************
       implicit none

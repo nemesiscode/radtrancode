@@ -78,13 +78,14 @@ C     **************************************************************
       real x0,x1,wing,vrel,maxdv,delv
       real vconv1(mconv)
       integer ny,jsurf,jalb,jtan,jpre,nem,nav(mgeom)
-      integer nphi,ipath,iconv,k
+      integer nphi,ipath,iconv,k,imie,imie1
       integer nmu,isol,lowbc,nf,nf1,nx2,kiter
       real dist,galb,sol_ang,emiss_ang,z_ang,aphi,vv
       double precision mu(maxmu),wtmu(maxmu)
       character*100 runname,logname
       character*100 rdummy
       real xmap(maxv,maxgas+2+maxcon,maxpro)
+      common /imiescat/imie1
 
       integer nvar,varident(mvar,3)
       real varparam(mvar,mparam)
@@ -191,7 +192,8 @@ C            nf=20
 
          
 C         Set up parameters for scattering cirsrad run.
-          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
+          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+          IMIE1=IMIE
 
           itype=11			! scloud11wave
 

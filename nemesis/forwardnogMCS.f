@@ -78,7 +78,7 @@ C     **************************************************************
       real vwave(mgeom,mwave),interpem,height(100),vv
       real calcout(maxout3),fwhm,planck_wave,output(maxout3)
       real calcouts(maxout3)
-      integer iptf
+      integer iptf,imie,imie1
       real htan,thetrot,altbore,caltbore
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       integer ipixA,ipixB,ichan
@@ -94,6 +94,7 @@ C     **************************************************************
       character*100 runname,logname,intname
       real xmap(maxv,maxgas+2+maxcon,maxpro)
       real hcorr,hcorrx
+      common /imiescat/imie1
 
       integer nconvtmp,nwavetmp,iflag,i1,iswitch
       integer nview,mview,iconv,nfov,mfov,iread
@@ -280,8 +281,8 @@ C       call mradfield(fmod)
        print*,'Setting up for interpolation calculations'       
 C      Set up parameters for scattering cirsrad run.
 
-       CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
-
+       CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+       IMIE1=IMIE
 
        itype=11			! scloud11wave
 
@@ -424,7 +425,8 @@ C         Set up parameters for scattering cirsrad run.
      1 dist,lowbc,galb,nf,nphi,layht,tsurf,nlayer1,laytyp,layint)
 
 
-          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
+          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+          IMIE1=IMIE
 
           itype=11                      ! scloud11wave
           iscat1=1

@@ -263,16 +263,21 @@ C     Read in forward modelling errors
         do ivar=1,nvar
          np=1
          if(varident(ivar,1).le.100)then
-          np=npvar(varident(ivar,3).eq.0,npro)
+           np=npvar(varident(ivar,3).eq.0,npro)
          endif
+         if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
+         if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
 
          if(varident(ivar,1).eq.0.and.np.eq.npro)then
           ioffx=0
           do ivarx=1,nvarx
            npx=1
            if(varidentx(ivarx,1).le.100)then
-            npx=npvar(varidentx(ivarx,3),npro)
+             npx=npvar(varidentx(ivarx,3),npro)
            endif
+           if(varidentx(ivarx,1).eq.888)npx = int(varparamx(ivarx,1))
+           if(varidentx(ivarx,1).eq.444)npx = 2+int(varparamx(ivarx,1))
+
            if(varidentx(ivarx,1).eq.0.and.npx.eq.npro)then
             do i=1,npro
              xn(ioff+i)=xnx(ioffx+i)

@@ -571,7 +571,7 @@ C-----------------------------------------------------------------------
 C                  ##### f(J) is average phase function ######
   		   f(J) = f(J)+phase(K)*tau2
 C                  print*,'J,phase(K),F(J)',J,phase(K),f(J)
-
+C                   print*,'X1',taucon(j)
 	 	 ENDIF
 		ENDDO
 		intscat = intscat + tauscat(J)
@@ -617,6 +617,7 @@ C		    Can occasionally get -ve AvCONTMPs at
 C		    edge of Karkoschka CH4 data.
  		    taucon(J) = taucon(J) + AvgCONTMP
  		    taugasc(J) = taugasc(J) + AvgCONTMP
+C                    print*,'X2',taucon(j)
                  endif
 
 		ENDDO
@@ -662,6 +663,7 @@ C       This goes off to do the collision induced-absorption
                 if(AvgCONTMP.gt.0.0) then
  		 taucon(J)= taucon(J) + AvgCONTMP
 		 taugasc(J)= taugasc(J) + AvgCONTMP
+C		 print*,'X3',taucon(j)
 		endif
 
 C	The code below is if Rayleigh scattering is considered.
@@ -682,6 +684,7 @@ C	The code below is if Rayleigh scattering is considered.
  	   	   taucon(J)= taucon(J) + AvgCONTMP
                    taugasc(J)= taugasc(J) + AvgCONTMP
                    tauscat(J)=tauscat(J) + AvgCONTMP
+C		   print*,'X4',taucon(j)
 	          endif
 
 C                 Calculate single-scattering contribution
@@ -781,9 +784,7 @@ C          print*,'calc_fine OK'
 	  tautmp(J) = taucon(J) + xk
 	  taugas(J) = taugasc(J) + xk
 
-C          if(vv.eq.6614.0)then
-C           print*,'lay',J,taucon(J),xk,tautmp(j)
-C          endif
+C          print*,'X5',tautmp(j)
 
       	ENDDO
 
@@ -813,15 +814,12 @@ C-----------------------------------------------------------------------
       DO Ipath = 1, npath
 	nlays = nlayin(Ipath)
 	output(Ipath) = 0.
-C        if(vv.eq.6614.0)print*,'lblrad_wave Ipath = ',Ipath
 	DO J = 1, nlays
 
 		taus(J) = tautmp(layinc(J,ipath)) * scale(J,ipath)
 		taur(J) = tauray(layinc(J,ipath)) * scale(J,ipath)
-C                if(vv.eq.6614.0)then
-C                  print*,'J,taus,taur',J,taus(J),taur(J)
-C                  print*,layinc(J,ipath),scale(J,ipath)
-C                endif
+C                print*,'X6',taus(j),taur(j)
+
 
 C               New arrays for scloud12wave. taucl holds the extinction
 C		optical depth of each cloud type. taucs holds the 
@@ -837,10 +835,11 @@ C                print*,'taucl',(taucl(k,j),k=1,ncont)
 C                print*,'taucs',(taucs(k,j),k=1,ncont)
 
 		taug(J) = taugas(layinc(J,ipath)) * scale(J,ipath)
+C                print*,'X7',taug(j)
 C               Subtract Rayleigh scattering
                 taug(J)=taug(J)-taur(J)
 
-C                print*,'taug',taug(J)
+C                print*,'X8 taug',taug(J)
 
                 if(single)then
 C                  print*,'single'

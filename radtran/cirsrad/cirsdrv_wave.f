@@ -62,7 +62,7 @@ C paths, etc.)
       INTEGER		intmod, nconv, nwave, I, npath, J, K,
      1			itype, ispace, idump
       INTEGER		NPoints, Planet, INormal, ichannel,nem
-      INTEGER		IRAY,IPTF
+      INTEGER		IRAY,IPTF,IMIE,IMIE1
       REAL		vconv(maxbin), vwave(maxbin), spec(maxout3),
      1                  uspec(maxout3)
       REAL		VREF,DELVK,VMIN,VMAX
@@ -83,7 +83,7 @@ C paths, etc.)
       REAL tnco,twave,frac,tico
       COMMON /hgphas/xwave,xf,xg1,xg2,tnco,twave,frac,tico
       COMMON /SCATDUMP/ IDUMP
-
+      COMMON /IMIESCAT/ IMIE1
 
       INCLUDE '../includes/ciacom.f'
       INCLUDE '../includes/gascom.f'
@@ -320,8 +320,8 @@ C-----------------------------------------------------------------------
        IPARA2=IPARA
       ENDIF
 
-      CALL READFLAGS(OPFILE,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
-
+      CALL READFLAGS(OPFILE,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+      IMIE1=IMIE
 
 C     See if there is a solar or stellar reference spectrum and read in
 C     if present.  

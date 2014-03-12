@@ -60,7 +60,7 @@ C paths, etc.)
       INTEGER		intmod, nconv, nwave, I, npath, J, K,
      1			itype, ispace, idump
       INTEGER		NPoints, Planet, INormal, Iray, ichannel,nem
-      INTEGER		IPTF
+      INTEGER		IPTF,IMIE,IMIE1
       REAL		vconv(maxbin), spec(maxout3)
       REAL		VREF,DELVK,VMIN,VMAX
       REAL		Dist, WNumBot, WNumTop, Resolution, DelV, FWHM,
@@ -80,6 +80,7 @@ C paths, etc.)
       REAL tnco,twave,frac,tico
       COMMON /hgphas/xwave,xf,xg1,xg2,tnco,twave,frac,tico
       COMMON /SCATDUMP/ IDUMP
+      COMMON /IMIESCAT/IMIE1
 
       INCLUDE '../includes/ciacom.f'
       INCLUDE '../includes/gascom.f'
@@ -206,7 +207,8 @@ C-----------------------------------------------------------------------
         GOTO 40
       ENDIF
 
-      CALL READFLAGS(OPFILE,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
+      CALL READFLAGS(OPFILE,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+      IMIE1=IMIE
 
       WRITE(*,*)'Enter surface temperature : '
       READ(*,*)tsurf

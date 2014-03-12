@@ -116,7 +116,6 @@ C		Passed variables
         INTEGER ifc(limcont,nlayer),nem,j0
 
 	REAL	XCOM,XNEXT,FPARA,vv,XRAY,RAYLEIGHJ,RAYLEIGHA,RAYLEIGHV
-        double precision get_albedo
 
 C		Dust variables
 
@@ -188,7 +187,7 @@ C		Misc variables or continuum variables
      1		XLen, AvgCONTMP, CONTMP(IORDP1), DABSORB(7)
 
         INTEGER LUNIS,IRECL,IOFF,NLAYERF,NMUF,NWAVEF,NGF,IFLUX,NFF
-        integer fintrad
+        integer fintrad,first
         character*100 fintname
 C		Common blocks and parameters
 
@@ -206,7 +205,7 @@ C       Solar reference spectrum common block
      1		lncons, lcons, sol_ang, emiss_ang, aphi, nf
 	common/phasesto/pplsto,pmisto
         common/intrad/fintrad,fintname
-
+        common/interp_phase_initial/first
 
 	PARAMETER	(tsun=5900.,theta0=4.65241e-3, pi=3.141593,
      1			error=5.e-5,LUNIS=61) 
@@ -300,6 +299,8 @@ C		imod = 21		Limb scattering
 C
 C-----------------------------------------------------------------------
 
+C       Set flag for code to read in modified PHASE*.DAT files if required
+        first=0
 
 	dpi = 4.0d0 * datan(1.0d0)
 	draddeg = 2.0d0 * dpi/360.0d0
@@ -479,7 +480,6 @@ C-----------------------------------------------------------------------
         DO I = 1, nwave
 		x = vwave(I)
                 esurf = interpem(nem,vem,emissivity,x)
-
 C               Set vv to the current WAVENUMBER
                 vv = x
                 if(ispace.eq.1)then
@@ -809,13 +809,11 @@ C-----------------------------------------------------------------------
 				DO L = 1, ng
 					k_g(L) = k_g2(L)
 				ENDDO
-C                     if(j.eq.22)print*,'X1',x,k,q1,k_g(9),k_g(10)
 			 ELSE
 				q2 = frac(J,K)
 				DO L = 1, ng
 					k_g1(L) = k_g(L)
 				ENDDO
-C                   if(j.eq.22)print*,'X2',k,q2,k_g1(9),k_g1(10)
 
 C	This subroutine combines the absorption coefficient distributions
 C	of two overlapping gases. The overlap is implicitly assumed to be 
@@ -825,17 +823,12 @@ C	total.
 				CALL overlap(delg,ng,k_g1,q1,
      1					k_g2,q2,k_g)
 				q1 = q1 + q2
-C                          if(j.eq.22)print*,'X3',k,q1,k_g(9),k_g(10)
 			 ENDIF
 			ENDDO
 
 			DO K = 1, ng
 				kl_g(K,J) = k_g(K)
 			ENDDO
-C                        if(J.EQ.22)then
-C  		 	  print*,'Layer : ',J
-C			  print*,'K = ',(kl_g(K,J),K=1,NG)
-C                        endif
 		ENDDO
 
 
@@ -1059,11 +1052,11 @@ C               upwelling radiation field to local temperature.
                 galb1=galb
 
                 if(galb1.lt.0)then
-                         galb1 = get_albedo(nem,vem,emissivity,x)
+                         galb1 = dble(1.-esurf)
                 endif
 
                 do J=1,nmu
-                 radg(J)=radground*sngl((1.0-galb1))
+                 radg(J)=radground
                 enddo
 
 C               The codes below calculates the radiance
@@ -1194,7 +1187,7 @@ C		IF (Ig.EQ.1) WRITE(*,*)' SINGLE SCATTERING IN USE '
                 galb1 = galb
                         
                 if(galb1.lt.0)then
-                   galb1 = get_albedo(nem,vem,emissivity,x)
+                   galb1 = dble(1.-esurf)
 C                  if(Ig.eq.1)print*,x,galb1
                 endif
 
@@ -1337,20 +1330,19 @@ C               surface and so uses tsurf to compute radiation upwelling.
 C               Otherwise, code assumes optical depth is large and sets
 C               upwelling radiation field to local temperature.
                 if(tsurf.le.0.0)then
-                 radg(1) = bnu(nlayer)
+                 radground = bnu(nlayer)
                 else
-                 radg(1) = esurf*planck_wave(ispace,x,tsurf)
+                 radground = esurf*planck_wave(ispace,x,tsurf)
                 endif
 
                 galb1=galb
 
                 if(galb1.lt.0)then
-                         galb1 = get_albedo(nem,vem,emissivity,x)
-C                 if(Ig.eq.1)print*,x,galb1
+                         galb1 = dble(1.-esurf)
                 endif
 
                 do J=1,nmu
-                 radg(J)=radg(1)*sngl((1.0-galb1))
+                 radg(J)=radground
                 enddo
 
 

@@ -27,7 +27,7 @@ C stored in the same directory as the rest of the code
       INTEGER LUN,LUN0
       PARAMETER (LUN=2,LUN0=30)
 
-      INTEGER PINDEX,CP,CT,LOOP
+      INTEGER PINDEX,CP,CT,LOOP,IPFORM
 
       INTEGER IREC,IREC0
       REAL P1,T1,PRESS1(MAXK),TEMP1(MAXK),VCEN(MAXBIN)
@@ -113,82 +113,89 @@ C     Read in central wavelengths if non-uniform grid
 
       IREC = IREC0
 
-      IF(DELV.GT.0)THEN
-       CALL PROMPT('Enter wavenumber [cm^-1] : ')
-       READ*,VV
-       N1 = 1 + NINT((VV - VMIN)/DELV)
-       WRITE(*,*)'Bin = ',N1,' Wavenumber = ',(VMIN + (N1-1)*DELV)
-      ELSE
-       CALL PROMPT('Enter channel number : ')
-       READ*,N1
-      ENDIF
+304   PRINT*,'Output data for a particular wavelength (1)'
+      PRINT*,'or output spectrum for particular P,T (2)'
+      CALL PROMPT('?:')
+      READ*,IPFORM
+      IF(IPFORM.LT.1.OR.IPFORM.GT.2)GOTO 304  
 
-      IREC = IREC0 + NP*NT*NG*(N1 - 1)
-      WRITE(*,*)'IREC = ',IREC
-      DO 20 J=1,NP
+      IF(IPFORM.EQ.1)THEN
+       IF(DELV.GT.0)THEN
+        CALL PROMPT('Enter wavenumber [cm^-1] : ')
+        READ*,VV
+        N1 = 1 + NINT((VV - VMIN)/DELV)
+        WRITE(*,*)'Bin = ',N1,' Wavenumber = ',(VMIN + (N1-1)*DELV)
+       ELSE
+        CALL PROMPT('Enter channel number : ')
+        READ*,N1
+       ENDIF
+
+       IREC = IREC0 + NP*NT*NG*(N1 - 1)
+       WRITE(*,*)'IREC = ',IREC
+       DO 20 J=1,NP
         DO 30 K=1,NT
           DO 40 LOOP=1,NG
             READ(LUN0,REC=IREC)TABLE(J,K,LOOP)
             IREC = IREC + 1
 40        CONTINUE
 30      CONTINUE
-20    CONTINUE
+20     CONTINUE
 
 
 
-      WRITE(*,*)'Enter Pressure [atm] and Temperature [K]'
-      READ*,P1,T1
-      PMAX = PRESS1(NP)
-      PMIN = PRESS1(1)
-      P1 = LOG(P1)
-      IF(P1.LT.PMIN)THEN
-        WRITE(*,*)'**WARNING** P < PMIN ==> P, PMIN = ',P,PMIN
+       WRITE(*,*)'Enter Pressure [atm] and Temperature [K]'
+       READ*,P1,T1
+       PMAX = PRESS1(NP)
+       PMIN = PRESS1(1)
+       P1 = LOG(P1)
+       IF(P1.LT.PMIN)THEN
+        WRITE(*,*)'**WARNING** P < PMIN ==> P, PMIN = ',P1,PMIN
         WRITE(*,*)' '
         WRITE(*,*)'Setting P equal to PMIN.'
         P1 = PMIN
-      ENDIF
-      IF(P1.GT.PMAX)THEN
-        WRITE(*,*)'**WARNING** P > PMAX ==> P, PMAX = ',P,PMAX
+       ENDIF
+       IF(P1.GT.PMAX)THEN
+        WRITE(*,*)'**WARNING** P > PMAX ==> P, PMAX = ',P1,PMAX
         WRITE(*,*)' '
         WRITE(*,*)'Setting P equal to PMAX.'
         P1 = PMAX
-      ENDIF
-      TMAX = TEMP1(NT)
-      TMIN = TEMP1(1)
-      IF(T1.LT.TMIN)THEN
-        WRITE(*,*)'**WARNING** T < TMIN ==> T, TMIN = ',T,TMIN
+       ENDIF
+       TMAX = TEMP1(NT)
+       TMIN = TEMP1(1)
+       IF(T1.LT.TMIN)THEN
+        WRITE(*,*)'**WARNING** T < TMIN ==> T, TMIN = ',T1,TMIN
         WRITE(*,*)' '
         WRITE(*,*)'Setting T equal to TMIN.'
         T1 = TMIN
-      ENDIF
-      IF(T1.GT.TMAX)THEN
-        WRITE(*,*)'**WARNING** T > TMAX ==> T, TMAX = ',T,TMAX
+       ENDIF
+       IF(T1.GT.TMAX)THEN
+        WRITE(*,*)'**WARNING** T > TMAX ==> T, TMAX = ',T1,TMAX
         WRITE(*,*)' '
         WRITE(*,*)'Setting T equal to TMAX.'
         T1 = TMAX
-      END IF
+       END IF
 
-      CP = PINDEX(PRESS1,NP,P1)
-      CT = PINDEX(TEMP1,NT,T1)
+       CP = PINDEX(PRESS1,NP,P1)
+       CT = PINDEX(TEMP1,NT,T1)
 
-      WRITE(*,*)'Pressure index (CP), temperature index (CT) = ',CP,CT
-      WRITE(*,*)' '
-      IF(PRESS1(CP+1).NE.PRESS1(CP))THEN
-       T = (P1 - PRESS1(CP))/(PRESS1(CP+1) - PRESS1(CP))
-      ELSE
-       T=0.
-      ENDIF
-      IF(TEMP1(CT+1).NE.TEMP1(CT))THEN
-       U = (T1 - TEMP1(CT))/(TEMP1(CT+1) - TEMP1(CT))
-      ELSE
-       U=0.
-      ENDIF
-      WRITE(*,*)'(P - PRESS1(CP))/(PRESS1(CP+1) - PRESS1(CP)) = ',T
-      WRITE(*,*)'(T - TEMP1(CT))/(TEMP1(CT+1) - TEMP1(CT)) = ',U
-      WRITE(*,*)' '
-      WRITE(*,*)'    G_ORD    |      K_G     |   K_G*26850'
+       WRITE(*,*)'Pressure index (CP), temperature index (CT) = ',CP,CT
+       WRITE(*,*)' '
+       IF(PRESS1(CP+1).NE.PRESS1(CP))THEN
+        T = (P1 - PRESS1(CP))/(PRESS1(CP+1) - PRESS1(CP))
+       ELSE
+        T=0.
+       ENDIF
+       IF(TEMP1(CT+1).NE.TEMP1(CT))THEN
+        U = (T1 - TEMP1(CT))/(TEMP1(CT+1) - TEMP1(CT))
+       ELSE
+        U=0.
+       ENDIF
+       WRITE(*,*)'(P - PRESS1(CP))/(PRESS1(CP+1) - PRESS1(CP)) = ',T
+       WRITE(*,*)'(T - TEMP1(CT))/(TEMP1(CT+1) - TEMP1(CT)) = ',U
+       WRITE(*,*)' '
+       WRITE(*,*)'    G_ORD    |      K_G     |   K_G*26850'
 
-      IF(TABLE(CP,CT,NG).GT.0.0)THEN
+       IF(TABLE(CP,CT,NG).GT.0.0)THEN
         DO 80 LOOP=1,NG
 C          print*,EXP(PRESS1(CP)),26850.0*TABLE(CP,CT,LOOP),
 C     1     EXP(PRESS1(CP+1)),26850.0*TABLE(CP+1,CT,LOOP)
@@ -200,19 +207,93 @@ C     1     EXP(PRESS1(CP+1)),26850.0*TABLE(CP+1,CT,LOOP)
      1    T*U*Y3 + (1.0 - T)*U*Y4)
           WRITE(*,*)G_ORD(LOOP),K_G(LOOP),K_G(LOOP)*26850.0
 80      CONTINUE
-      ELSE
+       ELSE
         DO 81 LOOP=1,NG
           K_G(LOOP) = 0.0
           WRITE(*,*)G_ORD(LOOP),K_G(LOOP),K_G(LOOP)*26850.0
 81      CONTINUE
+       ENDIF
+
+       OPEN(12,FILE='read_table.dat',status='unknown')
+        WRITE(12,*)NG,NP,NT
+        WRITE(12,*)G_ORD
+        WRITE(12,*)PRESS1
+        WRITE(12,*)TEMP1
+        WRITE(12,*)TABLE
+       CLOSE(12)
+       
+      ELSE
+  
+       OPEN(12,FILE='read_table_wv.dat',status='unknown')
+        WRITE(12,*)NPOINT
+        IF(DELV.GT.0.0)THEN
+         DO I = 1,NPOINT
+          VCEN(I)=VMIN+(I-1)*DELV
+         ENDDO
+        ENDIF
+        WRITE(12,*)(VCEN(I),I=1,NPOINT)
+        WRITE(12,*)NG
+        WRITE(12,*)(G_ORD(I),I=1,NG)
+
+        WRITE(*,*)'Enter Pressure [atm] and Temperature [K]'
+        READ*,P1,T1
+        PMAX = PRESS1(NP)
+        PMIN = PRESS1(1)
+        P1 = LOG(P1)
+        IF(P1.LT.PMIN)THEN
+         WRITE(*,*)'**WARNING** P < PMIN ==> P, PMIN = ',P1,PMIN
+         WRITE(*,*)' '
+         WRITE(*,*)'Setting P equal to PMIN.'
+         P1 = PMIN
+        ENDIF
+        IF(P1.GT.PMAX)THEN
+         WRITE(*,*)'**WARNING** P > PMAX ==> P, PMAX = ',P1,PMAX
+         WRITE(*,*)' '
+         WRITE(*,*)'Setting P equal to PMAX.'
+         P1 = PMAX
+        ENDIF
+        TMAX = TEMP1(NT)
+        TMIN = TEMP1(1)
+        IF(T1.LT.TMIN)THEN
+         WRITE(*,*)'**WARNING** T < TMIN ==> T, TMIN = ',T1,TMIN
+         WRITE(*,*)' '
+         WRITE(*,*)'Setting T equal to TMIN.'
+         T1 = TMIN
+        ENDIF
+        IF(T1.GT.TMAX)THEN
+         WRITE(*,*)'**WARNING** T > TMAX ==> T, TMAX = ',T1,TMAX
+         WRITE(*,*)' '
+         WRITE(*,*)'Setting T equal to TMAX.'
+         T1 = TMAX
+        END IF
+
+        CP = PINDEX(PRESS1,NP,P1)
+        CT = PINDEX(TEMP1,NT,T1)
+
+        WRITE(*,*)'Pressure index (CP), temperature index (CT) = ',CP,CT
+        WRITE(*,*)' '
+
+        DO I=1,NPOINT
+
+         IREC = IREC0 + NP*NT*NG*(I - 1)
+         DO 21 J=1,NP
+          DO 31 K=1,NT
+           DO 41 LOOP=1,NG
+            READ(LUN0,REC=IREC)TABLE(J,K,LOOP)
+            IREC = IREC + 1
+41         CONTINUE
+31        CONTINUE
+21       CONTINUE
+
+         WRITE(12,*)(TABLE(CP,CT,LOOP),LOOP=1,NG)
+
+        ENDDO
+
+       CLOSE(12)
+
       ENDIF
 
-      OPEN(12,FILE='read_table.dat',form='unformatted', 
-     1   status='unknown')
-       WRITE(12)G_ORD
-       WRITE(12)TABLE
-      CLOSE(12)
-        
+ 
       END
 C***********************************************************************
 C***********************************************************************

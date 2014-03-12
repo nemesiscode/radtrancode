@@ -163,6 +163,7 @@ C This function is assumed properly normalized [by cons(1)], so:
 C **********************************************************************
 C ISCAT= 4 : External phase file
 50      if(vwave.ne.oldvwave)then 
+C         print*,'vwave = ',vwave
          call interp_phase(vwave,ncont)
          oldvwave=vwave
         end if
@@ -170,6 +171,7 @@ C ISCAT= 4 : External phase file
         do i=1,nphas
          pfunc(i)=phas(icont,3,nphas - i + 1)
          xmu(i)=cthet(nphas - i + 1)
+C         print*,i,xmu(i),pfunc(i)
         end do
 
     
@@ -177,7 +179,9 @@ C ISCAT= 4 : External phase file
         calph1=sngl(calpha)
         call verint(xmu,pfunc,nphas,p1,calph1)
         p=dble(p1)
+
 	return
+C        goto 999
 
 C **********************************************************************
 C External Henyey-Greenstein file

@@ -72,7 +72,8 @@ C     ***********************************************************************
      1 tau(MAXLAY),vwave, solar, vv, tauray(MAXLAY),
      2 lfrac(MAXCON,MAXLAY),aphi,drad,solar1,sum
       integer nf,imu,iray
-      integer igdist
+      integer igdist,imie
+      common /imiescat/imie
 
       DOUBLE PRECISION MU(MAXMU), WTMU(MAXMU), MM(MAXMU,MAXMU),
      1 MMINV(MAXMU,MAXMU), RL(MAXMU,MAXMU,MAXSCATLAY),
@@ -188,14 +189,25 @@ C     Precalculate phase function arrays if new wavelength
       IF(IGDIST.EQ.1) THEN
        DO J1=1,NCONT
         if(idump.gt.0)print*,'j1,vwave',j1,vwave
-        CALL READ_HG(VWAVE,J1,NCONT,F,G1,G2)
-        if(idump.gt.0)print*,'f,g1,g2 = ',f,g1,g2
 
-        ISCAT =2
-        NCONS = 3
-        CONS8(1)=F
-        CONS8(2)=G1
-        CONS8(3)=G2
+
+C       If imie=1 then read in phase function from PHASEN.DAT files
+C       otherwise read in from hgphaseN.dat files
+
+        if(imie.eq.1)then
+          ISCAT=4
+          NCONS=0
+        else
+          CALL READ_HG(VWAVE,J1,NCONT,F,G1,G2)
+          if(idump.gt.0)print*,'f,g1,g2 = ',f,g1,g2
+
+          ISCAT =2
+          NCONS = 3
+          CONS8(1)=F
+          CONS8(2)=G1
+          CONS8(3)=G2
+        endif
+
         NORM = 1
         NPHI = 100
 
@@ -388,9 +400,8 @@ C         TAUT = TAUT + TAUR
          STEST=ABS(SFRAC-1.D0)
 	 STEST1 = ABS(SFRAC-0.D0)
          IF(STEST.GT.0.02D0.AND.STEST1.GT.0.02D0)THEN
-          PRINT*,'Scloud11wave. ERROR.  SUM(FRAC) must = 0 OR 1.'
+          PRINT*,'Scloud11wave. WARNING.  SUM(FRAC) must = 0 OR 1.'
           print*,sfrac
-          STOP
          END IF
 
 C         IF(IC.EQ.0.AND.SFRAC.GT.0.0)THEN

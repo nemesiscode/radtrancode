@@ -65,7 +65,7 @@ C stored in the same directory as the rest of the code
       INTEGER IRECK(10),JJ
       INTEGER ICHECK
       INTEGER I,J,IREC,IREC0,ISYS,LUN0,INORMAL,IRAY
-      INTEGER NPA,NTA,NGA,NP,NT,NG,NOUT,IPTF
+      INTEGER NPA,NTA,NGA,NP,NT,NG,NOUT,IPTF,IMIE,IMIE1
 
       REAL OUTPUT(MAXOUT),ERROR(MAXOUT),MAXDV
       REAL PRESS1(MAXK),TEMP1(MAXK),PRESSA(MAXK),TEMPA(MAXK)
@@ -108,7 +108,7 @@ C     Setup HG common block (if required)
      1 xg2(maxcon,maxsec)
       REAL twave,tico,frac,tnco
       COMMON /hgphas/ xwave,xf,xg1,xg2,tnco,twave,frac,tico
-
+      COMMON /IMIESCAT/ IMIE1
 C******************************** CODE *********************************
 
       xwave(1)=-1.
@@ -176,7 +176,8 @@ C FWHM, WING, VREL, and KEYFIL.
 
       CALL FILE(OPFILE,FLAFIL,'fla')
 
-      CALL READFLAGS(FLAFIL,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF)
+      CALL READFLAGS(FLAFIL,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+      IMIE1=IMIE
 
       MAXDV=VREL
 

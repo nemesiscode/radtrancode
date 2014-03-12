@@ -484,6 +484,10 @@ C           print*,'AA6, nwave',nwave
 C           do i=1,nwave
 C            print*,i,v1(i),n1(i),k1(i)
 C           enddo
+           
+           buffer='refindexN.dat' 
+           buffer(9:9)=char(ivar+48)
+           open(12,file=buffer,status='unknown')
 
            if(ispace.eq.0)then
             do i=1,nwave
@@ -506,7 +510,9 @@ C           enddo
            do i=1,nwave
             srefind(i,1)=nreal(i)
             srefind(i,2)=nimag(i)
+            write(12,*)wave(i),nreal(i),nimag(i)
            enddo
+           close(12)
 
            parm(1)=r0
            parm(2)=v0

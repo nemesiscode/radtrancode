@@ -240,7 +240,7 @@ Radtrans : radtrans.f $(LIBRARY) $(LIB)/spec_data.a
 Read_table : read_table.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Read_table read_table.f $(LIBRARY) \
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
-	$(LIB)/scatter.a $(LIB)/path.a
+	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/ciatable.a
 
 Concat_table : concat_table.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Concat_table concat_table.f \

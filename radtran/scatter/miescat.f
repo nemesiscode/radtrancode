@@ -124,7 +124,7 @@ C	Size integration parameters.
 C
 C-----------------------------------------------------------------------
 
-       print*,'Miescat RS = ',RS
+C       print*,'Miescat RS = ',RS
        R1 = RS(1)
        DELR = RS(3)
        IF (RS(2).LT.RS(1)) THEN
@@ -259,8 +259,9 @@ C-----------------------------------------------------------------------
 			 ENDIF
 		ENDDO
 		IF ((.NOT.CONT0).AND.(.NOT.CONT)) THEN
-		 WRITE (*,*) ' Miescat: size integration terminated'
-		 WRITE (*,*) ' Wavelength: ', XLAM, ' r =', RR
+C		 WRITE (*,*) ' Miescat: size integration terminated'
+C		 WRITE (*,*) ' Wavelength: ', XLAM, ' r =', RR
+
 C		 RS(2) = RR
 		 GOTO 10
 		ENDIF

@@ -19,42 +19,58 @@ C     ********************************************************************
 	real  		vv, thet(50),phas(10,3,50),head(10,3,3),
      1			cthet(50),inhead(10,maxpts,3),
      2		        inphas(10,maxpts,50),wave(maxpts),
-     3                  v0, v1, dv, frac
-      	character*512 	buffer
+     3                  v0, v1, dv, frac,pi
+        parameter (pi=3.1415927)
+       	character*512 	buffer
+        character*100   ipfile
 
 	common/phase/thet,cthet,phas,head,irec1,nphas,maxrec
-	common/initial/first
+	common/interp_phase_initial/first
 	common/interpsto/inhead, inphas, npts
 
  	if (first.ne.1) then
 		first = 1
 		write (*,*) ' Initialising Interp_phase'
       		do i = 1, ncont
-			iunit = 10 + I
-         		read(iunit,1000,rec=1)buffer	! Header
-         		if(buffer(2:2).eq.'w')then
-            			read(buffer(12:512),*)
-     1					v0,v1,dv,npoint,nphas
-     				print*,v0,v1,dv,npoint,nphas
-			else
-            			read(buffer,*)v0,v1,dv,npoint,nphas
-            			print*,v0,v1,dv,npoint,nphas
-			endif
+		  iunit = 10+i
+                  ipfile='PHASEN.DAT'
+                  ipfile(6:6) = char(I+48)
+                  open(iunit,file=ipfile,status='old',
+     1               access='direct',recl=512, form='formatted')
 
-			irec = irec1(I)
-			do J = 1, npoint
-				irec = irec + 1
-                                print*,'irec = ',irec
-	       			read(iunit,1000,rec=irec) buffer
-                                print*,buffer
-C				read(buffer,1010) (inhead(I,J,K),
-C     1					K = 1, 3), (inphas(I,J,L),
-C     2					L = 1, nphas)
-				read(buffer,*) (inhead(I,J,K),
-     1					K = 1, 3), (inphas(I,J,L),
-     2					L = 1, nphas)
-			enddo
-			npts(I) = npoint
+
+         	  read(iunit,1000,rec=1)buffer	! Header
+         	  if(buffer(2:2).eq.'w')then
+            		read(buffer(12:512),*)
+     1				v0,v1,dv,npoint,nphas
+     			print*,v0,v1,dv,npoint,nphas
+		  else
+            		read(buffer,*)v0,v1,dv,npoint,nphas
+            		print*,v0,v1,dv,npoint,nphas
+		  endif
+
+C		  irec = irec1(I)
+		  irec=3
+	    	  read(iunit,1000,rec=irec) buffer
+                  read(buffer,*)(thet(L),L=1,nphas)
+                  do L=1,nphas
+                   cthet(L)=cos(thet(L)*pi/180.)
+                  enddo
+
+		  do J = 1, npoint
+			irec = irec + 1
+	       		read(iunit,1000,rec=irec) buffer
+C                        print*,buffer
+C			read(buffer,1010) (inhead(I,J,K),
+C     1				K = 1, 3), (inphas(I,J,L),
+C     2				L = 1, nphas)
+
+			read(buffer,*) (inhead(I,J,K), 
+     1				K = 1, 3), (inphas(I,J,L),
+     2				L = 1, nphas)
+		  enddo
+		  npts(I) = npoint
+                  close(iunit)
 		enddo
 	endif
 

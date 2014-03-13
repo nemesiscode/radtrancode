@@ -1,6 +1,37 @@
       subroutine dumpflux(LUNIS,ioff,nlays,nmu,nf,radg,umif,uplf,iwave,
      1  x,nwave,Ig,ng,j0,xmu,solar,taus)
-
+C     ***************************************************************
+C     Subroutine to format output of scloud11flux into a more usable
+C     internal radiation field and output to a meta file.
+C
+C     Input variables
+C	LUNIS	integer	Unit number of output metafile
+C	ioff	integer	offset record number in output metafile
+C	nlays	integer	Number of scattering angles
+C	nmu	integer	Number of zenith quadrature angles
+C	nf	integer	Number of fourier components
+C	radg(maxmu)	real	Ground radiance field
+C	umif(maxmu,maxscatlay,maxf) real umif Radiance field going
+C                                        upwards out of the top of each
+C					 layer
+C	uplf(maxmu,maxscatlay,maxf) real umif Radiance field going
+C                                        downwards out of the bottom of each
+C					 layer
+C	iwave	integer	Wavelength ordinate in metafile
+C	x	real	Wavelength/wavenumber No longer used.
+C	nwave	integer	Number of wavelengths
+C	Ig	integer	Ordinate of k-distribution integration
+C	ng	integer	Number if g-ordinates
+C	j0	integer	Nearest quadrature zenith angle to solar
+C			zenith angle.
+C	xmu	real	Cos(zolar zenith angle)
+C	solar	real	Solar flux at this wavelength (weighted 
+C			by 2*!pi*wt1(j0)
+C	taus(maxscatlayer)	real	Optical depth of each layer
+C
+C     Documented by Pat Irwin	13/3/14
+C
+C     ***************************************************************
       implicit none
       INCLUDE '../includes/arrdef.f'
       integer LUNIS,ioff,nwave,irec,j0
@@ -25,18 +56,9 @@ C     decomposition
 
 C     First strip out direct solar component from uplf
       tmp=0.0
-C      print*,xmu,j0
       do j=1,nlays
        tmp = tmp+taus(j)/xmu
        sol1 = solar*exp(-tmp)
-C       if(j.eq.15) then 
-C         print*,j,solar,taus(j),tmp,sol1
-C         do i1=1,nf-1 
-C          print*,uplf(j0,j,i1),uplf(j0,j,i1)-sol1
-C         enddo
-C         stop
-C       endif
-
 
        do i1=1,nf+1
         uplf(j0,j,i1)=uplf(j0,j,i1)-sol1
@@ -62,7 +84,6 @@ C     layer. Rest of code have 1 as the bottom layer.
         enddo
       enddo
       
-C      print*,'umif'
       do j=nlays-1,1,-1
        do k=1,nmu
         do i1=1,nf+1
@@ -72,13 +93,8 @@ C      print*,'umif'
          irec=irec+1
         enddo
        enddo
-C       print*,(umif(k,j+1,1),k=1,nmu)
       enddo
 
-
-C      do j=nlays,1,-1
-C       write(LUNIS,REC=IREC)taus(j)
-C      enddo
 
 
       return

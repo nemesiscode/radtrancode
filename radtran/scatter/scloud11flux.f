@@ -3,7 +3,7 @@
      2 tauray, nlay, ncont, lfrac, umif, uplf)
 C     $Id: scloud11flux.f,v 1.10 2011-06-17 15:57:54 irwin Exp $
 C     ***********************************************************************
-C     Compute and return interbal radiation fields in a scattering atmosphere
+C     Compute and return internal radiation fields in a scattering atmosphere
 C     Code uses matrix operator algorithm.  Diffuse incident radiation 
 C     is allowed at the bottom and single-beam incident radiation 
 C     (sunlight) at the top. 

@@ -94,11 +94,11 @@ C     ***********************************************************************
       INTEGER NVAR,VARIDENT(MVAR,3)
       REAL VARPARAM(MVAR,MPARAM)
       REAL XWID,Y,Y0,XX
-      LOGICAL GASGIANT,FEXIST,VPEXIST
+      LOGICAL GASGIANT,FEXIST,VPEXIST,NTEST,ISNAN
       REAL VP(MAXGAS),VP1
       INTEGER SVPFLAG(MAXGAS),SVPFLAG1
       INTEGER NVP,ISWITCH(MAXGAS),IP1,IP2,JKNEE
-      INTEGER XLDEEP,XLHIGH
+      REAL XLDEEP,XLHIGH
 C----------------------------------------------------------------------------
 C
 C     First read in reference ATMOSPHERIC profile
@@ -830,7 +830,7 @@ C          Calculate density of atmosphere (g/cm3)
            OD(J)=OD(J+1)+(ND(J) - ND(J+1))*XFAC*1E5
            Q(J)=ND(J)/RHO
            DQDH(J) = DNDH(J)/RHO
-
+           print*,'Diag: ',J,XFAC,OD(J),Q(J)
            IF(H(J).LE.HKNEE.AND.JFSH.LT.0)THEN
             F = (HKNEE-H(J))/DELH
             XOD = (1.-F)*OD(J) + F*OD(J+1)
@@ -854,6 +854,10 @@ C         post-processing in gsetrad.f
            ENDIF
            IF(Q(J).GT.1e10)Q(J)=1e10
            IF(Q(J).LT.1e-36)Q(J)=1e-36
+           NTEST=ISNAN(Q(J))
+           IF(NTEST)THEN
+            print*,'Error in subprofretg.f, cloud density is NAN'
+           ENDIF
 
            IF(ITEST.EQ.1)THEN
             X1(J)=Q(J)
@@ -1336,7 +1340,7 @@ C        ***************************************************************
 
          JKNEE=-1
          DO J=1,NPRO
-          IF(H(J).LT.HKNEE)THEN
+          IF(H(J).GT.HKNEE)THEN
            JKNEE=J-1
            GOTO 211
           ENDIF
@@ -1366,13 +1370,13 @@ C        ***************************************************************
          DELH = H(JKNEE+1)-HKNEE
          X1(JKNEE+1)=XDEEP + DELH*XLHIGH
          IF(VARIDENT(IVAR,1).EQ.0)THEN
-            XMAP(NXTEMP+1,IPAR,JKNEE)=1.0
+            XMAP(NXTEMP+1,IPAR,JKNEE+1)=1.0
          ELSE
-            XMAP(NXTEMP+1,IPAR,JKNEE)=XDEEP
+            XMAP(NXTEMP+1,IPAR,JKNEE+1)=XDEEP
          ENDIF
-         XMAP(NXTEMP+2,IPAR,JKNEE)=XLHIGH*SCALE(JKNEE)
-         XMAP(NXTEMP+3,IPAR,JKNEE)=0.
-         XMAP(NXTEMP+4,IPAR,JKNEE)=DELH*XLHIGH
+         XMAP(NXTEMP+2,IPAR,JKNEE+1)=XLHIGH*SCALE(JKNEE)
+         XMAP(NXTEMP+3,IPAR,JKNEE+1)=0.
+         XMAP(NXTEMP+4,IPAR,JKNEE+1)=DELH*XLHIGH
 
 
          DO J=JKNEE+2,NPRO 
@@ -1390,7 +1394,7 @@ C        ***************************************************************
 
          ENDDO
 
-         DO J=JFSH-1,1,-1             
+         DO J=JKNEE-1,1,-1             
              DELH = H(J+1)-H(J)
              X1(J)=X1(J+1)+DELH*XLDEEP
 
@@ -1403,6 +1407,13 @@ C        ***************************************************************
              IF(X1(J).LT.1e-36)X1(J)=1e-36
 
          ENDDO
+
+C         open(12,file='test.dump',status='unknown')
+C         write(12,*)npro
+C         do j=1,npro
+C          write(12,*)x1(j),(xmap(k,ipar,j),k=nxtemp+1,nxtemp+4)
+C         enddo
+C         close(12)
 
 
         ELSE

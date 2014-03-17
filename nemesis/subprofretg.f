@@ -97,7 +97,8 @@ C     ***********************************************************************
       LOGICAL GASGIANT,FEXIST,VPEXIST
       REAL VP(MAXGAS),VP1
       INTEGER SVPFLAG(MAXGAS),SVPFLAG1
-      INTEGER NVP,ISWITCH(MAXGAS),IP1,IP2
+      INTEGER NVP,ISWITCH(MAXGAS),IP1,IP2,JKNEE
+      INTEGER XLDEEP,XLHIGH
 C----------------------------------------------------------------------------
 C
 C     First read in reference ATMOSPHERIC profile
@@ -1314,6 +1315,95 @@ C        Empirical correction to XOD
 
 C        *** This renormalisation is pretty accurate, but not quite accurate
 C        *** enough and so it gets updated in gsetrad.f
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.16)THEN
+C        Model 16. Profile modelled with a variable abundance at a fixed 
+C        pressure level and a lapse rate above and lapse rate below
+C        that level.
+C        ***************************************************************
+         PKNEE = VARPARAM(IVAR,1)
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+           XDEEP = XN(NXTEMP+1)
+         ELSE
+           XDEEP = EXP(XN(NXTEMP+1))
+         ENDIF
+         PKNEE  = EXP(XN(NXTEMP+2))
+         XLDEEP  = EXP(XN(NXTEMP+3))
+         XLHIGH  = EXP(XN(NXTEMP+4))
+
+         CALL VERINT(P,H,NPRO,HKNEE,PKNEE)
+         JFSH = 0       
+
+         JKNEE=-1
+         DO J=1,NPRO
+          IF(H(J).LT.HKNEE)THEN
+           JKNEE=J-1
+           GOTO 211
+          ENDIF
+         ENDDO
+211      CONTINUE
+
+         IF(JKNEE.LT.1.OR.JKNEE.GT.NPRO-1)THEN
+          PRINT*,'SUBPROFRETG. Must choose pressure level'
+          PRINT*,'within range of profile'
+          PRINT*,'Model = 16'
+          STOP
+         ENDIF
+
+        
+         DELH = HKNEE-H(JKNEE)
+         X1(JKNEE)=XDEEP + DELH*XLDEEP
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+            XMAP(NXTEMP+1,IPAR,JKNEE)=1.0
+         ELSE
+            XMAP(NXTEMP+1,IPAR,JKNEE)=XDEEP
+         ENDIF
+         XMAP(NXTEMP+2,IPAR,JKNEE)=-XLDEEP*SCALE(JKNEE)
+         XMAP(NXTEMP+3,IPAR,JKNEE)=DELH*XLDEEP
+         XMAP(NXTEMP+4,IPAR,JKNEE)=0.
+
+
+         DELH = H(JKNEE+1)-HKNEE
+         X1(JKNEE+1)=XDEEP + DELH*XLHIGH
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+            XMAP(NXTEMP+1,IPAR,JKNEE)=1.0
+         ELSE
+            XMAP(NXTEMP+1,IPAR,JKNEE)=XDEEP
+         ENDIF
+         XMAP(NXTEMP+2,IPAR,JKNEE)=XLHIGH*SCALE(JKNEE)
+         XMAP(NXTEMP+3,IPAR,JKNEE)=0.
+         XMAP(NXTEMP+4,IPAR,JKNEE)=DELH*XLHIGH
+
+
+         DO J=JKNEE+2,NPRO 
+             
+             DELH = H(J)-H(J-1)         
+             X1(J)=X1(J-1)+DELH*XLHIGH
+
+             XMAP(NXTEMP+1,IPAR,J)=XMAP(NXTEMP+1,IPAR,J-1)
+             XMAP(NXTEMP+2,IPAR,J)=XLHIGH*SCALE(J)
+             XMAP(NXTEMP+3,IPAR,J)=0.
+             XMAP(NXTEMP+4,IPAR,J)=DELH*XLHIGH
+
+             IF(X1(J).LT.1e-36)X1(J)=1e-36
+             IF(X1(J).GT.1e10)X1(J)=1e10
+
+         ENDDO
+
+         DO J=JFSH-1,1,-1             
+             DELH = H(J+1)-H(J)
+             X1(J)=X1(J+1)+DELH*XLDEEP
+
+             XMAP(NXTEMP+1,IPAR,J)=XMAP(NXTEMP+1,IPAR,J+1)
+             XMAP(NXTEMP+2,IPAR,J)=-XLDEEP*SCALE(J)
+             XMAP(NXTEMP+3,IPAR,J)=DELH*XLDEEP
+             XMAP(NXTEMP+4,IPAR,J)=0.
+
+             IF(X1(J).GT.1e10)X1(J)=1e10
+             IF(X1(J).LT.1e-36)X1(J)=1e-36
+
+         ENDDO
+
 
         ELSE
 

@@ -83,6 +83,9 @@ C     a priori covariance matrix
       integer nxx 
       real xwid,ewid,y,y0,lambda0
       real r0,er0,dr,edr,vm,nm,v1,nimag,delv
+      real xldeep,eldeep,xlhigh,elhigh
+
+
 C     Initialise a priori parameters
       do i=1,mx
        x0(i)=0.0
@@ -758,6 +761,56 @@ C            Read in xdeep, pknee, xwid
              sx(ix,ix) = (ewid/xwid)**2
 
              nx = nx+3
+
+           elseif (varident(ivar,3).eq.16)then
+C            ** profile held as amount at certain pressure with specified
+C            lapse rate above and below
+C            Read in xdeep, pknee, xwid
+
+             read(27,*)xdeep,edeep
+             read(27,*)pknee,eknee
+             read(27,*)xldeep,eldeep
+             read(27,*)xlhigh,elhigh
+
+             ix = nx+1
+
+             if(varident(ivar,1).eq.0)then
+C             *** temperature, leave alone ********
+              x0(ix)=xdeep
+              err = edeep
+             else
+C             *** vmr, para-H2 or cloud, take logs *********
+              if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+              else
+                print*,'Error in readapriori. xdeep must be > 0.0'
+                stop
+              endif
+              err = edeep/xdeep
+             endif
+
+             sx(ix,ix)=err**2
+
+
+             ix = nx+2
+             x0(ix) = alog(pknee)
+             sx(ix,ix) = (eknee/pknee)**2
+             lx(ix)=1
+
+             ix = nx+3
+             x0(ix) = alog(xldeep)
+             lx(ix)=1
+
+             sx(ix,ix) = (eldeep/xldeep)**2
+
+             ix = nx+4
+             x0(ix) = alog(xlhigh)
+             lx(ix)=1
+
+             sx(ix,ix) = (elhigh/xlhigh)**2
+
+             nx = nx+4
 
            else         
             print*,'vartype profile parametrisation not recognised'

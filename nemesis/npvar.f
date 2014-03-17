@@ -32,6 +32,7 @@ C     **************************************************************
         if(imod.eq.13)np = 3
         if(imod.eq.14)np = 3
         if(imod.eq.15)np = 3
+        if(imod.eq.16)np = 4
       else
        print*,'npvar:  Model parameterisation not defined = ',imod
       endif

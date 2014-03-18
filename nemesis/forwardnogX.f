@@ -238,7 +238,7 @@ C            nf=20
             endif                             
             xn(ix)=xn(ix)+dx
           endif
-
+C          print*,'ix,xref,dx,xn(ix)',ix,xref,dx,xn(ix)
           if(jsurf.gt.0)then
            tsurf = xn(jsurf)
           endif

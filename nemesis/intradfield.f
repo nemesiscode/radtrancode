@@ -119,7 +119,7 @@ C      emissivity spectrum
       CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
       IMIE1=IMIE
 
-      itype=13			        ! scloud13flux
+      itype=13			        ! scloud11flux
 
 C     Need to run this over the different solar zenith angles required 
 C     and then concatenate the internal.fld files together so that they 

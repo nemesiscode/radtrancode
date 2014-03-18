@@ -141,6 +141,7 @@ C     Initialise s1d
 C     Calculate inverse of sa.
       jmod = 2
       icheck=0
+      print*,'coreret: Checking can invert Sa'
       call dinvertm(jmod,icheck,s1d,nx,mx,sai)
       if(icheck.eq.1)then
        print*,'************* WARNING *************'

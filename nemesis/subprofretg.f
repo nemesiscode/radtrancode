@@ -1385,9 +1385,13 @@ C        ***************************************************************
              X1(J)=X1(J-1)+DELH*XLHIGH
 
              XMAP(NXTEMP+1,IPAR,J)=XMAP(NXTEMP+1,IPAR,J-1)
+C             XMAP(NXTEMP+2,IPAR,J)=XMAP(NXTEMP+2,IPAR,J-1)+
+C     &					XLHIGH*SCALE(J)
              XMAP(NXTEMP+2,IPAR,J)=XLHIGH*SCALE(J)
+
              XMAP(NXTEMP+3,IPAR,J)=0.
-             XMAP(NXTEMP+4,IPAR,J)=DELH*XLHIGH
+             XMAP(NXTEMP+4,IPAR,J)=XMAP(NXTEMP+4,IPAR,J-1)+
+     &					DELH*XLHIGH
 
              IF(X1(J).LT.1e-36)X1(J)=1e-36
              IF(X1(J).GT.1e10)X1(J)=1e10
@@ -1399,8 +1403,11 @@ C        ***************************************************************
              X1(J)=X1(J+1)+DELH*XLDEEP
 
              XMAP(NXTEMP+1,IPAR,J)=XMAP(NXTEMP+1,IPAR,J+1)
+C             XMAP(NXTEMP+2,IPAR,J)=XMAP(NXTEMP+2,IPAR,J+1)-
+C     &				       XLDEEP*SCALE(J)
              XMAP(NXTEMP+2,IPAR,J)=-XLDEEP*SCALE(J)
-             XMAP(NXTEMP+3,IPAR,J)=DELH*XLDEEP
+             XMAP(NXTEMP+3,IPAR,J)=XMAP(NXTEMP+3,IPAR,J+1)+
+     &				       DELH*XLDEEP
              XMAP(NXTEMP+4,IPAR,J)=0.
 
              IF(X1(J).GT.1e10)X1(J)=1e10

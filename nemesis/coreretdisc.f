@@ -370,13 +370,24 @@ C        Check to see if log numbers have gone out of range
          endif
          if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
          if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
+
          do j=ix,ix+np-1
-          if(varident(ivar,1).eq.0) then
-           if(xn1(j).lt.1.0) then
-            print*,'Temperature has gone negative, Increase alambda'
-            alambda = alambda*10.0		! increase Marquardt brake
-            if(alambda.gt.1e10)alambda=1e10
-            goto 145
+          if(varident(ivar,1).eq.0)then
+           if(varident(ivar,3).eq.0) then
+            if(xn1(j).lt.1.0) then
+             print*,'Temperature has gone negative, Increase alambda'
+             alambda = alambda*10.0             ! increase Marquardt brake
+             if(alambda.gt.1e10)alambda=1e10
+             goto 145
+            endif
+           endif
+           if(varident(ivar,3).eq.16.and.j.eq.ix) then
+            if(xn1(j).lt.1.0) then
+             print*,'Temperature has gone negative, Increase alambda'
+             alambda = alambda*10.0             ! increase Marquardt brake
+             if(alambda.gt.1e10)alambda=1e10
+             goto 145
+            endif
            endif
           endif
          enddo

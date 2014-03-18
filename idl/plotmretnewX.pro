@@ -82,7 +82,9 @@ openr,1,retname
    for ivar=0,nvar-1 do begin
      print,ivar
      print,varident(ivar,*)
-     for i=1,4 do begin
+;     nskip=4
+     nskip=44
+     for i=1,nskip do begin
       readf,1,head
      endfor
      itype = varident(ivar,2)
@@ -102,6 +104,8 @@ openr,1,retname
       13: np = 3
       14: np = 3
       15: np = 3
+      16: np = 4
+      444: np = 2 + varparam(ivar,0)
       555: np = 1
       888: np = varparam(ivar,0)
       889: np = 1
@@ -207,7 +211,7 @@ if(ips eq 0) then begin
   set_plot,'x'
   device,retain=2
   device,decomposed=0
-  window,0,title='Spectrum',xsize=600,ysize=600
+  window,0,title='Spectrum',xsize=600,ysize=800
 endif else begin
  set_plot,'ps'
  if(ips eq 1) then begin
@@ -216,7 +220,7 @@ endif else begin
 endelse
 
 nconv1=ny/ngeom
-!p.multi=[0,1,2]
+!p.multi=[0,1,3]
 i1=0
 i2=nconv1-1
 wkeep = fltarr(nconv1)
@@ -247,9 +251,8 @@ endif else begin
 endelse
 
 y2=max([spec+err,specf])
-if(strmid(uname,11,3) eq '100') then begin
- y1=min([spec-err,specf])
-endif else y1=0.
+
+y1=0
 
 print,'y1,y2 = ',y1,y2
 
@@ -288,6 +291,43 @@ for igeom=1,ngeom-1 do begin
  oplot,wkeep,specf,linestyle=2
 
 endfor
+
+;y1=min([spec-err,specf])
+y1=min(specf)
+
+
+plot_io,wkeep,spec,xtitle=xname,$
+ytitle=yname,xrange=xr,yrange=[y1,y2],xstyle=1
+oplot,wkeep,spec+err,linestyle=1
+oplot,wkeep,spec-err,linestyle=1
+oplot,wkeep,specf,linestyle=2
+
+for igeom=1,ngeom-1 do begin
+ i1 = igeom*nconv1
+ i2 = i1+nconv1-1
+
+ wkeep(*)=ydat(1,i1:i2)
+ spec(*)=ydat(2,i1:i2)
+ err(*)=ydat(3,i1:i2)
+ specf(*)=ydat(5,i1:i2)
+
+ if(irefl eq 1) then begin
+  solint = interpol(solar(1,*),solar(0,*),wkeep)
+  sun = solint*cos(zenkeep*!pi/180.0)/!pi
+  spec=spec/sun
+  err=err/sun
+  specf=specf/sun
+ endif
+
+
+ oplot,wkeep,spec
+ oplot,wkeep,spec+err,linestyle=1
+ oplot,wkeep,spec-err,linestyle=1
+ oplot,wkeep,specf,linestyle=2
+
+endfor
+
+
 
 i1=0
 i2=nconv1-1
@@ -389,6 +429,8 @@ for ivar=0,nvar-1 do begin
       13: np = 3
       14: np = 3
       15: np = 3
+      16: np = 4
+      444: np = 2 + varparam(ivar,0)
       555: np = 1
       888: np = varparam(ivar,0)
       889: np = 1
@@ -536,12 +578,17 @@ for ivar=0,nvar-1 do begin
        read,xr
 
        plot_io,cloud,pref,yrange=yr,xrange=xr
+       itypeA=1
 
-     endif else oplot,cloud,pref
+     endif else begin
 
-     itypeA=1         
+      oplot,cloud,pref,linestyle=ivar
+      print,'Overplotting'
+      print,'max, min = ',max(cloud),min(cloud)
+      read,ans
+     endelse
 
-     read,ans
+;     read,ans
 
    endif else begin
 
@@ -627,12 +674,87 @@ for ivar=0,nvar-1 do begin
 
       read,ans
 
-     endif else print,'Profile type not available'
-
+     endif else begin 
+      if(itype ne 16) then print,'Profile type not available'
+     endelse
     endelse
    endelse
 
   endelse
+
+  if(itype eq 444) then begin
+
+     xn = fltarr(np)
+     xa = fltarr(np)
+     errn = xn
+     erra = xa
+     xa(*)=xdat(0,istart:(istart+np-1))
+     erra(*)=xdat(1,istart:(istart+np-1))
+     xn(*)=xdat(2,istart:(istart+np-1))
+     errn(*)=xdat(3,istart:(istart+np-1))
+     walb = fltarr(np-2)
+     walb = varparam(ivar,5:5+np-3)
+
+     plot,walb,xn(2:np-1),xtitle='Wavelength',ytitle='Imaginary RI'
+     oplot,walb,xn(2:np-1)+errn(2:np-1),linestyle=1
+     oplot,walb,xn(2:np-1)-errn(2:np-1),linestyle=1
+     oplot,walb,xa(2:np-1),linestyle=2
+     oplot,walb,xa(2:np-1)-erra(2:np-1),linestyle=2
+     oplot,walb,xa(2:np-1)+erra(2:np-1),linestyle=2
+
+     print,'Apriori radius and error : ',xa(0),erra(0)
+     print,'Apriori variance and error : ',xa(1),erra(1)
+     print,'Fitted radius and error : ',xn(0),errn(0)
+     print,'Fitted variance and error : ',xn(1),errn(1)
+
+  endif
+
+  if(itype eq 16) then begin
+     xn = fltarr(np)
+     xa = fltarr(np)
+     errn = xn
+     erra = xa
+     xa(*)=xdat(0,istart:(istart+np-1))
+     erra(*)=xdat(1,istart:(istart+np-1))
+     xn(*)=xdat(2,istart:(istart+np-1))
+     errn(*)=xdat(3,istart:(istart+np-1))
+
+     xxa=fltarr(npro)
+     xxa(*)=xa(0)
+     
+     pknee = xa(1)
+     hknee = interpol(height,press,pknee)
+     ikeep = where(press lt pknee)
+     jref = ikeep(0)-1
+
+     for i=jref,0,-1 do begin
+      delh = hknee-height(i)
+      xxa(i)=xa(0)+xa(2)*delh
+     endfor
+     for i=jref+1,npro-1 do begin
+      delh = height(i)-hknee
+      xxa(i)=xa(0)+xa(3)*delh
+     endfor
+
+     plot_io,xxa,press,yrange=yr
+
+     pknee = xn(1)
+     hknee = interpol(height,press,pknee)
+     ikeep = where(press lt pknee)
+     jref = ikeep(0)-1
+
+     for i=jref,0,-1 do begin
+      delh = hknee-height(i)
+      xxa(i)=xn(0)+xn(2)*delh
+     endfor
+     for i=jref+1,npro-1 do begin
+      delh = height(i)-hknee
+      xxa(i)=xn(0)+xn(3)*delh
+     endfor
+
+     oplot,xxa,press,linestyle=1
+
+  endif
 
   istart = istart+np
 

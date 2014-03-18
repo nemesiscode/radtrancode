@@ -409,7 +409,7 @@ C       Now calculate next iterated xn1
 145     continue
         do i=1,nx
          xn1(i) = xn(i) + (x_out(i)-xn(i))/(1.0+alambda)
-         print*,'next x',xn1(i)
+         print*,'i, x_old, x_next',i,xn(i),xn1(i)
 C        Check to see if log numbers have gone out of range
          if(lx(i).eq.1)then
           if(xn1(i).gt.85.or.xn1(i).lt.-85)then
@@ -418,6 +418,8 @@ C        Check to see if log numbers have gone out of range
            alambda = alambda*10.0		! increase Marquardt brake
            if(alambda.gt.1e10)alambda=1e10
            goto 145
+          else
+           print*,'exp(x_old),exp(x_next)',exp(xn(i)),exp(xn1(i))
           endif
          endif
         enddo
@@ -432,12 +434,22 @@ C        Check to see if log numbers have gone out of range
          if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
 
          do j=ix,ix+np-1
-          if(varident(ivar,1).eq.0.and.varident(ivar,3).ne.16) then
-           if(xn1(j).lt.1.0) then
-            print*,'Temperature has gone negative, Increase alambda'
-            alambda = alambda*10.0		! increase Marquardt brake
-            if(alambda.gt.1e10)alambda=1e10
-            goto 145
+          if(varident(ivar,1).eq.0)then
+           if(varident(ivar,3).eq.0) then
+            if(xn1(j).lt.1.0) then
+             print*,'Temperature has gone negative, Increase alambda'
+             alambda = alambda*10.0		! increase Marquardt brake
+             if(alambda.gt.1e10)alambda=1e10
+             goto 145
+            endif
+           endif
+           if(varident(ivar,3).eq.16.and.j.eq.ix) then
+            if(xn1(j).lt.1.0) then
+             print*,'Temperature has gone negative, Increase alambda'
+             alambda = alambda*10.0		! increase Marquardt brake
+             if(alambda.gt.1e10)alambda=1e10
+             goto 145
+            endif
            endif
           endif
          enddo

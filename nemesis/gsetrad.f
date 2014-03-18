@@ -86,7 +86,7 @@ C     ************************************************************************
       real vconv(mconv),minlam,lambda0
       integer nmu,isol,lowbc,nf,flagh2p,jalb,jtan,jpre
       integer jsurfx,jalbx,jtanx,jprex,nprox,icheck,icont
-      integer jradx
+      integer jradx,npvar
       real x,y
       double precision mu(maxmu),wtmu(maxmu)
       real dist,galb,xn(mx),xnx(mx),aphi,emiss_ang,sol_ang
@@ -344,15 +344,6 @@ C        enddo
 
          if(varident(ivar,1).le.100)then
 
-          if(varident(ivar,3).eq.0)nx1=nx1+NN
-          if(varident(ivar,3).eq.1)nx1=nx1+2
-          if(varident(ivar,3).eq.2)nx1=nx1+1
-          if(varident(ivar,3).eq.3)nx1=nx1+1
-          if(varident(ivar,3).eq.4)nx1=nx1+3
-          if(varident(ivar,3).eq.5)nx1=nx1+NN
-          if(varident(ivar,3).eq.6)nx1=nx1+2
-          if(varident(ivar,3).eq.7)nx1=nx1+2
-          if(varident(ivar,3).eq.8)nx1=nx1+3
           if(varident(ivar,3).eq.9)then
               icont=abs(varident(ivar,1))
               od1=exp(xn(nx1+1))
@@ -364,7 +355,6 @@ C              print*,'gsetrad',od1,xod(icont),xscal(icont)
               do j=1,NN
                dust(icont,j)=dust(icont,j)/xscal(icont)
               enddo
-              nx1=nx1+3
           endif
           if(varident(ivar,3).eq.10)then
               icont=int(varparam(ivar,1))
@@ -374,11 +364,7 @@ C              print*,'gsetrad',od1,xod(icont),xscal(icont)
               do j=1,NN
                dust(icont,j)=dust(icont,j)/xscal(icont)
               enddo
-              nx1=nx1+4
           endif
-          if(varident(ivar,3).eq.11)nx1=nx1+2
-          if(varident(ivar,3).eq.12)nx1=nx1+3
-          if(varident(ivar,3).eq.13)nx1=nx1+3
           if(varident(ivar,3).eq.14.or.varident(ivar,3).eq.15)then
               icont=abs(varident(ivar,1))
               od1=exp(xn(nx1+1))
@@ -389,10 +375,11 @@ C              print*,'gsetrad',od1,xod(icont),xscal(icont)
               do j=1,NN
                dust(icont,j)=dust(icont,j)/xscal(icont)
               enddo
-
-              nx1=nx1+3
-
           endif
+
+          np = npvar(varident(ivar,3),NN)
+
+          nx1=nx1+np
 
          else 
 

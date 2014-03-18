@@ -393,7 +393,7 @@ C        total sum or vmrs=1 for AMFORM=1 format profile
 
 C       Look up number of parameters needed to define this type of profile
         NP = NPVAR(VARIDENT(IVAR,3),NPRO)
-
+        print*,'IVAR,VARIDENT,NP',IVAR,(VARIDENT(IVAR,I),I=1,3),NP
         IF(VARIDENT(IVAR,3).EQ.0)THEN
 C        Model 0. Continuous profile
 C        ***************************************************************
@@ -797,7 +797,7 @@ C        Q is specific density = particles/gram = particles/cm3 x g/cm3
           DX=0.05*XN(NXTEMP+ITEST-1)
           IF(DX.EQ.0.)DX=0.1
 
-          print*,'ITEST,IPAR,DX = ',ITEST,IPAR,DX
+          print*,'ITEST,IPAR,XN,DX = ',ITEST,IPAR,DX
           print*,'XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
           IF(ITEST.EQ.2)THEN
             XDEEP=EXP(XN(NXTEMP+1)+DX)
@@ -808,7 +808,7 @@ C        Q is specific density = particles/gram = particles/cm3 x g/cm3
           IF(ITEST.EQ.4)THEN
             HKNEE = XN(NXTEMP+3)+DX
           ENDIF
-          print*,'XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
+          print*,'Mod: XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
 
          
           JFSH=-1
@@ -830,7 +830,6 @@ C          Calculate density of atmosphere (g/cm3)
            OD(J)=OD(J+1)+(ND(J) - ND(J+1))*XFAC*1E5
            Q(J)=ND(J)/RHO
            DQDH(J) = DNDH(J)/RHO
-           print*,'Diag: ',J,XFAC,OD(J),Q(J)
            IF(H(J).LE.HKNEE.AND.JFSH.LT.0)THEN
             F = (HKNEE-H(J))/DELH
             XOD = (1.-F)*OD(J) + F*OD(J+1)
@@ -861,8 +860,10 @@ C         post-processing in gsetrad.f
 
            IF(ITEST.EQ.1)THEN
             X1(J)=Q(J)
+C            print*,'J,X1(J)',J,X1(J)
            ELSE
             XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
+C            PRINT*,'ITEST,J,XMAP',ITEST,J,Q(J),X1(J),(Q(J)-X1(J))/DX
            ENDIF
 
            DNDH(J)=DNDH(J)*XDEEP/XOD
@@ -1704,7 +1705,7 @@ C      print*,'subprofretg. Writing aerosol.prf'
       WRITE(2,*)NPRO, NCONT
       DO 41 I=1,NPRO
         WRITE(2,*) H(I),(CONT(J,I),J=1,NCONT)
-C        print*,H(I),(CONT(J,I),J=1,NCONT)
+C        print*,'subprofretg',H(I),(CONT(J,I),J=1,NCONT)
 41    CONTINUE
       CLOSE(2)
 

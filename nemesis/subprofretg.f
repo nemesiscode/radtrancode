@@ -797,7 +797,8 @@ C        Q is specific density = particles/gram = particles/cm3 x g/cm3
           DX=0.05*XN(NXTEMP+ITEST-1)
           IF(DX.EQ.0.)DX=0.1
 
-          print*,'ITEST,IPAR,XN,DX = ',ITEST,IPAR,DX
+          IF(ITEST.GT.1)print*,'ITEST,IPAR,XN,DX = ',ITEST,IPAR,
+     1		XN(NXTEMP+ITEST-1),DX
           print*,'XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
           IF(ITEST.EQ.2)THEN
             XDEEP=EXP(XN(NXTEMP+1)+DX)
@@ -860,7 +861,7 @@ C         post-processing in gsetrad.f
 
            IF(ITEST.EQ.1)THEN
             X1(J)=Q(J)
-C            print*,'J,X1(J)',J,X1(J)
+            print*,'J,X1(J)',J,X1(J)
            ELSE
             XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
 C            PRINT*,'ITEST,J,XMAP',ITEST,J,Q(J),X1(J),(Q(J)-X1(J))/DX
@@ -1705,7 +1706,7 @@ C      print*,'subprofretg. Writing aerosol.prf'
       WRITE(2,*)NPRO, NCONT
       DO 41 I=1,NPRO
         WRITE(2,*) H(I),(CONT(J,I),J=1,NCONT)
-C        print*,'subprofretg',H(I),(CONT(J,I),J=1,NCONT)
+        print*,'subprofretg',H(I),(CONT(J,I),J=1,NCONT)
 41    CONTINUE
       CLOSE(2)
 

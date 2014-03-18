@@ -181,10 +181,10 @@ C     Now sort wavelength arrays
       enddo      
       if(iswitch.eq.1)goto 41
 
-      print*,'ForwardnogPT vconv:'
-      do i=1,nconv1
-       print*,i,vconv1(i)
-      enddo
+C      print*,'ForwardnogPT vconv:'
+C      do i=1,nconv1
+C       print*,i,vconv1(i)
+C      enddo
 
       call setup(runname,gasgiant,nmu,mu,wtmu,isol,dist,lowbc,
      1 galb,nf,nphi,layht,tsurf,nlayer,laytyp,layint)

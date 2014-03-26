@@ -443,6 +443,7 @@ C        Check to see if log numbers have gone out of range
              goto 145
             endif
            endif
+
            if(varident(ivar,3).eq.16.and.j.eq.ix) then
             if(xn1(j).lt.1.0) then
              print*,'Temperature has gone negative, Increase alambda'
@@ -452,6 +453,17 @@ C        Check to see if log numbers have gone out of range
             endif
            endif
           endif
+
+          if(varident(ivar,1).eq.444.and.j.eq.ix+1)then
+           if(xn1(j).lt.0.01)then
+             print*,'Variance of size distribution gone too small,'
+             print*,'Increase alambda'
+             alambda = alambda*10.0		! increase Marquardt brake
+             if(alambda.gt.1e10)alambda=1e10
+             goto 145
+           endif
+          endif
+
          enddo
          ix=ix+np
         enddo

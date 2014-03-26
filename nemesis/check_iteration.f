@@ -32,7 +32,17 @@ C      then send error flag.
           if(ilog.eq.0.and.tmp(i).lt.0.)icheck=1
          enddo
        endif
+
+       if(varident(ivar,1).eq.444)then
+C       Check to see if the width of the size distribution has gone too
+C       small, which will muck up Mie Scattering
+
+        if(tmp(2).lt.0.01)icheck=1
+
+       endif
+
        istart=istart+np
+
 1000  continue
  
       return

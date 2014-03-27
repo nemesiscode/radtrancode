@@ -106,7 +106,7 @@ C     Set measurement vector and source vector lengths here.
       real yn1(my),s1(mx,mx),kk(my,mx)
       real wgeom(mgeom,mav),flat(mgeom,mav)
       real vwaveT(mwave),vconvT(mconv)
-      integer nwaveT,nconvT,npvar
+      integer nwaveT,nconvT,npvar,jj
       logical gasgiant
 
       double precision s1d(mx,mx),sai(mx,mx)
@@ -455,9 +455,14 @@ C        Check to see if log numbers have gone out of range
           endif
 
           if(varident(ivar,1).eq.444.and.j.eq.ix+1)then
-           if(xn1(j).lt.0.01)then
+           if(exp(xn1(j)).lt.0.01)then
              print*,'Variance of size distribution gone too small,'
-             print*,'Increase alambda'
+             do jj=1,nx
+              print*,jj,xn1(jj)
+             enddo
+             print*,j,ix,exp(xn1(j))
+             print*,'Increase alambda',alambda
+             stop
              alambda = alambda*10.0		! increase Marquardt brake
              if(alambda.gt.1e10)alambda=1e10
              goto 145

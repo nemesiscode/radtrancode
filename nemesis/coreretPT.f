@@ -382,7 +382,7 @@ C       Put output spectrum into temporary spectrum yn1 with
 C       temporary kernel matrix kk1. Does it improve the fit? 
 c	print*,xn1(1),xn(1),x_out(1),'jm3'
 
-        call check_iteration(nvar,varident,xn,npro,ineg)
+        call check_iteration(nvar,varident,varparam,xn,npro,ineg)
         if(ineg.eq.1)then
 C        Temperature gone negative. Increase brakes and try again
          xchi=-1.

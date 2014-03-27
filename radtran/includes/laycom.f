@@ -110,7 +110,7 @@ C
 C	Variables to describe atmospheric calculations.
 C
 C-----------------------------------------------------------------------
-      LOGICAL LIMB,NADLAY,WF,CG,THERM,BROAD,ABSORB,BINBB,SCATTER
+      LOGICAL LIMB,NADLAY,WF,CG,THERM,BROAD,ABSORB,BINBB,SCATTER     
 C LIMB: =.TRUE. if limb calculation.
 C WF: =.TRUE. if weighting function calculation.
 C CG: =.TRUE. if curtis-godson calculation.
@@ -120,10 +120,11 @@ C ABSORB: =.TRUE. if calculate absorption instead of transmission.
 C BINBB: =.TRUE. if calculate planck function at centre of bin in genlbl.
 C SCATTER: = .TRUE. if full scattering calculation.
 
-      LOGICAL SINGLE,HEMISP,NEARLIMB
+      LOGICAL SINGLE,HEMISP,NEARLIMB,NETFLUX
 C SINGLE: =.TRUE. if single-scattering calculation.
 C HEMISP: =.TRUE. if hemispherical calculation.
 C NEARLIMB: =.TRUE. if calculating near limb in a spherical atmosphere
+C NETFLUX: =.TRUE. if doing net flux calculation
 
       REAL HT,ANGLE
 C HT: lowest height to use for the calculation, the tangent height

@@ -129,7 +129,7 @@ C     First skip header
        ELSE
         READ(1,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
        ENDIF
-       print*,IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+C       print*,IPLANET,LATITUDE,NPRO,NVMR,MOLWT
        IF(NPRO.GT.MAXPRO)THEN
         PRINT*,'Error in subprofretg. NPRO>MAXPRO ',NPRO,MAXPRO
         STOP
@@ -320,12 +320,12 @@ C     First skip header
 
       NXTEMP=0
       DO 1000 IVAR = 1,NVAR
-       PRINT*,'SUBPROFRETG: IVAR = ',IVAR
+C       PRINT*,'SUBPROFRETG: IVAR = ',IVAR
        JCONT=-1
        JSPEC=-1
        JVMR=-1
        IPAR=-1
-       print*,(varident(ivar,j),j=1,3)      
+C       print*,(varident(ivar,j),j=1,3)      
        IF(VARIDENT(IVAR,1).LE.100)THEN
         IF(VARIDENT(IVAR,1).EQ.0)THEN
 C        variable is Temperature
@@ -374,10 +374,11 @@ C        Must be gas v.m.r., find which one
      1     VARIDENT(IVAR,2).EQ.ISOGAS(IVMR))JVMR = IVMR
          ENDDO
          IF(JVMR.LT.1)THEN
-          PRINT*,'Subprofretg: Gas could not be found'
+          PRINT*,'Subprofretg: Gas could not be found',
+     1     VARIDENT(IVAR,1),VARIDENT(IVAR,2)
           STOP
          ENDIF
-         print*,'Gas : ',IDGAS(JVMR),ISOGAS(JVMR)
+C         print*,'Gas : ',IDGAS(JVMR),ISOGAS(JVMR)
 C        Set ISCALE=0 for this gas to prevent vmr being scaled to give a 
 C        total sum or vmrs=1 for AMFORM=1 format profile
          ISCALE(JVMR)=0
@@ -388,12 +389,12 @@ C        total sum or vmrs=1 for AMFORM=1 format profile
 
         ENDIF
 
-        print*,'VARIDENT : ',VARIDENT(IVAR,1),VARIDENT(IVAR,2),
-     1    VARIDENT(IVAR,3)
+C        print*,'VARIDENT : ',VARIDENT(IVAR,1),VARIDENT(IVAR,2),
+C     1    VARIDENT(IVAR,3)
 
 C       Look up number of parameters needed to define this type of profile
         NP = NPVAR(VARIDENT(IVAR,3),NPRO)
-        print*,'IVAR,VARIDENT,NP',IVAR,(VARIDENT(IVAR,I),I=1,3),NP
+C        print*,'IVAR,VARIDENT,NP',IVAR,(VARIDENT(IVAR,I),I=1,3),NP
         IF(VARIDENT(IVAR,3).EQ.0)THEN
 C        Model 0. Continuous profile
 C        ***************************************************************
@@ -652,8 +653,8 @@ C        ***************************************************************
           STOP
          ENDIF
 
-         print*,'Requested knee pressure : ',PKNEE
-         print*,'Snapping to : ',P(JFSH)
+C         print*,'Requested knee pressure : ',PKNEE
+C         print*,'Snapping to : ',P(JFSH)
 
          X1(JFSH)=XDEEP
 
@@ -797,9 +798,11 @@ C        Q is specific density = particles/gram = particles/cm3 x g/cm3
           DX=0.05*XN(NXTEMP+ITEST-1)
           IF(DX.EQ.0.)DX=0.1
 
-          IF(ITEST.GT.1)print*,'ITEST,IPAR,XN,DX = ',ITEST,IPAR,
-     1		XN(NXTEMP+ITEST-1),DX
-          print*,'XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
+          IF(ITEST.GT.1)THEN
+C            print*,'ITEST,IPAR,XN,DX = ',ITEST,IPAR,
+C     1		XN(NXTEMP+ITEST-1),DX
+C            print*,'XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
+          ENDIF
           IF(ITEST.EQ.2)THEN
             XDEEP=EXP(XN(NXTEMP+1)+DX)
           ENDIF
@@ -809,7 +812,7 @@ C        Q is specific density = particles/gram = particles/cm3 x g/cm3
           IF(ITEST.EQ.4)THEN
             HKNEE = XN(NXTEMP+3)+DX
           ENDIF
-          print*,'Mod: XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
+C          print*,'Mod: XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
 
          
           JFSH=-1
@@ -857,11 +860,12 @@ C         post-processing in gsetrad.f
            NTEST=ISNAN(Q(J))
            IF(NTEST)THEN
             print*,'Error in subprofretg.f, cloud density is NAN'
+	    STOP
            ENDIF
 
            IF(ITEST.EQ.1)THEN
             X1(J)=Q(J)
-            print*,'J,X1(J)',J,X1(J)
+C            print*,'J,X1(J)',J,X1(J)
            ELSE
             XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
 C            PRINT*,'ITEST,J,XMAP',ITEST,J,Q(J),X1(J),(Q(J)-X1(J))/DX
@@ -1194,7 +1198,7 @@ C        ***************************************************************
 
          Y0=HKNEE
 
-         print*,'Xdeep, hknee, xwid',XDEEP,HKNEE,XWID
+C         print*,'Xdeep, hknee, xwid',XDEEP,HKNEE,XWID
 
 C        **** Want to normalise to get optical depth right. ***
 C        ND is the particles per cm3 (but will be rescaled)
@@ -1229,7 +1233,7 @@ C        Q(J)=ND(J)/RHO
 C        Empirical correction to XOD
          XOD = XOD*0.25
 
-         print*,'XOD = ',XOD
+C         print*,'XOD = ',XOD
 
 
          DO J=1,NPRO
@@ -1300,7 +1304,7 @@ C        Q(J)=ND(J)/RHO
 C        Empirical correction to XOD
          XOD = XOD*0.25
 
-         print*,'XOD = ',XOD
+C         print*,'XOD = ',XOD
 
          DO J=1,NPRO
          
@@ -1706,7 +1710,7 @@ C      print*,'subprofretg. Writing aerosol.prf'
       WRITE(2,*)NPRO, NCONT
       DO 41 I=1,NPRO
         WRITE(2,*) H(I),(CONT(J,I),J=1,NCONT)
-        print*,'subprofretg',H(I),(CONT(J,I),J=1,NCONT)
+C        print*,'subprofretg',H(I),(CONT(J,I),J=1,NCONT)
 41    CONTINUE
       CLOSE(2)
 

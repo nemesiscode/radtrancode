@@ -1,12 +1,14 @@
-      subroutine check_iteration(nvar,varident,varparam,xn,npro,icheck)
+      subroutine check_iteration(nvar,varident,varparam,xn,npro,
+     1  icheck)
 C     **********************************************************
 C     Subroutine to check that profiles are still valid. Called by coreretPT.
 C     **********************************************************      
+      implicit none
       include '../radtran/includes/arrdef.f'
       include 'arraylen.f'
-      integer nvar,nx,varident(mvar,3),icheck
+      integer nvar,nx,varident(mvar,3),icheck,npro,i,ilog
       real xn(mx),tmp(maxpro),varparam(mvar,mparam)
-      integer np,npvar,istart,logflag
+      integer np,npvar,istart,logflag,imod,itype,ivar
 
       icheck=0
       istart=0
@@ -28,7 +30,7 @@ C      See if this is a temperature model. If temperatures gone negative
 C      then send error flag.
        if(itype.eq.0) then 
          do i=1,np
-          ilog=logflag(itype,imod,ip)
+          ilog=logflag(itype,imod,i)
           if(ilog.eq.0.and.tmp(i).lt.0.)icheck=1
          enddo
        endif

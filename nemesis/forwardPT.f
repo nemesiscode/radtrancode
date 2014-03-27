@@ -323,8 +323,8 @@ C         print*,ipath,dh,area
 
         write(9,*)area,yn(iconv)
 
-        print*,'Areas',area0,area1,area,area1+area,yn(iconv),
-     1    100*area1/area0
+C        print*,'Areas',area0,area1,area,area1+area,yn(iconv),
+C     1    100*area1/area0
 
         do j=1,nx
              kk(iconv,j) = sngl(100.*darea(j)/area0)

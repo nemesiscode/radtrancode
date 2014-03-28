@@ -106,7 +106,7 @@ C     output section
 516   FORMAT(' original name of this file: ',1A30)
       IF(ICONV.GE.0.AND.ICONV.LT.10)THEN
        WRITE(4,507)VMIN,DELV,NPOINT,FWHM
-507    FORMAT(1X,F10.3,F11.6,I10,F8.3,4X,' :Vmin dV Npoints FWHM-LBL')
+507    FORMAT(1X,F13.6,F11.6,I10,F8.3,4X,' :Vmin dV Npoints FWHM-LBL')
        WRITE(4,508)WING,VREL
 508    FORMAT(1X,2F8.3,6X,' : wing continuum limit and overall limit')
       ELSE IF(ICONV.GE.10.AND.ICONV.LT.20)THEN

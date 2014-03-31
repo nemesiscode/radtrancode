@@ -41,6 +41,7 @@ F_SOURCES = \
 	subcirsrtf_waveS.f \
 	subcirsrtf_waveMC.f \
 	dumpflux.f \
+	streamflux.f \
 	impflux.f \
 	dumpfluxsol.f \
 	impfluxsol.f \

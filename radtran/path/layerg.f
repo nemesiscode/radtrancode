@@ -241,6 +241,7 @@ C Initialise the variables describing the layer
 121     CONTINUE
         NCONT = NDUST
         FLAGH2P = JFP
+        FLAGC = JFC  
         DO 122 J=1,NCONT
           CONT(J,I) = 0.0
           XIFC(J,I) = 0.0

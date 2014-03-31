@@ -125,7 +125,7 @@ C-----------------------------------------------------------------------
           npk = np(i)
           ntk = nt(i)
           ngk = ng(i)
-          print*,'read_klist : ngk = ',ngk
+C          print*,'read_klist : ngk = ',ngk
           delvk = delx(i)
           fwhmk = fwhm1(i)
           do j=1,npoint
@@ -185,6 +185,7 @@ C
 C	Check some variable sizes.
 C
 C-----------------------------------------------------------------------
+C      print*,'test'
 
       IF (ngk.GT.maxg) THEN
         WRITE(*,*)' READ_KLIST.f :: Error: Too many g-ordinates.'
@@ -254,7 +255,7 @@ C-----------------------------------------------------------------------
               DO ipo=1,npoint
                dx = 100*ABS((vwave(k)-XCENK(ipo))/XCENK(ipo))
                IF(dx.lt.MAXDX)THEN
-                  print*,'read_klist',k,vwave(k),ipo,xcenk(ipo)
+C                  print*,'read_klist',k,vwave(k),ipo,xcenk(ipo)
                   imatch=1
                   IF (iflag(k,i).EQ.0) THEN
                     iflag(k,i) = 1
@@ -262,7 +263,7 @@ C-----------------------------------------------------------------------
                     xmink(k,i) = xmin(j)
                     delk(k,i) = delx(j)
                     ireck(k,i) = irec(j)+npk*ntk*ngk*(ipo-1)
-                    print*,'k,i,ireck(k,i)',k,i,ireck(k,i)
+C                    print*,'k,i,ireck(k,i)',k,i,ireck(k,i)
                   ENDIF
                ENDIF
               ENDDO

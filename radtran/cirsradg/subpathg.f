@@ -127,7 +127,6 @@ C Initialise flags.
       CLRLAY = .TRUE.
       COMB = .TRUE.
       JFP = 0
-      print*,'Subpathg, JFP = ',JFP
 
       DO I=1,MAXPRO
        DO J=1,MAXCON

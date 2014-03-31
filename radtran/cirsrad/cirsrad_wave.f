@@ -110,7 +110,8 @@ C		Passed variables
      2		scale(incdim,npath), emtemp(incdim,npath), hfp(nlayer), 
      3		output(npath,nwave),bb(maxlay,maxpat),xf,tsurf,dv,
      4          hfc(nlayer),vwavef(maxbin),basep(nlayer),baseh(nlayer),
-     5          esurf,radground,totam(nlayer),RADIUS1,xdist,xfac
+     5          esurf,radground,totam(nlayer),RADIUS1,xdist,xfac,
+     6		eoutput(npath,nwave)
         REAL    vem(MAXSEC),emissivity(MAXSEC),interpem
         REAL	xmu,dtr,xt1
         INTEGER ifc(limcont,nlayer),nem,j0
@@ -156,7 +157,7 @@ C		Scattering variables
 
 C		Internal variables
 
-	INTEGER	I, J, K, L, Ipath, Ig, nlays
+	INTEGER	I, J, K, L, Ipath, Ig, nlays, lstcel
 	REAL	utotl(maxlay), qh(maxlay), qhe(maxlay),
      1		frac(maxlay,maxgas), qh_he(maxlay), dist1,
      2		x, taucon(maxlay)
@@ -164,7 +165,8 @@ C		Internal variables
         REAL    taugasc(maxlay),xp
         REAL    tau, tau2, asec(maxsec), bsec(maxsec),
      1          tausc(maxcon), taus(maxlay),
-     5		tautmp(maxlay), corkout(maxpat,maxg), 
+     5		tautmp(maxlay), corkout(maxpat,maxg),
+     7		ecorkout(maxpat,maxg),ctrans(mpoint,maxg),
      6		planck_wave, tmp, error, asec2(maxsec), 
      3          bsec2(maxsec), xsec2(2,maxcon,maxsec), muemiss,
      3          muinc, f(maxlay), fint(maxlay), tmp1, 
@@ -176,6 +178,7 @@ C		Internal variables
         REAL	fdown(maxlay,maxg),fwhmk,
      1          delvk,tauray(maxlay),f1(maxlay),g11(maxlay),
      2          g21(maxlay),taur(maxlay) 
+	REAL ftop(maxg)
 	DOUBLE PRECISION	tr, trold, taud, dtmp1, dtmp2, dpi, 
      1          dphase, calpha, dmuinc, dmuemiss, draddeg, dinc, demiss,
      2          tausun
@@ -873,12 +876,15 @@ C				center.
 C		8	(Combined Cell,Atm) The product of two
 C				previous output paths. NOT SUPPORTED HERE.
 C		11	(Atm) Contribution function.
+C		13	(Atm) SCR Sideband
+C		14	(Atm) SCR Wideband
 C		15	(Atm) Multiple scattering (multiple models)
 C		16	(Atm) Single scattering approximation.
-C		20	(Atm) Net flux calculation
+C		20	(Atm) Net flux calculation (thermal)
 C		21	(Atm) Limb scattering calculation
 C		22	(Atm) Limb scattering calculation using precomputed
 C			      internal radiation field.
+C		23	(Atm) Net flux calculation (scattering)
 C	then end the loop over the g ordinate.
 C
 C-----------------------------------------------------------------------
@@ -987,6 +993,13 @@ C               matrix inversion crashing
      1                  xfac*sngl((trold-tr)) * bb(J,Ipath)
  			trold = tr
 		enddo
+        ELSEIF (imod(ipath).eq.8) THEN
+C             model 8, product of two path outputs
+                print*,'8',layinc(1,Ipath),layinc(2,Ipath)
+                print*,corkout(layinc(1,Ipath),Ig),
+     1            corkout(layinc(2,Ipath),Ig)
+ 		corkout(ipath,Ig)=corkout(layinc(1,Ipath),Ig)*
+     1              corkout(layinc(2,Ipath),Ig)
 
 	ELSEIF (imod(ipath).EQ.11) THEN	
 
@@ -1005,6 +1018,25 @@ cc     1                  ' creating output'
      1                  sngl((trold-tr)) * bb(J,Ipath)
  			trold = tr
                 enddo
+
+        ELSEIF (imod(ipath).eq.13) THEN
+
+C          model 13, SCR sideband transmission (1-cell transmission)
+			taud = taus(J)
+
+           print*,'13 taus sig',taus(1),(1.0-exp(-taus(1)))
+           corkout(Ipath,Ig)=1.0-exp(-taus(1))
+
+           LSTCEL=IPATH
+
+        ELSEIF (imod(ipath).eq.14) THEN
+
+C          model 14 SCR wideband transmission
+           print*,'14 taus sig',taus(1),0.5*(1.0+exp(-taus(1)))
+
+           corkout(Ipath,Ig)=0.5*(1.0+exp(-taus(1)))
+
+           LSTCEL=IPATH
 
 	ELSEIF (imod(ipath).EQ.15) THEN
 
@@ -1263,7 +1295,7 @@ C		WRITE (*,*) ' Calculated: ', Ig, corkout(Ipath,Ig)
 	ELSEIF (imod(ipath).EQ.20)THEN
 
 cc		WRITE(*,*) 'CIRSRAD_WAVE: Imod= 20 =Net flux calculation,',
-cc     1                  ' creating output'
+cc     1        'thermal emission only. Creating output'
 
 C		Computes up and down flux at BOTTOM of each layer
 C		Compute once for Ipath=1
@@ -1398,15 +1430,8 @@ C       ************************************************************
                  call impfluxsol(LUNIS,ioff,nlayerf,nmuf,nff,umift,
      1                uplft,x,nwavef,vwavef,Ig,ng)
 
-                 if(Ig.eq.5.and.I.eq.1)then
-                 open(49,file='impfluxout.dat',status='unknown',
-     1            form='unformatted')
-                  write(49)umift
-                  write(49)uplft
-                 endif
 
                 endif
-                print*,'Imod = 22, Ipath = ',Ipath
 
 C                print*,(uplft(2,2,20,j),j=1,20)
 C                print*,(umift(2,2,20,j),j=1,20)
@@ -1464,10 +1489,70 @@ C               emission from ground.
                  corkout(Ipath,Ig) = corkout(Ipath,Ig) +
      1            sngl(trold) * radground
                 endif
-                if(Ig.eq.5.and.I.eq.1)then
-                 write(49)corkout(Ipath,Ig)
-                 close(49)
-                endif
+
+	ELSEIF (imod(ipath).EQ.23) THEN
+
+cc		WRITE(*,*) 'CIRSRAD_WAVE: Imod= 23 =Net flux calculation,',
+cc     1        ' multiple scattering'. Creating output'
+
+                if(ipath.eq.1)then
+
+
+		    do J = 1, nlays
+			if(Ig.eq.1)then
+                         bb(J,Ipath)=planck_wave(ispace,x,
+     1			   emtemp(J,Ipath))
+                        endif
+			bnu(J) = bb(J,Ipath)
+C                        print*,J,taus(J),taur(j)
+			IF(TAUSCAT(layinc(J,Ipath)).GT.0.0) THEN
+				dtmp1 = dble(tauscat(layinc(J,Ipath)))
+				dtmp2 = dble(tautmp(layinc(J,Ipath)))
+				eps(J) = 1.0d00 - dtmp1/dtmp2
+		        ELSE
+  				EPS(J)=1.0
+         		END IF
+
+
+			fcover(J) = HFC(layinc(J,Ipath))
+                        do k=1,ncont
+                         icloud(k,j)=IFC(k,layinc(J,Ipath))
+                        enddo
+		    enddo
+
+
+C               If tsurf > 0, then code assumes bottom layer is at the
+C               surface and so uses tsurf to compute radiation upwelling.
+C               Otherwise, code assumes optical depth is large and sets
+C               upwelling radiation field to local temperature.
+
+                   if(tsurf.le.0.0)then
+                    radground = bb(nlays,Ipath)
+                   else
+                    radground = esurf*planck_wave(ispace,x,tsurf)
+                   endif
+
+                   galb1=galb
+
+                   if(galb1.lt.0)then
+                         galb1 = dble(1.-esurf)
+                   endif
+
+                   do J=1,nmu
+                    radg(J)=radground
+                   enddo
+
+   	    	   call scloud11flux(radg, solar, sol_ang, 
+     1               lowbc, galb1, iray, mu1, wt1, nmu, nf, Ig, x,
+     2               vv, eps, bnu, taus, taur, 
+     3               nlays, ncont, lfrac, umif, uplf)
+
+                   call streamflux(nlays,nmu,mu1,wt1,radg,galb1,
+     1                ig,umif,uplf,fup,fdown,ftop)                    
+
+                 endif
+
+	         corkout(Ipath,Ig) = fup(Ipath,Ig) - fdown(Ipath,Ig)
 
 	ELSE
 		WRITE (*,*) ' Imod = ', imod(ipath), ' is not a valid',
@@ -1484,10 +1569,11 @@ C	Now integrate over g ordinates and then end loop over bins.
 C
 C-----------------------------------------------------------------------
 
+
 		DO Ipath = 1, npath
 			output(Ipath,I) = 0.
 			DO Ig = 1, ng
-				output(Ipath,I) = output(Ipath,I) + 
+			 output(Ipath,I) = output(Ipath,I) + 
      1					corkout(Ipath,Ig) * delg(Ig)
 			ENDDO
 

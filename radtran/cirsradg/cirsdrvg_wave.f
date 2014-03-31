@@ -68,6 +68,9 @@ C	Write a header
 C
 C-----------------------------------------------------------------------
 
+C     Read in gas information
+      CALL RESERVEGAS
+
 C Obtain the system time for use in determining the total time used by the
 C program since execution.
       CALL gettime(time)
@@ -226,7 +229,26 @@ C
 C       Get scattering type and Ortho/Para information.
 C
 C-----------------------------------------------------------------------
-      itype=11
+40    WRITE(*,*)'Allowed scattering routines: '
+      WRITE(*,*)'       11   scloud11wave '
+      WRITE(*,*)'       12   scloud12wave '
+      WRITE(*,*)'       13   scloud11flux '
+      WRITE(*,*)' Enter option : '
+      READ(*,*)IType
+      IF((IType.lt.11).or.(IType.GT.13))THEN
+        WRITE(*,*)' Parameter must lie in allowed range (11-13)'
+        GOTO 40
+      ENDIF
+
+      WRITE(*,*)'Enter surface temperature : '
+      READ(*,*)tsurf
+
+
+      nem=2
+      vem(1)=-100.0
+      vem(2)=1e7
+      emissivity(1)=1.0
+      emissivity(2)=1.0
 
 
       CALL READFLAGS(RUNNAME,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)

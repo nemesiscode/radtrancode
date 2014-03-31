@@ -175,7 +175,7 @@ C Definition of input and output variables ...
 
 
 C Definition of general variables ...
-      INTEGER i,j,k,l,ipath,ig,iray
+      INTEGER i,j,k,l,ipath,ig,iray,ipath1,lstcel
       INTEGER k1,nlays,nparam
       REAL ppp(maxgas),aamount(maxgas),vv
       REAL dbdt(maxlay,maxpat),bb(maxlay,maxpat)
@@ -306,7 +306,6 @@ C Common blocks ...
 
 
 C********************************* CODE ********************************
-
 
       CALL check_limits(nlayer,npath,ngas,ncont,nsec,
      1 ng,npk,ntk,nlayin,layinc)
@@ -838,6 +837,42 @@ C           matrix inversion crashing
               ENDDO
 
             ENDDO
+
+          ELSEIF(imod(ipath).eq.8)then
+
+C           model 8, product of two path outputs
+
+            corkout(ipath,Ig)=corkout(layinc(1,Ipath),Ig)*
+     1              corkout(layinc(2,Ipath),Ig)
+
+            
+            ipath1=layinc(1,Ipath)
+
+            nlays=nlayin(ipath1)
+
+            DO j=1,nlays
+              DO k=1,nparam
+                dcoutdq(ipath,ig,j,k) = dcoutdq(ipath1,ig,j,k)*
+     1            corkout(layinc(2,Ipath),Ig)
+              ENDDO
+            ENDDO
+
+          ELSEIF (imod(ipath).eq.13) THEN
+
+C          model 13, SCR sideband transmission (1-cell transmission)
+                        taud = taus(J)
+
+           corkout(Ipath,Ig)=1.0-exp(-taus(1))
+
+           LSTCEL=IPATH
+
+          ELSEIF (imod(ipath).eq.14) THEN
+
+C          model 14 SCR wideband transmission
+
+           corkout(Ipath,Ig)=0.5*(1.0+exp(-taus(1)))
+
+           LSTCEL=IPATH
 
 
           ELSEIF(imod(ipath).EQ.15)then

@@ -127,6 +127,7 @@ C Initialise flags.
       CLRLAY = .TRUE.
       COMB = .TRUE.
       JFP = 0
+      print*,'Subpathg, JFP = ',JFP
 
       DO I=1,MAXPRO
        DO J=1,MAXCON
@@ -216,7 +217,7 @@ C Skipping blank lines.
       ELSE IF (TEXT(1:12).EQ.'FCLOUD MODEL')THEN
         fcfile(1:88) = text(13:100)
         fcfile(89:100) = '            '    ! must be this way for IFC
-        CALL RFPMOD(fcfile)   
+        CALL RFCMOD(fcfile)   
       ELSE IF (TEXT(1:12).EQ.'DUST SPECTRA') THEN
         XFILE(1:) = TEXT(14:)
         CALL LOCASE(XFILE)

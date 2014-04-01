@@ -74,10 +74,13 @@ C     ********** Scattering variables **********************
 C     Solar spectrum variables and flags
       integer iform1,iread,solnpt
       real solwave(maxbin),solrad(maxbin),solradius
-      character*100 solfile,solname
-      logical solexist
+      character*100 solfile,solname,cellfile
+      integer cellngas,cellid(maxgas),celliso(maxgas),icread
+      real cellength,cellpress,celltemp,cellvmr(maxgas)
+      logical solexist,cellexist
       common/solardat/iread, iform, solradius, solwave, solrad,  solnpt
-
+      common/celldat/icread,cellngas,cellid,celliso,cellvmr,cellength,
+     1  cellpress,celltemp
 
 C     ******************************************************
 
@@ -187,6 +190,17 @@ C     if present.
    
       iform=iform1
 
+
+C     See if there is a SCR cell file present and read in
+C     if present.
+      icread=0
+      call file(runname,cellfile,'cel')
+      inquire(file=cellfile,exist=cellexist)
+      if(cellexist)then
+         icread=1
+         call readcell(cellfile)
+      endif
+
 C     Open spectra file
       lspec=37
       CALL file(runname,runname,'spx')
@@ -243,6 +257,12 @@ C     Read in measurement vector, obs. geometry and covariances
       call readnextspavX(lspec,iform,woff,xlat,xlon,ngeom,nav,ny,y,se,
      1  fwhm,nconv,vconv,angles,wgeom,flat,flon)
 
+      if(icread.eq.1)then
+       do igeom=1,ngeom
+        nconv(igeom)=nconv(igeom)/2
+       enddo
+      endif
+
 C     Read in forward modelling errors
       call forwarderr(ename,ngeom,nconv,vconv,woff,rerr)
 
@@ -256,6 +276,10 @@ C     Add forward errors to measurement covariances
         se(k)=se(k)+xerr**2
        enddo
       ENDDO
+
+C     If we are doing an SCR cell, then we only need half the 
+C     wavelengths in the spx file as we're calculating both WB and SB
+C     outputs
 
       if(ilbl.eq.0)then
 C     Calculate the tabulated wavelengths of c-k look up tables

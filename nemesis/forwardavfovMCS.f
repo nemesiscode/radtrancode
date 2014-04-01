@@ -441,8 +441,7 @@ C          pre-calculated array
      3      gradients)
 
 C          Need to assume order of paths. First path is assumed to be
-C          thermal emission, 2nd path is transmission to ground (if planet
-C          is not a gas giant)
+C          thermal emission
      
       
            ipath = 1
@@ -472,41 +471,6 @@ C          is not a gas giant)
             endif   
            enddo
           
-C          If planet is not a gas giant and observation is not at limb then
-C          we need to add the radiation from the ground
-           if(.not.gasgiant.and.emiss_ang.ge.0)then
-            ipath = 2
-          
-            do j=1,nconvtmp
-             vv = vconv(igeom,j)
-             esurf = interpem(nem,vem,emissivity,vv)
-             iconv=-1
-             do k=1,nconv1
-              if(vv.eq.vconv1(k))iconv=k
-             enddo
-
-             ioff1=nconv1*(ipath-1)+iconv
-
-             Bg = planck_wave(ispace,vv,tsurf)*esurf
-             print*,'Tsurf',ioff,j,vv,esurf,Bg,calcout(ioff1)
-             yn(ioff+j)=yn(ioff+j) + wgeom(igeom,iav)*calcout(ioff1)*Bg
-
-             do i=1,nx
-              ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + iconv
-              if(i.eq.jsurf)then
-                kk(ioff+j,i)=kk(ioff+j,i)+
-     1    wgeom(igeom,iav)*calcout(ioff1)*esurf*planckg_wave(ispace,
-     2    vv,tsurf)
-              else
-                kk(ioff+j,i)=kk(ioff+j,i) +
-     1               wgeom(igeom,iav)*gradients(ioff2)*Bg
-              endif
-             enddo
-          
-            enddo
-
-           endif
-
        endif
 
 
@@ -591,8 +555,7 @@ C          pre-calculated array
      3      gradients2)
 
 C          Need to assume order of paths. First path is assumed to be
-C          thermal emission, 2nd path is transmission to ground (if planet
-C          is not a gas giant)
+C          thermal emission
 
            ipath=1
            do j=1,nconvtmp
@@ -610,34 +573,6 @@ C          is not a gas giant)
 
            enddo
         
-
-C          If planet is not a gas giant and observation is not at limb then
-C          we need to add the radiation from the ground
-           if(.not.gasgiant.and.emiss_ang.ge.0)then
-            ipath = 2
-          
-            do j=1,nconvtmp
-             vv = vconv(igeom,j)
-             esurf = interpem(nem,vem,emissivity,vv)
-             iconv=-1
-             do k=1,nconv1
-              if(vv.eq.vconv1(k))iconv=k
-             enddo
-
-             ioff1=nconv1*(ipath-1)+iconv
-
-             Bg = planck_wave(ispace,vv,tsurf)*esurf
-             print*,ioff,j,vv,esurf,Bg,calcout(ioff1)
-             yn1(ioff+j)=yn1(ioff+j) + wgeom(igeom,iav)*
-     1        calcout(ioff1)*Bg
-
-             kk(ioff+j,jpre) = kk(ioff+j,jpre) + 
-     1         (yn1(ioff+j)-yn(ioff+j))/(pressR*delp)
-          
-            enddo
-
-           endif
-
            xn(jpre)=xn(jpre)-delp
 
         endif

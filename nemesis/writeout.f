@@ -70,11 +70,18 @@ C     ***********************************************************************
       real xlatx,varidentx(mvar,3),varparamx(mvar,mparam)
       real stx(mx,mx)
       integer nxx,xnx(mx),nvarx,nprox,jtanx,jprex,jradx
-      integer jsurfx,jalbx
-      character*100 runname,aname,buffer
-      logical gasgiant
+      integer jsurfx,jalbx,icread
+      character*100 runname,aname,buffer,cellfile
+      logical gasgiant,cellexist
 
 
+C     See if a cell file is present. If so we have two outputs per
+C     wavelength: SB and WB
+      call file(runname,cellfile,'cel')
+      inquire(file=cellfile,exist=cellexist)
+      icread=0
+      if(cellexist)icread=1
+     
 1     FORMAT(A)
 
 C     Output ny instead of nconv to keep format of mre file the same
@@ -189,6 +196,48 @@ C        Going back to default
 
        end do
        ioff = ioff+nconv(igeom)
+
+       if(icread.eq.1)then
+        do j=1,nconv(igeom)
+         i = ioff+j
+         err1 = sqrt(se(i))
+         if(y(i).ne.0)then
+          xerr1 = abs(100.0*err1/y(i))
+          relerr = abs(100.0*(y(i)-yn(i))/y(i))
+         else
+          xerr1 = -1.0
+          relerr = -1.0
+         endif
+         if(xerr1.gt.100.0)xerr1=100.0
+         if(relerr.gt.100.0)relerr=100.0
+
+         if(iform.eq.0)then
+          write(lout,1000)i,vconv(igeom,j),y(i)*xfac,err1*xfac,
+     & xerr1,yn(i)*xfac,relerr
+
+         elseif(iform.eq.1)then
+          write(lout,1010)i,vconv(igeom,j),y(i)*xfac,err1*xfac,
+     & xerr1,yn(i)*xfac,relerr
+
+         elseif(iform.eq.2)then
+          write(lout,1020)i,vconv(igeom,j),y(i)*xfac,err1*xfac,
+     & xerr1,yn(i)*xfac,relerr
+
+         elseif(iform.eq.3)then
+          write(lout,1030)i,vconv(igeom,j),y(i)*xfac,err1*xfac,
+     & xerr1,yn(i)*xfac,relerr
+
+         else
+C         Going back to default
+          write(lout,1000)i,vconv(igeom,j),y(i)*xfac,err1*xfac,
+     & xerr1,yn(i)*xfac,relerr
+         endif
+
+        end do
+        ioff = ioff+nconv(igeom)
+
+       endif
+
       enddo
 
 1000  format(1x,i4,1x,f10.4,1x,e15.8,1x,e15.8,1x,f7.2,1x,e15.8,1x,f9.5)

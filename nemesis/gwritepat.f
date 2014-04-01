@@ -34,7 +34,7 @@ C     *******************************************************************
       CHARACTER*100 RUNNAME
       REAL LAYHT,EMISS_ANG,VCONV(MCONV),LAYANG,LAYHT1,DELV,FWHM
       REAL SOL_ANG,E1
-      INTEGER ISCAT,LAYTYP,LAYINT,NLAYER,NCONV,LAYBOT,FLAGH2P
+      INTEGER ISCAT,LAYTYP,LAYINT,NLAYER,NCONV,LAYBOT,FLAGH2P,I
       CHARACTER*80 TEXT
       LOGICAL GASGIANT
 c  ** variable for reflected atmos
@@ -47,6 +47,12 @@ c  ** variables for solar reflected cloud **
       logical reflecting_atmos
       common /refl_cloud_params/refl_cloud_albedo,reflecting_atmos
 
+      integer cellngas,cellid(maxgas),celliso(maxgas),icread
+      real cellength,cellpress,celltemp,cellvmr(maxgas)
+      common/celldat/icread,cellngas,cellid,celliso,cellvmr,cellength,
+     1  cellpress,celltemp
+
+      
       CALL FILE(RUNNAME,RUNNAME,'pat')
 
       OPEN(31,FILE=RUNNAME,STATUS='UNKNOWN')
@@ -159,25 +165,6 @@ C     sol_ang is then the tangent altitude)
       WRITE(31,1)' '
 
       
-      print*,'gwritepat: GASGIANT = ',GASGIANT
-C     If planet is not a gas giant and observation is not at limb then
-C     we need to also calculate the transmission to the ground if
-C     the calculation is non-scattering
-      IF(.NOT.GASGIANT.AND.EMISS_ANG.GE.0.AND.ISCAT.EQ.0)THEN
-       WRITE(31,1)'atm'
-       TEXT='nadir'
-       LAYBOT=1
-       WRITE(31,4)TEXT,EMISS_ANG,LAYBOT    
-       WRITE(31,1)'notherm'
-       WRITE(31,1)'noscatter'
-       WRITE(31,1)'nowf'
-       WRITE(31,1)'nocg'
-       WRITE(31,1)'noabsorb'
-       WRITE(31,1)'binbb'
-       WRITE(31,1)'nobroad'
-       WRITE(31,1)' '
-      ENDIF
-
 c  ** if rflfile exists then insert stuff for reflecting path **
       CALL FILE(RUNNAME,rflfile,'rfl')
       inquire(file=rflfile,exist=fexist)
@@ -206,10 +193,29 @@ c	** write reflecting atmosphere to pat file **
       else 
          reflecting_atmos = .FALSE.
       endif
-      
+
+      if(icread.eq.1)then
+       write(31,1)' '
+       write(31,1)'cell'
+       WRITE(31,7) cellngas
+7	   FORMAT('gases ',i3)
+       do i=1,cellngas
+        write(31,8)cellid(i),celliso(i),cellvmr(i)
+8       format(i3,i3,f8.5)
+       enddo
+       write(31,9)cellength
+9      format('length ',f9.4)
+       write(31,1)'scr'
+       write(31,*)cellpress,celltemp
+       write(31,1)' '
+      endif      
       
       WRITE(31,1)'clrlay'
-      WRITE(31,1)'nocombine'
+      if(icread.ne.1)then
+       WRITE(31,1)'nocombine'
+      else
+       WRITE(31,1)'combine'
+      endif
 
       CALL FILE(RUNNAME,RUNNAME,'pra')
 

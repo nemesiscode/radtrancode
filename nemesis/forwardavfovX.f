@@ -95,6 +95,12 @@ C     **************************************************************
       real vem(maxsec),emissivity(maxsec)
       common /imiescat/imie1
 
+      integer cellngas,cellid(maxgas),celliso(maxgas),icread
+      real cellength,cellpress,celltemp,cellvmr(maxgas)
+      common/celldat/icread,cellngas,cellid,celliso,cellvmr,cellength,
+     1  cellpress,celltemp
+
+
 c  ** variables for solar refelcted cloud **
 	real solar
       real refl_cloud_albedo
@@ -224,150 +230,187 @@ C        Set up all files for a direct cirsrad run
      2    nx, xmap, vconv1, nconv1, npath, calcout, gradients)
 
 C        Need to assume order of paths. First path is assumed to be
-C        thermal emission, 2nd path is transmission to ground (if planet
-C        is not a gas giant)
+C        thermal emission
 
 
-         ipath = 1
-         do j=1,nconv1
-          iconv=-1
-          do k = 1,nconv1
-           if(vconv(igeom,j).eq.vconv1(k))iconv=k
+         print*,'Npath = ',npath
+
+         if(icread.ne.1)then
+          ipath = 1
+          do j=1,nconv1
+           iconv=-1
+           do k = 1,nconv1
+            if(vconv(igeom,j).eq.vconv1(k))iconv=k
+           enddo
+           if(iconv.lt.0)then
+            print*,'Error in forwardavfovX iconv<1'
+            stop
+           endif
+ 	   ioff1=nconv1*(ipath-1)+iconv
+           yn(ioff+j)=yn(ioff+j)+wgeom(igeom,iav)*calcout(ioff1)
           enddo
-          if(iconv.lt.0)then
-           print*,'Error in forwardavfovX iconv<1'
-           stop
-          endif
-	  ioff1=nconv1*(ipath-1)+iconv
-          yn(ioff+j)=yn(ioff+j)+wgeom(igeom,iav)*calcout(ioff1)
-         enddo
     
-         do i=1,nx
+          do i=1,nx
 
-          if(i.ne.jtan.and.i.ne.jpre.and.i.ne.jrad)then
-           do j=1,nconv1
-            iconv=-1
-            do k = 1,nconv1
-             if(vconv(igeom,j).eq.vconv1(k))iconv=k
+           if(i.ne.jtan.and.i.ne.jpre.and.i.ne.jrad)then
+            do j=1,nconv1
+             iconv=-1
+             do k = 1,nconv1
+              if(vconv(igeom,j).eq.vconv1(k))iconv=k
+             enddo
+             ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + iconv
+             kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*gradients(ioff2)
             enddo
-            ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + iconv
-            kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*gradients(ioff2)
-           enddo
-          endif
+           endif
 
-          if(i.eq.jrad)then
-           do j=1,nconv1
-            iconv=-1
-            do k = 1,nconv1
-             if(vconv(igeom,j).eq.vconv1(k))iconv=k
-            enddo
-  	    ioff1=nconv1*(ipath-1)+iconv
-            kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*
+           if(i.eq.jrad)then
+            do j=1,nconv1
+             iconv=-1
+             do k = 1,nconv1
+              if(vconv(igeom,j).eq.vconv1(k))iconv=k
+             enddo
+  	     ioff1=nconv1*(ipath-1)+iconv
+             kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*
      1          2.*calcout(ioff1)/RADIUS
-           enddo
-          endif
-         enddo
-
-C        If planet is not a gas giant and observation is not at limb then
-C        we need to add the radiation from the ground
-         if(.not.gasgiant.and.emiss_ang.ge.0)then
-          ipath = 2
-
-          do j=1,nconv1
-           vv = vconv(igeom,j)
-           iconv=-1
-           do k = 1,nconv1
-            if(vv.eq.vconv1(k))iconv=k
-           enddo
-
-           esurf = interpem(nem,vem,emissivity,vv)
-	   ioff1=nconv1*(ipath-1)+iconv
-
-           Bg = planck_wave(ispace,vconv1(j),tsurf)*esurf
-           xfac=1.
-           if(iform.eq.1.or.iform.eq.3)then
-            xfac=xfac*pi*4.*pi*(RADIUS*1e5)**2
+            enddo
            endif
-C          If a solar file exists and iform=1 we should divide the planet
-C          flux by the solar flux
-           if(iread.eq.999.and.iform.eq.1)then
-C            Set dist to -1 to get total power spectrum of star     
-             xdist=-1.0
-             call get_solar_wave(vconv1(j),xdist,solar)
-             xfac=xfac/solar
+
+           if(i.eq.jsurf)then
+            do j=1,nconv1
+             iconv=-1
+             do k = 1,nconv1
+              if(vconv(igeom,j).eq.vconv1(k))iconv=k
+             enddo
+  	     ioff1=nconv1*(ipath-1)+iconv
+             kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*
+     1          gradtsurf(ioff1)
+            enddo
            endif
-C          If doing integrated flux from planet need a factor to stop the
-C          matrix inversion crashing
-           if(iform.eq.3)xfac=xfac*1e-18
-
-           yn(ioff+j)=yn(ioff+j) + xfac*wgeom(igeom,iav)*
-     1 		calcout(ioff1)*Bg
-
-           do i=1,nx
-
-            ioff1=nconv1*(ipath-1)+iconv
-            ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + iconv
-
-            kk(ioff+j,i)=kk(ioff+j,i) + 
-     1               wgeom(igeom,iav)*gradients(ioff2)*Bg
-
-            if(i.eq.jsurf)then
-             kk(ioff+j,i)=kk(ioff+j,i)+
-     1    wgeom(igeom,iav)*calcout(ioff1)*esurf*xfac*
-     1    planckg_wave(ispace,vconv1(j),tsurf) 
-            endif
-            
-            if(i.eq.jrad)then
-             kk(ioff+j,i)=kk(ioff+j,i)+xfac*wgeom(igeom,iav)*
-     1          2.*calcout(ioff1)*Bg/RADIUS
-            endif
-
-
-           enddo
 
           enddo
-	   
-         else if (gasgiant.and.reflecting_atmos) then
-          print*,'ADDING IN REFLECTING ATMOSPHERE CONTRIBUTION'
-          print*,'cloud albedo=',refl_cloud_albedo
-          
-          ipath = 2
 
-c	  initialise solar spectrum
-          CALL FILE(runname,solfile,'sol')
-          inquire(file=solfile,exist=fexist)
-          if(fexist) then
-           call opensol(solfile,solname)
-          else
-           print*,'Error in forwardavfovX. solar flux file not defined'
-           stop
-          endif
-
-	  CALL init_solar_wave(ispace,solname)
-          
-          do j=1,nconv1
-           vv = vconv(igeom,j)
-           iconv=-1
-           do k = 1,nconv1
-            if(vv.eq.vconv1(k))iconv=k
-           enddo
-
-	     ioff1=nconv1*(ipath-1)+iconv
-         
-	     CALL get_solar_wave(vconv1(j),dist,solar)
-           Bg = solar*refl_cloud_albedo/3.141592654
+  
+          if (gasgiant.and.reflecting_atmos) then
+           print*,'ADDING IN REFLECTING ATMOSPHERE CONTRIBUTION'
+           print*,'cloud albedo=',refl_cloud_albedo
            
-           yn(ioff+j)=yn(ioff+j) + wgeom(igeom,iav)*calcout(ioff1)*Bg
+           ipath = 2
+ 
+c	   initialise solar spectrum
+           CALL FILE(runname,solfile,'sol')
+           inquire(file=solfile,exist=fexist)
+           if(fexist) then
+            call opensol(solfile,solname)
+           else
+            print*,'Error in forwardavfovX. solar flux file not defined'
+            stop
+           endif
+
+	   CALL init_solar_wave(ispace,solname)
+          
+           do j=1,nconv1
+            vv = vconv(igeom,j)
+            iconv=-1
+            do k = 1,nconv1
+             if(vv.eq.vconv1(k))iconv=k
+            enddo
+
+ 	     ioff1=nconv1*(ipath-1)+iconv
+         
+ 	     CALL get_solar_wave(vconv1(j),dist,solar)
+            Bg = solar*refl_cloud_albedo/3.141592654
+           
+            yn(ioff+j)=yn(ioff+j) + wgeom(igeom,iav)*calcout(ioff1)*Bg
                       
-           do i=1,nx
-            ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + iconv
-            kk(ioff+j,i)=kk(ioff+j,i) + 
-     1               wgeom(igeom,iav)*gradients(ioff2)*Bg
+            do i=1,nx
+             ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + iconv
+             kk(ioff+j,i)=kk(ioff+j,i) + 
+     1                wgeom(igeom,iav)*gradients(ioff2)*Bg
+            enddo
+
            enddo
+          
+          endif
+
+         else
+C         We have a cell defined, which means we have two outputs, wideband and 
+C         sideband
+
+          do j=1,nconv1
+           iconv=-1
+           do k = 1,nconv1
+            if(vconv(igeom,j).eq.vconv1(k))iconv=k
+           enddo
+           if(iconv.lt.0)then
+            print*,'Error in forwardavfovX iconv<1'
+            stop
+           endif
+           ipath=4
+ 	   ioff1=nconv1*(ipath-1)+iconv
+           yn(ioff+j)=yn(ioff+j)+wgeom(igeom,iav)*calcout(ioff1)
+           ipath=5
+ 	   ioff1=nconv1*(ipath-1)+iconv
+           yn(ioff+nconv1+j)=yn(ioff+nconv1+j)+wgeom(igeom,iav)*
+     1		calcout(ioff1)
+          enddo
+    
+          do i=1,nx
+
+           if(i.ne.jtan.and.i.ne.jpre.and.i.ne.jrad)then
+            do j=1,nconv1
+             iconv=-1
+             do k = 1,nconv1
+              if(vconv(igeom,j).eq.vconv1(k))iconv=k
+             enddo
+             ipath=4
+             ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + iconv
+             kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*gradients(ioff2)
+             ipath=5
+             ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + iconv
+             kk(ioff+nconv1+j,i)=kk(ioff+nconv1+j,i)+wgeom(igeom,iav)*
+     1		gradients(ioff2)
+            enddo
+           endif
+
+           if(i.eq.jrad)then
+            do j=1,nconv1
+             iconv=-1
+             do k = 1,nconv1
+              if(vconv(igeom,j).eq.vconv1(k))iconv=k
+             enddo
+             ipath=4
+  	     ioff1=nconv1*(ipath-1)+iconv
+             kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*
+     1          2.*calcout(ioff1)/RADIUS
+             ipath=5
+  	     ioff1=nconv1*(ipath-1)+iconv
+             kk(ioff+nconv1+j,i)=kk(ioff+nconv1+j,i)+wgeom(igeom,iav)*
+     1          2.*calcout(ioff1)/RADIUS
+            enddo
+           endif
+
+           if(i.eq.jsurf)then
+            do j=1,nconv1
+             iconv=-1
+             do k = 1,nconv1
+              if(vconv(igeom,j).eq.vconv1(k))iconv=k
+             enddo
+             ipath=4
+  	     ioff1=nconv1*(ipath-1)+iconv
+             kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*
+     1          gradtsurf(ioff1)
+             ipath=5
+  	     ioff1=nconv1*(ipath-1)+iconv
+             kk(ioff+nconv1+j,i)=kk(ioff+nconv1+j,i)+wgeom(igeom,iav)*
+     1          gradtsurf(ioff1)
+            enddo
+           endif
 
           enddo
-          
+
+
          endif
+
 
 110    continue
 
@@ -410,62 +453,75 @@ C        Set up all files for a direct cirsrad run
      1    vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf, 
      2    nx, xmap, vconv1, nconv1, npath, calcout, gradients)
 
-C        Need to assume order of paths. First path is assumed to be
-C        thermal emission, 2nd path is transmission to ground (if planet
-C        is not a gas giant)
 
-         ipath = 1
-         do j=1,nconv1
-          iconv=-1
-          do k=1,nconv1
-           if(vconv(igeom,j).eq.vconv1(k))iconv=k
-          enddo
-	  ioff1=nconv1*(ipath-1)+iconv
-          yn1(ioff+j)=yn1(ioff+j)+wgeom(igeom,iav)*calcout(ioff1)
-         enddo
+         if(icread.ne.1)then
+C         Need to assume order of paths. First path is assumed to be
+C         thermal emission
 
-C        If planet is not a gas giant and observation is not at limb then
-C        we need to add the radiation from the ground
-         if(.not.gasgiant.and.emiss_ang.ge.0)then
-          ipath = 2
-
+        
+          ipath = 1
           do j=1,nconv1
-           vv = vconv(igeom,j)
            iconv=-1
            do k=1,nconv1
             if(vconv(igeom,j).eq.vconv1(k))iconv=k
-           enddo
-           esurf = interpem(nem,vem,emissivity,vv)
-	   ioff1=nconv1*(ipath-1)+iconv
+           enddo 
+ 	   ioff1=nconv1*(ipath-1)+iconv
+           yn1(ioff+j)=yn1(ioff+j)+wgeom(igeom,iav)*calcout(ioff1)
+          enddo
 
-           Bg = planck_wave(ispace,vconv1(j),tsurf)*esurf
-           yn1(ioff+j)=yn1(ioff+j) +  wgeom(igeom,iav)*calcout(ioff1)*Bg
+         else
+
+          do j=1,nconv1
+           iconv=-1
+           do k=1,nconv1
+            if(vconv(igeom,j).eq.vconv1(k))iconv=k
+           enddo 
+           ipath=4
+ 	   ioff1=nconv1*(ipath-1)+iconv
+           yn1(ioff+j)=yn1(ioff+j)+wgeom(igeom,iav)*calcout(ioff1)
+           ipath=5
+ 	   ioff1=nconv1*(ipath-1)+iconv
+           yn1(ioff+nconv1+j)=yn1(ioff+nconv1+j)+
+     1		wgeom(igeom,iav)*calcout(ioff1)
           enddo
 
          endif
 
-111     continue
 
-        do j=1,nconv1
+111      continue
+
+         do j=1,nconv1
 
           if(jtan.gt.0)then
 C          Assume change in tangent height pressure of 1km.
            kk(ioff+j,jtan) = kk(ioff+j,jtan) + yn1(ioff+j)-yn(ioff+j)
+           if(icread.eq.1)then
+            kk(ioff+nconv1+j,jtan) = kk(ioff+nconv1+j,jtan) + 
+     1		yn1(ioff+nconv1+j)-yn(ioff+nconv1+j)
+           endif
           elseif(jpre.gt.0)then
            kk(ioff+j,jpre) = kk(ioff+j,jpre) +
      1        (yn1(ioff+j)-yn(ioff+j))/delp  
+           if(icread.eq.1)then
+            kk(ioff+nconv1+j,jpre) = kk(ioff+nconv1+j,jpre) +
+     1        (yn1(ioff+nconv1+j)-yn(ioff+nconv1+j))/delp  
+           endif
           endif
 
-        enddo
+         enddo
     
 
-        if(jpre.gt.0)then
+         if(jpre.gt.0)then
           xn(jpre)=pressR
-        endif
-
+         endif
+ 
        endif
 
-       ioff = ioff + nconv1
+       if(icread.ne.1)then
+        ioff = ioff + nconv1
+       else
+        ioff = ioff + 2*nconv1
+       endif
 
 100   continue
 

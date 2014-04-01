@@ -440,8 +440,7 @@ C          pre-calculated array
      2      gradtsurf, nx, xmap, vconv1, nconv1, npath, calcout, 
      3      gradients)
 
-C          Need to assume order of paths. First path is assumed to be
-C          thermal emission
+C          First path is here assumed to be thermal emission
      
       
            ipath = 1

@@ -233,9 +233,10 @@ C        Need to assume order of paths. First path is assumed to be
 C        thermal emission
 
 
-         print*,'Npath = ',npath
+         print*,'ForwardavfovX: Npath = ',npath
 
          if(icread.ne.1)then
+C         Not an SCR calculation. Assume 1st path is the thermal emission
           ipath = 1
           do j=1,nconv1
            iconv=-1
@@ -250,6 +251,7 @@ C        thermal emission
            yn(ioff+j)=yn(ioff+j)+wgeom(igeom,iav)*calcout(ioff1)
           enddo
     
+C         Calculate gradients
           do i=1,nx
 
            if(i.ne.jtan.and.i.ne.jpre.and.i.ne.jrad)then
@@ -294,6 +296,7 @@ C        thermal emission
            print*,'ADDING IN REFLECTING ATMOSPHERE CONTRIBUTION'
            print*,'cloud albedo=',refl_cloud_albedo
            
+C          Assume this calculation is in path 2.
            ipath = 2
  
 c	   initialise solar spectrum
@@ -315,9 +318,10 @@ c	   initialise solar spectrum
              if(vv.eq.vconv1(k))iconv=k
             enddo
 
- 	     ioff1=nconv1*(ipath-1)+iconv
+ 	    ioff1=nconv1*(ipath-1)+iconv
          
- 	     CALL get_solar_wave(vconv1(j),dist,solar)
+ 	    CALL get_solar_wave(vconv1(j),dist,solar)
+
             Bg = solar*refl_cloud_albedo/3.141592654
            
             yn(ioff+j)=yn(ioff+j) + wgeom(igeom,iav)*calcout(ioff1)*Bg
@@ -334,7 +338,8 @@ c	   initialise solar spectrum
 
          else
 C         We have a cell defined, which means we have two outputs, wideband and 
-C         sideband
+C         sideband. Output the sideband first (path=4) and then 
+C         the wideband (path=5)        
 
           do j=1,nconv1
            iconv=-1
@@ -356,6 +361,7 @@ C         sideband
     
           do i=1,nx
 
+C          Now the gradients
            if(i.ne.jtan.and.i.ne.jpre.and.i.ne.jrad)then
             do j=1,nconv1
              iconv=-1
@@ -455,9 +461,7 @@ C        Set up all files for a direct cirsrad run
 
 
          if(icread.ne.1)then
-C         Need to assume order of paths. First path is assumed to be
-C         thermal emission
-
+C         First path is assumed to be thermal emission if not SCR calculation
         
           ipath = 1
           do j=1,nconv1

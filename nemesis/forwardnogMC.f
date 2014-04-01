@@ -199,7 +199,7 @@ C         MonteCarlo code needs surface emissivity to be read in here.
      2     output,vconv1, nconv1, nem,vem,emissivity,tsurf,
      3     calcout)
 
-
+C         First path is here assumed to be thermal emission.
           ipath=1
           do j=1,nconv1
              iconv=-1

@@ -67,7 +67,7 @@ C     **************************************************************
       include 'arraylen.f'
       real xlat,xref,dx
       integer layint,inormal,iray,itype,nlayer,laytyp,iscat
-      integer ix,ix1,iav,iptf
+      integer ix,ix1,iav,iptf,j1
       real interpem
       real calcout(maxout3),fwhm,planck_wave
       real gradients(maxout4)
@@ -91,6 +91,11 @@ C     **************************************************************
       real varparam(mvar,mparam)
       logical gasgiant
       real vem(maxsec),emissivity(maxsec)
+
+      integer cellngas,cellid(maxgas),celliso(maxgas),icread
+      real cellength,cellpress,celltemp,cellvmr(maxgas)
+      common/celldat/icread,cellngas,cellid,celliso,cellvmr,cellength,
+     1  cellpress,celltemp
 
 
       print*,'forwardnoglbl called'
@@ -238,60 +243,85 @@ C         we need to read in the surface emissivity spectrum
      3     calcout)
 
 
-C         Need to assume order of paths. First path is assumed to be
-C         thermal emission, 2nd path is transmission to ground (if planet
-C         is not a gas giant)
+C         Unless an SCR calculation, first path is assumed to be thermal emission
         
-          ipath=1
-          do j=1,nconv1
-             iconv=-1
-             do k=1,nconv1
-              if(vconv(igeom,j).eq.vconv1(k))iconv=k
-             enddo
-             if(iconv.lt.0)then
-              print*,'Error in forwardnoglbl iconv < 0'
-              stop
-             endif
-             ioff1=nconv1*(ipath-1)+iconv
-             ytmp(ioff+j)=calcout(ioff1)
-          enddo
-C         If planet is not a gas giant and observation is not at limb 
-C         and calculation is not scattering then
-C         we need to add the radiation from the ground
-          if(.not.gasgiant.and.emiss_ang.ge.0.and.iscat.eq.0)then
-            ipath = 2
-            do j=1,nconv1
-             vv = vconv(igeom,j)
-             iconv=-1
-             do k=1,nconv1
-              if(vv.eq.vconv1(k))iconv=k
-             enddo
-             esurf = interpem(nem,vem,emissivity,vv)
-             ioff1=nconv1*(ipath-1)+iconv
-             ytmp(ioff+j)=ytmp(ioff+j)+
-     1          calcout(ioff1)*planck_wave(ispace,vconv1(j),tsurf)*esurf
-            enddo
-          endif
-C          print*,'YTMP',(ytmp(ioff+j),j=1,10)
-          if(ix.eq.0)then
-           do j=1,nconv1 
-            yn(ioff+j)=yn(ioff+j)+wgeom(igeom,iav)*ytmp(ioff+j)
-            ystore(ioff+j)=ytmp(ioff+j)
-           enddo
-C           print*,'YSTORE',(ytmp(ioff+j),j=1,10)
-          else
+          if(icread.ne.1)then
+           ipath=1
            do j=1,nconv1
-            kk(ioff+j,ix)=kk(ioff+j,ix)+wgeom(igeom,iav)*
+              iconv=-1
+              do k=1,nconv1
+               if(vconv(igeom,j).eq.vconv1(k))iconv=k
+              enddo
+              if(iconv.lt.0)then
+               print*,'Error in forwardnoglbl iconv < 0'
+               stop
+              endif
+              ioff1=nconv1*(ipath-1)+iconv
+              ytmp(ioff+j)=calcout(ioff1)
+           enddo
+
+           if(ix.eq.0)then
+            do j=1,nconv1 
+             yn(ioff+j)=yn(ioff+j)+wgeom(igeom,iav)*ytmp(ioff+j)
+             ystore(ioff+j)=ytmp(ioff+j)
+            enddo
+           else
+            do j=1,nconv1
+             kk(ioff+j,ix)=kk(ioff+j,ix)+wgeom(igeom,iav)*
      1               (ytmp(ioff+j) - ystore(ioff+j))/dx  
-           enddo 
-C           print*,'KK',(kk(ioff+j,ix),j=1,10)
-           xn(ix)=xref
+            enddo 
+            xn(ix)=xref
+           endif
+
+          else
+
+           do j=1,nconv1
+              iconv=-1
+              do k=1,nconv1
+               if(vconv(igeom,j).eq.vconv1(k))iconv=k
+              enddo
+              if(iconv.lt.0)then
+               print*,'Error in forwardnoglbl iconv < 0'
+               stop
+              endif
+              ipath=4
+              ioff1=nconv1*(ipath-1)+iconv
+              ytmp(ioff+j)=calcout(ioff1)
+              ipath=5
+              ioff1=nconv1*(ipath-1)+iconv
+              ytmp(ioff+nconv1+j)=calcout(ioff1)
+
+           enddo
+
+           if(ix.eq.0)then
+            do j=1,nconv1 
+             j1=j+nconv1
+             yn(ioff+j)=yn(ioff+j)+wgeom(igeom,iav)*ytmp(ioff+j)
+             ystore(ioff+j)=ytmp(ioff+j)
+             yn(ioff+j1)=yn(ioff+j1)+wgeom(igeom,iav)*ytmp(ioff+j1)
+             ystore(ioff+j1)=ytmp(ioff+j1)
+            enddo
+           else
+            do j=1,nconv1
+             j1=j+nconv1
+             kk(ioff+j,ix)=kk(ioff+j,ix)+wgeom(igeom,iav)*
+     1               (ytmp(ioff+j) - ystore(ioff+j))/dx  
+             kk(ioff+j1,ix)=kk(ioff+j1,ix)+wgeom(igeom,iav)*
+     1               (ytmp(ioff+j1) - ystore(ioff+j1))/dx  
+            enddo 
+            xn(ix)=xref
+           endif
+
           endif
 
 111      continue
 110     continue
      
-       ioff = ioff + nconv1
+       if(icread.ne.1)then
+        ioff = ioff + nconv1
+       else
+        ioff = ioff + 2*nconv1
+       endif
 
 100   continue
 

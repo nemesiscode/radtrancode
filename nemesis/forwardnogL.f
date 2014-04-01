@@ -263,8 +263,7 @@ C     Read in base heights from '.drv' file
      2      gradtsurf, nx, xmap, vconv1, nconv1, npath, calcout, 
      3      gradients)
 
-C          Need to assume order of paths. First path is assumed to be
-C          thermal emission
+C          First path is assumed here to be thermal emission
      
       
            ipath = 1

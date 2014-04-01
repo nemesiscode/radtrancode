@@ -77,6 +77,7 @@ bin:     \
 	Path \
 	Profile \
 	Interp_prf \
+	Convert_prf \
 	Write_path
 
 Dust_profile : dust_profile.f $(LIBRARY)
@@ -105,6 +106,10 @@ Profile : profile.f $(LIBRARY)
 
 Interp_prf : interp_prf.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Interp_prf interp_prf.f $(LIBRARY) \
+	$(LIB)/rtm_util.a
+
+Convert_prf : convert_prf.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Convert_prf convert_prf.f $(LIBRARY) \
 	$(LIB)/rtm_util.a
 
 Write_path : write_path.f $(LIBRARY)

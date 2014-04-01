@@ -77,7 +77,8 @@ F_SOURCES = \
 	npvar.f \
 	logflag.f \
 	check_iteration.f \
-	check_profile.f
+	check_profile.f \
+	readcell.f
 
 INCDIR = ../../radtran/includes
 INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/lincom.f $(INCDIR)/pathcom.f \

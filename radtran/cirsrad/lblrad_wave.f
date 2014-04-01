@@ -113,7 +113,7 @@ C		Passed variables
      2		scale(incdim,npath), emtemp(incdim,npath), hfp(nlayer), 
      3		bb(maxlay,maxpat),xf,tsurf,dv,bsurf,
      4          hfc(nlayer),basep(nlayer),baseh(nlayer),
-     5          esurf,radground, totam(nlayer)
+     5          esurf,radground, totam(nlayer),p1,p2
       REAL    vem(maxsec),emissivity(maxsec),interpem
       REAL	xmu,dtr,xt1
       INTEGER ifc(limcont,nlayer),nem,j0,IBS(2),IBD(2)
@@ -893,6 +893,34 @@ C     1                  ' output'
  			trold = tr
 		enddo
 
+C               Check to see if this is a limb path
+                j1=0.5*nlays
+
+                p1=press(layinc(j1,ipath))
+                p2=press(layinc(nlays,ipath))
+
+
+C               If not a limb path, add on surface radiance
+                if(p2.gt.p1)then
+
+
+                 if(tsurf.le.0.0)then
+                  radground = bb(nlays,Ipath)
+                 else
+                  radground = esurf*planck_wave(ispace,x,tsurf)
+                 endif
+                 output(Ipath) = output(Ipath) +
+     1                  sngl(trold)*radground
+
+                endif
+
+
+        ELSEIF (imod(ipath).eq.8) THEN
+C             model 8, product of two path outputs
+                output(Ipath)=output(layinc(1,Ipath))*
+     1              output(layinc(2,Ipath))
+
+
 	ELSEIF (imod(ipath).EQ.11) THEN	
 
 cc                WRITE(*,*) 'LBLrad_wave: Imod= 11 =Contribution Function,',
@@ -910,6 +938,21 @@ cc     1                  ' creating output'
      1                  sngl(trold-tr) * bb(J,Ipath)
  			trold = tr
                 enddo
+
+
+        ELSEIF (imod(ipath).eq.13) THEN
+
+C          model 13, SCR sideband transmission (1-cell transmission)
+                        taud = taus(J)
+
+           output(Ipath)=1.0-exp(-taus(1))
+
+        ELSEIF (imod(ipath).eq.14) THEN
+
+C          model 14 SCR wideband transmission
+
+           output(Ipath)=0.5*(1.0+exp(-taus(1)))
+
 
 	ELSEIF (imod(ipath).EQ.15) THEN
 

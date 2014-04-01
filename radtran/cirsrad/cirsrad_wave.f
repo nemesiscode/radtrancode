@@ -131,7 +131,7 @@ C		K table variables
      1		k_g(maxg), k_g1(maxg), k_g2(maxg), q1, q2, 
      2		pk(maxk), tk(maxk), g_ord(maxg), 
      3		delg(maxg), kl_g(maxg,maxlay),
-     4		kout(maxlay,maxgas,maxg)
+     4		kout(maxlay,maxgas,maxg),p1,p2
 
         REAL    basehf(maxlay),basepf(maxlay),basehS(maxlay)
         REAL    scaleS(maxlay),Jsource(maxlay),delhs(maxlay)
@@ -993,11 +993,30 @@ C               matrix inversion crashing
      1                  xfac*sngl((trold-tr)) * bb(J,Ipath)
  			trold = tr
 		enddo
+
+C               Check to see if this is a limb path
+                j1=0.5*nlays
+
+                p1=press(layinc(j1,ipath))
+                p2=press(layinc(nlays,ipath))
+
+
+C               If not a limb path, add on surface radiance
+                if(p2.gt.p1)then
+
+
+                 if(tsurf.le.0.0)then
+                  radground = bb(nlays,Ipath)
+                 else
+                  radground = esurf*planck_wave(ispace,x,tsurf)
+                 endif
+                 corkout(Ipath,Ig) = corkout(Ipath,Ig) +
+     1                  xfac*sngl(trold)*radground
+                endif
+
         ELSEIF (imod(ipath).eq.8) THEN
 C             model 8, product of two path outputs
-                print*,'8',layinc(1,Ipath),layinc(2,Ipath)
-                print*,corkout(layinc(1,Ipath),Ig),
-     1            corkout(layinc(2,Ipath),Ig)
+
  		corkout(ipath,Ig)=corkout(layinc(1,Ipath),Ig)*
      1              corkout(layinc(2,Ipath),Ig)
 
@@ -1024,7 +1043,6 @@ cc     1                  ' creating output'
 C          model 13, SCR sideband transmission (1-cell transmission)
 			taud = taus(J)
 
-           print*,'13 taus sig',taus(1),(1.0-exp(-taus(1)))
            corkout(Ipath,Ig)=1.0-exp(-taus(1))
 
            LSTCEL=IPATH
@@ -1032,7 +1050,6 @@ C          model 13, SCR sideband transmission (1-cell transmission)
         ELSEIF (imod(ipath).eq.14) THEN
 
 C          model 14 SCR wideband transmission
-           print*,'14 taus sig',taus(1),0.5*(1.0+exp(-taus(1)))
 
            corkout(Ipath,Ig)=0.5*(1.0+exp(-taus(1)))
 

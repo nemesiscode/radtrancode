@@ -164,14 +164,14 @@ C Definition of input and output variables ...
       INTEGER nlayer,npath,ngas,nsw,AMFORM
       INTEGER idgas(maxgas),isogas(maxgas),isw(maxgas+2+maxcon)
       INTEGER layinc(maxlay,maxpat),nlayin(maxpat),imod(maxpat)
-      REAL xdist,dist,vwave,delh(nlayer),esurf
+      REAL xdist,dist,vwave,delh(nlayer),esurf,radground
       REAL cont(maxcon,maxlay),tsurf,bsurf,gtsurf(maxpat)
-      REAL tempgtsurf(maxpat,maxg)
+      REAL tempgtsurf(maxpat,maxg),gradground
       REAL press(maxlay),temp(maxlay),hfp(maxlay)
       REAL scale(maxlay,maxpat),emtemp(maxlay,maxpat)
       REAL pp(maxlay,maxgas),amount(maxlay,maxgas)
       REAL output(maxpat),doutputdq(maxpat,maxlay,maxgas+2+maxcon)
-      REAL rad1,xfac,RADIUS1
+      REAL rad1,xfac,RADIUS1,p1,p2
 
 
 C Definition of general variables ...
@@ -837,6 +837,45 @@ C           matrix inversion crashing
               ENDDO
 
             ENDDO
+
+
+C           Check to see if this is a limb path
+            j1=0.5*nlays
+
+            p1=press(layinc(j1,ipath))
+            p2=press(layinc(nlays,ipath))
+
+
+C           If not a limb path, add on surface radiance
+            if(p2.gt.p1)then
+
+C             print*,'Add ground radiation : ',tsurf,esurf,
+C     1        trold,xfac
+C             print*,'vwave,ispace',vwave,ispace
+             if(tsurf.le.0.0)then
+               radground = bb(nlays,Ipath)
+               gradground = dbdt(nlays,Ipath)
+             else
+               radground = esurf*planck_wave(ispace,vwave,tsurf)
+               gradground = esurf*planckg_wave(ispace,vwave,tsurf)
+             endif
+
+             corkout(Ipath,Ig) = corkout(Ipath,Ig) +
+     1               xfac*sngl(trold)*radground
+
+C            gradient wrt surface temperature
+             tempgtsurf(ipath,ig) = xfac*sngl(trold)*gradground
+
+C            gradient with respect to atmospheric properties
+             DO j=1,nlays
+               DO k1=1,nsw
+                 k = isw(k1)
+                 dcoutdq(ipath,ig,j,k) =  
+     1        dcoutdq(ipath,ig,j,k)+xfac*radground*dtolddq(j,k)
+                 ENDDO
+             ENDDO
+            endif
+
 
           ELSEIF(imod(ipath).eq.8)then
 

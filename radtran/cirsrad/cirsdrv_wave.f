@@ -291,7 +291,7 @@ C-----------------------------------------------------------------------
         GOTO 40
       ENDIF
 
-      WRITE(*,*)'Enter surface temperature : '
+      WRITE(*,*)'Enter surface temperature (if applicable) : '
       READ(*,*)tsurf
 
       nem=2

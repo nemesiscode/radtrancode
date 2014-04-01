@@ -849,9 +849,6 @@ C           Check to see if this is a limb path
 C           If not a limb path, add on surface radiance
             if(p2.gt.p1)then
 
-C             print*,'Add ground radiation : ',tsurf,esurf,
-C     1        trold,xfac
-C             print*,'vwave,ispace',vwave,ispace
              if(tsurf.le.0.0)then
                radground = bb(nlays,Ipath)
                gradground = dbdt(nlays,Ipath)

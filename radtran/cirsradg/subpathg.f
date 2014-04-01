@@ -261,40 +261,45 @@ C Skipping blank lines.
 9     CONTINUE
 
       IF(COMB)THEN
-C Combining cell and atmosphere paths checking each calculation to see if
-C it's a cell calculation.
-        N = NCALC
+
+C       combining cell and atmosphere paths
+C       checking each calculation to see if it's a cell calculation
+        N=NCALC
         DO 200 I=1,N
-          IF (BIT(7,ITYPE(I))) THEN
-            DO 202 J=1,N
-              IF (.NOT.BIT(7,ITYPE(J))) THEN
-C Combining cell calc I with atmosphere calc J for each path in the cell
-C calculation, combining with all atmosphere paths.
-                npath1 = NPATH + 1
-                DO 201 K=ICALD(1,I),ICALD(2,I)
-                DO 201 L=ICALD(1,J),ICALD(2,J)
-                  ERRLIM(NPATH) = ERRDEF
-                  IMOD(NPATH) = 8
-                  LAYINC(1,NPATH) = K
-                  LAYINC(2,NPATH) = L
-                  NLAYIN(NPATH) = 2
-                  NPATH = NPATH + 1
-201             CONTINUE
-C Now adding the calculation type.
-                NCALC = NCALC + 1
-                ITYPE(NCALC) = 160
-                IF (BIT(5,ITYPE(J))) ITYPE(NCALC) = 161
-C Note that these calculation types also have bit 7 set.
-                NINTP(NCALC) = 4
-                NREALP(NCALC) = 0
-                ICALD(1,NCALC) = npath1
-                ICALD(2,NCALC) = NPATH
-                ICALD(3,NCALC) = I
-                ICALD(4,NCALC) = J
-              ENDIF
-202         CONTINUE
-          ENDIF
+        IF(BIT(7,ITYPE(I)))THEN
+          DO 202 J=1,N
+          IF(.NOT.BIT(7,ITYPE(J)))THEN
+C           combining cell calc I with atmosphere calc J
+C           for each path in the cell calculation, combining with all
+C           atmosphere paths
+            NPATH1=NPATH+1
+            DO 203 K=ICALD(1,I),ICALD(2,I)
+            DO 201 L=ICALD(1,J),ICALD(2,J)
+            NPATH=NPATH+1
+            ERRLIM(NPATH)=ERRDEF
+            IMOD(NPATH)=8
+            LAYINC(1,NPATH)=K
+            LAYINC(2,NPATH)=L
+            NLAYIN(NPATH)=2
+201         CONTINUE
+203         CONTINUE
+C           now adding the calculation type
+            NCALC=NCALC+1
+            ITYPE(NCALC)=160
+            IF(BIT(5,ITYPE(J)))ITYPE(NCALC)=161
+C           note that these calculation types also have bit 7 set
+            NINTP(NCALC)=4
+            NREALP(NCALC)=0
+            ICALD(1,NCALC)=NPATH1
+            ICALD(2,NCALC)=NPATH
+            ICALD(3,NCALC)=I
+            ICALD(4,NCALC)=J
+            END IF
+202       CONTINUE
+          END IF
 200     CONTINUE
+
+
       ENDIF
 
 

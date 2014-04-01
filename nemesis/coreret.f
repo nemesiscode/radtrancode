@@ -456,13 +456,9 @@ C        Check to see if log numbers have gone out of range
 
           if(varident(ivar,1).eq.444.and.j.eq.ix+1)then
            if(exp(xn1(j)).lt.0.01)then
-             print*,'Variance of size distribution gone too small,'
-             do jj=1,nx
-              print*,jj,xn1(jj)
-             enddo
-             print*,j,ix,exp(xn1(j))
+             print*,'Variance of size distribution gone too small',
+     1		exp(xn1(j))
              print*,'Increase alambda',alambda
-             stop
              alambda = alambda*10.0		! increase Marquardt brake
              if(alambda.gt.1e10)alambda=1e10
              goto 145

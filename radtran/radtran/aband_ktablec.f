@@ -226,6 +226,7 @@ C      READ*,ALAMBDA
        DO I=1,NBIN
         READ(12,*)WCEN(I)
        ENDDO
+       NFILBIN=0
        CLOSE(12)
 
       ELSE
@@ -320,7 +321,6 @@ c ---------------------------------------------------------------------
          ENDIF
          DO J=1,NFILBIN
             READ(12,*)WFIL(J),TFIL(J)
-            print*,WFIL(J),TFIL(J)
          ENDDO
          IF (IBIN.EQ.NBIN) CLOSE(12)
        ENDIF
@@ -336,12 +336,19 @@ c ---------------------------------------------------------------------
        WRITE(13,*)I,WCENTRAL,'! IPOINT, WAVE'
        WRITE(13,934)(BDUM(J),J=1,9)
 
+       print*,'NFILBIN,Range : ',NFILBIN,WFIL(1),WFIL(NFILBIN)
+       print*,'NAV = ',NAV
+    
        KNU0 = 0.0
+       tmp=0.
        DO I=1,NAV 
         IF(TPOUT(IAV(I),JGAS,1).GT.KNU0)THEN
          KNU0 = TPOUT(IAV(I),JGAS,1)
         ENDIF
+C        print*,I,IAV(I),WAVEIN(I),FBIN(I)
+        tmp=tmp+fbin(i)
        ENDDO      
+C       print*,'Sum of weights = ',tmp
 
        DO 150 IP=1,NP
          PRESS = P(IP)

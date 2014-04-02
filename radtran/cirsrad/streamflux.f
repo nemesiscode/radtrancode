@@ -60,9 +60,12 @@ C     Find correction for any quadrature errors
       xnorm=2*PI*0.5/xfac
 
       do 10 ilay=1,nlays
-       jlay=nlays+1-ilay
-       if(ilay.eq.1)then
 
+C      reverse order of output so that 1 is for the bottom layer
+       jlay=nlays+1-ilay
+
+       if(ilay.eq.1)then
+C       Bottom layer
         fdown(ilay,ig)=0.
         do i=1,nmu
          fdown(ilay,ig)=fdown(ilay,ig)+
@@ -71,7 +74,9 @@ C     Find correction for any quadrature errors
 
         fup(ilay,ig)=0.
         do i=1,nmu
+C        Thermal emission from ground
          fup(ilay,ig)=fup(ilay,ig)+sngl(mu1(i)*wt1(i))*radg(i)
+C	 Reflected radiance from ground
          fup(ilay,ig)=fup(ilay,ig)+sngl(mu1(i)*wt1(i))*
      &        uplf(i,jlay,1)*sngl(galb)
         enddo
@@ -85,7 +90,9 @@ C     Find correction for any quadrature errors
          fdown(ilay,ig)=fdown(ilay,ig)+sngl(mu1(i)*wt1(i))*
      &		uplf(i,jlay,1)
          fup(ilay,ig)=fup(ilay,ig)+sngl(mu1(i)*wt1(i))*
-     &		umif(i,jlay+1,1)
+     &		umif(i,jlay,1)
+C         fup(ilay,ig)=fup(ilay,ig)+sngl(mu1(i)*wt1(i))*
+C     &		umif(i,jlay+1,1)
         enddo
 
        endif

@@ -157,7 +157,7 @@ C		Scattering variables
 
 C		Internal variables
 
-	INTEGER	I, J, K, L, Ipath, Ig, nlays, lstcel
+	INTEGER	I, J, K, L, Ipath, Ig, nlays, lstcel,Jpath
 	REAL	utotl(maxlay), qh(maxlay), qhe(maxlay),
      1		frac(maxlay,maxgas), qh_he(maxlay), dist1,
      2		x, taucon(maxlay)
@@ -298,7 +298,8 @@ C     	Initialise some variables.
 C
 C		imod = 15		Multiple scattering
 C		imod = 16		Single scattering approx
-C		imod = 21		Limb scattering
+C		imod = 22		Limb scattering
+C		imod = 23		Limb scattering (precomputed flux)
 C
 C-----------------------------------------------------------------------
 
@@ -311,8 +312,8 @@ C       Set flag for code to read in modified PHASE*.DAT files if required
 	scatter=.FALSE.
 	single=.FALSE.
 	do Ipath = 1, npath
-		if (imod(Ipath).eq.15.or.imod(Ipath).eq.21.
-     1            or.imod(Ipath).eq.22) then
+		if (imod(Ipath).eq.15.or.imod(Ipath).eq.22.
+     1            or.imod(Ipath).eq.23.or.imod(Ipath).eq.24) then
         		scatter=.true.
 		end if
 		if (imod(Ipath).eq.16) then
@@ -874,17 +875,17 @@ C				wavenumber. NOT SUPPORTED HERE.
 C		3	(Atm) Emission. Planck function evaluated at bin 
 C				center.
 C		8	(Combined Cell,Atm) The product of two
-C				previous output paths. NOT SUPPORTED HERE.
+C				previous output paths.
 C		11	(Atm) Contribution function.
 C		13	(Atm) SCR Sideband
 C		14	(Atm) SCR Wideband
 C		15	(Atm) Multiple scattering (multiple models)
 C		16	(Atm) Single scattering approximation.
-C		20	(Atm) Net flux calculation (thermal)
-C		21	(Atm) Limb scattering calculation
-C		22	(Atm) Limb scattering calculation using precomputed
+C		21	(Atm) Net flux calculation (thermal)
+C		22	(Atm) Limb scattering calculation
+C		23	(Atm) Limb scattering calculation using precomputed
 C			      internal radiation field.
-C		23	(Atm) Net flux calculation (scattering)
+C		24	(Atm) Net flux calculation (scattering)
 C	then end the loop over the g ordinate.
 C
 C-----------------------------------------------------------------------
@@ -1309,51 +1310,86 @@ C               Add in reflectance from the ground
 
 C		WRITE (*,*) ' Calculated: ', Ig, corkout(Ipath,Ig)
 
-	ELSEIF (imod(ipath).EQ.20)THEN
+	ELSEIF (imod(ipath).EQ.21)THEN
 
-cc		WRITE(*,*) 'CIRSRAD_WAVE: Imod= 20 =Net flux calculation,',
+cc		WRITE(*,*) 'CIRSRAD_WAVE: Imod= 21 =Net flux calculation,',
 cc     1        'thermal emission only. Creating output'
 
 C		Computes up and down flux at BOTTOM of each layer
-C		Compute once for Ipath=1
+C		Compute once for Ipath=Npath
+C		Increase pathlength by 5/3 to approximate for
+C               Hemispherical integration (See Houghton, 1986, p13)
 
-		if(Ipath.eq.1)then
+		if(Ipath.eq.npath)then
                   do j=1,nlayin(npath)
                    fup(Ig,j)=0.0
                    fdown(Ig,j)=0.0
+                   if(scale(J,npath).gt.1.01)then
+                    print*,'Error in cirsrad_wave, layer properties'
+		    print*,'should calculated at zero emission'
+   		    print*,'angle.'
+                    stop
+                   endif
                    taus(layinc(J,npath))=tautmp(layinc(J,npath)) *
-     &			scale(J,npath)
+     &			scale(J,npath)*5./3.
 		   if(Ig.eq.1)then
 		     bb(layinc(j,npath),1)=planck_wave(ispace,
      1                  x,emtemp(j,npath))
 		   endif
 		  enddo
 
+C                 If tsurf > 0, then code assumes bottom layer is at the
+C                 surface and so uses tsurf to compute radiation upwelling.
+C                 Otherwise, code assumes optical depth is large and sets
+C                 upwelling radiation field to local temperature.
+                  if(tsurf.le.0.0)then
+                   radground = bb(1,1)
+                  else
+                   radground = esurf*planck_wave(ispace,x,tsurf)
+                  endif
+
 	   	  do j=1,nlayin(npath)
            	   if(j.eq.1)then
-		    fup(j,Ig)=bb(j,1)
+		    fup(j,Ig)=pi*radground
 		   else
-		    tr = exp(-taus(j-1))
-                 fup(j,Ig)=fup(j-1,Ig)*sngl(tr)+sngl((1.0-tr))*bb(j,1)
+                    taud=taus(j-1)
+		    tr = dexp(-taud)
+                    fup(j,Ig)=fup(j-1,Ig)*sngl(tr)+sngl((1.0-tr))*
+     1			pi*bb(j,1)
 		   endif
 		  enddo 
 
 	   	  do j=nlayin(npath),1,-1
-                   tr=exp(-taus(j))
+                   taud=taus(j)
+                   tr=dexp(-taud)
             	   if(j.eq.nlays)then
-		    fdown(j,Ig)=sngl((1.0-tr))*bb(j,1)
+		    fdown(j,Ig)=sngl((1.0-tr))*pi*bb(j,1)
 		   else
-              fdown(j,Ig)=sngl((1.0-tr))*bb(j,1)+sngl(tr)*fdown(j+1,Ig)
+                    fdown(j,Ig)=sngl((1.0-tr))*pi*bb(j,1)+
+     1			sngl(tr)*fdown(j+1,Ig)
 		   endif
 		  enddo 
 
-                endif 
-            
-	        corkout(Ipath,Ig) = fup(Ipath,Ig) - fdown(Ipath,Ig)
- 	
-	ELSEIF (imod(ipath).EQ.21) THEN
+C                  open(12,file='netflux_therm.dat',status='unknown')
+C                   write(12,*)Ig
+C                   do j=1,nlayin(npath)
+C                    write(12,*)j,taus(j),fup(J,Ig),fdown(J,Ig)
+C                   enddo
+C                 close(12)
 
-cc                WRITE(*,*) 'CIRSRAD_WAVE: Imod= 21 =Limb Scattering, ',
+C                 if(Ig.eq.5)stop
+
+                 do Jpath=1,Npath
+ 	          corkout(Jpath,Ig) = fup(Jpath,Ig) - fdown(Jpath,Ig)
+                 enddo
+
+                endif 
+
+            
+ 	
+	ELSEIF (imod(ipath).EQ.22) THEN
+
+cc                WRITE(*,*) 'CIRSRAD_WAVE: Imod= 22 =Limb Scattering, ',
 cc     1                  ' creating output'
 C                print*,ispace,x
 C       ************************************************************
@@ -1429,9 +1465,9 @@ C                enddo
 
  		corkout(Ipath,Ig) = rad1
 
-	ELSEIF (imod(ipath).EQ.22) THEN
+	ELSEIF (imod(ipath).EQ.23) THEN
 
-                WRITE(*,*) 'CIRSRAD_WAVE: Imod= 22 = modified source, ',
+                WRITE(*,*) 'CIRSRAD_WAVE: Imod= 23 = modified source, ',
      1                  ' creating output'
 C                print*,ispace,x
 C       ************************************************************
@@ -1507,15 +1543,17 @@ C               emission from ground.
      1            sngl(trold) * radground
                 endif
 
-	ELSEIF (imod(ipath).EQ.23) THEN
+	ELSEIF (imod(ipath).EQ.24) THEN
 
 cc		WRITE(*,*) 'CIRSRAD_WAVE: Imod= 23 =Net flux calculation,',
 cc     1        ' multiple scattering'. Creating output'
 
-                if(ipath.eq.1)then
+                if(Ipath.eq.Npath)then
 
+                 nlays = nlayin(Ipath)
+C                 print*,'Ipath,nlays,nmu',Ipath,nlays,nmu
 
-		    do J = 1, nlays
+		 do J = 1, nlays
 			if(Ig.eq.1)then
                          bb(J,Ipath)=planck_wave(ispace,x,
      1			   emtemp(J,Ipath))
@@ -1535,41 +1573,53 @@ C                        print*,J,taus(J),taur(j)
                         do k=1,ncont
                          icloud(k,j)=IFC(k,layinc(J,Ipath))
                         enddo
-		    enddo
+		  enddo
 
 
-C               If tsurf > 0, then code assumes bottom layer is at the
-C               surface and so uses tsurf to compute radiation upwelling.
-C               Otherwise, code assumes optical depth is large and sets
-C               upwelling radiation field to local temperature.
+C                 If tsurf > 0, then code assumes bottom layer is at the
+C                 surface and so uses tsurf to compute radiation upwelling.
+C                 Otherwise, code assumes optical depth is large and sets
+C                 upwelling radiation field to local temperature.
 
-                   if(tsurf.le.0.0)then
+                  if(tsurf.le.0.0)then
                     radground = bb(nlays,Ipath)
-                   else
+                  else
                     radground = esurf*planck_wave(ispace,x,tsurf)
-                   endif
+                  endif
 
-                   galb1=galb
+                  galb1=galb
 
-                   if(galb1.lt.0)then
+                  if(galb1.lt.0)then
                          galb1 = dble(1.-esurf)
-                   endif
+                  endif
 
-                   do J=1,nmu
+                  do J=1,nmu
                     radg(J)=radground
-                   enddo
+                  enddo
 
-   	    	   call scloud11flux(radg, solar, sol_ang, 
+   	    	  call scloud11flux(radg, solar, sol_ang, 
      1               lowbc, galb1, iray, mu1, wt1, nmu, nf, Ig, x,
      2               vv, eps, bnu, taus, taur, 
      3               nlays, ncont, lfrac, umif, uplf)
 
-                   call streamflux(nlays,nmu,mu1,wt1,radg,galb1,
+                  call streamflux(nlays,nmu,mu1,wt1,radg,galb1,
      1                ig,umif,uplf,fup,fdown,ftop)                    
 
-                 endif
+C                  open(12,file='netflux_scat.dat',status='unknown')
+C                   write(12,*)'Ig',Ig
+C                   do j=1,nlayin(npath)
+C                    write(12,*)j,taus(layinc(J,Ipath)),fup(J,Ig),
+C     1			fdown(J,Ig)
+C                   enddo
+C                  close(12)
 
-	         corkout(Ipath,Ig) = fup(Ipath,Ig) - fdown(Ipath,Ig)
+C                  if(Ig.eq.5)stop
+
+                  do Jpath=1,Ipath
+  	           corkout(Jpath,Ig) = fup(Jpath,Ig) - fdown(Jpath,Ig)
+                  enddo
+
+                endif
 
 	ELSE
 		WRITE (*,*) ' Imod = ', imod(ipath), ' is not a valid',

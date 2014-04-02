@@ -697,6 +697,10 @@ C	      Imod
 C		0	(Atm) Pure transmission
 C		1	(Atm) Absorption (useful for small transmissions)
 C		3	(Atm) Emission. Planck function evaluated at bin 
+C               8       (Combined Cell,Atm) The product of two
+C                               previous output paths.                    
+C               13      (Atm) SCR Sideband
+C               14      (Atm) SCR Wideband
 C		15	(Atm) Multiple scattering.
 C		18	(Atm) Emission into hemisphere (for disc-averaging)
 C

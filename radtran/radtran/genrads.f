@@ -2374,56 +2374,6 @@ C       As model 18 but using Curtis-Godson
         E3OLD=E3NEW
 487     CONTINUE
         LSTATM=IPATH
-C       ELSE IF(IMOD(IPATH).EQ.21)THEN
-C       model 15 Scattering.
-C        NLAYS=NLAYIN(IPATH)
-C        OUTPUT(IPATH,I)=0.
-C        DO 916 LAYER=1,NLAYIN(IPATH)
-C         DO 9161 IL=1,NCONT
-C          LFRAC1(IL,LAYER)=LFRAC(IL,LAYINC(LAYER,IPATH))
-C9161     CONTINUE
-C         TAUS(LAYER)=TAUTMP(LAYINC(LAYER,IPATH))*SCALE(LAYER,IPATH)
-C         BNU(LAYER)=NLTE(LAYINC(LAYER,IPATH))*
-C     1   PLANCK(SNGL(V),EMTEMP(LAYER,IPATH))
-C         IF(TAUSCAT(LAYINC(LAYER,IPATH)).GT.0.0)THEN
-C          EPS(LAYER)=1. - TAUSCAT(LAYINC(LAYER,IPATH))/
-C     1    TAUTMP(LAYINC(LAYER,IPATH))
-C         ELSE
-C          EPS(LAYER)=1.0
-C         END IF
-C         TEMP1(J)=TEMP(LAYINC(LAYER,IPATH))
-C         PRESS1(J)=PRESS(LAYINC(LAYER,IPATH))
-C         UTOT1(J)=UTOTL(LAYINC(LAYER,IPATH))
-C916     CONTINUE
-
-C        DO 918 JL=1,NMU
-C         RADG(JL)=PLANCK(SNGL(V),EMTEMP(NLAYIN(IPATH),IPATH))
-C918     CONTINUE
-
-C        IF(ISOL.EQ.1)THEN
-C         SOLAR=PLANCK(SNGL(V),TSUN)*PI*(THETA0/DIST)**2
-C        ELSE
-C         SOLAR=0.
-C        END IF
-
-C        vc = sngl(v)
-
-C        call scloud11flux( radg, solar, sol_ang, 
-C     1   lowbc, galb, iray, mu1, wt1, nmu, nf, igdist, vc, vc,
-C     2   eps, bnu,taus,press1,temp1,utot1,nlays, ncont, lfrac1,
-C     3   umif,uplf)
-
-
-C        call hgaverage(nlays,ncont,taus,eps,lfrac,iray,
-C     1           tauray,x,f1,g11,g21)
-
-C        call limbscatter(nlays,nmu,wt1,mu1,eps,bnu,
-C     1                taus,f1,g11,g21,umif,uplf,nf,rad)
-
-C        OUTPUT(IPATH,I)=RAD
-C        LSTATM=IPATH
-
-
        ELSE
         WRITE(*,54)IMOD(IPATH),IPATH
 54      FORMAT(' %no code for model encountered',I3,' Path: ',I3)

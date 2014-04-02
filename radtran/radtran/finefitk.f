@@ -42,6 +42,14 @@ C     ***********************************************************************
       double precision aa(mx,mx),dd(mx,my)
 C     -----------------------------------------------------------------------
 
+C      print*,ndata
+C      print*,(u(i),i=1,ndata)
+C      print*,(trans(i),i=1,ndata)
+C      print*,(etrans(i),i=1,ndata)
+C      print*,ng
+C      print*,(del_g(i),i=1,ng)
+C      print*,(k_g(i),i=1,ng)
+
       nx=ng
       ny=ndata
       phlimit=0. 
@@ -76,7 +84,12 @@ C      free reign in a least squares fit.
 
       do 11 j=1,ny
        y(j)=alog(trans(j))
-       se(j,j)=1e-6
+       if(trans(j).gt.0.0)then
+        se(j,j)=(etrans(j)/trans(j))**2
+C        se(j,j)=1e-6
+       else
+        se(j,j)=1.
+       endif
        sei(j,j)=1.0/se(j,j)
 11    continue
 
@@ -109,7 +122,7 @@ C     vectors xn, yn
        yn1(i)=yn(i)
       enddo
 
-      kiter=15
+      kiter=20
       do 401 iter = 1, kiter
 
 C      Now calculate next iterated xn1
@@ -180,6 +193,7 @@ C         Leave xn and kk alone and try again with more braking
 
 
 202   continue
+
       return
 
       end

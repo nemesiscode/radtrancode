@@ -39,6 +39,19 @@ C     ***************************************************************
       INTEGER NFILBIN
       REAL WFIL(MBIN), TFIL(MBIN), WAVE, VFIL(MBIN), XFRAC
 
+      print*,NPOINT,KWAVE
+C      do i=1,npoint
+C       print*,WAVEIN(i),FWHMIN(i)
+C      enddo
+      print*,DELV,WCENTRAL,WFWHM,ISHAPE,NFILBIN
+      do i=1,nfilbin
+       print*,WFIL(i),TFIL(i)
+      enddo
+      print*,IWAVE,NAV
+      do i=1,nfilbin
+       print*,IAV(i),FBIN(i)
+      enddo
+
       IF(ISHAPE.EQ.0)THEN
        W1 = WCENTRAL-0.5*WFWHM
        W2 = W1+WFWHM
@@ -66,39 +79,47 @@ C     ***************************************************************
 
       print*,'IS1,IS2',IS1,IS2       
       print*,'table wavenumber range : ',WAVEIN(IS1),WAVEIN(IS2)
+      print*,'table wavelength range : ',1e4/WAVEIN(IS2),
+     1  1e4/WAVEIN(IS1)
+      print*,'IWAVE,KWAVE',IWAVE,KWAVE
       DO 15 I=IS1,IS2 
 
-C      Find offset from centre of averaging function in wavenumber space
+C      Find offset from centre of averaging function in space
 C      of averaging function
        IF(IWAVE.EQ.0)THEN
          IF(KWAVE.EQ.0)THEN
-          DV = ABS(WAVEIN(I)-WCENTRAL)
+          DV = WAVEIN(I)-WCENTRAL
          ELSE
-          DV = ABS(1E4/WAVEIN(I) - WCENTRAL)
+          DV = 1E4/WAVEIN(I)-WCENTRAL
          ENDIF
        ELSE
          IF(KWAVE.EQ.0)THEN
-          DV = ABS(1E4/WAVEIN(I)-WCENTRAL)
+          DV = 1E4/WAVEIN(I)-WCENTRAL
          ELSE
-          DV = ABS(WAVEIN(I)-WCENTRAL)
+          DV = WAVEIN(I)-WCENTRAL
          ENDIF
        ENDIF
 
-        PRINT*,'ISHAPE,DV = ',ISHAPE,DV
         IF(ISHAPE.EQ.0)THEN
-         IF(DV.LE.0.5*WFWHM)THEN
+         IF(ABS(DV).LE.0.5*WFWHM)THEN
           FRAC(I)=1.0
          ELSE
           FRAC(I)=0.0
          ENDIF
         ELSEIF(ISHAPE.EQ.1)THEN
-         FRAC(I)=1.0-DV/WFWHM
+         FRAC(I)=1.0-ABS(DV)/WFWHM
         ELSEIF(ISHAPE.EQ.2)THEN
-         FRAC(I)=EXP(-0.693*(2*DV/WFWHM)**2)
+         FRAC(I)=EXP(-0.693*(2*ABS(DV)/WFWHM)**2)
         ELSE
          CALL INTERP(VFIL,TFIL,NFILBIN,XFRAC,DV)
+         IF(DV.LT.VFIL(1).AND.DV.GT.VFIL(NFILBIN))THEN
+          XFRAC=0.
+         ENDIF
          FRAC(I)=XFRAC
         ENDIF
+
+C        PRINT*,'ISHAPE,WCENTRAL,WAVEIN(I),1e4/WAVEIN(I),DV = ',
+C     1    ISHAPE,WCENTRAL,WAVEIN(I),1e4/WAVEIN(I),DV
 
         IF(FRAC(I).GT.1)FRAC(I)=1
         IF(FRAC(I).LT.0)FRAC(I)=0

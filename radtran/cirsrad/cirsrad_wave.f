@@ -996,7 +996,7 @@ C               matrix inversion crashing
 		enddo
 
 C               Check to see if this is a limb path
-                j1=0.5*nlays
+                j1=int(0.5*nlays)
 
                 p1=press(layinc(j1,ipath))
                 p2=press(layinc(nlays,ipath))

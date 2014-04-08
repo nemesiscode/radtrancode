@@ -90,7 +90,7 @@ C     Set measurement vector and source vector lengths here.
       real yn1(my),sx(mx,mx)
       real wgeom(mgeom,mav),flat(mgeom,mav)
       real vwaveT(mwave),vconvT(mconv)
-      integer nwaveT,nconvT,npvar
+      integer nwaveT,nconvT,npvar,iprfcheck
       logical gasgiant
       double precision s1d(mx,mx),sai(mx,mx)
 
@@ -155,7 +155,7 @@ C     Set lin=0 to prevent code looking for previous retrievals
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3   RADIUS,nx,xn,ny,yn,kk,kiter)
+     3   RADIUS,nx,xn,ny,yn,kk,kiter,iprfcheck)
        else
 
         CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
@@ -165,7 +165,7 @@ C     Set lin=0 to prevent code looking for previous retrievals
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3   RADIUS,nx,xn,ny,yn,kk,kiter)
+     3   RADIUS,nx,xn,ny,yn,kk,kiter,iprfcheck)
 
        endif
       endif
@@ -232,7 +232,7 @@ C       Put output spectrum into temporary spectrum yn1.
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3     RADIUS,nx,xn1,ny,yn1,kk,kiter)
+     3     RADIUS,nx,xn1,ny,yn1,kk,kiter,iprfcheck)
          else
           CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1     vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
@@ -240,7 +240,7 @@ C       Put output spectrum into temporary spectrum yn1.
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3     RADIUS,nx,xn1,ny,yn1,kk,kiter)
+     3     RADIUS,nx,xn1,ny,yn1,kk,kiter,iprfcheck)
          endif
         endif
 

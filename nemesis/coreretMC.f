@@ -80,7 +80,7 @@ C     Set measurement vector and source vector lengths here.
       include '../radtran/includes/arrdef.f'
       INCLUDE 'arraylen.f'
       integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,jsurf
-      integer jalb,jalbx,jtan,jtanx,jpre,jprex,iscat1
+      integer jalb,jalbx,jtan,jtanx,jpre,jprex,iscat1,iprfcheck
       integer jrad,jradx,npvar,iplanet,lx(mx),jlogg,jloggx
       real phlimit,alambda,xtry,tphi, RADIUS
       CHARACTER*100 runname,itname,abort
@@ -237,7 +237,7 @@ C       readapriori.f. Hence just read in from temporary .str file
         CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2   nvarx,varidentx,varparamx,jsurfx,jalbx,jtanx,jprex,jradx,
-     3   jloggx,RADIUS,nxx,xnx,ny,ynx,kkx,kiter)
+     3   jloggx,RADIUS,nxx,xnx,ny,ynx,kkx,kiter,iprfcheck)
        else
         print*,'CoreretMC: iscat invalid',iscat
         stop
@@ -345,14 +345,14 @@ C       print*,'Calling forwardnogX'
        CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3   RADIUS,nx,xn,ny,yn,kk,kiter)
+     3   RADIUS,nx,xn,ny,yn,kk,kiter,iprfcheck)
 
       else
        iscat1=1
        CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3   RADIUS,nx,xn,ny,yn,kk,kiter)
+     3   RADIUS,nx,xn,ny,yn,kk,kiter,iprfcheck)
 
 C        print*,'forwardnogX OK, jpre = ',jpre
       endif
@@ -489,7 +489,7 @@ C       temporary kernel matrix kk1. Does it improve the fit?
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3     RADIUS,nx,xn1,ny,yn1,kk1,kiter)
+     3     RADIUS,nx,xn1,ny,yn1,kk1,kiter,iprfcheck)
         elseif(iscat.eq.2)then
           CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1     vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
@@ -498,13 +498,23 @@ C       temporary kernel matrix kk1. Does it improve the fit?
           CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3     RADIUS,nx,xn1,ny,yn1,kk1,kiter)
+     3     RADIUS,nx,xn1,ny,yn1,kk1,kiter,iprfcheck)
         else
           iscat1=1
           CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3     RADIUS,nx,xn1,ny,yn1,kk1,kiter)
+     3     RADIUS,nx,xn1,ny,yn1,kk1,kiter,iprfcheck)
+        endif
+
+
+        if(iprfcheck.eq.1)then
+C        iteration has led to negative temperatures, vmrs or dust amounts
+C        Increase brake and try again.
+         print*,'Profile gone wobbly, increase brake and try again'
+         alambda = alambda*10.0              ! increase Marquardt brake
+         if(alambda.gt.1e10)alambda=1e10
+         goto 145
         endif
 
 C       Calculate the cost function for this trial solution.

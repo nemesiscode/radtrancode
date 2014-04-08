@@ -487,7 +487,6 @@ C Setting the correct type for the genlbl path
               ENDIF
             ENDIF
           ENDIF
-          IF(WF)IMOD(NPATH)=20 
         ELSE
           IF(ABSORB)IMOD(NPATH)=1
         ENDIF

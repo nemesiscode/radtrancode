@@ -84,6 +84,7 @@ C paths, etc.)
 
       INCLUDE '../includes/ciacom.f'
       INCLUDE '../includes/gascom.f'
+      INCLUDE '../includes/planrad.f'
 
       CHARACTER*100 ANAME
       REAL DNU
@@ -102,6 +103,9 @@ C
 C	Write a header
 C
 C-----------------------------------------------------------------------
+      jradf=-1
+      jloggf=-1
+
 
       CALL GETTIME(TIME)
       TIME1= TIME

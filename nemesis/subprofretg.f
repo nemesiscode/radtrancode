@@ -144,25 +144,11 @@ C      scale heights
         ISCALE(I)=1
 20     CONTINUE
 
-C      reading the first block of profiles
+C      Skip header
        READ(1,*)
-       N=MIN(NVMR,3)
-C      N is the maximum VMR which can be read in from the next block
        DO 30 I=1,NPRO
-         READ(1,*)H(I),P(I),T(I),(VMR(I,J),J=1,N)
+         READ(1,*)H(I),P(I),T(I),(VMR(I,J),J=1,NVMR)
 30     CONTINUE
-C      reading in additional blocks if any
-C      N VMR profiles have been read in so far
-33     IF(NVMR.GT.N)THEN 
-        READ(1,*)
-C       profiles up to VMR(?,K) to be read from this block
-        K=MIN(NVMR,(N+6))
-        DO 32 I=1,NPRO
-        READ(1,*)(VMR(I,J),J=N+1,K)
-32      CONTINUE
-        N=K
-        GOTO 33
-       END IF
 
 C      Make sure that vmrs add up to 1 if AMFORM=1
        IF(AMFORM.EQ.1)THEN
@@ -1679,29 +1665,13 @@ C     ************* Write out modified profiles *********
 	WRITE(2,502)IDGAS(I),ISOGAS(I)
 502     FORMAT(1X,I3,I5)
 503   CONTINUE
-C     writing the first block of profiles
-      N=MIN(NVMR,3) 
-      WRITE(2,504)(I,I=1,N)
+      WRITE(2,504)(I,I=1,NVMR)
 504   FORMAT(1X,' height (km) ',' press (atm) ','  temp (K)   ',
-     1  3(' VMR gas',I3,2X))
+     1  40(' VMR gas',I3,2X))
       DO 505 I=1,NPRO
-	  WRITE(2,506)H(I),P(I),T(I),(VMR(I,J),J=1,N)
-506       FORMAT(1X,F13.3,E13.5,F13.4,3(E13.5))
+	  WRITE(2,506)H(I),P(I),T(I),(VMR(I,J),J=1,NVMR)
+506       FORMAT(1X,F13.3,E13.5,F13.4,40(E13.5))
 505   CONTINUE
-C     writing additional blocks if any
-C     N VMR profiles have been written so far
-507   IF(NVMR.GT.N)THEN
-C         profiles up to VMR(?,K) to be written to this block
-	  K=MIN(NVMR,(N+6))
-	  WRITE(2,508)(I,I=N+1,K)
-508       FORMAT(1X,6(' VMR gas',I3,2X))
-	  DO 509 I=1,NPRO
-	  WRITE(2,510)(VMR(I,J),J=N+1,K)
-510       FORMAT(1X,6E13.5)
-509       CONTINUE
-	  N=K
-	  GOTO 507
-	  END IF
 C
 52    CONTINUE
       CLOSE(2)

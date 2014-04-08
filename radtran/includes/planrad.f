@@ -16,6 +16,6 @@ C
 C	
 C
 C-----------------------------------------------------------------------
-	  REAL RADIUS2
-	  INTEGER jradf
-          COMMON /PLANRAD/RADIUS2,jradf
+	  REAL RADIUS2,MASS2
+	  INTEGER jradf,jloggf
+          COMMON /PLANRAD/RADIUS2,jradf,MASS2,jloggf

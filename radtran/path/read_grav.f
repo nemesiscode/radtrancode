@@ -9,8 +9,9 @@ C
 C     Pat Irwin		Documented	13/4/00
 C
 C     **************************************************************
-      integer mplanet,nplanet,iplanet,isurf
-      real xgm,xcoeff(3),xradius,xellip,xomega
+      implicit none
+      integer mplanet,nplanet,iplanet,isurf,i,j
+      real xgm,xcoeff(3),xradius,xellip,xomega,pi,Grav
       parameter (mplanet=60,pi=3.1415927,Grav=6.672E-11)
       real plan_mass(mplanet),Jcoeff(3,mplanet),aradius(mplanet)
       real flatten,rotation,ellip(mplanet),omega(mplanet)
@@ -47,6 +48,7 @@ C      Ignore first 4 spaces which are reserved for planet number
        Jcoeff(1,i)=Jcoeff(1,i)/1e3
        Jcoeff(2,i)=Jcoeff(2,i)/1e6
        Jcoeff(3,i)=Jcoeff(3,i)/1e8
+C      Convert radius to units of cm
        aradius(i)=aradius(i)*1e5
 20    continue
       close(12)
@@ -62,16 +64,29 @@ C      Ignore first 4 spaces which are reserved for planet number
       endif
 
       xgm = plan_mass(iplanet)
+      if(mass2.gt.0.0.and.jloggf.gt.0)then
+C       print*,'read_grav: updating mass with mass2 from planrad'
+C       print*,'common block'
+C       print*,'Old mass = ',plan_mass(iplanet)/(Grav*1e24*1e6)
+C       print*,'New mass = ',mass2
+        xgm = mass2*Grav*1e24*1e6
+      else
+        mass2 = plan_mass(iplanet)/(Grav*1e24*1e6)
+      endif
+
+
       do 30 j=1,3
        xcoeff(j)=Jcoeff(j,iplanet)
 30    continue
       xradius=aradius(iplanet)
-      if(radius2.gt.0.0.and.jradf.ge.0)then
+      if(radius2.gt.0.0.and.jradf.gt.0)then
 C       print*,'read_grav: updating radius with radius2 from planrad'
 C       print*,'common block'
-C       print*,'Old radius = ',xradius
-C       print*,'New radius = ',radius2*1e5
+C       print*,'Old radius = ',xradius/1e5
+C       print*,'New radius = ',radius2
        xradius=radius2*1e5
+      else
+       radius2=xradius/1e5
       endif
       
       xellip = ellip(iplanet)

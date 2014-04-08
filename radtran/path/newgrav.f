@@ -104,8 +104,7 @@ C-------------------------------------------------------------------------------
        latc = thetagc(lat, xellip)
        slatc = sin(latc)
        clatc = cos(latc)
-       
-       if(jradf.gt.0)xradius=radius2*1.e5
+
 
 C      Rr is the ratio of radius at equator to radius at current latitude
        Rr = sqrt(clatc**2 + (xellip**2 * slatc**2))

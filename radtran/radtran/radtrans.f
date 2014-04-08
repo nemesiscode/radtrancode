@@ -95,6 +95,7 @@ C of the .kta files for use during calculation.
 
       INCLUDE '../includes/ciacom.f'
       INCLUDE '../includes/gascom.f'
+      INCLUDE '../includes/planrad.f'
 
       CHARACTER*100 ANAME
       REAL DNU
@@ -112,6 +113,9 @@ C     Setup HG common block (if required)
 C******************************** CODE *********************************
 
       xwave(1)=-1.
+      jradf=-1
+      jloggf=-1
+
 
 C Obtain the system time for use in determining the total time used by the
 C program since execution.

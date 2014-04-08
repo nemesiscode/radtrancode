@@ -831,6 +831,10 @@ C             *** vmr, para-H2 or cloud, take logs *********
 	    
          else
 C          Non-atmospheric and other parameters
+
+C          extra line to force varident(ivar,3)=varident(ivar,1)
+           varident(ivar,3)=varident(ivar,1)
+
            if(varident(ivar,1).eq.999)then
 C           **** Surface temperature *******
 C           Read in surface temperature and error

@@ -62,6 +62,7 @@ C         limb             followed by bottom layer to use
 C         nadir            followed by angle (degrees) from nadir and bottom
 C                          layer to use (normally 1)
 C         (no)wf           weighting function
+C         (no)netflux      Net flux calculation
 C         (no)cg           curtis godson
 C         (no)therm        thermal emission
 C	  (no)hemisphere   Integrate emission into hemisphere
@@ -93,6 +94,7 @@ C     note that default is a limb path from bottom layer
       BINBB=.TRUE.
       ABSORB=.FALSE.
       LIMB=.TRUE.
+      NETFLUX=.FALSE.
       ANGLE=90.
       BOTLAY=1
 C
@@ -113,6 +115,8 @@ C     checking for negated keywords
         GOTO 5
        ELSE IF(TEXT(1:2).EQ.'WF')THEN
         WF=DEF
+       ELSE IF(TEXT(1:7).EQ.'NETFLUX')THEN
+        NETFLUX=DEF
        ELSE IF(TEXT(1:2).EQ.'CG')THEN
         CG=DEF
        ELSE IF(TEXT(1:5).EQ.'THERM')THEN
@@ -157,7 +161,8 @@ C       NOLIMB doesn't make sense so DEF must be true
           STOP
           END IF
        ELSE
-        CALL WTEXT('unrecognised atmospheric keyword')
+        CALL WTEXT('unrecognised atmospheric keyword : ')
+        PRINT*,TEXT
         STOP
         END IF
       GOTO 4
@@ -422,6 +427,7 @@ C     need multiple paths if calculating a weighting function or if performing
 C     a thermal integration outside genlbl
       IF(WF)IPATH=NUSE
       IF(THERM.AND.BROAD)IPATH=NUSE
+      IF(NETFLUX)IPATH=NUSE
       DO 29 J=1,IPATH
 C      WRITE(*,207)J
 207   FORMAT(' path',I3)
@@ -451,18 +457,24 @@ C     setting the correct type for the genlbl path
           ENDIF
          END IF
         END IF
-C        IF(WF)IMOD(NPATH)=21 		! This seems obselete!
       ELSE
        IF(ABSORB)IMOD(NPATH)=1
       ENDIF
 
 
       IF(SCATTER)IMOD(NPATH)=15
+      IF(NETFLUX)THEN
+       IF(SCATTER)THEN
+        IMOD(NPATH)=24
+       ELSE
+        IMOD(NPATH)=21
+       ENDIF
+      ENDIF
       IF(SCATTER.AND.LIMB)THEN
 C       Assumes int. rad. field calc.
-        IMOD(NPATH)=22  
+        IMOD(NPATH)=23  
       ENDIF
-      IF(NEARLIMB)IMOD(NPATH)=22
+      IF(NEARLIMB)IMOD(NPATH)=23
       IF(SINGLE)IMOD(NPATH)=16
       IF(CG)THEN
         IF(IMOD(NPATH).GE.2.AND.IMOD(NPATH).LE.3)

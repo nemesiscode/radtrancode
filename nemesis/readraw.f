@@ -1,5 +1,5 @@
       subroutine readraw(lraw,xlat,xlon,npro,nvar,varident,
-     1  varparam,jsurf,jalb,jtan,jpre,jrad,nx,xn,st)
+     1  varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,nx,xn,st)
 C     $Id:
 C     ***********************************************************************
 C     Output the results of retrieval code
@@ -18,6 +18,8 @@ C					element (if retrieved)
 C	jalb		integer		Position of surface albedo spec
 C	jtan		integer		Position of tangent ht correction
 C	jpre		integer		Position of tangent pressure
+C	jrad		integer		Position of surface radius
+C	jlogg		integer		Position of surface log_10(g)
 C	nx		integer		Number of elements in state vector
 C	xn(mx)		real		Retrieved measurement vector
 C	st(mx,mx)	real		A priori covariance matrix
@@ -32,7 +34,7 @@ C     ***********************************************************************
       integer nx,i,j,ispec,lraw,npro,ivar1
       real xn(mx),st(mx,mx),xlat,xlon,varparam(mvar,mparam)
       integer varident(mvar,3),nvar,ivar,jsurf,ioff,np,jalb,jtan
-      integer jpre, jrad, npvar
+      integer jpre, jrad, npvar, jlogg
 
       read(lraw,*)ispec
       read(lraw,*)xlat,xlon
@@ -44,6 +46,7 @@ C     ***********************************************************************
       jtan = -1
       jpre = -1
       jrad = -1
+      jlogg = -1
       ioff=0
       do ivar=1,nvar
         read(lraw,*)ivar1
@@ -63,6 +66,7 @@ C     ***********************************************************************
         if(varident(ivar,1).eq.777)jtan=ioff
         if(varident(ivar,1).eq.666)jpre=ioff
         if(varident(ivar,1).eq.555)jrad=ioff
+        if(varident(ivar,1).eq.333)jlogg=ioff
 
       enddo
       read(lraw,*)nx

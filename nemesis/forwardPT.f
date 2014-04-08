@@ -1,6 +1,6 @@
       subroutine forwardPT(runname,ispace,fwhm,ngeom,nav,
      1 wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,nvar,
-     2 varident,varparam,jrad,RADIUS,nx,xn,ny,yn,kk)
+     2 varident,varparam,jrad,jlogg,RADIUS,nx,xn,ny,yn,kk)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate a primary transit spectrum of an exoplanet.
@@ -63,13 +63,14 @@ C     **************************************************************
       real xlat,planck_wave,planckg_wave,Bg,height(100),htan
       real wgeom(mgeom,mav),flat(mgeom,mav),fh,thetrot
       integer layint,inormal,iray,iptf,itype,nlayer,laytyp
-      integer nwave(mgeom),jsurf,jrad,nem,nav(mgeom),nwave1
+      integer nwave(mgeom),jsurf,jrad,jlogg,nem,nav(mgeom),nwave1
       real vwave(mgeom,mwave),angles(mgeom,mav,3),vwave1(mwave)
       real calcout(maxout3),fwhm,calcoutL(maxout3)
       real calcout1(maxout3),gradients1(maxout4)
       real calcout2(maxout3),gradients2(maxout4)
       real gradients(maxout4),vv,gradientsL(maxout4)
-      real ytrans(maxpat),yarea(maxpat)
+      real ytrans(maxpat),yarea(maxpat),Grav,xref,dx
+      parameter (Grav=6.672E-11)
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       integer ipixA,ipixB,ichan,imie,imie1
       real vconv(mgeom,mconv),vconv1(mconv)
@@ -103,8 +104,10 @@ C     **************************************************************
 
       common /solardat/iread, iform, stelrad, solwave, solrad,  solnpt
 
-C     jradf is passed via tha planrad common block
-      jradf=jrad
+C     jradf and jloggf are passed via the planrad common block
+      jradf=jrad       
+      jloggf=jlogg
+
 
 C     Initialise arrays
       do i=1,my
@@ -203,6 +206,14 @@ C     radius2 is passed via the planrad common block.
       else
        radius2 = radius
       endif
+
+C     If we're retrieving surface gravity then modify the planet mass
+C     N.B. mass2 is passed via the planrad common block. Assume xn(jlogg)
+C     holds log_10(surface gravity in cm/s^2). Need factor of 1e-20 to convert
+C     mass to units of 1e24 kg.      
+      if(jlogg.gt.0)then
+        mass2 = 1e-20*10**(xn(jlogg))*(radius2**2)/Grav
+      endif  
 
       iscat=0
 
@@ -341,6 +352,60 @@ C           Hence, d_output/d_radius = 2*pi*radius = 2*output/radius
 206   continue
 
       close(9)
+
+      if(jlogg.gt.0)then
+C      Need to compute RoC of signal with surface gravity numerically
+
+
+       xref=xn(jlogg)
+       dx=0.05*xref
+       if(dx.eq.0)dx = 0.1
+
+       xn(jlogg)=xref+dx
+       mass2 = 1e-20*10**(xn(jlogg))*(radius2**2)/Grav
+
+       call gsetradPT(runname,nconv1,vconv1,fwhm,ispace,iscat,
+     1    gasgiant,layht,nlayer,laytyp,layint,xlat,lin,
+     3    nvar,varident,varparam,nx,xn,xmap)
+
+
+       call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
+     1   vwave1,nwave1,itype, nem, vem, emissivity, tsurf, 
+     2   gradtsurf, nx, xmap, vconv1, nconv1, npath,calcoutL, 
+     3   gradientsL)
+
+
+       do 208 iconv=1,nconv1
+        area = 0.0
+
+        do 209 ipath=1,npath        
+
+         h1 = radius2 + height(ipath)
+         ioff1=nconv1*(ipath-1)+iconv
+         trans = calcoutL(ioff1)
+         ytrans(ipath)=trans
+         y1(ipath) = 2.*pi*h1*(1.-trans)
+209     continue        
+
+        do 307 ipath=1,npath-1
+
+         dh = height(ipath+1)-height(ipath)
+
+         area = area + 0.5*(y1(ipath)+y1(ipath+1))*dh
+
+307     continue
+        
+        yn1(iconv)=sngl(100.0*(area1+area)/area0)
+
+        kk(iconv,jlogg)=(yn1(iconv)-yn(iconv))/dx
+
+208    continue
+
+       xn(jlogg)=xref+dx
+       mass2 = 1e-20*10**(xn(jlogg))*(radius2**2)/Grav
+
+      endif
+
 
       return
 

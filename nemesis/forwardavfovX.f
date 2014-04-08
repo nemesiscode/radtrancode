@@ -1,7 +1,7 @@
       subroutine forwardavfovX(runname,ispace,iscat,fwhm,ngeom,
      1 nav,wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
-     2 lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
-     3 nx,xn,ny,yn,kk)
+     2 lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
+     3 RADIUS,nx,xn,ny,yn,kk)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate an FOV-averaged spectrum and
@@ -43,6 +43,8 @@ C	jpre		integer	Position of tangent pressure in
 C				xn (if included)
 C       jrad            integer position radius element in
 C                               xn (if included)
+C	jlogg		integer	position of surface log_10(g) in
+C                               xn (if included)
 C       RADIUS          real    Planetary radius at 0km altitude
 C       nx              integer Number of elements in state vector
 C       xn(mx)          real	State vector
@@ -68,11 +70,13 @@ C     **************************************************************
       include '../radtran/includes/gascom.f'
       include '../radtran/includes/planrad.f'
       include 'arraylen.f'
-      real xlat,planck_wave,planckg_wave,Bg
+      real xlat,planck_wave,planckg_wave,Bg,Grav
+      parameter (Grav=6.672E-11)
       real wgeom(mgeom,mav),flat(mgeom,mav),pressR,delp
+      real loggR,dellg
       integer layint,inormal,iray,itype,nlayer,laytyp,iscat
       integer nwave(mgeom),jsurf,nem,nav(mgeom),nwave1
-      integer jalb,jtan,jpre,k,iptf,jrad,imie,imie1
+      integer jalb,jtan,jpre,k,iptf,jrad,imie,imie1,jlogg
       real vwave(mgeom,mwave),angles(mgeom,mav,3),vwave1(mwave)
       real calcout(maxout3),fwhm,RADIUS
       real gradients(maxout4),vv
@@ -80,7 +84,7 @@ C     **************************************************************
       real vconv(mgeom,mconv),vconv1(mconv)
       real layht,tsurf,esurf,gradtsurf(maxout3)
       real xn(mx),yn(my),kk(my,mx),yn1(my)
-      integer ny,iconv
+      integer ny,iconv,iextra
       integer nphi,ipath
       integer nmu,isol,lowbc,nf
       real dist,galb,sol_ang,emiss_ang,aphi
@@ -112,9 +116,9 @@ c  ** variables for solar refelcted cloud **
 
       common /solardat/iread, iform, stelrad, solwave, solrad,  solnpt
 
-C     jradf is passed via tha planrad common block
+C     jradf and jloggf are passed via the planrad common block
       jradf=jrad
-
+      jloggf=jlogg
 
 
 C      print*,runname
@@ -174,6 +178,14 @@ C     N.B.radius2 is passed via the planrad common block.
         radius2 = xn(jrad) + radius
       else
         radius2 = radius
+      endif
+
+C     If we're retrieving surface gravity then modify the planet mass
+C     N.B. mass2 is passed via the planrad common block. Assume xn(jlogg)
+C     holds log_10(surface gravity in cm/s^2). Need factor of 1e-20 to convert
+C     mass to units of 1e24 kg.
+      if(jlogg.gt.0)then
+        mass2 = 1e-20*10**(xn(jlogg))*(radius2**2)/Grav
       endif
 
       ioff = 0
@@ -254,7 +266,7 @@ C         Not an SCR calculation. Assume 1st path is the thermal emission
 C         Calculate gradients
           do i=1,nx
 
-           if(i.ne.jtan.and.i.ne.jpre.and.i.ne.jrad)then
+           if(i.ne.jtan.and.i.ne.jpre.and.i.ne.jrad.and.i.ne.jlogg)then
             do j=1,nconv1
              iconv=-1
              do k = 1,nconv1
@@ -273,7 +285,7 @@ C         Calculate gradients
              enddo
   	     ioff1=nconv1*(ipath-1)+iconv
              kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*
-     1          2.*calcout(ioff1)/RADIUS
+     1          2.*calcout(ioff1)/RADIUS2
             enddo
            endif
 
@@ -362,7 +374,7 @@ C         the wideband (path=5)
           do i=1,nx
 
 C          Now the gradients
-           if(i.ne.jtan.and.i.ne.jpre.and.i.ne.jrad)then
+           if(i.ne.jtan.and.i.ne.jpre.and.i.ne.jrad.and.i.ne.jlogg)then
             do j=1,nconv1
              iconv=-1
              do k = 1,nconv1
@@ -387,11 +399,11 @@ C          Now the gradients
              ipath=4
   	     ioff1=nconv1*(ipath-1)+iconv
              kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*
-     1          2.*calcout(ioff1)/RADIUS
+     1          2.*calcout(ioff1)/RADIUS2
              ipath=5
   	     ioff1=nconv1*(ipath-1)+iconv
              kk(ioff+nconv1+j,i)=kk(ioff+nconv1+j,i)+wgeom(igeom,iav)*
-     1          2.*calcout(ioff1)/RADIUS
+     1          2.*calcout(ioff1)/RADIUS2
             enddo
            endif
 
@@ -420,105 +432,138 @@ C          Now the gradients
 
 110    continue
 
-       if(jtan.gt.0.or.jpre.gt.0)then
+       if(jtan.gt.0.or.jpre.gt.0.or.jlogg.gt.0)then
 
-        if(jpre.gt.0)then
+        do 113 iextra=1,3
+
+         if(iextra.eq.1.and.jpre.lt.1)goto 113
+         if(iextra.eq.2.and.jtan.lt.1)goto 113
+         if(iextra.eq.3.and.jlogg.lt.1)goto 113
+
+         if(iextra.eq.1.and.jpre.gt.0)then
           print*,'Calculating RoC with tangent pressure'
           pressR = xn(jpre)
           delp = pressR*0.01
           xn(jpre)=pressR+delp
-        endif
-
-        do 111 iav = 1,nav(igeom)
-         sol_ang = angles(igeom,iav,1)
-         emiss_ang = angles(igeom,iav,2)
-         aphi = angles(igeom,iav,3)
-
-         if(jtan.gt.0)then
-          if(emiss_ang.lt.0)sol_ang = sol_ang+1.0
          endif
 
-         xlat = flat(igeom,iav)   
-
-C        Set up parameters for non-scattering cirsrad run.
-
-         CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
-         IMIE1=IMIE
-
-         itype=11			! scloud11. not used here
-
-
-C        Set up all files for a direct cirsrad run
-         call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,
-     1    lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
-     2    layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
-     3    nvar,varident,varparam,nx,xn,jalb,jtan,jpre,tsurf,xmap)
+         if(iextra.eq.3.and.jlogg.gt.0)then
+          print*,'Calculating RoC with log(g)'
+          loggR = xn(jlogg)
+          dellg = loggR*0.01
+          xn(jlogg)=loggR+dellg
+          mass2 = 1e-20*10**(xn(jlogg))*(radius2**2)/Grav
+         endif
 
 
-         call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
-     1    vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf, 
-     2    nx, xmap, vconv1, nconv1, npath, calcout, gradients)
+         do 111 iav = 1,nav(igeom)
+          sol_ang = angles(igeom,iav,1)
+          emiss_ang = angles(igeom,iav,2)
+          aphi = angles(igeom,iav,3)
+
+          if(iextra.eq.2.and.jtan.gt.0)then
+           if(emiss_ang.lt.0)sol_ang = sol_ang+1.0
+          endif
+
+          xlat = flat(igeom,iav)   
+
+C         Set up parameters for non-scattering cirsrad run.
+ 
+          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+          IMIE1=IMIE
+
+          itype=11			! scloud11. not used here
 
 
-         if(icread.ne.1)then
-C         First path is assumed to be thermal emission if not SCR calculation
+C         Set up all files for a direct cirsrad run
+          call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,
+     1     lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
+     2     layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
+     3     nvar,varident,varparam,nx,xn,jalb,jtan,jpre,tsurf,xmap)
+
+
+          call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
+     1     vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf, 
+     2     nx, xmap, vconv1, nconv1, npath, calcout, gradients) 
+
+
+          if(icread.ne.1)then
+C          First path is assumed to be thermal emission if not SCR calculation
         
-          ipath = 1
-          do j=1,nconv1
-           iconv=-1
-           do k=1,nconv1
-            if(vconv(igeom,j).eq.vconv1(k))iconv=k
-           enddo 
- 	   ioff1=nconv1*(ipath-1)+iconv
-           yn1(ioff+j)=yn1(ioff+j)+wgeom(igeom,iav)*calcout(ioff1)
-          enddo
+           ipath = 1
+           do j=1,nconv1
+            iconv=-1
+            do k=1,nconv1
+             if(vconv(igeom,j).eq.vconv1(k))iconv=k
+            enddo 
+ 	    ioff1=nconv1*(ipath-1)+iconv
+            yn1(ioff+j)=yn1(ioff+j)+wgeom(igeom,iav)*calcout(ioff1)
+           enddo
 
-         else
+          else
 
-          do j=1,nconv1
-           iconv=-1
-           do k=1,nconv1
-            if(vconv(igeom,j).eq.vconv1(k))iconv=k
-           enddo 
-           ipath=4
- 	   ioff1=nconv1*(ipath-1)+iconv
-           yn1(ioff+j)=yn1(ioff+j)+wgeom(igeom,iav)*calcout(ioff1)
-           ipath=5
- 	   ioff1=nconv1*(ipath-1)+iconv
-           yn1(ioff+nconv1+j)=yn1(ioff+nconv1+j)+
+           do j=1,nconv1
+            iconv=-1
+            do k=1,nconv1
+             if(vconv(igeom,j).eq.vconv1(k))iconv=k
+            enddo 
+            ipath=4
+   	    ioff1=nconv1*(ipath-1)+iconv
+            yn1(ioff+j)=yn1(ioff+j)+wgeom(igeom,iav)*calcout(ioff1)
+            ipath=5
+ 	    ioff1=nconv1*(ipath-1)+iconv
+            yn1(ioff+nconv1+j)=yn1(ioff+nconv1+j)+
      1		wgeom(igeom,iav)*calcout(ioff1)
-          enddo
+           enddo
 
-         endif
+          endif
 
 
 111      continue
 
          do j=1,nconv1
 
-          if(jtan.gt.0)then
-C          Assume change in tangent height pressure of 1km.
-           kk(ioff+j,jtan) = kk(ioff+j,jtan) + yn1(ioff+j)-yn(ioff+j)
-           if(icread.eq.1)then
-            kk(ioff+nconv1+j,jtan) = kk(ioff+nconv1+j,jtan) + 
+           if(iextra.eq.1.and.jpre.gt.0)then
+            kk(ioff+j,jpre) = kk(ioff+j,jpre) +
+     1         (yn1(ioff+j)-yn(ioff+j))/delp  
+            if(icread.eq.1)then
+             kk(ioff+nconv1+j,jpre) = kk(ioff+nconv1+j,jpre) +
+     1         (yn1(ioff+nconv1+j)-yn(ioff+nconv1+j))/delp  
+            endif
+           endif
+
+           if(iextra.eq.2.and.jtan.gt.0)then
+C           Assume change in tangent height pressure of 1km.
+            kk(ioff+j,jtan) = kk(ioff+j,jtan) + yn1(ioff+j)-yn(ioff+j)
+            if(icread.eq.1)then
+             kk(ioff+nconv1+j,jtan) = kk(ioff+nconv1+j,jtan) + 
      1		yn1(ioff+nconv1+j)-yn(ioff+nconv1+j)
+            endif
            endif
-          elseif(jpre.gt.0)then
-           kk(ioff+j,jpre) = kk(ioff+j,jpre) +
-     1        (yn1(ioff+j)-yn(ioff+j))/delp  
-           if(icread.eq.1)then
-            kk(ioff+nconv1+j,jpre) = kk(ioff+nconv1+j,jpre) +
-     1        (yn1(ioff+nconv1+j)-yn(ioff+nconv1+j))/delp  
+
+           if(iextra.eq.3.and.jlogg.gt.0)then
+            kk(ioff+j,jlogg) = kk(ioff+j,jlogg) +
+     1         (yn1(ioff+j)-yn(ioff+j))/dellg  
+            if(icread.eq.1)then
+             kk(ioff+nconv1+j,jlogg) = kk(ioff+nconv1+j,jlogg) +
+     1         (yn1(ioff+nconv1+j)-yn(ioff+nconv1+j))/dellg  
+            endif
            endif
-          endif
 
          enddo
     
 
-         if(jpre.gt.0)then
+         if(iextra.eq.1.and.jpre.gt.0)then
           xn(jpre)=pressR
          endif
- 
+
+         if(iextra.eq.3.and.jlogg.gt.0)then
+          xn(jlogg)=loggR
+          mass2 = 1e-20*10**(xn(jlogg))*(radius2**2)/Grav
+         endif
+
+113     enddo
+
        endif
 
        if(icread.ne.1)then

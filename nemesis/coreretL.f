@@ -1,7 +1,7 @@
       subroutine coreretL(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,jsurf,jalb,jtan,
-     3  jpre,jrad,wgeom,flat,nx,lx,xa,sa,ny,y,se1,xn,sm,sn,st,yn,
+     3  jpre,jrad,jlogg,wgeom,flat,nx,lx,xa,sa,ny,y,se1,xn,sm,sn,st,yn,
      4  kk,aa,dd)
 C     $Id:
 C     ******************************************************************
@@ -79,7 +79,7 @@ C     Set measurement vector and source vector lengths here.
       INCLUDE 'arraylen.f'
       integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,jsurf
       integer jalb,jalbx,jtan,jpre,jtanx,jprex,iscat1,i1,k1
-      integer jrad,jradx,lx(mx)
+      integer jrad,jradx,jlogg,jloggx,lx(mx)
       real phlimit,alambda,xtry,tphi
       CHARACTER*100 runname,itname,abort
 
@@ -98,8 +98,8 @@ C     Set measurement vector and source vector lengths here.
       real kk(my,mx),xa(mx),kk1(my,mx),sa(mx,mx),y(my),yn(my)
       real kkx(my,mx),yn1(my),s1(mx,mx)
       real wgeom(mgeom,mav),flat(mgeom,mav)
-      real vconvT(mconv),vwaveT(mwave)
-      integer nwaveT,nconvT
+      real vconvT(mconv),vwaveT(mwave),RADIUS
+      integer nwaveT,nconvT,iplanet
       logical gasgiant
 
       double precision s1d(mx,mx),sai(mx,mx)
@@ -154,6 +154,8 @@ C     Initialise s1e
         sei(i,i)=1.0/dble(se1(i))
       enddo
 
+      CALL readrefiplan(runname,iplanet,RADIUS)
+
 
 C     Calculate first spectrum and k-matrix
 
@@ -166,7 +168,7 @@ C     Load state vector with a priori
 
        if(lin.eq.1)then
         call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,varparamx,
-     1   jsurfx,jalbx,jtanx,jprex,jradx,nxx,xnx,stx)
+     1   jsurfx,jalbx,jtanx,jprex,jradx,jloggx,nxx,xnx,stx)
 
         xdiff = abs(xlat-xlatx)
         if(xdiff.gt.lat_tolerance)then
@@ -193,7 +195,7 @@ C     Load state vector with a priori
 
 C       Write out x-data to temporary .str file for later routines.
         call writextmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1   nxx,xnx,stx,jsurfx,jalbx,jtanx,jprex,jradx)
+     1   nxx,xnx,stx,jsurfx,jalbx,jtanx,jprex,jradx,jloggx)
 
        else
 C       substituting and retrieving parameters from .pre file.
@@ -201,7 +203,7 @@ C       Current record frrom .pre file already read in by
 C       readapriori.f. Hence just read in from temporary .str file
 
         call readxtmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1   nxx,xnx,stx,jsurfx,jalbx,jtanx,jprex,jradx)
+     1   nxx,xnx,stx,jsurfx,jalbx,jtanx,jprex,jradx,jloggx)
        
        endif
 
@@ -228,7 +230,7 @@ C       endif
 
         CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1   vconvT,gasgiant,lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,
-     2   jtanx,jprex,nxx,xnx)
+     2   jtanx,jprex,jradx,jloggx,RADIUS,nxx,xnx)
         
         iscat1=1
         CALL forwardnogL(runname,ispace,iscat1,fwhm,ngeom,nav,
@@ -317,7 +319,7 @@ C       enddo
 
        CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1   vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
-     2   jtan,jpre,nx,xn)
+     2   jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
 
        print*,'Now calling forwardnogL'
        iscat1=1
@@ -430,7 +432,7 @@ C       temporary kernel matrix kk1. Does it improve the fit?
 
         CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1     vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
-     2     jtan,jpre,nx,xn1)
+     2     jtan,jpre,jrad,jlogg,RADIUS,nx,xn1)
 
         iscat1=1
         CALL forwardnogL(runname,ispace,iscat1,fwhm,ngeom,nav,

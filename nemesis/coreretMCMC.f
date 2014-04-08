@@ -1,7 +1,7 @@
       subroutine coreretMCMC(runname,ispace,iscat,ilbl,ica,miter,
      1  niter,fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,
      2  angles,gasgiant,nvar,varident,varparam,npro,jsurf,jalb,jtan,
-     3  jpre,jrad,wgeom,flat,nx,lx,xa,sa,ny,y,se1,idum)
+     3  jpre,jrad,jlogg,wgeom,flat,nx,lx,xa,sa,ny,y,se1,idum)
 C     $Id:
 C     ******************************************************************
 C
@@ -73,7 +73,7 @@ C     Set measurement vector and source vector lengths here.
       include '../radtran/includes/arrdef.f'
       INCLUDE 'arraylen.f'
       integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,jsurf,lin
-      integer jalb,jtan,jpre,ilbl,jrad,miter,niter,idum,itry
+      integer jalb,jtan,jpre,ilbl,jrad,jlogg,miter,niter,idum,itry
       CHARACTER*100 runname,itname,abort
 
       real xn(mx),se1(my),calc_chi,kk(my,mx),calc_phiprior
@@ -146,26 +146,26 @@ C     Set lin=0 to prevent code looking for previous retrievals
          print*,'Calling forwardnoglbl - B'
          CALL forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,nconv,vconv,angles,gasgiant,lin,
-     2    nvar,varident,varparam,jsurf,jalb,jtan,jpre,
-     3    nx,xn,ny,yn,kk,kiter)
+     2    nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,
+     3    jlogg,RADIUS,nx,xn,ny,yn,kk,kiter)
       else
 
        if(iscat.ne.2)then
  
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
-     3   nx,xn,ny,yn,kk,kiter)
+     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
+     3   RADIUS,nx,xn,ny,yn,kk,kiter)
        else
 
         CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1   vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
-     2   jtan,jpre,nx,xn)
+     2   jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
 
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
-     3   nx,xn,ny,yn,kk,kiter)
+     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
+     3   RADIUS,nx,xn,ny,yn,kk,kiter)
 
        endif
       endif
@@ -225,22 +225,22 @@ C       Put output spectrum into temporary spectrum yn1.
         if(ilbl.eq.1)then
          CALL forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,     
      1    wgeom,flat,nconv,vconv,angles,gasgiant,lin,
-     2    nvar,varident,varparam,jsurf,jalb,jtan,jpre,
-     3    nx,xn1,ny,yn1,kk,kiter)
+     2    nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
+     3    RADIUS,nx,xn1,ny,yn1,kk,kiter)
         else
          if(iscat.ne.2)then
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
-     3     nx,xn1,ny,yn1,kk,kiter)
+     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
+     3     RADIUS,nx,xn1,ny,yn1,kk,kiter)
          else
           CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1     vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
-     2     jtan,jpre,nx,xn1)
+     2     jtan,jpre,jrad,jlogg,RADIUS,nx,xn1)
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
-     3     nx,xn1,ny,yn1,kk,kiter)
+     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
+     3     RADIUS,nx,xn1,ny,yn1,kk,kiter)
          endif
         endif
 

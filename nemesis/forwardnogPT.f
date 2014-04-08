@@ -1,6 +1,6 @@
       subroutine forwardnogPT(runname,ispace,fwhm,ngeom,nav,
      1 wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,nvar,
-     2 varident,varparam,jrad,RADIUS,nx,xn,ny,yn,kk,kiter)
+     2 varident,varparam,jrad,jlogg,RADIUS,nx,xn,ny,yn,kk,kiter)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate a primary transit spectrum of an exoplanet.
@@ -64,10 +64,11 @@ C     **************************************************************
       real xlat,planck_wave,planckg_wave,Bg,height(100),htan
       real wgeom(mgeom,mav),flat(mgeom,mav),fh,thetrot
       integer layint,inormal,iray,iptf,itype,nlayer,laytyp
-      integer nwave(mgeom),jsurf,jrad,nem,nav(mgeom),nwave1
+      integer nwave(mgeom),jsurf,jrad,jlogg,nem,nav(mgeom),nwave1
       real vwave(mgeom,mwave),angles(mgeom,mav,3),vwave1(mwave)
       real calcout(maxout3),fwhm,output(maxout3)
-      real vv,xref,dx
+      real vv,xref,dx,Grav
+      parameter (Grav=6.672E-11)
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       integer ipixA,ipixB,ichan,ix,imie,imie1
       real vconv(mgeom,mconv),vconv1(mconv)
@@ -101,8 +102,10 @@ C     **************************************************************
 
       common /solardat/iread, iform, stelrad, solwave, solrad,  solnpt
  
-C     jradf is passed via the planrad common block
+
+C     jradf and jloggf are passed via the planrad common block
       jradf=jrad
+      jloggf=jlogg
 
 C     Initialise arrays
       do i=1,my
@@ -260,6 +263,15 @@ C        radius2 is passed via the planrad common block
          else
           radius2 = radius
          endif
+
+
+C        If we're retrieving surface gravity then modify the planet mass
+C        N.B. mass2 is passed via the planrad common block. Assume xn(jlogg)
+C        holds log_10(surface gravity in cm/s^2). Need factor of 1e-20 to convert
+C        mass to units of 1e24 kg.      
+         if(jlogg.gt.0)then
+          mass2 = 1e-20*10**(xn(jlogg))*(radius2**2)/Grav
+         endif  
 
 
 C        Set up all files for a direct cirsrad run of limb spectra and

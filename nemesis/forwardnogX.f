@@ -1,7 +1,7 @@
       subroutine forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1 wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
-     2 lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
-     3 nx,xn,ny,yn,kk,kiter,icheck)
+     2 lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
+     3 RADIUS,nx,xn,ny,yn,kk,kiter,icheck)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate a synthetic spectrum and KK-matrix using
@@ -48,6 +48,8 @@ C	jpre		integer position of tangent pressure element in
 C				xn (if included)
 C       jrad		integer position radius element in
 C                               xn (if included)
+C       jlogg		integer position surface gravity (log(g)) element in
+C                               xn (if included)
 C       RADIUS		real    Planetary radius at 0km altitude
 C       nx              integer Number of elements in state vector
 C       xn(mx)          real	State vector
@@ -75,14 +77,15 @@ C     **************************************************************
       include '../radtran/includes/gascom.f'
       include '../radtran/includes/planrad.f'
       include 'arraylen.f'
-      real xlat,xref,dx
+      real xlat,xref,dx,Grav
+      parameter (Grav=6.672E-11)
       integer layint,inormal,iray,itype,nlayer,laytyp,iscat
       integer nwave(mgeom),ix,ix1,iav,nwave1,iptf,jrad,j1
       real vwave(mgeom,mwave),interpem,RADIUS
       real calcout(maxout3),fwhm,planck_wave,output(maxout3)
       real gradients(maxout4),pi
       parameter (pi=3.1415927)
-      integer check_profile,icheck,imie,imie1
+      integer check_profile,icheck,imie,imie1,jlogg
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       real vconv(mgeom,mconv),wgeom(mgeom,mav),flat(mgeom,mav)
       real layht,tsurf,esurf,angles(mgeom,mav,3)
@@ -114,8 +117,9 @@ C     **************************************************************
 
 
 
-C     jradf is passed via tha planrad common block
+C     jradf and jloggf are passed via the planrad common block   
       jradf=jrad
+      jloggf=jlogg
 
 
 
@@ -260,6 +264,13 @@ C        N.B.radius2 is passed via the planrad common block.
           radius2 = radius
          endif
 
+C        If we're retrieving surface gravity then modify the planet mass
+C        N.B. mass2 is passed via the planrad common block. Assume xn(jlogg)
+C        holds log_10(surface gravity in cm/s^2). Need factor of 1e-20 to convert
+C        mass to units of 1e24 kg.       
+         if(jlogg.gt.0)then
+          mass2 = 1e-20*10**(xn(jlogg))*(radius**2)/Grav
+         endif
 
          
 C        Set up parameters for scattering cirsrad run.
@@ -316,8 +327,7 @@ C         Check also to see if surface temperature has gone negative
 
           print*,'Npath = ',npath
 
-C         Need to assume order of paths. First path is assumed to be
-C         thermal emission
+C         Unless an SCR calculation, first path is assumed to be thermal emission
 
           if(icread.ne.1)then       
            ipath=1
@@ -345,6 +355,9 @@ C         thermal emission
      1                      (ytmp(ioff+j) - ystore(ioff+j))/dx  
             enddo 
             xn(ix)=xref
+            if(ix.eq.jlogg)then
+             mass2 = 1e-20*10**(xn(jlogg))*(radius2**2)/Grav
+            endif
            endif
 
           else

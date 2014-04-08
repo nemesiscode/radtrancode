@@ -78,6 +78,7 @@ C     ************************************************************************
       real vconv(mconv)
       integer nmu,isol,lowbc,nf,flagh2p,jalb,jtan,jpre
       integer jsurfx,jalbx,jtanx,jprex,nprox,jradx,jpara
+      integer jloggx
       double precision mu(maxmu),wtmu(maxmu)
       real dist,galb,xn(mx),xnx(mx),aphi,emiss_ang,sol_ang
       real stx(mx,mx),xdnu,xtest
@@ -117,7 +118,7 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
       if(lin.eq.1.or.lin.eq.3)then
 
        call readxtmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1  nxx,xnx,stx,jsurfx,jalbx,jtanx,jprex,jradx)
+     1  nxx,xnx,stx,jsurfx,jalbx,jtanx,jprex,jradx,jloggx)
 
        call stripvar(nvarx,varidentx,varparamx,nprox,nvar,varident,
      1  nxx,xnx)

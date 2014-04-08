@@ -1,5 +1,5 @@
       subroutine readapriori(opfile,lin,lpre,xlat,npro,nvar,varident,
-     1  varparam,jsurf,jalb,jtan,jpre,jrad,nx,x0,sx,lx)
+     1  varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,nx,x0,sx,lx)
 C     $Id:
 C     ****************************************************************
 C     Subroutine to read in apriori vector and covariance matrix
@@ -33,6 +33,7 @@ C	jtan		integer		Position of tangent altitude
 C					correction
 C	jpre		integer		Position of ref. tangent  pressure
 C       jrad            integer         Position of radius of planet
+C       jlogg           integer         Position of surface log_10(g) of planet
 C	nx 		integer 	number of elements in state vector
 C	x0(mx)		real		a priori vector
 C	sx(mx,mx)	real		a priori covariance matrix
@@ -58,6 +59,7 @@ C     ****************************************************************
       implicit none
 
       integer i,j,nx,ix,jx,npro,jsurf,np,jalb,jtan,jpre,jrad,maxlat,k
+      integer jlogg
       parameter(maxlat=100)
 
 C     ****************************************************************
@@ -78,7 +80,7 @@ C     a priori covariance matrix
       integer varident(mvar,3),ivar,nvar,nlevel,lin,jsurfx
       integer jalbx,jtanx,jprex,jradx,jlat,ilat,nlat,lx(mx)
       integer nprox,nvarx,varidentx(mvar,3),lpre,ioffx,ivarx
-      integer npx,ioff,icond,npvar
+      integer npx,ioff,icond,npvar,jloggx
       character*100 opfile,buffer,ipfile,runname
       integer nxx 
       real xwid,ewid,y,y0,lambda0
@@ -98,7 +100,8 @@ C     Initialise a priori parameters
       jalb = -1
       jtan = -1
       jpre = -1
-      jrad = 0
+      jrad = -1
+      jlogg = -1
       runname=opfile
 
       call file(opfile,opfile,'apr')
@@ -903,7 +906,7 @@ C           **** Radius of planet *******
             read(27,*)x0(ix),err
             sx(ix,ix) = err**2
             jrad = ix
-C	print*,jrad,ix,sx(ix,ix),'jm2'
+C	    print*,jrad,ix,sx(ix,ix),'jm2'
 
             nx = nx+1
 
@@ -970,6 +973,16 @@ C               xfac = exp(-arg)
 
              nx = nx+2+np
  
+C **************** add mass variable  ***************
+           elseif(varident(ivar,1).eq.333)then
+C           **** surface ln(g) of planet *******
+            ix = nx+1
+            read(27,*)x0(ix),err
+            sx(ix,ix) = err**2
+            jlogg = ix
+
+            nx = nx+1
+
            else
             print*,'vartype not recognised'
             stop
@@ -994,7 +1007,8 @@ C               xfac = exp(-arg)
      1 update apriori'
 
        call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,
-     1  varparamx,jsurfx,jalbx,jtanx,jprex,jradx,nxx,xnx,sxx)
+     1  varparamx,jsurfx,jalbx,jtanx,jprex,jradx,jloggx,nxx,xnx,
+     2  sxx)
 
        xdiff = abs(xlat-xlatx)
        if(xdiff.gt.5.0)then
@@ -1057,7 +1071,7 @@ C               xfac = exp(-arg)
 C     Write out x-data to temporary .str file for later routines.
       if(lin.eq.3)then
        call writextmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1  nxx,xnx,sxx,jsurfx,jalbx,jtanx,jprex,jradx)
+     1  nxx,xnx,sxx,jsurfx,jalbx,jtanx,jprex,jradx,jloggx)
       endif
 
       return

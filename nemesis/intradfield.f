@@ -1,6 +1,6 @@
       subroutine intradfield(runname,ispace,xlat,nwave,vwave,
      1 nconv,vconv,gasgiant,lin,nvar,varident,
-     2 varparam,jsurf,jalb,jtan,jpre,nx,xn)
+     2 varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
 C
 C     $Id:
 C     **************************************************************
@@ -32,6 +32,11 @@ C       jtan            integer position of tangent ht. correction element in
 C                               xn (if included)
 C       jpre            integer position of tangent pressure element in
 C                               xn (if included)
+C       jrad            integer position of radius element in
+C                               xn (if included)
+C       jlogg           integer position of surface gravity element in
+C                               xn (if included)
+C	RADIUS		real	Planetary radius (km)
 C       nx              integer Number of elements in state vector
 C       xn(mx)          real    State vector
 C
@@ -48,8 +53,9 @@ C     **************************************************************
       integer ioff,lin,iscat
       include '../radtran/includes/arrdef.f'
       include '../radtran/includes/gascom.f'
+      include '../radtran/includes/planrad.f'
       include 'arraylen.f'
-      real xlat,xref,dx
+      real xlat,xref,dx,radius
       integer layint,inormal,itype,nlayer,laytyp
       integer iray,iptf,imie,imie1
       integer nwave,ix,ix1,iav,nwave1
@@ -57,10 +63,11 @@ C     **************************************************************
       real vwave(mwave),interpem
       real calcout(maxout3),fwhm,planck_wave,output(maxout3)
       integer nx,nconv,npath,ioff1,ioff2,nconv1
-      real vconv(mconv)
+      real vconv(mconv),Grav
+      parameter (Grav=6.672E-11)
       real layht,tsurf
       real xn(mx),dtr
-      integer jsurf,jalb,jtan,jpre,nem
+      integer jsurf,jalb,jtan,jpre,nem,jlogg,jrad
       integer nphi,ipath,fintrad
       character*100 fintname
       integer nmu,isol,lowbc,nf,nx2,kiter
@@ -76,6 +83,11 @@ C     **************************************************************
       real vem(maxsec),emissivity(maxsec)
 
       common/intrad/fintrad,fintname
+
+
+C     jradf and jloggf are passed via the planrad common block
+      jradf=jrad
+      jloggf=jlogg
 
 
       iscat=1
@@ -116,6 +128,25 @@ C      emissivity spectrum
           emissivity(2)=1.0
       endif
          
+
+
+C     If we're retrieving planet radius then add correction to reference
+C     radius
+C     N.B.radius2 is passed via the planrad common block.
+      if(jrad.gt.0)then
+          radius2 = xn(jrad) + radius
+      else
+          radius2 = radius
+      endif
+
+C     If we're retrieving surface gravity then modify the planet mass
+C     N.B. mass2 is passed via the planrad common block. Assume xn(jlogg)
+C     holds log_10(surface gravity in cm/s^2). Need factor of 1e-20 to convert
+C     mass to units of 1e24 kg.
+      if(jlogg.gt.0)then
+          mass2 = 1e-20*10**(xn(jlogg))*(radius**2)/Grav
+      endif
+
       CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
       IMIE1=IMIE
 

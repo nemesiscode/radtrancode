@@ -1,6 +1,6 @@
       subroutine writeout(iform,runname,ispace,lout,ispec,xlat,xlon,
      1  npro,nvar,varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err,ngeom,
-     2  nconv,vconv,gasgiant,jpre,iscat,lin)
+     2  nconv,vconv,gasgiant,jpre,jrad,jlogg,iscat,lin)
 C     $Id:
 C     ***********************************************************************
 C     Output the results of retrieval code
@@ -39,6 +39,10 @@ C	vconv(mgeom,mconv) real		Convolution wavenumbers
 C	gasgiant	logical		Gas giant flag
 C	jpre		integer		Indicates if pressure retrieval 
 C					performed.
+C	jrad		integer		Indicates if radiusretrieval 
+C					performed.
+C	jlogg		integer		Indicates if surface gravity retrieval 
+C					performed.
 C       iscat		integer		Flag to indicate scattering calc.
 C	lin		integer		Previous retrieval flag
 C
@@ -53,6 +57,7 @@ C
 C     ***********************************************************************
       implicit none
       include '../radtran/includes/arrdef.f'
+      include '../radtran/includes/planrad.f'
       include 'arraylen.f'
 
       integer ny,nx,i,ngeom,igeom,lout,ispec,nsubspec,iform
@@ -61,8 +66,9 @@ C     ***********************************************************************
       integer nconv(mgeom),j,ioff,varident(mvar,3),nvar,npro
       integer nxtemp,ivar,np,ix,iflag,ispace,npvar
       integer logflag,xflag,jpara,flagh2p,jpre,ncont,npro1
-      integer iscat,lin
-      real xa1,ea1,xn1,en1,iav,xdnu
+      integer iscat,lin,jrad,jlogg,iplanet
+      real xa1,ea1,xn1,en1,iav,xdnu,RADIUS,Grav
+      parameter (Grav=6.672E-11)
       real vconv(mgeom,mconv),varparam(mvar,mparam)
       real relerr
       real xmap(maxv,maxgas+2+maxcon,maxpro)
@@ -70,7 +76,7 @@ C     ***********************************************************************
       real xlatx,varidentx(mvar,3),varparamx(mvar,mparam)
       real stx(mx,mx)
       integer nxx,xnx(mx),nvarx,nprox,jtanx,jprex,jradx
-      integer jsurfx,jalbx,icread
+      integer jsurfx,jalbx,icread,jloggx
       character*100 runname,aname,buffer,cellfile
       logical gasgiant,cellexist
 
@@ -320,6 +326,28 @@ C     First skip header
       CLOSE(1)
 
 
+C     jradf and jloggf are passed via the planrad common block
+      jradf=jrad
+      jloggf=jlogg
+
+C     If we're retrieving planet radius then add correction to reference
+C     radius
+C     N.B.radius2 is passed via the planrad common block.
+      CALL readrefiplan(runname,iplanet,RADIUS)
+      if(jrad.gt.0)then
+          radius2 = xn(jrad) + radius
+      else
+          radius2 = radius
+      endif
+
+C     If we're retrieving surface gravity then modify the planet mass
+C     N.B. mass2 is passed via the planrad common block. Assume xn(jlogg)
+C     holds log_10(surface gravity in cm/s^2). Need factor of 1e-20 to convert
+C     mass to units of 1e24 kg.
+      if(jlogg.gt.0)then
+         mass2 = 1e-20*10**(xn(jlogg))*(radius**2)/Grav
+      endif
+
       xflag=0
       call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
      1  nvar,varident,varparam,nx,xn,jpre,ncont,flagh2p,xmap)
@@ -327,10 +355,25 @@ C     First skip header
       if(lin.eq.1.or.lin.eq.3)then
 
        call readxtmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1  nxx,xnx,stx,jsurfx,jalbx,jtanx,jprex,jradx)
+     1  nxx,xnx,stx,jsurfx,jalbx,jtanx,jprex,jradx,jloggx)
 
        call stripvar(nvarx,varidentx,varparamx,nprox,nvar,varident,
      1  nxx,xnx)
+
+C      jradf and jloggf are passed via the planrad common block
+       jradf=jradx
+       jloggf=jloggx
+
+       if(jrad.gt.0)then
+          radius2 = xnx(jradx) + radius
+       else
+          radius2 = radius
+       endif
+
+       if(jloggx.gt.0)then
+         mass2 = 1e-20*10**(xnx(jloggx))*(radius2**2)/Grav
+       endif
+
 
        xflag=1
        call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,

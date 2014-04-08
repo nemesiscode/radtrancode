@@ -1,8 +1,8 @@
       subroutine coreretMC(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jtan,
-     3  jpre,jrad,wgeom,flat,nx,lx,xa,sa,ny,y,se1,xn,sm,sn,st,yn,kk,
-     4  aa,dd)
+     3  jpre,jrad,jlogg,wgeom,flat,nx,lx,xa,sa,ny,y,se1,xn,sm,sn,st,yn,
+     4  kk,aa,dd)
 C     $Id:
 C     ******************************************************************
 C
@@ -81,7 +81,7 @@ C     Set measurement vector and source vector lengths here.
       INCLUDE 'arraylen.f'
       integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,jsurf
       integer jalb,jalbx,jtan,jtanx,jpre,jprex,iscat1
-      integer jrad,jradx,npvar,iplanet,lx(mx)
+      integer jrad,jradx,npvar,iplanet,lx(mx),jlogg,jloggx
       real phlimit,alambda,xtry,tphi, RADIUS
       CHARACTER*100 runname,itname,abort
 
@@ -174,7 +174,7 @@ C      print*,'coreretMC: lin = ',lin
        if(lin.eq.1) then
 C        Just substituting parameters from .pre file
          call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,varparamx,
-     1  jsurfx,jalbx,jtanx,jprex,jradx,nxx,xnx,stx)
+     1  jsurfx,jalbx,jtanx,jprex,jradx,jloggx,nxx,xnx,stx)
        
         xdiff = abs(xlat-xlatx)
         if(xdiff.gt.lat_tolerance)then
@@ -201,7 +201,7 @@ C        Just substituting parameters from .pre file
 
 C       Write out x-data to temporary .str file for later routines.
         call writextmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1   nxx,xnx,stx,jsurfx,jalbx,jtanx,jprex,jradx)
+     1   nxx,xnx,stx,jsurfx,jalbx,jtanx,jprex,jradx,jloggx)
 
        else
 C       substituting and retrieving parameters from .pre file. 
@@ -209,7 +209,7 @@ C       Current record frrom .pre file already read in by
 C       readapriori.f. Hence just read in from temporary .str file
  
         call readxtmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1   nxx,xnx,stx,jsurfx,jalbx,jtanx,jprex,jradx)
+     1   nxx,xnx,stx,jsurfx,jalbx,jtanx,jprex,jradx,jloggx)
 
        endif
  
@@ -220,7 +220,7 @@ C       readapriori.f. Hence just read in from temporary .str file
         CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,
      1   nav,wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
      2   lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jtanx,jprex,
-     3   jradx,RADIUS,nxx,xnx,ny,ynx,kkx)
+     3   jradx,jloggx,RADIUS,nxx,xnx,ny,ynx,kkx)
        elseif(iscat.eq.1)then
         print*,'Calling forwardnogMC'
         CALL forwardnogMC(runname,ispace,iscat,fwhm,ngeom,nav,
@@ -231,13 +231,13 @@ C       readapriori.f. Hence just read in from temporary .str file
         print*,'Calling intradfield'
         CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1   vconvT,gasgiant,lin0,nvarx,varidentx,varparamx,
-     2   jsurfx,jalbx,jtanx,jprex,nxx,xnx)
+     2   jsurfx,jalbx,jtanx,jprex,jradx,jloggx,RADIUS,nxx,xnx)
 
         iscat1=1
         CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2   nvarx,varidentx,varparamx,jsurfx,jalbx,jtanx,jprex,jradx,
-     3   RADIUS,nxx,xnx,ny,ynx,kkx,kiter)
+     3   jloggx,RADIUS,nxx,xnx,ny,ynx,kkx,kiter)
        else
         print*,'CoreretMC: iscat invalid',iscat
         stop
@@ -317,8 +317,8 @@ C        print*,ny
 
         CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
-     3   nx,xn,ny,yn,kk)
+     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
+     3   RADIUS,nx,xn,ny,yn,kk)
 
 C        print*,'forwardavfovX OK, jpre = ',jpre
 
@@ -338,21 +338,21 @@ C        print*,'forwardnogMC OK, jpre = ',jpre
        print*,'nx = ',nx
        CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1   vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
-     2   jtan,jpre,nx,xn)
+     2   jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
 
        iscat1=1
 C       print*,'Calling forwardnogX'
        CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,
+     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
      3   RADIUS,nx,xn,ny,yn,kk,kiter)
 
       else
        iscat1=1
        CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
-     3   nx,xn,ny,yn,kk,kiter)
+     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
+     3   RADIUS,nx,xn,ny,yn,kk,kiter)
 
 C        print*,'forwardnogX OK, jpre = ',jpre
       endif
@@ -484,27 +484,27 @@ C       temporary kernel matrix kk1. Does it improve the fit?
           CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
      2     lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,
-     3     jrad,RADIUS,nx,xn1,ny,yn1,kk1)
+     3     jrad,jlogg,RADIUS,nx,xn1,ny,yn1,kk1)
         elseif(iscat.eq.1)then
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
-     3     nx,xn1,ny,yn1,kk1,kiter)
+     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
+     3     RADIUS,nx,xn1,ny,yn1,kk1,kiter)
         elseif(iscat.eq.2)then
           CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1     vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
-     2     jtan,jpre,nx,xn1)
+     2     jtan,jpre,jrad,jlogg,RADIUS,nx,xn1)
           iscat1=1
           CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
-     3     nx,xn1,ny,yn1,kk1,kiter)
+     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
+     3     RADIUS,nx,xn1,ny,yn1,kk1,kiter)
         else
           iscat1=1
           CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,RADIUS,
-     3     nx,xn1,ny,yn1,kk1,kiter)
+     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
+     3     RADIUS,nx,xn1,ny,yn1,kk1,kiter)
         endif
 
 C       Calculate the cost function for this trial solution.

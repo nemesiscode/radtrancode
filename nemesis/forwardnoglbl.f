@@ -1,7 +1,7 @@
       subroutine forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,
      1 wgeom,flat,nconv,vconv,angles,gasgiant,
-     2 lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,
-     3 nx,xn,ny,yn,kk,kiter)
+     2 lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
+     3 RADIUS,nx,xn,ny,yn,kk,kiter)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate a synthetic spectrum and KK-matrix using
@@ -43,6 +43,10 @@ C	jtan		integer position of tangent ht. correction element in
 C				xn (if included)
 C	jpre		integer position of tangent pressure element in
 C				xn (if included)
+C       jrad            integer position radius element in
+C                               xn (if included)
+C       jlogg           integer position surface gravity (log(g)) element in
+C                               xn (if included)
 C       nx              integer Number of elements in state vector
 C       xn(mx)          real	State vector
 C       ny      	integer Number of elements in measured spectra array
@@ -64,6 +68,7 @@ C     **************************************************************
       integer ngeom,ioff,igeom,lin
       include '../radtran/includes/arrdef.f'
       include '../radtran/includes/gascom.f'
+      include '../radtran/includes/planrad.f'
       include 'arraylen.f'
       real xlat,xref,dx
       integer layint,inormal,iray,itype,nlayer,laytyp,iscat
@@ -76,11 +81,12 @@ C     **************************************************************
       real layht,tsurf,esurf,angles(mgeom,mav,3)
       real xn(mx),yn(my),kk(my,mx),ytmp(my),ystore(my)
       real x0,x1,wing,vrel,maxdv,delv
-      real vconv1(mconv)
+      real vconv1(mconv),RADIUS
       integer ny,jsurf,jalb,jtan,jpre,nem,nav(mgeom)
-      integer nphi,ipath,iconv,k,imie,imie1
+      integer nphi,ipath,iconv,k,imie,imie1,jrad,jlogg
       integer nmu,isol,lowbc,nf,nf1,nx2,kiter
-      real dist,galb,sol_ang,emiss_ang,z_ang,aphi,vv
+      real dist,galb,sol_ang,emiss_ang,z_ang,aphi,vv,Grav
+      parameter (Grav=6.672E-11)
       double precision mu(maxmu),wtmu(maxmu)
       character*100 runname,logname
       character*100 rdummy
@@ -100,6 +106,11 @@ C     **************************************************************
 
       print*,'forwardnoglbl called'
       print*,'lin = ',lin
+
+
+C     jradf and jloggf are passed via the planrad common block
+      jradf=jrad
+      jloggf=jlogg
 
       call setup(runname,gasgiant,nmu,mu,wtmu,isol,dist,lowbc,
      1 galb,nf1,nphi,layht,tsurf,nlayer,laytyp,layint)
@@ -194,6 +205,27 @@ C            nf=20
             xn(ix)=xn(ix)+dx
             print*,'XN',(xn(j),j=1,nx)
           endif
+          if(jsurf.gt.0)then
+           tsurf = xn(jsurf)
+          endif
+
+C         If we're retrieving planet radius then add correction to reference
+C         radius
+C         N.B.radius2 is passed via the planrad common block.
+          if(jrad.gt.0)then
+           radius2 = xn(jrad) + radius
+          else
+           radius2 = radius
+          endif
+
+C         If we're retrieving surface gravity then modify the planet mass
+C         N.B. mass2 is passed via the planrad common block. Assume xn(jlogg)
+C         holds log_10(surface gravity in cm/s^2). Need factor of 1e-20 to convert
+C         mass to units of 1e24 kg.
+          if(jlogg.gt.0)then
+           mass2 = 1e-20*10**(xn(jlogg))*(radius**2)/Grav
+          endif
+
 
          
 C         Set up parameters for scattering cirsrad run.

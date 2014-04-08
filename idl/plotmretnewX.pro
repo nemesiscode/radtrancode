@@ -82,8 +82,8 @@ openr,1,retname
    for ivar=0,nvar-1 do begin
      print,ivar
      print,varident(ivar,*)
-;     nskip=4
-     nskip=44
+     nskip=4
+;     nskip=44
      for i=1,nskip do begin
       readf,1,head
      endfor
@@ -105,6 +105,7 @@ openr,1,retname
       14: np = 3
       15: np = 3
       16: np = 4
+      333: np = 1
       444: np = 2 + varparam(ivar,0)
       555: np = 1
       888: np = varparam(ivar,0)
@@ -430,6 +431,7 @@ for ivar=0,nvar-1 do begin
       14: np = 3
       15: np = 3
       16: np = 4
+      333: np = 1
       444: np = 2 + varparam(ivar,0)
       555: np = 1
       888: np = varparam(ivar,0)

@@ -59,7 +59,9 @@ C     ****************************************************************
       implicit none
 
       integer i,j,nx,ix,jx,npro,jsurf,np,jalb,jtan,jpre,jrad,maxlat,k
-      integer jlogg
+      integer jlogg,nmode,nwave,max_mode, max_wave
+      parameter (max_mode = 10)
+      parameter (max_wave = 1000)
       parameter(maxlat=100)
 
 C     ****************************************************************
@@ -68,6 +70,7 @@ C     ****************************************************************
       include 'arraylen.f'
 C     ****************************************************************
 
+      real xsec(max_mode,max_wave,2),wave(max_wave)
       real x0(mx),sx(mx,mx),err,err1,ref1,pref(maxpro)
       real eref(maxlat,maxpro),reflat(maxlat),htan
       real delp,xfac,pknee,eknee,edeep,xdeep,xlat,xlatx,xlonx,pshld
@@ -83,11 +86,11 @@ C     a priori covariance matrix
       integer jalbx,jtanx,jprex,jradx,jlat,ilat,nlat,lx(mx)
       integer nprox,nvarx,varidentx(mvar,3),lpre,ioffx,ivarx
       integer npx,ioff,icond,npvar,jloggx,iplanet
-      character*100 opfile,buffer,ipfile,runname
+      character*100 opfile,buffer,ipfile,runname,rifile
       integer nxx 
-      real xwid,ewid,y,y0,lambda0
-      real r0,er0,dr,edr,vm,nm,v1,nimag,delv
-      real xldeep,eldeep,xlhigh,elhigh
+      real xwid,ewid,y,y0,lambda0,vi(mx)
+      real r0,er0,dr,edr,vm,nm,nimag,delv
+      real xldeep,eldeep,xlhigh,elhigh,v1
 
 
 C     Initialise a priori parameters
@@ -923,54 +926,60 @@ C	    print*,jrad,ix,sx(ix,ix),'jm2'
 
            elseif (varident(ivar,1).eq.444)then
 C            ** Variable cloud particle size distribution and composition
-             
-C            Read mean radius and error
-             read(27,*)r0,er0
-             ix=nx+1
-             x0(ix)=alog(r0)
-             sx(ix,ix)=(er0/r0)**2
-             lx(ix)=1
-C            Read radius variance and error
-             read(27,*)dr,edr
-             ix=nx+2
-             x0(ix)=alog(dr)
-             sx(ix,ix)=(edr/dr)**2
-             lx(ix)=1
+             read(27,1)rifile
 
-C            Read number of pressures and correlation length (wavelength/
+             open(28,file=rifile,status='old')
+C              Read mean radius and error
+               read(28,*)r0,er0
+               ix=nx+1
+               x0(ix)=alog(r0)
+               sx(ix,ix)=(er0/r0)**2
+               lx(ix)=1
+C              Read radius variance and error
+               read(28,*)dr,edr
+               ix=nx+2
+               x0(ix)=alog(dr)
+               sx(ix,ix)=(edr/dr)**2
+               lx(ix)=1
+
+C              Read number of pressures and correlation length (wavelength/
 C				wavenumbers)
-             read(27,*)np,clen
-             varparam(ivar,1)=np
-             varparam(ivar,2)=clen
+               read(28,*)np,clen
+               varparam(ivar,1)=np
 
-C            read reference wavelength and nr at that wavelength
-             read(27,*)vm,nm
-             varparam(ivar,3)=vm
-             varparam(ivar,4)=nm
 
-C            read x-section normalising wavelength (-1 to not normalise)
-             read(27,*)lambda0
-             varparam(ivar,5)=lambda0
+               call get_xsecA(opfile,nmode,nwave,wave,xsec)
+               if(np.ne.nwave)then
+       print*,'Error in readapriori.f. Number of wavelengths in ref.'
+       print*,'index file does not match number of wavelengths in'
+       print*,'xsc file. Wavelengths in these two files should match'
+                print*,rifile
+                print*,opfile
+                stop
+               endif
 
-             if(np.gt.mparam-5)then
-              print*,'Error in readapriori.f - too many wavelengths'
-              print*,'in imaginary RI spectrum'
-	      print*,'mparam-5,np : ',mparam-5,np
-              stop
-             endif
+               varparam(ivar,2)=clen
 
-             do i=1,np             
-              read(27,*)v1,nimag,err
-              varparam(ivar,5+i)=v1
-              ix=nx+2+i
-              x0(ix)=alog(nimag)
-              sx(ix,ix)=(err/nimag)**2
-              lx(ix)=1
-             enddo
+C              read reference wavelength and nr at that wavelength
+               read(28,*)vm,nm
+               varparam(ivar,3)=vm
+               varparam(ivar,4)=nm
+
+C              read x-section normalising wavelength (-1 to not normalise)
+               read(28,*)lambda0
+               varparam(ivar,5)=lambda0
+               do i=1,np             
+                read(28,*)vi(i),nimag,err
+                ix=nx+2+i
+                x0(ix)=alog(nimag)
+                sx(ix,ix)=(err/nimag)**2
+                lx(ix)=1
+               enddo
+             close(28)
 
              do i=1,np
               do j=i+1,np
-               delv = varparam(ivar,5+i)-varparam(ivar,5+j)
+               delv = vi(i)-vi(j)
                arg = abs(delv/clen)
 C               xfac = exp(-arg)
                xfac = exp(-arg*arg)

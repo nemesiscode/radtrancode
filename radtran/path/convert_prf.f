@@ -108,11 +108,11 @@ C      profiles up to VMR(?,K) to be read from this block
       END IF
       CLOSE(UNIT=1)
 
-      WRITE(2,504)(I,I=1,N)
+      WRITE(2,504)(I,I=1,NVMR)
 504   FORMAT(1X,' height (km) ',' press (atm) ','  temp (K)   ',
      1  40(' VMR gas',I3,2X))
       DO 505 I=1,NPRO
-        WRITE(2,506)H(I),P(I),T(I),(VMR(I,J),J=1,N)
+        WRITE(2,506)H(I),P(I),T(I),(VMR(I,J),J=1,NVMR)
 505   CONTINUE
 506   FORMAT(1X,F13.3,E13.5,F13.4,40(E13.5))
 

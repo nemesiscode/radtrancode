@@ -149,16 +149,8 @@ c  ** check max dimensions **
 c  ** read vmrs **      
       read(10,*) buffer
       do i=1,npro
-       read(10,*) height(i),press(i),temp(i),(vmrs(i,j),j=1,min(3,nvmr))
+       read(10,*) height(i),press(i),temp(i),(vmrs(i,j),j=1,nvmr)
       enddo
-	if (nvmr.gt.3) then
-        do l=1,floor(real(nvmr-3-0.01)/6.)+1
-          read(10,*) buffer
-          do i=1,npro
-            read(10,*) ( vmrs(i,j),j=4+6*(l-1),min(nvmr,3+(l*6)) )
-          enddo
-	  enddo
-      endif
       close(10)
       
       return
@@ -281,17 +273,8 @@ c  ** write vmrs **
       write(20,*) '  height (km)  press (atm)   temp (K)    vmrs....'
       do i=1,npro
         write(20,'(f12.3,2x,e12.5,2x,f12.4,3(2x,e12.5))')
-     > height(i),press(i),temp(i),(vmrs(i,j),j=1,min(3,nvmr))
+     > height(i),press(i),temp(i),(vmrs(i,j),j=1,nvmr)
       enddo
-	if (nvmr.gt.3) then
-        do l=1,floor(real(nvmr-3-0.01)/6.)+1
-          write(20,*) 'vmrs....'
-          do i=1,npro
-            write(20,'(e12.5,5(2x,e12.5))')
-     >	( vmrs(i,j),j=4+6*(l-1),min(nvmr,3+(l*6)) )
-          enddo
-	  enddo
-      endif
       close(20)
       
       return

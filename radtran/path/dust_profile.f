@@ -43,25 +43,11 @@ C     *******************************************
       DO 20 I=1,NVMR
       READ(1,*)ID(I),ISO(I)
 20    CONTINUE
-C     reading the first block of profiles
+C     Skip Header
       READ(1,*)
-      N=MIN(NVMR,3)
-C     N is the maximum VMR which can be read in from the next block
       DO 30 I=1,NPRO
-        READ(1,*)H(I),P(I),T(I),(VMR(I,J),J=1,N)
+        READ(1,*)H(I),P(I),T(I),(VMR(I,J),J=1,NVMR)
 30    CONTINUE
-C     reading in additional blocks if any
-C     N VMR profiles have been read in so far
-33    IF(NVMR.GT.N)THEN
-        READ(1,*)
-C       profiles up to VMR(?,K) to be read from this block
-        K=MIN(NVMR,(N+6))
-        DO 32 I=1,NPRO
-        READ(1,*)(VMR(I,J),J=N+1,K)
-32      CONTINUE
-        N=K
-        GOTO 33
-        END IF
       CLOSE(UNIT=1)
 C     ******************************************
 

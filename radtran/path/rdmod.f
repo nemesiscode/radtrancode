@@ -89,25 +89,10 @@ C First skip the header (if any)
 C        print*,id(i),iso(i)
 20    CONTINUE
 
-C Reading the first block of profiles
       READ(ilun,*)
-      n = MIN(nvmr,3)
       DO 30 I=1,NPRO
-        READ(ILUN,*)H(I),P(I),T(I),(VMR(I,J),J=1,N)
-C        print*,H(I),P(I),T(I),(VMR(I,J),J=1,N)
+        READ(ILUN,*)H(I),P(I),T(I),(VMR(I,J),J=1,NVMR)
 30    CONTINUE
-C Reading in additional blocks if any; N VMR profiles read in so far
-33    IF(NVMR.GT.N)THEN
-        READ(ILUN,*)
-C Profiles up to VMR(?,K) to be read from this block
-        k = MIN(nvmr,(n+6))
-        DO 32 I=1,NPRO
-          READ(ILUN,*)(VMR(I,J),J=N+1,K)
-C          print*,(VMR(I,J),J=N+1,K)
-32      CONTINUE
-        n=k
-        GOTO 33
-      ENDIF
       CLOSE(UNIT=82)
 
       MODEL = .TRUE.

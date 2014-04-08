@@ -96,24 +96,11 @@ C Read in the gas-identificaiton information
         READ(1,*)gasid(i),gasiso(i)
 20    CONTINUE
 
-C Read the first block of profiles
+C Skip header
       READ(1,*)
-      n = MIN(nvmr,3)
-C N is the maximum VMR which can be read in from the next block
       DO 30 i=1,npro
-          READ(1,*)h(i),p(i),t(i),(vmr(i,j),j=1,n)
+          READ(1,*)h(i),p(i),t(i),(vmr(i,j),j=1,nvmr)
 30    CONTINUE
-C Read in additional blocks if any. N VMR profiles read in so far.
-C Profiles up to VMR(?,K) to be read from this block.
-33    IF(nvmr.GT.n)THEN
-        READ(1,*)
-        k = MIN(nvmr,(n+6))
-        DO 32 i=1,npro
-          READ(1,*)(vmr(i,j),j=n+1,k)
-32      CONTINUE
-        n = k
-        GOTO 33
-      ENDIF
 
       CLOSE(UNIT=1)
 

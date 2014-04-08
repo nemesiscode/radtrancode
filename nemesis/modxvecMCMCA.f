@@ -143,6 +143,24 @@ C         **** Radius of planet *******
             do i=1,np
              xn(ix+i)=x0(ix+i)+err(ix+i)*gasdev1(idum)
             enddo
+          elseif(varident(ivar,3).eq.333)then  
+C         **** surface gravity of planet *******
+            np = 1
+            do i=1,np
+             xn(ix+i)=x0(ix+i)+err(ix+i)*gasdev1(idum)
+            enddo
+          elseif(varident(ivar,3).eq.888)then
+C         **** Surface albedo spectrum of planet *******
+            np = int(varparam(ivar,1))
+            do i=1,np
+             xn(ix+i)=x0(ix+i)+err(ix+i)*gasdev1(idum)
+            enddo
+          elseif(varident(ivar,3).eq.444)then
+C         **** Particle refractive index spectrum *******
+            np = 2+int(varparam(ivar,1))
+            do i=1,np
+             xn(ix+i)=x0(ix+i)+err(ix+i)*gasdev1(idum)
+            enddo
           endif
 
           ix = ix+np

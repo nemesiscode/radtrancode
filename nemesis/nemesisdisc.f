@@ -36,6 +36,7 @@ C     ******************************************************************
       implicit none
 C     Set measurement vector and source vector lengths here.
       include '../radtran/includes/arrdef.f'
+      include '../radtran/includes/planrad.f'
       INCLUDE 'arraylen.f'
 
 C     New compiler time
@@ -103,6 +104,8 @@ C     ----------- Scattering phase function initialisation --------------
       xwave(1)=-1                       ! Reset to force read of hgphase*
 C                                         files.
 C     ------------ Scattering phase function initialisation -------------
+      jradf=-1
+      jloggf=-1
 
 C     New compiler time
       call gettime(time)
@@ -304,7 +307,7 @@ C     set up a priori of x and its covariance
       CALL FILE(runname,runname,'cia')
 
       OPEN(12,FILE=runname,STATUS='OLD')
-       READ(12,1)ANAME
+       READ(12,1) ANAME
        READ(12,*) DNU
        READ(12,*) IPARA
       CLOSE(12)

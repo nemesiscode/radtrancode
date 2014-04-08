@@ -134,6 +134,13 @@ C         **** Radius of planet *******
              dx=2*(ran11(idum)-0.5)*err(ix+i)             
              xn(ix+i)=x0(ix+i)+dx
             enddo
+          elseif(varident(ivar,3).eq.333)then  
+C         **** Surface gravity of planet *******
+            np = 1
+            do i=1,np
+             dx=2*(ran11(idum)-0.5)*err(ix+i)             
+             xn(ix+i)=x0(ix+i)+dx
+            enddo
           endif
 
           ix = ix+np

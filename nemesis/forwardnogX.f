@@ -269,7 +269,7 @@ C        N.B. mass2 is passed via the planrad common block. Assume xn(jlogg)
 C        holds log_10(surface gravity in cm/s^2). Need factor of 1e-20 to convert
 C        mass to units of 1e24 kg.       
          if(jlogg.gt.0)then
-          mass2 = 1e-20*10**(xn(jlogg))*(radius**2)/Grav
+          mass2 = 1e-20*10**(xn(jlogg))*(radius2**2)/Grav
          endif
 
          

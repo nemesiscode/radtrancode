@@ -64,6 +64,7 @@ C     ****************************************************************
 
 C     ****************************************************************
       include '../radtran/includes/arrdef.f'
+      include '../radtran/includes/planrad.f'
       include 'arraylen.f'
 C     ****************************************************************
 
@@ -72,7 +73,8 @@ C     ****************************************************************
       real delp,xfac,pknee,eknee,edeep,xdeep,xlat,xlatx,xlonx,pshld
       real efsh,xfsh,varparam(mvar,mparam),flat,hknee,pre
       real ref(maxlat,maxpro),clen,SXMINFAC,arg,valb,alb
-      real xknee,xrh,erh,xcdeep,ecdeep
+      real xknee,xrh,erh,xcdeep,ecdeep,radius,Grav
+      parameter (Grav=6.672E-11)
 C     SXMINFAC is minimum off-diagonal factor allowed in the
 C     a priori covariance matrix
       parameter (SXMINFAC = 0.001)
@@ -80,7 +82,7 @@ C     a priori covariance matrix
       integer varident(mvar,3),ivar,nvar,nlevel,lin,jsurfx
       integer jalbx,jtanx,jprex,jradx,jlat,ilat,nlat,lx(mx)
       integer nprox,nvarx,varidentx(mvar,3),lpre,ioffx,ivarx
-      integer npx,ioff,icond,npvar,jloggx
+      integer npx,ioff,icond,npvar,jloggx,iplanet
       character*100 opfile,buffer,ipfile,runname
       integer nxx 
       real xwid,ewid,y,y0,lambda0
@@ -103,6 +105,10 @@ C     Initialise a priori parameters
       jrad = -1
       jlogg = -1
       runname=opfile
+
+C     Pass jrad and jlogg to planrad common block
+      jradf=jrad
+      jloggf=jlogg
 
       call file(opfile,opfile,'apr')
       open(27,file=opfile,status='old')
@@ -906,6 +912,11 @@ C           **** Radius of planet *******
             read(27,*)x0(ix),err
             sx(ix,ix) = err**2
             jrad = ix
+          
+            call readrefiplan(opfile,iplanet,radius)
+            jradf = jrad
+            radius2 = radius+x0(ix)
+
 C	    print*,jrad,ix,sx(ix,ix),'jm2'
 
             nx = nx+1
@@ -980,6 +991,10 @@ C           **** surface ln(g) of planet *******
             read(27,*)x0(ix),err
             sx(ix,ix) = err**2
             jlogg = ix
+            jloggf = jlogg
+
+            call readrefiplan(opfile,iplanet,radius)
+            mass2 = 1e-20*10**(x0(ix))*(radius**2)/Grav
 
             nx = nx+1
 
@@ -996,6 +1011,11 @@ C           **** surface ln(g) of planet *******
          endif
 
 10    continue
+C     If both mass and radius being retrieved then we need to update
+C     the mass using the a priori log(g) AND radius
+      if(jrad.gt.0.and.jlogg.gt.0)then
+         mass2 = 1e-20*10**(x0(jlogg))*(radius2**2)/Grav
+      endif
 
       print*,'Total number of variables (nx) : ',nx
 

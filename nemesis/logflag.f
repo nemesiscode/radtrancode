@@ -62,6 +62,7 @@ C       Variable is not temperature  - may need to take exponent
       if(ivar.eq.889)iflag=1	! Surface albedo spectrum multiplier
       if(ivar.eq.666)iflag=1	! Tangent pressure
       if(ivar.eq.555)iflag=0	! Planet radius
+      if(ivar.eq.333)iflag=0	! Planet surface gravity
       if(ivar.eq.444)iflag=1	! Particle size and ref. index
       logflag=iflag
 

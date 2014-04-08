@@ -1469,6 +1469,10 @@ C         print*,'Radius of Planet'
 C         print*,'Variable size and RI'
          IPAR = -1
          NP = 2+INT(VARPARAM(IVAR,1))
+        ELSEIF(VARIDENT(IVAR,1).EQ.333)THEN
+C         print*,'Surface gravity (log10(g))'
+         IPAR = -1
+         NP = 1
         ELSE
          PRINT*,'SUBPROFRETG: VARTYPE NOT RECOGNISED'
          STOP

@@ -120,7 +120,6 @@ C     Make sure input files are OK
       endif
 
 
-      CALL readrefiplan(runname,iplanet,radius)
 
 C     Read start, end and step of tables
       CALL readkkhead(runname,vkstart,vkend,vkstep)
@@ -231,6 +230,8 @@ C     Read in measurement vector, obs. geometry and covariances
 
 C     Read in forward modelling errors
       call forwarderr(ename,ngeom,nconv,vconv,woff,rerr)
+
+      CALL readrefiplan(runname,iplanet,xlat,radius)
 
 C     Add forward errors to measurement covariances
       k=0

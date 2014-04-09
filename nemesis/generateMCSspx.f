@@ -128,8 +128,6 @@ C     Read in whether to calculate with wavenumbers(0) or wavelength(1)
 C     Also read in whether scattering is required (iscat)
       READ(32,*)ispace,iscat
 
-      CALL readrefiplan(runname,iplanet,RADIUS)
-
       kiter=0
       woff=0.0
 
@@ -195,6 +193,8 @@ C     Read in sample measurement vector, obs. geometry and covariances
 
       close(lspec)
       close(linfo)
+
+      CALL readrefiplan(runname,iplanet,xlat,RADIUS)
 
 C     Calculate the tabulated wavelengths of c-k look up tables
       do igeom=1,ngeom

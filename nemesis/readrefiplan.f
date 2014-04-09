@@ -1,4 +1,4 @@
-      SUBROUTINE READREFIPLAN(IPFILE,IPLANET,RADIUS)
+      SUBROUTINE READREFIPLAN(IPFILE,IPLANET,XLAT,RADIUS)
 C     $Id:
 C     ***********************************************************************
 C     Subroutine to read a .ref file and return the number of vertical
@@ -6,6 +6,7 @@ C     levels and number of gases contained.
 C
 C     Input filename
 C	IPFILE	CHARACTER*100 	Input filename
+C	XLAT	REAL		Required latitude
 C
 C     Output filename
 C    	IPLANET	INTEGER		Planet identifier
@@ -16,8 +17,8 @@ C
 C     ***********************************************************************
       IMPLICIT NONE
       CHARACTER*100 IPFILE,BUFFER
-      INTEGER NPRO,NVMR,AMFORM,IPLANET
-      REAL LATITUDE,MOLWT,RADIUS,G,H1
+      INTEGER NPRO,NVMR,AMFORM,IPLANET,NLATREF
+      REAL LATITUDE,MOLWT,RADIUS,G,H1,XLAT
       LOGICAL GASGIANT
       CHARACTER*8 PNAME
 
@@ -29,6 +30,7 @@ C     First skip header
        IF(BUFFER(1:1).EQ.'#') GOTO 54
        READ(BUFFER,*)AMFORM
 1      FORMAT(A)
+       READ(1,*)NLATREF
        IF(AMFORM.EQ.1)THEN
         READ(1,*)IPLANET,LATITUDE,NPRO,NVMR
        ELSE
@@ -38,7 +40,7 @@ C     First skip header
 
 
       H1=0.0
-      CALL NEWGRAV(IPLANET,LATITUDE,H1,RADIUS,G,PNAME)
+      CALL NEWGRAV(IPLANET,XLAT,H1,RADIUS,G,PNAME)
       RADIUS=RADIUS
 
       RETURN

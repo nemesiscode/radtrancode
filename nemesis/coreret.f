@@ -166,7 +166,7 @@ C     Initialise s1e and se
       enddo
 
 
-      CALL readrefiplan(runname,iplanet,RADIUS)
+      CALL readrefiplan(runname,iplanet,xlat,RADIUS)
 
 
 C     Calculate first spectrum and k-matrix

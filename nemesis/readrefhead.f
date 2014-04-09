@@ -18,7 +18,7 @@ C     ***********************************************************************
       IMPLICIT NONE
       CHARACTER*100 IPFILE,BUFFER
       CHARACTER*8 PNAME
-      INTEGER NPRO,NVMR,AMFORM,IPLANET,ISURF
+      INTEGER NPRO,NVMR,AMFORM,IPLANET,ISURF,NLATREF
       REAL LATITUDE,MOLWT
       LOGICAL GASGIANT
 
@@ -32,6 +32,7 @@ C     First skip header
        IF(BUFFER(1:1).EQ.'#') GOTO 54
        READ(BUFFER,*)AMFORM
 1      FORMAT(A)
+       READ(1,*)NLATREF
        IF(AMFORM.EQ.1)THEN
         READ(1,*)IPLANET,LATITUDE,NPRO,NVMR
        ELSE

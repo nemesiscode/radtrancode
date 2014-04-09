@@ -333,7 +333,7 @@ C     jradf and jloggf are passed via the planrad common block
 C     If we're retrieving planet radius then add correction to reference
 C     radius
 C     N.B.radius2 is passed via the planrad common block.
-      CALL readrefiplan(runname,iplanet,RADIUS)
+      CALL readrefiplan(runname,iplanet,xlat,RADIUS)
       if(jrad.gt.0)then
           radius2 = xn(jrad) + radius
       else

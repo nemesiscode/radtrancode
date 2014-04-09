@@ -108,7 +108,7 @@ C      in order
 
       endif
 
-      CALL readrefiplan(runname,iplanet,RADIUS)
+      CALL readrefiplan(runname,iplanet,xlat,RADIUS)
 
 C     Calculate first spectrum
 

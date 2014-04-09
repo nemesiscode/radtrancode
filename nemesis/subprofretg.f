@@ -73,7 +73,12 @@ C     ***********************************************************************
       REAL RHO,F,DQDX(MAXPRO),DX
       REAL DNDH(MAXPRO),DQDH(MAXPRO),FCLOUD(MAXPRO)
       DOUBLE PRECISION Q(MAXPRO),OD(MAXPRO),ND(MAXPRO),XOD
-      INTEGER ISCALE(MAXGAS),XFLAG,NPVAR
+      INTEGER ISCALE(MAXGAS),XFLAG,NPVAR,MAXLAT
+      INTEGER NLATREF,ILATREF,JLAT,KLAT
+      PARAMETER (MAXLAT=20)
+      REAL HREF(MAXLAT,MAXPRO),TREF(MAXLAT,MAXPRO),FLAT
+      REAL PREF(MAXLAT,MAXPRO),VMRREF(MAXLAT,MAXPRO,MAXGAS)
+      REAL LATREF(MAXLAT),MOLWTREF(MAXLAT)
       REAL XRH,XCDEEP,P1,PS,PS1,PH,Y1,Y2,YY1,YY2
       INTEGER ICLOUD(MAXCON,MAXPRO),NCONT1,JSPEC,IFLA,I1
       INTEGER NPRO,NPRO1,NVMR,JZERO,IV,IP,IVAR,JCONT,JVMR
@@ -124,31 +129,122 @@ C     First skip header
        IF(BUFFER(1:1).EQ.'#') GOTO 54
        READ(BUFFER,*)AMFORM
 1      FORMAT(A)
-       IF(AMFORM.EQ.1)THEN
-        READ(1,*)IPLANET,LATITUDE,NPRO,NVMR
+       IF(XFLAG.EQ.0)THEN
+         READ(1,*)NLATREF
+         print*,'NLATREF = ',NLATREF
+         IF(NLATREF.GT.MAXLAT)THEN
+          PRINT*,'MAXLAT in subprofretg is too small. Increase'
+          PRINT*,'and recompile'
+          PRINT*,'MAXLAT, NLATREF = ',MAXLAT,NLATREF
+          STOP
+         ENDIF
+
+         DO 601 ILATREF=1,NLATREF
+          IF(AMFORM.EQ.1)THEN
+           READ(1,*)IPLANET,LATREF(ILATREF),NPRO,NVMR
+          ELSE
+           READ(1,*)IPLANET,LATREF(ILATREF),NPRO,NVMR,
+     1      MOLWTREF(ILATREF)
+          ENDIF
+
+          IF(NPRO.GT.MAXPRO)THEN
+           PRINT*,'Error in subprofretg. NPRO>MAXPRO ',NPRO,MAXPRO
+           STOP
+          ENDIF
+
+          DO 23 I=1,NVMR
+           READ(1,*)IDGAS(I),ISOGAS(I)
+           ISCALE(I)=1
+23        CONTINUE
+
+C         Skip header
+          READ(1,*)
+          DO 33 I=1,NPRO
+            READ(1,*)HREF(ILATREF,I),PREF(ILATREF,I),
+     & TREF(ILATREF,I),(VMRREF(ILATREF,I,J),J=1,NVMR)
+33        CONTINUE
+
+601      CONTINUE
+
+C        Now interpolate to correct latitude
+         IF(NLATREF.EQ.1)THEN
+          JLAT=1
+          FLAT=0.
+          PRINT*,'Snapping to first latitude'
+         ELSE
+          KLAT=-1
+          DO ILATREF=1,NLATREF
+           IF(XLAT.GE.LATREF(ILATREF))KLAT=ILATREF
+          ENDDO
+          IF(KLAT.LT.1)THEN
+           PRINT*,'Requested latitude is less than range given'
+           PRINT*,'Using lowest latitude available'
+           PRINT*,'Requested : ',XLAT
+           PRINT*,'Lowest available : ',LATREF(1)
+           JLAT=1
+           FLAT=0.
+          ELSEIF(KLAT.EQ.NLATREF)THEN
+           PRINT*,'Requested latitude is greater than range given'
+           PRINT*,'Using highest latitude available'
+           PRINT*,'Requested : ',XLAT
+           PRINT*,'Highest available : ',LATREF(NLATREF)
+           JLAT=NLATREF-1
+           FLAT=1.0
+          ELSE
+           JLAT=KLAT
+           FLAT=(XLAT-LATREF(JLAT))/
+     &			(LATREF(JLAT+1)-LATREF(JLAT))
+           PRINT*,'JLAT,FLAT',JLAT,FLAT
+           PRINT*,'LATREF(JLAT),LATREF(JLAT+1)',
+     &		LATREF(JLAT),LATREF(JLAT+1)
+          ENDIF
+         ENDIF
+
+         MOLWT=(1.0-FLAT)*MOLWTREF(JLAT)+FLAT*MOLWTREF(JLAT+1)
+         DO I=1,NPRO
+          H(I)=(1.0-FLAT)*HREF(JLAT,I)+FLAT*HREF(JLAT+1,I)
+          P(I)=(1.0-FLAT)*PREF(JLAT,I)+FLAT*PREF(JLAT+1,I)
+          T(I)=(1.0-FLAT)*TREF(JLAT,I)+FLAT*TREF(JLAT+1,I)
+          DO J=1,NVMR
+           VMR(I,J)=(1.0-FLAT)*VMRREF(JLAT,I,J)+
+     &		FLAT*VMRREF(JLAT+1,I,J)
+          ENDDO
+         ENDDO
+ 
+         LATITUDE=XLAT
+
        ELSE
-        READ(1,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+
+         IF(AMFORM.EQ.1)THEN
+          READ(1,*)IPLANET,LATITUDE,NPRO,NVMR
+         ELSE
+          READ(1,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+         ENDIF
+C         print*,IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+         IF(NPRO.GT.MAXPRO)THEN
+          PRINT*,'Error in subprofretg. NPRO>MAXPRO ',NPRO,MAXPRO
+          STOP
+         ENDIF
+
+C        reset latitude to required input value. Will need when recomputing
+C        scale heights
+         LATITUDE = XLAT
+
+         DO 20 I=1,NVMR
+          READ(1,*)IDGAS(I),ISOGAS(I)
+          ISCALE(I)=1
+20       CONTINUE
+
+C        Skip header
+         READ(1,*)
+         DO 30 I=1,NPRO
+           READ(1,*)H(I),P(I),T(I),(VMR(I,J),J=1,NVMR)
+30       CONTINUE
+
+        CLOSE(UNIT=1)
+
        ENDIF
-C       print*,IPLANET,LATITUDE,NPRO,NVMR,MOLWT
-       IF(NPRO.GT.MAXPRO)THEN
-        PRINT*,'Error in subprofretg. NPRO>MAXPRO ',NPRO,MAXPRO
-        STOP
-       ENDIF
 
-C      reset latitude to required input value. Will need when recomputing
-C      scale heights
-       LATITUDE = XLAT
-
-       DO 20 I=1,NVMR
-        READ(1,*)IDGAS(I),ISOGAS(I)
-        ISCALE(I)=1
-20     CONTINUE
-
-C      Skip header
-       READ(1,*)
-       DO 30 I=1,NPRO
-         READ(1,*)H(I),P(I),T(I),(VMR(I,J),J=1,NVMR)
-30     CONTINUE
 
 C      Make sure that vmrs add up to 1 if AMFORM=1
        IF(AMFORM.EQ.1)THEN
@@ -160,9 +256,9 @@ C      Make sure that vmrs add up to 1 if AMFORM=1
          ENDDO
          XXMOLWT(I)=CALCMOLWT(NVMR,XVMR,IDGAS,ISOGAS)
 301     CONTINUE
+
        ENDIF
 
-      CLOSE(UNIT=1)
 
 C     all processing below assumes that heights are in ascending order
 C     so sorting just in case

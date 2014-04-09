@@ -920,7 +920,7 @@ C           **** Radius of planet *******
             sx(ix,ix) = err**2
             jrad = ix
           
-            call readrefiplan(opfile,iplanet,radius)
+            call readrefiplan(opfile,iplanet,xlat,radius)
             jradf = jrad
             radius2 = radius+x0(ix)
 
@@ -1006,7 +1006,7 @@ C           **** surface ln(g) of planet *******
             jlogg = ix
             jloggf = jlogg
 
-            call readrefiplan(opfile,iplanet,radius)
+            call readrefiplan(opfile,iplanet,xlat,radius)
             mass2 = 1e-20*10**(x0(ix))*(radius**2)/Grav
 
             nx = nx+1

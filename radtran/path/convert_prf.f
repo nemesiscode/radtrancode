@@ -12,7 +12,8 @@ C     *********************************************************************
 C     MAXPRO is the maximum number of vertical points which can be stored.
 C     MAXGAS is the maximum number of vertical mixing ratio profiles.
       REAL H(MAXPRO),P(MAXPRO),T(MAXPRO),VMR(MAXPRO,MAXGAS)
-      INTEGER NPRO,NVMR,ID(MAXGAS),ISO(MAXGAS)
+      INTEGER NPRO,NVMR,ID(MAXGAS),ISO(MAXGAS),ITYPE,NTYPE
+      INTEGER NLATREF
 C     H is the height in kilometres above some NOMINAL zero.
 C     P is the pressure in atmospheres (not bar).
 C     T is the temperature in Kelvin.
@@ -52,71 +53,88 @@ C
 C     When AMFORM=1, it is assumed that the vmrs add up to 1.0 and this the
 C     molecular weight can be calculated at each level
 
-      CALL PROMPT('Enter existing filename : ')
+      CALL PROMPT('Update just .prf(1) or both .ref/.prf (2)? : ')
+      READ*,NTYPE
+
+      CALL PROMPT('Enter root name of .prf/.ref file(s) : ')
       READ(*,10)IPFILE
 10    FORMAT(A)
-      OPEN(UNIT=1,FILE=IPFILE,STATUS='OLD')
 
+      OPFILE='convertprof.prf'
+      NLATREF=1
 
-      CALL PROMPT('Enter output filename : ') 
-      READ(*,10)OPFILE
-      OPEN(UNIT=2,FILE=OPFILE,STATUS='UNKNOWN')
+      DO 1000 ITYPE=1,NTYPE
+       IF(ITYPE.EQ.1)THEN
+        CALL FILE(IPFILE,IPFILE,'prf')
+        CALL FILE(OPFILE,OPFILE,'prf')
+       ELSE
+        CALL FILE(IPFILE,IPFILE,'ref')
+        CALL FILE(OPFILE,OPFILE,'ref')
+       ENDIF
 
-C     First skip header
-54    READ(1,1)BUFFER
-1     FORMAT(A)
-      IF(BUFFER(1:1).EQ.'#') THEN
-       WRITE(2,1)BUFFER
-       GOTO 54
-      ENDIF
-      READ(BUFFER,*)AMFORM
-      WRITE(2,*)AMFORM
-      IF(AMFORM.EQ.0)THEN
+       OPEN(UNIT=1,FILE=IPFILE,STATUS='OLD')
+       OPEN(UNIT=2,FILE=OPFILE,STATUS='UNKNOWN')
+
+C      First skip header
+54     READ(1,1)BUFFER
+1      FORMAT(A)
+       IF(BUFFER(1:1).EQ.'#') THEN
+        WRITE(2,1)BUFFER
+        GOTO 54
+       ENDIF
+       READ(BUFFER,*)AMFORM
+       WRITE(2,*)AMFORM
+       IF(ITYPE.EQ.2)THEN
+        WRITE(2,*)NLATREF
+       ENDIF
+       IF(AMFORM.EQ.0)THEN
         READ(1,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
         WRITE(2,501)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
-      ELSE
+       ELSE
         READ(1,*)IPLANET,LATITUDE,NPRO,NVMR
         WRITE(2,511)IPLANET,LATITUDE,NPRO,NVMR
-      ENDIF
-501   FORMAT(1X,I3,1X,F6.2,1X,I3,I3,F8.3)
-511   FORMAT(1X,I3,1X,F6.2,1X,I3,I3)
+       ENDIF
+501    FORMAT(1X,I3,1X,F6.2,1X,I3,I3,F8.3)
+511    FORMAT(1X,I3,1X,F6.2,1X,I3,I3)
 
-      DO 20 I=1,NVMR
+       DO 20 I=1,NVMR
          READ(1,*)ID(I),ISO(I)
          WRITE(2,502)ID(I),ISO(I)
-20    CONTINUE
-502   FORMAT(1X,I3,I5)
+20     CONTINUE
+502    FORMAT(1X,I3,I5)
 
-C     reading the first block of profiles
-      READ(1,*)
-      N=MIN(NVMR,3)
-C     N is the maximum VMR which can be read in from the next block
-      DO 30 I=1,NPRO
-         READ(1,*)H(I),P(I),T(I),(VMR(I,J),J=1,N)
-30    CONTINUE
-C     reading in additional blocks if any
-C     N VMR profiles have been read in so far
-33    IF(NVMR.GT.N)THEN
+C      reading the first block of profiles
        READ(1,*)
-C      profiles up to VMR(?,K) to be read from this block
-       K=MIN(NVMR,(N+6))
-       DO 32 I=1,NPRO
-        READ(1,*)(VMR(I,J),J=N+1,K)
-32     CONTINUE
-       N=K
-       GOTO 33
-      END IF
-      CLOSE(UNIT=1)
+       N=MIN(NVMR,3)
+C      N is the maximum VMR which can be read in from the next block
+       DO 30 I=1,NPRO
+         READ(1,*)H(I),P(I),T(I),(VMR(I,J),J=1,N)
+30     CONTINUE
+C      reading in additional blocks if any
+C      N VMR profiles have been read in so far
+33     IF(NVMR.GT.N)THEN
+        READ(1,*)
+C       profiles up to VMR(?,K) to be read from this block
+        K=MIN(NVMR,(N+6))
+        DO 32 I=1,NPRO
+         READ(1,*)(VMR(I,J),J=N+1,K)
+32      CONTINUE
+        N=K
+        GOTO 33
+       END IF
+       CLOSE(UNIT=1)
 
-      WRITE(2,504)(I,I=1,NVMR)
-504   FORMAT(1X,' height (km) ',' press (atm) ','  temp (K)   ',
+       WRITE(2,504)(I,I=1,NVMR)
+504    FORMAT(1X,' height (km) ',' press (atm) ','  temp (K)   ',
      1  40(' VMR gas',I3,2X))
-      DO 505 I=1,NPRO
+       DO 505 I=1,NPRO
         WRITE(2,506)H(I),P(I),T(I),(VMR(I,J),J=1,NVMR)
-505   CONTINUE
-506   FORMAT(1X,F13.3,E13.5,F13.4,40(E13.5))
+505    CONTINUE
+506    FORMAT(1X,F13.3,E13.5,F13.4,40(E13.5))
 
-      CLOSE(UNIT=2)
+       CLOSE(UNIT=2)
+
+1000  CONTINUE
 
       END
 

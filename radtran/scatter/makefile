@@ -51,9 +51,7 @@ F_SOURCES = \
 	scloud12wave.f \
 	scloud11flux.f \
 	subfithgm.f \
-	modmakephase.f \
-	lob.f
-
+	modmakephase.f
 
 INCDIR = ../includes
 #INCLUDES = $(INCDIR)/pathcom.f $(INCDIR)/arrdef.f
@@ -87,8 +85,6 @@ bin :    \
         Makephase \
 	Normxsc \
         Readphase \
-	Testray \
-	Testlob \
 	Testkk \
 	Testsubphase \
 	Testmodphase \
@@ -106,10 +102,6 @@ Readphase : readphase.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Readphase readphase.f $(LIBRARY) \
 	$(LIB)/rtm_util.a $(FRECIPES)
 
-Testray : testray.f $(LIBRARY)
-	$(FC) $(FCFLAGS) -o $(BIN)/Testray testray.f $(LIBRARY) \
-	$(LIB)/rtm_util.a $(FRECIPES)
-
 Testmodphase : testmodphase.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Testmodphase testmodphase.f $(LIBRARY) \
 	$(LIB)/rtm_util.a $(FRECIPES)
@@ -117,10 +109,6 @@ Testmodphase : testmodphase.f $(LIBRARY)
 Testphase : testphase.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Testphase testphase.f $(LIBRARY) \
 	$(LIB)/rtm_util.a $(LIB)/path.a $(FRECIPES)
-
-Testlob : testlob.f $(LIBRARY)
-	$(FC) $(FCFLAGS) -o $(BIN)/Testlob testlob.f $(LIBRARY) \
-	$(LIB)/rtm_util.a $(FRECIPES) -libnag
 
 Testkk : testkk.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Testkk testkk.f $(LIBRARY) \

@@ -84,11 +84,7 @@ $(LIBRARY)(%.o): %.f $(INCLUDES)
 bin :    \
         Makephase \
 	Normxsc \
-        Readphase \
-	Testkk \
-	Testsubphase \
-	Testmodphase \
-	Testphase
+        Readphase
 
 Makephase : makephase.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Makephase makephase.f $(LIBRARY) \
@@ -101,16 +97,4 @@ Normxsc : normxsc.f $(LIBRARY)
 Readphase : readphase.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Readphase readphase.f $(LIBRARY) \
 	$(LIB)/rtm_util.a $(FRECIPES)
-
-Testmodphase : testmodphase.f $(LIBRARY)
-	$(FC) $(FCFLAGS) -o $(BIN)/Testmodphase testmodphase.f $(LIBRARY) \
-	$(LIB)/rtm_util.a $(FRECIPES)
-
-Testphase : testphase.f $(LIBRARY)
-	$(FC) $(FCFLAGS) -o $(BIN)/Testphase testphase.f $(LIBRARY) \
-	$(LIB)/rtm_util.a $(LIB)/path.a $(FRECIPES)
-
-Testkk : testkk.f $(LIBRARY)
-	$(FC) $(FCFLAGS) -o $(BIN)/Testkk testkk.f $(LIBRARY) \
-	$(LIB)/path.a $(LIB)/rtm_util.a $(FRECIPES)
 

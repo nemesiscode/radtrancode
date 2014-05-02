@@ -97,4 +97,3 @@ Normxsc : normxsc.f $(LIBRARY)
 Readphase : readphase.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Readphase readphase.f $(LIBRARY) \
 	$(LIB)/rtm_util.a $(FRECIPES)
-

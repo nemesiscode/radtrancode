@@ -315,7 +315,7 @@ C             print*,J,XVMR(J),ID(J),ISO(J)
           D(M)=DUST(J,M)
          END DO
          CALL VERINT(H,D,NPRO,DNOW,HEIGHT)
-         CONT(J,I)=CONT(J,I)+DNOW*DUDS*W(K)*XMOLWT/AVOGAD
+         CONT(J,I)=CONT(J,I)+DNOW*(XMOLWT/AVOGAD)*DUDS*W(K)
 124     CONTINUE
         DO 123 J=1,NVMR
          CALL VERINT(H,VMR(1,J),NPRO,VMR1,HEIGHT)

@@ -130,11 +130,13 @@ C NETFLUX: =.TRUE. if doing net flux calculation
 C HT: lowest height to use for the calculation, the tangent height
 C for limb paths and normally the bottom of the model for nadir paths
 
-      INTEGER BOTLAY
+      INTEGER BOTLAY,IPZEN
 C BOTLAY is the bottom layer to use for atmosphere.
-
+C IPZEN defines where the zenith angle is defined. 0 = at bottom of 
+C       bottom layer; 1 = at the 0km altitude level; and 2 = at the very top
+C       of the atmosphere.
       COMMON /ATMCOM/ LIMB,NADLAY,WF,CG,THERM,BROAD,ABSORB,BINBB,
-     1 HT,ANGLE,BOTLAY
+     1 HT,ANGLE,BOTLAY,IPZEN
 
 C-----------------------------------------------------------------------
 C

@@ -29,7 +29,7 @@ aername = 'aerosol.prf'
 
 readprofilenew,prfname,iformA,nplanetA,xlatA,nproA,ngasA,molwtA,idisoA,heightA,$
         pressA,tempA,vmrA
-readprofilenew,refname,iformB,nplanetB,xlatB,nproB,ngasB,molwtB,idisoB,heightB,$
+readrefnew,refname,iformB,nplanetB,xlatB,nproB,ngasB,molwtB,idisoB,heightB,$
         pressB,tempB,vmrB
 
 
@@ -45,7 +45,7 @@ endif
 readaerprfhead,aername,ncont
 
 ; ******* Read in .apr file to get a priori measurement vector *******
-readapriori,apname,npro,nvar,varident,varparam,nx,xa,erra
+readapriori,apname,npro,nvar,varident,varparam,nx,xa,erra,walb
 
 openr,1,retname
 
@@ -694,8 +694,6 @@ for ivar=0,nvar-1 do begin
      erra(*)=xdat(1,istart:(istart+np-1))
      xn(*)=xdat(2,istart:(istart+np-1))
      errn(*)=xdat(3,istart:(istart+np-1))
-     walb = fltarr(np-2)
-     walb = varparam(ivar,5:5+np-3)
 
      plot,walb,xn(2:np-1),xtitle='Wavelength',ytitle='Imaginary RI'
      oplot,walb,xn(2:np-1)+errn(2:np-1),linestyle=1

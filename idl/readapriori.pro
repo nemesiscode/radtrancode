@@ -1,4 +1,4 @@
-pro readapriori,apname,npro,nvar,varident,varparam,nx,xa,erra
+pro readapriori,apname,npro,nvar,varident,varparam,nx,xa,erra,walb
 ; ********************************************************************
 ; Procedure to read in a Nemesis .apr file
 ; Input variables
@@ -19,7 +19,7 @@ pro readapriori,apname,npro,nvar,varident,varparam,nx,xa,erra
 mx = 400
 mvar = 12
 np = 1
-mparam = 5
+mparam = 405
 xa = fltarr(mx)
 erra = fltarr(mx)
 varident = intarr(mvar,3)
@@ -133,6 +133,36 @@ for ivar=0,nvar-1 do begin
   readf,5,tmp
   xa(istart:istart+np-1)=tmp(1,*)
   erra(istart:istart+np-1)=tmp(2,*)
+ endif
+
+ if(itype eq 444)then begin
+  cloudfil=''
+  readf,5,cloudfil
+  openr,10,cloudfil
+   np=2
+   tmp=fltarr(2,np)
+   readf,10,tmp
+   print,tmp
+   xa(istart:istart+1)=tmp(0,*)
+   erra(istart:istart+1)=tmp(1,*)
+   tmp=fltarr(2)
+   readf,10,tmp
+   nlam=tmp(0)
+   print,'nlam = ',nlam
+   varparam(ivar,0:1) = tmp(*)
+   readf,10,tmp
+   varparam(ivar,2:3) = tmp(*)
+   xlam=1.
+   readf,10,xlam
+   varparam(ivar,4) = xlam
+   tmp=fltarr(3,nlam)
+   readf,10,tmp
+   xa(istart+2:istart+2+nlam-1)=tmp(1,*)
+   erra(istart+2:istart+2+nlam-1)=tmp(2,*)
+   walb=fltarr(nlam)
+   walb(*)=tmp(0,*)
+  close,10
+  np=np+nlam
  endif
 
  if(itype eq 666)then begin

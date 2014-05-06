@@ -35,7 +35,7 @@ C     because of the extensive use of large arrays
 C     note that laycom uses parameters defined in pathcom
 C--------------------------------------------------------------
 C     miscellaneous variables used in code
-      REAL DTR
+      REAL DTR,F
       PARAMETER (DTR=3.1415926/180.)
 C     DTR is conversion factor for degrees to radians
       INTEGER NUSE,LOCLAY(MAXINC),USELAY(MAXINC),NCG,FSTCG,LSTCG,IPATH
@@ -139,8 +139,11 @@ C     checking for negated keywords
 C       NONADIR doesn't make sense so DEF must be true
         IF(DEF)THEN
           LIMB=.FALSE.
-          READ(TEXT(6:),*)ANGLE,BOTLAY
-          IF(ANGLE.GT.90.)THEN
+          IPZEN=0
+          READ(TEXT(6:),*,END=101)ANGLE,BOTLAY,IPZEN
+          GOTO 102
+101       READ(TEXT(6:),*)ANGLE,BOTLAY
+102       IF(ANGLE.GT.90.)THEN
            ANGLE=180-ANGLE
            SURFACE = .TRUE.
           ELSE
@@ -227,12 +230,44 @@ C        IF(BINBB)CALL WTEXT('BINBB ignored for non thermal calculation')
         ENDIF
       END IF
 C
-      HT=BASEH(BOTLAY)
+
+      IF(IPZEN.EQ.1)THEN
+C      Compute zenith angle of ray at bottom of bottom layer, assuming it
+C      has been defined at the 0km level
+       Z0=RADIUS+BASEH(BOTLAY)
+       ANGLE=(1./DTR)*ASIN(RADIUS*SIN(DTR*ANGLE)/Z0)
+      ELSEIF(IPZEN.EQ.2)THEN
+C      Compute zenith angle of ray at bottom of bottom layer, assuming it
+C      has been defined at the top of the atmosphere
+       Z0=RADIUS+BASEH(NLAY)+DELH(NLAY)
+C      Calculate tangent altitude of ray at lowest point
+       HTAN=Z0*SIN(ANGLE*DTR)-RADIUS
+       PRINT*,'Near-limb path does not reach bottom layer'
+       PRINT*,'Tangent altitude is : ',HTAN
+       IF(HTAN.LE.BASEH(BOTLAY))THEN
+C      Calculate zenith angle at bottom of lowest layer
+        ANGLE=(1./DTR)*ASIN(Z0*SIN(DTR*ANGLE)/(RADIUS+BASEH(BOTLAY)))
+       ELSE
+C       We need to model this ray as a tangent path.
+        LIMB=.TRUE.
+        NADIR=.FALSE. 
+        ANGLE=90.
+C       Find number of bottom layer. Snap to layer with nearest base height
+C       to computed tangent height.
+        DO I=1,NLAY
+         IF(BASEH(I).LT.HTAN)BOTLAY=I
+        ENDDO
+        IF(BOTLAY.LT.NLAY)THEN
+         F=(HTAN-BASEH(BOTLAY))/(BASEH(BOTLAY+1)-BASEH(BOTLAY))
+         IF(F.GT.0.5)BOTLAY=BOTLAY+1
+        ENDIF
+       ENDIF
+      ENDIF
+
       SIN2A=SIN(DTR*ANGLE)**2
       COSA=COS(DTR*ANGLE)
-      Z0=RADIUS+HT
 
-C
+
 C     now calculating atmospheric paths
 C     
 C     calculating which layers to use

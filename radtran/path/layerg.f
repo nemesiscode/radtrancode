@@ -372,7 +372,7 @@ C            print*,'AMFORM,XMOLWT',AMFORM,XMOLWT
               ENDDO
               CALL VERINT(H,D,NPRO,DNOW,HEIGHT)
             conttest=CONT(1,I)+conttest
-              CONT(J,I) = CONT(J,I) + DNOW*DUDS*W(K)*XMOLWT/AVOGAD
+              CONT(J,I) = CONT(J,I) + DNOW*(XMOLWT/AVOGAD)*DUDS*W(K)
 124         CONTINUE
             DCO(I,JJ) = DCO(I,JJ) + (1 - F)*DUDS*W(K)*XMOLWT/AVOGAD
             DCO(I,JJ+1) = DCO(I,JJ+1) + F*DUDS*W(K)*XMOLWT/AVOGAD

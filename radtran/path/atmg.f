@@ -31,7 +31,7 @@ C parameters defined in pathcom.
       INCLUDE '../includes/laygrad.f'
 C ../includes/laygrad.f holds the variables for use in gradient
 C calculations.
-
+      INCLUDE '../includes/planrad.f'
 C Miscellaneous variables used in code ...
       REAL DTR
       PARAMETER (DTR=3.1415926/180.)
@@ -77,6 +77,7 @@ C Obviously you must have read in a model before you can calculate layers
         WRITE(*,*)' ATMG.F :: Stopping program.'
         STOP
       ENDIF
+        if(jradf.gt.0)radius=radius2
 
 C Initialising atmosphere flags: NOTE: that the default is a limb path
 C from bottom layer

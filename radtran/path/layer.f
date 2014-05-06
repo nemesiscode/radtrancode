@@ -52,7 +52,8 @@ C     LNPNOW = ln(PNOW)
 C     TNOW = the temperature at current height
 C     S is the distance along the atmospheric path
 C     S0 and S1 are the values of S at the bottom and top of the layer
-C     SMAX is the distance S along the path to the top of the model atmosphere
+C     SMAX is the distance S along the path from the bottom to the top of the 
+C          model atmosphere
 C     SIN2A = square of the sine of the angle from the nadir
 C     COSA = the cosine
 C     Z0 = the distance of the start of the path from the centre of the planet
@@ -123,6 +124,7 @@ C
       SIN2A=SIN(DTR*LAYANG)**2
       COSA=COS(DTR*LAYANG)
       Z0=RADIUS+LAYHT
+
 c      print*,'layer radius = ',radius
 C
 C     computing the bases of each layer

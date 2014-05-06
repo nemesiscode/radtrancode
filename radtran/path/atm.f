@@ -32,6 +32,7 @@ C     because of the extensive use of large arrays
       INCLUDE '../includes/arrdef.f'
       INCLUDE '../includes/pathcom.f'
       INCLUDE '../includes/laycom.f'
+      INCLUDE '../includes/planrad.f'
 C     note that laycom uses parameters defined in pathcom
 C--------------------------------------------------------------
 C     miscellaneous variables used in code
@@ -80,6 +81,8 @@ C         layers
         CALL WTEXT('no model defined for atmosphere calc.')
         STOP
         END IF
+        
+          if(jradf.gt.0)radius=radius2
 C
 C     initialising atmosphere flags
 C     note that default is a limb path from bottom layer

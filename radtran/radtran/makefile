@@ -105,7 +105,9 @@ F_SOURCES = \
 	write_k.f \
 	reservegas.f \
 	readbass1.f \
-	interpbass1.f  	
+	interpbass1.f \
+	readO3.f \
+	interpO3.f  	
 
 INCDIR = ../includes
 #INCLUDES = $(INCDIR)/arrdef.f $(INCDIR)/bincom.f $(INCDIR)/bincoms.f \

@@ -560,6 +560,8 @@ C        Model 3. Profile is scaled fraction of reference profile, but
 C         code uses log scaling, which is more robust
 C        ***************************************************************
          DO J = 1,NPRO
+          IF(XREF(J).GT.(1.0E37/EXP(XN(NXTEMP+1))).AND.XREF(J).GT.0.0)
+     1   	   XN(NXTEMP+1)=LOG(1.0E37/XREF(J))
           X1(J) = XREF(J)*EXP(XN(NXTEMP+1))
           XMAP(NXTEMP+1,IPAR,J)=X1(J)
          ENDDO
@@ -1780,7 +1782,6 @@ C      print*,'subprofretg. Writing aerosol.prf'
       WRITE(2,*)NPRO, NCONT
       DO 41 I=1,NPRO
         WRITE(2,*) H(I),(CONT(J,I),J=1,NCONT)
-C        print*,'subprofretg',H(I),(CONT(J,I),J=1,NCONT)
 41    CONTINUE
       CLOSE(2)
 

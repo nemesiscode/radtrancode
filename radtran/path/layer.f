@@ -36,7 +36,7 @@ C     note that laycom uses parameters defined in pathcom
 C--------------------------------------------------------------
 C     miscellaneous variables used in code
       INTEGER NINT,ICHECK
-      REAL SUM
+      DOUBLE PRECISION SUM
       PARAMETER (NINT=101)
 C     integrations are performed using simpson's rule, W holds the weights
       REAL W(NINT)
@@ -412,7 +412,7 @@ C       PRINT*,'(Vertical path)'
         SUM=0.
         DO L=1,NLAY
          I=L+NLAYER
-         SUM=SUM+SNGL(CONT(J,I))
+         SUM=SUM+CONT(J,I)
         END DO
         PRINT*,'Total number/cm2 for vertical path = ',SUM
        END DO

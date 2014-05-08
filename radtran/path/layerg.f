@@ -43,8 +43,8 @@ C calculation.
       INTEGER I,J,K,L,JJ,M,ICHECK
       INTEGER NINT,LAYINT
       PARAMETER (NINT=101)
-      REAL SUM,F,F1
-
+      REAL F,F1
+      DOUBLE PRECISION SUM
       REAL DTR,W(NINT),XOUT
       PARAMETER (DTR=3.1415926/180.)
 C DTR: Conversion factor for degrees to radians.
@@ -60,7 +60,7 @@ C TNOW: Temperature at current height.
       REAL D(MAXPRO),DNOW,XICNOW(MAXCON),XIFC(MAXCON,MAXPAT)
       REAL TMP(500)
 
-      REAL S,S0,S1,SMAX,SIN2A,COSA,Z0,DUDS,conttest
+      REAL S,S0,S1,SMAX,SIN2A,COSA,Z0,DUDS
 C S: Distance along the atmospheric path.
 C S0: S at the bottom of the layer.
 C S1: S at the top of the layer.
@@ -371,7 +371,6 @@ C            print*,'AMFORM,XMOLWT',AMFORM,XMOLWT
                 D(M) = DUST(J,M)
               ENDDO
               CALL VERINT(H,D,NPRO,DNOW,HEIGHT)
-            conttest=SNGL(CONT(1,I))+conttest
               CONT(J,I) = CONT(J,I) + DNOW*(XMOLWT/AVOGAD)*DUDS*W(K)
 124         CONTINUE
             DCO(I,JJ) = DCO(I,JJ) + (1 - F)*DUDS*W(K)*XMOLWT/AVOGAD
@@ -398,7 +397,6 @@ C			print*,'MOLWT,AVOGAD=',XMOLWT,AVOGAD
             AMOUNT(I,J) = AMOUNT(I,J)*DELS/3.0
             PP(I,J) = PP(I,J)/TOTAM(I)
 173       CONTINUE
-C      print*,'CONTTEST=',CONTTEST
 	  DO JJ=1,NPRO
             DAM(I,JJ) = DAM(I,JJ)*DELS/3.0
           ENDDO
@@ -500,7 +498,7 @@ C-----------------------------------------------------------------------
           SUM = 0.0
           DO L=1,NLAY
             I = L + NLAYER
-            SUM = SUM + SNGL(CONT(J,I))
+            SUM = SUM + CONT(J,I)
           ENDDO
           WRITE(*,*)' LAYERG.f :: Total number/cm2 for path= ',SUM
         ENDDO

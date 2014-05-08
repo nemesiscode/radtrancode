@@ -57,7 +57,8 @@ C     DUDS = DU/DS = the number of molecules per cm2 per km along the path
       REAL HEIGHT,VMR1,DELS,CLBOTP(10),CLTOPP(10),FSH(10)
       REAL CLBOTH(10),CLTOPH(10)
       INTEGER NCLAY(10)
-      REAL A,B,C,D1,CDUM(10)
+      REAL A,B,C,D1
+      DOUBLE PRECISION CDUM(10)
 C--------------------------------------------------------------
 C
 C     setting defaults for the layer parameters defined in laycom.f
@@ -179,7 +180,7 @@ C     Assume LAYTYP=2. splitting by equal height
       ENDDO
       DO I=1,NLAY
        DO J=1,NCLOUD
-        CDUM(J)=CDUM(J)+SNGL(CONT(J,I))
+        CDUM(J)=CDUM(J)+CONT(J,I)
        ENDDO
       ENDDO
       PRINT*,'Cloud ODs : ',(CDUM(J),J=1,NCLOUD)

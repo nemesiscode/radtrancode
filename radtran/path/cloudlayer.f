@@ -36,7 +36,8 @@ C     note that laycom uses parameters defined in pathcom
 C--------------------------------------------------------------
 C     miscellaneous variables used in code
       INTEGER NINT
-      REAL SUM,TMP
+      DOUBLE PRECISION SUM
+      REAL TMP
       PARAMETER (NINT=101)
 C     integrations are performed using simpson's rule, W holds the weights
       REAL W(NINT)
@@ -353,7 +354,7 @@ C     now scaling all the amounts back to a vertical path
       DO K=1,7
        SUM=0.0
        DO I=1,NLAY
-        SUM=SUM+SNGL(CONT(K,I))
+        SUM=SUM+CONT(K,I)
        ENDDO
        print*,K,COD(K),SUM
        DO I=1,NLAY

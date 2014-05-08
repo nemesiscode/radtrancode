@@ -371,7 +371,7 @@ C            print*,'AMFORM,XMOLWT',AMFORM,XMOLWT
                 D(M) = DUST(J,M)
               ENDDO
               CALL VERINT(H,D,NPRO,DNOW,HEIGHT)
-            conttest=CONT(1,I)+conttest
+            conttest=SNGL(CONT(1,I))+conttest
               CONT(J,I) = CONT(J,I) + DNOW*(XMOLWT/AVOGAD)*DUDS*W(K)
 124         CONTINUE
             DCO(I,JJ) = DCO(I,JJ) + (1 - F)*DUDS*W(K)*XMOLWT/AVOGAD
@@ -500,7 +500,7 @@ C-----------------------------------------------------------------------
           SUM = 0.0
           DO L=1,NLAY
             I = L + NLAYER
-            SUM = SUM + CONT(J,I)
+            SUM = SUM + SNGL(CONT(J,I))
           ENDDO
           WRITE(*,*)' LAYERG.f :: Total number/cm2 for path= ',SUM
         ENDDO

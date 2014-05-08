@@ -264,7 +264,6 @@ C      Calculate zenith angle at bottom of lowest layer
        ELSE
 C       We need to model this ray as a tangent path.
         LIMB=.TRUE.
-        NADIR=.FALSE.
         ANGLE=90.
 C       Find number of bottom layer. Snap to layer with nearest base height
 C       to computed tangent height.

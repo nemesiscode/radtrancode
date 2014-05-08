@@ -179,7 +179,7 @@ C     Assume LAYTYP=2. splitting by equal height
       ENDDO
       DO I=1,NLAY
        DO J=1,NCLOUD
-        CDUM(J)=CDUM(J)+CONT(J,I)
+        CDUM(J)=CDUM(J)+SNGL(CONT(J,I))
        ENDDO
       ENDDO
       PRINT*,'Cloud ODs : ',(CDUM(J),J=1,NCLOUD)

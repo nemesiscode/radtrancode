@@ -353,7 +353,7 @@ C     now scaling all the amounts back to a vertical path
       DO K=1,7
        SUM=0.0
        DO I=1,NLAY
-        SUM=SUM+CONT(K,I)
+        SUM=SUM+SNGL(CONT(K,I))
        ENDDO
        print*,K,COD(K),SUM
        DO I=1,NLAY

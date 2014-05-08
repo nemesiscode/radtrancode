@@ -246,7 +246,7 @@ C      has been defined at the top of the atmosphere
 C      Calculate tangent altitude of ray at lowest point
        HTAN=Z0*SIN(ANGLE*DTR)-RADIUS
        PRINT*,'Near-limb path does not reach bottom layer'
-       PRINT*,'Tangent altitude is : ',HTAN
+       PRINT*,'Tangent altitude, radius is : ',HTAN,HTAN+RADIUS
        IF(HTAN.LE.BASEH(BOTLAY))THEN
 C      Calculate zenith angle at bottom of lowest layer
         ANGLE=(1./DTR)*ASIN(Z0*SIN(DTR*ANGLE)/(RADIUS+BASEH(BOTLAY)))
@@ -264,11 +264,15 @@ C       to computed tangent height.
          F=(HTAN-BASEH(BOTLAY))/(BASEH(BOTLAY+1)-BASEH(BOTLAY))
          IF(F.GT.0.5)BOTLAY=BOTLAY+1
         ENDIF
+        print*,'botlay',botlay,baseh(botlay),baseh(botlay+1)
        ENDIF
       ENDIF
 
       SIN2A=SIN(DTR*ANGLE)**2
       COSA=COS(DTR*ANGLE)
+      Z0=RADIUS+BASEH(BOTLAY)
+
+      print*,'ATMG Check: ',LIMB,NADIR,ANGLE,SIN2A,COSA,Z0
 
 
 C     now calculating atmospheric paths

@@ -44,7 +44,7 @@ C calculation.
       INTEGER NINT,LAYINT
       PARAMETER (NINT=101)
       REAL F,F1
-      DOUBLE PRECISION SUM
+      REAL SUM
       REAL DTR,W(NINT),XOUT
       PARAMETER (DTR=3.1415926/180.)
 C DTR: Conversion factor for degrees to radians.

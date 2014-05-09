@@ -36,8 +36,7 @@ C     note that laycom uses parameters defined in pathcom
 C--------------------------------------------------------------
 C     miscellaneous variables used in code
       INTEGER NINT
-      DOUBLE PRECISION SUM
-      REAL TMP
+      REAL TMP,SUM
       PARAMETER (NINT=101)
 C     integrations are performed using simpson's rule, W holds the weights
       REAL W(NINT)

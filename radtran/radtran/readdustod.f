@@ -109,7 +109,7 @@ C     ********************************************
 
       DO 506 I=1,NLAYER
        DO 667 J=1,NCONT
-        XOD(J)=XOD(J)+SNGL(CONT(J,I))
+        XOD(J)=XOD(J)+CONT(J,I)
 667    ENDDO
 506   CONTINUE
 

@@ -368,10 +368,14 @@ c	 print*,xn1(i),xn(i),x_out(i),'Miscellaneous-2'
 C        Check to see if log numbers have gone out of range
          if(lx(i).eq.1)then
           if(xn1(i).gt.85.or.xn1(i).lt.-85)then
-           print*,'Coreret - log(number gone out of range)'
+           print*,'CoreretPT - log(number gone out of range)'
            print*,'Increasing brake'
            alambda = alambda*10.0               ! increase Marquardt brake
-           if(alambda.gt.1e10)alambda=1e10
+           if(alambda.gt.1e30)then
+            print*,'Death spiral - stopping'
+            stop
+           endif
+           print*,i,xn(i),xn1(i),exp(xn(i)),alambda
            goto 145
           endif
          endif
@@ -402,6 +406,7 @@ C        Temperature gone negative. Increase brakes and try again
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
      2     lin,nvar,varident,varparam,jrad,jlogg,radius,nx,xn1,ny,
      3     yn1,kk1)
+         print*,ny,(yn1(i),i=1,ny)
         else
          print*,'ForwardnogPT 3'
          CALL forwardnogPT(runname,ispace,fwhm,ngeom,nav,

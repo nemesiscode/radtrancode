@@ -417,7 +417,10 @@ C        Check to see if log numbers have gone out of range
            print*,'Coreret - log(number gone out of range)'
            print*,'Increasing brake'
            alambda = alambda*10.0		! increase Marquardt brake
-           if(alambda.gt.1e10)alambda=1e10
+           if(alambda.gt.1e30)then
+            print*,'Death spiral - stopping'
+            stop
+           endif
            goto 145
           else
            print*,'exp(x_old),exp(x_next)',exp(xn(i)),exp(xn1(i))

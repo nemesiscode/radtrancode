@@ -77,7 +77,9 @@ C Obviously you must have read in a model before you can calculate layers
         WRITE(*,*)' ATMG.F :: Stopping program.'
         STOP
       ENDIF
-        if(jradf.gt.0)radius=radius2
+
+C     Update radius if it's being fitted     
+      if(jradf.gt.0)radius=radius2
 
 C Initialising atmosphere flags: NOTE: that the default is a limb path
 C from bottom layer

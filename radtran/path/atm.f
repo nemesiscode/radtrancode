@@ -80,9 +80,10 @@ C         obviously you must have read in a model before you can calculate
 C         layers
         CALL WTEXT('no model defined for atmosphere calc.')
         STOP
-        END IF
-        
-          if(jradf.gt.0)radius=radius2
+      END IF
+      
+C     Update radius if it's being fitted  
+      if(jradf.gt.0)radius=radius2
 C
 C     initialising atmosphere flags
 C     note that default is a limb path from bottom layer

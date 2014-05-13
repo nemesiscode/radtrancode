@@ -296,10 +296,6 @@ C      Calculate inverse of se
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jrad,jlogg,radius,nx,xn,ny,yn,kk)
 	print*, 'jrad,Radius:', jrad,radius
-        do i=1,ny
-         print*,i,yn(i)
-        enddo
-        stop
       else
        print*,'ForwardnogPT 2'
        CALL forwardnogPT(runname,ispace,fwhm,ngeom,nav,

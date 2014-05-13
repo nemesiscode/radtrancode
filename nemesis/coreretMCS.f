@@ -1,8 +1,8 @@
       subroutine coreretMCS(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,jsurf,jalb,jtan,
-     3  jpre,jrad,jlogg,marsradius,satrad,thetrot,altbore,wgeom,flat,nx,lx,
-     4  xa,sa,ny,y,se1,xn,sm,sn,st,yn,kk,aa,dd)
+     3  jpre,jrad,jlogg,marsradius,satrad,thetrot,altbore,wgeom,flat,
+     4  nx,lx,xa,sa,ny,y,se1,xn,sm,sn,st,yn,kk,aa,dd)
 C     $Id:
 C     ******************************************************************
 C

@@ -1,8 +1,8 @@
       subroutine coreretPT(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jtan,
-     3  jpre,jrad,jlogg,radius,wgeom,flat,nx,lx,xa,sa,ny,y,se1,inumeric,xn,
-     4  sm,sn,st,yn,kk,aa,dd)
+     3  jpre,jrad,jlogg,radius,wgeom,flat,nx,lx,xa,sa,ny,y,se1,
+     4  inumeric,xn,sm,sn,st,yn,kk,aa,dd)
 C     $Id:
 C     ******************************************************************
 C
@@ -295,13 +295,17 @@ C      Calculate inverse of se
        CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jrad,jlogg,radius,nx,xn,ny,yn,kk)
-	print*, 'Radius - 1 =', jrad,radius
+	print*, 'jrad,Radius:', jrad,radius
+        do i=1,ny
+         print*,i,yn(i)
+        enddo
+        stop
       else
        print*,'ForwardnogPT 2'
        CALL forwardnogPT(runname,ispace,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jrad,jlogg,radius,nx,xn,ny,yn,kk,kiter)
-	print*, 'Radius - 1 =', jrad,radius
+	print*, 'jrad,Radius:', jrad,radius
       endif
 
       print*,'Calling calc_gain_matrix'

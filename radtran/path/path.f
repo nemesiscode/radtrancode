@@ -260,6 +260,8 @@ C           atmosphere paths
             IMOD(NPATH)=8
             LAYINC(1,NPATH)=K
             LAYINC(2,NPATH)=L
+            SCALE(1,NPATH)=1.
+            SCALE(2,NPATH)=1.
             NLAYIN(NPATH)=2
 201         CONTINUE
 203         CONTINUE

@@ -175,7 +175,7 @@ C Definition of input and output variables ...
 
 
 C Definition of general variables ...
-      INTEGER i,j,k,l,ipath,ig,iray,ipath1,lstcel
+      INTEGER i,j,k,l,ipath,ig,iray,ipath1,lstcel,ipath2
       INTEGER k1,nlays,nparam
       REAL ppp(maxgas),aamount(maxgas),vv
       REAL dbdt(maxlay,maxpat),bb(maxlay,maxpat)
@@ -720,6 +720,9 @@ C=======================================================================
           DO j=1,nlays
             taus(j) = tautmp(layinc(j,ipath)) * scale(j,ipath)
             taur(j) = tauray(layinc(j,ipath)) * scale(j,ipath)
+C            print*,'tau',j,ipath,layinc(j,ipath),scale(j,ipath),
+C     1		tautmp(layinc(j,ipath)),taus(j)
+
             do k=1,ncont
              tauscatl(k,j)=tauscat1(k,layinc(j,ipath)) * scale(j,ipath)
             enddo
@@ -843,6 +846,14 @@ C           matrix inversion crashing
             ENDDO
 
 
+C            DO j=1,nlays
+C               DO k1=1,nsw
+C                 k = isw(k1)
+C                 print*,'rad',j,k1,k,dcoutdq(ipath,ig,j,k)
+C               ENDDO
+C            ENDDO
+
+
 C           Check to see if this is a limb path
             j1=int(0.5*nlays)
 
@@ -869,11 +880,12 @@ C            gradient wrt surface temperature
 
 C            gradient with respect to atmospheric properties
              DO j=1,nlays
-               DO k1=1,nsw
-                 k = isw(k1)
-                 dcoutdq(ipath,ig,j,k) =  
+                DO k1=1,nsw
+                  k = isw(k1)
+                   dcoutdq(ipath,ig,j,k) =  
      1        dcoutdq(ipath,ig,j,k)+xfac*radground*dtolddq(j,k)
-                 ENDDO
+C                 print*,'radg',j,k1,k,dcoutdq(ipath,ig,j,k)
+                ENDDO
              ENDDO
             endif
 
@@ -882,19 +894,42 @@ C            gradient with respect to atmospheric properties
 
 C           model 8, product of two path outputs
 
-            corkout(ipath,Ig)=corkout(layinc(1,Ipath),Ig)*
-     1              corkout(layinc(2,Ipath),Ig)
-
-            
             ipath1=layinc(1,Ipath)
+            ipath2=layinc(2,Ipath)
 
-            nlays=nlayin(ipath1)
+C           Assume one of these must be an atmospheric calculation
+C	    and one must be a cell calculation. Assume that first
+C           one is a cell transmission and the second one is an
+C           atmosphere
+
+C            print*,'ipath1, imod',ipath1,imod(ipath1)
+C            print*,'ipath2, imod',ipath2,imod(ipath2)            
+
+            if(imod(ipath1).lt.13.or.imod(ipath1).gt.14)then
+             print*,'Error in cirsradg_wave: cell and atm'
+             print*,'paths not in expected order. Stopping'
+             stop
+            endif
+           
+C           Multiply two outputs together
+            corkout(ipath,Ig)=corkout(ipath1,Ig)*
+     1              corkout(ipath2,Ig)
+
+C            print*,layinc(1,ipath),layinc(2,ipath)
+C            print*,corkout(layinc(1,Ipath),ig),
+C     1		corkout(layinc(2,Ipath),Ig)
+
+
+            nlays=nlayin(ipath2)
 
             DO j=1,nlays
-              DO k=1,nparam
-                dcoutdq(ipath,ig,j,k) = dcoutdq(ipath1,ig,j,k)*
-     1            corkout(layinc(2,Ipath),Ig)
-              ENDDO
+             do k1=1,nsw
+                k = isw(k1)
+                dcoutdq(ipath,ig,j,k) = corkout(ipath1,Ig)*
+     1		  dcoutdq(ipath2,ig,j,k)
+C                 print*,j,k1,k,corkout(ipath1,Ig),
+C     1		  dcoutdq(ipath2,ig,j,k),dcoutdq(ipath,ig,j,k)
+             enddo
             ENDDO
 
           ELSEIF (imod(ipath).eq.13) THEN
@@ -903,7 +938,7 @@ C          model 13, SCR sideband transmission (1-cell transmission)
                         taud = taus(J)
 
            corkout(Ipath,Ig)=1.0-exp(-taus(1))
-
+C           print*,'SIDEBAND: ',taus(1),1.0-exp(-taus(1))
            LSTCEL=IPATH
 
           ELSEIF (imod(ipath).eq.14) THEN
@@ -911,6 +946,7 @@ C          model 13, SCR sideband transmission (1-cell transmission)
 C          model 14 SCR wideband transmission
 
            corkout(Ipath,Ig)=0.5*(1.0+exp(-taus(1)))
+C           print*,'WIDEBAND: ',taus(1),0.5*(1.0+exp(-taus(1)))
 
            LSTCEL=IPATH
 

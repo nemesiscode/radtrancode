@@ -22,6 +22,11 @@ isotest_lowt.tab		57.5-285.5K	dnu=1.
 glenniso.tab			70-310K 	dnu=1.
 exociatable_fletcher.tab	400-2800K	dnu=10.
 exociatable.tab			400-2800K	dnu=10.
+exobdwarfh2hecia.tab		400-2800K	dnu=10. 
+	(this file is a copy of exociatable.tab, but the H2-H2 parameters for
+	 inormal=0 and 1 have been replaced with oph2h2aflh.tab and the
+ 	 H2-He parameters for inormal=0,1 have been replaced with oph2he.tab.
+	 Files supplied by Derek Homeier via Ben Burningham.)
 
 b) para-H2
 fparah2he.tab			50-410K		dnu=1.0	npara=12 df=0.02

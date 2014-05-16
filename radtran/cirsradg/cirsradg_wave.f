@@ -161,7 +161,7 @@ C paths, etc.)
 
 C Definition of input and output variables ...
       INTEGER inormal,iwave,ispace,itype,flagh2p
-      INTEGER nlayer,npath,ngas,nsw,AMFORM
+      INTEGER nlayer,npath,ngas,nsw,AMFORM,nlay1
       INTEGER idgas(maxgas),isogas(maxgas),isw(maxgas+2+maxcon)
       INTEGER layinc(maxlay,maxpat),nlayin(maxpat),imod(maxpat)
       REAL xdist,dist,vwave,delh(nlayer),esurf,radground
@@ -747,7 +747,8 @@ cc	      WRITE(*,*)' creating output ...'
             tmp = corkout(ipath,ig)
             corkout(ipath,ig) = dpexp(-tmp)
             DO j=1,nlays
-              DO k=1,nparam
+              DO k1=1,nsw
+                k=isw(k1)
                 dcoutdq(ipath,ig,j,k)=-tmp*corkout(ipath,iG)*
      1          dtaudq(j,k)
               ENDDO
@@ -761,7 +762,8 @@ cc	      WRITE(*,*)' creating output ...'
             tmp = corkout(ipath,ig)
             corkout(ipath,ig) = 1. - dpexp(-tmp)
             DO j=1,nlays
-              DO k=1,nparam
+              DO k1=1,nsw
+		k=isw(k1)
                 dcoutdq(ipath,ig,j,k) = tmp*
      1          (1 - corkout(ipath,ig))*dtaudq(j,k)
               ENDDO
@@ -884,7 +886,8 @@ C            gradient with respect to atmospheric properties
                   k = isw(k1)
                    dcoutdq(ipath,ig,j,k) =  
      1        dcoutdq(ipath,ig,j,k)+xfac*radground*dtolddq(j,k)
-C                 print*,'radg',j,k1,k,dcoutdq(ipath,ig,j,k)
+C                 print*,'radg: j,k1,k,ig,ipath,',j,k1,k,ig,ipath,
+C     1			dcoutdq(ipath,ig,j,k)
                 ENDDO
              ENDDO
             endif
@@ -916,8 +919,8 @@ C           Multiply two outputs together
      1              corkout(ipath2,Ig)
 
 C            print*,layinc(1,ipath),layinc(2,ipath)
-C            print*,corkout(layinc(1,Ipath),ig),
-C     1		corkout(layinc(2,Ipath),Ig)
+C            print*,corkout(ipath1,ig),
+C     1		corkout(ipath2,Ig)
 
 
             nlays=nlayin(ipath2)
@@ -927,7 +930,7 @@ C     1		corkout(layinc(2,Ipath),Ig)
                 k = isw(k1)
                 dcoutdq(ipath,ig,j,k) = corkout(ipath1,Ig)*
      1		  dcoutdq(ipath2,ig,j,k)
-C                 print*,j,k1,k,corkout(ipath1,Ig),
+C                 print*,'mod 8',j,k1,k,ig,ipath,corkout(ipath1,Ig),
 C     1		  dcoutdq(ipath2,ig,j,k),dcoutdq(ipath,ig,j,k)
              enddo
             ENDDO
@@ -1089,17 +1092,37 @@ C=======================================================================
           ENDDO
         ENDDO
 
+C       Find correct number of atmospheric layers for IMOD=8 
+C           (i.e. SCR radiometer).
+        if(imod(ipath).eq.8)then
+           nlay1=nlayin(1)
+        else
+           nlay1=nlayin(ipath)
+        endif
+
         DO ig=1,ng
           output(ipath) = output(ipath) + corkout(ipath,ig)*delg(ig)
           gtsurf(ipath) = gtsurf(ipath) + 
      1			tempgtsurf(ipath,ig)*delg(ig)
-          DO j=1,nlayin(ipath)
-            DO k=1,nparam
+
+          DO j=1,nlay1
+            DO k1=1,nsw
+              k=isw(k1)
               doutputdq(ipath,j,k) = doutputdq(ipath,j,k) +
      1        dcoutdq(ipath,ig,j,k)*delg(ig)
             ENDDO
           ENDDO
+        
         ENDDO
+
+
+C        print*,'CCALC',ipath,output(ipath),gtsurf(ipath)
+C        do k1=1,nsw
+C          k=isw(k1)
+C          do j=1,nlay1
+C           print*,'CGRAD',k,j,doutputdq(ipath,j,k)
+C          enddo
+C        enddo
 
 C        print*,ipath,output(ipath)
 

@@ -44,30 +44,38 @@ C     *****************************************************************
       INCLUDE '../includes/laygrad.f'
       REAL doutputdq(maxpat,maxlay,maxgas+2+maxcon)
       REAL doutmoddq(maxpat,maxgas+2+maxcon,maxpro)
-      INTEGER nparam,ipath,k,jj,j,i
+      INTEGER nparam,ipath,k,jj,j,i,nlay1,ipath1
 
       do ipath=1,npath
         do k=1,nparam
           do jj=1,npro
             doutmoddq(ipath,k,jj)=0.0
-            do j=1,nlayin(ipath)
+C           Find correct number of atmospheric layers for IMOD=8 
+C		(i.e. SCR radiometer). 
+            nlay1=nlayin(ipath)
+            ipath1=ipath
+            if(imod(ipath).eq.8)then
+              nlay1=nlayin(1)
+              ipath1=1
+            endif
+            do j=1,nlay1
              if(k.le.ngas)then  
               doutmoddq(ipath,k,jj)=doutmoddq(ipath,k,jj)+
-     1          doutputdq(ipath,j,k)*DAM(LAYINC(J,IPATH),JJ)
+     1          doutputdq(ipath,j,k)*DAM(LAYINC(J,IPATH1),JJ)
              endif
 
              if(k.eq.ngas+1)then
               doutmoddq(ipath,k,jj)=doutmoddq(ipath,k,jj)+
-     1          doutputdq(ipath,j,k)*DTE(LAYINC(J,IPATH),JJ)
+     1          doutputdq(ipath,j,k)*DTE(LAYINC(J,IPATH1),JJ)
              endif
 
              if(k.gt.ngas+1)then
               if((k-ngas-1).le.ncont) then
                 doutmoddq(ipath,k,jj)=doutmoddq(ipath,k,jj)+
-     1            doutputdq(ipath,j,k)*DCO(LAYINC(J,IPATH),JJ)
+     1            doutputdq(ipath,j,k)*DCO(LAYINC(J,IPATH1),JJ)
               else
                 doutmoddq(ipath,k,jj)=doutmoddq(ipath,k,jj)+
-     1            doutputdq(ipath,j,k)*DFP(LAYINC(J,IPATH),JJ)
+     1            doutputdq(ipath,j,k)*DFP(LAYINC(J,IPATH1),JJ)
               endif
              endif
             enddo

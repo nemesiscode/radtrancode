@@ -847,15 +847,15 @@ C           matrix inversion crashing
 
             ENDDO
 
-
+C            if(ig.eq.5)then
 C            DO j=1,nlays
 C               DO k1=1,nsw
 C                 k = isw(k1)
-C                 print*,'rad',j,k1,k,dcoutdq(ipath,ig,j,k)
+C                 print*,'rad',ipath,ig,j,k1,k,dcoutdq(ipath,ig,j,k)
 C               ENDDO
 C            ENDDO
-
-
+C            endif
+ 
 C           Check to see if this is a limb path
             j1=int(0.5*nlays)
 
@@ -891,6 +891,15 @@ C     1			dcoutdq(ipath,ig,j,k)
                 ENDDO
              ENDDO
             endif
+
+C            if(ig.eq.5)then
+C            DO j=1,nlays
+C               DO k1=1,nsw
+C                 k = isw(k1)
+C                 print*,'radX',ipath,ig,j,k1,k,dcoutdq(ipath,ig,j,k)
+C               ENDDO
+C            ENDDO
+C            endif
 
 
           ELSEIF(imod(ipath).eq.8)then
@@ -930,8 +939,11 @@ C     1		corkout(ipath2,Ig)
                 k = isw(k1)
                 dcoutdq(ipath,ig,j,k) = corkout(ipath1,Ig)*
      1		  dcoutdq(ipath2,ig,j,k)
-C                 print*,'mod 8',j,k1,k,ig,ipath,corkout(ipath1,Ig),
+C                  if(ig.eq.5)then
+C                  print*,'mod 8',j,k1,k,ig,ipath,ipath2,
+C     1		  corkout(ipath1,Ig),
 C     1		  dcoutdq(ipath2,ig,j,k),dcoutdq(ipath,ig,j,k)
+C                  endif
              enddo
             ENDDO
 
@@ -1086,7 +1098,7 @@ C=======================================================================
       DO ipath=1,npath
         output(ipath) = 0.0
         gtsurf(ipath) = 0.0
-        DO j=1,nlayin(ipath)
+        DO j=1,maxlay
           DO k=1,nparam
             doutputdq(ipath,j,k) = 0.0
           ENDDO
@@ -1112,10 +1124,9 @@ C           (i.e. SCR radiometer).
      1        dcoutdq(ipath,ig,j,k)*delg(ig)
             ENDDO
           ENDDO
-        
-        ENDDO
 
 
+C        if(ig.eq.5)then
 C        print*,'CCALC',ipath,output(ipath),gtsurf(ipath)
 C        do k1=1,nsw
 C          k=isw(k1)
@@ -1123,8 +1134,12 @@ C          do j=1,nlay1
 C           print*,'CGRAD',k,j,doutputdq(ipath,j,k)
 C          enddo
 C        enddo
-
 C        print*,ipath,output(ipath)
+C        endif
+
+        
+        ENDDO
+
 
       ENDDO
 

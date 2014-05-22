@@ -947,6 +947,11 @@ C                  endif
              enddo
             ENDDO
 
+
+C           gradient wrt surface temperature
+            tempgtsurf(ipath,ig) = tempgtsurf(ipath2,ig)*
+     1		corkout(ipath1,Ig)
+
           ELSEIF (imod(ipath).eq.13) THEN
 
 C          model 13, SCR sideband transmission (1-cell transmission)

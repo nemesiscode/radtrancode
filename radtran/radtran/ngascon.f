@@ -57,7 +57,7 @@ C-----------------------------------------------------------------------
 C
 	INTEGER ID,ISO,I
 	REAL V0,DV,AMOUNT,PPRESS,PRESS,TEMP,ABSORB
-        REAL CH4CONT,INTERPBASS1
+        REAL CH4CONT,INTERPBASS1,INTERPO3
 C
 C --- Define COMMON blocks containing H2O continuum data ---
 C
@@ -200,8 +200,10 @@ C           Karkoschka CH4 coefficients
        ELSEIF ((ID.EQ.3) .AND. ((ISO.EQ.1).OR.(ISO.EQ.0))
      &   .AND. IO3.NE.0)THEN
 C           Bass Ozone coefficients
+C            ABSORB = AMOUNT*INTERPBASS1(FF,TEMP)
 
-            ABSORB = AMOUNT*INTERPBASS1(FF,TEMP)
+C	    New Dawson O3 coefficients
+            ABSORB = AMOUNT*INTERPO3(FF,TEMP)
 
        ELSE
 

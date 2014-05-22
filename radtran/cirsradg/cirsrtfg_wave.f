@@ -243,6 +243,10 @@ C change of desired variables.
 
         DO ipath=1,npath
           ioff1 = nwave*(ipath - 1) + iwave
+          if(ioff1.gt.maxout3)then
+            print*,'cirsrtfg: ioff1 > maxout3'
+            stop
+          endif
           tempout(ioff1) = output(ipath)
 
 C         Store ROC of surface temperature too
@@ -252,6 +256,10 @@ C     1      tempgtsurf(ioff1)
 
           DO iv=1,nv
             ioff2 = nwave*nv*(ipath - 1) + (iv - 1)*nwave + iwave
+            if(ioff2.gt.maxout4)then
+             print*,'cirsrtfg_wave: ioff2 > maxout4'
+             stop
+            endif
             tgrad(ioff2) = doutdx(ipath,iv)
           ENDDO
         ENDDO
@@ -289,6 +297,7 @@ C     1     gradtsurf(ioff1)
           DO iconv=1,nconv
             ioff2 = nconv*nv*(ipath - 1) + (iv - 1)*nconv + iconv
             gradients(ioff2) = yout(iconv)
+C            print*,'YYY',iconv,iv,ipath,ioff2,gradients(ioff2)
           ENDDO
         ENDDO
       ENDDO

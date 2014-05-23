@@ -37,12 +37,16 @@ makehitranCIAparaiso.tab	50-410K         dnu=1.
 	(these files were converted from HITRAN12 using the /trunk/idl/makehitranCIApara.pro
 	 procedure from data mostly in the Alternate-Folder tables. Here the ortho/para
 	 CIA tables for H2-H2 and H2-He are different)
+cia_orton2008_40-400K_dnu1.0.tab  40-400K     dnu=1. 
+	(Generated from GSO's file cia.longrev08.data.17nov2008 based on Orton et al., 2007, Icarus 189, p544)
+       
+       
 
 b) para-H2
 fparah2he.tab			50-410K		dnu=1.0	npara=12 df=0.02
 fpara24_dn1.0_40-280K_df0.02.tab 40-280K	dnu=1.0 npara=24 df=0.02
 fpara24_dn1.0_40-280K_df0.03.tab 40-280K	dnu=1.0 npara=24 df=0.03
-magnus_dn1.0_40-280K_df0.03.tab 40-280K		dnu=1.0 npara=24 df=0.02
+magnus_dn1.0_40-280K_df0.03.tab 40-280K		dnu=1.0 npara=24 df=0.03
 
 Pat Irwin  25/4/12	Original
 Pat Irwin  18/7/12	Revised

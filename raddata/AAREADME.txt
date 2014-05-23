@@ -27,6 +27,16 @@ exobdwarfh2hecia.tab		400-2800K	dnu=10.
 	 inormal=0 and 1 have been replaced with oph2h2aflh.tab and the
  	 H2-He parameters for inormal=0,1 have been replaced with oph2he.tab.
 	 Files supplied by Derek Homeier via Ben Burningham.)
+makehitranCIA.tab		50-410K         dnu=10.
+makehitranCIAiso.tab		50-410K         dnu=1.
+	(these files were converted from HITRAN12 using the /trunk/idl/makehitranCIA.pro
+	 procedure from data mostly in the Main-Folder tables. Here we have set the 
+	 ortho/para CIA tables for H2-H2 and H2-He to be the same)
+makehitranCIApara.tab		50-410K         dnu=10.
+makehitranCIAparaiso.tab	50-410K         dnu=1.
+	(these files were converted from HITRAN12 using the /trunk/idl/makehitranCIApara.pro
+	 procedure from data mostly in the Alternate-Folder tables. Here the ortho/para
+	 CIA tables for H2-H2 and H2-He are different)
 
 b) para-H2
 fparah2he.tab			50-410K		dnu=1.0	npara=12 df=0.02

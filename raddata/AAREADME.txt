@@ -20,13 +20,20 @@ GlennBorysow.tab		50-410K		dnu=10.
 isotest.tab			70-310K 	dnu=1.
 isotest_lowt.tab		57.5-285.5K	dnu=1.
 glenniso.tab			70-310K 	dnu=1.
+
 exociatable_fletcher.tab	400-2800K	dnu=10.
 exociatable.tab			400-2800K	dnu=10.
+exocia_hitran12.tab		400-2800K   dnu=10.
+	(Generated from HITRAN12, replaces exociatable.tab (LNF2009), which lacked 
+      400-600 K H2-H2 rototranslational transitions as Zheng and Borysow 
+      (1995) don't go that low.  Contains no H2-H2 beyond 10,000 cm-1).
+      
 exobdwarfh2hecia.tab		400-2800K	dnu=10. 
 	(this file is a copy of exociatable.tab, but the H2-H2 parameters for
 	 inormal=0 and 1 have been replaced with oph2h2aflh.tab and the
  	 H2-He parameters for inormal=0,1 have been replaced with oph2he.tab.
 	 Files supplied by Derek Homeier via Ben Burningham.)
+       
 makehitranCIA.tab		50-410K         dnu=10.
 makehitranCIAiso.tab		50-410K         dnu=1.
 	(these files were converted from HITRAN12 using the /trunk/idl/makehitranCIA.pro

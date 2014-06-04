@@ -109,7 +109,7 @@ c  ** variables for solar reflected cloud **
       ENDIF
           
 2     format(a,i3)
-3     format(a,f7.2)
+3     format(a,f8.2)
 
       LAYHT1 = LAYHT
       LAYANG = 0.0
@@ -136,7 +136,7 @@ C     sol_ang is then the tangent altitude)
        E1 = EMISS_ANG
        IF(ISCAT.EQ.1)E1 = 0.0
        IPZEN=0
-C       IPZEN=2 
+c       IPZEN=2 
        WRITE(31,4)TEXT,E1,LAYBOT,IPZEN
 4      FORMAT(A6,F7.2,I4,I4)
       ELSE

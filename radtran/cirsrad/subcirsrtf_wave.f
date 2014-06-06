@@ -67,10 +67,10 @@ C       bins, paths, etc.)
 	INTEGER		nwave, I, J, npath1, nout, ispace
 
 	INTEGER		INormal,Iray,nem
-	REAL		Dist,tsurf,radius1
+	REAL		Dist,tsurf,radius1,zheight(maxpro)
         REAL		vem(maxsec),emissivity(maxsec)
-	REAL		vwave(nwave), output(maxout3)
-	LOGICAL		fscatter, fdust, solexist
+	REAL		vwave(nwave), output(maxout3),radextra
+	LOGICAL		fscatter, fdust, solexist,fexist
         double precision mu1(maxmu), wt1(maxmu), galb
 
 	CHARACTER*100	klist,buffer
@@ -204,13 +204,22 @@ C       radius2 is radius held in planrad common block. Pass this to
 C       cirsrad_wave in case it's been updated.      
         radius1=radius2
 
+C       Look to see if ipzen has been set to 2 and if so read in altitude of
+C       top of atmosphere
+        radextra=0.
+        if(ipzen.eq.2)then
+C          need the current height profile
+           call readprfheight(opfile1,npro,zheight)
+           radextra=zheight(npro)
+        endif
 
         print*,'Calling cirsrad_wave'
 	CALL cirsrad_wave (Dist, INormal, Iray, ispace, DelH, nlayer, 
      1    npath,ngas, maxlay, maxcon, totam, press, temp, pp, amount,
      2    nwave, vwave, nlayin, maxinc, layinc, cont, scale, imod, 
      3    idgas, isogas,emtemp,iphi,nem,vem,emissivity,tsurf,
-     4    flagh2p,hfp,flagc, hfc, ifc, basep, baseh, RADIUS1,output)
+     4    flagh2p,hfp,flagc, hfc, ifc, basep, baseh, RADIUS1,
+     5    radextra,output)
 	WRITE(*,*)'Subcirsrtf_wave: cirsrad_wave COMPLETE'
 c	WRITE(*,*)' '
 

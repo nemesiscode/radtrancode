@@ -62,7 +62,9 @@ C                                       emissivity spectrum
 C       VEM(NEM)        Wavelengths of emissivity spectrum
 C       EMISSIVITY(NEM) Tabulated emissivities
 C       TSURF           Surface temperature (K)     
-C       RADIUS1         Planetary radius (km)      
+C       RADIUS1         Planetary radius (km) at reference pressure (usually 
+C								      1 bar)      
+C	RADEXTRA	Any correction to RADIUS1 needed for disc-integration
 C       FLAGH2P         FLAGH2P=1 if a para-H2 fraction
 C                                 profile has been read.
 C	HFP(NLAYER)	Para-H2 fraction in each layer (if FLAGH2P=1)
@@ -87,7 +89,8 @@ C-----------------------------------------------------------------------
      1    npath, ngas, limlay, limcont, totam, press, temp, pp, amount, 
      2    nwave, vwave, nlayin, incdim, layinc, cont, scale, imod,
      3    idgas, isogas, emtemp, itype, nem, vem, emissivity, tsurf, 
-     4    flagh2p,hfp, flagc, hfc, ifc, basep, baseh, RADIUS1, output)
+     4    flagh2p,hfp, flagc, hfc, ifc, basep, baseh, RADIUS1, 
+     5    radextra,output)
 
       IMPLICIT NONE
 
@@ -113,7 +116,7 @@ C		Passed variables
      5          esurf,radground,totam(nlayer),RADIUS1,xdist,xfac,
      6		eoutput(npath,nwave)
         REAL    vem(MAXSEC),emissivity(MAXSEC),interpem
-        REAL	xmu,dtr,xt1
+        REAL	xmu,dtr,xt1,radextra
         INTEGER ifc(limcont,nlayer),nem,j0
 
 	REAL	XCOM,XNEXT,FPARA,vv,XRAY,RAYLEIGHJ,RAYLEIGHA,RAYLEIGHV
@@ -966,7 +969,7 @@ C
 C               If iform = 1 or iform = 3 we need to calculate the total
 C               spectral flux from the planet.
                 if(iform.eq.1.or.iform.eq.3)then
-                 xfac=xfac*pi*4.*pi*(RADIUS1*1e5)**2
+                  xfac=xfac*pi*4.*pi*((RADIUS1+radextra)*1e5)**2
                 endif
 C               If a solar file exists and iform=1 we should divide the planet
 C               flux by the solar flux
@@ -1116,7 +1119,7 @@ C
 C               If iform = 1 or iform = 3 we need to calculate the total
 C               spectral flux from the planet.
                 if(iform.eq.1.or.iform.eq.3)then
-                 xfac=xfac*pi*4.*pi*(RADIUS1*1e5)**2
+                 xfac=xfac*pi*4.*pi*((RADIUS1+radextra)*1e5)**2
                 endif
 C               If a solar file exists and iform=1 we should divide the planet
 C               flux by the solar flux
@@ -1253,7 +1256,7 @@ C
 C               If iform = 1 or iform = 3 we need to calculate the total
 C               spectral flux from the planet.
                 if(iform.eq.1.or.iform.eq.3)then
-                 xfac=xfac*pi*4.*pi*(RADIUS1*1e5)**2
+                 xfac=xfac*pi*4.*pi*((RADIUS1+radextra)*1e5)**2
                 endif
 C               If a solar file exists and iform=1 we should divide the planet
 C               flux by the solar flux

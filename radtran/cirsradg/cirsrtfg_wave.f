@@ -111,8 +111,9 @@ C     XCOMP: % complete printed in increments of 10.
       CHARACTER*100 drvfil,radfile,xscfil,runname
       CHARACTER*100 klist
       INTEGER iwave,ipath,k,igas,ioff1,ioff2,iv,nv
+      REAL zheight(maxpro),radextra
       INTEGER nsw,isw(maxgas+2+maxcon),iswitch,rdamform
-      LOGICAL scatterf,dustf,solexist
+      LOGICAL scatterf,dustf,solexist,fexist
 
 C     Need simple way of passing planetary radius to nemesis
       INCLUDE '../includes/planrad.f'
@@ -225,11 +226,19 @@ C       radius2 is radius held in planrad common block. Pass this to
 C       cirsradg_wave, in case it's been updated.
         radius1=radius2
 
+        radextra=0.
+        if(ipzen.eq.2)then
+C          need the current height profile
+           call readprfheight(runname,npro,zheight)
+           radextra=zheight(npro)
+        endif
+    
+
 	CALL cirsradg_wave (dist,inormal,iray,delh,nlayer,npath,ngas,
      1  press,temp,pp,amount,iwave,ispace,AMFORM,vv,nlayin,
      2  layinc,cont,scale,imod,idgas,isogas,emtemp,itype1,
      3  nem, vem, emissivity, tsurf, gtsurf, RADIUS1,
-     4  flagh2p,hfp,nsw,isw,output,doutputdq)
+     4  flagh2p,hfp,radextra,nsw,isw,output,doutputdq)
 
 
 C Convert from rates of change with respect to layer variables to rates

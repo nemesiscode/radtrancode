@@ -56,7 +56,8 @@ F_SOURCES = \
 	calc_cont.f \
 	lblrtf_wave.f \
 	lblrad_wave.f \
-	calc_fine.f
+	calc_fine.f \
+	readprfheight.f
 
 INCDIR = ../includes
 INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/dbcom.f $(INCDIR)/laycom.f \

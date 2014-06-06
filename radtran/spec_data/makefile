@@ -15,7 +15,6 @@ F_SOURCES = \
 	fndwav.f \
 	lblband.f \
 	liness.f \
-	loadlinebuffer.f \
 	loadbuffer.f \
 	partf.f \
 	rdgas.f \

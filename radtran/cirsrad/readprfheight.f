@@ -27,7 +27,6 @@ C     ***********************************************************************
 
       CALL FILE(IPFILE,IPFILE,'prf')
       
-      print*,'Reading reference file from : ',IPFILE
       OPEN(UNIT=1,FILE=IPFILE,STATUS='OLD')
 C     First skip header
 54     READ(1,1)BUFFER

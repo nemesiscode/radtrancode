@@ -47,10 +47,11 @@ c  ** variables for solar reflected cloud **
       logical reflecting_atmos
       common /refl_cloud_params/refl_cloud_albedo,reflecting_atmos
 
-      integer cellngas,cellid(maxgas),celliso(maxgas),icread,ipzen
+      integer cellngas,cellid(maxgas),celliso(maxgas),icread
       real cellength,cellpress,celltemp,cellvmr(maxgas)
       common/celldat/icread,cellngas,cellid,celliso,cellvmr,cellength,
      1  cellpress,celltemp
+      INTEGER IPZEN
 
       
       CALL FILE(RUNNAME,RUNNAME,'pat')
@@ -129,14 +130,20 @@ C     sol_ang is then the tangent altitude)
 
       WRITE(31,1)' '
 
+      CALL FILE(RUNNAME,RUNNAME,'zen')
+      INQUIRE(FILE=RUNNAME,EXIST=FEXIST)
+      IPZEN=0
+      IF(FEXIST)THEN
+       OPEN(12,FILE=RUNNAME,STATUS='OLD')
+       READ(12,*)IPZEN
+      ENDIF
+
       WRITE(31,1)'atm'
       IF(EMISS_ANG.GE.0.0) THEN
        TEXT='nadir'
        LAYBOT=1
        E1 = EMISS_ANG
        IF(ISCAT.EQ.1)E1 = 0.0
-       IPZEN=0
-c       IPZEN=2 
        WRITE(31,4)TEXT,E1,LAYBOT,IPZEN
 4      FORMAT(A6,F7.2,I4,I4)
       ELSE

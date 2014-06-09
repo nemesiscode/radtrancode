@@ -28,7 +28,7 @@ C     ****************************************************************
       INTEGER IPROC,IDGAS
       
       REAL HUMLIC,GVOICO2,CHICO2,BURCHCO2,BURCHCO2_NORM
-      REAL HARTMANNCH4,HARTMANNCH4A,HARTMANNCH4B
+      REAL BAILLYNH3,HARTMANNCH4,HARTMANNCH4A,HARTMANNCH4B
       REAL VV,VLIN,ABSCO,X,Y,AD,TRATIO,DOUBV,GAMMA,VVWEISS
       REAL SLIN,ALIN,SBLIN,ELIN,TDW,TDWS,TCORDW,TCORS1,TCORS2
       REAL NH2,NHE,YPH3_H2,YPH3_HE,YPH3,PI,DV,TSTIM,TS1,TS2
@@ -58,7 +58,21 @@ C     used to renomalise the linestrengths
 C      print*,'SUBLINE',IDGAS,PRESS,TEMP,IPROC,VV,VLIN,ABSCO,X,Y,
 C     1 FNH3,FH2,LLQ,DOUBV
 
-      IF(IPROC.EQ.12)THEN
+      
+      IF(IPROC.EQ.13)THEN
+C      IPROC=13::Sub-lorentzian lineshape from Bailly et al. (2004)
+       IF(IDGAS.NE.11)THEN
+        WRITE(*,*)' SUBLINE.f :: Can_t use the'
+        WRITE(*,*)' Bailly sublorentzian shape '
+        WRITE(*,*)' for gases other than NH3.'
+        WRITE(*,*)' IDGAS = ',IDGAS
+        WRITE(*,*)' '
+        WRITE(*,*)' Stopping program.'
+        STOP
+       ENDIF
+	SUBLINE = ABSCO*BAILLYNH3(ABS(X),Y,ABS(DV))/AD
+
+      ELSE IF(IPROC.EQ.12)THEN
 C      IPROC=12::Doppler broadening only
        SUBLINE = ABSCO*EXP(-X**2)/(AD*SQRT(PI))
 
@@ -232,6 +246,14 @@ C      IPROC=2 :: VanVleck-Weisskopf lineshape
 
       ELSE IF(IPROC.EQ.1)THEN
 C      IPROC=1 :: Sub-Lorentzian Lineshape
+       IF(IDGAS.NE.2)THEN
+        WRITE(*,*)' SUBLINE.f :: Can_T use this sub-'
+        WRITE(*,*)' Lorentzian broadening for gases'
+        WRITE(*,*)' other than CO2.'
+        WRITE(*,*)' '
+        WRITE(*,*)' Stopping program.'
+        STOP
+       ENDIF
        SUBLINE = ABSCO*GVOICO2(ABS(X),Y,TEMP,AD)/AD
 
       ELSE IF(IPROC.EQ.0)THEN  

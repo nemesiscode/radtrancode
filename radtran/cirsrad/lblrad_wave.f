@@ -155,7 +155,7 @@ C		Scattering variables
 C		Internal variables
 
 	INTEGER	I, J, K, L, Ipath, Ig, nlays
-	REAL	utotl(maxlay), qh(maxlay), qhe(maxlay),
+	REAL	qh(maxlay), qhe(maxlay),
      1		frac(maxlay,maxgas), qh_he(maxlay), dist1,
      2		x, taucon(maxlay)
         REAL    taugas(maxlay), tauscat(maxlay), p, t
@@ -200,6 +200,14 @@ C		Common blocks and parameters
 	PARAMETER	(tsun=5900.,theta0=4.65241e-3, pi=3.141593,
      1			error=5.e-5,LUNIS=61) 
 
+
+C       IBS(2) specifies which of the two buffers is buffer 1 and buffer 2
+C              at start IBS = [1,2], but when a new set of lines is read in
+C	       it becomes [2,1] and then keeps switching as lines are read.
+C	IBD(2) specifies if the lines in a buffer need to be added to the
+C	       continuum. -1 indicates that the lines are new and need adding
+C	       and +1 indicates that the lines have already been added to the
+C	       continuum.
 C-----------------------------------------------------------------------
 C
 C	Check input parameters for possible problems.
@@ -349,25 +357,14 @@ c	Isec = min(4,nsec)
 
 C-----------------------------------------------------------------------
 C
-C	Precompute volume fractions. The factor of 1e-20 applied to
-C	utotl and totam arises for the following reason. In order to avoid 
-C	underflow, RADTRAN (and CIRSRAD) routines multiply line strengths
-C	by a factor of 1.e47. Thus, when final calculation routines get 
-C	hold of the strengths, they must correct by 1.e-47. This is broken
-C	into two factors, 1.e-27 applied directly in calculating the K
-C	tables, and 1.e-20 applied to the amounts where they are used in
-C	conjunction with the K tables.
+C	Precompute volume fractions. 
 C
 C-----------------------------------------------------------------------
 
 	DO I= 1, nlayer
-		utotl(I)= 0.
 		DO J= 1, ngas
 			frac(I,J) = pp(I,J) / press(I)
-			utotl(I) = utotl(I) + amount(I,J)
 		ENDDO
-		utotl(I) = utotl(I) * 1.e-20
-		totam(I) = totam(I) * 1.e-20
 	ENDDO
 
 C-----------------------------------------------------------------------
@@ -670,15 +667,15 @@ C	The code below is if Rayleigh scattering is considered.
 
 		IF(IRAY.GT.0.AND.ITYPE.NE.0)THEN
                   if(IRAY.EQ.1)THEN
-                   xray = RAYLEIGHJ(vv,p,t)*1E20
+                   xray = RAYLEIGHJ(vv,p,t)
  		  elseif(IRAY.EQ.2)then
-                   xray = RAYLEIGHV(vv,p,t)*1E20
+                   xray = RAYLEIGHV(vv,p,t)
 		  else
-                   xray = RAYLEIGHA(vv,p,t)*1E20
+                   xray = RAYLEIGHA(vv,p,t)
 		  endif
-
                   avgcontmp = totam(J)*xray
                   tauray(J)=avgcontmp
+C                  print*,J,totam(j),xray,tauray(J)
 
                   if(AvgCONTMP.ge.0.0)then
  	   	   taucon(J)= taucon(J) + AvgCONTMP
@@ -733,15 +730,20 @@ C         all continuum bins and all layers.
 
 C	  Now calculate fine structure for this layer and wavenumber
 C          print*,'Calculating fine structure. VV,Layer = ',VV,J
+
           CALL CALC_FINE(VV,WING,MAXDV,J,NLAYER,NGAS,PRESS,TEMP,
      1 FRAC,IDGAS,ISOGAS,IPROC,IBS,IFCONT,XK)
 
 C          print*,'calc_fine OK'
 
           IF(IFCONT.EQ.1.AND.J.EQ.1)THEN
+C          If we are in the 1st layer and CALC_FINE indicates that we have run
+C          out of lines then we need to relabel <buffer 2> as <buffer 1> and
+C	   read in a new <buffer 2>.
            IB=IBS(1)
            FSTREC=NXTREC
-           print*,'Loading in 2nd line buffer'
+           print*,'Loading more lines into what was <buffer 1>, '
+           print*,'but will now be <buffer 2>'
            print*,'FSTREC = ',FSTREC
            MAXLIN1 = MAXLIN
            print*,'lblrad_wave: MAXLIN = ',MAXLIN1
@@ -752,12 +754,12 @@ C          print*,'calc_fine OK'
            CALL LOADBUFFER(VMIN-VREL,VMAX+VREL,FSTREC,MAXLIN1,MAXBIN,
      1      IB,NGAS,IDGAS,ISOGAS,VBOT,WING,NLINR,VLIN,SLIN,ALIN,
      3      ELIN,IDLIN,SBLIN,PSHIFT,DOUBV,TDW,TDWS,LLQ,NXTREC,
-     3      FSTLIN,LSTLIN)
+     3      FSTLIN,LSTLIN,LSTBIN)
  
            NLINE(IB)=NLINR
            IBD(IB)=-1
 
-
+C          Swap round the IBS and IBD arrays
            J1=IBS(1)
            IBS(1)=IBS(2)
            IBS(2)=J1
@@ -771,11 +773,11 @@ C          print*,'calc_fine OK'
            print*,IBD(1),IBD(2)
 
 
-           print*,'IB,NLINE(IB),IBD',IB,NLINE(IB),IBD(IB)
-           DO I=1,NBIN
-            PRINT*,I,FSTLIN(IBS(1),I),LSTLIN(IBS(1),I),
-     1        FSTLIN(IBS(2),I),LSTLIN(IBS(2),I)
-           ENDDO
+C           print*,'IB,NLINE(IB),IBD',IB,NLINE(IB),IBD(IB)
+C           DO I=1,NBIN
+C            PRINT*,I,FSTLIN(IBS(1),I),LSTLIN(IBS(1),I),
+C     1        FSTLIN(IBS(2),I),LSTLIN(IBS(2),I)
+C           ENDDO
 
 
 
@@ -783,11 +785,10 @@ C          print*,'calc_fine OK'
 
 	  tautmp(J) = taucon(J) + xk
 	  taugas(J) = taugasc(J) + xk
-
-C          print*,'X5',tautmp(j)
+C          if(j.eq.1)print*,'X5',tautmp(j)
 
       	ENDDO
-
+   
 C-----------------------------------------------------------------------
 C
 C	Step through the number of paths, calculating the required 
@@ -818,7 +819,14 @@ C-----------------------------------------------------------------------
 
 		taus(J) = tautmp(layinc(J,ipath)) * scale(J,ipath)
 		taur(J) = tauray(layinc(J,ipath)) * scale(J,ipath)
-C                print*,'X6',taus(j),taur(j)
+
+C                print*,'J,taus,taur',J,taus(J),taur(J)
+C                print*,layinc(J,ipath),tautmp(layinc(J,ipath)),
+C     1 tauray(layinc(J,ipath)),scale(J,ipath)
+
+
+C                if(j.eq.41)print*,'X6',ipath,j,tautmp(layinc(J,ipath)),
+C     &			taus(j),taur(j)
 
 
 C               New arrays for scloud12wave. taucl holds the extinction
@@ -863,7 +871,8 @@ cc     1			' creating output'
 		DO J = 1, nlays
 			output(Ipath) = output(Ipath) + taus(J)
 		ENDDO
-		output(Ipath) = exp(-output(Ipath))
+      		output(Ipath) = exp(-output(Ipath))
+C                print*,'Ipath, output',Ipath,output(Ipath)
 
 	ELSEIF (imod(ipath).EQ.1) THEN	
 

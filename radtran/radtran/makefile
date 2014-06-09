@@ -9,6 +9,7 @@ FCFLAGS = $(FCFLAGS1) $(STATIC_FLAG)
 FRECIPES = $(LIB)/libfrecipes.a
 
 F_SOURCES = \
+	baillynh3.f \
 	bboff.f \
 	bright.f \
 	getmass.f \

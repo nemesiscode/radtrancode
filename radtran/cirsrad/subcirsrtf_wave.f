@@ -138,6 +138,7 @@ C-----------------------------------------------------------------------
         WRITE(*,*)'NPATH,NWAVE,NOUT = ',NPATH,NWAVE,NOUT
 
       	IF (NOUT.GT.MAXOUT3) THEN
+                PRINT*,'MAXOUT3 = ',MAXOUT3
         	WRITE(*,1080)
         	STOP
       	ENDIF

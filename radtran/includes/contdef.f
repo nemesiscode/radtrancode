@@ -10,7 +10,7 @@ C     properties.
       REAL TCORS1(MAXLAY,MAXGAS),TCORS2(MAXLAY)
       REAL TCORDW(MAXLAY,MAXGAS)
 C
-      INTEGER FSTLIN(2,MAXBIN),LSTLIN(2,MAXBIN)
+      INTEGER FSTLIN(2,MAXBIN),LSTLIN(2,MAXBIN),LSTBIN(2)
 
 C     IORDER is the order of the continuum polynomial.
 C     IORDP1 is the number of parameters in polynomial fit.
@@ -21,5 +21,5 @@ C     MATRIX and UNIT are both used for matrix inversion when computing
 C     polynomials where insufficient points for least squares.
 
       COMMON /CONCOMB/NBIN,VBIN,CONTINK,CONVALS,CONWAV,MATRIX,UNIT,
-     1 FSTLIN,LSTLIN,TCORS1,TCORS2,TCORDW
+     1 FSTLIN,LSTLIN,LSTBIN,TCORS1,TCORS2,TCORDW
 

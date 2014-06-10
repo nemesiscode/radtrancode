@@ -167,7 +167,7 @@ C-----------------------------------------------------------------------
 	DO I= 1, npath
 		IF (imod(I).EQ.15.OR.imod(I).EQ.16) fscatter= .true.
                 IF (imod(I).EQ.22.OR.imod(I).eq.23) fscatter = .true.
-                IF (imod(I).EQ.24) fscatter = .true.
+                IF (imod(I).EQ.24.OR.imod(I).eq.25) fscatter = .true.
 	ENDDO
 
 	IF (fscatter) THEN

@@ -120,12 +120,13 @@ C ABSORB: =.TRUE. if calculate absorption instead of transmission.
 C BINBB: =.TRUE. if calculate planck function at centre of bin in genlbl.
 C SCATTER: = .TRUE. if full scattering calculation.
 
-      LOGICAL SINGLE,HEMISP,NEARLIMB,NETFLUX,UPFLUX
+      LOGICAL SINGLE,HEMISP,NEARLIMB,NETFLUX,UPFLUX,OUTFLUX
 C SINGLE: =.TRUE. if single-scattering calculation.
 C HEMISP: =.TRUE. if hemispherical calculation.
 C NEARLIMB: =.TRUE. if calculating near limb in a spherical atmosphere
 C NETFLUX: =.TRUE. if doing net flux calculation
-C UPFLUX: =.TRUE. if doing upwards flux calculation
+C UPFLUX: =.TRUE. if doing internal upwards flux calculation
+C OUTFLUX: =.TRUE. if doing upwards flux calculation at top of atmosphere
 
       REAL HT,ANGLE
 C HT: lowest height to use for the calculation, the tangent height

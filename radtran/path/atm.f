@@ -21,6 +21,7 @@ C_HIST:   26feb93 SBC Original version
 C
 C_END:
 C--------------------------------------------------------------
+      implicit none 
       CHARACTER TEXT*(*)
 C--------------------------------------------------------------
 C     Variables to hold calculated layers and the details of each paths and
@@ -36,7 +37,7 @@ C     because of the extensive use of large arrays
 C     note that laycom uses parameters defined in pathcom
 C--------------------------------------------------------------
 C     miscellaneous variables used in code
-      REAL DTR,F
+      REAL DTR,F,HTAN
       PARAMETER (DTR=3.1415926/180.)
 C     DTR is conversion factor for degrees to radians
       INTEGER NUSE,LOCLAY(MAXINC),USELAY(MAXINC),NCG,FSTCG,LSTCG,IPATH
@@ -64,7 +65,8 @@ C         nadir            followed by angle (degrees) from nadir and bottom
 C                          layer to use (normally 1)
 C         (no)wf           weighting function
 C         (no)netflux      Net flux calculation
-C         (no)upflux      Net flux calculation
+C         (no)upflux       Internal upward flux calculation
+C	  (no)outflux	   Upward flux at top of topmost layer
 C         (no)cg           curtis godson
 C         (no)therm        thermal emission
 C	  (no)hemisphere   Integrate emission into hemisphere
@@ -101,6 +103,7 @@ C     note that default is a limb path from bottom layer
       LIMB=.TRUE.
       NETFLUX=.FALSE.
       UPFLUX=.FALSE.
+      OUTFLUX=.FALSE.
       ANGLE=90.
       BOTLAY=1
 C
@@ -123,6 +126,8 @@ C     checking for negated keywords
         WF=DEF
        ELSE IF(TEXT(1:7).EQ.'NETFLUX')THEN
         NETFLUX=DEF
+       ELSE IF(TEXT(1:7).EQ.'OUTFLUX')THEN
+        OUTFLUX=DEF
        ELSE IF(TEXT(1:7).EQ.'UPFLUX')THEN
         UPFLUX=DEF
        ELSE IF(TEXT(1:2).EQ.'CG')THEN
@@ -276,7 +281,8 @@ C       to computed tangent height.
       COSA=COS(DTR*ANGLE)
       Z0=RADIUS+BASEH(BOTLAY)
 
-      print*,'ATMG Check: ',LIMB,NADIR,ANGLE,SIN2A,COSA,Z0
+      print*,'ATM Check: LIMB,ANGLE,SIN2A,COSA,Z0'
+      print*,'ATM Check: ',LIMB,ANGLE,SIN2A,COSA,Z0
 
 
 C     now calculating atmospheric paths
@@ -525,6 +531,16 @@ C     setting the correct type for the genlbl path
         STOP
        ENDIF
       ENDIF
+      IF(OUTFLUX)THEN
+       IF(SCATTER)THEN
+        IMOD(NPATH)=26
+       ELSE
+        PRINT*,'Error in atm.f, cannot do outward flux calculation'
+        PRINT*,'with scattering turned off.'
+        STOP
+       ENDIF
+      ENDIF
+
       IF(SCATTER.AND.LIMB)THEN
 C       Assumes int. rad. field calc.
         IMOD(NPATH)=23  

@@ -315,9 +315,8 @@ C       Set flag for code to read in modified PHASE*.DAT files if required
 	scatter=.FALSE.
 	single=.FALSE.
 	do Ipath = 1, npath
-		if (imod(Ipath).eq.15.or.imod(Ipath).eq.22.
-     1            or.imod(Ipath).eq.23.or.imod(Ipath).eq.24.
-     2		  or.imod(Ipath).eq.25) then
+		if (imod(Ipath).eq.15.or.
+     1	  (imod(Ipath).ge.22.and.imod(Ipath).le.26)) then
         		scatter=.true.
 		end if
 		if (imod(Ipath).eq.16) then
@@ -1694,6 +1693,91 @@ C                 upwelling radiation field to local temperature.
                   enddo
 
                 endif
+
+	ELSEIF (imod(ipath).EQ.26) THEN
+cc		WRITE(*,*) 'CIRSRAD_WAVE: Imod= 26 = Upwards flux at top,',
+cc     1        ' multiple scattering'. Creating output'
+
+
+		do J = 1, nlays
+			if(Ig.eq.1)then
+                         bb(J,Ipath)=planck_wave(ispace,x,
+     1			   emtemp(J,Ipath))
+                        endif
+			bnu(J) = bb(J,Ipath)
+C                        print*,J,taus(J),taur(j)
+			IF(TAUSCAT(layinc(J,Ipath)).GT.0.0) THEN
+				dtmp1 = dble(tauscat(layinc(J,Ipath)))
+				dtmp2 = dble(tautmp(layinc(J,Ipath)))
+                                omegas(J)=dtmp1/dtmp2
+				eps(J) = 1.0d00 - omegas(J)
+		        ELSE
+  				EPS(J)=1.0
+         			omegaS(J)=0.
+         		END IF
+
+
+			fcover(J) = HFC(layinc(J,Ipath))
+                        do k=1,ncont
+                         icloud(k,j)=IFC(k,layinc(J,Ipath))
+                        enddo
+		enddo
+
+
+
+               
+C               If tsurf > 0, then code assumes bottom layer is at the
+C               surface and so uses tsurf to compute radiation upwelling.
+C               Otherwise, code assumes optical depth is large and sets
+C               upwelling radiation field to local temperature.
+
+                if(tsurf.le.0.0)then
+                 radground = bb(nlays,Ipath)
+                else
+                 radground = esurf*planck_wave(ispace,x,tsurf)
+                endif
+
+                galb1=galb
+
+                if(galb1.lt.0)then
+                         galb1 = dble(1.-esurf)
+                endif
+
+                do J=1,nmu
+                 radg(J)=radground
+                enddo
+
+C               The codes below calculates the upwards flux
+C               spectrum in units of W cm-2 (cm-1)-1 or W cm-2 um-1.
+C
+                xfac=1.
+C               If iform = 1 or iform = 3 we need to calculate the total
+C               spectral flux from the planet.
+                if(iform.eq.1.or.iform.eq.3)then
+                 xfac=xfac*4.*pi*((RADIUS1+radextra)*1e5)**2
+                endif
+C               If a solar file exists and iform=1 we should divide the planet
+C               flux by the solar flux
+                if(iread.eq.999.and.iform.eq.1)then
+C                Set dist to -1 to get total power spectrum of star
+                 xdist=-1.0
+                 call get_solar_wave(x,xdist,xsolar)
+                 xfac=xfac/xsolar
+                endif
+C               If doing integrated flux from planet need a factor to stop the
+C               matrix inversion crashing
+                if(iform.eq.3)xfac=xfac*1e-18
+
+
+   	   	call scloud11flux(radg, solar, sol_ang, 
+     1               lowbc, galb1, iray, mu1, wt1, nmu, nf, Ig, x,
+     2               vv, eps, omegas, bnu, taus, taur, 
+     3               nlays, ncont, lfrac, umif, uplf)
+
+                call streamflux(nlays,nmu,mu1,wt1,radg,galb1,
+     1                ig,umif,uplf,fup,fdown,ftop)                    
+
+ 		corkout(Ipath,Ig) = xfac*ftop(ig)
 
 	ELSE
 		WRITE (*,*) ' Imod = ', imod(ipath), ' is not a valid',

@@ -64,6 +64,7 @@ C         nadir            followed by angle (degrees) from nadir and bottom
 C                          layer to use (normally 1)
 C         (no)wf           weighting function
 C         (no)netflux      Net flux calculation
+C         (no)upflux      Net flux calculation
 C         (no)cg           curtis godson
 C         (no)therm        thermal emission
 C	  (no)hemisphere   Integrate emission into hemisphere
@@ -99,6 +100,7 @@ C     note that default is a limb path from bottom layer
       ABSORB=.FALSE.
       LIMB=.TRUE.
       NETFLUX=.FALSE.
+      UPFLUX=.FALSE.
       ANGLE=90.
       BOTLAY=1
 C
@@ -121,6 +123,8 @@ C     checking for negated keywords
         WF=DEF
        ELSE IF(TEXT(1:7).EQ.'NETFLUX')THEN
         NETFLUX=DEF
+       ELSE IF(TEXT(1:7).EQ.'UPFLUX')THEN
+        UPFLUX=DEF
        ELSE IF(TEXT(1:2).EQ.'CG')THEN
         CG=DEF
        ELSE IF(TEXT(1:5).EQ.'THERM')THEN
@@ -469,7 +473,7 @@ C     need multiple paths if calculating a weighting function or if performing
 C     a thermal integration outside genlbl
       IF(WF)IPATH=NUSE
       IF(THERM.AND.BROAD)IPATH=NUSE
-      IF(NETFLUX)IPATH=NUSE
+      IF(NETFLUX.OR.UPFLUX)IPATH=NUSE
       DO 29 J=1,IPATH
 C      WRITE(*,207)J
 207   FORMAT(' path',I3)
@@ -510,6 +514,15 @@ C     setting the correct type for the genlbl path
         IMOD(NPATH)=24
        ELSE
         IMOD(NPATH)=21
+       ENDIF
+      ENDIF
+      IF(UPFLUX)THEN
+       IF(SCATTER)THEN
+        IMOD(NPATH)=25
+       ELSE
+        PRINT*,'Error in atm.f, cannot do upward flux calculation'
+        PRINT*,'with scattering turned off.'
+        STOP
        ENDIF
       ENDIF
       IF(SCATTER.AND.LIMB)THEN

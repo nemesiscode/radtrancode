@@ -1,6 +1,6 @@
       subroutine scloud11wave( rad, sol_ang, emiss_ang, aphi, radg, 
      1 solar, lowbc, galb, iray, mu1, wt1, nmu, nf, igdist, vwave, vv,
-     2 eps, bnu, tau, tauray, nlay, ncont, lfrac)
+     2 eps, omegas, bnu, tau, tauray, nlay, ncont, lfrac)
 C     $Id: scloud11wave.f,v 1.11 2011-06-17 15:57:54 irwin Exp $
 C     ***********************************************************************
 C     Compute emergent intensity at top of multilayer cloud using the
@@ -39,6 +39,7 @@ C       nf              integer Number of terms in azimuth Fourier expansion
 C	igdist          integer Switch to recalculate phase functions. If > 1
 C                               then phase functions left alone
 C       eps(MAXSCATLAY)     double  Fraction of thermal absorption in each layer
+C	omegas(MAXSCATLAY)  double  Single scattering albedo of each layer
 C       bnu(MAXSCATLAY)     real  Mean Planck function in each layer
 C       tau(MAXSCATLAY)     real  Total optical thickness of each layer
 C       tauray(MAXSCATLAY)  real  Rayleigh optical thickness of each layer
@@ -80,7 +81,7 @@ C     ***********************************************************************
      2 TL(MAXMU,MAXMU,MAXSCATLAY), JL(MAXMU,1,MAXSCATLAY),
      3 RBASE(MAXMU,MAXMU,MAXSCATLAY),F,G1,G2,EPS(MAXSCATLAY),
      4 TBASE(MAXMU,MAXMU,MAXSCATLAY), JBASE(MAXMU,1,MAXSCATLAY),
-     5 UMI(MAXMU,1,MAXSCATLAY), 
+     5 UMI(MAXMU,1,MAXSCATLAY),OMEGAS(MAXSCATLAY),
      6 ACOM(MAXMU,1), BCOM(MAXMU,1),
      7 PPLPL(MAXMU,MAXMU), PPLMI(MAXMU,MAXMU), CONS8(MAXSCATPAR),
      8 PPLPLS(MAXMU,MAXMU),PPLMIS(MAXMU,MAXMU)
@@ -122,10 +123,10 @@ C--------------------------------------------------------------------------
       print*,(wt1(i),i=1,nmu)
       print*, (radg(i),i=1,nmu) 
       do i=1,nlay
-       print*,i,tau(i),(1.0 - eps(i)),bnu(i),tauray(i)
+       print*,i,tau(i),(1.0 - eps(i)),omegas(i),bnu(i),tauray(i)
       end do
       do i=1,nlay
-       print*,i,(1.0 - eps(i)),(lfrac(j,i),j=1,ncont)
+       print*,i,(1.0 - eps(i)),omegas(i),(lfrac(j,i),j=1,ncont)
        sum=0.0
        do j=1,ncont
         sum=sum+lfrac(j,i)
@@ -280,7 +281,8 @@ C
         if(idump.ne.0)print*,'L,IGDIST =',L,IGDIST
         TAUT = 1.0D0*TAU(L)
         BC = 1.0D0*BNU(L)
-        OMEGA = 1.0D0*(1. - EPS(L))
+C        OMEGA = 1.0D0*(1. - EPS(L))
+        OMEGA = OMEGAS(L)
 
         TAUSCAT = TAUT*OMEGA
         TAUR = TAURAY(L)

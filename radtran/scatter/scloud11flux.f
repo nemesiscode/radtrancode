@@ -1,5 +1,5 @@
       subroutine scloud11flux(radg, solar, sol_ang, lowbc, galb,
-     1 iray,mu1, wt1, nmu, nf, igdist, vwave, vv,eps, bnu, tau,
+     1 iray, mu1, wt1, nmu, nf, igdist, vwave, vv,eps, omegas, bnu, tau,
      2 tauray, nlay, ncont, lfrac, umif, uplf)
 C     $Id: scloud11flux.f,v 1.10 2011-06-17 15:57:54 irwin Exp $
 C     ***********************************************************************
@@ -39,6 +39,7 @@ C       nf              integer Number of terms in azimuth Fourier expansion
 C	igdist          integer Switch to recalculate phase functions. If > 1
 C                               then phase functions left alone
 C       eps(MAXSCATLAY)     real*8  Fraction of thermal absorption in each layer
+C       omegas(MAXSCATLAY)     real*8  Single scattering albedo of each layer
 C       bnu(MAXSCATLAY)     real  Mean Planck function in each layer
 C       tau(MAXSCATLAY)     real  Total optical thickness of each layer
 C       tauray(MAXSCATLAY)  real*4  Rayleigh optical thickness of each layer
@@ -76,7 +77,7 @@ C     ***********************************************************************
      1 MMINV(MAXMU,MAXMU), RL(MAXMU,MAXMU,MAXSCATLAY),EPS(MAXSCATLAY),
      2 TL(MAXMU,MAXMU,MAXSCATLAY), JL(MAXMU,1,MAXSCATLAY),
      3 RBASE(MAXMU,MAXMU,MAXSCATLAY),F,G1,G2,
-     9 RTOP(MAXMU,MAXMU,MAXSCATLAY),
+     9 RTOP(MAXMU,MAXMU,MAXSCATLAY),OMEGAS(MAXSCATLAY),
      4 TBASE(MAXMU,MAXMU,MAXSCATLAY), JBASE(MAXMU,1,MAXSCATLAY),
      5 TTOP(MAXMU,MAXMU,MAXSCATLAY),
      6 ACOM(MAXMU,1), BCOM(MAXMU,1),JTOP(MAXMU,1,MAXSCATLAY),
@@ -121,10 +122,10 @@ C--------------------------------------------------------------------------
       print*,(wt1(i),i=1,nmu)
       print*, (radg(i),i=1,nmu) 
       do i=1,nlay
-       print*,tau(i),(1.0 - eps(i)),bnu(i),tauray(i)
+       print*,tau(i),(1.0 - eps(i)),omegas(i),bnu(i),tauray(i)
       end do
       do i=1,nlay
-       print*,(1.0 - eps(i)),(lfrac(j,i),j=1,ncont)
+       print*,(1.0 - eps(i)),omegas(i),(lfrac(j,i),j=1,ncont)
       end do
       endif
 
@@ -244,7 +245,8 @@ C
         if(idump.ne.0)print*,'L,IGDIST =',L,IGDIST
         TAUT = 1.0D0*TAU(L)
         BC = 1.0D0*BNU(L)
-        OMEGA = 1.0D0*(1. - EPS(L))
+C        OMEGA = 1.0D0*(1. - EPS(L))
+        OMEGA = OMEGAS(L)
 
         TAUSCAT = TAUT*OMEGA
         TAUR = TAURAY(L)

@@ -69,7 +69,7 @@ C VLIN, SLIN, ALIN, ELIN, SBLIN, TDW, TDWS and that lot).
 C     General variables ...
       REAL DV,LINECONTRIB,VV,X,FNH3,FH2
       INTEGER I,J,K,L,LINE,IBIN,CURBIN,IGAS,IB,IBS(2),IBX
-      INTEGER IFCONT,F1,L1
+      INTEGER IFCONT,F1,L1,B1
       REAL CONVAL,VTMP
        
 
@@ -92,11 +92,12 @@ C******************************** CODE *********************************
 
         F1=FSTLIN(IB,IBIN)
         L1=LSTLIN(IB,IBIN)
-       
-        IF(IBIN.EQ.CURBIN-1.AND.IBX.EQ.1.AND.F1.LE.0) THEN
+        B1=LSTBIN(IB)
+        IF(IBIN.EQ.CURBIN-1.AND.IBX.EQ.1.AND.B1.LT.IBIN) THEN
 C        We have now run past the end of buffer 1 and need to read in a 
 C        new load of lines
 C        Pass back flag  
+         print*,IBIN,B1,F1,L1
          IFCONT = 1
         ENDIF
 
@@ -162,6 +163,10 @@ C     Now add on the line wing continuum contribution
        VTMP=VTMP*DV
       ENDDO
 
+      NANTEST=ISNAN(XK)
+      IF(NANTEST)THEN
+       PRINT*,'CALC_FINE: XK is NAN'       
+      ENDIF
       RETURN
 
       END

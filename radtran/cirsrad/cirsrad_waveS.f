@@ -155,7 +155,8 @@ C		Scattering variables
         DOUBLE PRECISION mu1(maxmu), wt1(maxmu), galb, galb1, 
      1		pplsto(0:40,maxmu,maxmu,maxscatlay),
      2		pmisto(0:40,maxmu,maxmu,maxscatlay),
-     3          epsS(maxlay),eps(maxscatlay)
+     3          epsS(maxlay),eps(maxscatlay),omegas(maxscatlay),
+     4		omegass(maxlay)
 	LOGICAL	scatter, single
 
 C		Internal variables
@@ -896,12 +897,14 @@ C     1                    tauscat(layinc(J,Ipath))
                                 dtmp1 = dble(tauscat(layinc(J,Ipath)))
                                 dtmp2 = dble(tautmp(layinc(J,Ipath)))
 C                                print*,J,dtmp1,dtmp2
-                                 epsS(J) = 1.0d00 - dtmp1/dtmp2
+				 omegass(J)=dtmp1/dtmp2
+                                 epsS(J) = 1.0d00 - omegass(J)
 C                                print*,layinc(J,IPath)
 C                                print*,dtmp1/dtmp2
 C                                print*,epsS(J)
                         ELSE
                                 epsS(J)=1.0
+				omegass(J)=0.
                         END IF
 
                         basehS(J) = baseh(layinc(J,Ipath))
@@ -1025,9 +1028,11 @@ cc     1                  ' creating output'
 			IF(TAUSCAT(layinc(J,Ipath)).GT.0.0) THEN
 				dtmp1 = dble(tauscat(layinc(J,Ipath)))
 				dtmp2 = dble(tautmp(layinc(J,Ipath)))
-				eps(J) = 1.0d00 - dtmp1/dtmp2
+				omegas(J)=dtmp1/dtmp2
+				eps(J) = 1.0d00 - omegas(J)
 		        ELSE
   				EPS(J)=1.0
+				omegas(J)=0.
          		END IF
                         temp1(J) = TEMP(layinc(J,Ipath))
                         press1(J) = PRESS(layinc(J,Ipath))
@@ -1075,8 +1080,8 @@ C                        print*,lowbc,galb1
 		  	call scloud11wave(rad1, sol_ang, emiss_ang,
      1                          aphi, radg, solar, lowbc, galb1, iray,
      2				mu1, wt1, nmu,   
-     3				nf, Ig, x, vv, eps, bnu, taus, taur,
-     4                          nlays,ncont,lfrac)
+     3				nf, Ig, x, vv, eps, omegas, bnu, taus, 
+     4				taur, nlays,ncont,lfrac)
 
  		  	corkout(Ipath,Ig) = rad1
 
@@ -1111,7 +1116,7 @@ C                        print*,'lowbc,galb1',lowbc,galb1
 
    	  	   call scloud11flux(radg, solar, sol_ang, 
      1               lowbc, galb1, iray, mu1, wt1, nmu, nf, Ig, x,
-     2               vv, eps, bnu, taus, taur, 
+     2               vv, eps, omegas, bnu, taus, taur, 
      3               nlays, ncont, lfrac, umif, uplf)
                     
                      open(48,file='test.dat',status='unknown')

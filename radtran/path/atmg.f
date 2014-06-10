@@ -17,6 +17,7 @@ C
 C_HIST:	26feb93	SBC	Original version
 C***********************************************************************
 
+      implicit none
       CHARACTER TEXT*(*)
 
       INCLUDE '../includes/arrdef.f'
@@ -52,7 +53,7 @@ C SIN2A: square of the sine of the angle from the nadir.
 C COSA: cosine of angle from the nadir.
 C Z0: distance of the start of the path from the centre of the planet.
       INTEGER I,J,K,L,M,NPATH1
-      REAL S0,S1,STMP,XIFC(MAXCON,MAXPRO)
+      REAL S0,S1,STMP,XIFC(MAXCON,MAXPRO),HTAN,F
       LOGICAL DEF,SURFACE
 
 C Path file format is atm followed by optional keywords. keyword are:
@@ -284,6 +285,7 @@ C       to computed tangent height.
       COSA=COS(DTR*ANGLE)
       Z0=RADIUS+BASEH(BOTLAY)
 
+      print*,'ATMG Check: LIMB,RADIUS,ANGLE,SIN2A,COSA,Z0'
       print*,'ATMG Check: ',LIMB,RADIUS,ANGLE,SIN2A,COSA,Z0
 
 C--------------------------------------------------------------

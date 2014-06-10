@@ -149,7 +149,8 @@ C		Scattering variables
         DOUBLE PRECISION mu1(maxmu), wt1(maxmu), galb, galb1, 
      1		pplsto(0:maxscatlay,maxmu,maxmu,maxscatlay),
      2		pmisto(0:maxscatlay,maxmu,maxmu,maxscatlay),
-     3          eps(maxscatlay),epsS(maxlay)
+     3          eps(maxscatlay),epsS(maxlay),
+     4          omegas(maxscatlay),omegasS(maxlay)
 	LOGICAL	scatter, single
 
 C		Internal variables
@@ -979,9 +980,11 @@ C                        print*,J,taus(J),taur(j)
 			IF(TAUSCAT(layinc(J,Ipath)).GT.0.0) THEN
 				dtmp1 = dble(tauscat(layinc(J,Ipath)))
 				dtmp2 = dble(tautmp(layinc(J,Ipath)))
-				eps(J) = 1.0d00 - dtmp1/dtmp2
+				omegas(J)=dtmp1/dtmp2
+				eps(J) = 1.0d00 - omegas(J)
 		        ELSE
   				EPS(J)=1.0
+				omegas(J)=0.
          		END IF
 
 
@@ -1034,8 +1037,8 @@ C                        print*,(wt1(i),i=1,nmu)
 		  	call scloud11wave(rad1, sol_ang, emiss_ang,
      1                          aphi, radg, solar, lowbc, galb1, iray,
      2				mu1, wt1, nmu,   
-     3				nf, Ig, x, vv, eps, bnu, taus, taur,
-     4                          nlays, ncont,lfrac)
+     3				nf, Ig, x, vv, eps, omegas,bnu, taus, 
+     4				taur,nlays, ncont,lfrac)
 
  		  	output(Ipath) = rad1
 
@@ -1071,7 +1074,7 @@ C                   endif
 
    	  	   call scloud11flux(radg, solar, sol_ang, 
      1               lowbc, galb1, iray, mu1, wt1, nmu, nf, Ig, x,
-     2               vv, eps, bnu, taus, taur, 
+     2               vv, eps, omegas, bnu, taus, taur, 
      3               nlays, ncont, lfrac, umif, uplf)
                     
                      open(48,file='test.dat',status='unknown',
@@ -1227,9 +1230,11 @@ C       ************************************************************
 			IF(TAUSCAT(J1).GT.0.0) THEN
 				dtmp1 = dble(tauscat(J1))
 				dtmp2 = dble(tautmp(J1))
-				eps(J) = 1.0d00 - dtmp1/dtmp2
+				omegas(J) = dtmp1/dtmp2
+				eps(J) = 1.0d00 - omegas(J)
 		        ELSE
   				EPS(J)=1.0
+				omegas(J)=0.
          		END IF
 		enddo
 
@@ -1257,7 +1262,7 @@ C               upwelling radiation field to local temperature.
 C                WRITE (*,*) '     CALLING scloud11flux, nf = ',nf
 		call scloud11flux(radg, solar, sol_ang, 
      1             lowbc, galb1, iray, mu1, wt1, nmu, nf, Ig, x,
-     2             vv, eps, bnu, taus, taur, 
+     2             vv, eps,omegas, bnu, taus, taur, 
      3             nlayer, ncont, lfrac, umif, uplf)
 
 C                do k=1,nlays
@@ -1274,9 +1279,11 @@ C                enddo
                         IF(TAUSCAT(layinc(J,Ipath)).GT.0.0) THEN
                                 dtmp1 = dble(tauscat(layinc(J,Ipath)))
                                 dtmp2 = dble(tautmp(layinc(J,Ipath)))
-                                eps(J) = 1.0d00 - dtmp1/dtmp2
+                                omegas(J) = dtmp1/dtmp2
+                                eps(J) = 1.0d00 - omegas(J)
                         ELSE
                                 EPS(J)=1.0
+				omegas(J)=0.
                         END IF
                 enddo
 

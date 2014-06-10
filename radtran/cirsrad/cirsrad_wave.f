@@ -155,7 +155,7 @@ C		Scattering variables
         DOUBLE PRECISION mu1(maxmu), wt1(maxmu), galb, galb1, 
      1		pplsto(0:40,maxmu,maxmu,maxscatlay),
      2		pmisto(0:40,maxmu,maxmu,maxscatlay),
-     3          eps(maxscatlay),epsS(maxlay)
+     3          eps(maxscatlay),epsS(maxlay),omegas(maxscatlay)
 	LOGICAL	scatter, single
 
 C		Internal variables
@@ -316,7 +316,8 @@ C       Set flag for code to read in modified PHASE*.DAT files if required
 	single=.FALSE.
 	do Ipath = 1, npath
 		if (imod(Ipath).eq.15.or.imod(Ipath).eq.22.
-     1            or.imod(Ipath).eq.23.or.imod(Ipath).eq.24) then
+     1            or.imod(Ipath).eq.23.or.imod(Ipath).eq.24.
+     2		  or.imod(Ipath).eq.25) then
         		scatter=.true.
 		end if
 		if (imod(Ipath).eq.16) then
@@ -1074,9 +1075,11 @@ C                        print*,J,taus(J),taur(j)
 			IF(TAUSCAT(layinc(J,Ipath)).GT.0.0) THEN
 				dtmp1 = dble(tauscat(layinc(J,Ipath)))
 				dtmp2 = dble(tautmp(layinc(J,Ipath)))
-				eps(J) = 1.0d00 - dtmp1/dtmp2
+                                omegas(J)=dtmp1/dtmp2
+				eps(J) = 1.0d00 - omegas(J)
 		        ELSE
   				EPS(J)=1.0
+         			omegaS(J)=0.
          		END IF
 
 
@@ -1153,8 +1156,8 @@ C                        print*,'iray = ',iray
       		  	call scloud11wave(rad1, sol_ang, emiss_ang,
      1                          aphi, radg, solar, lowbc, galb1, iray,
      2				mu1, wt1, nmu,   
-     3				nf, Ig, x, vv, eps, bnu, taus, taur,
-     4                          nlays, ncont,lfrac)
+     3				nf, Ig, x, vv, eps, omegas,bnu, taus, 
+     4				taur,nlays, ncont,lfrac)
 
 
  		  	corkout(Ipath,Ig) = xfac*rad1
@@ -1192,7 +1195,7 @@ C                   endif
 
    	  	   call scloud11flux(radg, solar, sol_ang, 
      1               lowbc, galb1, iray, mu1, wt1, nmu, nf, Ig, x,
-     2               vv, eps, bnu, taus, taur, 
+     2               vv, eps, omegas,bnu, taus, taur, 
      3               nlays, ncont, lfrac, umif, uplf)
                     
                      open(48,file='test.dat',status='unknown',
@@ -1407,9 +1410,11 @@ C       ************************************************************
 			IF(TAUSCAT(J1).GT.0.0) THEN
 				dtmp1 = dble(tauscat(J1))
 				dtmp2 = dble(tautmp(J1))
-				eps(J) = 1.0d00 - dtmp1/dtmp2
+                                omegas(J)=dtmp1/dtmp2
+				eps(J) = 1.0d00 - omegas(J)
 		        ELSE
   				EPS(J)=1.0
+				omegas(J)=0.
          		END IF
 		enddo
 
@@ -1437,7 +1442,7 @@ C               upwelling radiation field to local temperature.
 C                WRITE (*,*) '     CALLING scloud11flux, nf = ',nf
 		call scloud11flux(radg, solar, sol_ang, 
      1             lowbc, galb1, iray, mu1, wt1, nmu, nf, Ig, x,
-     2             vv, eps, bnu, taus, taur, 
+     2             vv, eps, omegas, bnu, taus, taur, 
      3             nlayer, ncont, lfrac, umif, uplf)
 
 C                do k=1,nlays
@@ -1454,9 +1459,11 @@ C                enddo
                         IF(TAUSCAT(layinc(J,Ipath)).GT.0.0) THEN
                                 dtmp1 = dble(tauscat(layinc(J,Ipath)))
                                 dtmp2 = dble(tautmp(layinc(J,Ipath)))
-                                eps(J) = 1.0d00 - dtmp1/dtmp2
+				omegas(J)=dtmp1/dtmp2
+                                eps(J) = 1.0d00 - omegas(J)
                         ELSE
                                 EPS(J)=1.0
+				omegas(J)=0.
                         END IF
                 enddo
 
@@ -1548,7 +1555,7 @@ C               emission from ground.
 
 	ELSEIF (imod(ipath).EQ.24) THEN
 
-cc		WRITE(*,*) 'CIRSRAD_WAVE: Imod= 23 =Net flux calculation,',
+cc		WRITE(*,*) 'CIRSRAD_WAVE: Imod= 24 =Net flux calculation,',
 cc     1        ' multiple scattering'. Creating output'
 
                 if(Ipath.eq.Npath)then
@@ -1566,9 +1573,11 @@ C                        print*,J,taus(J),taur(j)
 			IF(TAUSCAT(layinc(J,Ipath)).GT.0.0) THEN
 				dtmp1 = dble(tauscat(layinc(J,Ipath)))
 				dtmp2 = dble(tautmp(layinc(J,Ipath)))
-				eps(J) = 1.0d00 - dtmp1/dtmp2
+				omegas(J)=dtmp1/dtmp2
+				eps(J) = 1.0d00 - omegas(J)
 		        ELSE
   				EPS(J)=1.0
+				omegas(J)=0.
          		END IF
 
 
@@ -1602,24 +1611,86 @@ C                 upwelling radiation field to local temperature.
 
    	    	  call scloud11flux(radg, solar, sol_ang, 
      1               lowbc, galb1, iray, mu1, wt1, nmu, nf, Ig, x,
-     2               vv, eps, bnu, taus, taur, 
+     2               vv, eps, omegas, bnu, taus, taur, 
      3               nlays, ncont, lfrac, umif, uplf)
 
                   call streamflux(nlays,nmu,mu1,wt1,radg,galb1,
      1                ig,umif,uplf,fup,fdown,ftop)                    
 
-C                  open(12,file='netflux_scat.dat',status='unknown')
-C                   write(12,*)'Ig',Ig
-C                   do j=1,nlayin(npath)
-C                    write(12,*)j,taus(layinc(J,Ipath)),fup(J,Ig),
-C     1			fdown(J,Ig)
-C                   enddo
-C                  close(12)
-
-C                  if(Ig.eq.5)stop
 
                   do Jpath=1,Ipath
   	           corkout(Jpath,Ig) = fup(Jpath,Ig) - fdown(Jpath,Ig)
+                  enddo
+
+                endif
+
+	ELSEIF (imod(ipath).EQ.25) THEN
+
+cc		WRITE(*,*) 'CIRSRAD_WAVE: Imod= 25 = Upwards flux calculation,',
+cc     1        ' multiple scattering'. Creating output'
+
+                if(Ipath.eq.Npath)then
+
+                 nlays = nlayin(Ipath)
+C                 print*,'Ipath,nlays,nmu',Ipath,nlays,nmu
+
+		 do J = 1, nlays
+			if(Ig.eq.1)then
+                         bb(J,Ipath)=planck_wave(ispace,x,
+     1			   emtemp(J,Ipath))
+                        endif
+			bnu(J) = bb(J,Ipath)
+C                        print*,J,taus(J),taur(j)
+			IF(TAUSCAT(layinc(J,Ipath)).GT.0.0) THEN
+				dtmp1 = dble(tauscat(layinc(J,Ipath)))
+				dtmp2 = dble(tautmp(layinc(J,Ipath)))
+				omegas(J)=dtmp1/dtmp2
+				eps(J) = 1.0d00 - omegas(J)
+		        ELSE
+  				EPS(J)=1.0
+				omegas(J)=0.
+         		END IF
+
+
+			fcover(J) = HFC(layinc(J,Ipath))
+                        do k=1,ncont
+                         icloud(k,j)=IFC(k,layinc(J,Ipath))
+                        enddo
+		  enddo
+
+
+C                 If tsurf > 0, then code assumes bottom layer is at the
+C                 surface and so uses tsurf to compute radiation upwelling.
+C                 Otherwise, code assumes optical depth is large and sets
+C                 upwelling radiation field to local temperature.
+
+                  if(tsurf.le.0.0)then
+                    radground = bb(nlays,Ipath)
+                  else
+                    radground = esurf*planck_wave(ispace,x,tsurf)
+                  endif
+
+                  galb1=galb
+
+                  if(galb1.lt.0)then
+                         galb1 = dble(1.-esurf)
+                  endif
+
+                  do J=1,nmu
+                    radg(J)=radground
+                  enddo
+
+   	    	  call scloud11flux(radg, solar, sol_ang, 
+     1               lowbc, galb1, iray, mu1, wt1, nmu, nf, Ig, x,
+     2               vv, eps, omegas, bnu, taus, taur, 
+     3               nlays, ncont, lfrac, umif, uplf)
+
+                  call streamflux(nlays,nmu,mu1,wt1,radg,galb1,
+     1                ig,umif,uplf,fup,fdown,ftop)                    
+
+
+                  do Jpath=1,Ipath
+  	           corkout(Jpath,Ig) = fup(Jpath,Ig)
                   enddo
 
                 endif

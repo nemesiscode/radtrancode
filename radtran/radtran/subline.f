@@ -70,7 +70,7 @@ C      IPROC=13::Sub-lorentzian lineshape from Bailly et al. (2004)
         WRITE(*,*)' Stopping program.'
         STOP
        ENDIF
-	SUBLINE = ABSCO*BAILLYNH3(ABS(X),Y,ABS(DV))/AD
+	SUBLINE = ABSCO*BAILLYNH3(ABS(X),Y,DV)/AD
 
       ELSE IF(IPROC.EQ.12)THEN
 C      IPROC=12::Doppler broadening only

@@ -64,6 +64,7 @@ C       Variable is not temperature  - may need to take exponent
       if(ivar.eq.555)iflag=0	! Planet radius
       if(ivar.eq.333)iflag=0	! Planet surface gravity
       if(ivar.eq.444)iflag=1	! Particle size and ref. index
+      if(ivar.eq.222)iflag=1	! Larry's cloud model
       logflag=iflag
 
       return

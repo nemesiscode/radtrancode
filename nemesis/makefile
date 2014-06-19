@@ -47,6 +47,8 @@ F_SOURCES = \
 	calcnextxn.f \
 	setup.f \
 	gwritepat.f \
+	gwritepatsrom.f \
+	extractsrom.f \
 	calc_serr.f \
 	writeout.f \
 	calcfwderr.f \

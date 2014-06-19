@@ -1011,6 +1011,72 @@ C           **** surface ln(g) of planet *******
 
             nx = nx+1
 
+
+
+C **************** add mass variable  ***************
+           elseif(varident(ivar,1).eq.222)then
+C           **** Larry's discrete cloud model *******
+C           LTC base pressure
+            ix = nx+1
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           LTC opacity
+            ix = nx+2
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           MTC base pressure
+            ix = nx+3
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           MTC opacity
+            ix = nx+4
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           UTC base pressure
+            ix = nx+5
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           UTC opacity
+            ix = nx+6
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           Tropospheric haze opacity
+            ix = nx+7
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           Stratospheric haze opacity
+            ix = nx+8
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           read in haze p1,p2,p3,n1,n2
+            read(27,*),(varparam(ivar,j),j=1,5)
+
+            nx = nx+8
+
            else
             print*,'vartype not recognised'
             stop

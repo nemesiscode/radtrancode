@@ -100,9 +100,15 @@ C     ************************************************************************
       real varparam(mvar,mparam),alb(maxsec),valb(maxsec)
       integer nvarx,varidentx(mvar,3),ivarx
       real varparamx(mvar,mparam),od1
-      logical gasgiant
+      logical gasgiant,iflag222
       integer NN,NDUST
       REAL DUSTH(MAXLAY),DUST(MAXCON,MAXLAY)
+
+      integer mcloud,ncloud
+      parameter (mcloud=10)
+      real cpbot(mcloud),cptop(mcloud),codepth(mcloud),cfsh(mcloud)
+      integer nlaycloud(mcloud)
+
      
       print*,'gsetrad, lin = ',lin
 
@@ -292,9 +298,30 @@ C      ***************** Tangent height correction ***********
 
       enddo
 
-      call gwritepat(runname,gasgiant,iscat,sol_ang,
-     1 emiss_ang,nconv,vconv,fwhm,layht,nlayer,
-     2 laytyp,layint,flagh2p)
+C     See if Sromovsky cloud layer model is specified.
+      iflag222=.false.
+      do ivar=1,nvar
+       if(varident(ivar,1).eq.222)then
+         iflag222=.true.
+       endif
+      enddo
+
+      if(iflag222)then
+
+       call extractsrom(runname,nvar,varident,varparam,nx,xn,ncloud,
+     1  cpbot,cptop,nlaycloud,codepth,cfsh)
+
+       call gwritepatsrom(runname,gasgiant,iscat,sol_ang,
+     1  emiss_ang,nconv,vconv,fwhm,layht,nlayer,
+     2  laytyp,layint,flagh2p,ncloud,cpbot,cptop,nlaycloud,
+     3  codepth,cfsh)
+
+      else
+       call gwritepat(runname,gasgiant,iscat,sol_ang,
+     1  emiss_ang,nconv,vconv,fwhm,layht,nlayer,
+     2  laytyp,layint,flagh2p)
+
+      endif
 
       call mod_scatter(runname,ncont,nmu,mu,wtmu,isol,dist,lowbc,
      1 galb,nf,sol_ang,emiss_ang,aphi)
@@ -315,7 +342,7 @@ C     running subpath
 C     Compute the drv file to get the aerosol optical depths
       if(icheck.eq.1.and.iprfcheck.eq.0) then
 
-        print*,'Check',runname,runname
+        print*,'Check subpath A ',runname,runname
         call subpath(runname)
 
         call readdustod(runname,ncont1,xod)
@@ -489,7 +516,7 @@ C           print*,DUSTH(J),(DUST(I,J),I=1,NDUST)
         close(12)
 
 C       check that rescaling has happened correctly
-        print*,'Checking'
+        print*,'Checking subpath B'
         call subpath(runname)
 
       endif

@@ -142,6 +142,9 @@ C     Calculate inverse of sa.
       jmod = 2
       icheck=0
       print*,'coreret: Checking can invert Sa'
+      do i=1,nx
+       print*,i,xa(i),(sa(i,j),j=1,8)
+      enddo
       call dinvertm(jmod,icheck,s1d,nx,mx,sai)
       if(icheck.eq.1)then
        print*,'************* WARNING *************'
@@ -436,6 +439,7 @@ C        Check to see if log numbers have gone out of range
          endif
          if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
          if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
+         if(varident(ivar,1).eq.222)np = 8
 
          do j=ix,ix+np-1
           if(varident(ivar,1).eq.0)then

@@ -254,6 +254,7 @@ C     Add forward errors to measurement covariances
          endif
          if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
          if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
+         if(varident(ivar,1).eq.444)np = 8
 
          if(varident(ivar,1).eq.0.and.np.eq.npro)then
           ioffx=0

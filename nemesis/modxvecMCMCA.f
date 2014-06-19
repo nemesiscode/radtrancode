@@ -149,6 +149,12 @@ C         **** surface gravity of planet *******
             do i=1,np
              xn(ix+i)=x0(ix+i)+err(ix+i)*gasdev1(idum)
             enddo
+          elseif(varident(ivar,3).eq.222)then  
+C         **** Larry's cloud model *******
+            np = 8
+            do i=1,np
+             xn(ix+i)=x0(ix+i)+err(ix+i)*gasdev1(idum)
+            enddo
           elseif(varident(ivar,3).eq.888)then
 C         **** Surface albedo spectrum of planet *******
             np = int(varparam(ivar,1))

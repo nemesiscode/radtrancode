@@ -1557,6 +1557,10 @@ C         print*,'Variable size and RI'
 C         print*,'Surface gravity (log10(g))'
          IPAR = -1
          NP = 1
+        ELSEIF(VARIDENT(IVAR,1).EQ.222)THEN
+C         print*,'Sromovsky cloud layering'
+         IPAR = -1
+         NP = 1
         ELSE
          PRINT*,'SUBPROFRETG: VARTYPE NOT RECOGNISED'
          STOP

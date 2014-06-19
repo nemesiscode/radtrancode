@@ -105,6 +105,7 @@ openr,1,retname
       14: np = 3
       15: np = 3
       16: np = 4
+      222: np = 8
       333: np = 1
       444: np = 2 + varparam(ivar,0)
       555: np = 1
@@ -185,14 +186,24 @@ if(irefl eq 1) then begin
  
  
   if(ispace eq 1) then begin
-   ipfile = '/home/oxpln98/plan/irwin/radtrancode/trunk/raddata/sun_spec_echo.dat'
+;   ipfile = '/home/oxpln98/plan/irwin/radtrancode/trunk/raddata/sun_spec_echo.dat'
+;   print,'Sun file = ',ipfile
+;   openr,1,ipfile
+;   head=''
+;   for i=1,3 do readf,1,head
+;   solar = fltarr(2,600)
+;   readf,1,solar
+;   close,1
+
+   ipfile = '/home/oxpln98/plan/irwin/radtrancode/trunk/raddata/houghtonsolarwl.dat'
    print,'Sun file = ',ipfile
    openr,1,ipfile
    head=''
-   for i=1,3 do readf,1,head
-   solar = fltarr(2,600)
+   for i=1,4 do readf,1,head
+   solar = fltarr(2,78)
    readf,1,solar
    close,1
+
   endif
   AU=1.49598E13
 
@@ -431,6 +442,7 @@ for ivar=0,nvar-1 do begin
       14: np = 3
       15: np = 3
       16: np = 4
+      222: np = 8
       333: np = 1
       444: np = 2 + varparam(ivar,0)
       555: np = 1
@@ -677,7 +689,9 @@ for ivar=0,nvar-1 do begin
       read,ans
 
      endif else begin 
-      if(itype ne 16) then print,'Profile type not available'
+      if(itype ne 16 and itype ne 444 and itype ne 222) then begin
+        print,'Profile type not available'
+      endif
      endelse
     endelse
    endelse
@@ -708,6 +722,29 @@ for ivar=0,nvar-1 do begin
      print,'Fitted variance and error : ',xn(1),errn(1)
 
   endif
+
+
+  if(itype eq 222) then begin
+
+     xn = fltarr(np)
+     xa = fltarr(np)
+     errn = xn
+     erra = xa
+     xa(*)=xdat(0,istart:(istart+np-1))
+     erra(*)=xdat(1,istart:(istart+np-1))
+     xn(*)=xdat(2,istart:(istart+np-1))
+     errn(*)=xdat(3,istart:(istart+np-1))
+
+     plot,xn(2:np-1),ytitle='Sromovsky Cloud Parameters'
+     oplot,xn(2:np-1)+errn(2:np-1),linestyle=1
+     oplot,xn(2:np-1)-errn(2:np-1),linestyle=1
+     oplot,xa(2:np-1),linestyle=2
+     oplot,xa(2:np-1)-erra(2:np-1),linestyle=2
+     oplot,xa(2:np-1)+erra(2:np-1),linestyle=2
+
+  endif
+ 
+  
 
   if(itype eq 16) then begin
      xn = fltarr(np)

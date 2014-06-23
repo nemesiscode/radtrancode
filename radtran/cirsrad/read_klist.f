@@ -207,7 +207,7 @@ C      print*,'test'
 C-----------------------------------------------------------------------
 C
 C	Assign relevant correlated K files by wavenumber and gas. 
-C	For H2, He, H2S assign dummy values. H2 and He are calculated as
+C	For H2, He, N2, H2S assign dummy values. H2 and He are calculated as
 C	continuum contributions only. Iflag is used so that variables set
 C	by the first K table encountered are not reset, (thus overlapping
 C	K tables can be used, their priorities decided by the order in

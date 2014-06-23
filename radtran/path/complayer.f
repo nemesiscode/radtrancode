@@ -103,6 +103,7 @@ C        computing the cloud heights of each layer
         READ(TEXT(7:),*)LAYINT
        ELSE
         CALL WTEXT('invalid layer keyword')
+        PRINT*,TEXT
         STOP
         END IF
       GOTO 2
@@ -153,10 +154,16 @@ C     Assume LAYTYP=2. splitting by equal height
           BASEH(I)=CLBOTH(K) + FLOAT(J-1)*CDELH
           CONT(K,I)=EXP(-(J-1)*CDELH/(FSH(K)*SH))
 655      CONTINUE
-         DO 666 J=1,NLAYG
-          I=I+1
-          BASEH(I)=CLTOPH(K) + FLOAT(J-1)*(CLBOTH(K+1)-CLTOPH(K))/NLAYG
-666      CONTINUE
+C        Look to see if there is a gap between the layers
+         IF(CLTOPH(K).LT.CLBOTH(K+1))THEN
+          DO 666 J=1,NLAYG
+           I=I+1
+           BASEH(I)=CLTOPH(K) + FLOAT(J-1)*(CLBOTH(K+1)-CLTOPH(K))/NLAYG
+666       CONTINUE
+         ELSE
+          print*,'Skipping gas layers between clouds ',K,' and ',
+     &      K+1
+         ENDIF
 1005    CONTINUE
         CDELH = (CLTOPH(NCLOUD)-CLBOTH(NCLOUD))/NCLAY(NCLOUD)
         SH = -(CLTOPH(NCLOUD)-CLBOTH(NCLOUD))/

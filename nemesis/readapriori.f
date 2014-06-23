@@ -946,7 +946,7 @@ C              Read radius variance and error
                sx(ix,ix)=(edr/dr)**2
                lx(ix)=1
 
-C              Read number of pressures and correlation length (wavelength/
+C              Read number of wavelengths and correlation length (wavelength/
 C				wavenumbers)
                read(28,*)np,clen
                varparam(ivar,1)=np

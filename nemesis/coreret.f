@@ -142,13 +142,13 @@ C     Calculate inverse of sa.
       jmod = 2
       icheck=0
       print*,'coreret: Checking can invert Sa'
-      do i=1,nx
-       print*,i,xa(i),(sa(i,j),j=1,8)
-      enddo
       call dinvertm(jmod,icheck,s1d,nx,mx,sai)
       if(icheck.eq.1)then
        print*,'************* WARNING *************'
        print*,'Coreret, sa does not invert cleanly'
+       do i=1,nx
+        print*,i,xa(i),(sa(i,j),j=1,nx)
+       enddo
        print*,'Aborting...'
        print*,'***********************************'
        stop

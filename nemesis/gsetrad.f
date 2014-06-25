@@ -74,7 +74,7 @@ C     ************************************************************************
       parameter (max_mode = 10)
       parameter (max_wave = 1000)
 
-      integer nconv,lin,ispace,ncont1,xflag,nwave,np
+      integer nconv,lin,ispace,ncont1,xflag,nwave,np,np1
       real xlat,fwhm,xlatx,tsurf,wave(max_wave)
       real xsec(max_mode,max_wave,2),nimag(max_wave)
       real nreal(max_wave),r0,v0,clen,k2(mx)
@@ -86,7 +86,7 @@ C     ************************************************************************
       real vconv(mconv),minlam,lambda0
       integer nmu,isol,lowbc,nf,flagh2p,jalb,jtan,jpre
       integer jsurfx,jalbx,jtanx,jprex,nprox,icheck,icont
-      integer jradx,npvar,jloggx
+      integer jradx,npvar,jloggx,npro,nvmr
       real x,y
       double precision mu(maxmu),wtmu(maxmu)
       real dist,galb,xn(mx),xnx(mx),aphi,emiss_ang,sol_ang
@@ -142,7 +142,7 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
      1  nvarx,varidentx,varparamx,nxx,xnx,jprex,ncont,flagh2p,xmapx)
 
        do ivarx = 1,nvarx
-        if(varident(ivarx,1).eq.888)then
+        if(varidentx(ivarx,1).eq.888)then
 
 C        ********* reset surface albedo spectrum  **********
          nalb = int(varparamx(ivarx,1))
@@ -177,7 +177,7 @@ C         Stop emissivity going negative
 
 
 
-        if(varident(ivarx,1).eq.889)then
+        if(varidentx(ivarx,1).eq.889)then
 
 C        ********* reset surface albedo scaling  **********
          call file(runname,runname,'rsu')
@@ -203,6 +203,7 @@ C         Stop emissivity going negative
 
         endif
 
+        
 
         if(varidentx(ivarx,1).eq.777)then
 C       ************ reset tangent heights   ***********
@@ -338,11 +339,9 @@ C     Check to see if anything bad has happened in the .prf file before
 C     running subpath
       iprfcheck=check_profile(runname)
      
-
 C     Compute the drv file to get the aerosol optical depths
       if(icheck.eq.1.and.iprfcheck.eq.0) then
 
-        print*,'Check subpath A ',runname,runname
         call subpath(runname)
 
         call readdustod(runname,ncont1,xod)
@@ -363,10 +362,6 @@ C     Compute the drv file to get the aerosol optical depths
 
         nx1=0
 
-C        do i=1,nx
-C         print*,'gsetrad',i,xn(i),exp(xn(i))
-C        enddo
-
         do ivar=1,nvar
 
          if(varident(ivar,1).le.100)then
@@ -375,10 +370,6 @@ C        enddo
               icont=abs(varident(ivar,1))
               od1=exp(xn(nx1+1))
               xscal(icont)=xod(icont)/od1
-
-C              print*,'gsetrad',icont,nx1+1
-C              print*,'gsetrad',od1,xod(icont),xscal(icont)
-
               do j=1,NN
                dust(icont,j)=dust(icont,j)/xscal(icont)
               enddo
@@ -405,12 +396,50 @@ C              print*,'gsetrad',od1,xod(icont),xscal(icont)
           endif
 
           np = npvar(varident(ivar,3),NN)
+         
+         else
 
-          nx1=nx1+np
+          np=1
+          if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
+          if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
+          if(varident(ivar,1).eq.222)np = 8
 
-         else 
+         endif
 
-          if(varident(ivar,1).eq.444)then
+         nx1=nx1+np
+
+        enddo
+
+
+        open(12,file='aerosol.prf',status='unknown')
+         BUFFER='# simple.prf'
+         WRITE(12,1)BUFFER     
+         WRITE(12,*)NN,NDUST
+         DO 106 J=1,NN
+           WRITE(12,*)DUSTH(J),(DUST(I,J),I=1,NDUST)
+C           print*,DUSTH(J),(DUST(I,J),I=1,NDUST)
+106      CONTINUE
+        close(12)
+
+C       check that rescaling has happened correctly
+        call subpath(runname)
+
+      endif
+
+      nx1=0
+      CALL readrefhead(runname,npro,nvmr,gasgiant)
+
+      do ivar=1,nvar
+
+       np=1
+       if(varident(ivar,1).le.100)then
+           np=npvar(varident(ivar,3),npro)
+       endif
+       if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
+       if(varident(ivar,1).eq.222)np = 8
+          
+
+       if(varident(ivar,1).eq.444)then
 
            iwave=ispace
            if(iwave.eq.0)iwave=2
@@ -419,15 +448,19 @@ C              print*,'gsetrad',od1,xod(icont),xscal(icont)
 
            r0 = exp(xn(nx1+1))
            v0 = exp(xn(nx1+2))
-           np = int(varparam(ivar,1))
+           np1 = int(varparam(ivar,1))
            clen = varparam(ivar,2)           
            vm = varparam(ivar,3)
            nm = varparam(ivar,4)
            lambda0 = varparam(ivar,5)
-
+     
            call get_xsecA(runname,nmode,nwave,wave,xsec)
 
-C          np should now match nwave
+C          np1 should now match nwave
+           if(np1.ne.nwave)then
+             print*,'Warning from gsetrad.f, nwave in refindex file is'
+             print*,'different from that in .xsc file.'
+           endif
            do i=1,nwave
             nimag(i)=exp(xn(nx1+2+i))
            enddo
@@ -491,36 +524,13 @@ C          If nimag is in wavelength space, need to convert to wavenumbers
            call modmakephase(iwave,imode,inorm,iscat,
      1   parm,rs,srefind,runname,lambda0)
 
+           np=2+np1
 
-           nx1=nx1+2+np
+       endif
 
+       nx1=nx1+np
 
-          else
-
-           nx1=nx1+1
-
-          endif
-
-         endif
-
-        enddo
-
-        open(12,file='aerosol.prf',status='unknown')
-         BUFFER='# simple.prf'
-         WRITE(12,1)BUFFER     
-         WRITE(12,*)NN,NDUST
-         DO 106 J=1,NN
-           WRITE(12,*)DUSTH(J),(DUST(I,J),I=1,NDUST)
-C           print*,DUSTH(J),(DUST(I,J),I=1,NDUST)
-106      CONTINUE
-        close(12)
-
-C       check that rescaling has happened correctly
-        print*,'Checking subpath B'
-        call subpath(runname)
-
-      endif
-
+      enddo
 
       return
 

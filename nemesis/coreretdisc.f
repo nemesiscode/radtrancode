@@ -106,7 +106,7 @@ C     Set measurement vector and source vector lengths here.
       real wgeom(mgeom,mav),flat(mgeom,mav)
       real vwaveT(mwave),vconvT(mconv)
       integer nwaveT,nconvT,npvar
-      logical gasgiant
+      logical gasgiant,abexist
 
       double precision s1d(mx,mx),sai(mx,mx)
       double precision s1e(my,my),sei(my,my)
@@ -453,12 +453,15 @@ C	  Leave xn and kk alone and try again with more braking
         endif
 
         call file(runname,runname,'abo')
-        open(83,file=runname,status='old')
-        read(83,'(A)')abort
-        close(83)
-        if(abort.eq.'stop'.or.abort.eq.'STOP')then
-          print*,'Terminating retrieval'
-          GOTO 202
+        inquire(file=runname,exist=abexist)
+        if(abexist)then
+         open(83,file=runname,status='old')
+         read(83,'(A)')abort
+         close(83)
+         if(abort.eq.'stop'.or.abort.eq.'STOP')then
+           print*,'Terminating retrieval'
+           GOTO 202
+         endif
         endif
                
 401   continue       

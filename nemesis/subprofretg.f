@@ -74,12 +74,13 @@ C     ***********************************************************************
       REAL DNDH(MAXPRO),DQDH(MAXPRO),FCLOUD(MAXPRO)
       DOUBLE PRECISION Q(MAXPRO),OD(MAXPRO),ND(MAXPRO),XOD
       INTEGER ISCALE(MAXGAS),XFLAG,NPVAR,MAXLAT
-      INTEGER NLATREF,ILATREF,JLAT,KLAT
+      INTEGER NLATREF,ILATREF,JLAT,KLAT,ICUT
       PARAMETER (MAXLAT=20)
       REAL HREF(MAXLAT,MAXPRO),TREF(MAXLAT,MAXPRO),FLAT
       REAL PREF(MAXLAT,MAXPRO),VMRREF(MAXLAT,MAXPRO,MAXGAS)
       REAL LATREF(MAXLAT),MOLWTREF(MAXLAT)
       REAL XRH,XCDEEP,P1,PS,PS1,PH,Y1,Y2,YY1,YY2
+      REAL XCH4,PCH4,PCUT
       INTEGER ICLOUD(MAXCON,MAXPRO),NCONT1,JSPEC,IFLA,I1
       INTEGER NPRO,NPRO1,NVMR,JZERO,IV,IP,IVAR,JCONT,JVMR
       INTEGER IDGAS(MAXGAS),ISOGAS(MAXGAS),IPAR,JPAR,IVMR,NP
@@ -104,6 +105,7 @@ C     ***********************************************************************
       INTEGER SVPFLAG(MAXGAS),SVPFLAG1
       INTEGER NVP,ISWITCH(MAXGAS),IP1,IP2,JKNEE
       REAL XLDEEP,XLHIGH
+      COMMON /SROM223/PCUT
 C----------------------------------------------------------------------------
 C
 C     First read in reference ATMOSPHERIC profile
@@ -1560,7 +1562,46 @@ C         print*,'Surface gravity (log10(g))'
         ELSEIF(VARIDENT(IVAR,1).EQ.222)THEN
 C         print*,'Sromovsky cloud layering'
          IPAR = -1
-         NP = 1
+         NP = 8
+        ELSEIF(VARIDENT(IVAR,1).EQ.223)THEN
+C         print*,'Sromovsky cloud layering with methane'
+         IPAR = -1
+         DO I=1,NVMR
+           IF(IDGAS(I).EQ.6)IPAR=I
+         ENDDO
+         IF(IPAR.LT.0)THEN
+           PRINT*,'Error in subprofretg. Model 223 defined, but'
+           PRINT*,'no CH4 in .ref file'
+           STOP
+         ENDIF
+         DO I=1,NPRO
+           X1(I)=VMR(I,IPAR)
+         ENDDO
+         PCH4 = EXP(XN(NXTEMP+5))/1.013
+         XFAC = EXP(XN(NXTEMP+6))
+         IF(XFAC.GT.1.0)THEN
+          PRINT*,'Error in subprofretg, model 223. XFAC > 1.'
+          PRINT*,'Limiting to 1.0'
+          XFAC=1.
+         ENDIF
+         XCH4 = X1(1)*XFAC
+C        Set PCUT to where CH4 starts reducing in cases where XFAC=1
+         ICUT=0
+         DO I=1,NPRO
+          IF(X1(I).LT.X1(1).AND.ICUT.EQ.0)THEN
+            PCUT=P(I)
+            ICUT=1
+          ENDIF
+         ENDDO
+         DO I=1,NPRO
+          IF(P(I).LT.PCH4)THEN
+           IF(XCH4.LT.X1(I))THEN
+            X1(I)=XCH4
+            PCUT=P(I)
+           ENDIF
+          ENDIF
+         ENDDO
+         NP = 9
         ELSE
          PRINT*,'SUBPROFRETG: VARTYPE NOT RECOGNISED'
          STOP

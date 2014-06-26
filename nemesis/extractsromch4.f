@@ -1,8 +1,8 @@
-      subroutine extractsrom(runname,nvar,varident,varparam,nx,xn,
+      subroutine extractsromch4(runname,nvar,varident,varparam,nx,xn,
      1 ncloud,cpbot,cptop,nlaycloud,codepth,cfsh)
 C     **************************************************************
 C     Subroutine to extract cloud definition parameters for Sromovsky
-C     cloud model (222)
+C     cloud model (223)
 C
 C     Pat Irwin		19/6/14
 C
@@ -16,18 +16,19 @@ C     **************************************************************
       parameter (mcloud=10)
       integer nlaycloud(mcloud),ncloud
       real cpbot(mcloud),cptop(mcloud),codepth(mcloud),
-     1 cfsh(mcloud)      
+     1 cfsh(mcloud),pcut
       real xn(mx),varparam(mvar,mparam)
       integer varident(mvar,3)
       character*100 runname
       integer npro,nvmr
       logical gasgiant
+      common /srom223/pcut
 
       call readrefhead(runname,npro,nvmr,gasgiant)
 
       ix=1
       do 10 ivar=1,nvar
-       if(varident(ivar,1).ne.222)then
+       if(varident(ivar,1).ne.223)then
 C       Skip to right point in xn array
         np=1
         if(varident(ivar,1).le.100)then
@@ -35,7 +36,7 @@ C       Skip to right point in xn array
         endif
         if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))      
         if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
-        if(varident(ivar,1).eq.223)np = 9
+        if(varident(ivar,1).eq.222)np = 8
         ix=ix+np
 
        else
@@ -58,12 +59,18 @@ C       MTC
         codepth(2)=exp(xn(ix))
 
 C       UTC
-        ix=ix+1
-        cpbot(3)=exp(xn(ix))/1.013
+C        cpbot(3)=exp(xn(ix))/1.013
+C       Set CH4 cloud at where pressure, pcut, where depleted CH4 profile 
+C       meets SVP curve. pcut comes in via an ugly common block and has 
+C       previously been calculated in subprofretg.
+
+        cpbot(3)=pcut
         cptop(3)=cpbot(3)*0.93
         nlaycloud(3)=1
         cfsh(3)=1.
-        ix=ix+1
+C       Skip pch4 where depletion starts and depletion factor to get 
+C       odepth 
+        ix=ix+3
         codepth(3)=exp(xn(ix))
 
 C       Upper tropospheric haze

@@ -100,7 +100,7 @@ C     ************************************************************************
       real varparam(mvar,mparam),alb(maxsec),valb(maxsec)
       integer nvarx,varidentx(mvar,3),ivarx
       real varparamx(mvar,mparam),od1
-      logical gasgiant,iflag222
+      logical gasgiant,iflag222,iflag223
       integer NN,NDUST
       REAL DUSTH(MAXLAY),DUST(MAXCON,MAXLAY)
 
@@ -301,16 +301,25 @@ C      ***************** Tangent height correction ***********
 
 C     See if Sromovsky cloud layer model is specified.
       iflag222=.false.
+      iflag223=.false.
       do ivar=1,nvar
        if(varident(ivar,1).eq.222)then
          iflag222=.true.
        endif
+       if(varident(ivar,1).eq.223)then
+         iflag223=.true.
+       endif
       enddo
 
-      if(iflag222)then
+      if(iflag222.or.iflag223)then
 
-       call extractsrom(runname,nvar,varident,varparam,nx,xn,ncloud,
-     1  cpbot,cptop,nlaycloud,codepth,cfsh)
+       if(iflag222)then
+        call extractsrom(runname,nvar,varident,varparam,nx,xn,ncloud,
+     1   cpbot,cptop,nlaycloud,codepth,cfsh)
+       else
+        call extractsromch4(runname,nvar,varident,varparam,nx,xn,
+     1   ncloud,cpbot,cptop,nlaycloud,codepth,cfsh)
+       endif
 
        call gwritepatsrom(runname,gasgiant,iscat,sol_ang,
      1  emiss_ang,nconv,vconv,fwhm,layht,nlayer,

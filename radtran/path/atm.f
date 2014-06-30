@@ -67,6 +67,7 @@ C         (no)wf           weighting function
 C         (no)netflux      Net flux calculation
 C         (no)upflux       Internal upward flux calculation
 C	  (no)outflux	   Upward flux at top of topmost layer
+C	  (no)botflux	   Downward flux at bottom of lowest layer
 C         (no)cg           curtis godson
 C         (no)therm        thermal emission
 C	  (no)hemisphere   Integrate emission into hemisphere
@@ -104,6 +105,7 @@ C     note that default is a limb path from bottom layer
       NETFLUX=.FALSE.
       UPFLUX=.FALSE.
       OUTFLUX=.FALSE.
+      BOTFLUX=.FALSE.
       ANGLE=90.
       BOTLAY=1
 C
@@ -128,6 +130,8 @@ C     checking for negated keywords
         NETFLUX=DEF
        ELSE IF(TEXT(1:7).EQ.'OUTFLUX')THEN
         OUTFLUX=DEF
+       ELSE IF(TEXT(1:7).EQ.'BOTFLUX')THEN
+        BOTFLUX=DEF
        ELSE IF(TEXT(1:7).EQ.'UPFLUX')THEN
         UPFLUX=DEF
        ELSE IF(TEXT(1:2).EQ.'CG')THEN
@@ -536,6 +540,15 @@ C     setting the correct type for the genlbl path
         IMOD(NPATH)=26
        ELSE
         PRINT*,'Error in atm.f, cannot do outward flux calculation'
+        PRINT*,'with scattering turned off.'
+        STOP
+       ENDIF
+      ENDIF
+      IF(BOTFLUX)THEN
+       IF(SCATTER)THEN
+        IMOD(NPATH)=27
+       ELSE
+        PRINT*,'Error in atm.f, cannot do bottom flux calculation'
         PRINT*,'with scattering turned off.'
         STOP
        ENDIF

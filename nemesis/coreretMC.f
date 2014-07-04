@@ -93,7 +93,8 @@ C     Set measurement vector and source vector lengths here.
       real sn(mx,mx),sm(mx,mx),xnx(mx),stx(mx,mx),ynx(my)
 
       integer nvar,varident(mvar,3),lin,lin0,lpre,ispace,nav(mgeom),k
-      real varparam(mvar,mparam)
+      real varparam(mvar,mparam),err,ferr
+      integer ifix(mx),ifixx(mx)
 
       integer ngeom, nwave(mgeom), nconv(mgeom), nx, ny, nxf,ivar,ivarx
       real vwave(mgeom,mwave),vconv(mgeom,mconv),angles(mgeom,mav,3)
@@ -144,6 +145,9 @@ C       print*,'Setting to simple diagonal matrix'
        stop
       endif
 
+C     Find if any of the variables have such small error that we can
+C     fix them
+      call setifix(xa,sa,nvar,varident,varparam,npro,ifix)
 
 C     Initialise s1e and se
       do i=1,my
@@ -214,6 +218,11 @@ C       readapriori.f. Hence just read in from temporary .str file
        endif
  
        lin0 = 0
+    
+C      Calc. gradient of all elements of xnx matrix.
+       do i=1,nxx
+        ifixx(i)=1
+       enddo
 
        if(iscat.eq.0)then
         print*,'Calling forwardavfovX'
@@ -237,7 +246,7 @@ C       readapriori.f. Hence just read in from temporary .str file
         CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2   nvarx,varidentx,varparamx,jsurfx,jalbx,jtanx,jprex,jradx,
-     3   jloggx,RADIUS,nxx,xnx,ny,ynx,kkx,kiter,iprfcheck)
+     3   jloggx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,iprfcheck)
        else
         print*,'CoreretMC: iscat invalid',iscat
         stop
@@ -345,14 +354,14 @@ C       print*,'Calling forwardnogX'
        CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3   RADIUS,nx,xn,ny,yn,kk,kiter,iprfcheck)
+     3   RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
 
       else
        iscat1=1
        CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3   RADIUS,nx,xn,ny,yn,kk,kiter,iprfcheck)
+     3   RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
 
 C        print*,'forwardnogX OK, jpre = ',jpre
       endif
@@ -492,7 +501,7 @@ C       temporary kernel matrix kk1. Does it improve the fit?
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3     RADIUS,nx,xn1,ny,yn1,kk1,kiter,iprfcheck)
+     3     RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter,iprfcheck)
         elseif(iscat.eq.2)then
           CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1     vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
@@ -501,13 +510,13 @@ C       temporary kernel matrix kk1. Does it improve the fit?
           CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3     RADIUS,nx,xn1,ny,yn1,kk1,kiter,iprfcheck)
+     3     RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter,iprfcheck)
         else
           iscat1=1
           CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3     RADIUS,nx,xn1,ny,yn1,kk1,kiter,iprfcheck)
+     3     RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter,iprfcheck)
         endif
 
 

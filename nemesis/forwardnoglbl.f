@@ -1,7 +1,7 @@
       subroutine forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,
      1 wgeom,flat,nconv,vconv,angles,gasgiant,
      2 lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3 RADIUS,nx,xn,ny,yn,kk,kiter)
+     3 RADIUS,nx,xn,ifix,ny,yn,kk,kiter)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate a synthetic spectrum and KK-matrix using
@@ -49,6 +49,8 @@ C       jlogg           integer position surface gravity (log(g)) element in
 C                               xn (if included)
 C       nx              integer Number of elements in state vector
 C       xn(mx)          real	State vector
+C	ifix(mx)	integer	Vector indicating which elements of xn we
+C				 need gradients for
 C       ny      	integer Number of elements in measured spectra array
 C
 C     Output variables
@@ -72,7 +74,7 @@ C     **************************************************************
       include 'arraylen.f'
       real xlat,xref,dx
       integer layint,inormal,iray,itype,nlayer,laytyp,iscat
-      integer ix,ix1,iav,iptf,j1
+      integer ix,ix1,iav,iptf,j1,ifix(mx)
       real interpem
       real calcout(maxout3),fwhm,planck_wave
       real gradients(maxout4)
@@ -207,6 +209,14 @@ C            nf=20
           endif
           if(jsurf.gt.0)then
            tsurf = xn(jsurf)
+          endif
+
+
+C         Check to see if this variable is unconstrained enough to bother
+C         calculating its gradient.
+          if(ix.gt.0.and.ifix(ix).eq.1)then
+           xn(ix)=xref
+           goto 111
           endif
 
 C         If we're retrieving planet radius then add correction to reference

@@ -96,6 +96,7 @@ C     Set measurement vector and source vector lengths here.
       integer nprox,nvarx,varidentx(mvar,3),jsurfx,nxx,ix,np,npro
       real st(mx,mx),varparamx(mvar,mparam)
       real sn(mx,mx),sm(mx,mx),xnx(mx),stx(mx,mx),ynx(my)
+      integer ifix(mx),ifixx(mx)
 
       integer nvar,varident(mvar,3),lin,lin0,lpre,ispace,nav(mgeom),k
       real varparam(mvar,mparam)
@@ -154,6 +155,9 @@ C     Calculate inverse of sa.
        stop
       endif
 
+C     Find if any of the variables have such small error that we can 
+C     fix them
+      call setifix(xa,sa,nvar,varident,varparam,npro,ifix)
 
 C     Initialise s1e and se
       do i=1,my
@@ -222,6 +226,11 @@ C       readapriori.f. Hence just read in from temporary .str file
 
        endif
  
+C      Calc. gradient of all elements of xnx matrix.
+       do i=1,nxx
+        ifixx(i)=1
+       enddo
+
        lin0 = 0
 
        if(ilbl.eq.1)then
@@ -229,7 +238,7 @@ C       readapriori.f. Hence just read in from temporary .str file
          CALL forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,nconv,vconv,angles,gasgiant,lin0,
      2    nvarx,varidentx,varparamx,jsurfx,jalbx,jtanx,jprex,
-     3    jradx,jloggx,RADIUS,nxx,xnx,ny,ynx,kkx,kiter)
+     3    jradx,jloggx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter)
        else
         if(iscat.eq.0)then
          print*,'Calling forwardavfovX - A'
@@ -242,7 +251,8 @@ C       readapriori.f. Hence just read in from temporary .str file
          CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2    nvarx,varidentx,varparamx,jsurfx,jalbx,jtanx,jprex,
-     3    jradx,jloggx,RADIUS,nxx,xnx,ny,ynx,kkx,kiter,iprfcheck)
+     3    jradx,jloggx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,
+     4	  iprfcheck)
         elseif(iscat.eq.2)then
          print*,'Calling intradfield - A'
          CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
@@ -253,7 +263,8 @@ C       readapriori.f. Hence just read in from temporary .str file
          CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2    nvarx,varidentx,varparamx,jsurfx,jalbx,jtanx,jprex,
-     3    jradx,jloggx,RADIUS,nxx,xnx,ny,ynx,kkx,kiter,iprfcheck)
+     3    jradx,jloggx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,
+     4	  iprfcheck)
         else
          print*,'Coreret: iscat invalid',iscat
          stop
@@ -314,7 +325,7 @@ C      Calculate inverse of se
          CALL forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,nconv,vconv,angles,gasgiant,lin,
      2    nvar,varident,varparam,jsurf,jalb,jtan,jpre,
-     3    jrad,jlogg,RADIUS,nx,xn,ny,yn,kk,kiter)
+     3    jrad,jlogg,RADIUS,nx,xn,ifix,ny,yn,kk,kiter)
          print*,'call OK'
       else
 
@@ -334,7 +345,7 @@ C        print*,'forwardavfovX OK, jpre = ',jpre
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3   RADIUS,nx,xn,ny,yn,kk,kiter,iprfcheck)
+     3   RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
 
 C        print*,'forwardnogX OK, jpre = ',jpre
 
@@ -349,7 +360,7 @@ C        print*,'forwardnogX OK, jpre = ',jpre
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3   RADIUS,nx,xn,ny,yn,kk,kiter,iprfcheck)
+     3   RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
 
        endif
       endif
@@ -488,7 +499,7 @@ C       temporary kernel matrix kk1. Does it improve the fit?
          CALL forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,     
      1    wgeom,flat,nconv,vconv,angles,gasgiant,lin,
      2    nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3    RADIUS,nx,xn1,ny,yn1,kk1,kiter)
+     3    RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter)
         else
          if(iscat.eq.0)then
          print*,'Calling forwardavfovX - C'
@@ -501,7 +512,7 @@ C       temporary kernel matrix kk1. Does it improve the fit?
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3     RADIUS,nx,xn1,ny,yn1,kk1,kiter,iprfcheck)
+     3     RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter,iprfcheck)
          elseif(iscat.eq.2)then
          print*,'Calling intradfield - C'
           CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
@@ -510,7 +521,7 @@ C       temporary kernel matrix kk1. Does it improve the fit?
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3     RADIUS,nx,xn1,ny,yn1,kk1,kiter,iprfcheck)
+     3     RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter,iprfcheck)
          endif
         endif
 

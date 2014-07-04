@@ -77,12 +77,13 @@ C     Set measurement vector and source vector lengths here.
       CHARACTER*100 runname,itname,abort
 
       real xn(mx),se1(my),calc_chi,kk(my,mx),calc_phiprior
-      real fwhm,xlat,xn1(mx),ran11,test,RADIUS
+      real fwhm,xlat,xn1(mx),ran11,test,RADIUS,err,ferr
       integer ix,np,npro,lout,iplanet,lx(mx)
       real alpha,alpha_chi,alpha_phi
       logical accept
       integer nvar,varident(mvar,3),ispace,nav(mgeom),k
       real varparam(mvar,mparam)
+      integer ifix(mx),ifixx(mx)
 
       integer ngeom, nwave(mgeom), nconv(mgeom), nx, ny, nxf,ivar,ivarx
       real vwave(mgeom,mwave),vconv(mgeom,mconv),angles(mgeom,mav,3)
@@ -137,6 +138,10 @@ C     Calculate inverse of sa.
        stop
       endif
 
+C     Find if any of the variables have such small error that we can
+C     fix them
+      call setifix(xa,sa,nvar,varident,varparam,npro,ifix)
+
 C     Set kiter to -1 to stop the code calculating any gradients
       kiter = -1
 C     Set lin=0 to prevent code looking for previous retrievals
@@ -147,7 +152,7 @@ C     Set lin=0 to prevent code looking for previous retrievals
          CALL forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,nconv,vconv,angles,gasgiant,lin,
      2    nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,
-     3    jlogg,RADIUS,nx,xn,ny,yn,kk,kiter)
+     3    jlogg,RADIUS,nx,xn,ifix,ny,yn,kk,kiter)
       else
 
        if(iscat.ne.2)then
@@ -155,7 +160,7 @@ C     Set lin=0 to prevent code looking for previous retrievals
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3   RADIUS,nx,xn,ny,yn,kk,kiter,iprfcheck)
+     3   RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
        else
 
         CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
@@ -165,7 +170,7 @@ C     Set lin=0 to prevent code looking for previous retrievals
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3   RADIUS,nx,xn,ny,yn,kk,kiter,iprfcheck)
+     3   RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
 
        endif
       endif
@@ -226,13 +231,13 @@ C       Put output spectrum into temporary spectrum yn1.
          CALL forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,     
      1    wgeom,flat,nconv,vconv,angles,gasgiant,lin,
      2    nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3    RADIUS,nx,xn1,ny,yn1,kk,kiter)
+     3    RADIUS,nx,xn1,ifix,ny,yn1,kk,kiter)
         else
          if(iscat.ne.2)then
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3     RADIUS,nx,xn1,ny,yn1,kk,kiter,iprfcheck)
+     3     RADIUS,nx,xn1,ifix,ny,yn1,kk,kiter,iprfcheck)
          else
           CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1     vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
@@ -240,7 +245,7 @@ C       Put output spectrum into temporary spectrum yn1.
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3     RADIUS,nx,xn1,ny,yn1,kk,kiter,iprfcheck)
+     3     RADIUS,nx,xn1,ifix,ny,yn1,kk,kiter,iprfcheck)
          endif
         endif
 

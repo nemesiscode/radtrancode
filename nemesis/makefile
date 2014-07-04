@@ -81,6 +81,7 @@ F_SOURCES = \
 	logflag.f \
 	check_iteration.f \
 	check_profile.f \
+	setifix.f \
 	readcell.f
 
 INCDIR = ../../radtran/includes

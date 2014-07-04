@@ -1,7 +1,7 @@
       subroutine forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1 wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
      2 lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3 RADIUS,nx,xn,ny,yn,kk,kiter,icheck)
+     3 RADIUS,nx,xn,ifix,ny,yn,kk,kiter,icheck)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate a synthetic spectrum and KK-matrix using
@@ -53,6 +53,8 @@ C                               xn (if included)
 C       RADIUS		real    Planetary radius at 0km altitude
 C       nx              integer Number of elements in state vector
 C       xn(mx)          real	State vector
+C	ifix(mx)	integer Vector showing which elements we need
+C				 gradients for
 C       ny      	integer Number of elements in measured spectra array
 C	kiter		integer Number of iterations of Nemesis
 C
@@ -85,7 +87,7 @@ C     **************************************************************
       real calcout(maxout3),fwhm,planck_wave,output(maxout3)
       real gradients(maxout4),pi
       parameter (pi=3.1415927)
-      integer check_profile,icheck,imie,imie1,jlogg
+      integer check_profile,icheck,imie,imie1,jlogg,ifix(mx)
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       real vconv(mgeom,mconv),wgeom(mgeom,mav),flat(mgeom,mav)
       real layht,tsurf,esurf,angles(mgeom,mav,3)
@@ -235,7 +237,6 @@ C            nf=20
           ix = ix1-1
 
           print*,'forwardnogX, ix,nx = ',ix,nx
-
           if(ix.gt.0)then
             xref = xn(ix)
             dx = 0.05*xref
@@ -253,6 +254,13 @@ C            nf=20
 C          print*,'ix,xref,dx,xn(ix)',ix,xref,dx,xn(ix)
           if(jsurf.gt.0)then
            tsurf = xn(jsurf)
+          endif
+
+C         Check to see if this variable is unconstrained enough to bother
+C         calculating its gradient.
+          if(ix.gt.0.and.ifix(ix).eq.1)then
+           xn(ix)=xref
+           goto 111
           endif
 
 C        If we're retrieving planet radius then add correction to reference

@@ -57,7 +57,7 @@ C     Set minimum fractional error to fix variable.
           ea1 = xa1*ea1
         endif
    
-        ferr = ea1/xa1
+        ferr = abs(ea1/xa1)
  
         if(ferr.le.minferr)then
          ifix(ix) = 1

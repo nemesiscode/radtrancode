@@ -32,6 +32,7 @@ C     ***************************************************************
 C     Set minimum fractional error to fix variable.
       parameter (minferr = 1e-6)
       real varparam(mvar,mparam),sa(mx,mx),xa(mx)
+
             
       nxtemp=0
 

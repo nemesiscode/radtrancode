@@ -316,7 +316,7 @@ C       Set flag for code to read in modified PHASE*.DAT files if required
 	single=.FALSE.
 	do Ipath = 1, npath
 		if (imod(Ipath).eq.15.or.
-     1	  (imod(Ipath).ge.22.and.imod(Ipath).le.26)) then
+     1	  (imod(Ipath).ge.22.and.imod(Ipath).le.27)) then
         		scatter=.true.
 		end if
 		if (imod(Ipath).eq.16) then
@@ -1781,7 +1781,7 @@ C               matrix inversion crashing
 
 
 	ELSEIF (imod(ipath).EQ.27) THEN
-cc		WRITE(*,*) 'CIRSRAD_WAVE: Imod= 26 = Downwards flux at bottom,',
+cc		WRITE(*,*) 'CIRSRAD_WAVE: Imod= 27 = Downwards flux at bottom,',
 cc     1        ' multiple scattering'. Creating output'
 
 
@@ -1853,7 +1853,6 @@ C                Set dist to -1 to get total power spectrum of star
 C               If doing integrated flux from planet need a factor to stop the
 C               matrix inversion crashing
                 if(iform.eq.3)xfac=xfac*1e-18
-
 
    	   	call scloud11flux(radg, solar, sol_ang, 
      1               lowbc, galb1, iray, mu1, wt1, nmu, nf, Ig, x,

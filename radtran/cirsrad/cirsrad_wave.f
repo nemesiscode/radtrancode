@@ -1833,7 +1833,7 @@ C               upwelling radiation field to local temperature.
                  radg(J)=radground
                 enddo
 
-C               The codes below calculates the upwards flux
+C               The codes below calculates the downwards flux
 C               spectrum in units of W cm-2 (cm-1)-1 or W cm-2 um-1.
 C
                 xfac=1.

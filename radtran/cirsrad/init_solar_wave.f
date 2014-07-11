@@ -33,6 +33,7 @@ C-----------------------------------------------------------------------
 
 	INTEGER		iunit, npt, I,ispace,ispace1,iread,iform
 	REAL		wave(maxbin), rad(maxbin), y, solrad
+        REAL		xdum
         CHARACTER*100	aname,solfile
         CHARACTER*80    dummy
         PARAMETER (iunit=26)
@@ -68,6 +69,18 @@ C       Skip header
 		  npt = npt + 1
         enddo
 20	continue
+
+C       Check to see if there is any more of the solar file that has not
+C       been read in because MAXBIN is not big enough
+  	read (iunit,*,end=25)xdum
+
+        print*,'Error in init_solar_wave. Input solar file is too'
+        print*,'large for current array. Increase MAXBIN or use a'
+        print*,'different solar file'
+        print*,'Currently MAXBIN = ',MAXBIN
+        stop
+
+25      continue
   	close (iunit)
 
         iread=999

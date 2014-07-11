@@ -869,12 +869,13 @@ C        Start ND(NPRO) at a random value. Will be rescaled anyway
 C        OD is in units of particles/cm2 = particles/cm3 x length(cm)
 C        In this case this is the scale height at the top level.
          OD(NPRO)=ND(NPRO)*SCALE(NPRO)*1E5
-C        Q is specific density = particles/gram = particles/cm3 x g/cm3
+C        Q is specific density = particles/gram = (particles/cm3) / (g/cm3)
          Q(NPRO)=ND(NPRO)/RHO         
          DNDH(NPRO)=0.0
          DQDH(NPRO)=0.0
 
 
+C        Calculate gradient numerically as it's just too hard otherwise
          DO 22 ITEST=1,4
 
           XDEEP = EXP(XN(NXTEMP+1))

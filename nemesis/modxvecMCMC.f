@@ -43,7 +43,7 @@ C     ****************************************************************
 
       real x0(mx),xn(mx),sx(mx,mx),pref(maxpro),eref(maxpro)
       real delp,xfac,pknee,edeep,xdeep,err(mx),xtry(mx)
-      real efsh,xfsh,varparam(mvar,mparam),gasdev1
+      real efsh,xfsh,varparam(mvar,mparam),gasdev1,emax
       real ref(maxpro),clen,pi,dx,xl,xphi,xamp,sum,f
       parameter(pi=3.1415927)
       integer varident(mvar,3),ivar,nvar,nlevel
@@ -70,9 +70,11 @@ C         ********* continuous profile ************************
 C           Randomly modify the trial profile
 C            print*,ivar,npro
             np=npro
+            emax=0.
             do i=1,np
              xtry(i)=err(ix+i)*gasdev1(idum)
 C             print*,i,x0(ix+i),err(ix+i),xtry(i)
+             if(err(ix+i).gt.emax)emax=err(ix+i)
             enddo
 
 C           Now smooth with covariance matrix
@@ -85,8 +87,14 @@ C              print*,j,f
                xn(ix+i)=xn(ix+i) + f*xtry(j)
               sum=sum+f
              enddo
-             xn(ix+i)=x0(ix+i)+xn(ix+i)/sum
+C             xn(ix+i)=x0(ix+i)+xn(ix+i)/sum
+C             xn(ix+i)=x0(ix+i)+xtry(i)
+
+             xn(ix+i)=x0(ix+i)+err(ix+i)*xn(ix+i)/(sum*emax)
+
             enddo          
+
+            write(41,*)(xn(ix+j),j=1,np)
 
       
           elseif(varident(ivar,3).eq.1)then
@@ -140,6 +148,24 @@ C         **** Surface temperature *******
           elseif(varident(ivar,3).eq.555)then  
 C         **** Radius of planet *******
             np = 1
+            do i=1,np
+             xn(ix+i)=x0(ix+i)+err(ix+i)*gasdev1(idum)
+            enddo
+          elseif(varident(ivar,3).eq.333)then  
+C         **** Surface gravity of planet *******
+            np = 1
+            do i=1,np
+             xn(ix+i)=x0(ix+i)+err(ix+i)*gasdev1(idum)
+            enddo
+          elseif(varident(ivar,3).eq.888)then  
+C         **** Surface albedo spectrum of planet *******
+            np = int(varparam(ivar,1))
+            do i=1,np
+             xn(ix+i)=x0(ix+i)+err(ix+i)*gasdev1(idum)
+            enddo
+          elseif(varident(ivar,3).eq.444)then  
+C         **** Particle refractive index spectrum *******
+            np = 2+int(varparam(ivar,1))
             do i=1,np
              xn(ix+i)=x0(ix+i)+err(ix+i)*gasdev1(idum)
             enddo

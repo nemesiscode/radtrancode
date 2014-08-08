@@ -257,6 +257,11 @@ C     Read in measurement vector, obs. geometry and covariances
       call readnextspavX(lspec,iform,woff,xlat,xlon,ngeom,nav,ny,y,se,
      1  fwhm,nconv,vconv,angles,wgeom,flat,flon)
 
+C		reset jradf and jloggf to -1 for start of each run
+
+		jradf=-1
+		jloggf=-1
+
 C     Read in forward modelling errors
       call forwarderr(ename,ngeom,nconv,vconv,woff,rerr)
 

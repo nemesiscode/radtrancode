@@ -27,9 +27,9 @@ C     ******************************************************************
       implicit none
       include '../radtran/includes/arrdef.f'
       include 'arraylen.f'
-      integer nconv,i,j,k,ico,nco,nwave,j1,j2,nconv1,nsub
+      integer nconv,i,j,k,ico,nco,nwave,j1,j2,nconv1,nsub,jj
       real vwave(mwave),v1,v2,save(100000),temp,vconv(mconv),vcentral
-      real xdiff,test,vkstart,vkend,vkstep,fwhm,vfil(1000),dv
+      real xdiff,test,vkstart,vkend,vkstep,fwhm,vfil(1000),dv,vj
       real fil(1000)
       logical flag
       character*100 runname
@@ -73,24 +73,24 @@ C     just set the calculation wavelengths to be the convolution wavelengths
 c           print*,vcentral,vconv(i)
 cc           dv = 100.0*abs(vcentral-vconv(i))/vconv(i)
            dv = abs(vcentral-vconv(i))
+
            if(dv.lt.0.0001)then
-            do j=1,nsub
-             j1=int((vfil(j)-vkstart)/vkstep)
-             v1 = vkstart + j1*vkstep
-             v2 = v1+vkstep
-             if(v1.lt.vkstart.or.v2.gt.vkend)then
-              print*,'Error in wavesetb'
+            j1=((vfil(1)-vkstart)/vkstep)-1
+            j2=((vfil(nsub)-vkstart)/vkstep)+1
+            v1 = vkstart + (j1-1)*vkstep
+            v2 = vkstart + (j2-1)*vkstep
+            if(v1.lt.vkstart.or.v2.gt.vkend)then
+              print*,'Warning from wavesetb'
               print*,'Channel wavelengths not covered by ktables'
               print*,'v1,v2,vkstart,vkend',v1,v2,vkstart,vkend
-              stop
-             endif
+            endif
+
+            do jj=j1,j2
              ico=ico+1
-             save(ico)=v1
-C             print*,ico,save(ico)
-             ico=ico+1
-             save(ico)=v2
-C             print*,ico,save(ico)
+             vj = vkstart + jj*vkstep
+             save(ico)=vj
             enddo
+
            endif
 
 443       continue
@@ -131,7 +131,6 @@ C     sort calculation wavelengths into order
         endif
 445   continue
       if (flag) goto 440
-
 
 C     Now weed out repeated wavelengths
       vwave(1)=save(1)

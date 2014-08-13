@@ -65,9 +65,9 @@ C-----------------------------------------------------------------------
         IF(fwhm.gt.0.0)THEN
 
  	   IF(vconv(nconv).gt.vwave(nwave)-fwhm/2.)THEN
-		WRITE(*,*)'CIRSCONV: having to extrapolate vwave up'
-		WRITE(*,*)'vconv(nconv),vwave(nwave)-0.5*fwhm',
-     1			vconv(nconv),vwave(nwave)-0.5*fwhm
+C		WRITE(*,*)'CIRSCONV: having to extrapolate vwave up'
+C		WRITE(*,*)'vconv(nconv),vwave(nwave)-0.5*fwhm',
+C     1			vconv(nconv),vwave(nwave)-0.5*fwhm
 
 		nc = nc + 1
 		xc(nc) = vconv(nconv) + fwhm
@@ -77,9 +77,9 @@ C-----------------------------------------------------------------------
 	   ENDIF
 
 	  IF (vconv(1).lt.vwave(1)+fwhm/2.) THEN
-		WRITE(*,*)'CIRSCONV: having to extrapolate vwave down' 
-		WRITE(*,*)'vconv(1),vwave(1)+0.5*fwhm',vconv(1),
-     1			vwave(1)+0.5*fwhm
+C		WRITE(*,*)'CIRSCONV: having to extrapolate vwave down' 
+C		WRITE(*,*)'vconv(1),vwave(1)+0.5*fwhm',vconv(1),
+C     1			vwave(1)+0.5*fwhm
 
 		nc = nc + 1
 		DO I = nc, 2, -1
@@ -188,12 +188,6 @@ C            dv = 100*abs(vcentral-vconv(i))/vconv(i)
              sum = 0.0
 
 
-C             do j=1,nwave-1
-C              delv = vwave(j+1)-vwave(j)
-C              sum=sum+0.5*(ytmp(j)*y(j)+ytmp(j+1)*y(j+1))*delv
-C              sumf=sumf+0.5*(ytmp(j)+ytmp(j+1))*delv
-C             enddo
-
 
              do j=1,nwave-1
 
@@ -205,11 +199,9 @@ C             enddo
                sum=sum
                sumf=sumf
               endif
-
              enddo
 
              yout(I)=sngl(sum/sumf)
-
             endif
 
 205        continue

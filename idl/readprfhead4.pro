@@ -17,7 +17,10 @@ pro readprfhead4,prfname,npro,press,height,temp,molwt
 openr,4,prfname
 iform=1
 head=''
-readf,4,iform
+loop:
+readf,4,head
+if (strmid(head,0,1) eq '#')then goto,loop
+reads,head,iform
 tmp=fltarr(4)
 if(iform eq 0) then tmp = fltarr(5)
 readf,4,tmp
@@ -27,7 +30,6 @@ molwt=-1.
 if(iform eq 0) then molwt=tmp(4)*1e-3
 for i=1,ngas+1 do readf,4,head
 ncol = 3+ngas
-if(ncol gt 6) then ncol=6
 tdat = fltarr(ncol,npro)
 readf,4,tdat
 close,4

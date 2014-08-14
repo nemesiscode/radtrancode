@@ -27,7 +27,11 @@ exocia_hitran12.tab		400-2800K   dnu=10.
 	(Generated from HITRAN12, replaces exociatable.tab (LNF2009), which lacked 
       400-600 K H2-H2 rototranslational transitions as Zheng and Borysow 
       (1995) don't go that low.  Contains no H2-H2 beyond 10,000 cm-1).
-      
+exocia_hitran12_200-3800K.tab		200-3800K   dnu=10.
+ 	(Generated from HITRAN12, replaces exociatable.tab (LNF2009), which lacked 
+      400-600 K H2-H2 rototranslational transitions as Zheng and Borysow 
+      (1995) don't go that low.  Contains no H2-H2 beyond 10,000 cm-1).
+           
 exobdwarfh2hecia.tab		400-2800K	dnu=10. 
 	(this file is a copy of exociatable.tab, but the H2-H2 parameters for
 	 inormal=0 and 1 have been replaced with oph2h2aflh.tab and the

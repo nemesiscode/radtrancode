@@ -139,7 +139,7 @@ C     sol_ang is then the tangent altitude)
        E1 = EMISS_ANG
        IF(ISCAT.EQ.1)E1 = 0.0 
        WRITE(31,4)TEXT,E1,LAYBOT,IPZEN
-4      FORMAT(A6,F7.2,I4)
+4      FORMAT(A6,F7.2,I4,I4)
       ELSE
        TEXT='limb'
        LAYBOT=1

@@ -74,7 +74,16 @@ Note 3: on MacOSX, you'll need to install gfortran from somewhere such as fink
 	a version from a website. You'll also need f2c in order for gettime.c 
 	to compile. I got a build script from the following website, which 
 	worked fine - http://hpc.sourceforge.net/buildf2c
-
+Note 4: If you're having trouble locating f2c, which is only necessary to 
+        compile and link gettime.c, an alternative approach is the following
+	procedure.
+         1) In your .cshrc file (if you are using csh) add the line:
+             setenv CC "gcc"
+         2) In radtran/rtm_util/gettime.c:
+             comment our the include statement for f2c.h
+Note 5: In general, if you're using gfortran/gcc very useful advice for 
+ 	diagnosing problems may be found at:
+	www2.physics.ox.ac.uk/it-services/where-has-g77-gone-to
 
 N.B. For additional debugging on MacOSX with gfortran try:
 setenv FCFLAGS1 "-O -finit-local-zero -m64 -fcheck=bounds -fcheck=mem -fbacktrace -Wconversion 

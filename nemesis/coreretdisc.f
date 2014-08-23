@@ -75,7 +75,9 @@ C	aa(mx,mx)	double	Averaging kernels
 C	dd(mx,my)	double	Contribution functions
 C
 C     Pat Irwin		29/4/01
-C			10/10/03 conversion for Nemesis
+C	  10/10/03 conversion for Nemesis
+C	  Mahmuda Afrin Badhan	05/08/14  Alternate convergence criteria added to address time-consuming retrievals 
+C                                     caused by oscillating solutions
 C
 C     ************************ VARIABLES *******************************
       implicit none
@@ -85,7 +87,7 @@ C     Set measurement vector and source vector lengths here.
       integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,jsurf
       integer jalb,jalbx,jtan,jtanx,jpre,jprex,jrad,jradx
       integer lx(mx),jlogg,jloggx
-      real phlimit,alambda,xtry,tphi
+      real phlimit,alambda,xtry,tphi,abstphi
       CHARACTER*100 runname,itname,abort
 
       real xn(mx),se1(my),se(my,my),calc_phiret,sf(my,my)
@@ -417,6 +419,13 @@ C       Calculate the cost function for this trial solution.
         print*,'chisq/ny = ',xchi
         print*,'it.,al.,ophi.,phi.',
      1   iter,alambda,ophi,phi
+     
+     
+C       What's %phi between last and this iteration?    
+        tphi = 100.0*(ophi-phi)/ophi
+        abstphi = abs(tphi)
+        print*,'%phi, abs(%phi) : ',tphi,abstphi
+
 
 C       Does trial solution fit the data better?
         if(phi.le.ophi)then
@@ -431,26 +440,59 @@ C       Does trial solution fit the data better?
            enddo
           enddo
 
+          print*,'Calculating new gain matrix and averaging kernels'
 C         Now calculate the gain matrix and averaging kernels
           call calc_gain_matrix(nx,ny,kk,sa,sai,se,sei,dd,aa)
 
+          print*,'calc_gain_matrix OK'
+          
 C         Has solution converged?
-          tphi = 100.0*(ophi-phi)/ophi
+          
           if(tphi.ge.0.0.and.tphi.le.phlimit.and.alambda.lt.1.0)then
             print*,'%phi, phlimit : ',tphi,phlimit
             print*,'Phi has converged'
             print*,'Terminating retrieval'
-            GOTO 202
+            GOTO 202                   
           else
             ophi=phi
             oxchi = xchi
             alambda = alambda*0.3		! reduce Marquardt brake
           endif
-        else
-C	  Leave xn and kk alone and try again with more braking
+C         So, if phi > ophi, accept new xn and kk only if current solution 
+C         would converge under one of the alternate criterions:
+          
+		elseif (iter.ge.5.and.abstphi.le.phlimit)then
+
+C       If lambda is small enough, increase it to decrease abs(tphi) value. 						
+		    if (alambda.lt.0.1) then        ! don't allow lambda to increase beyond 1.0
+				alambda = alambda*10.0		! increase Marquardt brake further
+			else
+C       If lambda is close to 1.0 or greater when condition met, accept that iteration.
+
+			  print*,'Accepting iteration. Updating xn,yn and kk'
+			  do i=1,nx
+			   xn(i)=xn1(i)         		! update xn to new value
+			  enddo
+			  do i=1,ny
+			   yn(i)=yn1(i)				! update yn and kk
+			   do j=1,nx
+				kk(i,j)=kk1(i,j)
+			   enddo
+			  enddo
+				print*,'%phi, phlimit, alambda : ',tphi,phlimit,alambda
+				print*,'Phi has converged under the alternate criteria'
+					if (alambda.ge.1.0) then
+						print*,'In addition, alambda is >= 1.0'
+					endif	
+				print*,'Terminating retrieval'
+				GOTO 202 
+			endif														
+							
+C	     If alternate criterions aren't met either, leave xn and kk alone and try again with more braking
+		else
           alambda = alambda*10.0		! increase Marquardt brake
           if(alambda.gt.1e10)alambda=1e10
-        endif
+        endif     
 
         call file(runname,runname,'abo')
         inquire(file=runname,exist=abexist)
@@ -485,7 +527,9 @@ C      Write out k-matrix for reference
        print*,'chisq/ny should be less than 1 if correctly retrieved'
       endif
 
+      print*,'Calculating final covariance matrix'
       CALL calc_serr(nx,ny,sa,se,aa,dd,st,sn,sm)
+      print*,'Matrix calculated'
 
       return
 

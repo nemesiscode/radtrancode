@@ -77,6 +77,8 @@ C	dd(mx,my)	double	Contribution functions
 C
 C     Pat Irwin		29/4/01
 C			10/10/03 conversion for Nemesis
+C	  Mahmuda Afrin Badhan	05/08/14  Alternate convergence criteria added to address time-consuming retrievals 
+C                                     caused by oscillating solutions
 C
 C     ************************ VARIABLES *******************************
       implicit none
@@ -86,7 +88,7 @@ C     Set measurement vector and source vector lengths here.
       integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,jsurf
       integer jalb,jalbx,jtan,jpre,jtanx,jprex,iscat1,i1,k1
       integer jrad,jradx,lx(mx),jlogg,jloggx
-      real phlimit,alambda,xtry,tphi
+      real phlimit,alambda,xtry,tphi,abstphi
       CHARACTER*100 runname,itname,abort
 
       real xn(mx),se1(my),se(my,my),calc_phiret,sf(my,my)

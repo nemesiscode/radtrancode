@@ -23,7 +23,7 @@ C     ID and ISO hold the local identifier and isotope identifier for
 C     each gas. Note that this program does not check that you only include
 C     each gas once or that the identifiers are valid.
       INTEGER IPLANET,AMFORM
-      REAL MOLWT
+      REAL MOLWT,LATITUDE
       CHARACTER*100 IPFILE,OPFILE,BUFFER
 
 C     First reading in an existing set of profiles which could have been

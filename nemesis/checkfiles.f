@@ -38,6 +38,8 @@ C      First skip header
       if(npro1.ne.npro)then
        print*,'Error on checkfiles'
        print*,'npro in aerosol.ref not the same as in runname.ref'
+       print*,'npro in runname.ref = ',npro
+       print*,'npro in aerosol.ref = ',npro1
        stop
       endif
 

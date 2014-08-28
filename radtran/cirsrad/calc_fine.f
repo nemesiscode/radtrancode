@@ -92,7 +92,7 @@ C******************************** CODE *********************************
 
         F1=FSTLIN(IB,IBIN)
         L1=LSTLIN(IB,IBIN)
-        B1=LSTBIN(IB)
+        B1=LASTBIN(IB)
         IF(IBIN.EQ.CURBIN-1.AND.IBX.EQ.1.AND.B1.LT.IBIN) THEN
 C        We have now run past the end of buffer 1 and need to read in a 
 C        new load of lines

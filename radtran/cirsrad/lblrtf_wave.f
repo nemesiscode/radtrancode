@@ -63,7 +63,7 @@ C         bins, paths, etc.)
      1                  output(maxpat), yp(maxpat,2)
         REAL            yout(maxpat,mconv),tsurf,
      2			vem(maxsec),emissivity(maxsec), ynor(maxpat,mconv)
-	REAL		AAMOUNT(maxlay,maxgas)
+	REAL		AAMOUNT(maxlay,maxgas),XX0
 
         INTEGER         lun, ulog, iphi,NLINR
         PARAMETER       (lun=2, ulog=17)
@@ -207,9 +207,13 @@ C
        VMIN=X0
        VMAX=X1
 
-       PRINT*,'Calling init_cont',VMIN-VREL,VMAX+VREL,WING
+       XX0 = VMIN-VREL
+       IF(XX0.LT.0.)THEN
+        XX0 = 0.0
+       ENDIF
+       PRINT*,'Calling init_cont',XX0,VMAX+VREL,WING
 
-       CALL INIT_CONT(VMIN-VREL,VMAX+VREL,WING)
+       CALL INIT_CONT(XX0,VMAX+VREL,WING)
 
        VBOT=VBIN(1)
        PRINT*,'VBOT = ',VBOT
@@ -218,16 +222,16 @@ C
 
 C      Read in 2 arrays of lines
        IB=1
-       CALL FNDWAV(VMIN-VREL)
+       CALL FNDWAV(XX0)
        FSTREC = DBREC
 
        PRINT*,'FSTREC = ',FSTREC
 
        MAXLIN1=MAXLIN
        print*,'lblrtf_wave : maxlin = ',MAXLIN1
-       CALL LOADBUFFER(VMIN-VREL,VMAX+VREL,FSTREC,MAXLIN1,MAXBIN,IB,
+       CALL LOADBUFFER(XX0,VMAX+VREL,FSTREC,MAXLIN1,MAXBIN,IB,
      1 NGAS,IDGAS,ISOGAS,VBOT,WING,NLINR,VLIN,SLIN,ALIN,ELIN,IDLIN,
-     2 SBLIN,PSHIFT,DOUBV,TDW,TDWS,LLQ,NXTREC,FSTLIN,LSTLIN)
+     2 SBLIN,PSHIFT,DOUBV,TDW,TDWS,LLQ,NXTREC,FSTLIN,LSTLIN,LASTBIN)
 
 
        NLINE(IB)=NLINR
@@ -237,9 +241,9 @@ C      Read in 2 arrays of lines
        FSTREC=NXTREC
 
 
-       CALL LOADBUFFER(VMIN-VREL,VMAX+VREL,FSTREC,MAXLIN,MAXBIN,IB,
+       CALL LOADBUFFER(XX0,VMAX+VREL,FSTREC,MAXLIN,MAXBIN,IB,
      1 NGAS,IDGAS,ISOGAS,VBOT,WING,NLINR,VLIN,SLIN,ALIN,ELIN,IDLIN,
-     2 SBLIN,PSHIFT,DOUBV,TDW,TDWS,LLQ,NXTREC,FSTLIN,LSTLIN)
+     2 SBLIN,PSHIFT,DOUBV,TDW,TDWS,LLQ,NXTREC,FSTLIN,LSTLIN,LASTBIN)
 
        NLINE(IB)=NLINR
        IBD(IB)=-1

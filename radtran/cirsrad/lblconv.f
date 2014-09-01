@@ -173,12 +173,14 @@ C          Hanning Instrument Shape
 
           ENDIF
 
-          IF((F1.LT.0.0.OR.F2.LT.0.0).AND.ISHAPE.NE.3)THEN
-           print*,'Warning: lblconv. F1 or F2 < 0.0'
-           print*,F1,F2
-           stop
+          IF(ISHAPE.GT.0.AND.ISHAPE.LT.3)THEN
+           IF(F1.LT.0.0.OR.F2.LT.0.0)THEN
+            print*,'Warning: lblconv. F1 or F2 < 0.0'
+            print*,F1,F2
+            stop
+           ENDIF
           ENDIF
- 
+
           IF(F1.GT.0.0.OR.F2.GT.0.0)THEN 
 C           print*,J,V1,VWAVE1,VWAVE,V2,F1,F2
            DO I=1,NPATH

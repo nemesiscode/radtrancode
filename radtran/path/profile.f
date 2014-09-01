@@ -32,7 +32,7 @@ C     MAXGAS is the maximum number of vertical mixing ratio profiles.
       REAL H1(MAXPRO),P1(MAXPRO),T1(MAXPRO),VMR1(MAXPRO,MAXGAS)
       REAL XSUM,HTAN,PTAN,XP1,XP2,WCOL,PX,TX,DELH
       REAL XPR,XSCALE(MAXPRO)
-      INTEGER ISCALE(MAXGAS),IPLANET,JSWITCH,I1,IVMR,JW
+      INTEGER ISCALE(MAXGAS),IPLANET,JSWITCH,I1,IVMR,JW,IERR
       REAL XV(MAXPRO),XXMASS(MAXPRO),CALCMOLWT,RATIO(MAXGAS)
       INTEGER NPRO,NVMR,ID(MAXGAS),ISO(MAXGAS),NPRO1
 C     H is the height in kilometres above some NOMINAL zero.
@@ -438,8 +438,10 @@ C          Fix this gas to not scale if we adjust the vmrs later.
 
 C           Scale the other gases to add up to 1.0 for AMFORM=1 profile
             ISCALE(K)=0
-            CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE)
-
+            CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
+            IF(IERR.EQ.1)THEN
+             PRINT*,'Warning: A VMR has gone negative'
+            ENDIF
           ENDIF
 
         END IF
@@ -448,7 +450,10 @@ C --------------------------------------------------------------------
       ELSE IF(COMM.EQ.'E')THEN
 C       make the vmrs at each level add up to 1.0
 
-        CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE)
+        CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
+        IF(IERR.EQ.1)THEN
+             PRINT*,'Warning: A VMR has gone negative'
+        ENDIF
 
 C --------------------------------------------------------------------
       ELSE IF(COMM.EQ.'F')THEN
@@ -517,7 +522,10 @@ C --------------------------------------------------------------------
 
         IF(AMFORM.EQ.1)THEN
          ISCALE(NCONV)=0
-         CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE)
+         CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
+         IF(IERR.EQ.1)THEN
+             PRINT*,'Warning: A VMR has gone negative'
+         ENDIF
         ENDIF
 C --------------------------------------------------------------------
       ELSE IF(COMM.EQ.'L')THEN
@@ -657,7 +665,10 @@ C        Make sure water is condensed
 
          IF(AMFORM.EQ.1)THEN
           ISCALE(JW)=0
-          CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE)
+          CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
+          IF(IERR.EQ.1)THEN
+             PRINT*,'Warning: A VMR has gone negative'
+          ENDIF
          ENDIF
 
         ENDIF

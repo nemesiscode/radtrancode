@@ -74,7 +74,9 @@ C     Set measurement vector and source vector lengths here.
       INCLUDE 'arraylen.f'
       integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,jsurf,lin
       integer jalb,jtan,jpre,ilbl,jrad,jlogg,miter,niter,idum,itry
-      CHARACTER*100 runname,itname,abort
+      integer xflag,ierr,ncont,flagh2p,npro1,jpara
+      real xdnu,xmap(maxv,maxgas+2+maxcon,maxpro)
+      CHARACTER*100 runname,itname,abort,aname,buffer
 
       real xn(mx),se1(my),calc_chi,kk(my,mx),calc_phiprior
       real fwhm,xlat,xn1(mx),ran11,test,RADIUS,err,ferr
@@ -97,6 +99,33 @@ C     Set measurement vector and source vector lengths here.
 
       real chisq,xchi,ochisq,oxchi,phi,ophi,xphi
 C     **************************** CODE ********************************
+
+C     ++++++++++++++++++ Read in extra parameters to test vmr profile +++
+C     Look to see if the CIA file refined has variable para-H2 or not.
+      call file(runname,runname,'cia')
+      open(12,FILE=runname,STATUS='OLD')
+       read(12,1) aname
+       read(12,*) xdnu
+       read(12,*) jpara
+      close(12)
+
+      flagh2p=0
+      if(jpara.ne.0)then
+       flagh2p=1
+      endif
+
+C     Read in number of aerosol types from the aerosol.ref file
+      OPEN(UNIT=1,FILE='aerosol.ref',STATUS='OLD')
+C     First skip header
+55     READ(1,1)BUFFER
+       IF(BUFFER(1:1).EQ.'#') GOTO 55
+       READ(BUFFER,*)NPRO1,NCONT
+      CLOSE(1)
+
+1     FORMAT(A)
+
+C     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
       open(41,file='testxtry.dat',status='unknown')
 
@@ -220,8 +249,17 @@ C     Set proposal distribution to be same as a priori distribution (for now)
         print*,'iter,itry',iter,itry
 
 C       Now calculate next iterated xn
+403     continue
         call modxvecMCMCA(idum,npro,nvar,varident,varparam,
      1   nx,xn,sx,xn1)
+
+C       Test to see if any vmrs have gone negative.
+        xflag=0
+        call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
+     1    nvar,varident,varparam,nx,xn1,jpre,ncont,flagh2p,xmap,ierr)
+        if (ierr.eq.1)then
+          goto 403
+        endif
 
 
 C       Calculate test spectrum using trial state vector xn1. 

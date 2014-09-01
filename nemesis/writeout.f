@@ -76,7 +76,7 @@ C     ***********************************************************************
       real xlatx,varidentx(mvar,3),varparamx(mvar,mparam)
       real stx(mx,mx)
       integer nxx,xnx(mx),nvarx,nprox,jtanx,jprex,jradx
-      integer jsurfx,jalbx,icread,jloggx
+      integer jsurfx,jalbx,icread,jloggx,ierr,ierrx
       character*100 runname,aname,buffer,cellfile
       logical gasgiant,cellexist
 
@@ -246,8 +246,8 @@ C         Going back to default
 
       enddo
 
-cc1000  format(1x,i4,1x,f10.4,1x,e15.8,1x,e15.8,1x,f7.2,1x,e15.8,1x,f9.5)
-1000  format(1x,i4,1x,f11.5,1x,e15.8,1x,e15.8,1x,f7.2,1x,e15.8,1x,f9.5)
+C1000  format(1x,i4,1x,f10.4,1x,e15.8,1x,e15.8,1x,f7.2,1x,e15.8,1x,f9.5)
+1000  format(1x,i4,1x,f12.8,1x,e15.8,1x,e15.8,1x,f7.2,1x,e15.8,1x,f9.5)
 1010  format(1x,i4,1x,f10.4,1x,e15.8,1x,e15.8,1x,f7.2,1x,e15.8,1x,f9.5)
 1020  format(1x,i4,1x,f9.4,1x,e12.6,1x,e12.6,1x,f6.2,1x,e12.6,1x,f6.2)
 1030  format(1x,i4,1x,f10.4,1x,e15.8,1x,e15.8,1x,f7.2,1x,e15.8,1x,f9.5)
@@ -353,7 +353,10 @@ C     mass to units of 1e24 kg.
 
       xflag=0
       call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
-     1  nvar,varident,varparam,nx,xn,jpre,ncont,flagh2p,xmap)
+     1  nvar,varident,varparam,nx,xn,jpre,ncont,flagh2p,xmap,ierr)
+
+C     Also update .drv file
+      call subpath(runname)
 
       if(lin.eq.1.or.lin.eq.3)then
 
@@ -380,7 +383,11 @@ C      jradf and jloggf are passed via the planrad common block
 
        xflag=1
        call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
-     1  nvarx,varidentx,varparamx,nxx,xnx,jprex,ncont,flagh2p,xmapx)
+     1  nvarx,varidentx,varparamx,nxx,xnx,jprex,ncont,flagh2p,xmapx,
+     2  ierrx)
+
+C      Also update .drv file
+       call subpath(runname)
 
       endif
       

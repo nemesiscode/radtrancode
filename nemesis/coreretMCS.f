@@ -77,8 +77,6 @@ C	dd(mx,my)	double	Contribution functions
 C
 C     Pat Irwin		29/4/01
 C			10/10/03 conversion for Nemesis
-C	  Mahmuda Afrin Badhan	05/08/14  Alternate convergence criteria added to address time-consuming retrievals 
-C                                     caused by oscillating solutions
 C
 C     ************************ VARIABLES *******************************
       implicit none
@@ -88,8 +86,10 @@ C     Set measurement vector and source vector lengths here.
       integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,jsurf
       integer jalb,jalbx,jtan,jpre,jtanx,jprex,iscat1,i1,k1
       integer jrad,jradx,lx(mx),jlogg,jloggx
-      real phlimit,alambda,xtry,tphi,abstphi
-      CHARACTER*100 runname,itname,abort
+      real phlimit,alambda,xtry,tphi
+      integer xflag,ierr,ncont,flagh2p,npro1,jpara
+      real xdnu,xmap(maxv,maxgas+2+maxcon,maxpro)
+      CHARACTER*100 runname,itname,abort,aname,buffer
 
       real xn(mx),se1(my),se(my,my),calc_phiret,sf(my,my)
       real fwhm,xlat,xdiff,xn1(mx),x_out(mx)
@@ -118,6 +118,33 @@ C     Set measurement vector and source vector lengths here.
 
       real phi,ophi,chisq,xchi,oxchi
 C     **************************** CODE ********************************
+
+C     ++++++++++++++++++ Read in extra parameters to test vmr profile +++
+C     Look to see if the CIA file refined has variable para-H2 or not.
+      call file(runname,runname,'cia')
+      open(12,FILE=runname,STATUS='OLD')
+       read(12,1) aname
+       read(12,*) xdnu
+       read(12,*) jpara
+      close(12)
+
+      flagh2p=0
+      if(jpara.ne.0)then
+       flagh2p=1
+      endif
+
+C     Read in number of aerosol types from the aerosol.ref file
+      OPEN(UNIT=1,FILE='aerosol.ref',STATUS='OLD')
+C     First skip header
+55     READ(1,1)BUFFER
+       IF(BUFFER(1:1).EQ.'#') GOTO 55
+       READ(BUFFER,*)NPRO1,NCONT
+      CLOSE(1)
+
+1     FORMAT(A)
+
+C     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
 C     Find all the calculation and convolution wavelengths and rank
 C     in order
@@ -403,8 +430,18 @@ C        Check to see if log numbers have gone out of range
           endif
          endif
 
-
         enddo
+
+
+C       Test to see if any vmrs have gone negative.
+        xflag=0
+        call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
+     1    nvar,varident,varparam,nx,xn1,jpre,ncont,flagh2p,xmap,ierr)
+        if (ierr.eq.1)then
+          alambda = alambda*10.0             ! increase Marquardt brake
+          if(alambda.gt.1e10)alambda=1e10
+          goto 145
+        endif
 
 C       Calculate test spectrum using trial state vector xn1. 
 C       Put output spectrum into temporary spectrum yn1 with

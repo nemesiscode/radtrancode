@@ -1,5 +1,5 @@
       SUBROUTINE SUBPROFRETG(XFLAG,IPFILE,ISPACE,ISCAT,GASGIANT,XLAT,
-     1 NVAR,VARIDENT,VARPARAM,NX,XN,JPRE,NCONT,FLAGH2P,XMAP)
+     1 NVAR,VARIDENT,VARPARAM,NX,XN,JPRE,NCONT,FLAGH2P,XMAP,IERR)
 C     $Id:
 C     ***********************************************************************
 C     Subroutine to modify an existing ipfile.ref T/P/vmr profile and 
@@ -55,6 +55,8 @@ C				temperature,vmr,clouds at level J to be
 C				written out to runname.prf or aerosol.prf then
 C				XMAP(K,L,J) is d(X1(J))/d(XN(K)) and where
 C				 L is the identifier (1 to NGAS+1+2*NCONT)
+C	IERR	INTEGER		Error reporting flag set to 1 if a vmr has
+C				gone negative
 C
 C     Pat Irwin	29/7/96		Original
 C     Pat Irwin 17/10/03	Revised for Nemesis
@@ -73,7 +75,7 @@ C     ***********************************************************************
       REAL RHO,F,DQDX(MAXPRO),DX
       REAL DNDH(MAXPRO),DQDH(MAXPRO),FCLOUD(MAXPRO)
       DOUBLE PRECISION Q(MAXPRO),OD(MAXPRO),ND(MAXPRO),XOD
-      INTEGER ISCALE(MAXGAS),XFLAG,NPVAR,MAXLAT
+      INTEGER ISCALE(MAXGAS),XFLAG,NPVAR,MAXLAT,IERR
       INTEGER NLATREF,ILATREF,JLAT,KLAT,ICUT
       PARAMETER (MAXLAT=20)
       REAL HREF(MAXLAT,MAXPRO),TREF(MAXLAT,MAXPRO),FLAT
@@ -250,7 +252,7 @@ C        Skip header
 
 C      Make sure that vmrs add up to 1 if AMFORM=1
        IF(AMFORM.EQ.1)THEN
-        CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE)
+        CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
 
         DO 301 I=1,NPRO
          DO K=1,NVMR
@@ -1654,7 +1656,7 @@ C        **********************************************************
 C     Now make sure the resulting VMRs add up to 1.0 for an
 C     AMFORM=1 profile
       IF(AMFORM.EQ.1)THEN
-        CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE)
+        CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
       ENDIF
 
 C     ********  Modify profile with hydrostatic equation ********

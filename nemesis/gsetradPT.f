@@ -48,7 +48,7 @@ C     ************************************************************************
       real xlat,fwhm,xlatx,hcorrx,tsurf,radius
       integer nlayer,laytyp,nx,nxx,ncont,jpara
       integer layint,jsurfx,jalbx,jtanx,jprex,jradx,nprox
-      integer jloggx
+      integer jloggx,ierr,ierrx
       real layht,xdnu
       real vconv(mconv)
       integer flagh2p
@@ -84,7 +84,7 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
 
       xflag=0
       call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
-     1  nvar,varident,varparam,nx,xn,jpre,ncont,flagh2p,xmap)
+     1  nvar,varident,varparam,nx,xn,jpre,ncont,flagh2p,xmap,ierr)
 
       hcorrx=0.0
 
@@ -106,7 +106,8 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
 
        xflag=1
        call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
-     1  nvarx,varidentx,varparamx,nxx,xnx,jprex,ncont,flagh2p,xmapx)
+     1  nvarx,varidentx,varparamx,nxx,xnx,jprex,ncont,flagh2p,xmapx,
+     2  ierrx)
 
 
        do ivarx=1,nvarx

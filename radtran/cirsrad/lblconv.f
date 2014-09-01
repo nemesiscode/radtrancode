@@ -28,7 +28,7 @@ C       bins, paths, etc.)
      2			y2(maxbin), x1, x2, delx, xi, yi, yold, dv
 	REAL		vfil(1000),fil(1000),yy,sumf,delv
 	REAL		vcentral,ytmp(maxout),vcen
-	REAL		v1,v2,f1,f2,vt,XOFF,HAMMING,NFW
+	REAL		v1,v2,f1,f2,vt,XOFF,HAMMING,NFW,HANNING
 	CHARACTER*100	runname
 
         IF(fwhm.gt.0.0)THEN
@@ -51,8 +51,8 @@ C        vwave, delv are in wavenumbers
 
 C         print*,vwave,vwave1,delv,delx
 
-C        Set total width of Hamming function window in terms of
-C        numbers of FWHMs for ISHAPE=3
+C        Set total width of Hamming/Hanning function window in terms of
+C        numbers of FWHMs for ISHAPE=3 and ISHAPE=4
          NFW = 3.
 
          DO J=1,NCONV
@@ -131,7 +131,7 @@ C          Gaussian Instrument Shape
             ENDIF
            ENDIF           
 
-          ELSE
+          ELSEIF(ISHAPE.EQ.3)THEN
 C          Hamming Instrument Shape
            IF(VWAVE.GE.V1.AND.VWAVE.LE.V2)THEN
             IF(ISPACE.EQ.0)THEN
@@ -149,6 +149,26 @@ C          Hamming Instrument Shape
              XOFF = 1E4/VWAVE1-VCEN
             ENDIF
             F1 = HAMMING(FWHM,XOFF)
+           ENDIF           
+
+          ELSE
+C          Hanning Instrument Shape
+           IF(VWAVE.GE.V1.AND.VWAVE.LE.V2)THEN
+            IF(ISPACE.EQ.0)THEN
+             XOFF = VWAVE-VCEN
+            ELSE
+             XOFF = 1E4/VWAVE - VCEN
+            ENDIF
+            F2 = HANNING(FWHM,XOFF)
+           ENDIF
+
+           IF(VWAVE1.GE.V1.AND.VWAVE1.LE.V2)THEN
+            IF(ISPACE.EQ.0)THEN
+             XOFF = VWAVE1-VCEN
+            ELSE
+             XOFF = 1E4/VWAVE1-VCEN
+            ENDIF
+            F1 = HANNING(FWHM,XOFF)
            ENDIF           
 
           ENDIF

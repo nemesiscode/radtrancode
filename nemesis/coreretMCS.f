@@ -129,6 +129,7 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
       close(12)
 
       flagh2p=0
+      ierr=0
       if(jpara.ne.0)then
        flagh2p=1
       endif

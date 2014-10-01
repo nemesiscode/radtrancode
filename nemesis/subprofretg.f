@@ -110,6 +110,18 @@ C     ***********************************************************************
       COMMON /SROM223/PCUT
 C----------------------------------------------------------------------------
 C
+C     First zero-fill HREF, PREF, TREF and VMRREF arrays
+      do i=1,MAXLAT
+       do j=1,MAXPRO
+        HREF(i,j)=0.
+        PREF(i,j)=0.
+        TREF(i,j)=0.
+        do k=1,MAXGAS
+         VMRREF(i,j,k)=0.
+        enddo
+       enddo
+      enddo
+
 C     First read in reference ATMOSPHERIC profile
 
 10    FORMAT(A)

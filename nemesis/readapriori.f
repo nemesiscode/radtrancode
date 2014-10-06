@@ -76,7 +76,7 @@ C     ****************************************************************
       real delp,xfac,pknee,eknee,edeep,xdeep,xlat,xlatx,xlonx,pshld
       real efsh,xfsh,varparam(mvar,mparam),flat,hknee,pre
       real ref(maxlat,maxpro),clen,SXMINFAC,arg,valb,alb
-      real xknee,xrh,erh,xcdeep,ecdeep,radius,Grav
+      real xknee,xrh,erh,xcdeep,ecdeep,radius,Grav,plim
       parameter (Grav=6.672E-11)
 C     SXMINFAC is minimum off-diagonal factor allowed in the
 C     a priori covariance matrix
@@ -823,6 +823,45 @@ C             *** vmr, para-H2 or cloud, take logs *********
              sx(ix,ix) = (elhigh/xlhigh)**2
 
              nx = nx+4
+
+           elseif (varident(ivar,3).eq.17)then
+C            ******** profile held as a value at a certain pressure and 
+C            ******** fractional scale height, limited at pressures
+C            ******** less than that specified 
+C            Read in xknee,fsh,pknee,plim
+             read(27,*)pknee,plim
+             read(27,*)xknee,eknee
+             read(27,*)xfsh,efsh
+             varparam(ivar,1) = pknee
+             varparam(ivar,2) = plim
+             ix = nx+1
+             if(varident(ivar,1).eq.0)then
+C             *** temperature, leave alone ********
+              x0(ix)=xknee
+              err = eknee
+             else
+C             *** vmr, fcloud, para-H2 or cloud, take logs *********
+              if(xknee.gt.0)then
+                x0(ix)=alog(xknee)
+                lx(ix)=1
+              else
+                print*,'Error in readapriori - xknee must be > 0'
+                stop
+              endif
+              err = eknee/xknee
+             endif
+             sx(ix,ix)=err**2
+             ix = nx+2
+             if(xfsh.gt.0.0)then
+               x0(ix) = alog(xfsh)
+               lx(ix)=1
+             else
+               print*,'Error in readapriori - xfsh must be > 0'
+               stop
+             endif
+             sx(ix,ix) = (efsh/xfsh)**2
+
+             nx = nx+2
 
            else         
             print*,'vartype profile parametrisation not recognised'

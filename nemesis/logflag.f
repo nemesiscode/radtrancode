@@ -27,6 +27,7 @@ C       Variable is not temperature  - may need to take exponent
         if(imod.eq.6.and.ip.eq.1)iflag=1 ! Venus cloud profile
         if(imod.eq.7.and.ip.eq.1)iflag=1 ! extended profile         
         if(imod.eq.17.and.ip.eq.1)iflag=1 ! extended profile         
+        if(imod.eq.18.and.ip.eq.1)iflag=1 ! extended profile         
         if(imod.eq.8.and.ip.eq.1)iflag=1 ! variable knee profile
         if(imod.eq.9.and.ip.eq.1)iflag=1 ! variable knee profile
         if(imod.eq.16.and.ip.eq.1)iflag=1 ! lapse rate profile      
@@ -38,6 +39,7 @@ C       Variable is not temperature  - may need to take exponent
       if(imod.eq.6.and.ip.eq.2)iflag=1 ! Venus cloud profile
       if(imod.eq.7.and.ip.eq.2)iflag=1 ! log fsh - extended
       if(imod.eq.17.and.ip.eq.2)iflag=1 ! log fsh - extended
+      if(imod.eq.18.and.ip.eq.2)iflag=1 ! log fsh - extended
       if(imod.eq.8.and.ip.eq.2)iflag=1 ! log fsh - var. knee
       if(imod.eq.8.and.ip.eq.3)iflag=1 ! variable knee profile
       if(imod.eq.9.and.ip.eq.2)iflag=1 ! log fsh - var. knee

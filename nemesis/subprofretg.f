@@ -1609,6 +1609,72 @@ C         print*,'Snapping to : ',P(JFSH)
 
          ENDDO
 
+        ELSEIF(VARIDENT(IVAR,3).EQ.18)THEN
+C        Model 7. Profile modelled with a variable abundance at a fixed 
+C        pressure level and variable fractional scale height below
+C        that level. Abundance above is fixed
+C        ***************************************************************
+         PKNEE = VARPARAM(IVAR,1)
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+           XDEEP = XN(NXTEMP+1)
+         ELSE
+           XDEEP = EXP(XN(NXTEMP+1))
+         ENDIF
+         XFSH  = EXP(XN(NXTEMP+2))
+         XFAC = (1.0-XFSH)/XFSH
+         DXFAC = -1.0/XFSH
+
+         CALL VERINT(P,H,NPRO,HKNEE,PKNEE)
+         JFSH = 0       
+
+         DELH=1000.0
+         DO J=1,NPRO
+          PMIN = ABS(P(J)-PKNEE)
+          IF(PMIN.LT.DELH)THEN
+           JFSH = J
+           DELH=PMIN
+          ENDIF
+         ENDDO
+
+         IF(JFSH.LT.2.OR.JFSH.GT.NPRO-1)THEN
+          PRINT*,'SUBPROFRETG. Must choose pressure level'
+          PRINT*,'within range of profile'
+          STOP
+         ENDIF
+
+C         print*,'Requested knee pressure : ',PKNEE
+C         print*,'Snapping to : ',P(JFSH)
+
+         X1(JFSH)=XDEEP
+
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+            XMAP(NXTEMP+1,IPAR,JFSH)=1.0
+         ELSE
+            XMAP(NXTEMP+1,IPAR,JFSH)=X1(JFSH)
+         ENDIF
+
+
+         DO J=JFSH+1,NPRO 
+             X1(J)=X1(J-1)
+             XMAP(NXTEMP+1,IPAR,J)=XMAP(NXTEMP+1,IPAR,J-1)
+             XMAP(NXTEMP+2,IPAR,J)=0.
+
+         ENDDO
+
+         DO J=JFSH-1,1,-1             
+             DELH = H(J)-H(J+1)
+             X1(J)=X1(J+1)*EXP(-DELH*XFAC/SCALE(J))
+             XMAP(NXTEMP+1,IPAR,J)=XMAP(NXTEMP+1,IPAR,J+1)*
+     1                  EXP(-DELH*XFAC/SCALE(J))
+             XMAP(NXTEMP+2,IPAR,J)=(-DELH/SCALE(J))*DXFAC*
+     1          X1(J+1)*EXP(-DELH*XFAC/SCALE(J)) +
+     2          XMAP(NXTEMP+2,IPAR,J+1)*EXP(-DELH*XFAC/SCALE(J))
+
+             IF(X1(J).GT.1e10)X1(J)=1e10
+             IF(X1(J).LT.1e-36)X1(J)=1e-36
+
+         ENDDO
+
 
         ELSE
 

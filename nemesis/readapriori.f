@@ -863,6 +863,44 @@ C             *** vmr, fcloud, para-H2 or cloud, take logs *********
 
              nx = nx+2
 
+           elseif (varident(ivar,3).eq.18)then
+C            ******** profile held as a value at a certain pressure and 
+C            ******** fractional scale height. vmr is constant at altitudes
+C	     ******** above the reference level. 
+C            Read in xknee,fsh,pknee
+             read(27,*)pknee
+             read(27,*)xknee,eknee
+             read(27,*)xfsh,efsh
+             varparam(ivar,1) = pknee
+             ix = nx+1
+             if(varident(ivar,1).eq.0)then
+C             *** temperature, leave alone ********
+              x0(ix)=xknee
+              err = eknee
+             else
+C             *** vmr, fcloud, para-H2 or cloud, take logs *********
+              if(xknee.gt.0)then
+                x0(ix)=alog(xknee)
+                lx(ix)=1
+              else
+                print*,'Error in readapriori - xknee must be > 0'
+                stop
+              endif
+              err = eknee/xknee
+             endif
+             sx(ix,ix)=err**2
+             ix = nx+2
+             if(xfsh.gt.0.0)then
+               x0(ix) = alog(xfsh)
+               lx(ix)=1
+             else
+               print*,'Error in readapriori - xfsh must be > 0'
+               stop
+             endif
+             sx(ix,ix) = (efsh/xfsh)**2
+
+             nx = nx+2
+
            else         
             print*,'vartype profile parametrisation not recognised'
             stop

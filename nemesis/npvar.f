@@ -18,7 +18,7 @@ C     **************************************************************
       integer imod,np,npro
 
       np=1
-      if(imod.le.17)then
+      if(imod.le.18)then
         if(imod.eq.0)np = npro
         if(imod.eq.1)np = 2
         if(imod.eq.4)np = 3

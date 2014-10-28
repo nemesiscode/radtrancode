@@ -23,14 +23,16 @@ F_SOURCES = \
 	rdkey_band.f \
 	rdkey_corrk.f \
 	rdline.f \
+	printline.f \
+	init_partf.f \
 	read_bands.f \
 	read_del.f \
 	read_yam.f \
 	write_band.f
 
 INCDIR = ../includes
-INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/bincoms.f $(INCDIR)/dbcom.f \
-	$(INCDIR)/lincom.f $(INCDIR)/pathcom.f $(INCDIR)/arrdef.f
+#INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/bincoms.f $(INCDIR)/dbcom.f \
+#	$(INCDIR)/lincom.f $(INCDIR)/pathcom.f $(INCDIR)/arrdef.f
 
 OBJ = $(F_SOURCES:.f=.o)
 LIBRARY = $(LIB)/spec_data.a
@@ -62,6 +64,7 @@ bin :    \
 	Cp_lines \
 	Inv_scan \
 	Li_lines \
+	Li_linestemp \
 	Makeband \
 	Mergeband \
 	Modifyband \
@@ -73,6 +76,7 @@ bin :    \
 	Pl_elines \
 	Scan \
 	Select \
+	Convertlines \
 	Selecttemp \
 	Selecttemploop \
 	Summary \
@@ -94,12 +98,16 @@ Cp_lines : cp_lines.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Cp_lines cp_lines.f $(LIBRARY) \
 	$(LIB)/rtm_util.a
 
-Inv_scan : inv_scan.f $(LIBRARY)
-	$(FC) $(FCFLAGS) -o $(BIN)/Inv_scan inv_scan.f $(LIBRARY) \
-	$(LIB)/rtm_util.a
-
 Li_lines : li_lines.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Li_lines li_lines.f $(LIBRARY) \
+	$(LIB)/rtm_util.a
+
+Li_linestemp : li_linestemp.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Li_linestemp li_linestemp.f $(LIBRARY) \
+	$(LIB)/path.a $(LIB)/rtm_util.a
+
+Inv_scan : inv_scan.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Inv_scan inv_scan.f $(LIBRARY) \
 	$(LIB)/rtm_util.a
 
 Makeband : makeband.f $(LIBRARY)
@@ -138,13 +146,17 @@ Select : select.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Select select.f $(LIBRARY) \
 	$(LIB)/rtm_util.a
 
+Convertlines : convertlines.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Convertlines convertlines.f $(LIBRARY) \
+	$(LIB)/rtm_util.a
+
 Selecttemp : selecttemp.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Selecttemp selecttemp.f $(LIBRARY) \
-	$(LIB)/rtm_util.a
+	$(LIB)/path.a $(LIB)/rtm_util.a
 
 Selecttemploop : selecttemploop.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Selecttemploop selecttemploop.f $(LIBRARY) \
-	$(LIB)/rtm_util.a
+	$(LIB)/path.a $(LIB)/rtm_util.a
 
 Summary : summary.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Summary summary.f $(LIBRARY) \

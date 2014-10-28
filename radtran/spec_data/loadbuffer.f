@@ -1,6 +1,6 @@
       SUBROUTINE LOADBUFFER(VMIN,VMAX,FSTREC,MAXLIN,MAXBIN,IB,NGAS,
      1 IDGAS,ISOGAS,VBOT,WING,NLINR,VLIN,SLIN,ALIN,ELIN,IDLIN,SBLIN,
-     2 PSHIFT,DOUBV,TDW,TDWS,LLQ,NXTREC,FSTLIN,LSTLIN,LSTBIN)
+     2 PSHIFT,DOUBV,TDW,TDWS,LLQ,NXTREC,FSTLIN,LSTLIN,LASTBIN)
 
 C     $Id:
 C***********************************************************************
@@ -40,7 +40,7 @@ C	LLQ(2,MAXLIN)	CHARA*15 Lower state local quanta.
 C	NXTREC		INTEGER	Next record in database to query
 C	FSTLIN(2,MAXBIN) INT	First line read into in each continuum bin
 C	LSTLIN(2,MAXBIN) INT	Last line read into in each continuum bin
-C	LSTBIN(2)        INT	Bin position of last line in buffer
+C	LASTBIN(2)        INT	Bin position of last line in buffer
 C
 C
 C_FILE:	unit=1 (DBLUN) line data and gas files
@@ -64,7 +64,7 @@ C ../includes/dbcom.f stores the line database variables (e.g. RELABU).
       INTEGER MAXLIN,NLINR,MAXBIN,CURBIN
       INTEGER IDLIN(2,MAXLIN),NGAS,IDGAS(NGAS),ISOGAS(NGAS)
       INTEGER FSTLIN(2,MAXBIN),LSTLIN(2,MAXBIN),NBINX
-      INTEGER LSTBIN(2)
+      INTEGER LASTBIN(2)
       REAL VMIN,VMAX
       REAL VLIN(2,MAXLIN),SLIN(2,MAXLIN)
       REAL ALIN(2,MAXLIN),ELIN(2,MAXLIN)
@@ -89,24 +89,36 @@ C******************************** CODE *********************************
 
 C     Assume line database file is already open.
 
-      print*,'FSTREC=',FSTREC
+      print*,'loadbuffer: FSTREC=',FSTREC
+
+C      print*,'VMIN,VMAX = ',VMIN,VMAX
+C      print*,'MAXLIN,MAXBIN,IB = ',MAXLIN,MAXBIN,IB
+C      print*,'NGAS',NGAS
+C      do i=1,NGAS
+C       print*,idgas(i),isogas(i)
+C      enddo
+C      print*,'VBOT,WING = ',VBOT,WING
+
       IREC=FSTREC-1
       LINE=0
+
+      print*,'IREC,LINE = ',IREC,LINE
 
       DO I=1,MAXBIN
        FSTLIN(IB,I)=-1
        LSTLIN(IB,I)=-1
       ENDDO
-      LSTBIN(IB)=-1
+      LASTBIN(IB)=-1
 
 111   IREC=IREC+1
 
-C      print*,irec
+C      print*,'IREC = ',irec
+
       READ(DBLUN,110,REC=IREC)BUFFER(1:DBRECL)
 110   FORMAT(A)
 
       CALL RDLINE(BUFFER)
-
+   
 C      WRITE(*,110)BUFFER(1:DBRECL)
 
       IF(LNWAVE.LT.VMAX)THEN
@@ -208,9 +220,9 @@ C NOTE: SBLIN is the correction to air broadening so that zero is valid
       NBINX = 1+ (VMAX-VBOT)/WING 
       DO I=1,NBINX
 C       PRINT*,I,VBOT+(I-1)*WING,FSTLIN(IB,I),LSTLIN(IB,I)
-       IF(FSTLIN(IB,I).GT.0)LSTBIN(IB)=I
+       IF(FSTLIN(IB,I).GT.0)LASTBIN(IB)=I
       ENDDO
-      print*,'IB,NLINR,NXTREC,LSTBIN',IB,NLINR,NXTREC,LSTBIN(IB)
+      print*,'IB,NLINR,NXTREC,LASTBIN',IB,NLINR,NXTREC,LASTBIN(IB)
 
       RETURN
 

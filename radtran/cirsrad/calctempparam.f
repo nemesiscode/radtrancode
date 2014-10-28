@@ -4,7 +4,7 @@ C     $Id:
 C***********************************************************************
 C_TITL:	CALCTEMPPARAM.f
 C
-C_DESC:	Calculate the line contributions to the continuum bins
+C_DESC:	Calculate temperature parameters for different layers and gases.
 C
 C_ARGS:	Input variables:
 C	WING		REAL	Bin width.

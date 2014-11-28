@@ -84,18 +84,42 @@ C-----------------------------------------------------------------------------
       REAL TEMP,XTEMP(MTABEXTRA),YTEMP(MTABEXTRA)
       CHARACTER*100 PARTFIL
 C
-      REAL T0,T02,T03
+      REAL T0,T02,T03,P1,WT
       PARAMETER (T0=296.,T02=T0*T0,T03=T0*T02)
 C
       REAL PARTT0,PTMP
 
-      PARTT0=DBQTA(ISO,ID)+DBQTB(ISO,ID)*T0
-     1  +DBQTC(ISO,ID)*T02+DBQTD(ISO,ID)*T03
+      IF(IPTF.EQ.0) THEN
+       IF(ISO.GT.0)THEN
+        PARTT0=DBQTA(ISO,ID)+DBQTB(ISO,ID)*T0
+     1   +DBQTC(ISO,ID)*T02+DBQTD(ISO,ID)*T03
 C
-      PTMP=PARTT0/(DBQTA(ISO,ID) + TEMP*( DBQTB(ISO,ID) +
-     1  TEMP*( DBQTC(ISO,ID) + TEMP*DBQTD(ISO,ID) ) ) )
+        PTMP=PARTT0/(DBQTA(ISO,ID) + TEMP*( DBQTB(ISO,ID) +
+     1   TEMP*( DBQTC(ISO,ID) + TEMP*DBQTD(ISO,ID) ) ) )
 
-      IF(IPTF.EQ.1)THEN
+       ELSE
+        PARTT0=0.
+        PTMP=0.
+        DO 255 J=1,DBNISO(ID)
+C         print*,RELABU(J,ID),(DBQTA(J,ID)+DBQTB(J,ID)*T0
+C     1   +DBQTC(J,ID)*T02+DBQTD(J,ID)*T03),(DBQTA(J,ID) + 
+C     3   TEMP*( DBQTB(J,ID) +
+C     1   TEMP*( DBQTC(J,ID) + TEMP*DBQTD(J,ID) ) ) ),
+C     3   (DBQTA(J,ID)+DBQTB(J,ID)*T0
+C     1   +DBQTC(J,ID)*T02+DBQTD(J,ID)*T03)/(DBQTA(J,ID) +
+C     3   TEMP*( DBQTB(J,ID) +
+C     1   TEMP*( DBQTC(J,ID) + TEMP*DBQTD(J,ID) ) ) )
+
+         PARTT0=PARTT0+RELABU(J,ID)*(DBQTA(J,ID)+DBQTB(J,ID)*T0
+     1   +DBQTC(J,ID)*T02+DBQTD(J,ID)*T03)
+         PTMP=PTMP+RELABU(J,ID)*(DBQTA(J,ID) + TEMP*( DBQTB(J,ID) +
+     1   TEMP*( DBQTC(J,ID) + TEMP*DBQTD(J,ID) ) ) )
+
+255     CONTINUE
+        PTMP=PARTT0/PTMP
+       ENDIF
+
+      ELSE
 
        IF(IREADEXTRA.NE.-1)THEN
         PRINT*,'Extra partition functions database has not been'
@@ -103,21 +127,60 @@ C
         CALL INIT_PARTF
        ENDIF
 
-       JEXTRA=-1
-       DO 10 I=1,NPARTEXTRA
-        IF(IDEXTRA(I).EQ.ID.AND.
-     &		(ISOEXTRA(I).EQ.ISO.OR.ISOEXTRA(I).EQ.0))THEN
-         JEXTRA=I
-         NTAB=NTABEXTRA(I)
-         DO 20 J=1,NTAB
-          XTEMP(J)=TEMPEXTRA(I,J)
-          YTEMP(J)=PARTFEXTRA(I,J)
-20       CONTINUE
-         CALL VERINT(XTEMP,YTEMP,NTAB,PTMP,TEMP)
+       IF(ISO.GT.0)THEN
+        JEXTRA=-1
+        DO 10 I=1,NPARTEXTRA
+         IF(IDEXTRA(I).EQ.ID.AND.
+     &		(ISOEXTRA(I).EQ.ISO))THEN
+          JEXTRA=I
+          NTAB=NTABEXTRA(I)
+          DO 20 J=1,NTAB
+           XTEMP(J)=TEMPEXTRA(I,J)
+           YTEMP(J)=PARTFEXTRA(I,J)
+20        CONTINUE
+          CALL VERINT(XTEMP,YTEMP,NTAB,PTMP,TEMP)
+         ENDIF
+
+10      CONTINUE
+
+        IF(JEXTRA.LT.0)THEN
+         PRINT*,'Problem in PARTF - gas not found in partfextra.dat'
+         PRINT*,'ID,ISO = ',ID,ISO
+         PRINT*,'Stopping'
+         STOP
+        ENDIF
+       ELSE
+        JEXTRA=-2
+        PTMP=0.
+        WT=0.
+C       We'll keep a tab on the total relative abundances in case the
+C       number of isotopes in tabulated partition function file is less
+C       than the total number of isotopes for the gas in the database.
+        DO 15 I=1,NPARTEXTRA
+         IF(IDEXTRA(I).EQ.ID)THEN
+          NTAB=NTABEXTRA(I)
+          DO 25 J=1,NTAB
+           XTEMP(J)=TEMPEXTRA(I,J)
+           YTEMP(J)=PARTFEXTRA(I,J)
+25        CONTINUE
+          CALL VERINT(XTEMP,YTEMP,NTAB,P1,TEMP)
+C          print*,ID,ISOEXTRA(I),P1,RELABU(ISOEXTRA(I),ID),WT
+          PTMP=PTMP+RELABU(ISOEXTRA(I),ID)*P1
+          WT=WT+RELABU(ISOEXTRA(I),ID)
+         ENDIF
+15      CONTINUE
+
+        IF(WT.LE.0)THEN
+         PRINT*,'Problem in PARTF - no isotopes found in partfextra.dat'
+         PRINT*,'for gas requested'
+         PRINT*,'ID = ',ID
+         PRINT*,'Stopping'
+         STOP
         ENDIF
 
-10     CONTINUE
-        
+        PTMP=PTMP/WT
+
+       ENDIF 
       ENDIF
 
 

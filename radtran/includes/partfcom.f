@@ -11,7 +11,7 @@ C_HIST:
 C***********************************************************************
 
       INTEGER MPARTEXTRA,MTABEXTRA,IREADEXTRA,NPARTEXTRA
-      PARAMETER (MPARTEXTRA=20,MTABEXTRA=100)
+      PARAMETER (MPARTEXTRA=40,MTABEXTRA=300)
 C MPARTEXTRA: maximum number of gases that have tabulated partition functions
 C defined.
 C MTABEXTRA: maximum number temperatures for the partition functions defined

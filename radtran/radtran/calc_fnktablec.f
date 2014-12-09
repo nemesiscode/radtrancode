@@ -128,7 +128,7 @@ C      Calculate min/max wavelength/wavenumbers for continuum calculation
           VMIN1=VMIN-0.5*FWHM
           VMAX1=VMAX+0.5*FWHM
        ENDIF
-
+       
       ELSE
 
        FWHM=0.0
@@ -136,8 +136,17 @@ C      Calculate min/max wavelength/wavenumbers for continuum calculation
 C      Read min/max wavelength/wavenumbers for continuum calculation
        PRINT*,'Enter min,max wavenumber/wavelengths for'
        CALL PROMPT('continuum calculation : ')
-       READ*,VMIN1,VMAX1
- 
+       READ*,VMIN,VMAX
+C      Convert wavelength range to wavenumber range if IWAVE=0
+       IF(IWAVE.EQ.0)THEN
+          VMIN1 = 1E4/VMAX
+          VMAX1 = 1E4/VMIN
+       ELSE
+          VMIN1=VMIN
+          VMAX1=VMAX
+       ENDIF
+
+
        PRINT*,'Same bin shape for all output points(0) or'
        CALL PROMPT('new filter profile each time(1) : ')
        READ*,IMULTI
@@ -257,6 +266,7 @@ C     Write out central wavelengths if non-uniform grid
       IF(DELV.LT.0.0)THEN
        DO 303 J=1,NPOINT
         WRITE(LUN0,REC=IREC)VCEN(J)
+C        PRINT*,J,VCEN(J)
         IREC=IREC+1
 303    CONTINUE
       ENDIF

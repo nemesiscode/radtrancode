@@ -16,6 +16,7 @@ F_SOURCES = \
 	cloudlayer.f \
         complayer.f \
         ncomplayer.f \
+        ncomplayerA.f \
 	cubint.f \
 	layer.f \
 	layerg.f \

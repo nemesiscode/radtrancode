@@ -1,4 +1,4 @@
-      SUBROUTINE NCOMPLAYER(TEXT)
+      SUBROUTINE NCOMPLAYERA(TEXT)
 C     $Id: complayer.f,v 1.1.1.1 2000-08-17 09:26:56 irwin Exp $
 C--------------------------------------------------------------
 C_TITLE:  LAYER: calculates atmospheric layers for path.f
@@ -53,11 +53,11 @@ C     SIN2A = square of the sine of the angle from the nadir
 C     COSA = the cosine
 C     Z0 = the distance of the start of the path from the centre of the planet
 C     DUDS = DU/DS = the number of molecules per cm2 per km along the path
-      INTEGER I,J,K,L,LAYINT
+      INTEGER I,J,K,L,LAYINT,KEXT
       REAL HEIGHT,VMR1,DELS,CLBOTP(10),CLTOPP(10),FSH(10)
       REAL CLBOTH(10),CLTOPH(10),COD(10)
       INTEGER NCLAY(10)
-      REAL A,B,C,D1,XOD,CDUM(10)
+      REAL A,B,C,D1,XOD,CDUM(10),CDELH,DELH1
 C--------------------------------------------------------------
 C
 C     setting defaults for the layer parameters defined in laycom.f
@@ -66,7 +66,7 @@ C     setting defaults for the layer parameters defined in laycom.f
       LAYHT=H(1)
       LAYANG=0.
       NLAY=20
-      print*,'NCOMPLAYER'
+      print*,'NCOMPLAYERA'
 C     looking for keywords in file
 2     READ(2,1,END=3)TEXT
 1     FORMAT(A)
@@ -95,6 +95,7 @@ C        computing the cloud heights of each layer
 	 NCLAY(J)=INT(C)
          COD(J)=XOD
 	 FSH(J)=D1
+         print*,'Cloud OD, FSH = ',COD(J),FSH(J)
 157     CONTINUE
        ELSE IF(TEXT(1:6).EQ.'LAYANG')THEN
         READ(TEXT(7:),*)LAYANG
@@ -146,20 +147,43 @@ C     Assume LAYTYP=2. splitting by equal height
        I=I+1
        BASEH(I)=LAYHT+FLOAT(J-1)*(CLBOTH(1)-LAYHT)/FLOAT(NLAYBOT)
 104   CONTINUE
+      KEXT=-1
       DO 1005 K = 1,NCLOUD-1
         CDELH = (CLTOPH(K)-CLBOTH(K))/NCLAY(K)
         SH = -(CLTOPH(K)-CLBOTH(K))/LOG(CLTOPP(K)/CLBOTP(K))
-	print*,'SH=',SH
+        IF(FSH(K).NE.1.0)THEN
+          KEXT=K
+          PRINT*,'KEXT = ',KEXT
+        ENDIF
+	print*,'K = ',K,'SH=',SH,'NCLAY = ',NCLAY(K)
         DO 655 J=1,NCLAY(K)
           I=I+1
           BASEH(I)=CLBOTH(K) + FLOAT(J-1)*CDELH
           CONT(K,I)=EXP(-(J-1)*CDELH/(FSH(K)*SH))
+          IF(KEXT.GT.0)THEN
+           IF(K.EQ.KEXT.AND.J.EQ.1)THEN
+            CONT(KEXT,I)=1.
+           ELSE
+            DELH1=BASEH(I)-BASEH(I-1)
+C            print*,'DELH1,SH,FSH(KEXT)*SH',DELH1,SH,FSH(KEXT)*SH
+            CONT(KEXT,I)=CONT(KEXT,I-1)*EXP(-DELH1/(FSH(KEXT)*SH))
+           ENDIF
+C           print*,CONT(KEXT,I)
+          ENDIF
 655      CONTINUE
 C        Look to see if there is a gap between the layers
          IF(CLTOPH(K).LT.CLBOTH(K+1))THEN
+          CDELH=(CLBOTH(K+1)-CLTOPH(K))/NLAYG
+          SH = -(CLBOTH(K+1)-CLTOPH(K))/LOG(CLBOTP(K+1)/CLTOPP(K))
           DO 666 J=1,NLAYG
            I=I+1
-           BASEH(I)=CLTOPH(K) + FLOAT(J-1)*(CLBOTH(K+1)-CLTOPH(K))/NLAYG
+           BASEH(I)=CLTOPH(K) + FLOAT(J-1)*CDELH
+           IF(KEXT.GT.0)THEN
+            DELH1=BASEH(I)-BASEH(I-1)
+C            print*,DELH1,SH,FSH(KEXT)*SH
+            CONT(KEXT,I)=CONT(KEXT,I-1)*EXP(-DELH1/(FSH(KEXT)*SH))
+C            print*,CONT(KEXT,I)
+           ENDIF
 666       CONTINUE
          ELSE
           print*,'Skipping gas layers between clouds ',K,' and ',
@@ -170,18 +194,30 @@ C        Look to see if there is a gap between the layers
         SH = -(CLTOPH(NCLOUD)-CLBOTH(NCLOUD))/
      &		LOG(CLTOPP(NCLOUD)/CLBOTP(NCLOUD))
 	print*,'SH=',SH
+        IF(FSH(NCLOUD).NE.1.0)THEN KEXT=NCLOUD
         DO 667 J=1,NCLAY(NCLOUD)
           I=I+1
           BASEH(I)=CLBOTH(NCLOUD) + FLOAT(J-1)*CDELH
           CONT(NCLOUD,I) = EXP(-(J-1)*CDELH/(FSH(NCLOUD)*SH))
+          IF(KEXT.GT.0)THEN
+            DELH1=BASEH(I)-BASEH(I-1)
+C            print*,DELH1,SH,FSH(KEXT)*SH
+            CONT(KEXT,I)=CONT(KEXT,I-1)*EXP(-DELH1/(FSH(KEXT)*SH))
+C            print*,CONT(KEXT,I)
+          ENDIF
 667     CONTINUE
+        CDELH=(H(NPRO)-CLTOPH(NCLOUD))/NLAYTOP
+        SH=-(H(NPRO)-CLTOPH(NCLOUD))/LOG(P(NPRO)/CLTOPP(NCLOUD))
         DO 668 J=1,NLAYTOP
          I=I+1
-         BASEH(I)=CLTOPH(NCLOUD) + 
-     &    FLOAT(J-1)*(H(NPRO)-CLTOPH(NCLOUD))/NLAYTOP
+         BASEH(I)=CLTOPH(NCLOUD) + FLOAT(J-1)*CDELH
+         IF(KEXT.GT.0)THEN
+            DELH1=BASEH(I)-BASEH(I-1)
+            CONT(KEXT,I)=CONT(KEXT,I-1)*EXP(-DELH1/(FSH(KEXT)*SH))
+         ENDIF
 668     CONTINUE
       NLAY=I
-      print*,'ncomplayer. NLAY = ',NLAY
+      print*,'ncomplayerA. NLAY = ',NLAY
       DO J=1,NCLOUD
        CDUM(J)=0.0
       ENDDO

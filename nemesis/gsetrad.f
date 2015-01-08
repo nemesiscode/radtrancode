@@ -423,6 +423,8 @@ C     Compute the drv file to get the aerosol optical depths
           if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
           if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
           if(varident(ivar,1).eq.222)np = 8
+          if(varident(ivar,1).eq.223)np = 9
+          if(varident(ivar,1).eq.224)np = 9
 
          endif
 
@@ -457,6 +459,8 @@ C       check that rescaling has happened correctly
        endif
        if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
        if(varident(ivar,1).eq.222)np = 8
+       if(varident(ivar,1).eq.223)np = 9
+       if(varident(ivar,1).eq.224)np = 9
           
 
        if(varident(ivar,1).eq.444)then
@@ -473,7 +477,7 @@ C       check that rescaling has happened correctly
            vm = varparam(ivar,3)
            nm = varparam(ivar,4)
            lambda0 = varparam(ivar,5)
-     
+
            call get_xsecA(runname,nmode,nwave,wave,xsec)
 
 C          np1 should now match nwave

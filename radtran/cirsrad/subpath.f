@@ -115,6 +115,8 @@ C Initialise flags
        ENDDO
       ENDDO
 
+      print*,'Calling SUBPATH'
+
       CALL FILE(IPFILE,IPFILE,'pat')
       OPEN (UNIT=2,FILE=IPFILE,STATUS= 'OLD')
 
@@ -215,8 +217,11 @@ C Skipping blank lines
         CALL CLOUDLAYER(TEXT(7:))
       ELSE IF(TEXT(1:9).EQ.'COMPLAYER')THEN
         CALL COMPLAYER(TEXT(10:))
-      ELSE IF(TEXT(1:10).EQ.'NCOMPLAYER')THEN
+      ELSE IF(TEXT(1:10).EQ.'NCOMPLAYER'.AND.TEXT(11:11).NE.'A')THEN
         CALL NCOMPLAYER(TEXT(11:))
+      ELSE IF(TEXT(1:11).EQ.'NCOMPLAYERA')THEN
+        print*,'BB'
+        CALL NCOMPLAYERA(TEXT(12:))
       ELSE IF (TEXT(1:3).EQ.'ATM') THEN
         CALL ATM(TEXT(4:))
       ELSE IF (TEXT(1:7).EQ.'REFLATM') THEN

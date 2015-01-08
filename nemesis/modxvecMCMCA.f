@@ -157,7 +157,13 @@ C         **** Larry's cloud model *******
             enddo
           elseif(varident(ivar,3).eq.223)then  
 C         **** Larry's revised cloud model *******
-            np = 8
+            np = 9
+            do i=1,np
+             xn(ix+i)=x0(ix+i)+err(ix+i)*gasdev1(idum)
+            enddo
+          elseif(varident(ivar,3).eq.224)then  
+C         **** Larry's revised cloud model with extended UTC *******
+            np = 9
             do i=1,np
              xn(ix+i)=x0(ix+i)+err(ix+i)*gasdev1(idum)
             enddo

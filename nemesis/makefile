@@ -30,6 +30,7 @@ F_SOURCES = \
 	readapriori.f \
 	rmodapriori.f \
 	modxvecMCMCA.f \
+	modxvecMCMC.f \
 	wavesetb.f \
 	mod_scatter.f \
 	readkkhead.f \
@@ -49,6 +50,7 @@ F_SOURCES = \
 	gwritepat.f \
 	gwritepatsrom.f \
 	extractsrom.f \
+	extractsromA.f \
 	extractsromch4.f \
 	calc_serr.f \
 	writeout.f \
@@ -82,7 +84,11 @@ F_SOURCES = \
 	check_iteration.f \
 	check_profile.f \
 	setifix.f \
-	readcell.f
+	readcell.f \
+	fluxcalc.f \
+	gsetradflux.f \
+	gwritepatflux.f \
+	subradeqm.f
 
 INCDIR = ../../radtran/includes
 INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/lincom.f $(INCDIR)/pathcom.f \
@@ -124,7 +130,8 @@ bin :   \
 	NemesisPT \
 	Nemesisdisc \
 	Generatespx \
-	GenerateMCSspx
+	GenerateMCSspx \
+	Radeqm
 
 Nemesis: nemesis.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Nemesis nemesis.f $(LIBRARY) \
@@ -187,4 +194,11 @@ GenerateMCSspx: generateMCSspx.f $(LIBRARY)
 	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/radtran.a \
 	$(LIB)/matrices.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
 	$(LIB)/lgregfov.a $(FRECIPES)
+
+Radeqm: radeqm.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Radeqm radeqm.f $(LIBRARY) \
+	$(LIB)/cirsrad.a \
+	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/radtran.a \
+	$(LIB)/matrices.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
+	$(FRECIPES)
 

@@ -80,6 +80,16 @@ C     ***********************************************************************
       character*100 runname,aname,buffer,cellfile
       logical gasgiant,cellexist
 
+      integer iwave,imode,nx1,nvmr,np1,nmode,nwave,max_wave
+      integer max_mode,inorm
+      parameter (max_wave = 1000,max_mode = 10)
+      real r0,v0,clen,vm,nm,lambda0
+      real wave(max_wave),xsec(max_mode,max_wave,2),nimag(max_wave)
+      real v1(max_wave),k1(max_wave),vm1,n1(max_wave)
+      real nreal(max_wave),minlam
+      real srefind(max_wave,2),parm(3),rs(3)
+
+
 
 C     See if a cell file is present. If so we have two outputs per
 C     wavelength: SB and WB
@@ -270,6 +280,7 @@ C1000  format(1x,i4,1x,f10.4,1x,e15.8,1x,e15.8,1x,f7.2,1x,e15.8,1x,f9.5)
        if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
        if(varident(ivar,1).eq.222)np = 8
        if(varident(ivar,1).eq.223)np = 9
+       if(varident(ivar,1).eq.224)np = 9
 
        write(lout,*)
      &  '   i, ix, xa          sa_err       xn          xn_err'
@@ -301,13 +312,13 @@ C1000  format(1x,i4,1x,f10.4,1x,e15.8,1x,e15.8,1x,f7.2,1x,e15.8,1x,f9.5)
 
 1015  format(1x,i4,i4,' ',e12.5,e12.5,' ',e12.5,e12.5)
 
-C     Additional section to write out the .prf files that match
-C     the last successfully retrieved xn array.
+C     Additional section to write out the .prf, xsc and refractive index files 
+C     that match the last successfully retrieved xn array.
 
-      print*,'Writeout: Updating .prf files to match last'
-      print*,'          successful retrieval.'
+      print*,'Writeout: Updating .prf, .xsc, refindex files to match'
+      print*,'last successful retrieval.'
 
-C     Look to see if the CIA file refined has variable para-H2 or not.
+C     Look to see if the CIA file defined has variable para-H2 or not.
       call file(runname,runname,'cia')
       open(12,FILE=runname,STATUS='OLD')
        read(12,1) aname
@@ -390,8 +401,117 @@ C      Also update .drv file
        call subpath(runname)
 
       endif
-      
 
+C     New section to update the x-section, phase and refindex files if
+C     necessary
+
+      nx1=0
+      CALL readrefhead(runname,npro,nvmr,gasgiant)
+      
+      do ivar=1,nvar
+
+       np=1
+       if(varident(ivar,1).le.100)then
+           np=npvar(varident(ivar,3),npro)
+       endif
+       if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
+       if(varident(ivar,1).eq.222)np = 8
+       if(varident(ivar,1).eq.223)np = 9
+       if(varident(ivar,1).eq.224)np = 9
+
+
+       if(varident(ivar,1).eq.444)then
+
+           iwave=ispace
+           if(iwave.eq.0)iwave=2
+
+           imode=varident(ivar,2)
+
+           r0 = exp(xn(nx1+1))
+           v0 = exp(xn(nx1+2))
+           np1 = int(varparam(ivar,1))
+           clen = varparam(ivar,2)
+           vm = varparam(ivar,3)
+           nm = varparam(ivar,4)
+           lambda0 = varparam(ivar,5)
+
+           call get_xsecA(runname,nmode,nwave,wave,xsec)
+
+C          np1 should now match nwave
+           if(np1.ne.nwave)then
+             print*,'Warning from gsetrad.f, nwave in refindex file is'
+             print*,'different from that in .xsc file.'
+           endif
+           do i=1,nwave
+            nimag(i)=exp(xn(nx1+2+i))
+           enddo
+
+C          Compute nreal from KK
+C          If nimag is in wavelength space, need to convert to wavenumbers
+           if(ispace.eq.0)then
+            do i=1,nwave
+             v1(i)=wave(i)
+             k1(i)=nimag(i)
+             vm1=vm
+            enddo
+           else
+            do i=1,nwave
+             v1(i)=1e4/wave(nwave+1-i)
+             k1(i)=nimag(nwave+1-i)
+             vm1=1e4/vm
+            enddo
+           endif
+
+           call kk_new_sub(nwave,v1,k1,vm1,nm,n1)
+
+
+           buffer='refindexN.dat'
+           buffer(9:9)=char(ivar+48)
+           open(12,file=buffer,status='unknown')
+
+           if(ispace.eq.0)then
+            do i=1,nwave
+             nreal(i)=n1(i)
+            enddo
+           else
+            do i=1,nwave
+             nreal(i)=n1(nwave+1-i)
+            enddo
+           endif
+
+           inorm=1
+           iscat=1
+           if(ispace.eq.0)then
+            minlam=1e4/wave(nwave)
+           else
+            minlam=wave(1)
+           endif
+
+           do i=1,nwave
+            srefind(i,1)=nreal(i)
+            srefind(i,2)=nimag(i)
+            write(12,*)wave(i),nreal(i),nimag(i)
+           enddo
+           close(12)
+
+           parm(1)=r0
+           parm(2)=v0
+           parm(3)=(1. - 3 * parm(2))/parm(2)
+
+           rs(1)=0.015*minlam
+           rs(2)=0.
+           rs(3)=rs(1)
+
+           call modmakephase(iwave,imode,inorm,iscat,
+     1   parm,rs,srefind,runname,lambda0)
+
+           np=2+np1
+
+       endif
+
+       nx1=nx1+np
+
+      enddo
 
       return
 

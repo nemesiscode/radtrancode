@@ -1763,6 +1763,10 @@ C        Set PCUT to where CH4 starts reducing in cases where XFAC=1
           ENDIF
          ENDDO
          NP = 9
+        ELSEIF(VARIDENT(IVAR,1).EQ.224)THEN
+C         print*,'Sromovsky cloud layering with extended UTC'
+         IPAR = -1
+         NP = 9
         ELSE
          PRINT*,'SUBPROFRETG: VARTYPE NOT RECOGNISED'
          STOP

@@ -96,6 +96,11 @@ C       in Km
         AMOUNT(NLAYER,LOCID)=AMIP
         AMIP1 = AMIP*MODBOLTZA*TEMP(NLAYER)/PRESS(NLAYER)
 	DELH(NLAYER) = AMIP1/(VMRIP*1e5)		! Path length in km
+        IF(DELH(NLAYER).GT.99999.9) THEN
+         print*,'Layer Height too large in sngatm : ',DELH(NLAYER)
+         print*,'Capping to 99999.9'
+         DELH(NLAYER)=99999.9
+        ENDIF
       END IF
 100   CONTINUE
       READ(LUNIT,*)NCONT

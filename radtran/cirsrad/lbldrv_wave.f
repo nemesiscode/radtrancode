@@ -213,7 +213,6 @@ C-----------------------------------------------------------------------
 
       CALL READFLAGS(OPFILE,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
       IMIE1=IMIE
-
       WRITE(*,*)'Enter surface temperature : '
       READ(*,*)tsurf
 
@@ -275,7 +274,7 @@ C-----------------------------------------------------------------------
 
       CALL lblrtf_wave (x0, x1, wing, vrel, maxdv,opfile, Dist, 
      1 INormal, Iray, DELV, FWHM, ispace, npath, vconv, nconv, 
-     2 itype,nem,vem,emissivity,tsurf,spec)
+     2 itype,nem,vem,emissivity,tsurf,spec,IPTF)
 
       WRITE(*,*)' lblrtf_wave COMPLETE'
       WRITE(*,*)' '

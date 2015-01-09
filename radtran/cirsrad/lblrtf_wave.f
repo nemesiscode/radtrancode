@@ -40,7 +40,7 @@ C-----------------------------------------------------------------------
         SUBROUTINE lblrtf_wave(X0,X1,WING1,VREL1,MAXDV,opfile1, Dist, 
      1          INormal, IRay, DELV1, FWHM1, ispace,
      2          npath1, vconv, nconv, itype1, nem, vem, 
-     3          emissivity,tsurf, convout)
+     3          emissivity,tsurf, convout, IPTF)
 
 	IMPLICIT NONE
 
@@ -54,7 +54,7 @@ C         bins, paths, etc.)
 	INCLUDE '../includes/contdef.f'
 
         INTEGER         nconv, npath1, itype1, I, J, K, mconv
- 	INTEGER		MAXLIN1,ISHAPE
+ 	INTEGER		MAXLIN1,ISHAPE, IPTF
         PARAMETER       (mconv=6000)
 	INTEGER		INormal,Iray, ispace,nem,IBS(2),IBD(2), IFLAG
 	REAL		Dist, FWHM1,X0,X1,WING1,VREL1,MAXDV
@@ -151,7 +151,7 @@ C-----------------------------------------------------------------------
 
 C      Precompute temperature coeffients of layers
         CALL CALCTEMPPARAM(NLAYER,NGAS,PRESS,TEMP,AAMOUNT,
-     1 IDGAS,ISOGAS)
+     1 IDGAS,ISOGAS,IPTF)
 
 
         NOUT=NPATH*NCONV

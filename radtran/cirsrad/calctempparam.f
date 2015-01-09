@@ -1,5 +1,5 @@
       SUBROUTINE CALCTEMPPARAM(NLAYER,NGAS,PRESS,TEMP,AAMOUNT,
-     1 IDGAS,ISOGAS)
+     1 IDGAS,ISOGAS,IPTF)
 C     $Id:
 C***********************************************************************
 C_TITL:	CALCTEMPPARAM.f
@@ -72,19 +72,14 @@ C     width calculation
 
        XMASS = GETMASS(IDGAS(I),ISOGAS(I))
 
-       IPTF=0
-
        DO 16 J=1,NLAYER
 C      Calculate temperature tempendance parameters for the gas lines
 C      (Note: TCORS1 includes factor of 1.E-47 for scaling of stored line
 C       strengths. Scaling is applied in two stages to avoid numerical
 C       overflow)
-        IF(ISOGAS(I).EQ.0)THEN
-         K=1
-        ELSE
-         K=ISOGAS(I)
-        END IF
-        TCORS1(J,I)=PARTF(IDGAS(I),K,TEMP(J),IPTF)*AAMOUNT(J,I)*1e-20
+
+        TCORS1(J,I)=PARTF(IDGAS(I),ISOGAS(I),TEMP(J),IPTF)
+     &    *AAMOUNT(J,I)*1e-20
         TCORS1(J,I)=1.E-27*TCORS1(J,I)
         TCORDW(J,I)=4.301E-7*SQRT(TEMP(J)/XMASS)
 16    CONTINUE

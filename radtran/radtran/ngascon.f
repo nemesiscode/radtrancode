@@ -118,7 +118,7 @@ C
 
        FF = V0
 C
-       IF (ID .EQ. 1. AND. IH2O. NE. 0) THEN 
+       IF (ID .EQ. 1. AND. IH2O. EQ. 1) THEN 
 C
 C
 	    IF (FF .GE. VB1 .AND. FF .LT. VT1) THEN
@@ -188,6 +188,14 @@ c  CKD 2.1 correction as of 94.4.28
 	      ABSORB=0.
 
 	    ENDIF
+
+	ELSEIF ((ID.EQ.1) .AND. ((ISO.EQ.1).OR.(ISO.EQ.0))
+     &  .AND. IH2O.EQ.2)THEN
+        
+C           ExoMol H2O cross-section data
+            ABSORB= AMOUNT*H2OCONT(FF)
+
+	
 C
 C -- Other Gases --
 C
@@ -211,7 +219,6 @@ C	    New Dawson O3 coefficients
 
        ENDIF
 C
-
        RETURN
        END
 

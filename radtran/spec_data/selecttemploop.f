@@ -334,11 +334,8 @@ C        each strength decade
                TS2 = 1.0-EXP(-1.439*LNWAVE/296.0)
                TSTIM=1.0
                IF(TS2.NE.0) TSTIM = TS1/TS2
-               K = -1
-               DO J=1,DBNISO(LOCID(LNID))
-                  IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K=J
-               ENDDO                
-               TCORS1=PARTF(LOCID(LNID),K,TEMP,IPTF)
+
+               TCORS1=PARTF(LOCID(LNID),ISO,TEMP,IPTF)
                LNABSCO = LOG(LNSTR)+LOG(TCORS1)+
      &         (TCORS2*LNLSE)+LOG(TSTIM)
                LNSTR1=EXP(LNABSCO)
@@ -365,15 +362,11 @@ C  	print*,line,fstlin,lstlin,DBRECL,lnstr,lnwave,'JM'
                ENDIF
                
 C              see if this line is the right isotope
-               K = -1
-C               print*,'AA',LOCID(LNID),DBNISO(LOCID(LNID)),LNISO
-               DO 112 J=1,DBNISO(LOCID(LNID))
-                  IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K=J
-112            CONTINUE
 C               print*,'I,K,LOCID(LNID) = ',I,K,LOCID(LNID)
 C              if yes, then add 1 to count
-               IF(K.NE.-1)THEN
-                  NLINES(I,K,LOCID(LNID))=NLINES(I,K,LOCID(LNID))+1
+               IF(LNISO.EQ.ISO.OR.ISO.EQ.0)THEN
+                  NLINES(I,LNISO,LOCID(LNID))=
+     &            NLINES(I,LNISO,LOCID(LNID))+1
                ENDIF
                
 110         CONTINUE
@@ -453,23 +446,14 @@ C     See how many lines are deselected by this and sum up strengths:
         TS1 = 1.0-EXP(-1.439*LNWAVE/TEMP)
         TS2 = 1.0-EXP(-1.439*LNWAVE/296.0)
         TSTIM=1.0
-        IF(TS2.NE.0) TSTIM = TS1/TS2
-        K = -1
-        DO J=1,DBNISO(LOCID(LNID))
-          IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K=J
-        ENDDO                
-        TCORS1=PARTF(LOCID(LNID),K,TEMP,IPTF)
+        IF(TS2.NE.0) TSTIM = TS1/TS2         
+        TCORS1=PARTF(LOCID(LNID),ISO,TEMP,IPTF)
         LNABSCO = LOG(LNSTR)+LOG(TCORS1)+(TCORS2*LNLSE)+LOG(TSTIM)
         LNSTR1=EXP(LNABSCO)
-c	print*,lnstr,tcors1,tcors2,lnlse,tstim
-        K = -1
-        DO 162 J=1,DBNISO(LOCID(LNID))
-          IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K = J
-162     CONTINUE
-        IF(K.NE.-1.) THEN
-           IF(INCGAS(K,LOCID(LNID)))THEN
+       
+           IF(INCGAS(LNISO,LOCID(LNID)))THEN
               IF(PERCEN.GT.0.0)THEN
-                 IF (LNSTR1.GE.LIMIT(K,LOCID(LNID)))THEN
+                 IF (LNSTR1.GE.LIMIT(LNISO,LOCID(LNID)))THEN
                    NKEEP=NKEEP+1
                    IF(NKEEP.EQ.1)THEN
                     STRKEEP=LNSTR1
@@ -496,7 +480,6 @@ c	print*,lnstr,tcors1,tcors2,lnlse,tstim
                  ENDIF
               ENDIF
            ENDIF
-        ENDIF
 160   CONTINUE
    
       NLIN = LSTLIN-FSTLIN+1      
@@ -516,28 +499,18 @@ C     Copy required lines and correct for those stripped ...
         TS1 = 1.0-EXP(-1.439*LNWAVE/TEMP)
         TS2 = 1.0-EXP(-1.439*LNWAVE/296.0)
         TSTIM=1.0
-        IF(TS2.NE.0) TSTIM = TS1/TS2
-        K = -1
-        DO J=1,DBNISO(LOCID(LNID))
-          IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K=J
-        ENDDO                
-        TCORS1=PARTF(LOCID(LNID),K,TEMP,IPTF)
+        IF(TS2.NE.0) TSTIM = TS1/TS2    
+        TCORS1=PARTF(LOCID(LNID),ISO,TEMP,IPTF)
         LNABSCO = LOG(LNSTR)+LOG(TCORS1)+(TCORS2*LNLSE)+LOG(TSTIM)
         LNSTR1=EXP(LNABSCO)
 
-
-        K = -1
-        DO 152 J=1,DBNISO(LOCID(LNID))
-          IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K = J
-152     CONTINUE
-        IF(K.NE.-1.) THEN
-           IF(INCGAS(K,LOCID(LNID)))THEN
+           IF(INCGAS(LNISO,LOCID(LNID)))THEN
               LNSTR2=LNSTR1+SCORR
               FCORR = LNSTR2/LNSTR1
               LNSTR=LNSTR*FCORR
               IF(PERCEN.GT.0.0)THEN
 C                 print*,'EE',LNSTR1,LIMIT(K,LOCID(LNID))
-                 IF (LNSTR1.GE.LIMIT(K,LOCID(LNID)))THEN
+                 IF (LNSTR1.GE.LIMIT(LNISO,LOCID(LNID)))THEN
 c                    CALL EDLINE(BUFFER,QIDENT,ACO2,NCO2,AH2O,NH2O,YACO2,
 c     1                   YNCO2,YAN2,YNN2)
                     WRITE(3,111)BUFFER(1:DBRECL)
@@ -549,7 +522,6 @@ c     1                YNCO2,YAN2,YNN2)
                  WRITE(3,111)BUFFER(1:DBRECL)
               ENDIF
            ENDIF
-        ENDIF
 150   CONTINUE
 
 

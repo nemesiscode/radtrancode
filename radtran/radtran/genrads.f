@@ -714,12 +714,9 @@ C      Calculate temperature tempendance parameters for the gas lines
 C      (Note: TCORS1 includes factor of 1.E-47 for scaling of stored line
 C       strengths. Scaling is applied in two stages to avoid numerical
 C       overflow)
-        IF(ISOGAS(I).EQ.0)THEN
-         K=1
-        ELSE
-         K=ISOGAS(I)
-        END IF
-        TCORS1(J,I)=PARTF(IDGAS(I),K,TEMP(J),IPTF)*(AMOUNT(J,I)*1.E-20)
+
+        TCORS1(J,I)=PARTF(IDGAS(I),ISOGAS(I),TEMP(J),IPTF)*
+     1   (AMOUNT(J,I)*1.E-20)
         TCORS1(J,I)=1.E-27*TCORS1(J,I)
         TCORDW(J,I)=4.301E-7*SQRT(TEMP(J)/XMASS)
 16    CONTINUE
@@ -1794,7 +1791,7 @@ C        If the gas continuum is included in gascon, then ICH4=1
             ELSE
              I1 = 2
              IF(ISOGAS(J).EQ.0)THEN
-              K=1
+              K=0
              ELSE
               K=ISOGAS(J)
              END IF

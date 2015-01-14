@@ -179,12 +179,8 @@ cc420   FORMAT('LBL_KCONT.f :: ',1A6,'(',I2,',',I2,') has mass = ',F7.2)
 
 C NOTE: TCORS1 includes factor of 1.e-27 for scaling of stored lines
 
-      IF(ISOGAS.EQ.0)THEN
-        K = 1
-      ELSE
-        K = ISOGAS
-      ENDIF
-      TCORS1 = PARTF(IDGAS,K,TEMP,IPTF)*1.E-27
+
+      TCORS1 = PARTF(IDGAS,ISOGAS,TEMP,IPTF)*1.E-27
       TCORDW = 4.301E-7*SQRT(TEMP/XMASS)
       TCORS2 = 1.439*(TEMP - 296.)/(296.*TEMP)
 

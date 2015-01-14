@@ -140,12 +140,11 @@ C Read in spectral parameters ...
 
       CALL EDSET
 
-      CALL PROMPT('Enter IPTF (Partition function flag) : ')
-      READ*,IPTF
-
 C Select the gases ...
 10    CONTINUE
 
+      CALL PROMPT('Enter IPTF (Partition function flag) : ')
+      READ*,IPTF
 
       CALL WTEXT('--------------------------------------------------')
       CALL WTEXT('enter gas details')
@@ -299,9 +298,9 @@ C     each strength decade
                LNSTR1=EXP(LNABSCO)
 
                IF(LNSTR1.LT.LIMSTR)THEN
-                  WRITE(TEXT,115)LNWAVE,LNID,LNISO,LNSTR,LNSTR1,LIMSTR
+                  WRITE(TEXT,115)LNWAVE,LNSTR,LNSTR1,LNID,LNISO
  115              FORMAT('WARNING - strength too low for storage',
-     1                 F12.6,2I3,3E12.5)
+     1                 F12.6,E12.5,E12.5,2I3)
                   CALL WTEXT(TEXT)
                   GOTO 110
                ENDIF

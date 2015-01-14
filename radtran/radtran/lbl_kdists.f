@@ -232,12 +232,8 @@ C     WRITE (*,420) IDGAS(I), ISOGAS(I), GASNAM(IDGAS(I)), XMASS
 420   FORMAT(' %gas:',I2,'/',I2,2X,1A6,' mass=',F7.2)
 
 C     note TCORS1 includes factor of 1.e-27 for scaling of stored lines
-      IF(ISOGAS(I).EQ.0)THEN
-        K=1
-       ELSE
-        K=ISOGAS(I)
-      END IF
-      TCORS1(I)=PARTF(IDGAS(I),K,TEMP,IPTF)*1.E-27
+
+      TCORS1(I)=PARTF(IDGAS(I),ISOGAS(I),TEMP,IPTF)*1.E-27
       TCORDW(I)=4.301E-7*SQRT(TEMP/XMASS)
 16    CONTINUE
 

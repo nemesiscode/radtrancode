@@ -221,12 +221,8 @@ cc      WRITE(*,420)GASNAM(IDGAS),IDGAS,ISOGAS,XMASS
 cc420   FORMAT('LBL_FKNEW.f :: ',1A6,'(',I2,',',I2,') has mass = ',F7.2)
 
 C NOTE: TCORS1 includes a factor of 1.e-27 for scaling of stored lines
-      IF(ISOGAS.EQ.0)THEN
-        K = 1
-      ELSE
-        K = ISOGAS
-      ENDIF
-      TCORS1 = PARTF(IDGAS,K,TEMP,IPTF)*1.E-27
+
+      TCORS1 = PARTF(IDGAS,ISOGAS,TEMP,IPTF)*1.E-27
       TCORS2 = 1.439*(TEMP - 296.)/(296.*TEMP)
       TCORDW = 4.301E-7*SQRT(TEMP/XMASS)
       TRATIO = 296./TEMP

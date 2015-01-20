@@ -55,6 +55,7 @@ C-----------------------------------------------------------------------------
       PARAMETER (LUN=2,LUN0=30,LUN1=31,MFIL=1000)
       PARAMETER (NGMAX=51)
       REAL X,PMIN,PMAX,TMIN,TMAX,DT,DP
+      REAL VMINC,VMAXC
       INTEGER IREC,IREC0,I,IWAVE,NFIL,IMULTI
       INTEGER IEXO,IPTF
       REAL TOT_TIME
@@ -128,6 +129,8 @@ C      Calculate min/max wavelength/wavenumbers for continuum calculation
           VMIN1=VMIN-0.5*FWHM
           VMAX1=VMAX+0.5*FWHM
        ENDIF
+
+       print*,'test: VMIN1,VMAX1 = ',VMIN1,VMAX1
        
       ELSE
 
@@ -136,16 +139,17 @@ C      Calculate min/max wavelength/wavenumbers for continuum calculation
 C      Read min/max wavelength/wavenumbers for continuum calculation
        PRINT*,'Enter min,max wavenumber/wavelengths for'
        CALL PROMPT('continuum calculation : ')
-       READ*,VMIN,VMAX
+       READ*,VMINC,VMAXC
 C      Convert wavelength range to wavenumber range if IWAVE=0
        IF(IWAVE.EQ.0)THEN
-          VMIN1 = 1E4/VMAX
-          VMAX1 = 1E4/VMIN
+          VMIN1 = 1E4/VMAXC
+          VMAX1 = 1E4/VMINC
        ELSE
-          VMIN1=VMIN
-          VMAX1=VMAX
+          VMIN1 = VMINC
+          VMAX1 = VMAXC
        ENDIF
 
+       print*,'test: VMIN1,VMAX1 = ',VMIN1,VMAX1
 
        PRINT*,'Same bin shape for all output points(0) or'
        CALL PROMPT('new filter profile each time(1) : ')
@@ -424,7 +428,6 @@ C            Read in temperature specific line data file
 
             WRITE(*,*)'Pressure, temperature: ',P1,TE1
             WRITE(LUN1,*)'Pressure, temperature: ',P1,TE1
-
             CALL LBL_FKNEW(IWAVE,VSTART,VEND,P1,TE1,
      1          IDGAS(1),ISOGAS(1),IPROC(1),J,K,FRAC1,MAXDV,IPTF,
      2		NPOINT)

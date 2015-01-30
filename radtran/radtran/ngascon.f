@@ -115,6 +115,7 @@ c ckd 2.1 foreign continuum data
 C
 C --- Start calculations ---
 C
+C
 
        FF = V0
 C
@@ -193,7 +194,7 @@ c  CKD 2.1 correction as of 94.4.28
      &  .AND. IH2O.EQ.2)THEN
         
 C           ExoMol H2O cross-section data
-            ABSORB= AMOUNT*H2OCONT(FF)
+C            ABSORB= AMOUNT*H2OCONT(FF)
 
 	
 C

@@ -50,8 +50,6 @@ F_SOURCES = \
 	gwritepat.f \
 	gwritepatsrom.f \
 	extractsrom.f \
-	extractsromA.f \
-	extractsromch4.f \
 	calc_serr.f \
 	writeout.f \
 	calcfwderr.f \
@@ -84,11 +82,7 @@ F_SOURCES = \
 	check_iteration.f \
 	check_profile.f \
 	setifix.f \
-	readcell.f \
-	fluxcalc.f \
-	gsetradflux.f \
-	gwritepatflux.f \
-	subradeqm.f
+	readcell.f
 
 INCDIR = ../../radtran/includes
 INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/lincom.f $(INCDIR)/pathcom.f \

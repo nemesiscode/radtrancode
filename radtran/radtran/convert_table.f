@@ -21,7 +21,7 @@ C     MAXOUT the maximum number of output points
       CHARACTER*100 KTAFIL,PARFIL
       REAL TE1,TEMP1(MAXK),PRESS1(MAXK),TABLE(MAXK,MAXK,MAXG)
       REAL G_ORD(MAXG),K_G(MAXG),DEL_G(MAXG)
-
+      REAL VCEN(MAXBIN)
 
       WRITE(*,*)'Enter number of 4-byte words per record.'
       CALL PROMPT('old files = 2, new files = 1 : ')  
@@ -65,8 +65,13 @@ C     MAXOUT the maximum number of output points
       ENDIF
       WRITE(LUN1,*)'VMIN,DELV,FWHM = ',VMIN,DELV,FWHM
       print*,'VMIN,DELV,FWHM = ',VMIN,DELV,FWHM
-      WRITE(LUN1,*)'NPOINT,VMAX = ',NPOINT,VMIN + (NPOINT-1)*DELV
-      print*,'NPOINT,VMAX = ',NPOINT,VMIN + (NPOINT-1)*DELV
+      IF(DELV.GT.0)THEN
+       WRITE(LUN1,*)'NPOINT,VMAX = ',NPOINT,VMIN + (NPOINT-1)*DELV
+       print*,'NPOINT,VMAX = ',NPOINT,VMIN + (NPOINT-1)*DELV
+      ELSE
+       WRITE(LUN1,*)'NPOINT = ',NPOINT
+       print*,'NPOINT = ',NPOINT
+      ENDIF
       WRITE(LUN1,*)'Gas ID,ISO : ',IDGAS(1),ISOGAS(1)
       print*,'NP,NT,NG = ',NP,NT,NG
       print*,'ID, ISO = ',IDGAS(1),ISOGAS(1)
@@ -103,6 +108,15 @@ C     MAXOUT the maximum number of output points
        WRITE(LUN1,*)temp1(j)
        IREC=IREC+1
 302   CONTINUE
+C     Read in central wavelengths if non-uniform grid
+      IF(DELV.LT.0.0)THEN
+       PRINT*,'Channel centres'
+       DO 303 J=1,NPOINT
+        READ(LUN0,REC=IREC)VCEN(J)
+        PRINT*,J,VCEN(J)
+        IREC=IREC+1
+303    CONTINUE
+      ENDIF
 
       IREC=IREC0
 
@@ -113,8 +127,11 @@ C     MAXOUT the maximum number of output points
 
       DO 1000 I=1,NPOINT
 
-       VV = VMIN + (I-1)*DELV
-
+       IF(DELV.GT.0)THEN
+         VV = VMIN + (I-1)*DELV
+       ELSE
+         VV = VCEN(I)
+       ENDIF
 
        IREC=IREC0+NP*NT*NG*(I-1)
 

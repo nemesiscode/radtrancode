@@ -71,6 +71,7 @@ C       Variable is not temperature  - may need to take exponent
       if(ivar.eq.222)iflag=1	! Larry's cloud model
       if(ivar.eq.223)iflag=1	! Larry's revised cloud model
       if(ivar.eq.224)iflag=1	! Larry's revised cloud model with ext UTC
+      if(ivar.eq.225)iflag=1	! Revised cloud model with ext UTC and trunk.
       logflag=iflag
 
       return

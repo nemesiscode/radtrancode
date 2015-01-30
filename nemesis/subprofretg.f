@@ -1767,6 +1767,47 @@ C        Set PCUT to where CH4 starts reducing in cases where XFAC=1
 C         print*,'Sromovsky cloud layering with extended UTC'
          IPAR = -1
          NP = 9
+        ELSEIF(VARIDENT(IVAR,1).EQ.225)THEN
+C         print*,'Sromovsky cloud layering with extended UTC, cut-off'
+C         print*,'and variable methane'
+         IPAR = -1
+         DO I=1,NVMR
+           IF(IDGAS(I).EQ.6)IPAR=I
+         ENDDO
+         IF(IPAR.LT.0)THEN
+           PRINT*,'Error in subprofretg. Model 225 defined, but'
+           PRINT*,'no CH4 in .ref file'
+           STOP
+         ENDIF
+         DO I=1,NPRO
+           X1(I)=VMR(I,IPAR)
+         ENDDO
+         PCH4 = EXP(XN(NXTEMP+5))/1.013
+         XFAC = EXP(XN(NXTEMP+11))
+C         IF(XFAC.GT.1.0)THEN
+C          PRINT*,'Error in subprofretg, model 223. XFAC > 1.'
+C          PRINT*,'Limiting to 1.0'
+C          XFAC=1.
+C         ENDIF
+C         XCH4 = X1(1)*XFAC
+C        Set PCUT to where CH4 starts reducing in cases where XFAC=1
+C         ICUT=0
+C         DO I=1,NPRO
+C          IF(X1(I).LT.X1(1).AND.ICUT.EQ.0)THEN
+C            PCUT=P(I)
+C            ICUT=1
+C          ENDIF
+C         ENDDO
+C         DO I=1,NPRO
+C          IF(P(I).LT.PCH4)THEN
+C           IF(XCH4.LT.X1(I))THEN
+C            X1(I)=XCH4
+C            PCUT=P(I)
+C           ENDIF
+C          ENDIF
+C         ENDDO
+
+         NP = 11
         ELSE
          PRINT*,'SUBPROFRETG: VARTYPE NOT RECOGNISED'
          STOP

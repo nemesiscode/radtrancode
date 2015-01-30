@@ -498,6 +498,7 @@ C       Test to see if any vmrs have gone negative.
          if(varident(ivar,1).eq.222)np = 8
          if(varident(ivar,1).eq.223)np = 9
          if(varident(ivar,1).eq.224)np = 9
+         if(varident(ivar,1).eq.225)np = 11
 
          do j=ix,ix+np-1
           if(varident(ivar,1).eq.0)then
@@ -690,7 +691,8 @@ C      Write out k-matrix for reference
 
       endif
 
-      print*,'chisq/ny is equal to : ',chisq/float(ny)
+C      print*,'chisq/ny is equal to : ',chisq/float(ny)
+      print*,'chisq/ny is equal to : ',oxchi
       if(chisq.gt.ny)then
        print*,'Coreret: WARNING'
        print*,'chisq/ny should be less than 1 if correctly retrieved'

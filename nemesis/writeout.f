@@ -281,6 +281,7 @@ C1000  format(1x,i4,1x,f10.4,1x,e15.8,1x,e15.8,1x,f7.2,1x,e15.8,1x,f9.5)
        if(varident(ivar,1).eq.222)np = 8
        if(varident(ivar,1).eq.223)np = 9
        if(varident(ivar,1).eq.224)np = 9
+       if(varident(ivar,1).eq.225)np = 11
 
        write(lout,*)
      &  '   i, ix, xa          sa_err       xn          xn_err'
@@ -418,6 +419,7 @@ C     necessary
        if(varident(ivar,1).eq.222)np = 8
        if(varident(ivar,1).eq.223)np = 9
        if(varident(ivar,1).eq.224)np = 9
+       if(varident(ivar,1).eq.225)np = 11
 
 
        if(varident(ivar,1).eq.444)then

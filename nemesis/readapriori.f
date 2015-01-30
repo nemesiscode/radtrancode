@@ -1296,6 +1296,92 @@ C           read in haze p1,p2,p3,n1,n2
 
             nx = nx+9
 
+C **************** Sromovsky Cloud Model  ***************
+           elseif(varident(ivar,1).eq.225)then
+C           **** Larry's discrete cloud model, but extendable UTC and
+C           depleted methane  *******
+C           LTC base pressure
+            ix = nx+1
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           LTC opacity
+            ix = nx+2
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           MTC base pressure
+            ix = nx+3
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           MTC opacity
+            ix = nx+4
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           UTC base pressure
+            ix = nx+5
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           UTC opacity
+            ix = nx+6
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           UTC fsh
+            ix = nx+7
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           UTC tropopause cut-off rate
+            ix = nx+8
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           Tropospheric haze opacity
+            ix = nx+9
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           Stratospheric haze opacity
+            ix = nx+10
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           Methane depletion factor
+            ix = nx+11
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           read in haze p1,p2,p3,n1,n2
+            read(27,*),(varparam(ivar,j),j=1,5)
+
+            nx = nx+11
+
            else
             print*,'vartype not recognised'
             stop

@@ -1,6 +1,6 @@
       SUBROUTINE GWRITEPATSROM(RUNNAME,GASGIANT,ISCAT,SOL_ANG,EMISS_ANG,
      1 NCONV,VCONV,FWHM,LAYHT,NLAYER,LAYTYP,LAYINT,FLAGH2P,NCLOUD,CPBOT,
-     2 CPTOP,NLAYCLOUD,CODEPTH,CFSH,IFLAG224)
+     2 CPTOP,NLAYCLOUD,CODEPTH,CFSH,IFLAGSROM,CWID,PMETH)
 
 C     $Id:
 C     *******************************************************************
@@ -38,7 +38,9 @@ C     *******************************************************************
       REAL SOL_ANG,E1
       INTEGER ISCAT,LAYTYP,LAYINT,NLAYER,NCONV,LAYBOT,FLAGH2P,I
       CHARACTER*80 TEXT
-      LOGICAL GASGIANT,IFLAG224
+      LOGICAL GASGIANT
+      INTEGER IFLAGSROM,KEXT
+      REAL CWID,PMETH
 c  ** variable for reflected atmos
       CHARACTER*100 rflfile,dummy
       REAL angle_inc,angle_rfl
@@ -128,11 +130,15 @@ C     sol_ang is then the tangent altitude)
        LAYANG = 90.0
       ENDIF       
 
-      print*,'IFLAG',IFLAG224,NCLOUD
-      IF(IFLAG224)THEN
-       WRITE(31,1)'ncomplayerA'
-      ELSE
+      print*,'IFLAG',IFLAGSROM,NCLOUD
+      IF(IFLAGSROM.GE.222.AND.IFLAGSROM.LE.223)THEN
        WRITE(31,1)'ncomplayer'
+      ELSE
+       IF(IFLAGSROM.EQ.224)THEN
+        WRITE(31,1)'ncomplayerA'
+       ELSE
+        WRITE(31,1)'ncomplayerB'   
+       ENDIF  
       ENDIF
       nlayg=4
       nlaybot=4
@@ -145,6 +151,10 @@ C     sol_ang is then the tangent altitude)
        write(31,*)cpbot(icloud),cptop(icloud),nlaycloud(icloud),
      &  codepth(icloud),cfsh(icloud)
       enddo
+      if(iflagsrom.eq.225)then
+       kext=3
+       write(31,*)kext,cwid
+      endif
       WRITE(31,3)'layang ',layang
       WRITE(31,2)'layint ',layint
 

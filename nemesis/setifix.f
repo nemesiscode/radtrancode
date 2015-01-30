@@ -46,6 +46,7 @@ C     Set minimum fractional error to fix variable.
        if(varident(ivar,1).eq.222)np = 8
        if(varident(ivar,1).eq.223)np = 9
        if(varident(ivar,1).eq.224)np = 9
+       if(varident(ivar,1).eq.225)np = 11
 
        do i=1,np
         ix = nxtemp+i

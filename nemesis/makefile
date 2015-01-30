@@ -124,8 +124,7 @@ bin :   \
 	NemesisPT \
 	Nemesisdisc \
 	Generatespx \
-	GenerateMCSspx \
-	Radeqm
+	GenerateMCSspx
 
 Nemesis: nemesis.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Nemesis nemesis.f $(LIBRARY) \
@@ -188,11 +187,4 @@ GenerateMCSspx: generateMCSspx.f $(LIBRARY)
 	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/radtran.a \
 	$(LIB)/matrices.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
 	$(LIB)/lgregfov.a $(FRECIPES)
-
-Radeqm: radeqm.f $(LIBRARY)
-	$(FC) $(FCFLAGS) -o $(BIN)/Radeqm radeqm.f $(LIBRARY) \
-	$(LIB)/cirsrad.a \
-	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/radtran.a \
-	$(LIB)/matrices.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
-	$(FRECIPES)
 

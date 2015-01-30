@@ -82,7 +82,7 @@ C     ************************************************************************
       real v1(max_wave),k1(max_wave),vm1,n1(max_wave)
       integer nlayer,laytyp,iscat,nx,nxx,ncont,nx1
       integer layint,iprfcheck,check_profile,nmode,inorm
-      real layht,xod(maxcon),xscal(maxcon)
+      real layht,xod(maxcon),xscal(maxcon),cwid,pmeth
       real vconv(mconv),minlam,lambda0
       integer nmu,isol,lowbc,nf,flagh2p,jalb,jtan,jpre
       integer jsurfx,jalbx,jtanx,jprex,nprox,icheck,icont
@@ -98,9 +98,9 @@ C     ************************************************************************
 
       integer nvar,ivar,varident(mvar,3),i,j,nalb,nalb1
       real varparam(mvar,mparam),alb(maxsec),valb(maxsec)
-      integer nvarx,varidentx(mvar,3),ivarx
+      integer nvarx,varidentx(mvar,3),ivarx,iflagsrom,iflagtest
       real varparamx(mvar,mparam),od1
-      logical gasgiant,iflag222,iflag223,iflag224
+      logical gasgiant,iflagcloud
       integer NN,NDUST
       REAL DUSTH(MAXLAY),DUST(MAXCON,MAXLAY)
 
@@ -228,7 +228,7 @@ C       ***************** Surface temperature correction ***********
 
       do ivar=1,nvar
 
-C       print*,ivar
+       print*,'gsetrad - ',ivar,varident(ivar,1)
        if (varident(ivar,1).eq.888)then
 C       ********* surface albedo spectrum retrieval **********
         nalb = int(varparam(ivar,1))
@@ -298,43 +298,28 @@ C      ***************** Tangent height correction ***********
 
        endif
 
+       iflagtest=varident(ivar,1)
+       if(iflagtest.ge.222.and.iflagtest.le.225)then
+        iflagcloud=.true.
+        iflagsrom=iflagtest
+       endif
+
       enddo
 
 C     See if Sromovsky cloud layer model is specified.
-      iflag222=.false.
-      iflag223=.false.
-      iflag224=.false.
-      do ivar=1,nvar
-       if(varident(ivar,1).eq.222)then
-         iflag222=.true.
-       endif
-       if(varident(ivar,1).eq.223)then
-         iflag223=.true.
-       endif
-       if(varident(ivar,1).eq.224)then
-         iflag224=.true.
-       endif
-      enddo
+      print*,'gsetrad - iflagsrom = ',iflagsrom
 
-      if(iflag222.or.iflag223.or.iflag224)then
+      if(iflagcloud)then
 
-       if(iflag222)then 
-        call extractsrom(runname,nvar,varident,varparam,nx,xn,
-     1    ncloud,cpbot,cptop,nlaycloud,codepth,cfsh)
-       endif
-       if(iflag223)then 
-        call extractsromch4(runname,nvar,varident,varparam,nx,
-     1   xn,ncloud,cpbot,cptop,nlaycloud,codepth,cfsh)
-       endif
-       if(iflag224)then 
-        call extractsromA(runname,nvar,varident,varparam,nx,
-     1   xn,ncloud,cpbot,cptop,nlaycloud,codepth,cfsh)
-       endif
-
+        call extractsrom(runname,iflagsrom,nvar,varident,
+     1    varparam,nx,xn,ncloud,cpbot,cptop,nlaycloud,codepth,
+     2    cfsh,cwid,pmeth)
+          
+       print*,'Calling gwritepatsrom'
        call gwritepatsrom(runname,gasgiant,iscat,sol_ang,
      1  emiss_ang,nconv,vconv,fwhm,layht,nlayer,
      2  laytyp,layint,flagh2p,ncloud,cpbot,cptop,nlaycloud,
-     3  codepth,cfsh,iflag224)
+     3  codepth,cfsh,iflagsrom,cwid,pmeth)
 
       else
 
@@ -425,6 +410,7 @@ C     Compute the drv file to get the aerosol optical depths
           if(varident(ivar,1).eq.222)np = 8
           if(varident(ivar,1).eq.223)np = 9
           if(varident(ivar,1).eq.224)np = 9
+          if(varident(ivar,1).eq.225)np = 11
 
          endif
 
@@ -461,6 +447,7 @@ C       check that rescaling has happened correctly
        if(varident(ivar,1).eq.222)np = 8
        if(varident(ivar,1).eq.223)np = 9
        if(varident(ivar,1).eq.224)np = 9
+       if(varident(ivar,1).eq.225)np = 11
           
 
        if(varident(ivar,1).eq.444)then

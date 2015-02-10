@@ -272,7 +272,7 @@ c  ** write header **
 c  ** write vmrs **      
       write(20,*) '  height (km)  press (atm)   temp (K)    vmrs....'
       do i=1,npro
-        write(20,'(f12.3,2x,e12.5,2x,f12.4,3(2x,e12.5))')
+        write(20,'(f12.3,2x,e12.5,2x,f12.4,20(2x,e12.5))')
      > height(i),press(i),temp(i),(vmrs(i,j),j=1,nvmr)
       enddo
       close(20)

@@ -282,7 +282,7 @@ C         we need to read in the surface emissivity spectrum
           call lblrtf_wave(x0, x1, wing, vrel, maxdv, rdummy, dist, 
      1     inormal, iray, delv, fwhm, ispace, npath, 
      2     vconv1, nconv1, itype,nem,vem,emissivity,tsurf, 
-     3     calcout)
+     3     calcout, IPTF)
 
 
 C         Unless an SCR calculation, first path is assumed to be thermal emission

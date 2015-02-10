@@ -29,6 +29,15 @@ C-----------------------------------------------------------------------
         endif
 
 	call interp(wave, rad, npt, y, x)
+C       Add catch to stop extrapolation beyond provided solar spectrum
+C       wavelengths.    
+        if(wave(1).lt.wave(npt))then
+         if(x.lt.wave(1))y=0.
+         if(x.gt.wave(npt))y=0.
+        else
+         if(x.gt.wave(1))y=0.
+         if(x.lt.wave(npt))y=0.
+        endif
 
 C       If dist is > 0 then we calculate the flux at the distance of the 
 C       planet from the star. Hence we need to divide by 4*pi*dist^2

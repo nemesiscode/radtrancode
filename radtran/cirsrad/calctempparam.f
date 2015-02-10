@@ -7,16 +7,14 @@ C
 C_DESC:	Calculate temperature parameters for different layers and gases.
 C
 C_ARGS:	Input variables:
-C	WING		REAL	Bin width.
-C	MAXDV		REAL	Line wing cut-off
 C	NLAYER		INTEGER	Number of Layers
 C	NGAS		INTEGER	Number of gases
 C	PRESS(NLAYER)	REAL	Total pressure [atm].
 C	TEMP(NLAYER)	REAL	Temperature [Kelvin].
+C       AAMOUNT(MAXLAY,MAXGAS) REAL Path amounts
 C	IDGAS(NGAS)	INTEGER	Gas ID
 C       ISOGAS(NGAS)	INTEGER Isotope ID
-C	IPROC(NGAS)	INTEGER	Line wing processing parameter.
-C	IB		INTEGER Buffer 1 or 2
+C	IPTF		INTEGER Partition function identifier
 C
 C	../includes/*.f variables:
 C	VLIN(2,MAXLIN)	REAL	Line position [cm^-1].
@@ -69,15 +67,12 @@ C******************************** CODE *********************************
       DO 16 I=1,NGAS
 C     Check isotopes included in model for each gas and set mass for doppler
 C     width calculation
-
        XMASS = GETMASS(IDGAS(I),ISOGAS(I))
-
        DO 16 J=1,NLAYER
 C      Calculate temperature tempendance parameters for the gas lines
 C      (Note: TCORS1 includes factor of 1.E-47 for scaling of stored line
 C       strengths. Scaling is applied in two stages to avoid numerical
 C       overflow)
-
         TCORS1(J,I)=PARTF(IDGAS(I),ISOGAS(I),TEMP(J),IPTF)
      &    *AAMOUNT(J,I)*1e-20
         TCORS1(J,I)=1.E-27*TCORS1(J,I)

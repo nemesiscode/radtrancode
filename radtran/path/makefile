@@ -17,6 +17,7 @@ F_SOURCES = \
         complayer.f \
         ncomplayer.f \
         ncomplayerA.f \
+        ncomplayerB.f \
 	cubint.f \
 	layer.f \
 	layerg.f \

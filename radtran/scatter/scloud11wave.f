@@ -96,7 +96,7 @@ C     ***********************************************************************
      1 STEST1
 
       REAL SOL_ANG,EMISS_ANG,CONV1,CONV,DEFCONV
-      REAL YX(4),T,U,FEMM,FSOL
+      REAL YX(4),T,U,FEMM,FSOL,XFAC
       INTEGER ICO,ISOL,IEMM,ISCL(MAXSCATLAY)
 
 C     Common blocks
@@ -135,6 +135,13 @@ C--------------------------------------------------------------------------
       end do
       endif
 
+
+C     Find correction for any quadrature errors
+      xfac=0.
+      do i=1,nmu
+       xfac=xfac+sngl(mu1(i)*wt1(i))
+      enddo
+      xfac=0.5/xfac
 
       LTOT = NLAY     ! Set internal number of layers
       LT1 = LTOT
@@ -465,11 +472,14 @@ C  SPECIAL MATRICES FOR LAMBERTIAN REFLECTION AT BOTTOM:
       IF (LOWBC.EQ.1) THEN
 	DO J=1,NMU
 C	  JL(J,1,LTOT) = 0.D0
-	  JL(J,1,LTOT) = RADG(NMU+1-J)
+	  JL(J,1,LTOT) = (1.0-GALB)*RADG(NMU+1-J)
           IF(IC.EQ.0)THEN
  	   DO I=1,NMU
 	    TL(I,J,LTOT) = 0.D0
 	    RL(I,J,LTOT) = 2.0D0*GALB*MU(J)*WTMU(J)  !Sum of MU*WTMU = 0.5
+C           Make any necessary quadrature correction.
+            RL(I,J,LTOT) = RL(I,J,LTOT)*XFAC
+
 	   ENDDO
 C	   TL(J,J,LTOT) = 1.D0-GALB
 	  ELSE
@@ -486,6 +496,9 @@ C ***********************************************************************
 C  CALCULATE UPWARD MATRICES FOR COMPOSITE OF L LAYERS FROM BASE OF CLOUD.
 C    XBASE(I,J,L) IS THE X MATRIX FOR THE BOTTOM L LAYERS OF THE CLOUD.
 C  AS FOR "TOP", R01 = R10 & T01 = T10 IS VALID FOR LAYER BEING ADDED ONLY.
+C
+C  i.e. XBASE(I,J,L) is the effective reflectivity, transmission and emission
+C  of the bottom L layers of the atmosphere (i.e. layers LTOT-L+1 to LTOT)
 C ***********************************************************************
       DO J = 1,NMU
 	JBASE(J,1,1) = JL(J,1,LTOT)

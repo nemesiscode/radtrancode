@@ -71,7 +71,9 @@ C     ***********************************************************************
      1 tau(MAXLAY),vwave, solar, vv, tauray(MAXLAY),
      2 lfrac(MAXCON,MAXLAY),drad,solar1
       integer nf,imu,iray,jmu
-      integer igdist
+      integer igdist,imie
+      common /imiescat/imie
+
 
       DOUBLE PRECISION MU(MAXMU), WTMU(MAXMU), MM(MAXMU,MAXMU),
      1 MMINV(MAXMU,MAXMU), RL(MAXMU,MAXMU,MAXSCATLAY),EPS(MAXSCATLAY),
@@ -96,7 +98,7 @@ C     ***********************************************************************
      1 OMEGA,FRAC,SFRAC,STEST,GALB,ZMU0,ZMU,TEX, TAUSCAT, 
      2 TAUR, TAU1, STEST1
 
-      REAL SOL_ANG,FSOL
+      REAL SOL_ANG,FSOL,XFAC,XNORM
       INTEGER ISOL,ISCL(MAXSCATLAY)
 
 C     Common blocks
@@ -131,6 +133,15 @@ C--------------------------------------------------------------------------
 
       LTOT = NLAY      ! Set internal number of layers
       LT1 = LTOT
+
+C     Find correction for any quadrature errors
+      xfac=0.
+      do i=1,nmu
+       xfac=xfac+sngl(mu1(i)*wt1(i))
+      enddo
+      xfac=0.5/xfac
+      print*,'xfac = ',xfac
+      print*,'Galb = ',galb
 
 C     In case of Lambertian reflection, add extra dummy layer at bottom,
 C     whose transmission matrix = (1-A)*Unit-Matrix. This layer must be
@@ -178,13 +189,21 @@ C     Precalculate phase function arrays if new wavelength
       IF(IGDIST.EQ.1) THEN
        DO J1=1,NCONT
 
-        CALL READ_HG(VWAVE,J1,NCONT,F,G1,G2)
+C       If imie=1 then read in phase function from PHASEN.DAT files
+C       otherwise read in from hgphaseN.dat files
 
-        ISCAT =2
-        NCONS = 3
-        CONS8(1)=F
-        CONS8(2)=G1
-        CONS8(3)=G2
+        if(imie.eq.1)then
+          ISCAT=4
+          NCONS=0
+        else
+         CALL READ_HG(VWAVE,J1,NCONT,F,G1,G2)
+         ISCAT =2
+         NCONS = 3
+         CONS8(1)=F
+         CONS8(2)=G1
+         CONS8(3)=G2
+        endif
+
         NPHI = 100
         NORM = 1
 
@@ -412,21 +431,29 @@ C       P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P
 C  SPECIAL MATRICES FOR LAMBERTIAN REFLECTION AT BOTTOM:
       IF (LOWBC.EQ.1) THEN
         DO J=1,NMU
-          JL(J,1,LTOT) = 0.D0
+          JL(J,1,LTOT) = (1.0-GALB)*RADG(NMU+1-J)
+C          JL(J,1,LTOT) = 0.
           IF(IC.EQ.0)THEN
             DO I=1,NMU
              TL(I,J,LTOT) = 0.D0
+C            TL(J,J,LTOT) = 1.D0-GALB
              RL(I,J,LTOT) = 2.0D0*GALB*MU(J)*WTMU(J)  !Sum of MU*WTMU
 C                                                           = 0.5
+C            Correct for fact that Sum of MU*WTMU is not quite 0.5
+             RL(I,J,LTOT) = RL(I,J,LTOT)*XFAC
             ENDDO
-            TL(J,J,LTOT) = 1.D0-GALB
+            ISCL(LTOT)=0
+            IF(GALB.GT.0.)ISCL(LTOT)=1
           ELSE
+C           Lambertian is azumuthally symmetric so no components in
+C	    Fourier decomposition.
             DO I=1,NMU
              TL(I,J,LTOT) = 0.0D0
              RL(I,J,LTOT) = 0.0D0
             ENDDO
           ENDIF
         ENDDO
+C        print*,'Layer refl (1,1,LTOT): ',RL(1,1,LTOT)
       ENDIF
 
 
@@ -435,6 +462,9 @@ C  CALCULATE DOWNWARD MATRICES FOR COMPOSITE OF L LAYERS FROM TOP OF CLOUD.
 C        XTOP(I,J,L) IS THE X MATRIX FOR THE TOP L LAYERS OF CLOUD.
 C  NOTE THAT R21 = R12 & T21 = T12 VALID FOR THE HOMOGENEOUS LAYER BEING ADD$
 C  BUT NOT FOR THE INHOMOGENEOUS RESULTING "TOP" LAYER.
+C
+C  i.e. XTOP(I,J,L) is the effective reflectivity, transmission and emission
+C  of the top L layers of the atmosphere (i.e. layers 1-L)
 C **********************************************************************
       DO J = 1,NMU
         JTOP(J,1,1) = JL(J,1,1)
@@ -443,18 +473,29 @@ C **********************************************************************
           TTOP(I,J,1) = TL(I,J,1)
         ENDDO
       ENDDO
+C      print*,'RT1 = ',RTOP(1,1,1)
       DO L = 1,LTOT-1
         if(idump.gt.0)print*,'Multiply ',L,' of ',LTOT-1
+C         print*,L,RTOP(1,1,L),RL(1,1,L+1)
         CALL ADDP( RL(1,1,L+1), TL(1,1,L+1), JL(1,1,L+1), ISCL(L+1),
      1   RTOP(1,1,L),TTOP(1,1,L), JTOP(1,1,L), RTOP(1,1,L+1),
      2   TTOP(1,1,L+1),JTOP(1,1,L+1), NMU, MAXMU)
+C         print*,L+1,RTOP(1,1,L+1)
       ENDDO
+
+C      print*,'l,rtop(1,1,l),ttop(1,1,l),jtop(1,1,l)'
+C      do l=1,ltot
+C       write(6,101)l,rtop(1,1,l),ttop(1,1,l),jtop(1,1,l)
+C      enddo
 
 
 C ***********************************************************************
 C  CALCULATE UPWARD MATRICES FOR COMPOSITE OF L LAYERS FROM BASE OF CLOUD.
 C    XBASE(I,J,L) IS THE X MATRIX FOR THE BOTTOM L LAYERS OF THE CLOUD.
 C  AS FOR "TOP", R01 = R10 & T01 = T10 IS VALID FOR LAYER BEING ADDED ONLY.
+C
+C  i.e. XBASE(I,J,L) is the effective reflectivity, transmission and emission
+C  of the bottom L layers of the atmosphere (i.e. layers LTOT-L+1 to LTOT)
 C ***********************************************************************
       DO J = 1,NMU
         JBASE(J,1,1) = JL(J,1,LTOT)
@@ -463,14 +504,23 @@ C ***********************************************************************
           TBASE(I,J,1) = TL(I,J,LTOT)
         ENDDO
       ENDDO
+C      print*,'Rbase',RBASE(1,1,1),TBASE(1,1,1)
       DO L = 1,LTOT-1
         if(idump.gt.0)print*,'Multiply ',L,' of ',LTOT-1
         K = LTOT-L
+C        print*,RBASE(1,1,L),RL(1,1,K)
+C        print*,TBASE(1,1,L),TL(1,1,K)
         CALL ADDP( RL(1,1,K), TL(1,1,K), JL(1,1,K), ISCL(K),
      1  RBASE(1,1,L), TBASE(1,1,L), JBASE(1,1,L), RBASE(1,1,L+1), 
      2  TBASE(1,1,L+1), JBASE(1,1,L+1), NMU, MAXMU)
+C        print*,rbase(1,1,L+1),tbase(1,1,L+1)
       ENDDO
 
+C      print*,'l,rbase(1,1,l),tbase(1,1,l),jbase(1,1,l)'
+C      do l=1,ltot
+C       write(6,101)l,rbase(1,1,l),tbase(1,1,l),jbase(1,1,l)
+C      enddo
+101   format(i4,3(f12.8))
 
       IF(IC.NE.0)THEN
        DO IL=1,NMU
@@ -491,11 +541,13 @@ C ***********************************************************************
       ENDIF
 
       ISOL=1
+C      print*,'SOLAR,ZMU0',SOLAR,ZMU0
       DO J=1,NMU-1
+C       print*,J,MU(J),ZMU0
        IF(ZMU0.LE.MU(J).AND.ZMU0.GT.MU(J+1))ISOL = J
       END DO
       IF(ZMU0.LE.MU(NMU))ISOL=NMU-1 
-       
+C      print*,'ISOL,FSOL=',ISOL,FSOL
       
       FSOL = SNGL((MU(ISOL)-ZMU0)/(MU(ISOL)-MU(ISOL+1)))
 
@@ -514,62 +566,97 @@ C ***********************************************************************
 
       DO IMU0=ISOL,ISOL+1
        U0PL(IMU0,1) = SOLAR1/(2.0D0*PI*WTMU(IMU0))
-
+       
 
 C ****************************************************
 C      CALCULATING INTERIOR INTENSITIES FOR CLOUD.
 C         UPL(J,1,L) GOES DOWN OUT OF LAYER L.
 C          UMI(J,1,L) GOES UP OUT OF LAYER L.
 C ****************************************************
+C       print*,'l,k,umi,upl',ISOL,FSOL
        DO L = 1,LTOT-1
         K = LTOT-L
         CALL IUP( RTOP(1,1,L), TTOP(1,1,L), JTOP(1,1,L),
      1    RBASE(1,1,K), TBASE(1,1,K), JBASE(1,1,K), UMI(1,1,L+1),
      2    NMU, MAXMU)
+C        CALL IUP( RTOP(1,1,L), TTOP(1,1,L), JTOP(1,1,L),
+C     1    RBASE(1,1,K), TBASE(1,1,K), JBASE(1,1,K), UMI(1,1,L),
+C     2    NMU, MAXMU)
         CALL IDOWN( RTOP(1,1,L), TTOP(1,1,L), JTOP(1,1,L),
      1    RBASE(1,1,K), TBASE(1,1,K), JBASE(1,1,K), UPL(1,1,L),
      2    NMU, MAXMU)
+C        print*,L,k,umi(1,1,l),upl(1,1,l)
        ENDDO
 
 
 C *******************************************************
 C     CALCULATING EXTERIOR INTENSITIES UTPL AND U0MI
 C *******************************************************
+C       print*,'RBASE, U0PL'
+C       write(6,102)RBASE(1,1,LTOT),U0PL(1,1)
+102    format(5(e12.5))
+C       print*,IMU0,mu(imu0),wtmu(imu0),(u0pl(k,1),k=1,nmu)
+
+C      Basically upward radiation at top of atmosphere:
+C      U0MI = U0PL*RBASE + TBASE*UTMI + JBASE
+ 
        CALL MMUL(1.0D0,RBASE(1,1,LTOT),U0PL,ACOM,NMU,NMU,1,
      1   MAXMU,MAXMU,1)
+C       print*,'TBASE, UTMI'
+C       write(6,102)TBASE(1,1,LTOT),UTMI(1,1)
        CALL MMUL(1.0D0,TBASE(1,1,LTOT),UTMI,BCOM,NMU,NMU,1,
      1   MAXMU,MAXMU,1)
        CALL MADD(1.0D0,ACOM,BCOM,ACOM,NMU,1,MAXMU,1)
+C       print*,'Add'
+C       write(6,102)ACOM(1,1)
        CALL MADD(1.0D0,JBASE(1,1,LTOT),ACOM,U0MI,NMU,1,MAXMU,1)
 
-       CALL MMUL(1.0D0,TTOP(1,1,LTOT),U0PL,ACOM,NMU,NMU,1,
+C      Basically downward radiation at bottom of atmosphere:
+C      UTPL = U0PL*TTOP + RTOP*UTMI + JTOP
+
+       CALL MMUL(1.0D0,TTOP(1,1,LT1),U0PL,ACOM,NMU,NMU,1,
      1  MAXMU,MAXMU,1)
-       CALL MMUL(1.0D0,RTOP(1,1,LTOT),UTMI,BCOM,NMU,NMU,1,
+       CALL MMUL(1.0D0,RTOP(1,1,LT1),UTMI,BCOM,NMU,NMU,1,
      1  MAXMU,MAXMU,1)
        CALL MADD(1.0D0,ACOM,BCOM,ACOM,NMU,1,MAXMU,1)
        CALL MADD(1.0D0,JTOP(1,1,LTOT),ACOM,UTPL(1,1,LT1),
      1  NMU,1,MAXMU,1)
-
+C       print*,'U0MI,UTPL : '
+C       write(6,102)U0MI(1,1,1),UTPL(1,1,LT1)
 
        DO 302 IMU = 1, NMU
 
         JMU  = NMU+1-IMU
 
+
+        IF(IMU0.EQ.ISOL)THEN
+         UMIF(JMU,1,IC+1)=(1.-FSOL)*SNGL(U0MI(IMU,1,1))
+        ELSE
+         UMIF(JMU,1,IC+1)=UMIF(JMU,1,IC+1)+
+     &				FSOL*SNGL(U0MI(IMU,1,1))
+        ENDIF
+
         DO 301 L=1,LT1
-         IF(L.EQ.1)THEN 
-          UMIF(JMU,L,IC+1)=SNGL(U0MI(IMU,1,1))
-         ENDIF
-         IF(L.EQ.LT1)THEN 
-          UPLF(JMU,L,IC+1)=SNGL(UTPL(IMU,1,LT1))
-         ENDIF
          IF(IMU0.EQ.ISOL)THEN
-          UPLF(JMU,L,IC+1)=(1-FSOL)*SNGL(UPL(IMU,1,L))
-          UMIF(JMU,L,IC+1)=(1-FSOL)*SNGL(UMI(IMU,1,L))
+          IF(L.NE.LT1)UPLF(JMU,L,IC+1)=
+     &			(1.-FSOL)*SNGL(UPL(IMU,1,L))
+          IF(L.NE.1)UMIF(JMU,L,IC+1)=
+     &			(1.-FSOL)*SNGL(UMI(IMU,1,L))
          ELSE
-          UPLF(JMU,L,IC+1)=UPLF(JMU,L,IC+1)+FSOL*SNGL(UPL(IMU,1,L))
-          UMIF(JMU,L,IC+1)=UMIF(JMU,L,IC+1)+FSOL*SNGL(UMI(IMU,1,L))
+          IF(L.NE.LT1)UPLF(JMU,L,IC+1)=
+     &			UPLF(JMU,L,IC+1)+FSOL*SNGL(UPL(IMU,1,L))
+          IF(L.NE.1)UMIF(JMU,L,IC+1)=
+     &			UMIF(JMU,L,IC+1)+FSOL*SNGL(UMI(IMU,1,L))
          ENDIF
+
 301     CONTINUE
+
+        IF(IMU0.EQ.ISOL)THEN
+         UPLF(JMU,LT1,IC+1)=(1.-FSOL)*SNGL(UTPL(IMU,1,LT1))
+        ELSE
+         UPLF(JMU,LT1,IC+1)=UPLF(JMU,LT1,IC+1)+
+     &				FSOL*SNGL(UTPL(IMU,1,LT1))
+        ENDIF
 
 302    CONTINUE
 
@@ -578,6 +665,17 @@ C *******************************************************
       END DO
 
 1000  CONTINUE
+
+C      print*,'Flux down',LTOT
+C      do i=1,LTOT
+C       print*,i,(uplf(j,i,1),j=1,nmu)
+c      enddo
+C      print*,'Flux up',LTOT
+C      do i=1,LTOT
+C       print*,i,(umif(j,i,1),j=1,nmu)
+C      enddo
+
+
 
       RETURN
       END

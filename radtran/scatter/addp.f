@@ -10,6 +10,7 @@ C     Input variables:
 C	R1(JDIM,JDIM)	DOUBLE	Diffuse reflection operator for 1st layer
 C	T1(JDIM,JDIM)	DOUBLE	Diffuse transmission operator for 1st layer
 C	J1(JDIM,1)	DOUBLE	Diffuse source function for 1st layer
+C	ISCAT1		INTEGER Flag to indicate if 2nd layer is scattering
 C	RSUB(JDIM,JDIM)	DOUBLE	Diffuse reflection operator for 2nd layer
 C	TSUB(JDIM,JDIM)	DOUBLE	Diffuse transmission operator for 2nd layer
 C	JSUB(JDIM,1)	DOUBLE	Diffuse source function for 2nd layer
@@ -42,7 +43,7 @@ C
       IF (JDIM.NE.MAXMU) CALL ABEND(' ADD: DIMENSION ERROR')
 C
       IF(ISCAT1.EQ.1)THEN
-
+C      2nd layer is scattering.
        CALL MMUL(-1.0D0,RSUB,R1,BCOM,NMU,NMU,NMU,JDIM,JDIM,JDIM)
        CALL MADD(1.0D0,E,BCOM,BCOM,NMU,NMU,JDIM,JDIM)
        CALL MATINV8(BCOM,NMU,JDIM,ACOM)
@@ -58,7 +59,7 @@ C
        CALL MADD(1.0D0,J1,JANS,JANS,NMU,1,JDIM,1)
   
       ELSE
-
+C       2nd layer is non-scattering
        CALL MMUL(1.0D0,RSUB,J1,JCOM,NMU,NMU,1,JDIM,JDIM,1)
        CALL MADD(1.0D0,JSUB,JCOM,JCOM,NMU,1,JDIM,1)
 

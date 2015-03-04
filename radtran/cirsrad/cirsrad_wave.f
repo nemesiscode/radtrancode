@@ -408,7 +408,7 @@ C-----------------------------------------------------------------------
          if(imod(i).eq.15.and.itype.eq.13)then
           iflux=1
          endif
-         if(imod(i).eq.22)then 
+         if(imod(i).eq.23)then 
           iflux=2
          endif
         ENDDO

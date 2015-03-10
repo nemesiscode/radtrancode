@@ -1311,7 +1311,7 @@ C                stop
 
 C               Add in reflectance from the ground
                 corkout(Ipath,Ig)=corkout(Ipath,Ig) + 
-     1                          xfac*sngl(trold*solar*galb1)/pi
+     1                 xfac*sngl(trold*solar*muinc*galb1)/pi
 
 C		WRITE (*,*) ' Calculated: ', Ig, corkout(Ipath,Ig)
 

@@ -281,8 +281,9 @@ C     Misc variables or variables defined in the code
       REAL DOPMAX,WING,VREL,VMAX,VTOP,VBOT,RANGE,XMASS,FILCUR
       REAL V1,VTMP,TAU,TR,TROLD,GETMASS
       DOUBLE PRECISION V,V1DP,V2DP,DVSAMP,VCENT
-      REAL ABSCO,LNABSCO,AD,X,Y,MINPR,MXMASS,MXWID,XWID,FPARA
+      REAL ABSCO,AD,X,Y,MINPR,MXMASS,MXWID,XWID,FPARA
       REAL PARTF,AAMOUNT(MAXGAS),PPP(MAXGAS),XLEN
+      DOUBLE PRECISION LNABSCO
       INTEGER LABEL
       LOGICAL NOFILT
       REAL M, TRAT
@@ -714,9 +715,8 @@ C      Calculate temperature tempendance parameters for the gas lines
 C      (Note: TCORS1 includes factor of 1.E-47 for scaling of stored line
 C       strengths. Scaling is applied in two stages to avoid numerical
 C       overflow)
-
         TCORS1(J,I)=PARTF(IDGAS(I),ISOGAS(I),TEMP(J),IPTF)*
-     1   (AMOUNT(J,I)*1.E-20)
+     1		(AMOUNT(J,I)*1.E-20)
         TCORS1(J,I)=1.E-27*TCORS1(J,I)
         TCORDW(J,I)=4.301E-7*SQRT(TEMP(J)/XMASS)
 16    CONTINUE
@@ -1657,7 +1657,7 @@ C         Compute stimulated emission term
 
           LNABSCO=LOG(SLIN(LINE))+LOG(TCORS1(LAYER,IDLIN(LINE)))+
      &        (TCORS2(LAYER)*ELIN(LINE))+LOG(TSTIM)
-          ABSCO=EXP(LNABSCO)
+          ABSCO=SNGL(DEXP(LNABSCO))
 
           AD=TCORDW(LAYER,IDLIN(LINE))*VLIN(LINE)
 
@@ -1791,7 +1791,7 @@ C        If the gas continuum is included in gascon, then ICH4=1
             ELSE
              I1 = 2
              IF(ISOGAS(J).EQ.0)THEN
-              K=0
+              K=1
              ELSE
               K=ISOGAS(J)
              END IF

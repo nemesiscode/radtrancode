@@ -329,7 +329,8 @@ c     pretabulate some line calculation parameters
              tstim_arr(line) = (1.0 - dpexp(-1.439*vlin(line)/temp))/
      >          (1.0 - dpexp(-1.439*vlin(line)/296.0))
              absco_arr(line) = 
-     >        slin(line)*tcors1*dpexp(tcors2*elin(line))*tstim_arr(line)
+     >        sngl(slin(line)*tcors1*dpexp(tcors2*elin(line))*
+     >        tstim_arr(line))
              ad_arr(line) = tcordw*vlin(line)
              y_arr(line) = (alin(line)*(1 - frac)*tratio**tdw(line) +
      >           (alin(line) - sblin(line))*frac*tratio**tdws(line))*

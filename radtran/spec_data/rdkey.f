@@ -25,41 +25,25 @@ C--------------------------------------------------------------
       INCLUDE '../includes/dbcom.f' 
 C--------------------------------------------------------------
       INTEGER LUN
-      CHARACTER*56 TMPNAM
       DBLUN=LUN
       CALL FILE(KEYFIL,KEYFIL,'key')
       OPEN(UNIT=LUN,FILE=KEYFIL,STATUS='OLD')
       READ(LUN,20)DBNAME
 C     note not overwriting KEYFIL with original name
       READ(LUN,*)
-      READ(LUN,20)TMPNAM
-      IPFILE(1:56)=TMPNAM(1:56)
-      CALL REMSP(IPFILE)
-      IPFILE(57:100)='                                            '
+      READ(LUN,20)IPFILE
       WRITE(*,20)IPFILE
-      READ(LUN,20) TMPNAM
-      DBFILE(1:56)=TMPNAM(1:56)
-      DBFILE(57:100)='                                            '
-      CALL REMSP(DBFILE)
+      READ(LUN,20)DBFILE
       WRITE(*,20)DBFILE
-      READ(LUN,20) TMPNAM
-      INDFIL(1:56)=TMPNAM(1:56)
-      INDFIL(57:100)='                                            '
-      CALL REMSP(INDFIL)
+      READ(LUN,20)INDFIL
       WRITE(*,20)INDFIL
-      READ(LUN,20) TMPNAM
-      GASFIL(1:56)=TMPNAM(1:56)
-      GASFIL(57:100)='                                            '
-      CALL REMSP(GASFIL)
+      READ(LUN,20)GASFIL
       WRITE(*,20)GASFIL
-      READ(LUN,20) TMPNAM
-      ISOFIL(1:56)=TMPNAM(1:56)
-      ISOFIL(57:100)='                                            '
-      CALL REMSP(ISOFIL)
+      READ(LUN,20)ISOFIL
       WRITE(*,20)ISOFIL
 
 C     relies on size of variables to avoid comments at end of line
-20    FORMAT(A56)
+20    FORMAT(A)
 
       READ(LUN,*)DBSIZ
       READ(LUN,*)DBFORM

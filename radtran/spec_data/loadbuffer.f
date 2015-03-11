@@ -218,7 +218,7 @@ C NOTE: SBLIN is the correction to air broadening so that zero is valid
       NXTREC=IREC
 
 101   CONTINUE
-      NBINX = 1+ (VMAX-VBOT)/WING 
+      NBINX = 1+ INT((VMAX-VBOT)/WING) 
       DO I=1,NBINX
 C       PRINT*,I,VBOT+(I-1)*WING,FSTLIN(IB,I),LSTLIN(IB,I)
        IF(FSTLIN(IB,I).GT.0)LASTBIN(IB)=I

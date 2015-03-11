@@ -48,7 +48,7 @@ C	 IPTF		INTEGER	Partition function flag for CH4.
 C
 C	../includes/*.f variables:
 C	VLIN(MAXLIN)	REAL	Line position [cm^-1].
-C	SLIN(MAXLIN)	REAL	Line strength [cm^-1 molecule^-1 cm^-2] at
+C	SLIN(MAXLIN)	REAL*8	Line strength [cm^-1 molecule^-1 cm^-2] at
 C				STP.
 C	ALIN(MAXLIN)	REAL	Air-broadened halfwidth [cm^-1/atm] @ STP.
 C	ELIN(MAXLIN)	REAL	Lower state energy line position [cm^-1].
@@ -189,7 +189,7 @@ C NOTE: TCORS1 includes factor of 1.e-27 for scaling of stored lines
       IF(VBOT.LT.0.0)VBOT = 0.0
       RANGE = VTOP - VBOT
       NBIN = INT(RANGE/WING) + 1
-
+      PRINT*,'LBL_KCONT: NBIN, RANGE, WING = ',NBIN, RANGE, WING
       IF(NBIN.GT.MAXBIN)THEN
         WRITE(*,*)'LBL_KCONT.f :: *ERROR* NBIN > MAXBIN'
         WRITE(*,*)'Stopping program.'

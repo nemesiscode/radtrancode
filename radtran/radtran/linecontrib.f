@@ -16,7 +16,7 @@ C	PRESS	REAL	Pressure
 C	TEMP	REAL	Temperature
 C	FRAC	REAL	Fraction
 C	VLIN	REAL	Line wavenumber
-C	SLIN	REAL	Line strength at STP
+C	SLIN	REAL*8	Line strength at STP
 C	ELIN	REAL 	Lower state energy
 C	ALIN	REAL	Air-broadened width
 C	SBLIN	REAL	Self-broadened width

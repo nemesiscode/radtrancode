@@ -26,49 +26,11 @@ C***************************** VARIABLES *******************************
 C ../includes/dbcom.f stores the linedata base variables (e.g. RELABU).
       INCLUDE '../includes/dbcom.f' 
 
-      INTEGER MINEXP,MAXEXP,MINEXP1,MAXEXP1
-      PARAMETER (MINEXP=-79,MAXEXP=-15)
-      PARAMETER (MINEXP1=-37,MAXEXP1=38)
-
       CHARACTER*3 ATNW
       INTEGER EXP,EXP1,IPOW,IPOW1
-
+      DOUBLE PRECISION CC
+      PARAMETER (CC=10.)
       COMMON /OVERFLOW/IPOW,IPOW1
-
-      REAL POWER(MINEXP:MAXEXP)
-      REAL POWER1(MINEXP1:MAXEXP1)
-      DATA POWER /
-     1     1.E-32,1.E-31,1.E-30,
-     2     1.E-29,1.E-28,1.E-27,1.E-26,1.E-25,
-     3     1.E-24,1.E-23,1.E-22,1.E-21,1.E-20,
-     4     1.E-19,1.E-18,1.E-17,1.E-16,1.E-15,
-     5     1.E-14,1.E-13,1.E-12,1.E-11,1.E-10,
-     6     1.E-9,1.E-8,1.E-7,1.E-6,1.E-5,
-     7     1.E-4,1.E-3,1.E-2,1.E-1,1.E0,
-     8     1.E+1,1.E+2,1.E+3,1.E+4,1.E+5,
-     9     1.E+6,1.E+7,1.E+8,1.E+9,1.E+10,
-     &     1.E+11,1.E+12,1.E+13,1.E+14,1.E+15,
-     1     1.E+16,1.E+17,1.E+18,1.E+19,1.E+20,
-     2     1.E+21,1.E+22,1.E+23,1.E+24,1.E+25,
-     3     1.E+26,1.E+27,1.E+28,1.E+29,1.E+30,
-     4     1.E+31,1.E+32/
-      DATA POWER1 /
-     1     1.E-37,1.E-36,1.E-35,
-     2     1.E-34,1.E-33,1.E-32,1.E-31,1.E-30,
-     3     1.E-29,1.E-28,1.E-27,1.E-26,1.E-25,
-     4     1.E-24,1.E-23,1.E-22,1.E-21,1.E-20,
-     5     1.E-19,1.E-18,1.E-17,1.E-16,1.E-15,
-     6     1.E-14,1.E-13,1.E-12,1.E-11,1.E-10,
-     7     1.E-9,1.E-8,1.E-7,1.E-6,1.E-5,
-     8     1.E-4,1.E-3,1.E-2,1.E-1,1.E0,
-     9     1.E+1,1.E+2,1.E+3,1.E+4,1.E+5,
-     &     1.E+6,1.E+7,1.E+8,1.E+9,1.E+10,
-     1     1.E+11,1.E+12,1.E+13,1.E+14,1.E+15,
-     2     1.E+16,1.E+17,1.E+18,1.E+19,1.E+20,
-     3     1.E+21,1.E+22,1.E+23,1.E+24,1.E+25,
-     4     1.E+26,1.E+27,1.E+28,1.E+29,1.E+30,
-     5     1.E+31,1.E+32,1.E+33,1.E+34,1.E+35,
-     6     1.E+36,1.E+37,1.E+38/
 
 C******************************** CODE *********************************
 
@@ -94,10 +56,22 @@ C=======================================================================
 101       FORMAT(I2,I1,F12.6,F6.3,1X,I3,F6.3,1X,I3,F5.4,F5.4,F10.4,
      1    F4.2,F8.6,I3,I3,A9,A9,3I1,3I2,F12.7)
         ELSE IF(DBRECL.EQ.160)THEN
-          READ(BUFFER,102,ERR=99)LNID,LNISO,LNWAVE,LNSTR,EXP,LNEINA,
-     1    EXP1,LNWIDA,LNWIDS,LNLSE,LNTDEP,LNPSH,LNUGQI04,LNLGQI04,
-     2    LNULQ04,LNLLQ04,LNACC04,LNREF04,LNFLAG,UWGHT,LWGHT
-102       FORMAT(I2,I1,F12.6,F6.3,1X,I3,F6.3,1X,I3,F5.4,F5.4,F10.4,
+C         HITEMP160 is not quite the same as HITRAN160. Need to add a 
+C         catch to spot the difference.
+          IF(BUFFER(21:21).EQ.'E')THEN
+C          HITEMP160
+           READ(BUFFER,102,ERR=99)LNID,LNISO,LNWAVE,LNSTR,EXP,LNEINA,
+     1     EXP1,LNWIDA,LNWIDS,LNLSE,LNTDEP,LNPSH,LNUGQI04,LNLGQI04,
+     2     LNULQ04,LNLLQ04,LNACC04,LNREF04,LNFLAG,UWGHT,LWGHT
+          ELSE
+C          HITRAN160
+           READ(BUFFER,104,ERR=99)LNID,LNISO,LNWAVE,LNSTR,EXP,LNEINA,
+     1     EXP1,LNWIDA,LNWIDS,LNLSE,LNTDEP,LNPSH,LNUGQI04,LNLGQI04,
+     2     LNULQ04,LNLLQ04,LNACC04,LNREF04,LNFLAG,UWGHT,LWGHT
+          ENDIF
+102       FORMAT(I2,I1,F12.6,F5.3,1X,I4,F6.3,1X,I3,F5.4,F5.4,F10.4,
+     1    F4.2,F8.6,A15,A15,A15,A15,6I1,6I2,A1,F7.1,F7.1)
+104       FORMAT(I2,I1,F12.6,F6.3,1X,I3,F6.3,1X,I3,F5.4,F5.4,F10.4,
      1    F4.2,F8.6,A15,A15,A15,A15,6I1,6I2,A1,F7.1,F7.1)
         ELSE
           WRITE(*,*)' RDLINE.f :: HITRAN format not recognised.'
@@ -215,46 +189,14 @@ C probability column.
 C Scaling strengths by 1.E47 to avoid underflow and including exponent
 C Old versions used Avagadros constant as the scaling factor but new data
 C bases include many very weak lines
-      IF(EXP.LT.MINEXP.OR.EXP.GT.MAXEXP)THEN
-        IF(IPOW.NE.-1)THEN
-          WRITE(*,*)' RDLINE.f :: Warning: Line strength exponent (EXP)'
-          WRITE(*,*)' out of range.'
-          WRITE(*,*)' '
-          WRITE(*,*)' MINEXP, MAXEXP, EXP = ',MINEXP,MAXEXP,EXP
-          WRITE(*,*)' LNWAVE, LNID, LNISO = ',LNWAVE,LNID,LNISO
-          WRITE(*,*)' '
-          WRITE(*,*)' Setting the LNSTR = 0.0, EXP = ', MINEXP
-          IPOW= -1
-        ENDIF
-        LNSTR= 0.0
-        EXP= MINEXP
-      ENDIF
-
-      LNSTR= LNSTR*POWER(EXP)
-
-      IF(EXP1.LT.MINEXP1.OR.EXP1.GT.MAXEXP1)THEN
-        IF(IPOW1.NE.-1)THEN
-          WRITE(*,*)' RDLINE.f :: Warning: Probability exponent (EXP1)'
-          WRITE(*,*)' out of range.'
-          WRITE(*,*)' '
-          WRITE(*,*)' MINEXP1, MAXEXP1, EXP1 = ',MINEXP1,MAXEXP1,EXP1
-          WRITE(*,*)' LNWAVE, LNID, LNISO = ',LNWAVE,LNID,LNISO
-          WRITE(*,*)' '
-          WRITE(*,*)' Setting the LNPROB = 0.0, EXP1= ', MINEXP1
-          IPOW1= -1
-        ENDIF
-        IF(DBRECL.EQ.160)THEN
-         LNEINA=0.0
-        ELSE
-         LNPROB= 0.0
-        ENDIF
-        EXP1= MINEXP1
-      ENDIF
-
+      
+C      print*,LNSTR,EXP
+      LNSTR= LNSTR*CC**(EXP+47)
+C      print*,'A',LNSTR
       IF(DBRECL.EQ.160)THEN
-       LNEINA= LNEINA*POWER1(EXP1)
+       LNEINA= LNEINA*CC**EXP1
       ELSE
-       LNPROB= LNPROB*POWER1(EXP1)
+       LNPROB= LNPROB*CC**EXP1
       ENDIF
 
       IF(LNLSE.LT.0.0)THEN
@@ -268,10 +210,6 @@ C13     CONTINUE
 C       WRITE(*,*)' Setting ELIN to zero'
        LNLSE=0.0
       ENDIF
-
-C      Test to see if line strengths are OK.
-C      LNWIDA=LNWIDA*1.5
-C      LNWIDS=LNWIDS*1.5
 
       RETURN
 

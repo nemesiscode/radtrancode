@@ -20,8 +20,9 @@ C-----------------------------------------------------------------------
 C MAXLIN: maximum number of lines which can be stored.
 
       INTEGER IDLIN(2,MAXLIN),NLINE(2),NXTREC
-      REAL VLIN(2,MAXLIN),SLIN(2,MAXLIN),ALIN(2,MAXLIN)
+      REAL VLIN(2,MAXLIN),ALIN(2,MAXLIN)
       REAL PSHIFT(2,MAXLIN)
+      DOUBLE PRECISION SLIN(2,MAXLIN)
 C VLIN: Line position [cm^-1].
 C SLIN: Line strength [cm^-1 molecule^-1 cm^-2] at STP.
 C ALIN: Lorentz half width [cm^-1] at STP.

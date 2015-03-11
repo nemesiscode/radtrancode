@@ -57,19 +57,20 @@ C***************************** VARIABLES *******************************
 C ../includes/dbcom.f stores the linedata base variables.
 
       INTEGER MINSTR,MAXSTR
-      REAL LIMSTR
-      PARAMETER (MINSTR=-37,MAXSTR=38,LIMSTR=10.**MINSTR)
+      DOUBLE PRECISION LIMSTR,CC
+      PARAMETER (MINSTR=-323,MAXSTR=308,CC=10.0)
 
       INTEGER NLINES(MINSTR:MAXSTR,MAXISO,MAXDGAS)
       INTEGER TOTLIN(MINSTR:MAXSTR,MAXDGAS)
       INTEGER I,J,K,ID,ISO,IBIN,LINE,FSTLIN,LSTLIN,NBIN
       INTEGER FIRST(2),LAST(2),NPAR,IERROR,READI
 
-      REAL VMIN,VMAX,BINSIZ,LIMIT(MAXISO,MAXDGAS),PERCEN,VLOW,VHIGH
+      REAL VMIN,VMAX,BINSIZ,VLOW,VHIGH
+      DOUBLE PRECISION LIMIT(MAXISO,MAXDGAS),PERCEN
 C VMIN: Wavenumber [cm-1] minimum.
 C VMAX: Wavenumber [cm-1] maximum.
 C BINSIZ: Size [cm-1] of bins for limit selection.
-      REAL TOTSTR,SUMSTR
+      DOUBLE PRECISION TOTSTR,SUMSTR
       REAL ENERGY(190),ACO2(190),NCO2(190),AH2O(190),NH2O(190)
       REAL AN2(190),NN2(190),AO2(190),NO2(190)
       REAL YACO2(200),YNCO2(200),YAN2(200),YNN2(200),ECO2(200),EN2(200)
@@ -85,6 +86,7 @@ C ALLISO: Flag to show if using all isotopes for limit calculation.
 
 C******************************** CODE *********************************
 
+      LIMSTR=CC**MINSTR
 C Open database ...
       CALL PROMPT('name of data base key')
       READ(*,1)KEYFIL
@@ -276,14 +278,14 @@ C     each strength decade
  111           FORMAT(A)
                CALL RDLINE(BUFFER)
                IF(LNSTR.LT.LIMSTR)THEN
-                  WRITE(TEXT,115)LNWAVE,LNSTR,LNID,LNISO
+                  WRITE(TEXT,115)LNWAVE,LNSTR,LIMSTR,LNID,LNISO
  115              FORMAT('WARNING - strength too low for storage',
-     1                 F12.6,E12.5,2I3)
+     1                 F12.6,E15.5,E15.5,2I3)
                   CALL WTEXT(TEXT)
                   GOTO 110
                ENDIF
 
-               I = INT(ALOG10(LNSTR))
+               I = INT(DLOG10(LNSTR))
                IF(I.GT.MAXSTR)THEN
                   WRITE(*,113)LNWAVE,LNSTR,LNID,LNISO
  113              FORMAT('WARNING - strength too high for storage',
@@ -323,30 +325,30 @@ C Compute limit for each isotope ...
               IF(ALLISO(J,I))THEN
                 TOTSTR = 0.
                 DO 144 K=MINSTR,MAXSTR
-                  TOTSTR = TOTSTR + FLOAT(TOTLIN(K,I))*10.**K
+                  TOTSTR = TOTSTR + DBLE(TOTLIN(K,I))*CC**K
 144             CONTINUE
-                LIMIT(J,I) = 10.**MINSTR
+                LIMIT(J,I) = CC**MINSTR
                 SUMSTR = 0.
                 DO 145 K=MINSTR,MAXSTR
-                  SUMSTR = SUMSTR + FLOAT(TOTLIN(K,I))*10.**K
+                  SUMSTR = SUMSTR + DBLE(TOTLIN(K,I))*CC**K
                   IF(SUMSTR.GT.PERCEN*TOTSTR)GOTO 143
-                  LIMIT(J,I) = 10.**K
+                  LIMIT(J,I) = CC**K
 145             CONTINUE
               ELSE
                 TOTSTR = 0.
                 DO 141 K=MINSTR,MAXSTR
-                  TOTSTR = TOTSTR + FLOAT(NLINES(K,J,I))*10.**K
-c                  print*, FLOAT(NLINES(K,J,I))*10.**K, totstr
+                  TOTSTR = TOTSTR + DBLE(NLINES(K,J,I))*CC**K
+c                  print*, DBLE(NLINES(K,J,I))*CC**K, totstr
 141             CONTINUE
-                LIMIT(J,I) = 10.**MINSTR
+                LIMIT(J,I) = CC**MINSTR
                 SUMSTR = 0.
                 DO 142 K=MINSTR,MAXSTR
-                  SUMSTR = SUMSTR + FLOAT(NLINES(K,J,I))*10.**K
+                  SUMSTR = SUMSTR + DBLE(NLINES(K,J,I))*CC**K
 
-c                  print*, FLOAT(NLINES(K,J,I))*10.**K, sumstr,
+c                  print*, DBLE(NLINES(K,J,I))*CC**K, sumstr,
 c     C                 percen*totstr, totstr, limit(j,i)
                   IF(SUMSTR.GT.PERCEN*TOTSTR)GOTO 143
-                  LIMIT(J,I) = 10.**K
+                  LIMIT(J,I) = CC**K
 142             CONTINUE
               ENDIF
 
@@ -357,10 +359,10 @@ c     C                 percen*totstr, totstr, limit(j,i)
 140     CONTINUE
 
 C Print out computed limits for each gas ...
-      WRITE(*,*)'Limiting strengths for each gas:'
-      DO 134 I=1,MAXDGAS
-        WRITE(*,*)I,DBNISO(I),(LIMIT(K,I),K=1,DBNISO(I))
-134   CONTINUE
+C      WRITE(*,*)'Limiting strengths for each gas:'
+C      DO 134 I=1,MAXDGAS
+C        WRITE(*,*)I,DBNISO(I),(LIMIT(K,I),K=1,DBNISO(I))
+C134   CONTINUE
 
       ENDIF
 

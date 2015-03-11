@@ -53,27 +53,27 @@ C***************************** VARIABLES *******************************
 C ../includes/dbcom.f stores the linedata base variables.
 
       INTEGER MINSTR,MAXSTR
-      REAL LIMSTR
-      PARAMETER (MINSTR=-37,MAXSTR=38,LIMSTR=10.**MINSTR)
-C      PARAMETER (MINSTR=-79,MAXSTR=-15,LIMSTR=10.**MINSTR)
-C      PARAMETER (MINSTR=-79,MAXSTR=38,LIMSTR=10.**MINSTR)
+      DOUBLE PRECISION LIMSTR,CC,LNSTR1
+      PARAMETER (MINSTR=-323,MAXSTR=308,CC=10.)
 
       INTEGER NLINES(MINSTR:MAXSTR,MAXISO,MAXDGAS)
       INTEGER TOTLIN(MINSTR:MAXSTR,MAXDGAS)
-      REAL STRLOSE,STRKEEP
+      DOUBLE PRECISION STRLOSE,STRKEEP
       INTEGER I,J,K,ID,ISO,IBIN,LINE,FSTLIN,LSTLIN,NBIN,IPTF
       INTEGER FIRST(2),LAST(2),NPAR,IERROR,READI,NLIN,NKEEP,NLOSE
 
-      REAL VMIN,VMAX,BINSIZ,LIMIT(MAXISO,MAXDGAS),PERCEN,VLOW,VHIGH
+      REAL VMIN,VMAX,BINSIZ,VLOW,VHIGH
+      DOUBLE PRECISION LIMIT(MAXISO,MAXDGAS),TOTSTR,SUMSTR,PERCEN
 C VMIN: Wavenumber [cm-1] minimum.
 C VMAX: Wavenumber [cm-1] maximum.
 C BINSIZ: Size [cm-1] of bins for limit selection.
-      REAL TOTSTR,SUMSTR,TCALC,LNSTR1,TCORS1,TCORS2,TSTIM,LNABSCO
+      REAL TCALC,TCORS1,TCORS2,TSTIM
+      DOUBLE PRECISION LNABSCO
       REAL ENERGY(190),ACO2(190),NCO2(190),AH2O(190),NH2O(190)
       REAL AN2(190),NN2(190),AO2(190),NO2(190)
       REAL YACO2(200),YNCO2(200),YAN2(200),YNN2(200),ECO2(200),EN2(200)
-      REAL TEMP,TS1,TS2,PARTF,SCORR
-      REAL FCORR,LNSTR2
+      REAL TEMP,TS1,TS2,PARTF
+      DOUBLE PRECISION SCORR,FCORR,LNSTR2
       CHARACTER*6 QIDENT(190)
       CHARACTER*100 OPNAME
       CHARACTER*100 TEXT
@@ -84,6 +84,7 @@ C INCGAS: Flag to show if a gas is included.
 C ALLISO: Flag to show if using all isotopes for limit calculation.
 
 C******************************** CODE *********************************
+      LIMSTR=CC**MINSTR
 
 C Open database ...
       CALL PROMPT('name of data base key')
@@ -140,11 +141,12 @@ C Read in spectral parameters ...
 
       CALL EDSET
 
+      CALL PROMPT('Enter IPTF (Partition function flag) : ')
+      READ*,IPTF
+
 C Select the gases ...
 10    CONTINUE
 
-      CALL PROMPT('Enter IPTF (Partition function flag) : ')
-      READ*,IPTF
 
       CALL WTEXT('--------------------------------------------------')
       CALL WTEXT('enter gas details')
@@ -279,7 +281,7 @@ C     each strength decade
  123              CONTINUE
  122           CONTINUE
  120        CONTINUE
-            
+
             DO 110 LINE=FSTLIN,LSTLIN
                READ(DBLUN,111,REC=LINE)BUFFER(1:DBRECL)
  111           FORMAT(A)
@@ -292,20 +294,22 @@ C     each strength decade
                DO J=1,DBNISO(LOCID(LNID))
                   IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K=J
                ENDDO                
+C               print*,LNWAVE,LNSTR
                TCORS1=PARTF(LOCID(LNID),K,TEMP,IPTF)
                LNABSCO = LOG(LNSTR)+LOG(TCORS1)+
      &         (TCORS2*LNLSE)+LOG(TSTIM)
-               LNSTR1=EXP(LNABSCO)
-
+C               print*,LOG(LNSTR),LOG(TCORS1),(TCORS2*LNLSE),LOG(TSTIM)
+               LNSTR1=DEXP(LNABSCO)
+C               print*,LNABSCO,LNSTR1
                IF(LNSTR1.LT.LIMSTR)THEN
-                  WRITE(TEXT,115)LNWAVE,LNSTR,LNSTR1,LNID,LNISO
+                  WRITE(TEXT,115)LNWAVE,LNID,LNISO,LNSTR,LNSTR1,LIMSTR
  115              FORMAT('WARNING - strength too low for storage',
-     1                 F12.6,E12.5,E12.5,2I3)
+     1                 F12.6,2I3,3E12.5)
                   CALL WTEXT(TEXT)
                   GOTO 110
                ENDIF
 
-               I = INT(ALOG10(LNSTR1))
+               I = INT(DLOG10(LNSTR1))
                IF(I.GT.MAXSTR)THEN
                   WRITE(*,113)LNWAVE,LNSTR,LNSTR1,LNID,LNISO
  113              FORMAT('WARNING - strength too high for storage',
@@ -344,30 +348,30 @@ C Compute limit for each isotope ...
               IF(ALLISO(J,I))THEN
                 TOTSTR = 0.
                 DO 144 K=MINSTR,MAXSTR
-                  TOTSTR = TOTSTR + FLOAT(TOTLIN(K,I))*10.**K
+                  TOTSTR = TOTSTR + DBLE(TOTLIN(K,I))*CC**K
 144             CONTINUE
-                LIMIT(J,I) = 10.**MINSTR
+                LIMIT(J,I) = CC**MINSTR
                 SUMSTR = 0.
                 DO 145 K=MINSTR,MAXSTR
-                  SUMSTR = SUMSTR + FLOAT(TOTLIN(K,I))*10.**K
+                  SUMSTR = SUMSTR + DBLE(TOTLIN(K,I))*CC**K
                   IF(SUMSTR.GT.PERCEN*TOTSTR)GOTO 143
-                  LIMIT(J,I) = 10.**K
+                  LIMIT(J,I) = CC**K
 145             CONTINUE
               ELSE
                 TOTSTR = 0.
                 DO 141 K=MINSTR,MAXSTR
-                  TOTSTR = TOTSTR + FLOAT(NLINES(K,J,I))*10.**K
-c                  print*, FLOAT(NLINES(K,J,I))*10.**K, totstr
+                  TOTSTR = TOTSTR + DBLE(NLINES(K,J,I))*CC**K
+c                  print*, DBLE(NLINES(K,J,I))*CC**K, totstr
 141             CONTINUE
-                LIMIT(J,I) = 10.**MINSTR
+                LIMIT(J,I) = CC**MINSTR
                 SUMSTR = 0.
                 DO 142 K=MINSTR,MAXSTR
-                  SUMSTR = SUMSTR + FLOAT(NLINES(K,J,I))*10.**K
+                  SUMSTR = SUMSTR + DBLE(NLINES(K,J,I))*CC**K
 
-c                  print*, FLOAT(NLINES(K,J,I))*10.**K, sumstr,
+c                  print*, DBLE(NLINES(K,J,I))*CC**K, sumstr,
 c     C                 percen*totstr, totstr, limit(j,i)
                   IF(SUMSTR.GT.PERCEN*TOTSTR)GOTO 143
-                  LIMIT(J,I) = 10.**K
+                  LIMIT(J,I) = CC**K
 142             CONTINUE
               ENDIF
 
@@ -379,8 +383,8 @@ c     C                 percen*totstr, totstr, limit(j,i)
 
 C Print out computed limits for each gas ...
 C      WRITE(*,*)'Limiting strengths for each gas:'
-C      DO 134 I=1,MAXDGAS
-C        WRITE(*,*)I,DBNISO(I),(LIMIT(K,I),K=1,DBNISO(I))
+C      DO 134 J=1,MAXDGAS
+C        WRITE(*,*)J,DBNISO(J),(LIMIT(K,J),K=1,DBNISO(J))
 C134   CONTINUE
 
       ENDIF
@@ -405,7 +409,7 @@ C     See how many lines are deselected by this and sum up strengths:
         ENDDO                
         TCORS1=PARTF(LOCID(LNID),K,TEMP,IPTF)
         LNABSCO = LOG(LNSTR)+LOG(TCORS1)+(TCORS2*LNLSE)+LOG(TSTIM)
-        LNSTR1=EXP(LNABSCO)
+        LNSTR1=DEXP(DBLE(LNABSCO))
 
         K = -1
         DO 162 J=1,DBNISO(LOCID(LNID))
@@ -419,16 +423,16 @@ C     See how many lines are deselected by this and sum up strengths:
                    IF(NKEEP.EQ.1)THEN
                     STRKEEP=LNSTR1
                    ELSE
-                    STRKEEP=STRKEEP*FLOAT(NKEEP-1)/FLOAT(NKEEP)+
-     &                 LNSTR1/FLOAT(NKEEP)
+                    STRKEEP=STRKEEP*DBLE(NKEEP-1)/DBLE(NKEEP)+
+     &                 LNSTR1/DBLE(NKEEP)
                    ENDIF
                  ELSE
                    NLOSE=NLOSE+1
                    IF(NLOSE.EQ.1)THEN
                     STRLOSE=LNSTR1
                    ELSE
-                    STRLOSE=STRLOSE*FLOAT(NLOSE-1)/FLOAT(NLOSE)+
-     &                 LNSTR1/FLOAT(NLOSE)
+                    STRLOSE=STRLOSE*DBLE(NLOSE-1)/DBLE(NLOSE)+
+     &                 LNSTR1/DBLE(NLOSE)
                    ENDIF
                  ENDIF
               ELSE
@@ -436,8 +440,8 @@ C     See how many lines are deselected by this and sum up strengths:
                  IF(NKEEP.EQ.1)THEN
                     STRKEEP=LNSTR1
                  ELSE
-                    STRKEEP=STRKEEP*FLOAT(NKEEP-1)/FLOAT(NKEEP)+
-     &                 LNSTR1/FLOAT(NKEEP)
+                    STRKEEP=STRKEEP*DBLE(NKEEP-1)/DBLE(NKEEP)+
+     &                 LNSTR1/DBLE(NKEEP)
                  ENDIF
               ENDIF
            ENDIF
@@ -445,11 +449,14 @@ C     See how many lines are deselected by this and sum up strengths:
 160   CONTINUE
    
       NLIN = LSTLIN-FSTLIN+1      
-      print*,NLIN,NLOSE+NKEEP
-C      SCORR = 1.0+NLOSE*STRLOSE/(NKEEP*STRKEEP)
-      SCORR=STRLOSE/FLOAT(NKEEP)
-      PRINT*,NLOSE,STRLOSE,NKEEP,STRKEEP
-      PRINT*,SCORR
+      print*,'NLIN, NKEEP, NLOSE+NKEEP',NLIN,NKEEP,NLOSE+NKEEP
+      IF(NKEEP.GT.0)THEN
+       SCORR=STRLOSE/DBLE(NKEEP)
+      ELSE
+       SCORR=STRLOSE
+      ENDIF
+C      PRINT*,'NLOSE,STRLOSE,NKEEP,STRKEEP',NLOSE,STRLOSE,NKEEP,STRKEEP
+C      PRINT*,'SCORR',SCORR
 
 
 C Copy required lines and correct for those stripped ...
@@ -467,7 +474,7 @@ C Copy required lines and correct for those stripped ...
         ENDDO                
         TCORS1=PARTF(LOCID(LNID),K,TEMP,IPTF)
         LNABSCO = LOG(LNSTR)+LOG(TCORS1)+(TCORS2*LNLSE)+LOG(TSTIM)
-        LNSTR1=EXP(LNABSCO)
+        LNSTR1=DEXP(LNABSCO)
 
 
         K = -1

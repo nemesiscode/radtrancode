@@ -53,26 +53,25 @@ C***************************** VARIABLES *******************************
 C     ../includes/dbcom.f stores the linedata base variables.
 
       INTEGER MINSTR,MAXSTR
-      REAL LIMSTR
-      PARAMETER (MINSTR=-37,MAXSTR=38,LIMSTR=10.**MINSTR)
-C      PARAMETER (MINSTR=-79,MAXSTR=-15,LIMSTR=10.**MINSTR)
-C      PARAMETER (MINSTR=-79,MAXSTR=38,LIMSTR=10.**MINSTR)
+      DOUBLE PRECISION LIMSTR,CC
+      PARAMETER (MINSTR=-323,MAXSTR=308,CC=10.)
 
       INTEGER NLINES(MINSTR:MAXSTR,MAXISO,MAXDGAS),ILOW
       INTEGER TOTLIN(MINSTR:MAXSTR,MAXDGAS),IPTF
       INTEGER I,J,K,ID,ISO,IBIN,LINE,FSTLIN,LSTLIN,NBIN
       INTEGER FIRST(2),LAST(2),NPAR,IERROR,READI,NLIN,NKEEP,NLOSE
-
-      REAL VMIN,VMAX,BINSIZ,LIMIT(MAXISO,MAXDGAS),PERCEN,VLOW,VHIGH
+      REAL VMIN,VMAX,BINSIZ,VLOW,VHIGH
+      DOUBLE PRECISION LIMIT(MAXISO,MAXDGAS),PERCEN
 C     VMIN: Wavenumber [cm-1] minimum.
 C     VMAX: Wavenumber [cm-1] maximum.
 C     BINSIZ: Size [cm-1] of bins for limit selection.
-      REAL TOTSTR,SUMSTR,TCALC,LNSTR1,TCORS1,TCORS2,TSTIM,LNABSCO
+      DOUBLE PRECISION TOTSTR,SUMSTR,LNSTR1,LNABSCO
+      REAL TCALC,TCORS1,TCORS2,TSTIM
       REAL ENERGY(190),ACO2(190),NCO2(190),AH2O(190),NH2O(190)
       REAL AN2(190),NN2(190),AO2(190),NO2(190)
       REAL YACO2(200),YNCO2(200),YAN2(200),YNN2(200),ECO2(200),EN2(200)
-      REAL TEMP,TS1,TS2,PARTF,SCORR,STRLOSE,STRKEEP,TEMP1(20)
-      REAL FCORR,LNSTR2
+      REAL TEMP,TS1,TS2,PARTF,TEMP1(20)
+      DOUBLE PRECISION FCORR,LNSTR2,SCORR,STRLOSE,STRKEEP
       CHARACTER*6 QIDENT(190)
       CHARACTER*100 OPNAME
       CHARACTER*100 TEXT
@@ -88,6 +87,7 @@ C     ALLISO: Flag to show if using all isotopes for limit calculation.
 C******************************** CODE *********************************
 
       ILOW=1
+      LIMSTR=CC**MINSTR
 
 C     Open database ...
       CALL PROMPT('name of data base key')
@@ -353,7 +353,7 @@ C  	print*,line,fstlin,lstlin,DBRECL,lnstr,lnwave,'JM'
                   GOTO 110
                ENDIF
 
-               I = INT(ALOG10(LNSTR1))
+               I = INT(DLOG10(LNSTR1))
                IF(I.GT.MAXSTR)THEN
                   WRITE(*,113)LNWAVE,LNSTR,LNSTR1,LNID,LNISO
 113               FORMAT('WARNING - strength too high for storage',
@@ -392,30 +392,30 @@ C Compute limit for each isotope ...
               IF(ALLISO(J,I))THEN
                 TOTSTR = 0.
                 DO 144 K=MINSTR,MAXSTR
-                  TOTSTR = TOTSTR + FLOAT(TOTLIN(K,I))*10.**K
+                  TOTSTR = TOTSTR + DBLE(TOTLIN(K,I))*CC**K
 144             CONTINUE
-                LIMIT(J,I) = 10.**MINSTR
+                LIMIT(J,I) = CC**MINSTR
                 SUMSTR = 0.
                 DO 145 K=MINSTR,MAXSTR
-                  SUMSTR = SUMSTR + FLOAT(TOTLIN(K,I))*10.**K
+                  SUMSTR = SUMSTR + DBLE(TOTLIN(K,I))*CC**K
                   IF(SUMSTR.GT.PERCEN*TOTSTR)GOTO 143
-                  LIMIT(J,I) = 10.**K
+                  LIMIT(J,I) = CC**K
 145             CONTINUE
               ELSE
                 TOTSTR = 0.
                 DO 141 K=MINSTR,MAXSTR
-                  TOTSTR = TOTSTR + FLOAT(NLINES(K,J,I))*10.**K
-c                  print*, FLOAT(NLINES(K,J,I))*10.**K, totstr
+                  TOTSTR = TOTSTR + DBLE(NLINES(K,J,I))*CC**K
+c                  print*, DBLE(NLINES(K,J,I))*CC**K, totstr
 141             CONTINUE
-                LIMIT(J,I) = 10.**MINSTR
+                LIMIT(J,I) = CC**MINSTR
                 SUMSTR = 0.
                 DO 142 K=MINSTR,MAXSTR
-                  SUMSTR = SUMSTR + FLOAT(NLINES(K,J,I))*10.**K
+                  SUMSTR = SUMSTR + DBLE(NLINES(K,J,I))*CC**K
 
-c                  print*, FLOAT(NLINES(K,J,I))*10.**K, sumstr,
+c                  print*, DBLE(NLINES(K,J,I))*CC**K, sumstr,
 c     &                 percen*totstr, totstr, limit(j,i)
                   IF(SUMSTR.GT.PERCEN*TOTSTR)GOTO 143
-                  LIMIT(J,I) = 10.**K
+                  LIMIT(J,I) = CC**K
 142             CONTINUE
               ENDIF
 
@@ -426,10 +426,10 @@ c     &                 percen*totstr, totstr, limit(j,i)
 140     CONTINUE
 
 C     Print out computed limits for each gas ...
-      WRITE(*,*)'Limiting strengths for each gas:'
-      DO 134 I=1,MAXDGAS
-        WRITE(*,*)I,DBNISO(I),(LIMIT(K,I),K=1,DBNISO(I))
-134   CONTINUE
+C      WRITE(*,*)'Limiting strengths for each gas:'
+C      DO 134 I=1,MAXDGAS
+C        WRITE(*,*)I,DBNISO(I),(LIMIT(K,I),K=1,DBNISO(I))
+C134   CONTINUE
 
       ENDIF
 
@@ -458,16 +458,16 @@ C     See how many lines are deselected by this and sum up strengths:
                    IF(NKEEP.EQ.1)THEN
                     STRKEEP=LNSTR1
                    ELSE
-                    STRKEEP=STRKEEP*FLOAT(NKEEP-1)/FLOAT(NKEEP)+
-     &                 LNSTR1/FLOAT(NKEEP)
+                    STRKEEP=STRKEEP*DBLE(NKEEP-1)/DBLE(NKEEP)+
+     &                 LNSTR1/DBLE(NKEEP)
                    ENDIF
                  ELSE
                    NLOSE=NLOSE+1
                    IF(NLOSE.EQ.1)THEN
                     STRLOSE=LNSTR1
                    ELSE
-                    STRLOSE=STRLOSE*FLOAT(NLOSE-1)/FLOAT(NLOSE)+
-     &                 LNSTR1/FLOAT(NLOSE)
+                    STRLOSE=STRLOSE*DBLE(NLOSE-1)/DBLE(NLOSE)+
+     &                 LNSTR1/DBLE(NLOSE)
                    ENDIF
                  ENDIF
               ELSE
@@ -475,20 +475,20 @@ C     See how many lines are deselected by this and sum up strengths:
                  IF(NKEEP.EQ.1)THEN
                     STRKEEP=LNSTR1
                  ELSE
-                    STRKEEP=STRKEEP*FLOAT(NKEEP-1)/FLOAT(NKEEP)+
-     &                 LNSTR1/FLOAT(NKEEP)
+                    STRKEEP=STRKEEP*DBLE(NKEEP-1)/DBLE(NKEEP)+
+     &                 LNSTR1/DBLE(NKEEP)
                  ENDIF
               ENDIF
            ENDIF
 160   CONTINUE
    
       NLIN = LSTLIN-FSTLIN+1      
-C      print*,'BB',NLIN,NLOSE+NKEEP
-C      SCORR = 1.0+NLOSE*STRLOSE/(NKEEP*STRKEEP)
-      SCORR = STRLOSE/FLOAT(NKEEP)
-
-C      PRINT*,'CC',NLOSE,STRLOSE,NKEEP,STRKEEP
-C      PRINT*,'DD',SCORR
+      print*,'NLIN,NKEEP,NLOSE+NKEEP',NLIN,NKEEP,NLOSE+NKEEP
+      IF(NKEEP.GT.0)THEN
+       SCORR = STRLOSE/DBLE(NKEEP)
+      ELSE
+       SCORR = STRLOSE
+      ENDIF
 
 
 C     Copy required lines and correct for those stripped ...

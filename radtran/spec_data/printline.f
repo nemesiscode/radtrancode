@@ -35,7 +35,7 @@ C ../includes/dbcom.f stores the linedata base variables (e.g. RELABU).
 C******************************** CODE *********************************
 
 C     Scale lines.
-      L1 = LNSTR*1e-20
+      L1 = SNGL(LNSTR)*1e-20
       L1 = L1*1e-27
 
 

@@ -39,16 +39,17 @@ C--------------------------------------------------------------------------
       INCLUDE '../includes/dbcom.f'
 C--------------------------------------------------------------
       INTEGER LINLIM
-      PARAMETER (LINLIM=100000)
+      PARAMETER (LINLIM=10000000)
       INTEGER I,L,ISOGAS,IDGAS,ILAST,NLIN,NGAS,IFIRST,MAXLIN
       REAL YMIN,YMAX,VMIN,VMAX,DX,DY,DELV,DVMIN,DVLIN
       CHARACTER*100 BUFFER
       INTEGER ISCALE,IXFORM,IYFORM
       CHARACTER*12 XFORM,YFORM
       REAL SCALE
-      REAL VLIN(LINLIM),SLIN(LINLIM),ALIN(LINLIM),ELIN(LINLIM),
+      REAL VLIN(LINLIM),ALIN(LINLIM),ELIN(LINLIM),
      1 SBLIN(LINLIM),TDW(LINLIM),TDWS(LINLIM),PSHIFT(LINLIM),
      2 DOUBV(LINLIM)
+      DOUBLE PRECISION SLIN(LINLIM)
       CHARACTER*15 LLQ(LINLIM)
       INTEGER IDLIN(LINLIM)
 C     variables relating to gases
@@ -91,9 +92,9 @@ C     and very long plots
       IF(NLIN.EQ.0)STOP
       IF(LINEAR)THEN
         DO 203 I=1,NLIN
-        YMAX=MAX(YMAX,SLIN(I))
+        YMAX=SNGL(MAX(DBLE(YMAX),SLIN(I)))
 203     CONTINUE
-        ISCALE=INT(1000+ALOG10(YMAX))-1000
+        ISCALE=INT(1000+LOG10(YMAX))-1000
         SCALE=10.**ISCALE
         YMAX=YMAX*1.1/SCALE
         YMIN=0.
@@ -103,7 +104,7 @@ C     and very long plots
         YMIN=-30.
         DO 204 I=1,NLIN
          IF(SLIN(I).GT.0)THEN
-          YMIN=MIN(YMIN,FLOAT(INT(1000+ALOG10(SLIN(I)))-1047))
+          YMIN=MIN(YMIN,FLOAT(INT(1000+LOG10(SLIN(I)))-1047))
          END IF
 204     CONTINUE
         DY=1.+FLOAT(INT((YMAX-YMIN)/14))
@@ -181,9 +182,9 @@ C
        ELSE
          SLIN(I)=SLIN(I)*1e-20
          SLIN(I)=SLIN(I)*1e-27
-C        SLIN(I)=SLIN(I)/SCALE
+C        SLIN(I)=SLIN(I)/DBLE(SCALE)
       END IF
-      WRITE(23,*)VLIN(I),SLIN(I)
+      WRITE(23,*)VLIN(I),SNGL(SLIN(I))
 200   CONTINUE
 
       CLOSE(23)

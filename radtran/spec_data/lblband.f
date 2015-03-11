@@ -59,6 +59,7 @@ C------------------------------------------------------------------------------
       REAL DELTA,KNU0,Y0,DELAD,PI
       PARAMETER (PI=3.1415927)
       INTEGER FSTLIN,LSTLIN,NLIN
+      CHARACTER*1 ANS
       DIMENSION AD0(MAXGAS)
 
 C------------------------------------------------------------------------------
@@ -147,12 +148,13 @@ C           ABSCO=SLIN(LINE)*1E-27
 C          ELSE
 C           ABSCO = 0.
 C          END IF
-          ABSCO=SLIN(LINE)*1E-27
+          ABSCO=SNGL(SLIN(LINE)*1E-27)
           AL = ALIN(LINE)-SBLIN(LINE)
           SFB = (ALIN(LINE)-SBLIN(LINE))/ALIN(LINE)
           EL = ELIN(LINE)
 C         Test to discard lines with negative LSE
 
+          print*,VLIN(LINE),ABSCO,AL,EL,SFB
           IF(EL.LT.0.0)ABSCO=0.0
           IF(ABSCO.GT.0)THEN
            WR=WR+ABSCO
@@ -160,7 +162,9 @@ C         Test to discard lines with negative LSE
            SSFB=SSFB+SFB*ABSCO
            SEL=SEL+EL*ABSCO
           ENDIF
-
+          print*,WR,SR,SSFB,SEL
+          read(5,1)ans
+1         format(a)
          ENDIF
 55      CONTINUE
  
@@ -183,12 +187,13 @@ C         Test to discard lines with negative LSE
         ENDIF
 
 C       Begining of debugging lines
-C        PRINT*,'  V    GAS    Kv(T0)      delta/AD0         y0
-C     &            El            SFB'
-C        WRITE(*,3267) V,GAS,KNU0,DELAD,Y0,EL,SFB
-C3267    FORMAT(F7.1,I3,2X,E12.6,2X,E12.6,2X,E12.6,2X,E12.6,2X,E12.6)
+        PRINT*,'  V    GAS    Kv(T0)      delta/AD0         y0
+     &            El            SFB'
+        WRITE(*,3267) V,GAS,KNU0,DELAD,Y0,EL,SFB
+3267    FORMAT(F7.1,I3,2X,E12.6,2X,E12.6,2X,E12.6,2X,E12.6,2X,E12.6)
 C       End of debugging lines
 
+        read(5,1)ans
 
         POUT(I,GAS,1) = KNU0
         POUT(I,GAS,2) = DELAD

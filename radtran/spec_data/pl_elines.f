@@ -46,9 +46,10 @@ C--------------------------------------------------------------
       INTEGER ISCALE,IXFORM,IYFORM
       CHARACTER*12 XFORM,YFORM
       REAL SCALE
-      REAL VLIN(LINLIM),SLIN(LINLIM),ALIN(LINLIM),ELIN(LINLIM),
+      REAL VLIN(LINLIM),ALIN(LINLIM),ELIN(LINLIM),
      1 SBLIN(LINLIM),TDW(LINLIM),TDWS(LINLIM),PSHIFT(LINLIM),
      2 DOUBV(LINLIM)
+      DOUBLE PRECISION SLIN(LINLIM)
       CHARACTER*15 LLQ(LINLIM)
       INTEGER IDLIN(LINLIM)
 C     variables relating to gases
@@ -95,7 +96,7 @@ C      DVMIN=0.0
       IF(NLIN.EQ.0)STOP
       IF(LINEAR)THEN
         DO 203 I=1,NLIN
-        YMAX=MAX(YMAX,SLIN(I))
+        YMAX=SNGL(MAX(DBLE(YMAX),SLIN(I)))
 203     CONTINUE
         ISCALE=INT(1000+ALOG10(YMAX))-1000
         SCALE=10.**ISCALE
@@ -107,7 +108,7 @@ C      DVMIN=0.0
         YMIN=-30.
         DO 204 I=1,NLIN
          IF(SLIN(I).GT.0)THEN
-          YMIN=MIN(YMIN,FLOAT(INT(1000+ALOG10(SLIN(I)))-1047))
+          YMIN=MIN(YMIN,FLOAT(INT(1000+DLOG10(SLIN(I)))-1047))
          END IF
 204     CONTINUE
         DY=1.+FLOAT(INT((YMAX-YMIN)/14))
@@ -180,14 +181,14 @@ C
       DO 200 I=1,L
       IF(.NOT.LINEAR)THEN
         IF(SLIN(I).GT.0.)THEN
-          SLIN(I)=LOG10(SLIN(I))-47
+          SLIN(I)=DLOG10(SLIN(I))-47
         ELSE
           GOTO 200
         END IF
        ELSE
          SLIN(I)=SLIN(I)*1e-20
          SLIN(I)=SLIN(I)*1e-27
-C        SLIN(I)=SLIN(I)/SCALE
+C        SLIN(I)=SLIN(I)/DBLE(SCALE)
       END IF
       WRITE(23,*)VLIN(I),SLIN(I),ELIN(I)
 200   CONTINUE

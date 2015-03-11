@@ -37,9 +37,10 @@ C--------------------------------------------------------------------------
 C--------------------------------------------------------------
       INTEGER LINLIM
       PARAMETER (LINLIM=20000)
-      REAL VLIN(LINLIM),SLIN(LINLIM),ALIN(LINLIM),ELIN(LINLIM),
+      REAL VLIN(LINLIM),ALIN(LINLIM),ELIN(LINLIM),
      1 SBLIN(LINLIM),TDW(LINLIM),TDWS(LINLIM),PSHIFT(LINLIM),
      2 DOUBV(LINLIM)
+      DOUBLE PRECISION SLIN(LINLIM)
       CHARACTER*15 LLQ(LINLIM)
       INTEGER IDLIN(LINLIM),IDGAS(MAXDGAS),ISOGAS(MAXDGAS)
       INTEGER NGAS,IGAS,MAXLIN,IFIRST,NLIN,ILAST,I,DISEXP
@@ -110,10 +111,10 @@ C       can't do this trivially since 1.e-47 is not a valid number and
 C       the result would be useless for weak lines anyway
         WRITE(MANTIS,203)SLIN(I)
 203     FORMAT(E12.5)
-        DISEXP=INT((1000+ALOG10(SLIN(I))))-1046
+        DISEXP=INT((1000+DLOG10(SLIN(I))))-1046
       WRITE(IW,201)VLIN(I),MANTIS(1:8),DISEXP,ALIN(I),ALIN(I)-SBLIN(I),
      1 ELIN(I),TDW(I),TDWS(I),IDGAS(IDLIN(I)),ISOGAS(IDLIN(I))
-201     FORMAT(1X,F10.3,1X,1A8,'E',I3,F7.4,F7.4,F7.1,F5.2,F5.2,I4,I4)
+201     FORMAT(1X,F10.3,1X,1A8,'E',I4,F7.4,F7.4,F8.1,F5.2,F5.2,I4,I4)
 
 200   CONTINUE      
 

@@ -31,8 +31,8 @@ C--------------------------------------------------------------
       INCLUDE '../includes/dbcom.f' 
 C--------------------------------------------------------------
       CHARACTER*256 BUFFER
-      REAL VMIN,VMAX,VBIN,BINSIZ,SMAX(MAXISO,MAXDGAS)
-      REAL SMIN(MAXISO,MAXDGAS)
+      REAL VMIN,VMAX,VBIN,BINSIZ
+      DOUBLE PRECISION SMAX(MAXISO,MAXDGAS),SMIN(MAXISO,MAXDGAS)
       INTEGER NLINES(MAXISO,MAXDGAS),IBIN,NBIN,I,J,IMIN,IMAX,TOTLIN,OVTOT
       CALL PROMPT('data base key?')
       READ(*,102)KEYFIL
@@ -102,14 +102,14 @@ C--------------------------------------------------------------
       WRITE(BUFFER,207)SMIN(J,I),SMAX(J,I)
 207   FORMAT(2E13.5)
       IF(SMIN(J,I).GT.0.)THEN
-        IMIN=INT(1000+ALOG10(SMIN(J,I)))-1046
+        IMIN=INT(1000+DLOG10(SMIN(J,I)))-1046
         WRITE(BUFFER(11:13),208)IMIN
        ELSE
         WRITE(BUFFER(11:13),212)
 212     FORMAT('***')
         END IF
       IF(SMAX(J,I).GT.0.)THEN
-        IMAX=INT(1000+ALOG10(SMAX(J,I)))-1046
+        IMAX=INT(1000+DLOG10(SMAX(J,I)))-1046
         WRITE(BUFFER(24:26),208)IMAX
        ELSE
         WRITE(BUFFER(11:13),212)

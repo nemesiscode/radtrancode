@@ -52,7 +52,7 @@ C	IPTF		INTEGER Partition function flag for CH4
 C
 C	../includes/*.f variables:
 C	VLIN(MAXLIN)	REAL	Line position [cm^-1].
-C	SLIN(MAXLIN)	REAL	Line strength [cm^-1 molecule^-1 cm^-2] at
+C	SLIN(MAXLIN)	REAL*8	Line strength [cm^-1 molecule^-1 cm^-2] at
 C				STP.
 C	ALIN(MAXLIN)	REAL	Air-broadened halfwidth [cm^-1/atm] @ STP.
 C	ELIN(MAXLIN)	REAL	Lower state energy line position [cm^-1].
@@ -373,7 +373,6 @@ C=======================================================================
 C First calculate continuum contribution. CURBIN is the current BIN for
 C which calculations are being made.
       CURBIN = INT((V - VBIN(1))/WING) + 1
-
 C Calculate the continuum absorption via the IORDP1 polynomial
 C coefficients held in CONTINK.
       TAUTMP = CONTINK(1,IP,IT,CURBIN)
@@ -417,7 +416,7 @@ C=======================================================================
         WRITE(*,*)' '
         WRITE(*,*)'Resetting according to ...'
         WRITE(*,*)'  IF (IBIN1.LT.1) IBIN1 = 1'
-        WRITE(*,*)'  IF (IBIN2.GT.NBIN) IBIN2 = NBIN'
+        WRITE(*,*)'  IF (IBIN2.GT.NBIN) IBIN2 = NBIN',NBIN
       ENDIF
       IF(IBIN1.LT.1)IBIN1 = 1
       IF(IBIN2.GT.NBIN)IBIN2 = NBIN

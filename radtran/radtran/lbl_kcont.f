@@ -285,18 +285,15 @@ C For each line
             DO 22 K=1,IORDP1
               CONVAL(K) = 0.0
 22          CONTINUE
-
 C Compute absorption coefficient for normal incidence
             DO 20 LINE=FSTLIN(I),LSTLIN(I)
 
               DO 21 K=1,IORDP1
                 VV=VBIN(J)+CONWAV(K)
                 DV=VV-VLIN(LINE)
-
                 IF(ABS(DV).LE.MAXDV)THEN
                  FNH3=-1.0
                  FH2=-1.0
-
                  CONVAL(K)=CONVAL(K)+LINECONTRIB(IPROC,IDGAS,VV,TCORDW,
      1 TCORS1,TCORS2,PRESS,TEMP,FRAC,VLIN(LINE),SLIN(LINE),ELIN(LINE),
      2 ALIN(LINE),SBLIN(LINE),TDW(LINE),TDWS(LINE),LLQ(LINE),

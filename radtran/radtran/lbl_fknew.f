@@ -168,7 +168,8 @@ C MXWID: Root mean square of XPW, XPD.
 C Misc (and UNDOCUMENTED!!) variables defined in the code ...
       INTEGER LINE,LABEL
       REAL XMASS,GETMASS,VTMP
-      REAL V
+      REAL V,ABSCO
+      DOUBLE PRECISION LNABSCO
 c--------------------------------
 cc NT*** these  are now arrays **
 ccc      REAL ABSCO,AD,X,Y,DV
@@ -328,9 +329,18 @@ c     pretabulate some line calculation parameters
              line_done(line)=1
              tstim_arr(line) = (1.0 - dpexp(-1.439*vlin(line)/temp))/
      >          (1.0 - dpexp(-1.439*vlin(line)/296.0))
-             absco_arr(line) = 
-     >        sngl(slin(line)*tcors1*dpexp(tcors2*elin(line))*
-     >        tstim_arr(line))
+             LNABSCO=LOG(SLIN(LINE))+LOG(TCORS1)+TCORS2*ELIN(LINE)+
+     >		LOG(TSTIM_ARR(LINE))
+             ABSCO = SNGL(EXP(LNABSCO))
+C             print*,'DD'
+C             PRINT*,LNABSCO,EXP(LNABSCO),ABSCO
+             absco_arr(line)=ABSCO
+C             print*,sngl(slin(line)*tcors1*dpexp(tcors2*elin(line))*
+C     >        tstim_arr(line))
+
+C             absco_arr(line) = 
+C     >        sngl(slin(line)*tcors1*dpexp(tcors2*elin(line))*
+C     >        tstim_arr(line))
              ad_arr(line) = tcordw*vlin(line)
              y_arr(line) = (alin(line)*(1 - frac)*tratio**tdw(line) +
      >           (alin(line) - sblin(line))*frac*tratio**tdws(line))*

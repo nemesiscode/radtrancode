@@ -51,7 +51,7 @@ C     Stimulated emission coefficient.
       IF(TS2.NE.0.)TSTIM=TS1/TS2
 
       LNABSCO=LOG(SLIN)+LOG(TCORS1)+TCORS2*ELIN+LOG(TSTIM)
-      ABSCO=SNGL(DEXP(LNABSCO))
+      ABSCO=SNGL(EXP(LNABSCO))
 
       TRATIO = 296./TEMP
       Y = (ALIN*(1.-FRAC)*TRATIO**TDW+(ALIN-SBLIN)*FRAC*

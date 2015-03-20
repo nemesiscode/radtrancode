@@ -40,7 +40,14 @@ F_SOURCES = \
 	adjustvmr.f \
 	wrlbld.f \
 	XhydrostatP.f \
-	XhydrostatH.f
+	XhydrostatH.f \
+	deflectray.f \
+	findnear.f \
+	quadsolve.f \
+	sphintercept.f \
+	sproduct.f \
+	traceray.f \
+	raystart.f
 
 INCDIR = ../includes
 INCLUDES= $(INCDIR)/pathcom.f $(INCDIR)/laycom.f $(INCDIR)/laygrad.f \

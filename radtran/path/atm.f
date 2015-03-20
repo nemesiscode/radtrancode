@@ -73,7 +73,8 @@ C         (no)therm        thermal emission
 C	  (no)hemisphere   Integrate emission into hemisphere
 C         (no)scatter      Full scattering calculation
 C         (no)nearlimb     Near-limb scattering calculation
-C         (no)single	   Single scattering calculation
+C         (no)single	   Single scattering calculation (plane parallel)
+C         (no)sphsingle	   Single scattering calculation (spherical atm.)
 C         (no)absorb       calculate absorption not transmission
 C         (no)binbb        use planck function at bin centre in genlbl
 C         (no)broad        calculate emission outside of genlbl
@@ -99,6 +100,7 @@ C     note that default is a limb path from bottom layer
       SCATTER=.FALSE.
       SURFACE=.FALSE.
       SINGLE=.FALSE.
+      SPHSINGLE=.FALSE.
       BINBB=.TRUE.
       ABSORB=.FALSE.
       LIMB=.TRUE.
@@ -144,6 +146,8 @@ C     checking for negated keywords
         NEARLIMB=DEF
        ELSE IF(TEXT(1:6).EQ.'SINGLE')THEN
         SINGLE=DEF
+       ELSE IF(TEXT(1:9).EQ.'SPHSINGLE')THEN
+        SPHSINGLE=DEF
        ELSE IF(TEXT(1:7).EQ.'SCATTER')THEN
         SCATTER=DEF
        ELSE IF(TEXT(1:5).EQ.'BROAD')THEN
@@ -201,6 +205,14 @@ C       END IF
         CALL WTEXT('can"t have both SINGLE and SCATTER - set SCATTER')
         SINGLE=.FALSE.
       ENDIF
+      IF(SPHSINGLE.AND.SCATTER)THEN
+        CALL WTEXT('can"t have SPHSINGLE and SCATTER - set SCATTER')
+        SINGLE=.FALSE.
+      ENDIF
+      IF(SINGLE.AND.SPHSINGLE)THEN
+        CALL WTEXT('can"t have SINGLE and SPHSINGLE - set SPHSINGLE')
+        SPHSINGLE=.FALSE.
+      ENDIF
       IF(.NOT.THERM)THEN
 C        IF(BROAD)CALL WTEXT('BROAD ignored for non thermal calculation')
 C        IF(BINBB)CALL WTEXT('BINBB ignored for non thermal calculation')
@@ -211,7 +223,7 @@ C        IF(BINBB)CALL WTEXT('BINBB ignored for non thermal calculation')
         CALL WTEXT('can"t use BROAD and BINBB - setting to BINBB')
         BROAD=.FALSE.
       END IF
-      IF((SCATTER.OR.SINGLE).AND.THERM)THEN
+      IF((SCATTER.OR.SINGLE.OR.SPHSINGLE).AND.THERM)THEN
         CALL WTEXT('THERM not required. Scattering includes emission')
         THERM=.FALSE.
       END IF
@@ -219,14 +231,18 @@ C        IF(BINBB)CALL WTEXT('BINBB ignored for non thermal calculation')
         CALL WTEXT('HEMISP assumes THERM')
         THERM=.TRUE.
       ENDIF
-      IF((SCATTER.OR.SINGLE).AND.CG)THEN
+      IF((SCATTER.OR.SINGLE.OR.SPHSINGLE).AND.CG)THEN
         CALL WTEXT('CG and SCATTER not allowed. Setting CG=.FALSE.')
         CG=.FALSE.
       END IF
-      IF(SCATTER.OR.SINGLE)THEN
+      IF(SCATTER.OR.SINGLE.OR.SPHSINGLE)THEN
         IF (LIMB) THEN
           IF(SINGLE)THEN
            CALL WTEXT('SINGLE and LIMB not catered for.')
+           STOP
+          ENDIF
+          IF(SPHSINGLE)THEN
+           CALL WTEXT('SPHSINGLE and LIMB not catered for.')
            STOP
           ENDIF
         ELSE IF (ANGLE.NE.0) THEN
@@ -559,7 +575,10 @@ C       Assumes int. rad. field calc.
         IMOD(NPATH)=23  
       ENDIF
       IF(NEARLIMB)IMOD(NPATH)=23
+      print*,'SINGLE,SPHSINGLE',SINGLE,SPHSINGLE
       IF(SINGLE)IMOD(NPATH)=16
+      IF(SPHSINGLE)IMOD(NPATH)=28
+      print*,NPATH,IMOD(NPATH)
       IF(CG)THEN
         IF(IMOD(NPATH).GE.2.AND.IMOD(NPATH).LE.3)
      1    IMOD(NPATH)=IMOD(NPATH)+8
@@ -613,7 +632,7 @@ C     have calculated the atmospheric paths, now outputing the calculation
       IF(THERM)ITYPE(NCALC)=ITYPE(NCALC)+2
       IF(WF)ITYPE(NCALC)=ITYPE(NCALC)+4
       IF(CG)ITYPE(NCALC)=ITYPE(NCALC)+8
-      IF(SCATTER.OR.SINGLE)ITYPE(NCALC)=256
+      IF(SCATTER.OR.SINGLE.OR.SPHSINGLE)ITYPE(NCALC)=256
       NINTP(NCALC)=3
       ICALD(1,NCALC)=NPATH1
       ICALD(2,NCALC)=NPATH

@@ -148,7 +148,7 @@ C		Scattering variables
      2		lcons(maxcon,maxscatpar), rad1, omega(maxscatlay),
      3		tsun, v, frcscat(maxcon,maxlay), sol_ang, emiss_ang
         REAL    bnuS(maxlay),fcover(maxscatlay),xsolar
-        REAL    umif(maxmu,maxscatlay,maxf)
+        REAL    umif(maxmu,maxscatlay,maxf),sum
         REAL    uplf(maxmu,maxscatlay,maxf)	
         REAL    umift(maxmu,maxmu,maxscatlay,maxf)
         REAL    uplft(maxmu,maxmu,maxscatlay,maxf)	
@@ -156,7 +156,7 @@ C		Scattering variables
      1		pplsto(0:40,maxmu,maxmu,maxscatlay),
      2		pmisto(0:40,maxmu,maxmu,maxscatlay),
      3          eps(maxscatlay),epsS(maxlay),omegas(maxscatlay)
-	LOGICAL	scatter, single
+	LOGICAL	scatter, single, sphsingle
 
 C		Internal variables
 
@@ -188,9 +188,18 @@ C		Internal variables
 
 C		Misc variables or continuum variables
 
-	INTEGER	ii, id1,j1,IABSORB(5)
+	INTEGER	ii, id1,J1,J2,L1,L2,IABSORB(5)
 	REAL	DelH(nlayer), AAmount(maxgas), PPP(maxgas),
      1		XLen, AvgCONTMP, CONTMP(IORDP1), DABSORB(7)
+
+        REAL   rad(maxlay+1),refrac(MAXLAY),r0(3),vec(3),r1(3)
+        REAL   ethick,scaleH,svec(3),vec1(3),ff,sproduct,rtmp
+        REAL   trace(maxpat,3),disttrace(maxpat),scaletrace(maxpat)
+        REAL   scaletraceLOS(maxpat),traceLOS(maxpat,3),tauLOS
+        REAL   tausol,vectrace(maxpat,3),vectraceLOS(maxpat,3)
+        integer jtrace(maxlay),startlay,npathLOS,ipzen,icont
+        integer jtraceLOS(maxlay),npathsol,JLAY,ILAY,KLAY
+        common/defang/ipzen
 
         INTEGER LUNIS,IRECL,IOFF,NLAYERF,NMUF,NWAVEF,NGF,IFLUX,NFF
         integer fintrad,first
@@ -343,6 +352,11 @@ C                        print*,'ssfac',muinc,muemiss,ssfac
 C			print*,'calpha',calpha
 
 		endif
+                if(imod(ipath).eq.28)then
+                  sphsingle=.TRUE.
+                else
+                  sphsingle=.FALSE.
+                endif
 	end do
 
 c	Isec = min(4,nsec)
@@ -492,7 +506,7 @@ C               Set vv to the current WAVENUMBER
                 if(ispace.eq.1)then
                   vv=1e4/x 
                 endif
-		IF ((scatter).OR.(single)) THEN
+		IF ((scatter).OR.(single).OR.(sphsingle)) THEN
 			IF (isol.EQ.1) THEN
 			  CALL get_solar_wave(x,dist,solar)
 			ELSE
@@ -650,6 +664,8 @@ C-----------------------------------------------------------------------
 C                           print*,'CCC',J,taucon(J)
 C                          ##### f(J) is average phase function ######
   			   f(J) = f(J)+phase(K)*tau2
+C                           print*,'phase',phase(K)
+C                           print*,tau2,ff
 C                           print*,'J,phase(K),F(J)',J,phase(K),f(J)
 
 			 ENDIF
@@ -766,6 +782,8 @@ C               Set vv to the current WAVENUMBER
 
 C               Calculate single-scattering contribution
                 f(J) = f(J) + phase(ncont+1)*tauray(J)
+C                 print*,phase(ncont+1)
+C                 print*,tauray(J),f(J)
 C                print*,'single',J,f(J),phase(ncont+1)
                            
         ELSE
@@ -889,6 +907,10 @@ C		22	(Atm) Limb scattering calculation
 C		23	(Atm) Limb scattering calculation using precomputed
 C			      internal radiation field.
 C		24	(Atm) Net flux calculation (scattering)
+C		25	(Atm) Upwards flux (internal) calculation (scattering)  
+C		26	(Atm) Upwards flux (top) calculation (scattering)  
+C		27	(Atm) Downwards flux (bottom) calculation (scattering)  
+C		28	(Atm) Single scattering approximation (spherical).
 C	then end the loop over the g ordinate.
 C
 C-----------------------------------------------------------------------
@@ -1243,7 +1265,7 @@ C		IF (Ig.EQ.1) WRITE(*,*)' SINGLE SCATTERING IN USE '
                         
                 if(galb1.lt.0)then
                    galb1 = dble(1.-esurf)
-C                  if(Ig.eq.1)print*,x,galb1
+                  if(Ig.eq.1)print*,'x,galb1',x,galb1
                 endif
 
                 taud = 0.
@@ -1275,10 +1297,12 @@ C               matrix inversion crashing
 
 		DO J= 1, nlays
 
+C                 print*,'Omega'
                  IF(TAUSCAT(layinc(J,Ipath)).GT.0.0) THEN
 	          tmp1 = tauscat(layinc(J,Ipath))
 		  tmp2 = tautmp(layinc(J,Ipath))
 		  omega(J) = tmp1/tmp2
+C                  print*,J,layinc(J,Ipath),tmp1,tmp2,omega(J),ssfac
 	         ELSE
   		  omega(J)=0.0
                  END IF
@@ -1289,6 +1313,11 @@ C                 taud = taud + taus(J)*(1.0-omega(J))
 
                  taud = taud + taus(J)
                  tr = dexp(-taud)
+
+C                 print*,'J,trold,tr,ssfac,fint(J),omega(J),
+C     1 muinc,muemiss'
+C                 print*,J,trold,tr,ssfac,fint(J),omega(J),
+C     1 muinc,muemiss
 
 		 corkout(Ipath,Ig) = corkout(Ipath,Ig) + 
      1			xfac*sngl((trold-tr))*ssfac*fint(J)*
@@ -1306,12 +1335,13 @@ C                 taud = taud + taus(J)*(1.0-omega(J))
 
                  trold = tr
 		ENDDO
-
 C                stop
 
 C               Add in reflectance from the ground
                 corkout(Ipath,Ig)=corkout(Ipath,Ig) + 
      1                 xfac*sngl(trold*solar*muinc*galb1)/pi
+
+C                print*,'TOTAL TR = ',trold
 
 C		WRITE (*,*) ' Calculated: ', Ig, corkout(Ipath,Ig)
 
@@ -1863,6 +1893,223 @@ C               matrix inversion crashing
      1                ig,umif,uplf,fup,fdown,ftop)                    
 
  		corkout(Ipath,Ig) = xfac*fdown(1,ig)
+
+	ELSEIF (imod(ipath).EQ.28) THEN
+
+		WRITE(*,*) 'CIRSRAD_WAVE: Imod= 28 =Single Scat Approx,',
+     1                  ' (Spherical atmosphere) creating output'
+
+C		IF (Ig.EQ.1) WRITE(*,*)' SINGLE SCATTERING IN USE '
+
+                galb1 = galb
+                        
+                if(galb1.lt.0)then
+                   galb1 = dble(1.-esurf)
+C                  if(Ig.eq.1)print*,x,galb1
+                endif
+
+                taud = 0.
+                tausun=0.0
+                trold = 1.
+
+
+C               This code below calculates the radiance
+C               spectrum in units of W cm-2 sr-1 (cm-1)-1 or W cm-2 sr-1 um-1.
+C
+                xfac=1.
+C               If iform = 1 or iform = 3 we need to calculate the total
+C               spectral flux from the planet.
+                if(iform.eq.1.or.iform.eq.3)then
+                 xfac=xfac*pi*4.*pi*((RADIUS1+radextra)*1e5)**2
+                endif
+C               If a solar file exists and iform=1 we should divide the planet
+C               flux by the solar flux
+                if(iread.eq.999.and.iform.eq.1)then
+C                Set dist to -1 to get total power spectrum of star
+                 xdist=-1.0
+                 call get_solar_wave(vwave,xdist,xsolar)
+                 xfac=xfac/xsolar
+                endif
+C               If doing integrated flux from planet need a factor to stop the
+C               matrix inversion crashing
+                if(iform.eq.3)xfac=xfac*1e-18
+
+		DO J= 1, nlays
+                 IF(TAUSCAT(layinc(J,Ipath)).GT.0.0) THEN
+	          tmp1 = tauscat(layinc(J,Ipath))
+		  tmp2 = tautmp(layinc(J,Ipath))
+		  omega(J) = tmp1/tmp2
+C                  print*,J,layinc(J,Ipath),tmp1,tmp2,omega(J)
+	         ELSE
+  		  omega(J)=0.0
+                 END IF
+                 refrac(J)=1.0
+                 rad(J)=RADIUS1+baseh(J)
+C                 print*,J,rad(J),omega(J)
+                ENDDO
+                rad(nlays+1)=RADIUS1+baseh(nlays)+delH(nlays)
+C                print*,rad(nlays+1)
+                ethick=(rad(2)-rad(1))/10.
+
+C               Compute path properties along line of sight
+                startlay=nlays+1
+                j=0.5*nlays
+                scaleH=-delH(j)/log(basep(j+1)/basep(j))
+C                print*,'scaleH',scaleH
+C               Set up initial ray position and vector. Also set up 
+C               direction to Sun
+                call raystart(emiss_ang,sol_ang,aphi,ipzen,
+     1           nlays,rad,r0,vec,svec)
+C                print*,'emiss_ang,sol_ang,aphi,ipzen,nlays'
+C                print*,emiss_ang,sol_ang,aphi,ipzen,nlays
+C                print*,r0
+C                print*,vec
+C                print*,startlay,rad(startlay),ethick,scaleH
+              
+                call traceray(nlays,rad,refrac,startlay,r0,vec,ethick,
+     1             scaleH,npathLOS,traceLOS,jtraceLOS,disttrace,
+     2             scaletraceLOS,vectraceLOS)
+
+C                print*,'npathLOS, NLAYS=',npathLOS,NLAYS
+C                do j=1,npathLOS
+C                 print*,jtraceLOS(j),disttrace(J),
+C     1			scaletraceLOS(j)
+C                enddo
+
+C               Compute transmission along line of sight
+                tauLOS=0.
+                trold=1.
+                DO J=1,npathLOS-1
+                 J1=jtraceLOS(J)
+                 J2=jtraceLOS(J+1)
+C                 print*,J,J1,J2
+C                If ray going downwards need to take opacity of layer 
+C                with ordinate equal to boundary at end of this subsection.
+C                If ray going upwardswards need to take opacity of layer 
+C                with ordinate equal to boundary at start of this subsection.
+ 
+                 IF(J1.GE.J2)THEN
+                  JLAY=J2
+                 ELSE
+                  JLAY=J1
+                 ENDIF                 
+                 ILAY=1+NLAYS-JLAY
+
+               
+                 tauLOS=tauLOS+tautmp(JLAY)*
+     1			   scaletraceLOS(J+1)
+
+C                 print*,'tauLOS,JLAY',tauLOS,JLAY
+
+C                 do k=1,nlays
+C                  print*,k,taus(k),tautmp(k),tauscat(k)
+C                 enddo
+
+C                Compute solar transmission to this point.
+
+                 do L=1,3
+                   r0(L)=traceLOS(J+1,L)
+                   vec1(L)=vectraceLOS(J+1,L)
+                   vec(L)=svec(L)
+                 enddo
+C                 print*,'J+1 etc',J+1,r0,sqrt(sproduct(r0,r0)),
+C     1  rad(jtraceLOS(J+1))
+C                 print*,'svec',svec
+C                Find local scattering angle
+                 calpha=sproduct(vec1,svec)
+C                 print*,'calpha',calpha
+
+                 ff=0.
+                 sum=0
+                 do icont=1,ncont
+                       CALL get_hg(x,calpha,ncont,icont,dphase)
+                       phase(icont) = sngl(dphase)
+C                       print*,'phase',phase(icont)
+                       ff=ff+phase(icont)*tauclscat(icont,JLAY)
+C                       print*,tauclscat(icont,JLAY),ff
+                       sum=sum+tauclscat(icont,JLAY)
+                 enddo
+                 IF(IRAY.GT.0)THEN
+C                  Calculate Rayleigh scattering too
+                   phase(ncont+1)=sngl(0.75*(1+calpha*calpha)) 
+C                   print*,phase(ncont+1)
+                   ff=ff+phase(ncont+1)*tauray(JLAY)
+C                   print*,tauray(JLAY),ff
+                   sum=sum+tauray(JLAY)
+                 ENDIF
+                 if(sum.gt.0)then
+                  ff=ff/sum
+                 else
+                  ff=0.
+                 endif
+                 startlay=jtraceLOS(J+1)
+
+C                 print*,'Start of solar ray',startlay,rad(startlay)
+
+                 call traceray(nlays,rad,refrac,startlay,r0,vec,ethick,
+     1             scaleH,npathsol,trace,jtrace,disttrace,scaletrace,
+     2		   vectrace)
+C                 print*,'npathsol',npathsol
+                 tausol=0.
+                 DO L=1,NPATHSOL-1
+                   L1=JTRACE(L)
+                   L2=JTRACE(L+1)
+                   IF(L1.GE.L2)THEN
+                    KLAY=L2                 
+                   ELSE
+                    KLAY=L1
+                   ENDIF
+C                   print*,L1,L2,klay,scaletrace(L+1)
+                   tausol=tausol+tautmp(KLAY)*
+     1				scaletrace(L+1)
+                 ENDDO
+C                 print*,'tausol',tausol
+                 tr=exp(-(tauLOS+tausol)) 
+                 DO L=1,3
+                  r1(L)=trace(J+1,L)
+                 ENDDO
+                 rtmp=sqrt(sproduct(r0,r0))                 
+
+                 
+                 muinc = abs(sproduct(svec,r1)/rtmp)
+                 muemiss = abs(sproduct(vec1,r1)/rtmp)
+
+                 ssfac = muinc/(muinc+muemiss)
+
+C                 print*,'J,trold,tr,ssfac,ff,omega(ILAY),
+C     1 muinc,muemiss'
+C                 print*,J,trold,tr,ssfac,ff,
+C     1 omega(ILAY),muinc,muemiss
+
+
+C                 print*,'muinc,muemiss,ssfac',muinc,muemiss,ssfac
+ 		 corkout(Ipath,Ig) = corkout(Ipath,Ig) + 
+     1			xfac*sngl((trold-tr))*ff*ssfac*
+     2			omega(ILAY)*solar/(4*pi)
+
+                 if(Ig.eq.1)then
+                          bb(J,Ipath)=planck_wave(ispace,x,
+     1				emtemp(ILAY,Ipath))
+C                          print*,JLAY,ILAY,emtemp(ILAY,Ipath)
+                 endif
+
+ 	         corkout(Ipath,Ig) = corkout(Ipath,Ig) + 
+     1                  xfac*sngl((trold-tr)) * bb(J,Ipath)
+
+
+                 trold = tr
+                 
+                ENDDO
+                 
+C                stop
+
+C               Add in reflectance from the ground
+                IF(npathLOS.EQ.nlays+1)THEN
+                 corkout(Ipath,Ig)=corkout(Ipath,Ig) + 
+     1                 xfac*sngl(trold*solar*muinc*galb1)/pi
+                ENDIF
+C		WRITE (*,*) ' Calculated: ', Ig, corkout(Ipath,Ig)
+
 
 	ELSE
 		WRITE (*,*) ' Imod = ', imod(ipath), ' is not a valid',

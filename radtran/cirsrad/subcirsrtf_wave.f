@@ -61,7 +61,7 @@ C	calculating atmospheric paths. ! nptah. itype declared within
 C       Defines the maximum values for a series of variables (layers,
 C       bins, paths, etc.)
 
-        INTEGER         lun, ulog, iphi, itype1
+        INTEGER         lun, ulog, iphi, itype1,ipzen1
 	PARAMETER       (lun=2, ulog=17)
 
 	INTEGER		nwave, I, J, npath1, nout, ispace
@@ -79,6 +79,7 @@ C       bins, paths, etc.)
 	CHARACTER*100	logfil, drvfil, radfile, xscfil,albfile
 
         common/scatd/mu1, wt1, galb
+        common/defang/ipzen1
 C       Need simple way of passing planetary radius to nemesis
         INCLUDE '../includes/planrad.f'
 
@@ -166,7 +167,7 @@ C-----------------------------------------------------------------------
 	fscatter= .false.
 	DO I= 1, npath
 		IF (imod(I).EQ.15.OR.imod(I).EQ.16) fscatter= .true.
-                IF (imod(I).GE.22.AND.imod(I).LE.27) fscatter = .true.
+                IF (imod(I).GE.22.AND.imod(I).LE.28) fscatter = .true.
 	ENDDO
 
 	IF (fscatter) THEN
@@ -207,6 +208,7 @@ C       cirsrad_wave in case it's been updated.
 C       Look to see if ipzen has been set to 2 and if so read in altitude of
 C       top of atmosphere
         radextra=0.
+        ipzen1=ipzen
         if(ipzen.eq.2)then
 C          need the current height profile
            call readprfheight(opfile1,npro,zheight)

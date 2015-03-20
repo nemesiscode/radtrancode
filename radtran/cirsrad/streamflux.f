@@ -5,7 +5,7 @@ C     Subroutine to format output of scloud11flux into a more usable
 C     internal radiation field and output to a meta file.
 C
 C     Input variables
-C	nlays	integer	Number of scattering angles
+C	nlays	integer	Number of scattering layers
 C	nmu	integer	Number of zenith quadrature angles
 C	mu1(maxmu) double precision	zenith angle values
 C	wt1(maxmu) double precision	zenith angle weights
@@ -57,7 +57,23 @@ C     Find correction for any quadrature errors
       do i=1,nmu
        xfac=xfac+sngl(mu1(i)*wt1(i))
       enddo
-      xnorm=2*PI*0.5/xfac
+C      print*,'xfac = ',xfac
+      xnorm=PI/xfac
+      xnorm=2*PI
+
+C      print*,'Flux down out of bottom, flux up out of top'
+C      print*,'Layer, Fdown, Fup'
+C      do ilay=1,nlays+1
+C       fup(ilay,ig)=0.
+C       fdown(ilay,ig)=0.
+C       do i=1,nmu
+C        fdown(ilay,ig)=fdown(ilay,ig)+
+C     &          sngl(mu1(i)*wt1(i))*uplf(i,ilay,1)
+C        fup(ilay,ig)=fup(ilay,ig)+
+C     &          sngl(mu1(i)*wt1(i))*umif(i,ilay,1)
+C       enddo
+C       print*,ilay,xnorm*fdown(ilay,ig),xnorm*fup(ilay,ig)
+C      enddo
 
       do 10 ilay=1,nlays
 
@@ -75,9 +91,10 @@ C       Bottom layer
         fup(ilay,ig)=0.
         do i=1,nmu
 C        Thermal emission from ground
-         fup(ilay,ig)=fup(ilay,ig)+sngl(mu1(i)*wt1(i))*radg(i)
+        fup(ilay,ig)=fup(ilay,ig)+sngl(mu1(i)*wt1(i))*radg(i)*
+     &		(1.0-sngl(galb))
 C	 Reflected radiance from ground
-         fup(ilay,ig)=fup(ilay,ig)+sngl(mu1(i)*wt1(i))*
+        fup(ilay,ig)=fup(ilay,ig)+sngl(mu1(i)*wt1(i))*
      &        uplf(i,jlay,1)*sngl(galb)
         enddo
 
@@ -89,12 +106,12 @@ C	 Reflected radiance from ground
         do i=1,nmu
          fdown(ilay,ig)=fdown(ilay,ig)+sngl(mu1(i)*wt1(i))*
      &		uplf(i,jlay,1)
-         fup(ilay,ig)=fup(ilay,ig)+sngl(mu1(i)*wt1(i))*
-     &		umif(i,jlay,1)
 C         fup(ilay,ig)=fup(ilay,ig)+sngl(mu1(i)*wt1(i))*
-C     &		umif(i,jlay+1,1)
+C     &		umif(i,jlay,1)
+         fup(ilay,ig)=fup(ilay,ig)+sngl(mu1(i)*wt1(i))*
+     &		umif(i,jlay+1,1)
         enddo
-
+C        print*,ilay,xnorm*fdown(ilay,ig),xnorm*fup(ilay,ig)
        endif
        
        if(ilay.eq.nlays)then

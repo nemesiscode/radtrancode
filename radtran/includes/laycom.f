@@ -121,7 +121,9 @@ C BINBB: =.TRUE. if calculate planck function at centre of bin in genlbl.
 C SCATTER: = .TRUE. if full scattering calculation.
 
       LOGICAL SINGLE,HEMISP,NEARLIMB,NETFLUX,UPFLUX,OUTFLUX,BOTFLUX
+      LOGICAL SPHSINGLE
 C SINGLE: =.TRUE. if single-scattering calculation.
+C SPHSINGLE: =.TRUE. if single-scattering calculation in spherical atm.
 C HEMISP: =.TRUE. if hemispherical calculation.
 C NEARLIMB: =.TRUE. if calculating near limb in a spherical atmosphere
 C NETFLUX: =.TRUE. if doing net flux calculation

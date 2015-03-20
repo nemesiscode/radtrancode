@@ -31,7 +31,6 @@ C     ************************************************************
       ierrout=0
       call quadsolve(aa,bb,cc,soln,ierr)
 
-C      print*,soln(1),soln(2)
       if(ierr.eq.0) then
        if(soln(1).lt.-thick.and.soln(2).lt.-thick) then
 C        print*,'Solution is in wrong direction'
@@ -45,18 +44,16 @@ C        print*,'Solution is in wrong direction'
           lambda=soln(1)
          else
           a=min(abs(soln(1)),abs(soln(2)))
-C          print*,'a,thick',a,thick
           if(a.gt.thick)then
            lambda=a
           else
            lambda=max(soln(1),soln(2))
           endif
-C          print*,'lambda',lambda
          endif
         endif
        endif
       else
-       print*,'sphintercept: No real solution'
+C       print*,'sphintercept: No real solution'
        ierrout=1
        return
       endif

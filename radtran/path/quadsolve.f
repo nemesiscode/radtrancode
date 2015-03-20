@@ -17,13 +17,10 @@ C     *********************************************************
       integer ierr,i
       real a,b,c,xx(2)
       logical isnan,ntest1,ntest2
-C      print*,'abc',a,b,c
       ierr=0
       do i=1,2
        xx(i)=0.
       enddo
-C      test=b**2-4*a*c
-C      print*,'test = ',test
       if(b**2.ge.4*a*c) then
         xx(1)=(-b+sqrt(b**2-4.0*a*c))/(2.*a)
         xx(2)=(-b-sqrt(b**2-4.0*a*c))/(2.*a)
@@ -31,7 +28,6 @@ C      print*,'test = ',test
         ierr=1
       endif
 
-C      print*,'xx',xx(1),xx(2)
       ntest1=isnan(xx(1))
       ntest2=isnan(xx(2))
       if(ntest1.or.ntest2)then

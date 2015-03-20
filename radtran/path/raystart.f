@@ -45,7 +45,6 @@ C     compute vector towards Sun.
       svec(1)=xs1
       svec(2)=ys1
       svec(3)=zs1      
-C      print*,'Set',xs1,ys1,zs1
 
 C     See if ray hits surface
       ilimb=0
@@ -60,17 +59,12 @@ C     See if ray hits surface
       else
         if(ipzen.eq.0)then
          sur_angle=inp_angle
-C         print*,rbot,rtop
          angle = asin(rbot*sin(pi-inp_angle*dtr)/rtop)/dtr
-C         print*,inp_angle,inp_solangle,sur_angle,angle
         else
          print*,'raystart: ipzen must be 0 or 2'
          stop
         endif
       endif
-
-C      print*,'Angle at top of atmosphere = ',angle
-C      if(ilimb.ne.1)print*,'Angle at surface = ',sur_angle
 
 C     turn ray into form z=a+bx
       a=rtop
@@ -84,7 +78,6 @@ C       get ray to hit surface at x=0.
 C       if IPZEN=2 then rotate frame to correct solar vector
         if(ipzen.eq.2)then
            throt=(sur_angle-angle)*dtr
-C           print*,'S-T = ',sur_angle-angle
            zs2=zs1*cos(throt)-xs1*sin(throt)
            xs2=xs1*cos(throt)+zs1*sin(throt)
            zs1=zs2
@@ -94,7 +87,6 @@ C           print*,'S-T = ',sur_angle-angle
         endif
       endif
 
-C      print*,'solar zenith at surface = ',acos(zs1)/dtr
       xnow=0.
       znow=rtop
 

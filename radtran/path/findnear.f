@@ -37,14 +37,11 @@ C     *************************************************************
       j2=jlay+1
       if(j2.gt.nlay+1)j2=nlay+1
 
-C      print*,'r0',r0
-C      print*,'vec',vec
       sum=1e36
       dist=-1.
       ilay=-1
       do 10 j=j1,j2
        rtmp = rad(j)
-C       print*,'j,rtmp,ethick',j,rtmp,ethick
        call sphintercept(r0,vec,rtmp,r1,ethick,ierrout)
        if(ierrout.eq.0) then
          dist=0.
@@ -59,7 +56,6 @@ C       print*,'j,rtmp,ethick',j,rtmp,ethick
            rsave(k)=r1(k)
           enddo
          endif
-C         print*,j,rtmp,dist,sum
        endif 
 10    continue
 

@@ -62,19 +62,16 @@ C      ethick=1.
        vectrace(ioff,i)=vec(i)
       enddo
 
-C      print*,theta
 C     See if ray is going up or down and determine if it needs refracting or not
       if(theta.gt.90.0)then
 C      ray going down
        if(jlay.eq.nlay+1) then
 C       starting at top.
-C        print*,'Starting at top'
         n1=1.0
         n2=refrac(nlay)
        else
         if(jlay.eq.1) then
 C        we have reached the ground
-C         print*,'We have reached ground'
          goto 100
         else
          n1=refrac(jlay)
@@ -89,7 +86,6 @@ C      ray going up
        else
         if(jlay.eq.nlay+1) then
 C        we have reached space
-C         print*,'We have reached space'
          goto 100
         else
          n1=refrac(jlay-1)
@@ -98,10 +94,8 @@ C         print*,'We have reached space'
        endif
       endif
 
-C      print*,n1,n2
 C     deflect ray
       theta1=theta
-C      print*,'theta1,n1,n2',theta1,n1,n2
       xx = n1*sin(theta1*dtr)/n2
       if(xx.le.1.0) then
         theta2=asin(n1*sin(theta1*dtr)/n2)/dtr
@@ -112,23 +106,17 @@ C        print*,'Assume ray goes straight on'
       endif
       if(theta.gt.90.0)theta2=180.0-theta2
       dtheta=theta2-theta1
-C      print*,'dtheta = ',dtheta
       call deflectray(vec,r0,dtheta,vec1)
-C      print*,'sproduct',sproduct(vec,vec1)
       do i=1,3
        vec(i)=vec1(i)
       enddo
 
 C     find next intersection with concentric spheres
-C      print*,jlay,nlay,r0,vec,ethick
       call findnear(jlay,nlay,rad,r0,vec,ethick,ilay,r1,dist,
      &  theta)
 
-C      print*,jlay,rad(jlay)
-C      print*,jlay,ilay,rad(ilay),dist
       if(ilay.ne.jlay)then
        scale=dist/(abs(rad(ilay)-rad(jlay)))
-C       print*,'scale = ',scale
       else
 C      find midpoint
        do i=1,3

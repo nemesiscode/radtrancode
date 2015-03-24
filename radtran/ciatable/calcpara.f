@@ -78,7 +78,7 @@ C     Come here if INORMAL = 1 force para fraction to F
 
       R = SODD/SEV
     
-      CALCPARA = 1.0/(1.0+R)
+      CALCPARA = SNGL(1.0/(1.0+R))
 
       RETURN
 

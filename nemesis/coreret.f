@@ -279,7 +279,7 @@ C      Calc. gradient of all elements of xnx matrix.
      1    nav,wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
      2    lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jtanx,jprex,
      3    jradx,jloggx,RADIUS,nxx,xnx,ny,ynx,kkx)
-        elseif(iscat.eq.1.or.iscat.eq.3)then
+        elseif(iscat.eq.1.or.iscat.eq.3.or.iscat.eq.4)then
          print*,'Calling forwardnogX - A'
          CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
@@ -372,7 +372,7 @@ C      Calculate inverse of se
 
 C        print*,'forwardavfovX OK, jpre = ',jpre
 
-       elseif(iscat.eq.1.or.iscat.eq.3)then
+       elseif(iscat.eq.1.or.iscat.eq.3.or.iscat.eq.4)then
         print*,'Calling forwardnogX - B'
  
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
@@ -389,12 +389,12 @@ C        print*,'forwardnogX OK, jpre = ',jpre
         CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1   vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
      2   jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
-
+        print*,'intradfield - B called OK'
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
      3   RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
-
+        print*,'B - OK'
        endif
       endif
 
@@ -554,7 +554,7 @@ C       temporary kernel matrix kk1. Does it improve the fit?
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
      2     lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,
      3     jrad,jlogg,RADIUS,nx,xn1,ny,yn1,kk1)
-         elseif(iscat.eq.1.or.iscat.eq.3)then
+         elseif(iscat.eq.1.or.iscat.eq.3.or.iscat.eq.4)then
          print*,'Calling forwardnogX - C'
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,

@@ -1130,6 +1130,8 @@ C     1                           taus(j)-taur(j)
 C                        enddo
 C                        print*,'iray = ',iray
 
+C                        print*,'galb1,solar,emiss_ang',galb1,solar,
+C     1  emiss_ang
       		  	call scloud11wave(rad1, sol_ang, emiss_ang,
      1                          aphi, radg, solar, lowbc, galb1, iray,
      2				mu1, wt1, nmu,   
@@ -1279,6 +1281,9 @@ C               Add in reflectance from the ground
                 corkout(Ipath,Ig)=corkout(Ipath,Ig) + 
      1                 xfac*sngl(trold*solar*muinc*galb1)/pi
 
+C                print*,'galb,solar,muinc,xfac,trold',galb1,
+C     1  solar,muinc,xfac,trold
+                
 C		WRITE (*,*) ' Calculated: ', Ig, corkout(Ipath,Ig)
 
 	ELSEIF (imod(ipath).EQ.21)THEN
@@ -1960,14 +1965,16 @@ C                  Calculate Rayleigh scattering too
                  ENDDO
                  tr=exp(-(tauLOS+tausol)) 
                  DO L=1,3
-                  r1(L)=trace(J+1,L)
+                  r1(L)=traceLOS(J+1,L)
                  ENDDO
-                 rtmp=sqrt(sproduct(r0,r0))                 
-
+                 rtmp=sqrt(sproduct(r1,r1))                 
+                 print*,'rtmp-RADIUS1 = ',rtmp-RADIUS1
                  
                  muinc = abs(sproduct(svec,r1)/rtmp)
                  muemiss = abs(sproduct(vec1,r1)/rtmp)
-
+                 print*,muinc,muemiss
+                 dtr=3.1415927/180.0
+                 print*,J,acos(muinc)/dtr,acos(muemiss)/dtr
                  ssfac = muinc/(muinc+muemiss)
 
 
@@ -1990,7 +1997,13 @@ C                          print*,JLAY,ILAY,emtemp(ILAY,Ipath)
                 ENDDO                 
 
 C               Add in reflectance from the ground
+
                 IF(npathLOS.EQ.nlays+1)THEN
+
+C                print*,'npathLOS',npathLOS
+C                print*,'galb,solar,muinc,xfac,trold',galb1,
+C     1  solar,muinc,xfac,trold
+
                  corkout(Ipath,Ig)=corkout(Ipath,Ig) + 
      1                 xfac*sngl(trold*solar*muinc*galb1)/pi
                 ENDIF

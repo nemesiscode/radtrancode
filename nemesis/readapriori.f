@@ -77,6 +77,7 @@ C     ****************************************************************
       real efsh,xfsh,varparam(mvar,mparam),flat,hknee,pre
       real ref(maxlat,maxpro),clen,SXMINFAC,arg,valb,alb
       real xknee,xrh,erh,xcdeep,ecdeep,radius,Grav,plim
+      real xcwid,ecwid
       parameter (Grav=6.672E-11)
 C     SXMINFAC is minimum off-diagonal factor allowed in the
 C     a priori covariance matrix
@@ -900,6 +901,63 @@ C             *** vmr, fcloud, para-H2 or cloud, take logs *********
              sx(ix,ix) = (efsh/xfsh)**2
 
              nx = nx+2
+
+
+           elseif (varident(ivar,3).eq.19)then
+C            ******** cloud profile held as total optical depth plus
+C            ******** base height and fractional scale height. Below the knee
+C            ******** pressure the profile is set to zero - a simple
+C            ******** cloud in other words!
+C            Read in xdeep,fsh,pknee
+             read(27,*)hknee,eknee
+             read(27,*)xdeep,edeep
+             read(27,*)xfsh,efsh
+             read(27,*)xcwid,ecwid
+
+             ix = nx+1
+             if(varident(ivar,1).eq.0)then
+C             *** temperature, leave alone ********
+              x0(ix)=xdeep
+              err = edeep
+             else
+C             *** vmr, fcloud, para-H2 or cloud, take logs *********
+              if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+              else
+                print*,'Error in readapriori. xdeep must be > 0.0'
+                stop
+              endif
+              err = edeep/xdeep
+             endif
+             sx(ix,ix)=err**2
+
+             ix = nx+2
+             if(xfsh.gt.0.0)then
+               x0(ix) = alog(xfsh)
+               lx(ix)=1
+             else
+               print*,'Error in readapriori - xfsh must be > 0'
+               stop
+             endif
+             sx(ix,ix) = (efsh/xfsh)**2
+
+             ix = nx+3
+             x0(ix) = hknee
+             sx(ix,ix) = eknee**2
+
+             ix = nx+4
+             if(xcwid.gt.0.0)then
+               x0(ix) = alog(xcwid)
+               lx(ix)=1
+             else
+               print*,'Error in readapriori - xcwid must be > 0'
+               stop
+             endif
+             sx(ix,ix) = (ecwid/xcwid)**2
+
+             nx = nx+4
+
 
            else         
             print*,'vartype profile parametrisation not recognised'

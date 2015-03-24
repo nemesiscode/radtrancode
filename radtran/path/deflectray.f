@@ -18,8 +18,8 @@ C     **************************************************************
       implicit none
       real vec(3),r(3),theta,vec1(3),dtr,sproduct,n(3)
       real rr,gamma,cos2thet,aa,bb,cc,alpha(2)
-      real thet1,thet2(2)
-      integer i,ierr,beta(2),j
+      real thet1,thet2(2),beta(2)
+      integer i,ierr,j
       parameter(dtr=3.1415927/180.)
 
       rr=sqrt(sproduct(r,r))

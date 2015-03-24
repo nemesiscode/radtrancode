@@ -11,6 +11,7 @@ C       ISCAT           integer         0=non-scattering
 C					1=plane-parallel scattering
 C					2=limb/near-limb scattering
 C					3=single-scattering
+C					4=single-scattering in spherical atm.
 C       SOL_ANG         real            Solar zenith angle
 C       EMISS_ANG       real            Emission zenith angle
 C       NCONV           integer         Number of convolution wavelengths
@@ -103,6 +104,7 @@ c  ** variables for solar reflected cloud **
        WRITE(31,*)' '
       ENDIF
 
+      print*,'AA ISCAT = ',ISCAT
       IF(ISCAT.GT.0)THEN
        TEXT = 'fcloud model fcloud.prf'
        WRITE(31,1)TEXT
@@ -163,7 +165,11 @@ C     sol_ang is then the tangent altitude)
         IF(ISCAT.EQ.2)write(31,1)'nearlimb'
        ELSE
         WRITE(31,1)'notherm'
-        WRITE(31,1)'single'
+        IF(ISCAT.EQ.3)THEN
+         WRITE(31,1)'single'
+        ELSE
+         WRITE(31,1)'sphsingle'
+        ENDIF
        ENDIF
       ENDIF
       WRITE(31,1)'nowf'

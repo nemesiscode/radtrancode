@@ -31,6 +31,7 @@ C       Variable is not temperature  - may need to take exponent
         if(imod.eq.8.and.ip.eq.1)iflag=1 ! variable knee profile
         if(imod.eq.9.and.ip.eq.1)iflag=1 ! variable knee profile
         if(imod.eq.16.and.ip.eq.1)iflag=1 ! lapse rate profile      
+        if(imod.eq.19.and.ip.eq.1)iflag=1 ! lapse rate profile      
       endif
 
       if(imod.eq.1.and.ip.eq.2)iflag=1 ! log fsh - fixed knee
@@ -43,6 +44,8 @@ C       Variable is not temperature  - may need to take exponent
       if(imod.eq.8.and.ip.eq.2)iflag=1 ! log fsh - var. knee
       if(imod.eq.8.and.ip.eq.3)iflag=1 ! variable knee profile
       if(imod.eq.9.and.ip.eq.2)iflag=1 ! log fsh - var. knee
+      if(imod.eq.19.and.ip.eq.2)iflag=1 ! log fsh - var. knee
+      if(imod.eq.9.and.ip.eq.4)iflag=1 ! log cwid - var knee
       if(imod.ge.12.and.imod.le.13)then 
           if(ip.eq.1)iflag=1 	       ! Gaussian/Lorentz cloud
           if(ip.eq.2)iflag=1 

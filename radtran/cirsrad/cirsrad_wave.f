@@ -1882,7 +1882,7 @@ C               matrix inversion crashing
 
 C               Compute path properties along line of sight
                 startlay=nlays+1
-                j=0.5*nlays
+                j=nlays/2
                 scaleH=-delH(j)/log(basep(j+1)/basep(j))
 
 C               Set up initial ray position and vector. Also set up 

@@ -308,7 +308,7 @@ C      ***************** Tangent height correction ***********
       enddo
 
 C     See if Sromovsky cloud layer model is specified.
-      print*,'gsetrad - iflagsrom = ',iflagsrom
+      print*,'gsetrad - iflagcloud,iflagsrom = ',iflagcloud,iflagsrom
 
       if(iflagcloud)then
 

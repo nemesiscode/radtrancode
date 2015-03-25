@@ -64,13 +64,13 @@ bin :    \
 	Cp_lines \
 	Inv_scan \
 	Li_lines \
-	Li_linestemp \
 	Makeband \
 	Mergeband \
 	Modifyband \
 	Makedb \
 	Makedbloop \
 	Merge \
+	Merge_multi_ascending \
 	Sortlines \
 	Pl_lines \
 	Pl_elines \
@@ -80,10 +80,15 @@ bin :    \
 	Selecttemp \
 	Selecttemploop \
 	Summary \
-	Write_xsec
+	Write_xsec\
+	Li_linestemp
 
 Merge : merge.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Merge merge.f $(LIBRARY) \
+	$(LIB)/rtm_util.a
+	
+Merge_multi_ascending : merge_multi_ascending.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Merge_multi_ascending merge_multi_ascending.f $(LIBRARY) \
 	$(LIB)/rtm_util.a
 
 Sortlines : sortlines.f $(LIBRARY)

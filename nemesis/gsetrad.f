@@ -225,6 +225,7 @@ C       ***************** Surface temperature correction ***********
 
       endif
 
+      iflagcloud=.false.
 
       do ivar=1,nvar
 
@@ -298,7 +299,6 @@ C      ***************** Tangent height correction ***********
 
        endif
 
-       iflagcloud=.false.
        iflagtest=varident(ivar,1)
        if(iflagtest.ge.222.and.iflagtest.le.225)then
         iflagcloud=.true.

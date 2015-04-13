@@ -621,7 +621,7 @@ C=======================================================================
 
         DO k=1,ngas
           amo(k) = amount(j,k)*1.0e-20
-          IF((idgas(k).EQ.39).OR.(idgas(k).EQ.40).OR.(lun(i,k).LT.0))
+          IF(lun(i,k).LT.0)
      1    THEN
             DO l=1,ng
               k_gn(l,k) = 0.0

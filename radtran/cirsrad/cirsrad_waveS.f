@@ -777,9 +777,7 @@ C
 C-----------------------------------------------------------------------
 
 			DO K = 1, ngas
-			 IF ((idgas(K).EQ.39).OR.(idgas(K).EQ.40)
-     1				.OR.
-     2				(lun(I,K).LT.0)) THEN
+			 IF (lun(I,K).LT.0) THEN
 				DO L = 1, ng
 					k_g2(L) = 0.
 				ENDDO

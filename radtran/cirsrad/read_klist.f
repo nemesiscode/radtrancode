@@ -222,17 +222,6 @@ C-----------------------------------------------------------------------
       ENDDO
 
       DO i=1,ngas
-        IF ((idgas(i).EQ.39).OR.(idgas(i).EQ.40).OR.
-     1	(idgas(i).EQ.22).OR.(idgas(i).EQ.36)) THEN
-          DO j = 1, nwave
-            iflag(j,i) = 1
-            lun(j,i) = 0
-            xmink(j,i) = 0.0
-            delk(j,i) = 0.0
-            ireck(j,i) = 0
-          ENDDO
-          GOTO 30
-        ENDIF
         DO j=1,nkl
           IF ((idgas(i).EQ.idgask(j)).AND.
      1	  (isogas(i).EQ.isogask(j))) THEN

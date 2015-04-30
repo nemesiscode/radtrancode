@@ -72,7 +72,7 @@ C     ***********************************************************************
       REAL H(MAXPRO),P(MAXPRO),T(MAXPRO),VMR(MAXPRO,MAXGAS)
       REAL CONT(MAXCON,MAXPRO),XLAT,X,XREF(MAXPRO),X1(MAXPRO)
       REAL PKNEE,HKNEE,XDEEP,XFSH,PARAH2(MAXPRO),XH,XKEEP,X2(MAXPRO)
-      REAL RHO,F,DQDX(MAXPRO),DX,PLIM,XFACP,CWID
+      REAL RHO,F,DQDX(MAXPRO),DX,PLIM,XFACP,CWID,PTROP
       REAL DNDH(MAXPRO),DQDH(MAXPRO),FCLOUD(MAXPRO)
       DOUBLE PRECISION Q(MAXPRO),OD(MAXPRO),ND(MAXPRO),XOD
       INTEGER ISCALE(MAXGAS),XFLAG,NPVAR,MAXLAT,IERR
@@ -1809,6 +1809,58 @@ C            PRINT*,'ITEST,J,XMAP',ITEST,J,Q(J),X1(J),(Q(J)-X1(J))/DX
 
 32       CONTINUE
         
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.20)THEN
+C        Model 1. Variable deep abundance, fixed knee pressure, fixed
+C        tropopause temperature and variable fractional scale height.
+C        ***************************************************************
+         PKNEE = VARPARAM(IVAR,1)
+         PTROP = VARPARAM(IVAR,2)
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+           XDEEP = XN(NXTEMP+1)
+         ELSE
+           XDEEP = EXP(XN(NXTEMP+1))
+         ENDIF
+         XFSH  = EXP(XN(NXTEMP+2))
+         XFAC = (1.0-XFSH)/XFSH
+C         DXFAC = -1.0/(XFSH*XFSH)
+C        New gradient correction if fsh is held as logs
+         DXFAC = -1.0/XFSH
+
+         CALL VERINT(P,H,NPRO,HKNEE,PKNEE)
+         JFSH = 0
+
+         DO J=1,NPRO
+          X1(J)=XDEEP
+          IF(VARIDENT(IVAR,1).EQ.0)THEN
+            XMAP(NXTEMP+1,IPAR,J)=1.0
+          ELSE
+            XMAP(NXTEMP+1,IPAR,J)=X1(J)
+          ENDIF
+          IF(P(J).LT.PKNEE)THEN  
+
+             IF(JFSH.EQ.0)THEN
+               DELH=H(J)-HKNEE
+             ELSE
+               DELH=H(J)-H(J-1)
+             ENDIF
+             
+             X1(J)=X1(J-1)*EXP(-DELH*XFAC/SCALE(J))
+             XMAP(NXTEMP+1,IPAR,J)=XMAP(NXTEMP+1,IPAR,J-1)*
+     1                  EXP(-DELH*XFAC/SCALE(J))
+             XMAP(NXTEMP+2,IPAR,J)=(-DELH/SCALE(J))*DXFAC*
+     1          X1(J-1)*EXP(-DELH*XFAC/SCALE(J)) +
+     2          XMAP(NXTEMP+2,IPAR,J-1)*EXP(-DELH*XFAC/SCALE(J))
+
+             JFSH = 1
+
+             IF(X1(J).LT.1e-36)X1(J)=1e-36
+
+          END IF
+          IF(P(J).LT.PTROP)THEN
+           X1(J)=1e-36
+          ENDIF
+         ENDDO
 
 
         ELSE

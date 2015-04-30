@@ -23,6 +23,7 @@ C     **************************************************************
 C       Variable is not temperature  - may need to take exponent
         if(imod.eq.0)iflag=1		 ! continuous profile
         if(imod.eq.1.and.ip.eq.1)iflag=1 ! knee profile         
+        if(imod.eq.20.and.ip.eq.1)iflag=1 ! knee profile         
         if(imod.eq.4.and.ip.eq.1)iflag=1 ! variable knee profile
         if(imod.eq.6.and.ip.eq.1)iflag=1 ! Venus cloud profile
         if(imod.eq.7.and.ip.eq.1)iflag=1 ! extended profile         
@@ -35,6 +36,7 @@ C       Variable is not temperature  - may need to take exponent
       endif
 
       if(imod.eq.1.and.ip.eq.2)iflag=1 ! log fsh - fixed knee
+      if(imod.eq.20.and.ip.eq.2)iflag=1 ! log fsh - fixed knee
       if(imod.eq.4.and.ip.eq.2)iflag=1 ! log fsh - var. knee
       if(imod.eq.4.and.ip.eq.3)iflag=1 ! variable knee profile
       if(imod.eq.6.and.ip.eq.2)iflag=1 ! Venus cloud profile

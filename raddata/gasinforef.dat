@@ -1,0 +1,651 @@
+# TITL:      gasinforef.dat
+#
+# DESC:  Reference gasinfo.dat file.
+#    
+#        This file contains information on the relative abundance and 
+#        atomic weight of the isotopes acceptable by RADTRANS and
+#        NEMESIS. In most line databases (e.g. HITRAN and GEISA),
+#        TERRESTRIAL relative abundances are assumed and the lines in the 
+#        databases are scaled by these relative abundances, such that if
+#        you request the lines of all the isotopes of a given gas the line
+#        strengths come 'pre-scaled' by these ratios. If you want to use 
+#        different isotope ratios then you should really modify the line 
+#        strengths in your database and update the relative abundances in
+#        your gasinfo.dat file. Hence, you are likely to want to have your
+#        own gasinfo.dat file(s). 
+#
+#        This file is provided as a reference and was also generated to 
+#        provide the master key for what IDs different gases have within
+#        Radtrans/Nemesis. As new gases are incorporated you need to add them
+#        here and alert the rest of the Nemesis users to make sure that 
+#        the same gas ID number is used for a particular gas by ALL Nemesis
+#        users. 
+#       
+#        
+#        This file was originally updated from 'gasinfo04.dat' according to 
+#        the HITRAN08 release by Nick Teanby and then new gases added on.
+#        This current file was updated by Pat Irwin to include extra 
+#        extra exoplanet-specific gases and also to eliminate the duplication
+#        of H2 between ID=39 and 48.
+#
+#        The file also contains the coefficients of the 4th order 
+#        polynomial fit to the 70-300K section of the total partition 
+#         function (vib + rot) distributed with the HITRAN-08 database
+#        (parsum.dat, version 24-mar-10) fit using idl routine
+#         polyfit_hitran_parsum.pro
+#        -> /home/oxpln98/plan/irwin/linedata/hitran08/ParSum_4th_order_polyfit.dat
+#
+#       Abundances and mol wts were updated according to the molparam.txt
+#       file supplied with hitran08 (24-mar-10 version) (same directory)
+#
+#       Where no partition function information is listed, for linear
+#       molecules we have set the coeffs. to (0.0,1.0,0.0,0.0) and for
+#       polyatomic molecules we have set the coeffs to:
+#               (-0.44219E+02, +0.58047E+01, +0.50145E-01, -0.37316E-04)
+#       which is a reasonable approximation to T**1.5 (rotation partition
+#       function of polyatomic rotor.
+#
+#
+#       As far as can be seen there have been no changes to the partition
+#       functions or isotope ratios since HITRAN04 so actually this file
+#       is unchanged from gasinfo04.dat
+# 
+#
+# HIST: Pat Irwin       18/9/00
+#       PDP             14.may.01       Copied gas_info96.dat into this
+#                                       file and adjusted the abundances
+#                                       for gas 39 from 1.0 to more
+#                                       appropriate values. The relative
+#                                       abundance of HD (39,2) came from
+#                                       the terrestrial determination of
+#                                       D/H and the forumula where (HD/H2)
+#                                       = 2.0 D/H where D/H for Standard
+#                                       Mean Ocean Water = 1.557E-4.
+#       PDP             14.mar.02       Updated the D/H ratio from the
+#                                       clearly-inappropriate value above
+#                                       to that provided by Lellouch etal
+#                                       2001 from ISO-SWS observations and
+#                                       supported by Mahaffy etal 1998 of
+#                                       the Galileo Probe equaling
+#                                       D/H= 2.25 pm0.35 x10^-5.
+#       NT              14.jan.04       updated partition function fitting
+#                                       coeffs by fitting 4th order polynomial
+#                                       to the 70-300k segment of the total
+#                                       partition function supplied with the
+#                                       HITRAN2K release.
+#       NT              5.jan.05        changed C2H6 isotope 2 abundance from
+#                                       0.0000001 to 0.01665 (= 6/4 * 13CH4 ab)
+#       NT              31.mar.05       updated partition functions for
+#                                       HC3N, C4H2, C3H4, C3H8
+#       NT              5.may.05        updated partition functions for
+#                                       C2N2
+#       NT              26.sept.05      updated partition functions for
+#                                       H2O, CO2, CO, CH4, NH3, HF, HCL, HBR
+#                                       HI, N2, HCN, C2H2, PH3, H2S, C2H4, SO2
+#                                       from hitran04 parsum.dat file and
+#                                       also checked mol wt.s and abundances
+#                                       from molparam.txt
+#       NT              31.mar.05       fixed coefficients for non-linear
+#                                       gases not listed in HITRAN
+#       NT              13.oct.05       added iso 48 for H2 quadrupole lines
+#       NT              19.apr.06       added iso 49 for benzene
+#                        -mol mass from NIST
+#                        -PF calced from vibe bands and degeneracies in 
+#           Dang-Nhu 1989 JMS and assuming a T^1.5 rotational component
+#       NT              12.mar.07       added iso 50 for ch3cn
+#                        -mol mass from NIST
+#                        -PF calced from vibe bands and degeneracies in 
+#           jpl psuedo list readme file and a T^1.5 rotational component
+#       NT              4.apr.07 -fixed c2h6 (iso2) PF
+#                                -added in Leighs updated PF cfs for H2/HD 
+#                                (gas48) assuming H2=T^0.95, HD=T^0.89
+#                                from lellouch et al 2001
+#       NT              10.nov.08  updated partition functions for
+#                                  C2N2 using Grecu et al 1993 (Tab1)
+#       PGJI            23.apr.10  update for HITRAN08
+#                                  updated partition functions for GeH4
+#                                   and AsH3    
+#       NT              ?          Several new Titan gases added.
+#       PGJI            1.may.15   Added Na, K, TiO and VO from Jo Barstow.
+#				   Also deleted H2 at ID=48.
+#                                  File also contains new PH3 isotopes from
+#				   Rohini Giles.
+   
+ ------------------------------------------------
+  1                 gas identifier
+ H2O   
+  5                 number of isotopes
+  1 0.9973170   18.0106   (161)  isotope id, relative abun, mass #
+     -3.46229e+00  2.51974e-01  1.43133e-03 -8.45955e-07
+  2 0.0019998   20.0148   (181)  isotope id, relative abun, mass #
+     -4.50170e+00  2.54188e-01  1.44279e-03 -8.51659e-07
+  3 0.0003719   19.0148   (171)  isotope id, relative abun, mass #
+     -2.77882e+01  1.53995e+00  8.46510e-03 -4.70886e-06
+  4 0.0003107   19.0167   (162)  isotope id, relative abun, mass #
+     -2.47416e+01  1.24678e+00  7.08276e-03 -4.09274e-06
+  5 0.0000006   21.0210   (182)  isotope id, relative abun, mass #
+     -1.90622e+01  1.26371e+00  7.15754e-03 -4.13404e-06
+ ------------------------------------------------
+  2                 gas identifier
+ CO2   
+  9                 number of isotopes
+  1 0.9842040   43.9898   (626)  isotope id, relative abun, mass #
+     -2.96501e+00  9.83215e-01 -8.97249e-04  2.98804e-06
+  2 0.0110574   44.9932   (636)  isotope id, relative abun, mass #
+     -5.69943e+00  1.96467e+00 -1.83314e-03  6.29369e-06
+  3 0.0039471   45.9941   (628)  isotope id, relative abun, mass #
+     -6.35548e+00  2.08607e+00 -1.92846e-03  6.45300e-06
+  4 0.0007340   44.9940   (627)  isotope id, relative abun, mass #
+     -3.67382e+01  1.21635e+01 -1.11648e-02  3.73013e-05
+  5 0.0000443   46.9974   (638)  isotope id, relative abun, mass #
+     -1.20751e+01  4.16621e+00 -3.93008e-03  1.35896e-05
+  6 0.0000082   45.9974   (637)  isotope id, relative abun, mass #
+     -7.06247e+01  2.43071e+01 -2.28238e-02  7.86220e-05
+  7 0.0000040   47.9983   (828)  isotope id, relative abun, mass #
+     -3.36000e+00  1.10736e+00 -1.03189e-03  3.47875e-06
+  8 0.0000001   46.9983   (727)  isotope id, relative abun, mass #
+     +0.00000E+00 +1.00000E+00 +0.00000E+00 +0.00000E+00      
+  9 0.0000001   48.0000   (838)  isotope id, relative abun, mass #
+     +0.00000E+00 +1.00000E+00 +0.00000E+00 +0.00000E+00           
+ ------------------------------------------------
+  3                 gas identifier
+ O3    
+  5                 number of isotopes
+  1 0.9929010   47.9847   (666)  isotope id, relative abun, mass #
+     -1.33581e+02  6.04917e+00  1.70067e-02  1.28849e-05
+  2 0.0039819   49.9890   (668)  isotope id, relative abun, mass #
+     -2.89120e+02  1.30276e+01  3.52366e-02  3.10756e-05
+  3 0.0019910   49.9890   (686)  isotope id, relative abun, mass #
+     -1.42445e+02  6.39302e+00  1.70594e-02  1.54142e-05
+  4 0.0007405   48.9890   (667)  isotope id, relative abun, mass #
+     -1.66828e+03  7.53972e+01  2.08145e-01  1.70149e-04
+  5 0.0003702   48.9890   (676)  isotope id, relative abun, mass #
+     -8.27131e+02  3.73150e+01  1.02505e-01  8.44186e-05 
+ ------------------------------------------------
+  4                 gas identifier
+ N2O   
+  5                 number of isotopes
+  1 0.9903330   44.0011   (446)  isotope id, relative abun, mass #
+     -3.68881e+01  1.63266e+01 -1.59404e-02  6.18354e-05
+  2 0.0036409   44.9981   (456)  isotope id, relative abun, mass #
+     -2.19223e+01  1.08403e+01 -1.05753e-02  4.25126e-05
+  3 0.0036409   44.9981   (546)  isotope id, relative abun, mass #
+     -2.51325e+01  1.12613e+01 -1.10480e-02  4.31522e-05
+  4 0.0019858   46.0053   (448)  isotope id, relative abun, mass #
+     -3.89884e+01  1.72992e+01 -1.70867e-02  6.67585e-05
+  5 0.0003693   45.0053   (447)  isotope id, relative abun, mass #
+     -2.26226e+02  1.00913e+02 -9.89411e-02  3.85688e-04
+ ------------------------------------------------
+  5                 gas identifier
+ CO    
+  6                 number of isotopes
+  1 0.9865440   27.9949   ( 26)  isotope id, relative abun, mass #
+      3.34009e-01  3.59976e-01  2.25241e-06  1.26962e-09
+  2 0.0110836   28.9983   ( 36)  isotope id, relative abun, mass #
+      6.77444e-01  7.52962e-01  5.60890e-06  1.38546e-09
+  3 0.0019782   29.9992   ( 28)  isotope id, relative abun, mass #
+      3.33434e-01  3.78025e-01  2.29809e-06  1.46391e-09
+  4 0.0003679   28.9991   ( 27)  isotope id, relative abun, mass #
+      2.00295e+00  2.21582e+00  1.52613e-05  4.34306e-09
+  5 0.0000222   31.0025   ( 38)  isotope id, relative abun, mass #
+      6.75861e-01  7.92552e-01  5.88599e-06  1.30104e-09
+  6 0.0000041   30.0025   ( 37)  isotope id, relative abun, mass #
+      4.00014e+00  4.64180e+00  2.90809e-05  1.42774e-08
+ ------------------------------------------------
+  6                 gas identifier
+ CH4   
+  3                 number of isotopes
+  1 0.9882740   16.0313   (211)  isotope id, relative abun, mass #
+     -1.61194e+01  9.05200e-01  4.40876e-03 -1.85094e-06
+  2 0.0111031   17.0347   (311)  isotope id, relative abun, mass #
+     -3.22742e+01  1.81107e+00  8.81186e-03 -3.69149e-06
+  3 0.0006158   17.0375   (212)  isotope id, relative abun, mass #
+     -1.32101e+02  7.30804e+00  3.57219e-02 -1.49912e-05
+ ------------------------------------------------
+  7                 gas identifier
+ O2    
+  3                 number of isotopes
+  1 0.9952620   31.9898   ( 66)  isotope id, relative abun, mass #
+      7.52687e-01  7.26609e-01 -1.02337e-05  3.21953e-08
+  2 0.0039914   33.9941   ( 68)  isotope id, relative abun, mass #
+     -3.18564e+00  1.54078e+00 -3.41463e-05  9.23627e-08
+  3 0.0007422   32.9940   ( 67)  isotope id, relative abun, mass #
+     -1.83703e+01  8.98862e+00 -1.52297e-04  4.44482e-07
+ ------------------------------------------------
+  8                 gas identifier
+ NO    
+  3                 number of isotopes
+  1 0.9939740   29.9980   ( 46)  isotope id, relative abun, mass #
+     -1.41684e+01  2.37012e+00  8.10726e-03 -9.88509e-06
+  2 0.0036543   30.9950   ( 56)  isotope id, relative abun, mass #
+     -9.87836e+00  1.63860e+00  5.59892e-03 -6.82485e-06
+  3 0.0019931   32.0022   ( 48)  isotope id, relative abun, mass #
+     -1.51258e+01  2.50117e+00  8.53937e-03 -1.04032e-05
+ ------------------------------------------------
+  9                 gas identifier
+ SO2   
+  2                 number of isotopes
+  1 0.9456780   63.9619   (626)  isotope id, relative abun, mass #
+     -2.05876e+02  1.01420e+01  2.95180e-02  3.68379e-05
+  2 0.0419503   65.9577   (646)  isotope id, relative abun, mass #
+     -2.07071e+02  1.01929e+01  2.96328e-02  3.70217e-05
+ ------------------------------------------------
+ 10                 gas identifier
+ NO2   
+  1                 number of isotopes
+  1 0.9916160   45.9929   (646)  isotope id, relative abun, mass #
+     -4.47916e+02  2.19662e+01  8.40982e-02  5.69159e-06
+ ------------------------------------------------
+ 11                 gas identifier
+ NH3   
+  2                 number of isotopes
+  1 0.9958720   17.0265   (411)  isotope id, relative abun, mass #
+     -4.70458e+01  2.66615e+00  1.24549e-02 -4.20413e-06
+  2 0.0036613   18.0236   (511)  isotope id, relative abun, mass #
+     -3.14668e+01  1.78176e+00  8.31785e-03 -2.79961e-06
+ ------------------------------------------------
+ 12                 gas identifier
+ HNO3  
+  1                 number of isotopes
+  1 0.9891100   62.9956   (146)  isotope id, relative abun, mass #
+     -1.43360e+04  5.07726e+02 -1.03819e+00  6.50804e-03
+ ------------------------------------------------
+ 13                 gas identifier
+ OH    
+  3                 number of isotopes
+  1 0.9974730   17.0027   ( 61)  isotope id, relative abun, mass #
+      9.84530e+00  1.32445e-01  5.72620e-04 -7.29821e-07
+  2 0.0020001   19.0070   ( 81)  isotope id, relative abun, mass #
+      9.80176e+00  1.34016e-01  5.74469e-04 -7.32264e-07
+  3 0.0001554   18.0089   ( 62)  isotope id, relative abun, mass #
+      1.20475e+01  3.91224e-01  1.45614e-03 -1.78393e-06
+ ------------------------------------------------
+ 14                 gas identifier
+ HF    
+  1                 number of isotopes
+  1 0.9998440   20.0062   ( 19)  isotope id, relative abun, mass #
+      1.57821e+00  1.32791e-01  1.06981e-05 -1.37698e-08
+ ------------------------------------------------
+ 15                 gas identifier
+ HCl   
+  2                 number of isotopes
+  1 0.7575870   35.9767   ( 15)  isotope id, relative abun, mass #
+      2.89837e+00  5.30371e-01  1.22006e-05 -1.15908e-08
+  2 0.2422570   37.9737   ( 17)  isotope id, relative abun, mass #
+      2.91205e+00  5.30851e-01  1.44892e-05 -1.64577e-08
+ ------------------------------------------------
+ 16                 gas identifier
+ HBr   
+  2                 number of isotopes
+  1 0.5067810   79.9262   ( 19)  isotope id, relative abun, mass #
+      2.85471e+00  6.63967e-01  1.22426e-05 -1.11152e-08
+  2 0.4930630   81.9241   ( 11)  isotope id, relative abun, mass #
+      2.87147e+00  6.63835e-01  1.41725e-05 -1.44642e-08
+ ------------------------------------------------
+ 17                 gas identifier
+ HI    
+  1                 number of isotopes
+  1 0.9998440  127.9123   ( 17)  isotope id, relative abun, mass #
+      4.20077e+00  1.29599e+00  1.60701e-05 -8.77552e-09
+ ------------------------------------------------
+ 18                 gas identifier
+ ClO   
+  2                 number of isotopes
+  1 0.7559080   50.9638   ( 56)  isotope id, relative abun, mass #
+      7.48171e+01  7.19926e+00  1.03672e-02  6.23034e-06
+  2 0.2417200   52.9608   ( 76)  isotope id, relative abun, mass #
+      7.60270e+01  7.32562e+00  1.05152e-02  6.46501e-06
+ ------------------------------------------------
+ 19                 gas identifier
+ OCS   
+  7                 number of isotopes
+  1 0.9373950   59.9670   (622)  isotope id, relative abun, mass #
+     -8.39885e+00  3.77942e+00 -4.55140e-03  1.96579e-05
+  2 0.0415828   61.9628   (624)  isotope id, relative abun, mass #
+     -8.80897e+00  3.87953e+00 -4.72004e-03  2.03521e-05
+  3 0.0105315   60.9703   (632)  isotope id, relative abun, mass #
+     -1.36526e+01  7.52105e+00 -8.94903e-03  4.07341e-05
+  4 0.0018797   61.9712   (822)  isotope id, relative abun, mass #
+     -8.08853e+00  4.01362e+00 -4.84194e-03  2.15305e-05
+  5 0.0073990   60.9664   (623)  isotope id, relative abun, mass #
+     -3.43080e+01  1.53180e+01 -1.85246e-02  7.99975e-05           
+  6 0.0000001   63.0000   (634)  isotope id, relative abun, mass #
+     +0.00000E+00 +1.00000E+00 +0.00000E+00 +0.00000E+00           
+  7 0.0000001   61.0000   (722)  isotope id, relative abun, mass #
+     +0.00000E+00 +1.00000E+00 +0.00000E+00 +0.00000E+00           
+ ------------------------------------------------
+ 20                 gas identifier
+ H2CO  
+  3                 number of isotopes
+  1 0.9862370   30.0106   (126)  isotope id, relative abun, mass #
+     -8.06693e+01  4.32186e+00  2.14787e-02 -9.07461e-06
+  2 0.0110802   31.0139   (136)  isotope id, relative abun, mass #
+     -1.64949e+02  8.85012e+00  4.41300e-02 -1.87720e-05
+  3 0.0019776   32.0148   (128)  isotope id, relative abun, mass #
+     -8.44756e+01  4.52897e+00  2.25631e-02 -9.57127e-06
+ ------------------------------------------------
+ 21                 gas identifier
+ HOCl  
+  2                 number of isotopes
+  1 0.7557900   51.9716   (165)  isotope id, relative abun, mass #
+     -6.39768e+02  3.13071e+01  1.16209e-01  1.75429e-05
+  2 0.2416830   53.9686   (167)  isotope id, relative abun, mass #
+     -6.52631e+02  3.18954e+01  1.18026e-01  1.83609e-05
+ ------------------------------------------------
+ 22                 gas identifier
+ N2    
+  1                 number of isotopes
+  1 0.9926870   28.0061   ( 44)  isotope id, relative abun, mass #
+      1.50887e+00  1.56547e+00  1.20366e-05  1.42517e-09
+ ------------------------------------------------
+ 23                 gas identifier
+ HCN   
+  3                 number of isotopes
+  1 0.9851140   27.0109   (124)  isotope id, relative abun, mass #
+     -7.69888e+00  3.09721e+00 -2.54497e-03  8.06649e-06
+  2 0.0110676   28.0143   (134)  isotope id, relative abun, mass #
+     -1.59127e+01  6.36125e+00 -5.27088e-03  1.67791e-05
+  3 0.0036217   28.0079   (125)  isotope id, relative abun, mass #
+     -5.32057e+00  2.14441e+00 -1.78399e-03  5.71841e-06
+ ------------------------------------------------
+ 24                 gas identifier
+ CH3Cl 
+  2                 number of isotopes
+  1 0.7489370   49.9923   (215)  isotope id, relative abun, mass #
+     -4.88553e+03  2.11457e+02  4.97960e-01  5.54523e-04
+  2 0.2394910   51.9894   (217)  isotope id, relative abun, mass #
+     -4.96251e+03  2.14792e+02  5.05896e-01  5.63292e-04
+ ------------------------------------------------
+ 25                 gas identifier
+ H2O2  
+  1                 number of isotopes
+  1 0.9949520   34.0055   (166)  isotope id, relative abun, mass #
+     -2.04542e+02  1.02294e+01  5.14620e-02  9.57989e-05
+ ------------------------------------------------
+ 26                 gas identifier
+ C2H2  
+  2                 number of isotopes
+  1 0.9775990   26.0157   (221)  isotope id, relative abun, mass #
+     -8.42596e+00  1.44585e+00 -2.54357e-03  8.37932e-06
+  2 0.0219663   27.0190   (231)  isotope id, relative abun, mass #
+     -3.37411e+01  5.78454e+00 -1.01816e-02  3.35342e-05
+ ------------------------------------------------
+ 27                 gas identifier
+ C2H6  
+  2                 number of isotopes
+  1 0.9769000   30.0470   (226)  isotope id, relative abun, mass #
+     -2.95205e+03  1.19368e+02 -2.13804e-02  1.55277e-03
+  2 0.0222000   31.0700   (236)  isotope id, relative abun, mass #
+     -2.95205e+03  1.19368e+02 -2.13804e-02  1.55277e-03
+ ------------------------------------------------
+ 28                 gas identifier
+ PH3   
+  1                 number of isotopes
+  1 0.9995330   33.9972   (131)  isotope id, relative abun, mass #
+     -1.05413e+02  5.32304e+00  2.08494e-02 -1.95721e-06
+ ------------------------------------------------
+ 29                 gas identifier
+ C2N2  
+  1                 number of isotopes
+  1 1.0000000   52.0000   (224)  isotope id, relative abun, mass #
+     -6.56507e-02 +5.08000e-03 -1.86588e-05 +1.08991e-07
+ ------------------------------------------------
+ 30                 gas identifier
+ C4H2  
+  1                 number of isotopes
+  1 1.0000000   50.0000   (211)  isotope id, relative abun, mass #
+     -3.34142e-01 +1.16107e-02 -6.99304e-05 +2.49526e-07
+ ------------------------------------------------
+ 31                 gas identifier
+ HC3N  
+  1                 number of isotopes
+  1 1.0000000   51.0000   (124)  isotope id, relative abun, mass #
+     -1.55444e-01 +7.25791e-03 -3.58075e-05 +1.59203e-07
+ ------------------------------------------------
+ 32                 gas identifier
+ C2H4  
+  2                 number of isotopes
+  1 0.9772940   28.0313   (211)  isotope id, relative abun, mass #
+     -5.33427e+02  2.16816e+01  3.53904e-02  7.87332e-05
+  2 0.0219595   29.0347   (311)  isotope id, relative abun, mass #
+     -2.18296e+03  8.87363e+01  1.44920e-01  3.22243e-04
+ ------------------------------------------------
+ 33                 gas identifier
+ GeH4  
+  5                 number of isotopes
+  1 0.3594000   78.0000   (411)  isotope id, relative abun, mass #      
+     -0.44219E+02 +0.58047E+01 +0.50145E-01 -0.37316E-04
+  2 0.2766000   76.0000   (211)  isotope id, relative abun, mass #      
+     -0.44219E+02 +0.58047E+01 +0.50145E-01 -0.37316E-04
+  3 0.2123000   74.0000   ( 11)  isotope id, relative abun, mass #      
+     -0.44219E+02 +0.58047E+01 +0.50145E-01 -0.37316E-04
+  4 0.0773000   77.0000   (311)  isotope id, relative abun, mass #    
+     -0.44219E+02 +0.58047E+01 +0.50145E-01 -0.37316E-04
+  5 0.0744000   80.0000   (611)  isotope id, relative abun, mass #
+     -0.44219E+02 +0.58047E+01 +0.50145E-01 -0.37316E-04 
+------------------------------------------------
+ 34                 gas identifier
+ C3H8  
+  1                 number of isotopes
+  1 1.0000000   44.0000   (211)  isotope id, relative abun, mass #
+     -3.96318e-02 +1.80309e-03 +5.30025e-06 +3.22088e-09
+ ------------------------------------------------
+ 35                 gas identifier
+ HCOOH 
+  1                 number of isotopes
+  1 0.9838980   46.0055   (261)  isotope id, relative abun, mass #
+     -1.98417e+03  7.89531e+01  4.51356e-02  5.30188e-04
+ ------------------------------------------------
+ 36                 gas identifier
+ H2S   
+  3                 number of isotopes
+  1 0.9498840   33.9877   (121)  isotope id, relative abun, mass #
+     -1.20797e+01  7.42684e-01  4.01000e-03 -2.16779e-06
+  2 0.0074977   34.9871   (131)  isotope id, relative abun, mass #
+     -4.84085e+01  2.97512e+00  1.60583e-02 -8.67821e-06
+  3 0.0421369   35.9835   (141)  isotope id, relative abun, mass #
+     -1.21068e+01  7.44435e-01  4.02107e-03 -2.17485e-06
+ ------------------------------------------------
+ 37                 gas identifier
+ COF2
+  1                 number of isotopes
+  1 0.9865440   65.9917   (269)  isotope id, relative abun, mass #
+     -3.89009e+03  1.48981e+02 -3.88424e-02  1.27860e-03
+ ------------------------------------------------
+ 38                 gas identifier
+ SF6
+  1                 number of isotopes
+  1 0.950180  145.9625   ( 29)  isotope id, relative abun, mass #
+     -3.98561e+05  1.01396e+04 -7.03630e+01  1.99113e-01
+ ------------------------------------------------
+ 39                 gas identifier
+ H2
+  2                 number of isotopes
+  1 0.9999550    2.0160   ( 11)  isotope id, relative abun, mass #
+     +0.00000E+00 +1.00000E+00 +0.00000E+00 +0.00000E+00
+  2 0.0000450    3.0240   ( 12)  isotope id, relative abun, mass #
+     +0.00000E+00 +1.00000E+00 +0.00000E+00 +0.00000E+00
+ ------------------------------------------------
+ 40                 gas identifier
+ He
+  1                 number of isotopes
+  1 1.0000000    4.0021   (  4)  isotope id, relative abun, mass #
+     +0.00000E+00 +1.00000E+00 +0.00000E+00 +0.00000E+00
+ ------------------------------------------------
+ 41                 gas identifier
+ AsH3
+  1                 number of isotopes
+  1 1.0000000   78.5000   (181)  isotope id, relative abun, mass #
+     -0.44219E+02 +0.58047E+01 +0.50145E-01 -0.37316E-04
+ ------------------------------------------------
+ 42                 gas identifier
+ C3H4
+  1                 number of isotopes
+  1 1.0000000   40.0000   (341)  isotope id, relative abun, mass #
+     -8.93543e-02 +3.27791e-03 -1.05124e-05 +6.78358e-08
+ ------------------------------------------------
+ 43                 gas identifier
+ ClONO2
+  2                 number of isotopes
+  1 0.7495700   96.9567   (564)  isotope id, relative abun, mass #
+     -5.55568e+05  1.46414e+04 -9.76502e+01  3.67867e-01
+  2 0.2396940   98.9537   (764)  isotope id, relative abun, mass #
+     -5.69803e+05  1.50161e+04 -1.00149e+02  3.77253e-01
+ ------------------------------------------------
+ 44                 gas identifier
+ HO2
+  1                 number of isotopes
+  1 0.9951070   32.9977   (166)  isotope id, relative abun, mass #
+     -1.17959e+02  6.45327e+00  3.31743e-02 -1.54409e-05
+ ------------------------------------------------
+ 45                 gas identifier
+ O
+  1                 number of isotopes
+  1 0.9976280   15.9949   (  6)  isotope id, relative abun, mass #
+     -0.10000E+01 +0.00000E+00 +0.00000E+00 +0.00000E+00 
+ ------------------------------------------------
+ 46                 gas identifier
+ NO+
+  1                 number of isotopes
+  1 0.9939740   29.9980   (  4)  isotope id, relative abun, mass #
+     1.04596e+00  1.04827e+00  5.65417e-06 -5.58099e-09 
+ ------------------------------------------------
+ 47                 gas identifier
+ CH3OH
+  1                 number of isotopes
+  1 0.9859300   32.0262   (211)  isotope id, relative abun, mass #
+     -4.43710e+03  1.72219e+02  1.37732e-01  9.15583e-04 
+ ------------------------------------------------
+ 48                 gas identifier
+ Unobtanium
+  1                 number of isotopes
+  1 0.9999550    2.0160   ( 11)  isotope id, relative abun, mass #
+     9.67935E-03 3.56126E-03 -1.01632e-06 9.75427e-10
+ ------------------------------------------------
+ 49                 gas identifier
+ C6H6
+  1                 number of isotopes
+  1 1.0000000    78.11    (221)  isotope id, relative abun, mass #
+     -1.73943e-01 +7.80648e-03 -3.77745e-05 +1.14948e-07
+ ------------------------------------------------
+ 50                 gas identifier
+ CH3CN
+  1                 number of isotopes
+  1 1.0000000    41.05    (241)  isotope id, relative abun, mass #
+     -6.27792e-02  2.55606e-03 -3.70671e-06  4.36134e-08
+ ------------------------------------------------
+ 51                 gas identifier
+ CH2NH
+  4                 number of isotopes
+  1 1.0000000   29.0000   (241)  isotope id, relative abun, mass #
+     -4.45427e+01  6.52519e+00  5.63892e-02 -4.07146e-05
+  2 0.0105300   30.0000   (341)  isotope id, relative abun, mass #
+     -1.31524e+01  2.04989e+00  2.11016e-02 -1.81248e-05
+  3 0.0153800   30.0000   (251)  isotope id, relative abun, mass #
+     -1.31737e+01  2.05320e+00  2.11356e-02 -1.81539e-05
+  4 0.0001170   30.0000   (242)  isotope id, relative abun, mass #
+     -2.86027e+01  5.28362e+00  9.18531e-02 -9.81119e-05
+ ------------------------------------------------
+ 52                 gas identifier
+ C2H3CN
+  6                 number of isotopes
+  1 1.0000000   53.0000   (241)  isotope id, relative abun, mass #
+     -1.54793e+02  5.88874e+01  9.39280e-01  6.43523e-04
+  2 0.0105300   54.0000   (441)  isotope id, relative abun, mass #
+     -1.70787e+02  2.68203e+01  2.76754e-01 -2.34522e-04
+  3 0.0105300   54.0000   (541)  isotope id, relative abun, mass #
+     -1.72984e+02  2.71647e+01  2.80301e-01 -2.37552e-04
+  4 0.0105300   54.0000   (641)  isotope id, relative abun, mass #
+     -1.75702e+02  2.75884e+01  2.84693e-01 -2.41259e-04
+  5 0.0001170   54.0000   (242)  isotope id, relative abun, mass #
+     -1.90290e+02  3.00907e+01  3.14149e-01 -2.71996e-04
+  6 0.0153800   54.0000   (251)  isotope id, relative abun, mass #
+     -1.75435e+02  2.75460e+01  2.84265e-01 -2.40851e-04
+ ------------------------------------------------
+ 53                 gas identifier
+ HCP
+  1                 number of isotopes
+  1 1.0000000   44.0000   (123)  isotope id, relative abun, mass #
+      4.07958e-01  1.03821e+00  6.67295e-05 -2.16079e-07
+ ------------------------------------------------
+ 54                 gas identifier
+ CS
+  1                 number of isotopes
+  1 1.0000000   44.0000   ( 22)  isotope id, relative abun, mass #
+      3.53804e-01  8.49631e-01  1.39364e-05 -3.66230e-08
+ ------------------------------------------------
+ 55                 gas identifier
+ HC5N
+  1                 number of isotopes
+  1 1.0000000   75.0000   (241)  isotope id, relative abun, mass #
+      3.33717e-01  1.56509e+01  1.10945e-05 -2.04631e-11
+ ------------------------------------------------
+ 56                 gas identifier
+ HC7N
+  1                 number of isotopes
+  1 1.000000    99.0000   (241)  isotope id, relative abun, mass #
+     -2.46600e+02  1.30500e+02 -2.77850e-01  2.16506e-04
+ ------------------------------------------------
+ 57                 gas identifier
+ C2H5CN
+  5                 number of isotopes
+  1 1.0000000   55.0000   (241)  isotope id, relative abun, mass #
+     -2.42048e+02  3.79879e+01  3.91607e-01 -3.32892e-04
+  2 0.0105300   56.0000   (441)  isotope id, relative abun, mass #
+     -9.22629e+02  1.10609e+02  1.14061e+00 -8.39605e-04
+  3 0.0105300   56.0000   (541)  isotope id, relative abun, mass #
+     -9.32681e+02  1.11813e+02  1.15301e+00 -8.48733e-04
+  4 0.0105300   56.0000   (641)  isotope id, relative abun, mass #
+     -9.46039e+02  1.13398e+02  1.16931e+00 -8.60716e-04
+  5 0.0153800   56.0000   (251)  isotope id, relative abun, mass #
+      6.18308e+00  1.82100e+01  5.68471e-01 -6.74954e-04
+ ------------------------------------------------
+ 58                 gas identifier
+ CH3NH2
+  1                 number of isotopes
+  1 1.0000000   31.0000   (124)  isotope id, relative abun, mass #
+     -8.13720e+02  1.26598e+02  1.30776e+00 -1.11831e-03
+ ------------------------------------------------
+ 59                 gas identifier
+ HNC
+  4                 number of isotopes
+  1 1.0000000   27.0000   (142)  isotope id, relative abun, mass #
+      3.49399e-01  4.59311e-01  2.92041e-06 -3.51095e-09
+  2 0.0105300   28.0000   (143)  isotope id, relative abun, mass #
+      3.57422e-01  4.77576e-01  9.62110e-06 -2.27844e-08
+  3 0.0153800   28.0000   (152)  isotope id, relative abun, mass #
+      3.53799e-01  4.68320e-01  6.59346e-06 -1.42053e-08
+  4 0.0001170   28.0000   (242)  isotope id, relative abun, mass #
+      3.45570e-01  5.45889e-01  2.50195e-06 -2.46926e-09
+ ------------------------------------------------
+ 60                 gas identifier
+ Na
+  1                  number of isotopes
+  1 1.0000000   22.9900   ( 11)  isotope id, relative abun, mass #
+      4.39393     -4.33822e-03  2.39818e-06 -4.12438e-10    
+ ------------------------------------------------
+ 61                 gas identifier
+ K
+  1                  number of isotopes
+  1 1.0000000   39.1000   ( 19)  isotope id, relative abun, mass #
+      6.01454     -7.22715e-03  3.97413e-06 -6.80502e-10    
+ ------------------------------------------------
+ 62                 gas identifier
+ TiO
+  5                 number of isotopes
+  1 1.0000000   63.8660   (581)  isotope id, relative abun, mass #
+   -860.00527      5.25794      4.11768e-03  4.44797e-07
+  2 1.0000000   63.8660   (582)  isotope id, relative abun, mass #
+   -860.00527      5.25794      4.11768e-03  4.44797e-07
+  3 1.0000000   63.8660   (583)  isotope id, relative abun, mass #
+   -860.00527      5.25794      4.11768e-03  4.44797e-07
+  4 1.0000000   63.8660   (584)  isotope id, relative abun, mass #
+   -860.00527      5.25794      4.11768e-03  4.44797e-07
+  5 1.0000000   63.8660   (585)  isotope id, relative abun, mass #
+   -860.00527      5.25794      4.11768e-03  4.44797e-07
+ ------------------------------------------------
+ 63                 gas identifier
+ VO
+  1                 number of isotopes
+  1 1.0000000   66.9409   (591)  isotope id, relative abun, mass #
+   -922.20713      4.96349      2.42690e-03  1.66643e-07

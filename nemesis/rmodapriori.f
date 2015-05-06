@@ -141,6 +141,20 @@ C         **** Surface gravity of planet *******
              dx=2*(ran11(idum)-0.5)*err(ix+i)             
              xn(ix+i)=x0(ix+i)+dx
             enddo
+          elseif(varident(ivar,3).eq.225)then  
+C         **** Surface gravity of planet *******
+            np = 11
+            do i=1,np
+             dx=2*(ran11(idum)-0.5)*err(ix+i)             
+             xn(ix+i)=x0(ix+i)+dx
+            enddo
+          elseif(varident(ivar,3).eq.444)then  
+C         **** Surface gravity of planet *******
+            np = 2+int(varparam(ivar,1))
+            do i=1,np
+             dx=2*(ran11(idum)-0.5)*err(ix+i)             
+             xn(ix+i)=x0(ix+i)+dx
+            enddo
           endif
 
           ix = ix+np

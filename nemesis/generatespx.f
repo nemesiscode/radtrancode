@@ -120,7 +120,7 @@ C     Also read in whether scattering is required (iscat)
       READ(32,*)ispace,iscat
       CALL readrefiplan(runname,iplanet,xlat,RADIUS)
 
-      kiter=0
+      kiter=-1
       woff=0.0
 
 C     Read in total number of spectra to simulate

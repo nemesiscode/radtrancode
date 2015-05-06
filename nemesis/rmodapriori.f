@@ -45,7 +45,7 @@ C     ****************************************************************
       real efsh,xfsh,varparam(mvar,mparam),ran11
       real ref(maxpro),clen,pi,dx,xl,xphi,xamp
       parameter(pi=3.1415927)
-      integer varident(mvar,3),ivar,nvar,nlevel
+      integer varident(mvar,3),ivar,nvar,nlevel,npvar
       character*100 opfile,buffer,ipfile
  
       do i=1,nx
@@ -54,6 +54,8 @@ C     ****************************************************************
 
       ix=0
       do 10 ivar=1,nvar
+          print*,(varident(ivar,i),i=1,3)
+          print*,(varparam(ivar,i),i=1,5)
           if(varident(ivar,3).eq.0)then
 C         ********* continuous profile ************************
             np = npro
@@ -71,90 +73,25 @@ C            xamp = 2.0*(ran11(idum)-0.5)
 C             dx=xamp*err(ix+i)
              xn(ix+i)=x0(ix+i)+dx
             enddo
-          elseif(varident(ivar,3).eq.1)then
-C         ******** profile held as deep amount, fsh and knee pressure **
-            np = 2
+          else
+            np=1
+
+            if(varident(ivar,1).le.100)then
+             np=npvar(varident(ivar,3),npro)
+            endif
+            if(varident(ivar,1).eq.888)np=int(varparam(ivar,1))
+            if(varident(ivar,1).eq.444)np=2+int(varparam(ivar,1))
+            if(varident(ivar,1).eq.222)np = 8
+            if(varident(ivar,1).eq.223)np = 9
+            if(varident(ivar,1).eq.224)np = 9
+            if(varident(ivar,1).eq.225)np = 11
+            
+
             do i=1,np
              dx=2*(ran11(idum)-0.5)*err(ix+i)             
              xn(ix+i)=x0(ix+i)+dx
             enddo
-          elseif(varident(ivar,3).eq.2)then  
-C         **** Simple scaling factor of reference profile *******
-            np = 1
-            do i=1,np
-             dx=2*(ran11(idum)-0.5)*err(ix+i)             
-             xn(ix+i)=x0(ix+i)+dx
-            enddo
-          elseif(varident(ivar,3).eq.3)then  
-C         **** Simple log scaling factor of reference profile *******
-            np = 1
-            do i=1,np
-             dx=2*(ran11(idum)-0.5)*err(ix+i)             
-             xn(ix+i)=x0(ix+i)+dx
-            enddo
-          elseif(varident(ivar,3).eq.4)then
-C         ******** profile held as deep amount, fsh and variable knee press
-            np = 3
-            do i=1,np
-             dx=2*(ran11(idum)-0.5)*err(ix+i)             
-             xn(ix+i)=x0(ix+i)+dx
-            enddo
-          elseif(varident(ivar,3).eq.6)then
-C         ******** profile cloud od at specified level plus fsh.
-            np = 2
-            do i=1,np
-             dx=2*(ran11(idum)-0.5)*err(ix+i)
-             xn(ix+i)=x0(ix+i)+dx
-            enddo
-          elseif(varident(ivar,3).eq.666)then  
-C         **** Pressure at given altitude *******
-            np = 1
-            do i=1,np
-             dx=2*(ran11(idum)-0.5)*err(ix+i)             
-             xn(ix+i)=x0(ix+i)+dx
-            enddo
-          elseif(varident(ivar,3).eq.777)then  
-C         **** Tangent height correction *******
-            np = 1
-            do i=1,np
-             dx=2*(ran11(idum)-0.5)*err(ix+i)             
-             xn(ix+i)=x0(ix+i)+dx
-            enddo
-          elseif(varident(ivar,3).eq.999)then  
-C         **** Surface temperature *******
-            np = 1
-            do i=1,np
-             dx=2*(ran11(idum)-0.5)*err(ix+i)             
-             xn(ix+i)=x0(ix+i)+dx
-            enddo
-          elseif(varident(ivar,3).eq.555)then  
-C         **** Radius of planet *******
-            np = 1
-            do i=1,np
-             dx=2*(ran11(idum)-0.5)*err(ix+i)             
-             xn(ix+i)=x0(ix+i)+dx
-            enddo
-          elseif(varident(ivar,3).eq.333)then  
-C         **** Surface gravity of planet *******
-            np = 1
-            do i=1,np
-             dx=2*(ran11(idum)-0.5)*err(ix+i)             
-             xn(ix+i)=x0(ix+i)+dx
-            enddo
-          elseif(varident(ivar,3).eq.225)then  
-C         **** Surface gravity of planet *******
-            np = 11
-            do i=1,np
-             dx=2*(ran11(idum)-0.5)*err(ix+i)             
-             xn(ix+i)=x0(ix+i)+dx
-            enddo
-          elseif(varident(ivar,3).eq.444)then  
-C         **** Surface gravity of planet *******
-            np = 2+int(varparam(ivar,1))
-            do i=1,np
-             dx=2*(ran11(idum)-0.5)*err(ix+i)             
-             xn(ix+i)=x0(ix+i)+dx
-            enddo
+
           endif
 
           ix = ix+np

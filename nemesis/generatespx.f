@@ -36,7 +36,7 @@ C     TIME: Temporary variable returned by GETTIME containing the system time.
 C     TIME1: System time at the beginning of program execution.
 C     TIME2: System time at the end of program execution.
 
-      character*100 buffer,ename
+      character*100 buffer,ename,solfile,solname
       integer i,j,iscat,ica,k,lspec,lout,ispec,nspec,nspecx,ioff
       real xn(mx),se(my),err1(mx),woff,xdiff
       real fwhm,xlat,xlon,st(mx,mx),varparam(mvar,mparam)
@@ -44,7 +44,7 @@ C     TIME2: System time at the end of program execution.
       real stx(mx,mx),xlonx,RADIUS
       integer varident(mvar,3),varidentx(mvar,3),iscat1,iplanet
       integer npro,nvmr,ispace,nav(mgeom),lraw,nprox,lpre
-      integer lx(mx)
+      integer lx(mx),iprfcheck,ifix(mx)
       character*100 runname
       integer ngeom, nwave(mgeom), nconv(mgeom), nx, ny, jsurf, jsurfx
       integer np,lin1,ioffx,ivarx,npx
@@ -65,7 +65,7 @@ C     ********** Scattering variables **********************
       real xg2(maxcon,maxsec)
       real tnco,twave,frac,tico
       real phlimit,kkcor(mx,mx)
-      logical gasgiant
+      logical gasgiant,solexist
       COMMON /hgphas/xwave,xf,xg1,xg2,tnco,twave,frac,tico
       COMMON /scatdump/ idump
 
@@ -118,8 +118,7 @@ C     Read start, end and step of tables
 C     Read in whether to calculate with wavenumbers(0) or wavelength(1)
 C     Also read in whether scattering is required (iscat)
       READ(32,*)ispace,iscat
-
-      CALL readrefiplan(runname,iplanet,RADIUS)
+      CALL readrefiplan(runname,iplanet,xlat,RADIUS)
 
       kiter=0
       woff=0.0
@@ -127,10 +126,9 @@ C     Also read in whether scattering is required (iscat)
 C     Read in total number of spectra to simulate
       READ(32,*)nspec
 
-
+ 
 C     Read in random -ve seed number
       READ(32,*)idum
-
 C     Read in name of forward modelling error file
       READ(32,1)ename
 
@@ -141,6 +139,23 @@ C     Read in lin identifier in case want to use retrieved T
 
       iform=0
      
+
+
+C     See if there is a solar or stellar reference spectrum and read in
+C     if present.
+      call file(runname,solfile,'sol')
+      inquire(file=solfile,exist=solexist)
+      if(solexist)then
+         call opensol(solfile,solname)
+         CALL init_solar_wave(ispace,solname)
+      else
+         if(iform.eq.1)then
+          print*,'Error in Nemesis. Flux-ratio calculation defined'
+          print*,'but no solar file exists'
+          stop
+         endif
+      endif
+
 C     Open output files
       lout=38
       open(lout,file='generatespx.spx',status='unknown')
@@ -236,6 +251,8 @@ C     Add forward errors to measurement covariances
        IPARA2=IPARA
       ENDIF
 
+      call setifix(xa,sa,nvar,varident,varparam,npro,ifix)
+
       do 2999 ispec=1,nspec
 
        call rmodapriori(idum,npro,nvar,varident,varparam,
@@ -291,10 +308,11 @@ C     Add forward errors to measurement covariances
      2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
      3   RADIUS,nx,xn,ny,yn,kk)
       elseif(iscat.eq.1)then 
+       print*,'Calling forwardnogX'
        CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3   RADIUS,nx,xn,ny,yn,kk,kiter)
+     3   RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
       elseif(iscat.eq.2)then
        CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1   vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
@@ -303,13 +321,13 @@ C     Add forward errors to measurement covariances
        CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3   RADIUS,nx,xn,ny,yn,kk,kiter)
+     3   RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
       else
        iscat1=1
        CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3   RADIUS,nx,xn,ny,yn,kk,kiter)
+     3   RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
       endif
 
       call writenextspavX(lout,iform,idum,woff,xlat,xlon,ngeom,nav,

@@ -154,11 +154,13 @@ bin :   \
 	Par_ktable \
 	Li_spec \
 	Pl_spec \
+	Zerotable \
 	Radtrans \
 	Read_table \
 	Concat_table \
 	Concat_table_temperature \
-	Cut_table
+	Cut_table \
+	Mod_table
 	
 Aground : aground.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Aground aground.f $(LIBRARY) \
@@ -171,6 +173,11 @@ Ave_table : ave_table.f $(LIBRARY) $(LIB)/spec_data.a
 
 Calc_fnktablec : calc_fnktablec.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Calc_fnktablec calc_fnktablec.f $(LIBRARY) \
+	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
+	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a
+
+Zerotable : zerotable.f $(LIBRARY) $(LIB)/spec_data.a
+	$(FC) $(FCFLAGS) -o $(BIN)/Zerotable zerotable.f $(LIBRARY) \
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
 	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a
 
@@ -246,6 +253,11 @@ Concat_table_temperature : concat_table_temperature.f $(LIBRARY)\
 
 Cut_table : cut_table.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Cut_table cut_table.f $(LIBRARY) \
+	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
+	$(LIB)/scatter.a $(LIB)/path.a
+
+Mod_table : mod_table.f $(LIBRARY) $(LIB)/spec_data.a
+	$(FC) $(FCFLAGS) -o $(BIN)/Mod_table mod_table.f $(LIBRARY) \
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
 	$(LIB)/scatter.a $(LIB)/path.a
 

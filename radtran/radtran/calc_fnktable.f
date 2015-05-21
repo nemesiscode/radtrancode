@@ -266,7 +266,7 @@ C        print*,vmin1,vmax1
             WRITE(*,*)'Calculating Continua: IP, IT = ',J,K
 C            print*,press1(j),temp1(k)
             CALL LBL_KCONT(VMIN1,VMAX1,WING,VREL,PRESS1(J),TEMP1(K),
-     1      IDGAS1,ISOGAS1,FRAC,IPROC1,J,K,MAXDV,IPTF)
+     1      IDGAS1,ISOGAS1,FRAC,IPROC1,J,K,MAXDV,IPTF,IEXO)
 102       CONTINUE
 105     CONTINUE
       ENDIF

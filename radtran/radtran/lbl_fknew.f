@@ -124,7 +124,7 @@ C ../includes/parcom.f stores the parameter values such as MAXLAY,
 
 
 C Continuum variables ...
-      INTEGER ISUM,IREAD,IPTF
+      INTEGER ISUM,IPTF
       REAL TAUTMP,PARTF
       REAL CONTINK(IORDP1,MAXK,MAXK,MAXBIN)
       REAL CONVAL(NWAV),CONWAV(NWAV)
@@ -138,7 +138,7 @@ C fitting continuum
 C MATRIX and UNIT are both used for matrix inversion when computing
 C polynomials where insufficient points for least squares.
 
-      COMMON /CONCOMK/ CONTINK,CONVAL,CONWAV,MATRIX,UNIT,IREAD
+      COMMON /CONCOMK/ CONTINK,CONVAL,CONWAV,MATRIX,UNIT
 
 
 C General variables ...
@@ -333,10 +333,11 @@ c     pretabulate some line calculation parameters
      >		LOG(TSTIM_ARR(LINE))
              ABSCO = SNGL(EXP(LNABSCO))
 C             print*,'DD'
-C             PRINT*,LNABSCO,EXP(LNABSCO),ABSCO
+C             PRINT*,VLIN(LINE),SLIN(LINE),LNABSCO,
+C     1		EXP(LNABSCO),ABSCO
              absco_arr(line)=ABSCO
-C             print*,sngl(slin(line)*tcors1*dpexp(tcors2*elin(line))*
-C     >        tstim_arr(line))
+             print*,sngl(slin(line)*tcors1*dpexp(tcors2*elin(line))*
+     >        tstim_arr(line))
 
 C             absco_arr(line) = 
 C     >        sngl(slin(line)*tcors1*dpexp(tcors2*elin(line))*

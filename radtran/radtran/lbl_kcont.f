@@ -1,5 +1,5 @@
       SUBROUTINE LBL_KCONT(VMIN,VMAX,WING,VREL,PRESS,TEMP,IDGAS,ISOGAS,
-     1 FRAC,IPROC,IP,IT,MAXDV,IPTF)
+     1 FRAC,IPROC,IP,IT,MAXDV,IPTF,IEXO)
 C     $Id: lbl_kcont.f,v 1.17 2011-09-06 15:35:54 irwin Exp $
 C***********************************************************************
 C_TITL:	LBL_KCONT.f
@@ -45,6 +45,9 @@ C				wavenumber-distance away within which to
 C				consider the contribution of the line 
 C				wings.
 C	 IPTF		INTEGER	Partition function flag for CH4.
+C	 IEXO		INTEGER IEXO=0, same line data for all temperatures
+C				IEXO=1, different line data for different
+C				  temperatures.
 C
 C	../includes/*.f variables:
 C	VLIN(MAXLIN)	REAL	Line position [cm^-1].
@@ -88,7 +91,7 @@ C***************************** VARIABLES *******************************
       IMPLICIT NONE
 
 C Definition of input parameters ...
-      INTEGER IP,IT,IDGAS,ISOGAS,IPROC
+      INTEGER IP,IT,IDGAS,ISOGAS,IPROC,IREAD,IEXO
       REAL VMIN,VMAX,WING,VREL,MAXDV
       REAL FRAC,PRESS,TEMP
 
@@ -119,7 +122,6 @@ C RANGE: =VTOP-VBOT, the calculation range [cm^-1].
 
 
 C Continuum variables ...
-      INTEGER IREAD
       INTEGER MP,MT
       PARAMETER (MP=20,MT=20)
       REAL CONTINK(IORDP1,MP,MT,MAXBIN)
@@ -134,7 +136,7 @@ C fitting continuum.
 C MATRIX and UNIT are both used for matrix inversion when computing
 C polynomials where insufficient points for least squares.
 
-      COMMON /CONCOMK/CONTINK,CONVAL,CONWAV,MATRIX,UNIT,IREAD
+      COMMON /CONCOMK/CONTINK,CONVAL,CONWAV,MATRIX,UNIT
 
 
 C Misc (and UNDOCUMENTED!!) variables or variables defined in the code ...
@@ -228,14 +230,31 @@ C Initialising continuum polynomial
 16    CONTINUE
 
 C-----------------------------------------------------------------------
-C Read in the lines
-      IF(IP.EQ.1.AND.IT.EQ.1.AND.IREAD.NE.-99)THEN
+C Read in the lines if necessary
+      IREAD=0
+      IF(IEXO.EQ.0)THEN
+C      Same line database for all temperatures. Only need to read in lines
+C      for IP=1 and IT=1
+       IF(IP.EQ.1.AND.IT.EQ.1)THEN
+        IREAD=1
+       ENDIF
+      ELSE
+C      Different line database for different temperatures. 
+C      Assume loop over pressure takes place within loop over temperature in
+C      calling program)
+       IF(IP.EQ.1)THEN
+        IREAD=1
+       ENDIF
+      ENDIF
+
+      IF(IREAD.EQ.1)THEN
 	NGAS = 1
         CALL LOADBINS(WING,NGAS,IDGAS,ISOGAS)
 
         WRITE(*,*)'LBL_KCONT :: computing the continuum polynomial from'
         WRITE(*,*)'NBIN bins where NBIN = ',NBIN
-        IREAD = -99
+        WRITE(*,*)'Temperature = ',TEMP
+        WRITE(*,*)'Pressure = ',PRESS
       ENDIF
 
 C=======================================================================

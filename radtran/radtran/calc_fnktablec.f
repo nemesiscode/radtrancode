@@ -299,6 +299,7 @@ C          Read in temperature specific linedata file.
            CALL RDISO
          ENDIF
 
+
          DO 105 J=1,NP
 
             PRINT*,'Continuum. J,K = ',J,K,' P = ',PRESS1(J),' T = ',
@@ -306,7 +307,7 @@ C          Read in temperature specific linedata file.
    
 cc            WRITE(*,*)'CALLING lbl_kcont'
             CALL LBL_KCONT(VMIN1,VMAX1,WING,VREL,PRESS1(J),TEMP1(K),
-     1      IDGAS(1),ISOGAS(1),FRAC1,IPROC(1),J,K,MAXDV,IPTF)
+     1      IDGAS(1),ISOGAS(1),FRAC1,IPROC(1),J,K,MAXDV,IPTF,IEXO)
 cc            WRITE(*,*)'lbl_kcont COMPLETE'
 cc            WRITE(*,*)' '
 105      CONTINUE
@@ -420,6 +421,10 @@ C            Read in temperature specific line data file
              CALL RDKEY(LUN)
              CALL RDGAS
              CALL RDISO
+C            Read in the lines into the bins (bins have already been
+C            defined by lbl_kcont.f) 
+             CALL LOADBINS(WING,NGAS,IDGAS,ISOGAS)
+             PRINT*,'Reading in lines for temperature : ',TEMP1(K)
           ENDIF
 
           DO 20 J=1,NP

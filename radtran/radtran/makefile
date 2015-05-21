@@ -66,9 +66,7 @@ F_SOURCES = \
 	fpread.f \
 	kml.f \
 	lbl_kcont.f \
-	lbl_kcont_exo3.f \
 	lbl_kdists.f \
-	lbl_fknew_exo3.f \
 	lbl_fknew.f \
 	loadbins.f \
 	malkmus_lor.f \

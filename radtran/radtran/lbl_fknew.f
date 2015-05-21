@@ -336,12 +336,9 @@ C             print*,'DD'
 C             PRINT*,VLIN(LINE),SLIN(LINE),LNABSCO,
 C     1		EXP(LNABSCO),ABSCO
              absco_arr(line)=ABSCO
-             print*,sngl(slin(line)*tcors1*dpexp(tcors2*elin(line))*
-     >        tstim_arr(line))
-
-C             absco_arr(line) = 
-C     >        sngl(slin(line)*tcors1*dpexp(tcors2*elin(line))*
+C             print*,sngl(slin(line)*tcors1*dpexp(tcors2*elin(line))*
 C     >        tstim_arr(line))
+
              ad_arr(line) = tcordw*vlin(line)
              y_arr(line) = (alin(line)*(1 - frac)*tratio**tdw(line) +
      >           (alin(line) - sblin(line))*frac*tratio**tdws(line))*

@@ -180,21 +180,28 @@ cc          WRITE(*,*)'GET_KG :: Zero k-data for GAS: ',IGAS
         IF(delv.gt.0)THEN
 C        Calculate wavelength in table below current wavelength
          tmp = vmin + delv*n1
-
-C        Does wavenumber coincide with a tabulated wavenumber?
+         COINC=.FALSE.
+C         print*,'GET_KG: vwave, COINC = ',vwave,COINC
+C         print*,'Nearest tabulated: ',tmp,tmp+delv
+        ELSE
+C        DELV<0. Does wavenumber coincide with a tabulated wavenumber?
          coinc = .FALSE.
          IF(ABS(tmp - vwave).LT.eps)coinc = .TRUE.
-        ELSE
-         coinc=.TRUE.
+         IF(.NOT.COINC)THEN
+             WRITE(*,*)'GET_KG: Requested wavenumber does not'
+             WRITE(*,*)'coincide with tabulated value and table'
+             WRITE(*,*)'has delv <= 0. Aborting here.'
+             STOP
+          ENDIF
         ENDIF
 
-C       Read in table at or below current wavelength
         ntab = np*nt*ng
         if(ntab.gt.MTAB)then
          print*,'Error in get_kg, NTAB>MTAB'
          print*,NTAB,MTAB
          stop
         endif
+C       Read in table at or below current wavelength
         DO I=1,ntab
           READ(LUN0,REC=IREC)TABLE(I)
           irec = irec + 1
@@ -267,9 +274,7 @@ C=======================================================================
               ENDIF
             ENDDO
           ELSE
-            WRITE(*,*)'GET_KG :: *WARNING* Wavenumber does not'
-            WRITE(*,*)'coincide with tabulated value.',delv
-
+             
             weight(2) = ((vwave - tmp)/delv)
             IF(weight(2).GT.1.0)weight(2) = 1.0
             IF(weight(2).LT.0.0)weight(2) = 0.0

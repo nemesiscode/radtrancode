@@ -135,12 +135,17 @@ C          print*,'GET_K: Zero k-data for GAS: ',IGAS
          IF(delv.gt.0.0)then
           tmp = VMIN + N1*DELV	! Calculate wavelength in table below
 C				  current wavelength
-
-C         Does wavenumber coincide with a tabulated wavenumber?
           COINC=.FALSE.
-          IF (abs(tmp - vwave).LT.eps) COINC=.TRUE.
          ELSE
-          COINC=.TRUE.
+C         DELV<0. Does wavenumber coincide with a tabulated wavenumber?
+          coinc = .FALSE.
+          IF(ABS(tmp - vwave).LT.eps)coinc = .TRUE.
+          IF(.NOT.COINC)THEN
+             WRITE(*,*)'GET_KG: Requested wavenumber does not'
+             WRITE(*,*)'coincide with tabulated value and table'
+             WRITE(*,*)'has delv <= 0. Aborting here.'
+             STOP
+          ENDIF
          ENDIF
 
 C         print*,tmp,vwave,abs(tmp-vwave),eps

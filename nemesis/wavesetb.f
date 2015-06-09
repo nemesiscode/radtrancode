@@ -131,13 +131,20 @@ C     sort calculation wavelengths into order
         endif
 445   continue
       if (flag) goto 440
+      nwave=nco
+      do i=1,nwave
+       vwave(i)=save(i)
+      enddo
 
-C     Now weed out repeated wavelengths
-      vwave(1)=save(1)
-      ico=1
-      xdiff = 0.9*vkstep
-      do 446 i=2,nco
-        test = abs(save(i)-save(i-1))
+      if(fwhm.lt.0)then
+C      Now weed out repeated wavelengths
+       vwave(1)=save(1)
+       ico=1
+       xdiff = 0.9*vkstep
+       print*,'Weeding out repeated wavelengths. vkstep = ',
+     &		vkstep
+       do 446 i=2,nco
+        test = abs(save(i)-save(ico))
         if(test.ge.xdiff)then
           ico=ico+1
           if(ico.gt.mwave)then
@@ -148,8 +155,10 @@ C     Now weed out repeated wavelengths
           endif
           vwave(ico)=save(i)
         end if
-446   continue
-      nwave=ico
-      
+446    continue
+       nwave=ico
+      endif
+
+      print*,'wavesetb: nwave = ',nwave
       return
       end

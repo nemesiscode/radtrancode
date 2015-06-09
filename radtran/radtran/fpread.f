@@ -142,8 +142,9 @@ C     ----------------------------------------------------------------------
       end if
 
       if(temp.gt.tempk2(NUMT).and.it1k.ne.1)then
-         print*,'fpread: warning temp > MaxT ',temp
-         print*,'Setting to ',tempk2(NUMT)
+         print*,'fpread: warning temp > MaxT '
+         print*,'Requested Temperature = ',temp
+         print*,'Maxumum temperature = ',tempk2(NUMT)
          temp1 = tempk2(NUMT)
          it1k=1
       else

@@ -35,6 +35,9 @@ C-----------------------------------------------------------------------
 	do I = 1, ng
 		g_ord(I+1) = g_ord(I) + gw(I)
 	end do
+C       Make sure g_ord(ng+1)=1. (rounding errors can lead to numbers just
+C                                 less than 1.0)
+        if(g_ord(ng+1).lt.1.0)g_ord(ng+1)=1.
 
         do I=1,nloop
          ico(I) = I

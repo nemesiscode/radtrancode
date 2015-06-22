@@ -70,16 +70,14 @@ C     ************************************************************************
       include '../radtran/includes/arrdef.f'
       include 'arraylen.f'
 
-      integer max_mode, max_wave,iwave,imode
-      parameter (max_mode = 10)
-      parameter (max_wave = 1000)
+      integer iwave,imode
 
       integer nconv,lin,ispace,ncont1,xflag,nwave,np,np1
-      real xlat,fwhm,xlatx,tsurf,wave(max_wave)
-      real xsec(max_mode,max_wave,2),nimag(max_wave)
-      real nreal(max_wave),r0,v0,clen,k2(mx)
-      real srefind(max_wave,2),parm(3),rs(3),vm,nm
-      real v1(max_wave),k1(max_wave),vm1,n1(max_wave)
+      real xlat,fwhm,xlatx,tsurf,wave(mwave)
+      real xsec(maxcon,mwave,2),nimag(mwave)
+      real nreal(mwave),r0,v0,clen,k2(mx)
+      real srefind(mwave,2),parm(3),rs(3),vm,nm
+      real v1(mwave),k1(mwave),vm1,n1(mwave)
       integer nlayer,laytyp,iscat,nx,nxx,ncont,nx1
       integer layint,iprfcheck,check_profile,nmode,inorm
       real layht,xod(maxcon),xscal(maxcon),cwid,pmeth

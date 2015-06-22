@@ -80,14 +80,13 @@ C     ***********************************************************************
       character*100 runname,aname,buffer,cellfile
       logical gasgiant,cellexist
 
-      integer iwave,imode,nx1,nvmr,np1,nmode,nwave,max_wave
-      integer max_mode,inorm
-      parameter (max_wave = 1000,max_mode = 10)
+      integer iwave,imode,nx1,nvmr,np1,nmode,nwave
+      integer inorm
       real r0,v0,clen,vm,nm,lambda0
-      real wave(max_wave),xsec(max_mode,max_wave,2),nimag(max_wave)
-      real v1(max_wave),k1(max_wave),vm1,n1(max_wave)
-      real nreal(max_wave),minlam
-      real srefind(max_wave,2),parm(3),rs(3)
+      real wave(mwave),xsec(maxcon,mwave,2),nimag(mwave)
+      real v1(mwave),k1(mwave),vm1,n1(mwave)
+      real nreal(mwave),minlam
+      real srefind(mwave,2),parm(3),rs(3)
 
 
 

@@ -29,8 +29,8 @@ C     ******************************************************************
       include 'arraylen.f'
       integer nconv,i,j,k,ico,nco,nwave,j1,j2,nconv1,nsub,jj
       real vwave(mwave),v1,v2,save(100000),temp,vconv(mconv),vcentral
-      real xdiff,test,vkstart,vkend,vkstep,fwhm,vfil(1000),dv,vj
-      real fil(1000)
+      real xdiff,test,vkstart,vkend,vkstep,fwhm,vfil(maxfil),dv,vj
+      real fil(maxfil)
       logical flag
       character*100 runname
 C     *******************************************************************
@@ -60,7 +60,7 @@ C     just set the calculation wavelengths to be the convolution wavelengths
          do 442 k=1,nconv1
           read(12,*)vcentral
           read(12,*)nsub
-          if(nsub.gt.1000)then
+          if(nsub.gt.maxfil)then
            print*,'Error in wavesetb: vfil array not big enough'
            print*,nsub
            stop

@@ -9,7 +9,7 @@ C
 C     **************************************************************
       INCLUDE '../includes/dbcom.f'
 
-      GASFIL='gasinfo04.dat'
+      GASFIL='gasinforef.dat'
       CALL DATARCHIVE(GASFIL)
       DBLUN=2
 

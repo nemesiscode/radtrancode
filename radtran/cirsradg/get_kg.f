@@ -138,7 +138,7 @@ C First check range is fine
         VMIN = XMIN(IWAVE,IGAS)
         DELV = DELX(IWAVE,IGAS)
         IREC0 = IRECK(IWAVE,IGAS)
-        print*,'iwave,igas,vmin',IWAVE,IGAS,VMIN
+C        print*,'iwave,igas,vmin',IWAVE,IGAS,VMIN
         IF(LUN0.LE.0)THEN
 cc          WRITE(*,*)'GET_KG :: No data defined for gas : ',IGAS
           DO ilayer=1,NLAYER

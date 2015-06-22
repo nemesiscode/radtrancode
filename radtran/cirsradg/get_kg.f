@@ -138,7 +138,7 @@ C First check range is fine
         VMIN = XMIN(IWAVE,IGAS)
         DELV = DELX(IWAVE,IGAS)
         IREC0 = IRECK(IWAVE,IGAS)
-
+        print*,'iwave,igas,vmin',IWAVE,IGAS,VMIN
         IF(LUN0.LE.0)THEN
 cc          WRITE(*,*)'GET_KG :: No data defined for gas : ',IGAS
           DO ilayer=1,NLAYER
@@ -184,15 +184,9 @@ C        Calculate wavelength in table below current wavelength
 C         print*,'GET_KG: vwave, COINC = ',vwave,COINC
 C         print*,'Nearest tabulated: ',tmp,tmp+delv
         ELSE
-C        DELV<0. Does wavenumber coincide with a tabulated wavenumber?
-         coinc = .FALSE.
-         IF(ABS(tmp - vwave).LT.eps)coinc = .TRUE.
-         IF(.NOT.COINC)THEN
-             WRITE(*,*)'GET_KG: Requested wavenumber does not'
-             WRITE(*,*)'coincide with tabulated value and table'
-             WRITE(*,*)'has delv <= 0. Aborting here.'
-             STOP
-          ENDIF
+C        DELV<=0. In this case the k-table should already be pointing to
+C        the right wavelength through ireck, set by read_klist.f
+         coinc = .TRUE.
         ENDIF
 
         ntab = np*nt*ng

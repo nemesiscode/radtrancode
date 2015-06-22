@@ -107,10 +107,10 @@
 #                                   and AsH3    
 #       NT              ?          Several new Titan gases added.
 #       PGJI            1.may.15   Added Na, K, TiO and VO from Jo Barstow.
-#				   Also deleted H2 at ID=48.
+#                                  Also deleted H2 at ID=48.
 #                                  File also contains new PH3 isotopes from
-#				   Rohini Giles.
-   
+#                                  Rohini Giles.
+
  ------------------------------------------------
   1                 gas identifier
  H2O   
@@ -649,3 +649,4 @@
   1                 number of isotopes
   1 1.0000000   66.9409   (591)  isotope id, relative abun, mass #
    -922.20713      4.96349      2.42690e-03  1.66643e-07
+

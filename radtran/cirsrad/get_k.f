@@ -25,12 +25,6 @@ C-----------------------------------------------------------------------
 	REAL	P1, T1,DELV,VMIN, tmp, eps, KTEST,
      1		Y1, Y2, Y3, Y4, U, V, pmax, pmin, tmax, tmin, X, Z
         real weight(2),fac(maxc),cont(maxc),sum
-
-C        parameter (eps=1e-6)		! Max allowed wavenumber difference
-C					  between wavenumber and nearest
-C					  tabulated wavenumber to be considered
-C					  'aligned'.
-
         REAL PRESS(NLAYER),TEMP(NLAYER),VWAVE
 
 C       Defines the maximum values for a series of variables (layers, 
@@ -65,6 +59,8 @@ C        print*,'k-temps : ',nt,(T(I),I=1,NT)
 C        print*,'ng,delg : ',ng,(delg(i),i=1,ng)
 C        print*,'kout(1,1,1)=',kout(1,1,1)
 
+
+        eps=0.01
         PMAX = P(NP)
         PMIN = P(1)
         TMAX = T(NT)
@@ -79,7 +75,7 @@ C        print*,'kout(1,1,1)=',kout(1,1,1)
          DELV = DELX(IWAVE,IGAS)
          IREC0 = IRECK(IWAVE,IGAS)
 
-C         print*,'IGAS,DELV',IGAS,DELV
+         print*,'IGAS,DELV,IWAVE,VMIN',IGAS,DELV,IWAVE,VMIN
          IF(LUN0.LE.0) THEN
 C	  print*,'No data defined for gas : ',IGAS
           DO LAYER=1,NLAYER
@@ -137,15 +133,9 @@ C          print*,'GET_K: Zero k-data for GAS: ',IGAS
 C				  current wavelength
           COINC=.FALSE.
          ELSE
-C         DELV<0. Does wavenumber coincide with a tabulated wavenumber?
-          coinc = .FALSE.
-          IF(ABS(tmp - vwave).LT.eps)coinc = .TRUE.
-          IF(.NOT.COINC)THEN
-             WRITE(*,*)'GET_KG: Requested wavenumber does not'
-             WRITE(*,*)'coincide with tabulated value and table'
-             WRITE(*,*)'has delv <= 0. Aborting here.'
-             STOP
-          ENDIF
+C         if(DELV < 0) then k-table should already be pointing to
+C         right place via ireck, which is set in read_klist.f
+          coinc=.true. 
          ENDIF
 
 C         print*,tmp,vwave,abs(tmp-vwave),eps

@@ -99,7 +99,12 @@ C-----------------------------------------------------------------------
 			sum = sum + frac * weight(I)
 			k_g(ig) = k_g(ig)/sum
 			dkdt(ig) = dkdt(ig)/sum
-			ig = ig + 1
+                        if(ig.lt.ng)then
+                         ig=ig+1
+                        else
+                         print*,'Overrunning i-ordinate in rankk.f'       
+                         print*,'Leave ig unchanged'
+                        endif
 			sum = (1.-frac) * weight(I)
 			k_g(ig) = (1.-frac)*cont(I)*weight(I)
 			dkdt(ig) = (1.-frac)*dcont(I)*weight(I)

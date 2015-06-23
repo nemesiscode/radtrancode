@@ -92,7 +92,7 @@ C T: K-table temperatures [Kelvin].
       INTEGER IOFF(MAXLAY,4)
       REAL UT(MAXLAY),VT(MAXLAY),TDUDT(MAXLAY),FWHMK,DELVK
 
-      LOGICAL COINC,KLOG
+      LOGICAL COINC,KLOG,NTEST,ISNAN
 
       COMMON /INTERPK/ LUN,IRECK,XMIN,DELX,P,NP,T,NT,NG,DELVK,FWHMK,
      1 G_ORD,DELG,KOUT,DKOUTDT
@@ -322,10 +322,29 @@ c	    write(*,*)'After rankk:',k_g
 
           ENDIF
 
+
           DO I=1,NG
-            KOUT(ilayer,IGAS,I) = K_G(I)
-            DKOUTDT(ilayer,IGAS,I) = DKDT(I)
+            NTEST=ISNAN(K_G(I))
+            IF(NTEST)THEN
+             KOUT(ILAYER,IGAS,I)=1e-37  
+             PRINT*,'Warning, NAN returned by get_k.f for gas',igas
+             print*,'         IWAVE,VWAVE = ',IWAVE,VWAVE
+             print*,'         PRESS,TEMP = ',PRESS,TEMP
+            ELSE
+             KOUT(ILAYER,IGAS,I)=K_G(I)
+            ENDIF
+
+            NTEST=ISNAN(DKDT(I))
+            IF(NTEST)THEN
+             DKOUTDT(ILAYER,IGAS,I)=1e-37  
+             PRINT*,'Warning, Grad NAN returned by get_k.f for gas',igas
+             print*,'         IWAVE,VWAVE = ',IWAVE,VWAVE
+             print*,'         PRESS,TEMP = ',PRESS,TEMP
+            ELSE
+             DKOUTDT(ILAYER,IGAS,I)=DKDT(I)
+            ENDIF            
           ENDDO
+
 c 	  write(*,*)'End of get_kg:',k_g
 
 1050    CONTINUE

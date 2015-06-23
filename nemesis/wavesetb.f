@@ -144,7 +144,7 @@ C      Now weed out repeated wavelengths
        print*,'Weeding out repeated wavelengths. vkstep = ',
      &		vkstep
        do 446 i=2,nco
-        test = abs(save(i)-save(ico))
+        test = abs(save(i)-vwave(ico))
         if(test.ge.xdiff)then
           ico=ico+1
           if(ico.gt.mwave)then

@@ -60,7 +60,7 @@ C NG: Number of ordinates in k-distribution.
       INTEGER ntab,loop,count
       INTEGER maxc,mtab
       PARAMETER (maxc=2*maxg,MTAB=maxk*maxk*maxg)
-      REAL TABLE(mtab),TABLE2(mtab)
+      REAL TABLE(mtab),TABLE2(mtab),frac
 
       REAL P1,T1,tmp,eps,KTEST
 C T1: Profile temperature at each atmospheric layer.
@@ -180,9 +180,14 @@ cc          WRITE(*,*)'GET_KG :: Zero k-data for GAS: ',IGAS
         IF(delv.gt.0)THEN
 C        Calculate wavelength in table below current wavelength
          tmp = vmin + delv*n1
-         COINC=.FALSE.
-C         print*,'GET_KG: vwave, COINC = ',vwave,COINC
-C         print*,'Nearest tabulated: ',tmp,tmp+delv
+         frac = (vwave-tmp)/delv
+         if(frac.lt.eps)then
+          COINC=.TRUE.
+         else
+          COINC=.FALSE.
+         endif
+         print*,'GET_KG: vwave, COINC = ',vwave,COINC
+         print*,'Nearest tabulated+ frac: ',tmp,tmp+delv,frac
         ELSE
 C        DELV<=0. In this case the k-table should already be pointing to
 C        the right wavelength through ireck, set by read_klist.f
@@ -209,6 +214,7 @@ C       If not in-line, read in k-coeffs for next bin also
           ENDDO
         ENDIF
 
+
 C       Now interpolate k-coefficients for conditions in each layer
         DO 1050 ilayer=1,NLAYER
           U = UT(ilayer)
@@ -219,7 +225,6 @@ C       Now interpolate k-coefficients for conditions in each layer
           I2 = IOFF(ilayer,2)
           I3 = IOFF(ilayer,3)
           I4 = IOFF(ilayer,4)
-
 
           IF(coinc)THEN
 C=======================================================================
@@ -265,6 +270,12 @@ C=======================================================================
               ELSE
                 K_G(I) = X
                 DKDT(I) = DXDT
+              ENDIF
+              NTEST=ISNAN(K_G(I))
+              IF(NTEST)THEN
+               print*,'NAN in get_kg'
+               print*,'Y1,Y2,Y3,Y4',Y1,Y2,Y3,Y4
+               print*,'u,v,x',u,v,x
               ENDIF
             ENDDO
           ELSE
@@ -318,7 +329,7 @@ c     		write(*,*)i,k_g(i),u,v,y1,y2,y3,y4
 c	    write(*,*)'Before rankk (count):',count
 c	    write(*,*)'Before rankk:',cont
             CALL rankk(delg,ng,cont,dcont,fac,count,k_g,dkdt)
-c	    write(*,*)'After rankk:',k_g
+	    write(*,*)'After rankk:',k_g
 
           ENDIF
 
@@ -329,7 +340,8 @@ c	    write(*,*)'After rankk:',k_g
              KOUT(ILAYER,IGAS,I)=1e-37  
              PRINT*,'Warning, NAN returned by get_k.f for gas',igas
              print*,'         IWAVE,VWAVE = ',IWAVE,VWAVE
-             print*,'         PRESS,TEMP = ',PRESS,TEMP
+             print*,'         LAYER,PRESS,TEMP = ',ILAYER,
+     1        PRESS(ILAYER),TEMP(ILAYER)
             ELSE
              KOUT(ILAYER,IGAS,I)=K_G(I)
             ENDIF
@@ -339,7 +351,8 @@ c	    write(*,*)'After rankk:',k_g
              DKOUTDT(ILAYER,IGAS,I)=1e-37  
              PRINT*,'Warning, Grad NAN returned by get_k.f for gas',igas
              print*,'         IWAVE,VWAVE = ',IWAVE,VWAVE
-             print*,'         PRESS,TEMP = ',PRESS,TEMP
+             print*,'         LAYER,PRESS,TEMP = ',ILAYER,
+     1        PRESS(ILAYER),TEMP(ILAYER)
             ELSE
              DKOUTDT(ILAYER,IGAS,I)=DKDT(I)
             ENDIF            

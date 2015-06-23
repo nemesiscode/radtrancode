@@ -59,7 +59,9 @@ C     ****************************************************************
       implicit none
 
       integer i,j,nx,ix,jx,npro,jsurf,np,jalb,jtan,jpre,jrad,maxlat,k
-      integer jlogg,nmode,nwave
+      integer jlogg,nmode,nwave,max_mode, max_wave
+      parameter (max_mode = 10)
+      parameter (max_wave = 1000)
       parameter(maxlat=100)
 
 C     ****************************************************************
@@ -68,7 +70,7 @@ C     ****************************************************************
       include 'arraylen.f'
 C     ****************************************************************
 
-      real xsec(maxcon,mwave,2),wave(mwave)
+      real xsec(max_mode,max_wave,2),wave(max_wave)
       real x0(mx),sx(mx,mx),err,err1,ref1,pref(maxpro)
       real eref(maxlat,maxpro),reflat(maxlat),htan
       real delp,xfac,pknee,eknee,edeep,xdeep,xlat,xlatx,xlonx,pshld

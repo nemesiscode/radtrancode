@@ -21,7 +21,7 @@ C     ********************************************************
       double precision xtrans,e3out,de3out,tabtran(mtab),tabe3(mtab)
       double precision tau,tran,e3,egrad(mtab),dtrans
       double precision f        
-
+      logical isnan,ntest
       character*100 ipfile,buffer
       common /e3table/tabtran,tabe3,egrad
 
@@ -50,11 +50,18 @@ C     ********************************************************
 
       endif
     
+      ntest=isnan(xtrans)
+      if(xtrans.lt.0.or.ntest)then
+       print*,'e3interp: warning - requested transmission is < 0'
+       print*,'or NAN ',xtrans
+       print*,'Aborting'
+       e3out = 0.
+       de3out = 0.
+       return
+      endif
 
       j=1+int(xtrans/dtrans)
       if(j.ge.mtab)j=mtab-1
-
-
       f=(xtrans-tabtran(j))/dtrans
       if(f.gt.1.0)f=1.0
 C      print*,xtrans,j,tabtran(j),f

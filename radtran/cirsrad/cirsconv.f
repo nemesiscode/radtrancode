@@ -55,6 +55,7 @@ C	WRITE(*,*)'CIRSCONV: FWHM of boxcar = ',FWHM
 	DO I = 1, nc
 		xc(I) = vwave(I)
 		yc(I) = y(I)
+C                print*,'raw',i,xc(I),yc(I)
 	ENDDO
 
 C-----------------------------------------------------------------------
@@ -174,6 +175,7 @@ C           Make sure you're using the right filter function for the
 C           channel requested.
 C            dv = 100*abs(vcentral-vconv(i))/vconv(i)
            dv = abs(vcentral-vconv(i))
+C           print*,'averaged consistency',i,vconv(i),vcentral
             if(dv.lt.0.0001)then
              do j=1,nwave
               if(vwave(j).ge.vfil(1).and.vwave(j).le.vfil(nsub))then
@@ -202,6 +204,7 @@ C            dv = 100*abs(vcentral-vconv(i))/vconv(i)
              enddo
 
              yout(I)=sngl(sum/sumf)
+C             print*,'nconv,vconv,yout',nconv,vconv(i),yout(I)
             endif
 
 205        continue

@@ -136,6 +136,7 @@ C     sort calculation wavelengths into order
        vwave(i)=save(i)
       enddo
 
+      print*,'nco = ',nco
       if(fwhm.lt.0)then
 C      Now weed out repeated wavelengths
        vwave(1)=save(1)
@@ -154,6 +155,7 @@ C      Now weed out repeated wavelengths
            stop
           endif
           vwave(ico)=save(i)
+C          print*,'ico,vwave',ico,vwave(ico)
         end if
 446    continue
        nwave=ico

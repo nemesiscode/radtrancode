@@ -38,6 +38,13 @@ C     *******************************************************************
 C     If k-tables are tabulated on an irregular wavelength grid OR have
 C     have been calculated with a built-in instrument function then
 C     just set the calculation wavelengths to be the convolution wavelengths
+
+
+C      print*,'vconv'
+C      print*,nconv
+C      do i=1,nconv
+C       print*,i,vconv(i)
+C      enddo
       if(vkstep.lt.0.or.fwhm.eq.0)then
         ico=nconv
         do i=1,nconv
@@ -136,30 +143,34 @@ C     sort calculation wavelengths into order
        vwave(i)=save(i)
       enddo
 
-      print*,'nco = ',nco
-      if(fwhm.lt.0)then
-C      Now weed out repeated wavelengths
-       vwave(1)=save(1)
-       ico=1
-       xdiff = 0.9*vkstep
-       print*,'Weeding out repeated wavelengths. vkstep = ',
+C      print*,'nco = ',nco
+C     Now weed out repeated wavelengths
+      vwave(1)=save(1)
+      ico=1
+      xdiff = 0.9*vkstep
+      print*,'Weeding out repeated wavelengths. vkstep = ',
      &		vkstep
-       do 446 i=2,nco
-        test = abs(save(i)-vwave(ico))
-        if(test.ge.xdiff)then
-          ico=ico+1
-          if(ico.gt.mwave)then
-           print*,'Overflow in wavesetb.f'
-           print*,'ico > mwave',ico,mwave
-           print*,save(i)
-           stop
-          endif
-          vwave(ico)=save(i)
-C          print*,'ico,vwave',ico,vwave(ico)
-        end if
-446    continue
-       nwave=ico
-      endif
+      do 446 i=2,nco
+       test = abs(save(i)-vwave(ico))
+       if(test.ge.xdiff)then
+         ico=ico+1
+         if(ico.gt.mwave)then
+          print*,'Overflow in wavesetb.f'
+          print*,'ico > mwave',ico,mwave
+          print*,save(i)
+          stop
+         endif
+         vwave(ico)=save(i)
+C         print*,'ico,vwave',ico,vwave(ico)
+       end if
+446   continue
+      nwave=ico
+
+
+C      print*,'nwave = ',nwave
+C      do i=1,nwave
+C       print*,i,vwave(i)
+C      enddo
 
       print*,'wavesetb: nwave = ',nwave
       return

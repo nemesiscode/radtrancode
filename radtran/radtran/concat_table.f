@@ -1,4 +1,4 @@
-      PROGRAM CONCAT_TABLE
+      PROGRAM CONCAT_TABLEA
 C     $Id:
 C***********************************************************************
 C_TITL:	CONCAT_TABLE.f
@@ -147,11 +147,81 @@ C******************************** CODE *********************************
        STOP
       ENDIF
 
+      IREC=11
+      DO 296 J=1,NG1
+        READ(LUN1,REC=IREC)G_ORD1(J)
+        READ(LUN2,REC=IREC)G_ORD2(J)
+        IREC=IREC+1
+        IF(G_ORD1(J).NE.G_ORD2(J)) THEN
+         PRINT*,'J, G_ORD1 <> G_ORD2',J, G_ORD1(J),G_ORD2(J)
+         PRINT*,'Continue (Y/N)?'
+         READ(5,23)ANS
+         IF(ANS.NE.'Y'.AND.ANS.NE.'y')THEN
+          STOP
+         ENDIF
+        ENDIF
+296   CONTINUE
+
+      DO 398 J=1,NG1
+        READ(LUN1,REC=IREC)DEL_G1(J)
+        READ(LUN2,REC=IREC)DEL_G2(J)
+        IREC=IREC+1
+        IF(DEL_G1(J).NE.DEL_G2(J)) THEN
+         PRINT*,'J,DEL_G1 <> DEL_G2',J,DEL_G1(J),DEL_G2(J)
+         PRINT*,'Continue (Y/N)?'
+         READ(5,23)ANS
+         IF(ANS.NE.'Y'.AND.ANS.NE.'y')THEN
+          STOP
+         ENDIF
+        ENDIF
+398   CONTINUE
+
+      IREC = 11 + 2*NG1 + 2
+
+      DO 311 J=1,NP1
+        READ(LUN1,REC=IREC)PRESS1(J)
+        READ(LUN2,REC=IREC)PRESS2(J)
+        IF(PRESS1(J).NE.PRESS2(J))THEN
+         PRINT*,'PRESS1(J) <> PRESS2(J)',PRESS1(J),PRESS2(J)
+         PRINT*,'Continue (Y/N)?'
+         READ(5,23)ANS
+         IF(ANS.NE.'Y'.AND.ANS.NE.'y')THEN
+          STOP
+         ENDIF
+        ENDIF 
+        IREC = IREC + 1
+311   CONTINUE
+
+
+      DO 312 J=1,NT1
+        READ(LUN1,REC=IREC)TEMP1(J)
+        READ(LUN2,REC=IREC)TEMP2(J)
+        IF(TEMP1(J).NE.TEMP2(J))THEN
+         PRINT*,'TEMP1(J) <> TEMP2(J)',TEMP1(J),TEMP2(J)
+         PRINT*,'Continue (Y/N)?'
+         READ(5,23)ANS
+         IF(ANS.NE.'Y'.AND.ANS.NE.'y')THEN
+          STOP
+         ENDIF
+        ENDIF 
+        IREC = IREC + 1
+312   CONTINUE
+
+      IREC1=IREC
+      IREC2=IREC
       PRINT*,'Table1'
       PRINT*,'Index, Wavelength or Wavenumber'
-      DO I=1,NPOINT1
-       PRINT*,I,VMIN1+(I-1)*DELV1
-      ENDDO
+      IF(DELV1.GT.0)THEN
+       DO I=1,NPOINT1
+        PRINT*,I,VMIN1+(I-1)*DELV1
+       ENDDO
+      ELSE
+       DO I=1,NPOINT1
+        READ(LUN1,REC=IREC1)VCEN1(I)
+        PRINT*,I,VCEN1(I)
+        IREC1=IREC1+1
+       ENDDO
+      ENDIF
       PRINT*,'Enter starting and finishing wavelength indices of that'
       PRINT*,'part of Table 1 you want to extract and concatenate,'
       CALL PROMPT('i.e., enter indesired I1,I2 : ')
@@ -159,9 +229,18 @@ C******************************** CODE *********************************
 
       PRINT*,'Table2'
       PRINT*,'Index, Wavelength or Wavenumber'
-      DO I=1,NPOINT2
-       PRINT*,I,VMIN2+(I-1)*DELV2
-      ENDDO
+      IF(DELV2.GT.0)THEN
+       DO I=1,NPOINT2
+        PRINT*,I,VMIN2+(I-1)*DELV2
+       ENDDO
+      ELSE
+       DO I=1,NPOINT2
+        READ(LUN2,REC=IREC2)VCEN2(I)
+        PRINT*,I,VCEN2(I)
+        IREC2=IREC2+1
+       ENDDO
+      ENDIF
+
       PRINT*,'Enter starting and finishing wavelength indices of that'
       PRINT*,'part of Table 2 you want to extract and concatenate,'
       CALL PROMPT('i.e., enter desired J1,J2 : ')
@@ -169,9 +248,14 @@ C******************************** CODE *********************************
 
 
       NPOINT=1+I2-I1 + 1+J2-J1
-      VMIN = VMIN1+(I1-1)*DELV1
+      IF(DELV1.GT.0)THEN
+       VMIN = VMIN1+(I1-1)*DELV1
+      ELSE
+       VMIN = VCEN1(I1)
+      ENDIF
 
       IREC0=11 + 2*NG1 + 2 + NP1*NT1 + 2
+      IF(DELV1.LT.0)IREC0=IREC0+NPOINT
 
       IREC=11
 
@@ -182,7 +266,6 @@ C******************************** CODE *********************************
       WRITE(*,*)' '
 
 
-C      read(5,23)ans
       WRITE(LUN0,REC=1)IREC0
       WRITE(LUN0,REC=2)NPOINT
       WRITE(LUN0,REC=3)VMIN
@@ -194,60 +277,61 @@ C      read(5,23)ans
       WRITE(LUN0,REC=9)IDGAS1
       WRITE(LUN0,REC=10)ISOGAS1
 
+      WRITE(*,*)'G - ordinates'
       DO 299 J=1,NG1
-        READ(LUN1,REC=IREC)G_ORD1(J)
-        READ(LUN2,REC=IREC)G_ORD2(J)
+        PRINT*,J,G_ORD1(J)
         WRITE(LUN0,REC=IREC)G_ORD1(J)
-        print*,J,G_ORD1(J)
         IREC = IREC + 1
-        IF(G_ORD1(J).NE.G_ORD2(J)) THEN
-         PRINT*,'J, G_ORD1 <> G_ORD2',J, G_ORD1(J),G_ORD2(J)
-        ENDIF
 299   CONTINUE
 
-C      read(5,23)ans
 
       WRITE(*,*)'G - ordinates, weights'
       DO 399 J=1,NG1
-        READ(LUN1,REC=IREC)DEL_G1(J)
-        READ(LUN2,REC=IREC)DEL_G2(J)
         print*,J,DEL_G1(J)
         WRITE(LUN0,REC=IREC)DEL_G1(J)
         IREC=IREC+1
-        IF(DEL_G1(J).NE.DEL_G2(J)) THEN
-         PRINT*,'J,DEL_G1 <> DEL_G2',J,DEL_G1(J),DEL_G2(J)
-        ENDIF
 399   CONTINUE
-
-C      read(5,23)ans
 
       IREC = 11 + 2*NG1 + 2
       WRITE(*,*)'Pressures : '
       DO 301 J=1,NP1
-        READ(LUN1,REC=IREC)PRESS1(J)
-        READ(LUN2,REC=IREC)PRESS2(J)
         print*,J,press1(J)
         WRITE(LUN0,REC=IREC)PRESS1(J)
-        IF(PRESS1(J).NE.PRESS2(J))THEN
-         PRINT*,'PRESS1(J) <> PRESS2(J)',PRESS1(J),PRESS2(J)
-        ENDIF 
         IREC = IREC + 1
 301   CONTINUE
 
-C      read(5,23)ans
-
       WRITE(*,*)'Temperatures : '
       DO 302 J=1,NT1
-        READ(LUN1,REC=IREC)TEMP1(J)
-        READ(LUN2,REC=IREC)TEMP2(J)
         print*,J,temp1(J)
         WRITE(LUN0,REC=IREC)TEMP1(J)
-        IF(TEMP1(J).NE.TEMP2(J))THEN
-         PRINT*,'TEMP1(J) <> TEMP2(J)',TEMP1(J),TEMP2(J)
-        ENDIF 
         IREC = IREC + 1
 302   CONTINUE
 
+      I=1
+      WRITE(*,*)'Wavelengths/wavenumbers'
+      IF(DELV1.LT.0.0)THEN
+       DO 303 J=I1,I2
+        WRITE(LUN0,REC=IREC)VCEN1(J)
+        print*,I,VCEN1(J)
+        IREC=IREC+1
+        I=I+1
+303    CONTINUE
+       DO 304 J=J1,J2
+        WRITE(LUN0,REC=IREC)VCEN2(J)
+        print*,I,VCEN2(J)
+        IREC=IREC+1
+        I=I+1
+304    CONTINUE
+      ELSE
+       DO 403 J=I1,I2
+        print*,I,VMIN1+(J-1)*DELV1
+        I=I+1
+403    CONTINUE
+       DO 503 J=J1,J2
+        print*,I,VMIN2+(J-1)*DELV2
+        I=I+1
+503    CONTINUE           
+      ENDIF
 
       IREC = IREC0
       IREC1 = IREC01

@@ -119,9 +119,11 @@
 #                                  Rohini Giles.
 #
 #       CAN             03.Aug.15  (Re)added isotopes of CH4(4), C4H2(2), 
-#					C2H2(3), N2(2), HC3N(2,3), C2N2, CS
-#                       and new gases C5H5N, C4H4N2, C7H8, C8H6, C5H5CN
-
+#                       C2H2(3), N2(2), HC3N(2,3), C2N2, CS
+#                       and new gases CH2CCH2, C4N2, C5H5N, C4H4N2, 
+#                                     C7H8, C8H6, C5H5CN
+#                       and updated C3H8 partition function to 25 modes.
+#
  ------------------------------------------------
   1                 gas identifier
  H2O   
@@ -205,7 +207,7 @@
  ------------------------------------------------
   6                 gas identifier
  CH4   
-  3                 number of isotopes
+  4                 number of isotopes
   1 0.9882740   16.0313   (211)  isotope id, relative abun, mass #
      -1.61194e+01  9.05200e-01  4.40876e-03 -1.85094e-06
   2 0.0111031   17.0347   (311)  isotope id, relative abun, mass #
@@ -347,7 +349,7 @@
  ------------------------------------------------
  22                 gas identifier
  N2    
-  1                 number of isotopes
+  2                 number of isotopes
   1 0.9926870   28.0061   ( 44)  isotope id, relative abun, mass #
       1.50887e+00  1.56547e+00  1.20366e-05  1.42517e-09
   2 0.0073130   29.0043   ( 45)  isotope id, relative abun, mass #
@@ -379,7 +381,7 @@
  ------------------------------------------------
  26                 gas identifier
  C2H2  
-  2                 number of isotopes
+  3                 number of isotopes
   1 0.9775990   26.0157   (221)  isotope id, relative abun, mass #
      -8.42596e+00  1.44585e+00 -2.54357e-03  8.37932e-06
   2 0.0219663   27.0190   (231)  isotope id, relative abun, mass #
@@ -413,7 +415,7 @@
 ------------------------------------------------
  30                 gas identifier
  C4H2  
-  1                 number of isotopes
+  2                 number of isotopes
   1 1.9777777   50.0587   (211)  isotope id, relative abun, mass #
      -3.34142e-01 +1.16107e-02 -6.99304e-05 +2.49526e-07
   2 0.0222222   51.0062   (311)  isotope id, relative abun, mass #

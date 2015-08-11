@@ -124,6 +124,7 @@
 #                                     C7H8, C8H6, C5H5CN
 #                       and updated C3H8 partition function to 25 modes.
 #
+
  ------------------------------------------------
   1                 gas identifier
  H2O   
@@ -599,7 +600,7 @@
  ------------------------------------------------
  54                 gas identifier
  CS
-  1                 number of isotopes
+  3                 number of isotopes
   1 0.947333   44.0000   ( 22)  isotope id, relative abun, mass #
       3.53804e-01  8.49631e-01  1.39364e-05 -3.66230e-08
   2 0.010643   44.0000   ( 32)  isotope id, relative abun, mass #

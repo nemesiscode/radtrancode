@@ -37,7 +37,7 @@ C paths, etc.)
 
       INTEGER maxkfil,imatch,ipo1
       real MAXDX,MAXDX1
-      PARAMETER (maxkfil=100,MAXDX=0.01)
+      PARAMETER (maxkfil=100,MAXDX=1e-4)
 
       INTEGER ngas,nwave,nkl,npk,ntk,ngk,i,j,i1,i2,k,npoint
 C NPK: Number of pressure points in k-tables.
@@ -244,7 +244,8 @@ C-----------------------------------------------------------------------
               DO ipo=1,npoint
                dx = 100*ABS((vwave(k)-XCENK(ipo))/XCENK(ipo))
                IF(dx.lt.MAXDX)THEN
-C                  print*,'read_klist',k,vwave(k),ipo,xcenk(ipo)
+                  print*,'read_klist',k,vwave(k),ipo,xcenk(ipo),
+     &        dx,maxdx
                   imatch=1
                   IF (iflag(k,i).EQ.0) THEN
                     iflag(k,i) = 1

@@ -78,16 +78,16 @@ C of JCOEF is power of MU, second is N=0,1,2,...,MAXSCATPAR. Note that a
 C polynomial of even N has only even powers, and odd N has only odd
 C powers.)
 	integer jcoef(maxscatpar/2,maxscatpar)/
-	1 1, 4*0,
-	2 1, 4*0,
-	3 -1, 3, 3*0,
-	4 -3, 5, 3*0,
-	5 3, -30, 35, 2*0,
-	6 15, -70, 63, 2*0,
-	7 -5, 105, -315, 231, 0, 
-	8 -35, 315, -693, 429, 0, 
-	9 35, -1260, 6930, -12012, 6435, 
-	1 315, -4620, 18018, -25740, 12155/
+     1 1, 4*0,
+     2 1, 4*0,
+     3 -1, 3, 3*0,
+     4 -3, 5, 3*0,
+     5 3, -30, 35, 2*0,
+     6 15, -70, 63, 2*0,
+     7 -5, 105, -315, 231, 0, 
+     8 -35, 315, -693, 429, 0, 
+     9 35, -1260, 6930, -12012, 6435, 
+     1 315, -4620, 18018, -25740, 12155/
 C Each scale factors is for polynomial 2i-1 & 2i:
 	integer jdiv(maxscatpar/2)/ 1, 2, 8, 16, 128/
 

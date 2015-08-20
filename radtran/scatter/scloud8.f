@@ -369,8 +369,8 @@ C ***********************************************************************
       DO L = 1,LTOT-1
 	K = LTOT-L
 	CALL ADD( RL(1,1,K), TL(1,1,K), JL(1,1,K), RBASE(1,1,L), 
-	1 TBASE(1,1,L), JBASE(1,1,L), RBASE(1,1,L+1), 
-	2 TBASE(1,1,L+1), JBASE(1,1,L+1), NMU, MAXMU)
+     1 TBASE(1,1,L), JBASE(1,1,L), RBASE(1,1,L+1), 
+     2 TBASE(1,1,L+1), JBASE(1,1,L+1), NMU, MAXMU)
       ENDDO
 
 

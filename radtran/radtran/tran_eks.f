@@ -458,7 +458,7 @@ C  PAR(2) = y = a0(self) / P0*d
 C  PAR(3) = E 
 
 	ELSE IF (IMOD.EQ.9) THEN
-	  K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(3))*(T-T0)/(T0*T))
+	 K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(3))*(T-T0)/(T0*T))
 	  KU  = K * U 
 	  PS  = PI * ABS(PAR(2)) * P * SQRT(T0/T)
 	  TAU = KU * SQRT(PS / (KU + PS))
@@ -490,7 +490,7 @@ C  See the notes above for IMOD=2 for full details of the numerical integration.
 
 	ELSE IF (IMOD.EQ.10) THEN
 	  NPTS 	= 100
-	  K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(4))*(T-T0)/(T0*T))
+	 K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(4))*(T-T0)/(T0*T))
 	  KU	= 2.0 * K * U
 	  KUDEL = 0.5 * KU * ABS(PAR(2)) / SQRT(T)
 	  Y	= ABS(PAR(3)) * (P/P0) * SQRT(T0)/T
@@ -535,7 +535,7 @@ C  PAR(1) = K(T0)
 C  PAR(2) = E 
 
 	ELSE IF (IMOD.EQ.11) THEN
-	  K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(2))*(T-T0)/(T0*T))
+	 K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(2))*(T-T0)/(T0*T))
 	  TAU = K * U
 	  IF (TAU.GT.70.0) TAU = 70.0
 	  TRAN_EKS = EXP(-TAU)
@@ -633,7 +633,7 @@ C  See the notes above for IMOD=2 for full details of the numerical integration.
 
 	ELSE IF (IMOD.EQ.13) THEN
 	  NPTS	= 100
-	  K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(4))*(T-T0)/(T0*T))
+	 K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(4))*(T-T0)/(T0*T))
 	  KU	= 2.0 * K * U
 	  KUDEL	= 0.5 * KU * ABS(PAR(2)) / SQRT(T)
 	  P3	= C + (1.0-C) / ABS(PAR(5))
@@ -698,7 +698,7 @@ C  See the notes above for IMOD=2 for full details of the numerical integration.
 
 	ELSE IF (IMOD.EQ.14) THEN
 	  NPTS 	= 100
-	  K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(4))*(T-T0)/(T0*T))
+	 K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(4))*(T-T0)/(T0*T))
 	  KU	= 2.0 * K * U
 	  KUDEL	= 0.5 * KU * ABS(PAR(2)) / SQRT(T)
 	  Y	= ABS(PAR(3)) * (P/P0) * SQRT(T0)/T
@@ -840,7 +840,7 @@ C  PAR(2) = y = a0(self) / P0*d
 C  PAR(3) = E 
 
 	ELSE IF (IMOD.EQ.17) THEN
-	  K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(3))*(T-T0)/(T0*T))
+	 K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(3))*(T-T0)/(T0*T))
 	  KU   = K * U
 	  TERM = 1.0 + KU * SQRT(T/T0) / (PI * ABS(PAR(2)) * P)
 	  TAU  = (2.0 * KU) / (1.0 + SQRT(TERM))
@@ -874,7 +874,7 @@ C  Perform Simpson's Rule integration over the high and low resolution
 C  ranges as part of the same loop.
 
 	ELSE IF (IMOD.EQ.18) THEN
-	  K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(4))*(T-T0)/(T0*T))
+	 K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(4))*(T-T0)/(T0*T))
 	  TERM  = K * ABS(PAR(2)) * U / SQRT(T)
 	  Y 	= ABS(PAR(3)) * (P/P0) * SQRT(T0)/T
 	  NPTS 	= 100
@@ -925,7 +925,7 @@ C  Perform Simpson's Rule integration over the high and low resolution
 C  ranges as part of the same loop.
 
 	ELSE IF (IMOD.EQ.19) THEN
-	  K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(4))*(T-T0)/(T0*T))
+	 K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(4))*(T-T0)/(T0*T))
 	  TERM  = K * ABS(PAR(2)) * U / SQRT(T)
 	  Y 	= ABS(PAR(3)) * (P/P0) * SQRT(T0)/T
 	  NPTS 	= 100
@@ -969,7 +969,7 @@ C  K(T) = K(T0)  * (T0/T)**1.5 * exp( 1.439 * E      * {1/T0-1/T} )
 C       = PAR(1) * (T0/T)**1.5 * exp( 1.439 * PAR(5) * {1/T0-1/T} )
 C
 	ELSE IF (IMOD.EQ.20) THEN
-	  K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(5))*(T-T0)/(T0*T))
+	 K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(5))*(T-T0)/(T0*T))
 	  TERM = LOG(K) + PAR(2)*LOG(U) + PAR(3)*LOG(P)
      #		 + PAR(4)*LOG(T)
 	  IF (TERM.GT.70.0) TERM = 70.0
@@ -1013,7 +1013,7 @@ C  model for this explicit Lorentz lineshape formulation using Numerical
 C  Recipes routines to evaluate the gamma and incomplete gamma functions.
 
 	ELSE IF (IMOD.EQ.21) THEN
-	  K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(4))*(T-T0)/(T0*T))
+	 K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(4))*(T-T0)/(T0*T))
 C 	  CALL STRONGLOR_EKS(PAR(3),PAR(2),K,T,U,P,ST,SQST)
 	  TAU = 1.0 / SQRT( 1.0/(K*U)**2 + ST )
 	  IF (TAU.GT.70.0) TAU = 70.0
@@ -1057,7 +1057,7 @@ C
 C  Must have ABS(PAR(5)) < SQRT(PAR(4)).
 
 	ELSE IF (IMOD.EQ.22) THEN
-	  K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(6))*(T-T0)/(T0*T))
+	 K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(6))*(T-T0)/(T0*T))
 C 	  CALL STRONGLOR_EKS(PAR(3),PAR(2),K,T,U,P,ST,SQST)
 	  KU    = K * U
 	  WEAKT = (1.0/KU)**2.0
@@ -1098,7 +1098,7 @@ C  PAR(3) = E
 C  PAR(4) = a0(self)/a0(foreign) = self-to-foreign broadening parameter 
 
 	ELSE IF (IMOD.EQ.23) THEN
-	  K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(3))*(T-T0)/(T0*T))
+	 K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(3))*(T-T0)/(T0*T))
 	  KU  = K * U 
 	  P3  = C + (1.0-C) / ABS(PAR(4))
 	  PS  = PI * ABS(PAR(2)) * P * SQRT(T0/T) * P3
@@ -1135,7 +1135,7 @@ C  PAR(3) = E
 C  PAR(4) = a0(self)/a0(foreign) = self-to-foreign broadening parameter 
 
 	ELSE IF (IMOD.EQ.24) THEN
-	  K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(3))*(T-T0)/(T0*T))
+	 K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(3))*(T-T0)/(T0*T))
 	  KU   = K * U
 	  P3  = C + (1.0-C) / ABS(PAR(4))
 	  TERM = 1.0 + KU * SQRT(T/T0) / (PI * ABS(PAR(2)) * P * P3)
@@ -1175,7 +1175,7 @@ C  Perform Simpson's Rule integration over the high and low resolution
 C  ranges as part of the same loop.
 
 	ELSE IF (IMOD.EQ.25) THEN
-	  K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(4))*(T-T0)/(T0*T))
+	 K = ABS(PAR(1))*(T0/T)**1.5*EXP(1.439*ABS(PAR(4))*(T-T0)/(T0*T))
 	  TERM  = K * ABS(PAR(2)) * U / SQRT(T)
 	  P3	= C + (1.0-C) / ABS(PAR(5))
 	  Y	= (P/P0) * (SQRT(T0)/T) * ABS(PAR(3)) * P3

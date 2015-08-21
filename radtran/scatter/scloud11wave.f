@@ -74,6 +74,7 @@ C     ***********************************************************************
      2 lfrac(MAXCON,MAXLAY),aphi,drad,solar1,sum
       integer nf,imu,iray
       integer igdist,imie
+      logical lrep
       common /imiescat/imie
 
       DOUBLE PRECISION MU(MAXMU), WTMU(MAXMU), MM(MAXMU,MAXMU),
@@ -95,7 +96,7 @@ C     ***********************************************************************
       DOUBLE PRECISION STEST,GALB,ZMU0,ZMU,TEX, TAUSCAT, TAUR, TAU1, 
      1 STEST1
 
-      REAL SOL_ANG,EMISS_ANG,CONV1,CONV,DEFCONV
+      REAL SOL_ANG,EMISS_ANG,CONV,DEFCONV
       REAL YX(4),T,U,FEMM,FSOL,XFAC
       INTEGER ICO,ISOL,IEMM,ISCL(MAXSCATLAY)
 
@@ -112,8 +113,10 @@ C     Common blocks
 
 C--------------------------------------------------------------------------
 
-
-      if(idump.gt.0)then
+C     Define additional debugging 'reporting variable', lrep
+C      lrep=.true.
+      lrep=.false.
+      if(idump.gt.0.or.(lrep.and.igdist.eq.1))then
       print*,'scloud11wave : sol_ang',sol_ang, 'emiss_ang',emiss_ang,
      1 'aphi', aphi, 'solar', solar, 'lowbc',lowbc, 'galb',galb,
      2 'nmu',nmu, 'nf',nf, 'nlay',nlay, 'ncont',ncont,
@@ -158,8 +161,8 @@ C     omitted from computation by doubling
       IF (NMU.GT.MAXMU) THEN
         CALL ABEND(' SCLOUD11WAVE: TOO MANY ANGLE POINTS')
       ENDIF
-      if(idump.gt.0)print*,'scloud11wave: NLAY,LTOT,IGDIST',NLAY,
-     1  LTOT,IGDIST
+      if(idump.gt.0.or.lrep)print*,'scloud11wave: NLAY,LTOT,IGDIST',
+     1  NLAY,LTOT,IGDIST
 
 C     Reset the order of angles:
       DO I=1,NMU
@@ -192,11 +195,14 @@ C ********************************
         ENDDO
       ENDDO
 
+C      lrep=.true.
+      lrep=.false.
 C     PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
 C     Precalculate phase function arrays if new wavelength
       IF(IGDIST.EQ.1) THEN
        DO J1=1,NCONT
-        if(idump.gt.0)print*,'j1,vwave',j1,vwave
+        if(idump.gt.0.or.lrep)print*,'j1,vwave',j1,
+     1   vwave
 
 
 C       If imie=1 then read in phase function from PHASEN.DAT files
@@ -207,7 +213,8 @@ C       otherwise read in from hgphaseN.dat files
           NCONS=0
         else
           CALL READ_HG(VWAVE,J1,NCONT,F,G1,G2)
-          if(idump.gt.0)print*,'f,g1,g2 = ',f,g1,g2
+          if(idump.gt.0.or.lrep)print*,'f,g1,g2 = ',
+     1      f,g1,g2
 
           ISCAT =2
           NCONS = 3
@@ -220,7 +227,7 @@ C       otherwise read in from hgphaseN.dat files
         NPHI = 100
 
         DO 900 IC=0,NF
-         if(idump.gt.0)print*,
+         if(idump.gt.0.or.lrep)print*,
      1    'Calculating matrix from scratch IC = ',IC
          CALL CALC_PMAT6(NF, IC, PPLPL, PPLMI, MU, WTMU, 
      1    NMU, ISCAT, CONS8, NCONS, NORM, J1, NCONT, VWAVE, NPHI)
@@ -270,10 +277,10 @@ C     PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
 
       RAD=0.0
       CONV = 100.0
-      CONV1 = 100.0
       
 C     ******* Define convergence (max % change in last two iterations
-      DEFCONV=0.1
+C     Set very small now to make sure we never apply this.
+      DEFCONV=1e-20
 
 
       DO 1000 IC=0,NF
@@ -285,6 +292,8 @@ C **********************************************************************
 C
       IPOW0 = 16
       DO 2000 L = 1,LT1
+        LREP=.FALSE.
+C        if(L.EQ.33.and.IGDIST.EQ.1.AND.IC.EQ.0)LREP=.TRUE.
         if(idump.ne.0)print*,'L,IGDIST =',L,IGDIST
         TAUT = 1.0D0*TAU(L)
         BC = 1.0D0*BNU(L)
@@ -294,6 +303,14 @@ C        OMEGA = 1.0D0*(1. - EPS(L))
         TAUSCAT = TAUT*OMEGA
         TAUR = TAURAY(L)
 
+        if(lrep)then
+         print*,'l',L
+         print*,'tau',TAU(L),TAUT
+         print*,'bnu',BNU(L),BC
+         print*,'eps',EPS(L),OMEGA
+         print*,'tauscat,taur,tauray',TAUSCAT,TAUR,TAURAY(L)
+        endif
+
         if(idump.ne.0)then
          print*,L
          print*,TAU(L),TAUT
@@ -301,6 +318,7 @@ C        OMEGA = 1.0D0*(1. - EPS(L))
          print*,EPS(L),OMEGA
          print*,TAUSCAT,TAUR,TAURAY(L)
         endif
+
 C        print*,'scloud',L,tauscat,taur,tauscat-taur
 C       Calling codes now already include Rayleigh optical depth in 
 C       tauscat if IRAY>0, so we need to subtract it first here
@@ -310,6 +328,10 @@ C       Add in an error trap to counter single-double subtraction overflows
         IF(TAUSCAT.LT.0.)TAUSCAT=0.
 
         if(idump.gt.0)then
+         print*,'L,TAUT,BC,OMEGA = ',L,TAUT,BC,OMEGA
+         print*,'TAUSCAT,TAUR',TAUSCAT,TAUR
+        endif
+        if(lrep)then
          print*,'L,TAUT,BC,OMEGA = ',L,TAUT,BC,OMEGA
          print*,'TAUSCAT,TAUR',TAUSCAT,TAUR
         endif
@@ -355,6 +377,7 @@ C       Assign phase function coefficients for each atmospheric layer
 
           SFRAC = SFRAC+FRAC
           if(idump.gt.0)print*,J1,FRAC,SFRAC
+          if(lrep)print*,'j1,frac,sfrac',J1,FRAC,SFRAC
 
           IF(FRAC.GT.0.0)THEN
            DO JP = 1,NMU
@@ -364,6 +387,8 @@ C       Assign phase function coefficients for each atmospheric layer
             END DO
            END DO
            if(idump.gt.0)print*,'Layer ',L,' Adding fraction ',
+     &	    FRAC,' of mode ',J1
+           if(lrep)print*,'Layer ',L,' Adding fraction ',
      &	    FRAC,' of mode ',J1
            CALL MADD(FRAC,PPLPLS,PPLPL,PPLPLS,NMU,NMU,
      1      MAXMU,MAXMU)
@@ -382,7 +407,7 @@ C       Assign phase function coefficients for each atmospheric layer
 
          SFRAC = SFRAC+FRAC
 
-C         print*,'Ray ',FRAC,SFRAC      
+         if(lrep)print*,'Ray ',FRAC,SFRAC      
          IF(FRAC.GT.0)THEN
           DO JP = 1,NMU
             DO IP = 1,NMU
@@ -391,6 +416,8 @@ C         print*,'Ray ',FRAC,SFRAC
             END DO
           END DO
           if(idump.gt.0)print*,'Layer ',L,' Adding fraction ',
+     &		FRAC,' of Rayleigh scattering'
+          if(lrep)print*,'Layer ',L,' Adding fraction ',
      &		FRAC,' of Rayleigh scattering'
           CALL MADD(FRAC,PPLPLS,PPLPL,PPLPLS,NMU,NMU,
      1      MAXMU,MAXMU)
@@ -402,6 +429,10 @@ C         TAUT = TAUT + TAUR
          OMEGA = (TAUSCAT+TAUR)/TAUT
          
          if(idump.gt.0)then
+          print*,'Rayleigh: TAUR,TAUSCAT,TAUT-TAUR,OMEGA',TAUR,
+     &          TAUSCAT,TAUT-TAUR,OMEGA
+         endif
+         if(lrep)then
           print*,'Rayleigh: TAUR,TAUSCAT,TAUT-TAUR,OMEGA',TAUR,
      &          TAUSCAT,TAUT-TAUR,OMEGA
          endif
@@ -438,7 +469,7 @@ C       P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P
           TL(i1,i1,L)=1.0
          end do
          iscl(l) = 0
-         if(idump.gt.0)print*,'zero layer ',l,iscl(l)
+         if(idump.gt.0.or.lrep)print*,'zero layer ',l,iscl(l)
         ELSE IF(OMEGA.EQ.0)THEN
          do i1=1,nmu
           do j1=1,nmu
@@ -446,21 +477,21 @@ C       P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P
            TL(I1,J1,L)=0.0
           end do
           TEX = -MMINV(i1,i1)*TAUT
-          if(idump.gt.0)print*,i1,MMINV(i1,i1),TAUT
-          if(idump.gt.0)print*,TEX
+          if(idump.gt.0.or.lrep)print*,i1,MMINV(i1,i1),TAUT
+          if(idump.gt.0.or.lrep)print*,TEX
           if(TEX.GT.-200.0D0)THEN
             TL(i1,i1,L)=DEXP(TEX)
           ELSE
             TL(i1,i1,L)=0.D0
           ENDIF
-          if(idump.gt.0)print*,TL(i1,i1,L)
+          if(idump.gt.0.or.lrep)print*,TL(i1,i1,L)
           JL(i1,1,L)= BC*(1.0 - TL(i1,i1,L))
          end do
          iscl(l) = 0
-         if(idump.gt.0)print*,'gas layer ',l,iscl(l)
+         if(idump.gt.0.or.lrep)print*,'gas layer ',l,iscl(l)
         ELSE
          iscl(l) = 1
-         if(idump.gt.0)print*,'cloud layer ',l,iscl(l)
+         if(idump.gt.0.or.lrep)print*,'cloud layer ',l,iscl(l)
  	 CALL DOUBLE1(IC,L,RL(1,1,L),TL(1,1,L),JL(1,1,L),NMU,MAXMU)
 
         END IF
@@ -595,17 +626,14 @@ C ***********************************************************************
         print*,'radf,y',radf(ic),(yx(imu),imu=1,4)       
       end if
 
-
-      CONV1 = CONV
-
       DRAD = RADF(IC)*COS(IC*APHI*SNGL(PI)/180.0)
       IF(IC.GT.0)DRAD=DRAD*2
 
       RAD=RAD+DRAD
       CONV = ABS(100*DRAD/RAD)
      
-      IF(CONV.LT.DEFCONV.AND.CONV1.LT.DEFCONV)THEN
-       if(idump.gt.0)PRINT*,'Converged after ',IC,
+      IF(CONV.LT.DEFCONV)THEN
+       PRINT*,'scloud11wave: Converged after ',IC,
      1  ' fourier components'
        GOTO 2001
       ENDIF

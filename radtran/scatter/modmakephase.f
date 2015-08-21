@@ -49,22 +49,32 @@ C
         real          table(5000,3)
         common /store/ ilist,nspec,idspec,table
 
+C       Extra variables to make sure that hgphase files are read in again
+C       by read_hg.f
+        integer mcon,mphas
+        parameter(mcon=10,mphas=300)
+        real xwave(mphas),xf(mcon,mphas),xg1(mcon,mphas)
+        real xg2(mcon,mphas),tnco,twave,frac,tico
+        common /hgphas/xwave,xf,xg1,xg2,tnco,twave,frac,tico
+
 
 	pi = 3.141592654
 	wavetype(1) = 'wavelength'
 	wavetype(2) = 'wavenumber'
 
-C        print*,'modmakephase'
-C        print*,iwave,imode,inorm,iscat,lambda0
-C        print*,(parm(i),i=1,3)
-C        print*,(rs(i),i=1,3)
-C        print*,outfile
+        print*,'modmakephase'
+        print*,'iwave,imode,inorm,iscat,lambda0',iwave,imode,
+     1  inorm,iscat,lambda0
+        print*,'(parm(i),i=1,3)',(parm(i),i=1,3)
+        print*,'(rs(i),i=1,3)',(rs(i),i=1,3)
 
         call get_xsecA(runname,nmode,nwave,wave,xsec)
 
-C        do i=1,nwave
-C         print*,srefind(i,1),srefind(i,2)
-C        enddo
+        print*,'Refindex'
+        print*,'nwave = ',nwave
+        do i=1,nwave
+         print*,wave(i),srefind(i,1),srefind(i,2)
+        enddo
 
 	call file (runname,runname,'xsc')
         open (12, file=runname, status='unknown')
@@ -308,6 +318,11 @@ C	      phase.
 	      xsec(imode,J,2) = omega
 
 	enddo
+
+C       Since the hgphase file has bee updated we need to make sure that
+C       read_hg.f reads it in again, by setting xwave(1) < 0.
+        xwave(1)=-1.
+
 
  	close(13)
  	close(14)

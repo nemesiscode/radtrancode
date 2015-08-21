@@ -369,13 +369,14 @@ C     Compute the drv file to get the aerosol optical depths
         nx1=0
 
         do ivar=1,nvar
-
+         print*,'ivar = ',ivar
          if(varident(ivar,1).le.100)then
 
           if(varident(ivar,3).eq.9)then
               icont=abs(varident(ivar,1))
               od1=exp(xn(nx1+1))
               xscal(icont)=xod(icont)/od1
+              print*,icont,xod(icont),od1
               do j=1,NN
                dust(icont,j)=dust(icont,j)/xscal(icont)
               enddo
@@ -420,6 +421,7 @@ C     Compute the drv file to get the aerosol optical depths
         enddo
 
 
+        print*,'Writing out scale aerosol'
         open(12,file='aerosol.prf',status='unknown')
          BUFFER='# simple.prf'
          WRITE(12,1)BUFFER     
@@ -478,14 +480,15 @@ C          np1 should now match nwave
            enddo
 
 C          Compute nreal from KK
-C          If nimag is in wavelength space, need to convert to wavenumbers
            if(ispace.eq.0)then
+C           nimag in wavenumber space, can transfer directly
             do i=1,nwave
              v1(i)=wave(i)
              k1(i)=nimag(i)
              vm1=vm
             enddo
            else
+C          If nimag is in wavelength space, need to convert to wavenumbers
             do i=1,nwave
              v1(i)=1e4/wave(nwave+1-i)
              k1(i)=nimag(nwave+1-i)
@@ -512,6 +515,7 @@ C          If nimag is in wavelength space, need to convert to wavenumbers
 
            inorm=1
            iscat=1
+C          Find minimum wavelength
            if(ispace.eq.0)then
             minlam=1e4/wave(nwave)
            else

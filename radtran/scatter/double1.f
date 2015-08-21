@@ -65,7 +65,15 @@ C           print*,cc(i,i),pplpl(i,j),pplmi(i,j)
           PRINT*,'Double1: Warning - Sum of phase function <> 1'
 	  PRINT*,'IC,L  = ',IC,L
           PRINT*,'J,SUM = ',J,SUM*2.0*PI
-C          STOP
+          PRINT*,'PPLPL'
+          DO I=1,NMU
+           PRINT*,(PPLPL(I,K),K=1,NMU)
+          ENDDO
+          PRINT*,'PPLMI'
+          DO I=1,NMU
+           PRINT*,(PPLMI(I,K),K=1,NMU)
+          ENDDO
+          STOP
          ENDIF
         END DO
       ENDIF 

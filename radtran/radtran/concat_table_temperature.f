@@ -204,7 +204,7 @@ C      ENDIF
       WRITE(*,*)'NP, NT, NG = ',NP1,NT,NG1
       WRITE(*,*)'Gas ID, ISO = ',IDGAS1,ISOGAS1
       WRITE(*,*)' '
-      IREC0=11 + 2*NG1 + 2 + NP1*NT + 2
+      IREC0=11 + 2*NG1 + 2 + NP1 + NT + 2
 
 C      read(5,23)ans
       WRITE(LUN0,REC=1)IREC0
@@ -293,8 +293,8 @@ C      read(5,23)ans
 
 
       IREC = IREC0
-      IREC01= 11 + 2*NG1 + 2 + NP1*NT1 + 2
-      IREC02= 11 + 2*NG1 + 2 + NP1*NT2 + 2
+      IREC01= 11 + 2*NG1 + 2 + NP1 + NT1 + 2
+      IREC02= 11 + 2*NG1 + 2 + NP1 + NT2 + 2
       IREC1 = IREC01+(I1-1)*(NP1*(NG1)*NT1)
       IREC2 = IREC02+(J1-1)*(NP1*(NG1)*NT2)
     

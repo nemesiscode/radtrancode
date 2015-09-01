@@ -233,10 +233,12 @@ C      (for exoplanet k-tables)
       IRECL=ISYS()
       OPEN(UNIT=LUN0,FILE=KTAFIL,STATUS='UNKNOWN',ACCESS='DIRECT',
      1 RECL=IRECL)
-      IREC0=11 + 2*NG + 2 + NP*NT + 2
+      IREC0=11 + 2*NG + 2 + NP + NT + 2
 C     Add in extra buffer to list wavelengths if a non-uniform grid is
 C     specified
-      IF(DELV.LT.0.0)THEN IREC0=IREC0+NPOINT
+      IF(DELV.LT.0.0)THEN 
+        IREC0=IREC0+NPOINT
+      ENDIF
 c     PRINT*,'IREC0 = ',irec0
       WRITE(LUN0,REC=1)IREC0
       WRITE(LUN0,REC=2)NPOINT

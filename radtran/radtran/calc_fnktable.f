@@ -216,7 +216,7 @@ c  ** calc g_ord and del_g **
       IRECL = ISYS()
       OPEN(UNIT=LUN0,FILE=KTAFIL,STATUS='UNKNOWN',ACCESS='DIRECT',
      1 RECL=IRECL)
-      IREC0 = 11 + 2*NG + 2 + NP*NT + 2
+      IREC0 = 11 + 2*NG + 2 + NP + NT + 2
 cc      WRITE(*,*)' CALC_FNKTABLE.f :: IREC0 = ',irec0
       WRITE(LUN0,REC=1)IREC0
       WRITE(LUN0,REC=2)NPOINT

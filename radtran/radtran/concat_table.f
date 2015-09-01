@@ -254,9 +254,10 @@ C******************************** CODE *********************************
        VMIN = VCEN1(I1)
       ENDIF
 
-      IREC0=11 + 2*NG1 + 2 + NP1*NT1 + 2
-      IF(DELV1.LT.0)IREC0=IREC0+NPOINT
-
+      IREC0=11 + 2*NG1 + 2 + NP1 + NT1 + 2
+      IF(DELV1.LT.0)THEN
+        IREC0=IREC0+NPOINT
+      ENDIF
       IREC=11
 
       WRITE(*,*)'VMIN = ',VMIN

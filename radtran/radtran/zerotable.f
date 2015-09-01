@@ -158,7 +158,7 @@ C program since execution.
       IRECL = ISYS()
       OPEN(UNIT=LUN0,FILE=KTAFIL,STATUS='UNKNOWN',ACCESS='DIRECT',
      1 RECL=IRECL)
-      IREC0 = 11 + 2*NG + 2 + NP*NT + 2
+      IREC0 = 11 + 2*NG + 2 + NP + NT + 2
       WRITE(LUN0,REC=1)IREC0
       WRITE(LUN0,REC=2)NPOINT
       WRITE(LUN0,REC=3)VMIN

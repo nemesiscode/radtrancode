@@ -29,8 +29,8 @@ C       within 20% of the mass of the main isotope
         IF(MASSNO(1,IDGAS).GT.1.E-32.AND.
      1  ABS((XMASS-MASSNO(1,IDGAS))/MASSNO(1,IDGAS)).GT.0.2)THEN
           XMASS = MASSNO(1,IDGAS)
-          WRITE(*,*)'getmass.f :: *WARNING* using main isotope'
-          WRITE(*,*)'mass-number.'
+c          WRITE(*,*)'getmass.f :: *WARNING* using main isotope'
+c          WRITE(*,*)'mass-number.'
         ENDIF
       ELSE
         IF(ISOGAS.LE.DBNISO(IDGAS))THEN

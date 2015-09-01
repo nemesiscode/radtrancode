@@ -244,8 +244,8 @@ C-----------------------------------------------------------------------
               DO ipo=1,npoint
                dx = 100*ABS((vwave(k)-XCENK(ipo))/XCENK(ipo))
                IF(dx.lt.MAXDX)THEN
-                  print*,'read_klist',k,vwave(k),ipo,xcenk(ipo),
-     &        dx,maxdx
+c                  print*,'read_klist',k,vwave(k),ipo,xcenk(ipo),
+c     &        dx,maxdx
                   imatch=1
                   IF (iflag(k,i).EQ.0) THEN
                     iflag(k,i) = 1
@@ -259,9 +259,9 @@ C                    print*,'k,i,ireck(k,i)',k,i,ireck(k,i)
               ENDDO
 C              print*,k,vwave(k),ireck(k,i),imatch
               IF(imatch.eq.0)THEN
-                  print*,'Warning - read_klist. Match not found'
-                  print*,'For wavelength : ',k,vwave(k)
-                  print*,'Snapping to nearest wavelength'
+c                  print*,'Warning - read_klist. Match not found'
+c                  print*,'For wavelength : ',k,vwave(k)
+c                  print*,'Snapping to nearest wavelength'
 
                   MAXDX1=1000.0
                   DO ipo=1,npoint

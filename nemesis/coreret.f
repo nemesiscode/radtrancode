@@ -458,7 +458,7 @@ C       Now calculate next iterated xn1
 145     continue
         do i=1,nx
          xn1(i) = xn(i) + (x_out(i)-xn(i))/(1.0+alambda)
-         print*,'i, x_old, x_next',i,xn(i),xn1(i)
+c         print*,'i, x_old, x_next',i,xn(i),xn1(i)
 C        Check to see if log numbers have gone out of range
          if(lx(i).eq.1)then
           if(xn1(i).gt.85.or.xn1(i).lt.-85)then

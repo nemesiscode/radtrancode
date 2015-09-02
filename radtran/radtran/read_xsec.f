@@ -53,12 +53,12 @@ C     ***********************************************************************
 106   continue
       nsec=j-1
 
-      print*,'read_xsec'
-      print*,nsec,ncont
-      do i=1,nsec
-       print*,i,vsec(i),(xsec(1,j,i),j=1,ncont)
-       print*,(xsec(2,j,i),j=1,ncont)
-      enddo
+c      print*,'read_xsec'
+c      print*,nsec,ncont
+c      do i=1,nsec
+c       print*,i,vsec(i),(xsec(1,j,i),j=1,ncont)
+c       print*,(xsec(2,j,i),j=1,ncont)
+c      enddo
       
       close(iunit)
       print*,'Ncont is', ncont

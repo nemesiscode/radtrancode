@@ -1,4 +1,4 @@
-      PROGRAM CONCAT_TABLEA
+      PROGRAM CONCAT_TABLE
 C     $Id:
 C***********************************************************************
 C_TITL:	CONCAT_TABLE.f

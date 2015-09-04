@@ -172,24 +172,29 @@ C      ENDIF
       ENDIF
 
       
-
-	  IF((VMIN1+(I1-1)*DELV1.ne.VMIN2+(J1-1)*DELV1))then
-	  IF((VMIN1+(I2-1)*DELV1.ne.VMIN2+(J2-1)*DELV1))then
+      IF((VMIN1+(I1-1)*DELV1.ne.VMIN2+(J1-1)*DELV1))then
 	  PRINT*,'Selected wavelength ranges are different!'
-         STOP
+          print*,'I1,J1 = ',I1,J1
+          print*,VMIN1+(I1-1)*DELV1,VMIN2+(J1-1)*DELV1
+          STOP
       ENDIF
+      IF((VMIN1+(I2-1)*DELV1.ne.VMIN2+(J2-1)*DELV1))then
+	  PRINT*,'Selected wavelength ranges are different!'
+          print*,'I2,J2 = ',I2,J2
+          print*,VMIN1+(I2-1)*DELV1,VMIN2+(J2-1)*DELV1
+          STOP
       ENDIF
+
       NPOINT=1+I2-I1
       VMIN = VMIN1+(I1-1)*DELV1
 
-
       IREC=11
       
-	  PRINT*,'Select temperature range for table1 (indices):'
+      PRINT*,'Select temperature range for table1 (indices):'
       CALL PROMPT('Enter desired KT1,KT2 : ')
       READ*,KT1,KT2
       
-	  PRINT*,'Select temperature range for table2 (indices):'
+      PRINT*,'Select temperature range for table2 (indices):'
       CALL PROMPT('Enter desired LT1,LT2 : ')
       READ*,LT1,LT2
       
@@ -205,8 +210,10 @@ C      ENDIF
       WRITE(*,*)'Gas ID, ISO = ',IDGAS1,ISOGAS1
       WRITE(*,*)' '
       IREC0=11 + 2*NG1 + 2 + NP1 + NT + 2
-
-C      read(5,23)ans
+      IF(DELV1.LT.0)THEN
+        IREC0=IREC0+NPOINT
+      ENDIF
+ 
       WRITE(LUN0,REC=1)IREC0
       WRITE(LUN0,REC=2)NPOINT
       WRITE(LUN0,REC=3)VMIN
@@ -230,7 +237,6 @@ C      read(5,23)ans
         ENDIF
 299   CONTINUE
 
-C      read(5,23)ans
 
       WRITE(*,*)'G - ordinates, weights'
       DO 399 J=1,NG1
@@ -245,7 +251,6 @@ C      read(5,23)ans
         ENDIF
 399   CONTINUE
 
-C      read(5,23)ans
 
       IREC = 11 + 2*NG1 + 2
       WRITE(*,*)'Pressures : '
@@ -260,7 +265,6 @@ C      read(5,23)ans
         IREC = IREC + 1
 301   CONTINUE
 
-C      read(5,23)ans
 
       WRITE(*,*)'Temperatures : '
       DO 302 J=1,NT1
@@ -274,7 +278,7 @@ C      read(5,23)ans
         IREC01=IREC
 302   CONTINUE
 
-	  IREC = IREC-NT1
+      IREC = IREC-NT1
       WRITE(*,*)'Temperatures : '
       DO 303 J=1,NT2
         READ(LUN2,REC=IREC)TEMP2(J)
@@ -286,10 +290,10 @@ C      read(5,23)ans
         IREC = IREC + 1 
 303   CONTINUE
 
-	  IF (TEMP1(1).gt.TEMP2(1)) then
-	  	print*,'Files entered in wrong order!'
-	  	stop
-	  endif
+      IF (TEMP1(1).gt.TEMP2(1)) then
+  	print*,'Files entered in wrong order!'
+  	stop
+      ENDIF
 
 
       IREC = IREC0
@@ -309,21 +313,21 @@ C      read(5,23)ans
              IREC=IREC+1
              ENDIF
              IREC1 = IREC1 + 1
-40		   CONTINUE
-30	    CONTINUE
-20    CONTINUE
-	  DO 22 K=1, NT2
-		 DO 32 J=1,NP1
-		 	DO 42 LOOP=1,NG1	
-             READ(LUN2,REC=IREC2)TABLE2(J,K,LOOP)
+40         CONTINUE
+30       CONTINUE
+20     CONTINUE
+       DO 22 K=1, NT2
+        DO 32 J=1,NP1
+         DO 42 LOOP=1,NG1	
+           READ(LUN2,REC=IREC2)TABLE2(J,K,LOOP)
         IF((K.ge.LT1.AND.K.le.LT2).and.(I.GE.I1.AND.I.LE.I2))THEN
-             WRITE(LUN0,REC=IREC)TABLE2(J,K,LOOP)
-             IREC=IREC+1
-             ENDIF
-             IREC2 = IREC2 + 1
-42		   CONTINUE
-32	    CONTINUE
-22       CONTINUE
+            WRITE(LUN0,REC=IREC)TABLE2(J,K,LOOP)
+            IREC=IREC+1
+           ENDIF
+           IREC2 = IREC2 + 1
+42       CONTINUE
+32      CONTINUE
+22     CONTINUE
 297   CONTINUE
 
       CLOSE(LUN0)

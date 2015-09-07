@@ -186,8 +186,8 @@ C        Calculate wavelength in table below current wavelength
          else
           COINC=.FALSE.
          endif
-         print*,'GET_KG: vwave, COINC = ',vwave,COINC
-         print*,'Nearest tabulated+ frac: ',tmp,tmp+delv,frac
+c         print*,'GET_KG: vwave, COINC = ',vwave,COINC
+c         print*,'Nearest tabulated+ frac: ',tmp,tmp+delv,frac
         ELSE
 C        DELV<=0. In this case the k-table should already be pointing to
 C        the right wavelength through ireck, set by read_klist.f

@@ -28,9 +28,11 @@ C       wrong (e.g. set to 1 because unknown) so checking that the final mass is
 C       within 20% of the mass of the main isotope
         IF(MASSNO(1,IDGAS).GT.1.E-32.AND.
      1  ABS((XMASS-MASSNO(1,IDGAS))/MASSNO(1,IDGAS)).GT.0.2)THEN
+          WRITE(*,*)'getmass.f :: *WARNING* using main isotope'
+          WRITE(*,*)'mass-number.'
+          WRITE(*,*)IDGAS,ISOGAS,XMASS,
+     1		(MASSNO(J,IDGAS),J=1,DBNISO(IDGAS))
           XMASS = MASSNO(1,IDGAS)
-c          WRITE(*,*)'getmass.f :: *WARNING* using main isotope'
-c          WRITE(*,*)'mass-number.'
         ENDIF
       ELSE
         IF(ISOGAS.LE.DBNISO(IDGAS))THEN

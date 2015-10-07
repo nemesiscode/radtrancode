@@ -281,7 +281,8 @@ C       call mradfield(fmod)
        print*,'Setting up for interpolation calculations'       
 C      Set up parameters for scattering cirsrad run.
 
-       CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+       CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
+     1  IPTF,IMIE)
        IMIE1=IMIE
 
        itype=11			! scloud11wave
@@ -425,7 +426,8 @@ C         Set up parameters for scattering cirsrad run.
      1 dist,lowbc,galb,nf,nphi,layht,tsurf,nlayer1,laytyp,layint)
 
 
-          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
+     1     IPTF,IMIE)
           IMIE1=IMIE
 
           itype=11                      ! scloud11wave

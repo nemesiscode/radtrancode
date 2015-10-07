@@ -184,7 +184,8 @@ C     mass to units of 1e24 kg.
          xlat = flat(igeom,iav)   
 
 C        Set up parameters for non-scattering cirsrad run.
-         CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+         CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
+     1    IPTF,IMIE)
          IMIE1=IMIE
 
          itype=11			! scloud11. not used here
@@ -330,7 +331,8 @@ C       Need to calculate RoC of radiance with surface gravity numerically
          xlat = flat(igeom,iav)   
 
 C        Set up parameters for non-scattering cirsrad run.
-         CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+         CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
+     1    IPTF,IMIE)
          IMIE1=IMIE
 
          itype=11			! scloud11. not used here

@@ -147,7 +147,8 @@ C     mass to units of 1e24 kg.
           mass2 = 1e-20*10**(xn(jlogg))*(radius2**2)/Grav
       endif
 
-      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
+     1 IPTF,IMIE)
       IMIE1=IMIE
 
       itype=13			        ! scloud11flux

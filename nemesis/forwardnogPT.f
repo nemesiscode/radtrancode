@@ -237,7 +237,8 @@ C     emissivity spectrum
            emissivity(2)=1.0
       endif
 
-      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+      CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
+     1 IPTF,IMIE)
       IMIE1=IMIE
 
       do 111 ix1=1,nx2

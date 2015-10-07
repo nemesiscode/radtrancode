@@ -283,7 +283,8 @@ C        mass to units of 1e24 kg.
          
 C        Set up parameters for scattering cirsrad run.
 
-         CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+         CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
+     1    IPTF,IMIE)
          IMIE1=IMIE
           itype=11			! scloud11wave
 
@@ -293,10 +294,12 @@ C        Set up parameters for scattering cirsrad run.
 
 
 C         Set up all files for a direct cirsrad run
+          print*,'calling gsetrad'
           call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,
      1     lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
      2     layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
      3     nvar,varident,varparam,nx,xn,jalb,jtan,jpre,tsurf,xmap)
+          print*,'gsetrad called OK'
 
 C         If planet is not a gas giant and observation is not at limb then
 C         we need to read in the surface emissivity spectrum.

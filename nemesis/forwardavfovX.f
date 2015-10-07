@@ -205,6 +205,7 @@ C     mass to units of 1e24 kg.
        if(nwave1.gt.1)call sort(nwave1,vwave1)
        if(nconv1.gt.1)call sort(nconv1,vconv1)
 
+
        do 110 iav = 1,nav(igeom)
          sol_ang = angles(igeom,iav,1)
          emiss_ang = angles(igeom,iav,2)
@@ -225,7 +226,8 @@ C        we need to read in the surface emissivity spectrum
          endif
 
 C        Set up parameters for non-scattering cirsrad run.
-         CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+         CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
+     1    IPTF,IMIE)
          IMIE1=IMIE
          itype=11			! scloud11. not used here
 
@@ -469,7 +471,8 @@ C          Now the gradients
 
 C         Set up parameters for non-scattering cirsrad run.
  
-          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
+     1     IPTF,IMIE)
           IMIE1=IMIE
 
           itype=11			! scloud11. not used here

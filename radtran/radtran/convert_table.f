@@ -109,7 +109,7 @@ C     MAXOUT the maximum number of output points
        IREC=IREC+1
 302   CONTINUE
 C     Read in central wavelengths if non-uniform grid
-      IF(DELV.LT.0.0)THEN
+      IF(DELV.LE.0.0)THEN
        PRINT*,'Channel centres'
        DO 303 J=1,NPOINT
         READ(LUN0,REC=IREC)VCEN(J)

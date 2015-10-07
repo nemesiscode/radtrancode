@@ -34,6 +34,7 @@ C stored in the same directory as the rest of the code
       REAL G_ORD(MAXG),K_G(MAXG),DEL_G(MAXG),TABLE(MAXK,MAXK,MAXG)
 
       CHARACTER*100 KTAFIL,OPFILE1
+      CHARACTER*1 ANS
 
 C******************************** CODE *********************************
 
@@ -102,8 +103,10 @@ C******************************** CODE *********************************
         IREC = IREC + 1
 302   CONTINUE
 C     Read in central wavelengths if non-uniform grid
-      IF(DELV.LT.0.0)THEN
+      IF(DELV.LE.0.0)THEN
        PRINT*,'Channel centres'
+       print*,'Press a key to continue'
+       READ(5,23)ANS
        DO 303 J=1,NPOINT
         READ(LUN0,REC=IREC)VCEN(J)  
         PRINT*,J,VCEN(J)  

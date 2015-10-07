@@ -76,8 +76,8 @@ C     Assume 4-byte words per record
 
 27    PRINT*,'Current range = ',VMIN,VMIN+(NPOINT-1)*DELV,DELV,NPOINT
 
-      IF(DELV.LT.0)THEN
-       Print*,'DELV is less than zero. Reset?'
+      IF(DELV.LE.0)THEN
+       Print*,'DELV is less than or equal to zero. Reset?'
        READ(5,23)ANS
        IF(ANS.EQ.'Y'.OR.ANS.EQ.'y')THEN
         CALL PROMPT('Enter new value : ')

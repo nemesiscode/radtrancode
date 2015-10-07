@@ -236,7 +236,7 @@ C      (for exoplanet k-tables)
       IREC0=11 + 2*NG + 2 + NP + NT + 2
 C     Add in extra buffer to list wavelengths if a non-uniform grid is
 C     specified
-      IF(DELV.LT.0.0)THEN 
+      IF(DELV.LE.0.0)THEN 
         IREC0=IREC0+NPOINT
       ENDIF
 c     PRINT*,'IREC0 = ',irec0
@@ -269,7 +269,7 @@ c     PRINT*,'IREC0 = ',irec0
         IREC=IREC+1
 302   CONTINUE
 C     Write out central wavelengths if non-uniform grid
-      IF(DELV.LT.0.0)THEN
+      IF(DELV.LE.0.0)THEN
        DO 303 J=1,NPOINT
         WRITE(LUN0,REC=IREC)VCEN(J)
 C        PRINT*,J,VCEN(J)

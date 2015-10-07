@@ -87,24 +87,31 @@ C-----------------------------------------------------------------------
 	ig = 1
 	sum=0.
 	do I = 1, nloop
-		if(gdist(I).lt.g_ord(ig+1))then
+C                print*,i,gdist(i),cont(i),weight(i),ig,g_ord(ig+1)
+		if(gdist(I).le.g_ord(ig+1).and.ig.le.ng)then
 			k_g(ig) = k_g(ig) + cont(I) * weight(I)
 			dkdt(ig) = dkdt(ig) + dcont(I)*weight(I) 
 			sum = sum + weight(I)
 		else
 			frac = (g_ord(ig+1)-gdist(I-1))/
      1				(gdist(I)-gdist(I-1))
+C                        print*,g_ord(ig+1),gdist(I),gdist(I-1)
+C                        print*,g_ord(ig+1)-gdist(I-1),
+C     1				(gdist(I)-gdist(I-1))
 			k_g(ig) = k_g(ig) + frac * cont(I)*weight(I)
 			dkdt(ig) = dkdt(ig) + frac * dcont(I)*weight(I)
 			sum = sum + frac * weight(I)
 			k_g(ig) = k_g(ig)/sum
 			dkdt(ig) = dkdt(ig)/sum
-                        if(ig.lt.ng)then
-                         ig=ig+1
-                        else
-                         print*,'Overrunning i-ordinate in rankk.f'       
-                         print*,'Leave ig unchanged'
-                        endif
+			ig=ig+1
+C                        print*,ig,k_g(ig),frac
+C                        if(ig.lt.ng)then
+C                         ig=ig+1
+C                        else
+C                         print*,'Overrunning i-ordinate in rankk.f'       
+C                         print*,'Leave ig unchanged'
+C			 stop                         
+C                        endif
 			sum = (1.-frac) * weight(I)
 			k_g(ig) = (1.-frac)*cont(I)*weight(I)
 			dkdt(ig) = (1.-frac)*dcont(I)*weight(I)

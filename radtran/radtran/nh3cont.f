@@ -2,11 +2,10 @@
 ************************************************************************
 C-----------------------------------------------------------------------
 C
-C			SUBROUTINE CH4CONT
+C			SUBROUTINE NH3CONT
 C
-C	Returns the 'continuum methane absorption below 1um from
-C       Karkoschka (1994), Fink et al above 1um.
-C	Wavelengths are supplied in microns.
+C	Returns the 'continuum ammonia absorption below 1um from
+C       Lutz and Owen (1980).
 C
 C	Note that since FORTRAN calls pass only the pointers to arrays, 
 C	the call to LOCATE supplies only the first nrows elements of
@@ -15,27 +14,28 @@ C	etc., then the call to LOCATE passes all the wavelengths only.
 C
 C-----------------------------------------------------------------------
 
-        real function ch4cont(nu)
+        real function nh3cont(nu)
 
 	implicit none
 	integer		n
-	parameter	(n=1810)
+	parameter	(n=130)
 	integer		I, J, k, m, k1, k2, nread
-	real	lambda, kabs, table(n,2), nu, tmp, frac, xres, xwid
+	real	lambda, kabs, table(n,2), nu, tmp, frac
         real  sum1,sum2,wf,dx,x
-        character*100 aname
-        common /methane/ nread,table
+        character*100 aname,buffer
+        common /ammonia/ nread,table
 
-        xres = 0.0125
-        xwid = xres/2.0
         if(nread.ne.-999)then
-         aname = 'karkoschka.dat'
+         aname = 'lutzowen.dat'
 	 call datarchive(aname)
          open(12,file=aname,status='old')
-         print*,'Reading Karkoshka methane data'
+         print*,'Reading Lutz+Owen NH3 data'
+         read(12,1)buffer
+1        format(a)
+         read(12,1)buffer
+         read(12,1)buffer
          do 100 i=1,n 
-          read(12,*)x,table(i,2)
-          table(i,1)=0.001*x
+          read(12,*)table(i,1),table(i,2)
 100      continue
          nread = -999
          close(12)
@@ -45,7 +45,7 @@ C-----------------------------------------------------------------------
         if(nu.gt.1000.0)lambda = 1e4/nu
 
 	if ((lambda.lt.table(1,1)).or.(lambda.gt.table(n,1))) then
-                ch4cont = 0.0
+                nh3cont = 0.0
                 return
 	endif
 
@@ -54,7 +54,8 @@ C-----------------------------------------------------------------------
         frac = (lambda - table(k,1))/(table(k+1,1)-table(k,1))
         kabs = table(k,2) + frac*(table(k+1,2)-table(k,2))
 
-        ch4cont = kabs/26850.0	! Convert to units of 1e20 cm2/mol 
+C       LutzOwen data in units of m-1 amagat-1
+        nh3cont = 1000*kabs/26850.0	! Convert to units of 1e20 cm2/mol 
 
 	return
 

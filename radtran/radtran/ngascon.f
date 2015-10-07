@@ -57,7 +57,7 @@ C-----------------------------------------------------------------------
 C
 	INTEGER ID,ISO,I
 	REAL V0,DV,AMOUNT,PPRESS,PRESS,TEMP,ABSORB
-        REAL CH4CONT,INTERPBASS1,INTERPO3
+        REAL CH4CONT,INTERPBASS1,INTERPO3,NH3CONT
 C
 C --- Define COMMON blocks containing H2O continuum data ---
 C
@@ -205,6 +205,13 @@ C
 C           Karkoschka CH4 coefficients
 
             ABSORB= AMOUNT*1E-20*CH4CONT(FF)
+
+
+       ELSEIF ((ID.EQ.11) .AND. ((ISO.EQ.1).OR.(ISO.EQ.0))
+     &  .AND. INH3.NE.0)THEN
+C           Lutz+Owen NH3 coefficients
+
+            ABSORB= AMOUNT*1E-20*NH3CONT(FF)
 
        ELSEIF ((ID.EQ.3) .AND. ((ISO.EQ.1).OR.(ISO.EQ.0))
      &   .AND. IO3.NE.0)THEN

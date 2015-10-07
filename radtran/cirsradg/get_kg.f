@@ -46,7 +46,7 @@ C paths, etc.)
 
 C The input and output variables ...
       INTEGER nlayer,ngas,iwave
-      REAL press(nlayer),temp(nlayer),vwave
+      REAL press(nlayer),temp(nlayer),vwave,frac
       REAL kout(maxlay,maxgas,maxg),dkoutdt(maxlay,maxgas,maxg)
 
 
@@ -60,7 +60,7 @@ C NG: Number of ordinates in k-distribution.
       INTEGER ntab,loop,count
       INTEGER maxc,mtab
       PARAMETER (maxc=2*maxg,MTAB=maxk*maxk*maxg)
-      REAL TABLE(mtab),TABLE2(mtab),frac
+      REAL TABLE(mtab),TABLE2(mtab),frack
 
       REAL P1,T1,tmp,eps,KTEST
 C T1: Profile temperature at each atmospheric layer.
@@ -79,6 +79,7 @@ C TMAX: K-table temperature maximum [Kelvin].
 
       INTEGER lun0,lun(maxbin,maxgas),irec0,ireck(maxbin,maxgas)
       REAL vmin,xmin(maxbin,maxgas),delv,delx(maxbin,maxgas)
+      REAL fracx(maxbin,maxgas)
 
       REAL K_G(MAXG),G_ORD(MAXG),DELG(MAXG),DKDT(MAXG)
 C K_G: Calculated k-distribution.
@@ -94,8 +95,8 @@ C T: K-table temperatures [Kelvin].
 
       LOGICAL COINC,KLOG,NTEST,ISNAN
 
-      COMMON /INTERPK/ LUN,IRECK,XMIN,DELX,P,NP,T,NT,NG,DELVK,FWHMK,
-     1 G_ORD,DELG,KOUT,DKOUTDT
+      COMMON /INTERPK/ LUN,IRECK,XMIN,DELX,FRACX,P,NP,T,NT,NG,
+     1 DELVK,FWHMK,G_ORD,DELG,KOUT,DKOUTDT
 
 C******************************** CODE *********************************
 
@@ -137,6 +138,7 @@ C First check range is fine
         LUN0 = LUN(IWAVE,IGAS)
         VMIN = XMIN(IWAVE,IGAS)
         DELV = DELX(IWAVE,IGAS)
+        FRACK = FRACX(IWAVE,IGAS)
         IREC0 = IRECK(IWAVE,IGAS)
 C        print*,'iwave,igas,vmin',IWAVE,IGAS,VMIN
         IF(LUN0.LE.0)THEN
@@ -157,10 +159,11 @@ C between platforms.
           n1 = INT((vwave - vmin)/delv + eps)
           irec = irec0 + np*nt*ng*n1
         ELSE
-C         If irregularly gridded table, then it is assumed that the 
-C         calculation wavelengths coincide with the central wavelengths
-C         and thus IREC0 is assumed to hold the current record number, not
-C         that of the start of the table
+
+C         For irregularly gridded tables IREC0 is assumed to hold the
+C         nearest record number in the table to the requested wavelength, not
+C         that of the start of the table. This has already been allocated
+C         by read_klist.f
           irec = irec0
         ENDIF
 
@@ -186,12 +189,22 @@ C        Calculate wavelength in table below current wavelength
          else
           COINC=.FALSE.
          endif
-c         print*,'GET_KG: vwave, COINC = ',vwave,COINC
-c         print*,'Nearest tabulated+ frac: ',tmp,tmp+delv,frac
+C         print*,'GET_KG: vwave, COINC = ',vwave,COINC
+C         print*,'Nearest tabulated+ frac: ',tmp,tmp+delv,frac
         ELSE
-C        DELV<=0. In this case the k-table should already be pointing to
-C        the right wavelength through ireck, set by read_klist.f
-         coinc = .TRUE.
+          if(delv.lt.0)then
+C          If delv < 0 then it is assumed that the calculation wavelengths
+C          coincide with the central wavelengths and thus IREC0 is assumed to
+C          hold the current record number of the nearest wavelength in the
+C          table, already set up in read_klist.f.
+           COINC=.TRUE.
+          else
+C          If delv = 0 then it is not assumed that the calculation wavelengths
+C          coincide with the central wavelengths and thus IREC0 is assumed to
+C          hold the current record number of the nearest wavelength in the
+C          table BELOW that requested, already set up in read_klist.f.
+           COINC=.FALSE.
+          endif
         ENDIF
 
         ntab = np*nt*ng
@@ -279,12 +292,16 @@ C=======================================================================
               ENDIF
             ENDDO
           ELSE
-             
-            weight(2) = ((vwave - tmp)/delv)
-            IF(weight(2).GT.1.0)weight(2) = 1.0
-            IF(weight(2).LT.0.0)weight(2) = 0.0
-            weight(1) = 1.0 - weight(2)
-
+            if(delv.gt.0)then 
+             weight(2) = ((vwave - tmp)/delv)
+             IF(weight(2).GT.1.0)weight(2) = 1.0
+             IF(weight(2).LT.0.0)weight(2) = 0.0
+             weight(1) = 1.0 - weight(2)
+            else
+             weight(1)=frack
+             weight(2)=1.0-frack
+            endif
+C            print*,'Vwave,weights : ',vwave,weight(1),weight(2)
 c Fletcher: Initialised cont and dcont arrays, and the parameter X.
 	    DO I=1,MAXC
 		cont(i)=0.0
@@ -329,7 +346,7 @@ c     		write(*,*)i,k_g(i),u,v,y1,y2,y3,y4
 c	    write(*,*)'Before rankk (count):',count
 c	    write(*,*)'Before rankk:',cont
             CALL rankk(delg,ng,cont,dcont,fac,count,k_g,dkdt)
-	    write(*,*)'After rankk:',k_g
+C	    write(*,*)'After rankk:',(k_g(i),i=1,ng)
 
           ENDIF
 

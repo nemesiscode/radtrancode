@@ -232,7 +232,8 @@ C FWHMK: Full-Width Half Maximum of the k-table.
       REAL pk(maxk),tk(maxk)
 C PK: K-table pressures [atm].
 C TK: K-table temperatures [Kelvin].
-      REAL xmink(maxbin,maxgas),delk(maxbin,maxgas) 
+      REAL xmink(maxbin,maxgas),delk(maxbin,maxgas)
+      REAL frack(maxbin,maxgas) 
 C XMINK: K-table wavenumber minimum [cm-1].
 C DELK: K-table point-spacing [cm-1].
       REAL amo(maxgas)
@@ -299,7 +300,7 @@ C     Solar reference spectrum common block
 
 C Common blocks ...
       COMMON /dust/ vsec,xsec,nsec,ncont
-      COMMON /interpk/ lun,ireck,xmink,delk,pk,npk,tk,ntk,ng, 
+      COMMON /interpk/ lun,ireck,xmink,delk,frack,pk,npk,tk,ntk,ng, 
      1 delvk,fwhmk,g_ord,delg,kout,dkoutdt
       COMMON /scatd/ mu1,wt1,galb 
       common/alb/nalb,valb,alb

@@ -116,6 +116,7 @@ c     First skip header
          FWHMIN(J)=TWAVEN(J,2)
 110     CONTINUE
        ENDIF
+       print*,'Gas ',I,'Bandtype: ',BANDTYP(I)
 105   CONTINUE
 
       CLOSE(12)
@@ -338,14 +339,14 @@ c ---------------------------------------------------------------------
 
        print*,'NFILBIN,Range : ',NFILBIN,WFIL(1),WFIL(NFILBIN)
        print*,'NAV = ',NAV
-    
+          
        KNU0 = 0.0
        tmp=0.
        DO I=1,NAV 
         IF(TPOUT(IAV(I),JGAS,1).GT.KNU0)THEN
          KNU0 = TPOUT(IAV(I),JGAS,1)
         ENDIF
-C        print*,I,IAV(I),WAVEIN(I),FBIN(I)
+C        print*,I,IAV(I),WAVEIN(IAV(I)),FBIN(I)
         tmp=tmp+fbin(i)
        ENDDO      
 C       print*,'Sum of weights = ',tmp
@@ -377,8 +378,9 @@ C          WRITE(6,*)IT,TEMP,' ! IT,TEMP'
      1       PRESS,TEMP,Q,U,TRAN,SIG,NTRAN)
 
             CALL ROUGHK(NTRAN,U,TRAN,NG,DEL_G,K_G)
-
+       
             CALL FINEFITK(NTRAN,U,TRAN,SIG,NG,DEL_G,K_G,ICALC)
+
 
             CHISQ=0.0
             DO J=1,NTRAN
@@ -416,13 +418,6 @@ C          WRITE(6,*)IT,TEMP,' ! IT,TEMP'
 404   FORMAT(8X,I3)      
 405   FORMAT(7X,I3,I3)
 
-
-C401   FORMAT(1X,'VMIN = ',F8.2)
-C402   FORMAT(1X,'DELV = ',F8.2)
-C400   FORMAT(1X,'FWHM = ',F8.2)
-C403   FORMAT(1X,'NPOINT = ',I5)
-C404   FORMAT(1X,'NGAS = ',I3)      
-C405   FORMAT(1X,'Gas : ',I3,I3)
 
 406   FORMAT(1X,A)
 932   FORMAT(1X,F8.2,F8.2,E12.5,E12.5,E12.5,E12.5,E12.5)

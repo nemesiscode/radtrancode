@@ -255,7 +255,8 @@ C-----------------------------------------------------------------------
       emissivity(2)=1.0
 
 
-      CALL READFLAGS(RUNNAME,INORMAL,IRAY,IH2O,ICH4,IO3,IPTF,IMIE)
+      CALL READFLAGS(RUNNAME,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
+     1 IPTF,IMIE)
       IMIE1=IMIE
 
       CALL FILE(runname,CIAFIL,'cia')

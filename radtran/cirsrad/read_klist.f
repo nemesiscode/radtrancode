@@ -35,7 +35,7 @@ C***********************************************************************
 C Defines the maximum values for a series of variables (layers, bins,
 C paths, etc.)
 
-      INTEGER maxkfil,imatch,ipo1
+      INTEGER maxkfil,imatch,ipo1,jpo
       real MAXDX,MAXDX1
       PARAMETER (maxkfil=100,MAXDX=1e-4)
 
@@ -62,12 +62,13 @@ C TK@ Temperature values in k-tables.
 C G_ORD: g-ordinates.
 C DELG: g-weights.
       REAL xmink(maxbin,maxgas),delk(maxbin,maxgas),DX
+      REAL frack(maxbin,maxgas)
 C XMINK: Beginning wavenumber in table.
 C DELK: Wavenumber step of evaluation points.
       REAL kout(maxlay,maxgas,maxg),dkoutdt(maxlay,maxgas,maxg)
       CHARACTER*100 klist,ktafil(maxkfil),null
 
-      COMMON /interpk/ lun,ireck,xmink,delk,pk,npk,tk,ntk,ngk,
+      COMMON /interpk/ lun,ireck,xmink,delk,frack,pk,npk,tk,ntk,ngk,
      1 delvk,fwhmk,g_ord,delg,kout,dkoutdt
 
 C********************************* CODE ********************************
@@ -146,7 +147,7 @@ C          print*,'read_klist : ngk = ',ngk
             STOP
           ENDIF
 
-          IF(delx(i).lt.0)THEN
+          IF(delx(i).le.0)THEN
            IF(npt(i).NE.npoint)THEN
             WRITE(*,*)'Error in READ_KLIST: npoints dont match'
             WRITE(*,*)' npoint = ',npoint,' npt(i) = ',npt(i)
@@ -162,10 +163,10 @@ C          print*,'read_klist : ngk = ',ngk
            ENDDO
           ENDIF
 
-          IF ((abs(pk(1)-pmin).GT.1.e-4).OR.
-     1    (abs(pk(npk)-pmax).GT.1.e-4).OR.
-     2    (abs(tk(1)-tmin).GT.1.e-4).or.
-     3    (abs(tk(ntk)-tmax).GT.1.e-4)) THEN
+          IF ((abs(pk(1)-pmin).GT.MAXDX).OR.
+     1    (abs(pk(npk)-pmax).GT.MAXDX).OR.
+     2    (abs(tk(1)-tmin).GT.MAXDX).or.
+     3    (abs(tk(ntk)-tmax).GT.MAXDX)) THEN
             WRITE(*,*)' READ_KLIST.f :: Error: Problems reading'
             WRITE(*,*)' k-tables PT Grid. Stopping program.'
             WRITE(*,*)' '
@@ -235,49 +236,69 @@ C-----------------------------------------------------------------------
                     xmink(k,i) = xmin(j)
                     delk(k,i) = delx(j)
                     ireck(k,i) = irec(j)
+                    frack(k,i) = 1
                   ENDIF
                 ENDDO
               ENDIF
             ELSE
              DO k=1,nwave
               imatch=0
+              MAXDX1=1e10
               DO ipo=1,npoint
                dx = 100*ABS((vwave(k)-XCENK(ipo))/XCENK(ipo))
-               IF(dx.lt.MAXDX)THEN
-c                  print*,'read_klist',k,vwave(k),ipo,xcenk(ipo),
-c     &        dx,maxdx
+C              IF DELV in ktables = 0, then find the nearest entry
+C              at a wavelength less than or equal to that requested
+               if(delx(j).eq.0)then
+C                print*,ipo,xcenk(ipo),vwave(k)                
+                IF(dx.lt.MAXDX1.and.XCENK(ipo).le.vwave(k))THEN
                   imatch=1
-                  IF (iflag(k,i).EQ.0) THEN
-                    iflag(k,i) = 1
-                    lun(k,i) = unit(j)
-                    xmink(k,i) = xmin(j)
-                    delk(k,i) = delx(j)
-                    ireck(k,i) = irec(j)+npk*ntk*ngk*(ipo-1)
-C                    print*,'k,i,ireck(k,i)',k,i,ireck(k,i)
-                  ENDIF
-               ENDIF
+                  iflag(k,i) = 1
+                  lun(k,i) = unit(j)
+                  xmink(k,i) = xmin(j)
+                  delk(k,i) = delx(j)
+                  ireck(k,i) = irec(j)+npk*ntk*ngk*(ipo-1)
+                  if(ipo.lt.npoint)then
+                     dx = xcenk(ipo+1)-xcenk(ipo)
+                     frack(k,i) = 1.0 - (vwave(k)-XCENK(ipo))/dx
+                  else
+                     frack(k,i) = 1.
+                  endif
+C                  print*,i,k,vwave(k),ipo,xcenk(ipo),xmin(j),
+C     1			delx(j),frack(k,i)
+                  MAXDX1=dx
+                ENDIF
+               else
+C              IF DELV in ktables < 0, then find the nearest entry
+C              and 'snap' the calculation to this wavelength.
+                IF(dx.lt.MAXDX1)THEN
+                  imatch=1
+                  jpo=ipo
+                  iflag(k,i) = 1
+                  lun(k,i) = unit(j)
+                  xmink(k,i) = xmin(j)
+                  delk(k,i) = delx(j)
+                  ireck(k,i) = irec(j)+npk*ntk*ngk*(ipo-1)
+                  frack(k,i) = 1.
+                  MAXDX1=dx
+                ENDIF
+               endif
               ENDDO
-C              print*,k,vwave(k),ireck(k,i),imatch
+
               IF(imatch.eq.0)THEN
-c                  print*,'Warning - read_klist. Match not found'
-c                  print*,'For wavelength : ',k,vwave(k)
-c                  print*,'Snapping to nearest wavelength'
+                  print*,'Warning - read_klist. Match not found'
+                  print*,'For wavelength : ',k,vwave(k)
+                  stop
+              ENDIF
 
-                  MAXDX1=1000.0
-                  DO ipo=1,npoint
-                   dx = 100*ABS((vwave(k)-XCENK(ipo))/XCENK(ipo))
-                   IF(dx.lt.MAXDX1)THEN
-                    iflag(k,i) = 1
-                    lun(k,i) = unit(j)
-                    xmink(k,i) = xmin(j)
-                    delk(k,i) = delx(j)
-                    ireck(k,i) = irec(j)+npk*ntk*ngk*(ipo-1)
-                    ipo1=ipo
-                   ENDIF
-                   MAXDX1 = dx
-                  ENDDO
-C                  print*,'read_klist',k,vwave(k),ipo1,xcenk(ipo1)
-
+              IF(DELX(J).LT.0.AND.MAXDX1.GT.MAXDX)THEN
+               print*,'Warning from read_klist.f'
+               print*,'DELV < 0 and snapping to nearest point'
+               print*,'in table, but not to the precision expected.'
+               print*,'Closest percentage match = ',MAXDX1
+               print*,'Expected precision = ',MAXDX 
+               print*,'K-table number = ',J
+               print*,'Wavenumber requested and found = ',vwave(k),
+     1		xcenk(jpo)	
               ENDIF
 
              ENDDO

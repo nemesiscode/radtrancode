@@ -134,7 +134,7 @@ C		K table variables
      1		k_g(maxg), k_g1(maxg), k_g2(maxg), q1, q2, 
      2		pk(maxk), tk(maxk), g_ord(maxg), 
      3		delg(maxg), kl_g(maxg,maxlay),
-     4		kout(maxlay,maxgas,maxg)
+     4		kout(maxlay,maxgas,maxg),frack(maxbin,maxgas)
 
         REAL    basehf(maxlay),basepf(maxlay),basehS(maxlay)
         REAL    scaleS(maxlay),jsource(maxlay)
@@ -195,8 +195,8 @@ C		Misc variables or continuum variables
 C		Common blocks and parameters
 
 	common/dust/vsec,xsec,nsec,ncont
-	common/interpk/lun, ireck, xmink, delk, pk, npk, tk, ntk, ng, 
-     1		delvk, fwhmk, g_ord, delg, kout
+	common/interpk/lun, ireck, xmink, delk, frack, pk, npk, 
+     1      tk, ntk, ng, delvk, fwhmk, g_ord, delg, kout
 	common/scatd/mu1, wt1, galb
 	common/scatter1/nmu, isol, dist1, lowbc, liscat, lnorm,
      1		lncons, lcons, sol_ang, emiss_ang, aphi, nf

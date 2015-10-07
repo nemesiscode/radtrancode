@@ -25,21 +25,21 @@ C-----------------------------------------------------------------------
 	REAL	P1, T1,DELV,VMIN, tmp, eps, KTEST,
      1		Y1, Y2, Y3, Y4, U, V, pmax, pmin, tmax, tmin, X, Z
         real weight(2),fac(maxc),cont(maxc),sum
-        REAL PRESS(NLAYER),TEMP(NLAYER),VWAVE
+        REAL PRESS(NLAYER),TEMP(NLAYER),VWAVE,FRAC
 
 C       Defines the maximum values for a series of variables (layers, 
 C       bins, paths, etc.)
         integer lun(maxbin,maxgas), ireck(maxbin,maxgas)
         real xmin(maxbin,maxgas), delx(maxbin,maxgas)
 	REAL KOUT(MAXLAY,MAXGAS,MAXG),K_G(MAXG),G_ORD(MAXG)
-        REAL DELG(MAXG)
+        REAL DELG(MAXG),fracx(maxbin,maxgas)
         REAL dkoutdt(maxlay,maxgas,maxg)
         REAL P(MAXK),T(MAXK)
 	REAL UT(MAXLAY),VT(MAXLAY),FWHMK,DELVK
         INTEGER IOFF(MAXLAY,4)
         LOGICAL INTERP
 
-	COMMON /INTERPK/LUN,IRECK,XMIN,DELX,P,NP,T,NT,
+	COMMON /INTERPK/LUN,IRECK,XMIN,DELX,FRACX,P,NP,T,NT,
      1			NG,DELVK,FWHMK,G_ORD,DELG,KOUT,DKOUTDT
 C-----------------------------------------------------------------------
 
@@ -73,9 +73,10 @@ C        print*,'kout(1,1,1)=',kout(1,1,1)
          LUN0 = LUN(IWAVE,IGAS)
          VMIN = XMIN(IWAVE,IGAS)
          DELV = DELX(IWAVE,IGAS)
+         FRAC = FRACX(IWAVE,IGAS)
          IREC0 = IRECK(IWAVE,IGAS)
 
-         print*,'IGAS,DELV,IWAVE,VMIN',IGAS,DELV,IWAVE,VMIN
+C         print*,'IGAS,DELV,IWAVE,VMIN',IGAS,DELV,IWAVE,VMIN
          IF(LUN0.LE.0) THEN
 C	  print*,'No data defined for gas : ',IGAS
           DO LAYER=1,NLAYER
@@ -104,17 +105,15 @@ C						  to prevent small numerical
 C						  errors in VWAVE screwing
 C					          things up between platforms
           IREC = IREC0+NP*NT*NG*N1
-         ELSE
-C         If irregularly gridded table, then it is assumed that the 
-C         calculation wavelengths coincide with the central wavelengths
-C         and thus IREC0 is assumed to hold the current record number, not
-C         that of the start of the table
+         ELSE       
+C         For irregularly gridded tables IREC0 is assumed to hold the 
+C         nearest record number in the table to the requested wavelength, not
+C         that of the start of the table. This has already been allocated
+C         by read_klist.f
           irec = irec0 
           N1=-1   
-C          print*,'get_k',iwave,vwave,irec
          ENDIF
 
-C	 print*,'igas,lun0,irec0,irec',IGAS,' ',lun0,' ',irec0,' ',irec
          READ(LUN0,REC=IREC)KTEST
 
          IF(KTEST.EQ.0.0)THEN
@@ -133,13 +132,21 @@ C          print*,'GET_K: Zero k-data for GAS: ',IGAS
 C				  current wavelength
           COINC=.FALSE.
          ELSE
-C         if(DELV < 0) then k-table should already be pointing to
-C         right place via ireck, which is set in read_klist.f
-          coinc=.true. 
+          if(delv.lt.0)then
+C          If delv < 0 then it is assumed that the calculation wavelengths 
+C          coincide with the central wavelengths and thus IREC0 is assumed to 
+C          hold the current record number of the nearest wavelength in the 
+C          table, already set up in read_klist.f.
+           COINC=.TRUE.
+          else
+C          If delv = 0 then it is not assumed that the calculation wavelengths 
+C          coincide with the central wavelengths and thus IREC0 is assumed to 
+C          hold the current record number of the nearest wavelength in the 
+C          table BELOW that requested, already set up in read_klist.f.
+           COINC=.FALSE.
+          endif
          ENDIF
 
-C         print*,tmp,vwave,abs(tmp-vwave),eps
-C         print*,'Get_K. COINC,N1,VWAVE = ',COINC,N1,VWAVE
 
          NTAB = NT*NP*NG
          if(NTAB.gt.MTAB)then
@@ -150,7 +157,6 @@ C         print*,'Get_K. COINC,N1,VWAVE = ',COINC,N1,VWAVE
 
          DO I=1,NTAB
           READ(LUN0,REC=IREC)TABLE(I)
-C          print*,IREC,TABLE(I)
           IREC=IREC+1
          ENDDO
 
@@ -259,12 +265,18 @@ C           print*,'Wavenumber coincides with tabulated value'
            ENDDO
 
           ELSE
-C           print*,'Wavenumber does not coincide with tabulated value'
-           weight(2) = ((vwave - tmp)/delv)
-           if(weight(2).gt.1.0)weight(2)=1.0
-           if(weight(2).lt.0.0)weight(2)=0.0
-           weight(1) = 1. - weight(2)
-
+           print*,'Wavenumber does not coincide with tabulated value'
+           if(delv.gt.0)then
+             weight(2) = ((vwave - tmp)/delv)
+             if(weight(2).gt.1.0)weight(2)=1.0
+             if(weight(2).lt.0.0)weight(2)=0.0
+             weight(1) = 1. - weight(2)
+C            print*,'weight',weight(1),weight(2)
+           else
+             weight(1)=frac
+             weight(2)=1.0-frac
+           endif
+           print*,'vwave,Weight : ',vwave,weight(1),weight(2)
            NTAB = NP*NT*NG
            count = 0
            do loop = 1, 2
@@ -286,6 +298,7 @@ C           print*,'Wavenumber does not coincide with tabulated value'
                  count = count + 1
                  cont(count) = k_g(I)
                  fac(count) = delg(I) * weight(loop)
+C                 print*,count,cont(count),fac(count)
                 ENDDO
            enddo
 
@@ -293,8 +306,19 @@ C           print*,'Wavenumber does not coincide with tabulated value'
            do I = 1, count
                 sum = sum + fac(I)
            enddo
-           call rank (delg, ng, cont, fac, count, k_g)
+C           print*,'sum',sum
 
+           if(weight(1).gt.0.and.weight(2).gt.0)then
+             call rank (delg, ng, cont, fac, count, k_g)
+           else
+             do i=1,ng
+              if(weight(2).eq.0)then
+                k_g(i)=cont(i)
+              else
+                k_g(i)=cont(i+ng)
+              endif
+             enddo
+           endif
          ENDIF
 
          DO I=1,NG
@@ -303,6 +327,7 @@ C           print*,igas,K_G(I)
            IF(NTEST)THEN
             KOUT(LAYER,IGAS,I)=1e-37
             PRINT*,'Warning, NAN returned by get_k.f for gas',igas
+            stop
            ELSE
             KOUT(LAYER,IGAS,I)=K_G(I)
            ENDIF

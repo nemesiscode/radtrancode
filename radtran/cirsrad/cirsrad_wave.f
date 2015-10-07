@@ -134,7 +134,7 @@ C		K table variables
      1		k_g(maxg), k_g1(maxg), k_g2(maxg), q1, q2, 
      2		pk(maxk), tk(maxk), g_ord(maxg), 
      3		delg(maxg), kl_g(maxg,maxlay),
-     4		kout(maxlay,maxgas,maxg),p1,p2
+     4		kout(maxlay,maxgas,maxg),p1,p2,frack(maxbin,maxgas)
 
         REAL    basehf(maxlay),basepf(maxlay),basehS(maxlay)
         REAL    scaleS(maxlay),Jsource(maxlay),delhs(maxlay)
@@ -213,8 +213,8 @@ C       Solar reference spectrum common block
 
 
 	common/dust/vsec,xsec,nsec,ncont
-	common/interpk/lun, ireck, xmink, delk, pk, npk, tk, ntk, ng, 
-     1		delvk, fwhmk, g_ord, delg, kout
+	common/interpk/lun, ireck, xmink, delk, frack, pk, npk, tk, 
+     1      ntk, ng, delvk, fwhmk, g_ord, delg, kout
 	common/scatd/mu1, wt1, galb
 	common/scatter1/nmu, isol, dist1, lowbc, liscat, lnorm,
      1		lncons, lcons, sol_ang, emiss_ang, aphi, nf
@@ -794,6 +794,7 @@ C
 C-----------------------------------------------------------------------
 
 			DO K = 1, ngas
+C                         print*,'I,K',I,K,lun(I,K)
 			 IF (lun(I,K).LT.0) THEN
 				DO L = 1, ng
 					k_g2(L) = 0.
@@ -803,31 +804,46 @@ C-----------------------------------------------------------------------
                           		k_g2(L)=KOUT(J,K,L)
 				ENDDO
 			 ENDIF
+C                         print*,'k_g2',k_g2(5)
 
 		 	 IF (K.EQ.1) THEN
 				q1 = frac(J,K)
 				DO L = 1, ng
 					k_g(L) = k_g2(L)
 				ENDDO
+C                                print*,'AA',q1,k_g(5)
 			 ELSE
 				q2 = frac(J,K)
 				DO L = 1, ng
 					k_g1(L) = k_g(L)
 				ENDDO
-
+C                                print*,'BB',q2,k_g1(5)
 C	This subroutine combines the absorption coefficient distributions
 C	of two overlapping gases. The overlap is implicitly assumed to be 
 C	random and the k-distributions are assumed to have NG-1 mean
 C	values and NG-1 weights. Correspondingly there are NG ordinates in
 C	total.
-				CALL overlap(delg,ng,k_g1,q1,
+                                if(q2.gt.0.and.q1.gt.0)then
+				 CALL overlap(delg,ng,k_g1,q1,
      1					k_g2,q2,k_g)
+                                else
+                                 if(q2.gt.0)then
+                                  do L=1,ng
+                                   k_g(l)=k_g2(l)
+                                  enddo                                  
+                                 endif
+C                                if(q1.gt.0)then leave k_g unchanged.
+                                endif
+
 				q1 = q1 + q2
+C                                print*,'CC',q1,k_g(5)
 			 ENDIF
 			ENDDO
 
+C                        print*,'Final'
 			DO K = 1, ng
 				kl_g(K,J) = k_g(K)
+C                                print*,k,j,kl_g(k,j)
 			ENDDO
 		ENDDO
 
@@ -918,11 +934,12 @@ C               Subtract Rayleigh scattering
 	
 	IF (imod(ipath).EQ.0) THEN
 
-cc		WRITE(*,*) 'CIRSRAD_WAVE: Imod= 0 =Pure Transmission,',
-cc     1			' creating output'
+		WRITE(*,*) 'CIRSRAD_WAVE: Imod= 0 =Pure Transmission,',
+     1			' creating output'
 
 		DO J = 1, nlays
 			corkout(Ipath,Ig) = corkout(Ipath,Ig) + taus(J)
+                        print*,'J,tau',J,taus(J)
 		ENDDO
 		corkout(Ipath,Ig) = exp(-corkout(Ipath,Ig))
 

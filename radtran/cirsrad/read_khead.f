@@ -84,7 +84,7 @@ C     Check to see if NG is within limits
        READ(LUN0,REC=IREC)TEMP(J)
        IREC=IREC+1
 302   CONTINUE
-      IF(DELV.LT.0.0)THEN
+      IF(DELV.LE.0.0)THEN
        DO 303 J=1,NPOINT   
        READ(LUN0,REC=IREC)VCEN(J)
        IREC = IREC + 1

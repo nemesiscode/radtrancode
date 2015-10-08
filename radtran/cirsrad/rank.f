@@ -68,11 +68,11 @@ C                print*,gdist(i)
 	ig = 1
 	sum=0.
 	do I = 1, nloop
-C                print*,'C',i,gdist(i),g_ord(ig+1)
+                print*,'C',i,ig,gdist(i),g_ord(ig),g_ord(ig+1)
 		if(gdist(I).lt.g_ord(ig+1).and.ig.le.ng)then
 			k_g(ig) = k_g(ig) + cont(I) * weight(I)
 			sum = sum + weight(I)
-C                        print*,'A',ig,k_g(ig),sum
+                        print*,'A',ig,k_g(ig),sum
 		else
 			frac = (g_ord(ig+1)-gdist(I-1))/
      1				(gdist(I)-gdist(I-1))
@@ -80,18 +80,18 @@ C                        print*,'A',ig,k_g(ig),sum
 			sum = sum + frac * weight(I)
 			k_g(ig) = k_g(ig)/sum
 			ig = ig + 1
-			sum = (1.-frac) * weight(I)
-			k_g(ig) = k_g(ig) + (1.-frac)*cont(I)
+                        if(ig.le.ng)then
+ 			 sum = (1.-frac) * weight(I)
+			 k_g(ig) = k_g(ig) + (1.-frac)*cont(I)
      1				*weight(I)
-C                        print*,'B',ig,k_g(ig),sum
+                         print*,'B',ig,k_g(ig),sum
+                        endif
 		endif
 	enddo
 	if (ig.eq.ng) then
          k_g(ig) = k_g(ig)/sum
-        else
-         print*,'***** Warning from rank.f, ig <> ng'
-         print*,ig,ng
         endif
+
 	return
 
 	end

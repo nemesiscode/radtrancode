@@ -86,8 +86,12 @@ C                        print*,'A',ig,k_g(ig),sum
 C                        print*,'B',ig,k_g(ig),sum
 		endif
 	enddo
-	if (ig.eq.ng) k_g(ig) = k_g(ig)/sum
-
+	if (ig.eq.ng) then
+         k_g(ig) = k_g(ig)/sum
+        else
+         print*,'***** Warning from rank.f, ig <> ng'
+         print*,ig,ng
+        endif
 	return
 
 	end

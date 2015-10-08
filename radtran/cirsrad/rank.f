@@ -68,11 +68,11 @@ C                print*,gdist(i)
 	ig = 1
 	sum=0.
 	do I = 1, nloop
-                print*,'C',i,ig,gdist(i),g_ord(ig),g_ord(ig+1)
+C                print*,'C',i,ig,gdist(i),g_ord(ig),g_ord(ig+1)
 		if(gdist(I).lt.g_ord(ig+1).and.ig.le.ng)then
 			k_g(ig) = k_g(ig) + cont(I) * weight(I)
 			sum = sum + weight(I)
-                        print*,'A',ig,k_g(ig),sum
+C                        print*,'A',ig,k_g(ig),sum
 		else
 			frac = (g_ord(ig+1)-gdist(I-1))/
      1				(gdist(I)-gdist(I-1))
@@ -84,7 +84,7 @@ C                print*,gdist(i)
  			 sum = (1.-frac) * weight(I)
 			 k_g(ig) = k_g(ig) + (1.-frac)*cont(I)
      1				*weight(I)
-                         print*,'B',ig,k_g(ig),sum
+C                         print*,'B',ig,k_g(ig),sum
                         endif
 		endif
 	enddo

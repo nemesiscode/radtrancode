@@ -100,17 +100,16 @@ C-----------------------------------------------------------------------
 			k_g(ig) = k_g(ig)/sum
 			dkdt(ig) = dkdt(ig)/sum
 			ig=ig+1
-			sum = (1.-frac) * weight(I)
-			k_g(ig) = (1.-frac)*cont(I)*weight(I)
-			dkdt(ig) = (1.-frac)*dcont(I)*weight(I)
+                        if(ig.le.ng)then
+ 			 sum = (1.-frac) * weight(I)
+			 k_g(ig) = (1.-frac)*cont(I)*weight(I)
+			 dkdt(ig) = (1.-frac)*dcont(I)*weight(I)
+                        endif
 		endif
 	enddo
 	if (ig.eq.ng) then
           k_g(ig) = k_g(ig)/sum
           dkdt(ig) = dkdt(ig)/sum
-        else
-         print*,'***** Warning from rankk.f, ig <> ng'
-         print*,ig,ng
         endif
 
 	return

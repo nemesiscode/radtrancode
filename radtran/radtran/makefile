@@ -44,6 +44,7 @@ F_SOURCES = \
 	nparacon.f \
 	ciaread.f \
 	ch4cont.f \
+	nh3cont.f \
 	chico2.f \
 	burchco2.f \
 	conray.f \

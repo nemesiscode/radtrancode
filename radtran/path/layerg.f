@@ -102,6 +102,12 @@ C Looking for keywords in file
         READ(TEXT(7:),*)LAYANG
       ELSE IF(TEXT(1:5).EQ.'LAYHT')THEN
         READ(TEXT(6:),*)LAYHT
+        IF(LAYHT.LT.H(1))THEN
+         PRINT*,'Warning from layerg.f'
+         PRINT*,'LAYHT < H(1)'
+         PRINT*,'Resetting LAYHT = H(1)'
+         LAYHT=H(1)
+        ENDIF
       ELSE IF(TEXT(1:6).EQ.'LAYINT')THEN
         READ(TEXT(7:),*)LAYINT
       ELSE IF(TEXT(1:6).EQ.'LAYTYP')THEN

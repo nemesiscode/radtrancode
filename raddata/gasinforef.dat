@@ -123,7 +123,16 @@
 #                       and new gases CH2CCH2, C4N2, C5H5N, C4H4N2, 
 #                                     C7H8, C8H6, C5H5CN
 #                       and updated C3H8 partition function to 25 modes.
-#
+#   	PGJI		26.Oct.15  Data for TiO and VO came from Jaemin Lee
+#			and no-one knows from where! For TiO in particular
+#			there were 5 isotopes with the same properties and the
+# 			source of the partition function is unknown. 
+#			Data replaced with single isotope of TiO using
+#			terrestrial mean atomic weight of 47.8668 and oxygen 
+#			with mean molecular weight of 15.99491. For VO assume
+#			mean molecular weight of 50.94396.
+#			Set partition function to default linear rotor in
+#			absence of any better information.
 
  ------------------------------------------------
   1                 gas identifier
@@ -666,23 +675,16 @@
  ------------------------------------------------
  62                 gas identifier
  TiO
-  5                 number of isotopes
-  1 1.0000000   63.8660   (581)  isotope id, relative abun, mass #
+  1                 number of isotopes
+  1 1.0000000   63.8617   (486)  isotope id, relative abun, mass #
    -860.00527      5.25794      4.11768e-03  4.44797e-07
-  2 1.0000000   63.8660   (582)  isotope id, relative abun, mass #
-   -860.00527      5.25794      4.11768e-03  4.44797e-07
-  3 1.0000000   63.8660   (583)  isotope id, relative abun, mass #
-   -860.00527      5.25794      4.11768e-03  4.44797e-07
-  4 1.0000000   63.8660   (584)  isotope id, relative abun, mass #
-   -860.00527      5.25794      4.11768e-03  4.44797e-07
-  5 1.0000000   63.8660   (585)  isotope id, relative abun, mass #
-   -860.00527      5.25794      4.11768e-03  4.44797e-07
+      +0.00000E+00 +1.00000E+00 +0.00000E+00 +0.00000E+00
  ------------------------------------------------
  63                 gas identifier
  VO
   1                 number of isotopes
-  1 1.0000000   66.9409   (591)  isotope id, relative abun, mass #
-   -922.20713      4.96349      2.42690e-03  1.66643e-07
+  1 1.0000000   66.9389   (516)  isotope id, relative abun, mass #
+      +0.00000E+00 +1.00000E+00 +0.00000E+00 +0.00000E+00
  ------------------------------------------------
  64                 gas identifier
  CH2CCH2

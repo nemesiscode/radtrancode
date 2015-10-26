@@ -939,7 +939,7 @@ C               Subtract Rayleigh scattering
 
 		DO J = 1, nlays
 			corkout(Ipath,Ig) = corkout(Ipath,Ig) + taus(J)
-                        print*,'J,tau',J,taus(J)
+C                        print*,'J,tau',J,taus(J)
 		ENDDO
 		corkout(Ipath,Ig) = exp(-corkout(Ipath,Ig))
 

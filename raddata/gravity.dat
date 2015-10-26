@@ -1,4 +1,4 @@
-56
+57
 # *****************************************************************
 # Data for solar system planets extracted from Astronomical Almanac 1994, pE88
 # *****************************************************************
@@ -55,10 +55,11 @@
 50  Earth_v4      5.9742  1.08263 -2.54    -1.61  6059.23  0.00335364  0.99726968 1
 51  Jupiter3   1803.9     14.75    0.0   -580.0  71492.0   0.064874    0.41354    0
 52  Jupiter4   1898.8     14.75    0.0   -580.0  67917.4   0.064874    0.41354    0
-53  HD3651B   65000.0      0.0     0.0      0.0  70000.0   0.    100000.          0
+53  HD3651B   65000.0      0.0     0.0      0.0  70000.0   0.     100000.0        0
 54  model4.5  23172.1     0.0      0.0      0.0  69911.0   0.0    100000.0        0
 55  model5.5 231720.9     0.0      0.0      0.0  69911.0   0.0    100000.0        0
 56  model3.5   2317.2     0.0      0.0      0.0  69911.0   0.0    100000.0        0
+57  WASP-52b    873.45    0.0      0.0      0.0  90794.8   0.0    100000.0        0
 # Notes. Some disagreement of radius of HD189733b. Originally set here to be 79021.71 
 # from somewhere, but this was based on an older estimate of the star radius. Current
 # estimate of plan size (via Wikipedia) is 81357.9 km, but this is still not quite 

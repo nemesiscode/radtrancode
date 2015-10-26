@@ -285,8 +285,8 @@ C       to computed tangent height.
       COSA=COS(DTR*ANGLE)
       Z0=RADIUS+BASEH(BOTLAY)
 
-      print*,'ATMG Check: LIMB,RADIUS,ANGLE,SIN2A,COSA,Z0'
-      print*,'ATMG Check: ',LIMB,RADIUS,ANGLE,SIN2A,COSA,Z0
+C      print*,'ATMG Check: LIMB,RADIUS,ANGLE,SIN2A,COSA,Z0'
+C      print*,'ATMG Check: ',LIMB,RADIUS,ANGLE,SIN2A,COSA,Z0
 
 C--------------------------------------------------------------
 C

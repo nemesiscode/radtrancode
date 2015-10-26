@@ -273,10 +273,13 @@ C      has been defined at the 0km level
 C      Compute zenith angle of ray at bottom of bottom layer, assuming it
 C      has been defined at the top of the atmosphere
        Z0=RADIUS+BASEH(NLAY)+DELH(NLAY)
+       print*,'NLAY,BASEH(NLAY)+DELH(NLAY)',BASEH(NLAY),DELH(NLAY)
 C      Calculate tangent altitude of ray at lowest point
+       print*,'ANGLE,DTR,SIN(ANGLE)=',ANGLE,DTR,SIN(ANGLE*DTR)
+       print*,'Z0, RADIUS = ',Z0,RADIUS
        HTAN=Z0*SIN(ANGLE*DTR)-RADIUS
-       PRINT*,'Near-limb path does not reach bottom layer'
-       PRINT*,'Tangent altitude, radius is : ',HTAN,HTAN+RADIUS
+       PRINT*,'Near-limb path - RADIUS=',RADIUS
+       PRINT*,'Tangent altitude, tangent radius is : ',HTAN,HTAN+RADIUS
        IF(HTAN.LE.BASEH(BOTLAY))THEN
 C      Calculate zenith angle at bottom of lowest layer
         ANGLE=(1./DTR)*ASIN(Z0*SIN(DTR*ANGLE)/(RADIUS+BASEH(BOTLAY)))
@@ -301,8 +304,8 @@ C       to computed tangent height.
       COSA=COS(DTR*ANGLE)
       Z0=RADIUS+BASEH(BOTLAY)
 
-      print*,'ATM Check: LIMB,ANGLE,SIN2A,COSA,Z0'
-      print*,'ATM Check: ',LIMB,ANGLE,SIN2A,COSA,Z0
+C      print*,'ATM Check: LIMB,ANGLE,SIN2A,COSA,Z0'
+C      print*,'ATM Check: ',LIMB,ANGLE,SIN2A,COSA,Z0
 
 
 C     now calculating atmospheric paths
@@ -575,7 +578,7 @@ C       Assumes int. rad. field calc.
         IMOD(NPATH)=23  
       ENDIF
       IF(NEARLIMB)IMOD(NPATH)=23
-      print*,'SINGLE,SPHSINGLE',SINGLE,SPHSINGLE
+C      print*,'SINGLE,SPHSINGLE',SINGLE,SPHSINGLE
       IF(SINGLE)IMOD(NPATH)=16
       IF(SPHSINGLE)IMOD(NPATH)=28
       print*,NPATH,IMOD(NPATH)

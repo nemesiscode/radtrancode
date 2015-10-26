@@ -265,18 +265,18 @@ C           print*,'Wavenumber coincides with tabulated value'
            ENDDO
 
           ELSE
-           print*,'Wavenumber does not coincide with tabulated value'
+C           print*,'Wavenumber does not coincide with tabulated value'
            if(delv.gt.0)then
              weight(2) = ((vwave - tmp)/delv)
              if(weight(2).gt.1.0)weight(2)=1.0
              if(weight(2).lt.0.0)weight(2)=0.0
              weight(1) = 1. - weight(2)
-C            print*,'weight',weight(1),weight(2)
+C             print*,'weight',vwave,tmp,weight(1),weight(2)
            else
              weight(1)=frac
              weight(2)=1.0-frac
            endif
-           print*,'vwave,Weight : ',vwave,weight(1),weight(2)
+C           print*,'vwave,Weight : ',vwave,weight(1),weight(2)
            NTAB = NP*NT*NG
            count = 0
            do loop = 1, 2

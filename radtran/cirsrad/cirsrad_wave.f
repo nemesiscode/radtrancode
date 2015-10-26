@@ -934,8 +934,8 @@ C               Subtract Rayleigh scattering
 	
 	IF (imod(ipath).EQ.0) THEN
 
-		WRITE(*,*) 'CIRSRAD_WAVE: Imod= 0 =Pure Transmission,',
-     1			' creating output'
+C		WRITE(*,*) 'CIRSRAD_WAVE: Imod= 0 =Pure Transmission,',
+C     1			' creating output'
 
 		DO J = 1, nlays
 			corkout(Ipath,Ig) = corkout(Ipath,Ig) + taus(J)

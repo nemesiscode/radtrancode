@@ -118,13 +118,13 @@ $(LIBRARY)(%.o): %.f $(INCLUDES)
 bin :   \
 	Nemesis \
 	NemesisL \
-	NemesisMCS \
 	NemesisMC \
 	NemesisMCMC \
 	NemesisPT \
 	Nemesisdisc \
 	Generatespx \
-	GenerateMCSspx
+	GenerateMCSspx \
+#	NemesisMCS
 
 Nemesis: nemesis.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Nemesis nemesis.f $(LIBRARY) \

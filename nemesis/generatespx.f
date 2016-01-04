@@ -31,7 +31,12 @@ C     Set measurement vector and source vector lengths here.
 
 C     New compiler time
       real tot_time
-      double precision time,time1,time2
+      real rate
+      integer c1,c2,cr,time1,time2
+      CALL system_clock(count_rate=cr)
+      CALL system_clock(count_max=cm)
+      rate = REAL(cr)
+      
 C     TIME: Temporary variable returned by GETTIME containing the system time.
 C     TIME1: System time at the beginning of program execution.
 C     TIME2: System time at the end of program execution.
@@ -91,8 +96,7 @@ C                                         files.
 C     ------------ Scattering phase function initialisation -------------
 
 C     New compiler time
-      call gettime(time)
-      time1=time
+      call system_clock(time1)
 
       CALL prompt('Enter run name : ')
       READ(5,1)buffer
@@ -344,9 +348,8 @@ C     Add forward errors to measurement covariances
       if(lin.gt.0)close(lpre)
 
 C     New compiler time
-      call gettime(time)
-      time2=time
-      tot_time=sngl(time2-time1)
+      call system_clock(time2)
+      tot_time=(time2-time1)/rate
 
       write(6,*)'Model run OK'
       WRITE(6,244)tot_time

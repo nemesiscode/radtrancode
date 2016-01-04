@@ -47,7 +47,7 @@ c  ** if arcfile exists then get tname from that **
 
 C      tname = '/Users/patirwin/radtrancode/trunk/raddata/'
 
-      tname ='/Users/glnat/CIRS/Radtran/radtrancode/trunk/raddata/'
+      tname ='/Users/cnixon/radtrancode/trunk/raddata/'
 
       endif
       

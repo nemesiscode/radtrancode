@@ -115,7 +115,7 @@ C Read in spectral parameters ...
 22    CALL PROMPT('Enter bin width and cut-off limit [%]')
       READ(*,*)BINSIZ,PERCEN
       PERCEN = PERCEN*0.01
-      IF(BINSIZ.LT.0.01)THEN
+      IF(BINSIZ.LT.0.00001)THEN
         WRITE(*,*)'Bin size is too small'
         GOTO 22
       ENDIF
@@ -245,6 +245,8 @@ C compilers (notably Prospero Fortran for MS-DOS)
       
 C     For each bin ...
       NBIN = INT((VMAX-VMIN)/BINSIZ) + 1
+c      print*, nbin
+c      stop
       
 C     First setting LSTLIN to one record before the first in the first bin
 C     (FNDWAV returns first record in DBREC) each bin then starts off at one
@@ -255,7 +257,7 @@ C     record after LSTLIN and then sets it to the last record in the bin.
          VLOW = VMIN + FLOAT(IBIN-1)*BINSIZ
          VHIGH = VMIN + FLOAT(IBIN)*BINSIZ
          WRITE(*,121)IBIN,VLOW,VHIGH
- 121     FORMAT(I5,F12.3,'-',F12.3)
+ 121     FORMAT(I7,F12.5,'-',F12.5)
 C     Find wavenumber region in data base
          FSTLIN = LSTLIN + 1
          CALL FNDWAV(VHIGH)

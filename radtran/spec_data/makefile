@@ -81,7 +81,7 @@ bin :    \
 	Selecttemploop \
 	Summary \
 	Write_xsec\
-	Li_linestemp
+#	Li_linestemp
 
 Merge : merge.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Merge merge.f $(LIBRARY) \

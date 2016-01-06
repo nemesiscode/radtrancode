@@ -33,7 +33,8 @@ C (layers, bins, paths, etc.)
       REAL dist,wnumbot,wnumtop,delv,fwhm,gradtsurf(maxout3)
 
       REAL tot_time
-      DOUBLE PRECISION time,time1,time2
+      real rate
+      integer c1,c2,cr,time1,time2,cm
 
       REAL calcout(maxout3),gradients(maxout4)
       REAL xmap(maxv,maxgas+2+maxcon,maxpro)
@@ -77,8 +78,11 @@ C     Read in gas information
 
 C Obtain the system time for use in determining the total time used by the
 C program since execution.
-      CALL gettime(time)
-      time1= time
+      CALL system_clock(count_rate=cr)
+      CALL system_clock(count_max=cm)
+      rate = REAL(cr)
+
+      CALL system_clock(time1)
 
 C Reset xwave to force read of hgphase* files for scloud10-11.
       xwave(1)=-1
@@ -330,9 +334,8 @@ C
 C-----------------------------------------------------------------------
 
       WRITE(*,*)' CIRSDRVG_WAVE.f :: calculation complete.'
-      CALL GETTIME(time)
-      time2 = time
-      tot_time = sngl(time2-time1)
+      CALL system_clock(time2)
+      tot_time =  (time2-time1)/rate
       WRITE(*,200)tot_time
 200   FORMAT(' Elapsed time including convolution (sec)= ',F8.1)
 

@@ -21,7 +21,7 @@ F_SOURCES= \
 	rankk.f \
 	sort2g.f \
 	adjustgrad.f \
-	subpathg.f
+	subpathg.f 
 
 INCDIR = ../includes
 #INCLUDES = $(INCDIR)/dbcom.f $(INCDIR)/laycom.f $(INCDIR)/laygrad.f \

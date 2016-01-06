@@ -43,12 +43,15 @@ C     ****************************************************************
       PARAMETER(MWAVE=500)
       REAL VMIN,VMAX,DELV,VWAVE(MWAVE)
 
-      REAL TOT_TIME
-      DOUBLE PRECISION TIME,TIME1,TIME2
+      real tot_time
+      real rate
+      integer c1,c2,cr,time1,time2,cm
 
 C     CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-      CALL GETTIME(TIME)
-      TIME1= TIME
+      CALL system_clock(count_rate=cr)
+      CALL system_clock(count_max=cm)
+      rate = REAL(cr)
+      call system_clock(time1)
 
       NPHASE=100
       DTR = PI/180.0
@@ -295,10 +298,9 @@ C      Regrid phase functions to equal probability steps
 
 
       WRITE(*,*)'%Monteck.f :: calculation complete'
-      CALL GETTIME(TIME)
-      TIME2= TIME
-      TOT_TIME=SNGL(TIME2-TIME1)
-      WRITE(*,200)TOT_TIME
+      call system_clock(time2)
+      tot_time=(time2-time1)/rate
+      WRITE(*,200)tot_time
 200   FORMAT(' Elapsed time (sec)= ',F8.1)
 
       END

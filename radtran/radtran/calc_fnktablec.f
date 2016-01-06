@@ -58,8 +58,9 @@ C-----------------------------------------------------------------------------
       REAL VMINC,VMAXC
       INTEGER IREC,IREC0,I,IWAVE,NFIL,IMULTI
       INTEGER IEXO,IPTF
-      REAL TOT_TIME
-      DOUBLE PRECISION TIME,TIME1,TIME2
+      real tot_time
+      real rate
+      integer c1,c2,cr,time1,time2,cm
       REAL TFIL(MFIL),VFIL(MFIL),V1(MFIL),V2(MFIL),T1(MFIL)
       CHARACTER*100 KTAFIL,FILFILE,OPFILE1
       CHARACTER*1 ANS
@@ -74,8 +75,10 @@ C     K_G: Calculated k-distribution.
 C     DEL_G: Gauss-Legendre weights for integration.
 C     **** all these are now defined by zgauleg.f ***
 
-      CALL GETTIME(TIME)
-      TIME1= TIME
+      CALL system_clock(count_rate=cr)
+      CALL system_clock(count_max=cm)
+      rate = REAL(cr)
+      call system_clock(time1)
 
       CALL PROMPT('Enter IEXO, IPTF : ')
       READ*,IEXO,IPTF
@@ -484,10 +487,9 @@ C its main usefulness is when the code crashes prior to completion.
       CLOSE(UNIT= LUN1,STATUS= 'DELETE')
 
       CALL WTEXT('%CALC_KTABLEC.f :: calculation complete')
-      CALL GETTIME(TIME)
-      TIME2= TIME
-      TOT_TIME=SNGL(TIME2-TIME1)
-      WRITE(*,244)TOT_TIME
+      call system_clock(time2)
+      tot_time=(time2-time1)/rate
+      WRITE(*,244)tot_time
 244   FORMAT('%Elapsed time (s) = ',F8.1)
 
       CLOSE(IFIL)

@@ -70,9 +70,10 @@ C paths, etc.)
      1			VWaveMin, VWaveMax, USpecMin, USpecMax,
      2			VConvMin, VConvMax, SpecMin, SpecMax
 
-      REAL		TOT_TIME,tsurf,vem(MAXSEC),emissivity(MAXSEC)
-      DOUBLE PRECISION	TIME,TIME1,TIME2
-
+      REAL		tsurf,vem(MAXSEC),emissivity(MAXSEC)
+      real tot_time
+      real rate
+      integer c1,c2,cr,time1,time2,cm
       CHARACTER*80	TEXT
       CHARACTER*100	opfile, patfile, outfile, idlfile, ciafil
       CHARACTER*100     confil
@@ -111,8 +112,10 @@ C-----------------------------------------------------------------------
       jloggf=-1
 
 
-      CALL GETTIME(TIME)
-      TIME1= TIME
+      CALL system_clock(count_rate=cr)
+      CALL system_clock(count_max=cm)
+      rate = REAL(cr)
+      call system_clock(time1)
       xwave(1)=-1                       ! Reset to force read of hgphase*
 C                                         files for scloud11-13
 
@@ -432,10 +435,9 @@ C-----------------------------------------------------------------------
       ENDDO
 
       WRITE(*,*)'%CIRSDRV_WAVE.f :: calculation complete'
-      CALL GETTIME(TIME)
-      TIME2= TIME
-      TOT_TIME=SNGL(TIME2-TIME1)
-      WRITE(*,200)TOT_TIME
+      call system_clock(time2)
+      tot_time=(time2-time1)/rate
+      WRITE(*,200)tot_time
 
 C-----------------------------------------------------------------------
 C

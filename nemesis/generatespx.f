@@ -32,10 +32,8 @@ C     Set measurement vector and source vector lengths here.
 C     New compiler time
       real tot_time
       real rate
-      integer c1,c2,cr,time1,time2
-      CALL system_clock(count_rate=cr)
-      CALL system_clock(count_max=cm)
-      rate = REAL(cr)
+      integer c1,c2,cr,time1,time2,cm
+     
       
 C     TIME: Temporary variable returned by GETTIME containing the system time.
 C     TIME1: System time at the beginning of program execution.
@@ -96,6 +94,9 @@ C                                         files.
 C     ------------ Scattering phase function initialisation -------------
 
 C     New compiler time
+      CALL system_clock(count_rate=cr)
+      CALL system_clock(count_max=cm)
+      rate = REAL(cr)
       call system_clock(time1)
 
       CALL prompt('Enter run name : ')

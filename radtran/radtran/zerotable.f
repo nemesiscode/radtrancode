@@ -36,9 +36,10 @@ C NT: Number of temperatures.
       PARAMETER (MDATA=20,QROT=1.5,NG=10)
 C NG: Number of ordinates in k-distribution.
 
-      REAL TOT_TIME
+      real tot_time
+      real rate
+      integer c1,c2,cr,time1,time2,cm
 C TOT_TIME: The total system time it took to complete program execution.
-      DOUBLE PRECISION TIME,TIME1,TIME2
 C TIME: Temporary variable returned by GETTIME containing the system time.
 C TIME1: System time at the beginning of program execution.
 C TIME2: System time at the end of program execution.
@@ -109,8 +110,10 @@ C******************************** CODE *********************************
 
 C Obtain the system time for use in determining the total time used by the
 C program since execution.
-      CALL GETTIME(TIME)
-      TIME1 = TIME
+      CALL system_clock(count_rate=cr)
+      CALL system_clock(count_max=cm)
+      rate = REAL(cr)
+      call system_clock(time1)
 
       WRITE(*,*)'Enter wavenumber minumum : '
       READ*,VMIN
@@ -214,7 +217,8 @@ C
 C	Close files and shut down the program.
 C
 C-----------------------------------------------------------------------
-
+      call system_clock(time2)
+      tot_time=(time2-time1)/rate
       END
 ************************************************************************
 ************************************************************************

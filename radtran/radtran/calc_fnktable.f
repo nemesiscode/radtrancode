@@ -81,9 +81,11 @@ C NT: Number of temperatures.
       PARAMETER (MDATA=20,QROT=1.5,NGMAX=21,MFIL=1000)
 C NG: Number of ordinates in k-distribution.
 
-      REAL TOT_TIME,TFIL(MFIL),VFIL(MFIL)
+      REAL TFIL(MFIL),VFIL(MFIL)
 C TOT_TIME: The total system time it took to complete program execution.
-      DOUBLE PRECISION TIME,TIME1,TIME2
+      real tot_time
+      real rate
+      integer c1,c2,cr,time1,time2,cm
 C TIME: Temporary variable returned by GETTIME containing the system time.
 C TIME1: System time at the beginning of program execution.
 C TIME2: System time at the end of program execution.
@@ -128,8 +130,10 @@ C******************************** CODE *********************************
 
 C Obtain the system time for use in determining the total time used by the
 C program since execution.
-      CALL GETTIME(TIME)
-      TIME1 = TIME
+      CALL system_clock(count_rate=cr)
+      CALL system_clock(count_max=cm)
+      rate = REAL(cr)
+      call system_clock(time1)
 C     Set NFIL to -1 to stop calc_fkdist_wavec trying to average over a
 C     filter function
 
@@ -386,10 +390,9 @@ C since its main usefulness is when the code crashes prior to completion.
       CLOSE(UNIT=LUN1,STATUS='DELETE')
 
       WRITE(*,*)' CALC_FNKTABLE.f :: calculation complete.'
-      CALL GETTIME(TIME)
-      TIME2 = TIME
-      TOT_TIME = SNGL(TIME2 - TIME1)
-      WRITE(*,244)TOT_TIME
+      call system_clock(time2)
+      tot_time=(time2-time1)/rate
+      WRITE(*,244)tot_time
 244   FORMAT(/' Elapsed time (s) = ',F8.1)
 
       END

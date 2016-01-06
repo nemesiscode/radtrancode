@@ -31,13 +31,13 @@ C     Set measurement vector and source vector lengths here.
       INCLUDE 'arraylen.f'
 
 C     New compiler time
-      real tot_time
-      real rate
-      integer c1,c2,cr,cm,time1,time2,cm
+      
 C     TIME: Temporary variable returned by GETTIME containing the system time.
 C     TIME1: System time at the beginning of program execution.
 C     TIME2: System time at the end of program execution.
-
+      real tot_time
+      real rate
+      integer c1,c2,cr,cm,time1,time2
       character*100 buffer,ename
       integer i,j,iscat,ica,k,lspec,lout,ispec,nspec,nspecx,ioff
       real xn(mx),se(my),err1(mx),woff,xdiff

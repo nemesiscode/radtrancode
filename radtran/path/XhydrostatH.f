@@ -15,7 +15,8 @@ C     ****************************************************************
       INTEGER ISOGAS(MAXGAS),IDGAS(MAXGAS)
       REAL H(MAXPRO),P(MAXPRO),T(MAXPRO),LATITUDE,DELH,X,TEMP
       REAL RADIUS,G,MOLWT,R,SCALE(MAXPRO),VMR(MAXPRO,MAXGAS)
-      REAL XVMR(MAXGAS),XMOLWT,CALCMOLWT,SH
+      REAL XVMR(MAXGAS),XMOLWT,CALCMOLWT,SH,ATDEPTH,ATDEPTH1
+      REAL XDEPTH
       CHARACTER*8 PNAME
 
 
@@ -23,6 +24,9 @@ C     **************** Code **************
 
 C     R no included in constdef.f (RGAS) and needs scaling for units here.
       R = RGAS*0.001
+
+999   CONTINUE
+      ATDEPTH = H(NPRO)-H(1)
 
 C     First find level closest to zero altitude
       DELH=1000.0
@@ -64,6 +68,12 @@ C     First find level closest to zero altitude
            H(I) = H(I+1) - SH*LOG(P(I)/P(I+1))
 311   CONTINUE
 
+      ATDEPTH1=H(NPRO)-H(1)
+   
+      XDEPTH = 100*ABS((ATDEPTH1-ATDEPTH)/ATDEPTH)
+      IF(XDEPTH.GT.1.0)THEN
+        GOTO 999
+      ENDIF
 
       RETURN
       END

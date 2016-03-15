@@ -57,6 +57,10 @@ C-----------------------------------------------------------------------
 C       LutzOwen data in units of m-1 amagat-1
         nh3cont = 1000*kabs/26850.0	! Convert to units of 1e20 cm2/mol 
 
+C       For some reason seem to need extra factor of 10 to make this
+C       consistent with Bowles data at longer wavelengths
+        nh3cont=nh3cont*10.
+
 	return
 
 	end

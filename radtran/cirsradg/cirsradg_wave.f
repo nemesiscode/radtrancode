@@ -238,6 +238,7 @@ C DELK: K-table point-spacing [cm-1].
       REAL amo(maxgas)
       REAL k_gn(maxg,maxgas),dkgndt(maxg,maxgas)
       REAL k_g(maxg),delg(maxg),g_ord(maxg)
+      REAL frack(maxbin,maxgas)
 C K_G: Calculated k-distribution.
 C DEL_G: Gauss-Legendre weights for integration.
 C G_ORD: Gauss-Legendre ordinates for calculating the k-distribution.
@@ -299,8 +300,8 @@ C     Solar reference spectrum common block
 
 C Common blocks ...
       COMMON /dust/ vsec,xsec,nsec,ncont
-      COMMON /interpk/ lun,ireck,xmink,delk,pk,npk,tk,ntk,ng, 
-     1 delvk,fwhmk,g_ord,delg,kout,dkoutdt
+      COMMON /interpk/ lun,ireck,xmink,delk,frack,pk,npk,tk,ntk,
+     1 ng, delvk,fwhmk,g_ord,delg,kout,dkoutdt
       COMMON /scatd/ mu1,wt1,galb 
       common/alb/nalb,valb,alb
       COMMON /scatter1/ nmu,isol,dist1,lowbc,liscat,lnorm,
@@ -750,13 +751,25 @@ cc	      WRITE(*,*)' creating output ...'
             ENDDO
             tmp = corkout(ipath,ig)
             corkout(ipath,ig) = dpexp(-tmp)
+
+C           If a solar file exists and iform=4 we should multiply the
+C           transmission by the solar flux
+            xfac=1.
+            if(iread.eq.999.and.iform.eq.4)then
+              call get_solar_wave(vwave,dist,xsolar)
+C              xfac=xsolar
+            endif
+
             DO j=1,nlays
               DO k1=1,nsw
                 k=isw(k1)
                 dcoutdq(ipath,ig,j,k)=-tmp*corkout(ipath,iG)*
-     1          dtaudq(j,k)
+     1          dtaudq(j,k)*xfac
               ENDDO
             ENDDO
+
+            corkout(ipath,ig)=corkout(ipath,ig)*xfac
+
           ELSE IF(imod(ipath).EQ.1)THEN
 cc	      WRITE(*,*)' CIRSRADG.f :: Imod= 1 ==> absorption calc.'
 cc	      WRITE(*,*)' creating output ...'

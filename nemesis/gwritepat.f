@@ -54,6 +54,10 @@ c  ** variables for solar reflected cloud **
      1  cellpress,celltemp
       INTEGER IPZEN
 
+      integer iread,nspt,iform
+      real solrad,swave(maxbin),srad(maxbin)
+      common /solardat/iread,iform,solrad,swave,srad,nspt
+
       
       CALL FILE(RUNNAME,RUNNAME,'pat')
 
@@ -156,7 +160,11 @@ C     sol_ang is then the tangent altitude)
       ENDIF
     
       IF(ISCAT.EQ.0)THEN
-       WRITE(31,1)'therm'
+       IF(iform.eq.4)then
+        WRITE(31,1)'notherm'
+       ELSE
+        WRITE(31,1)'therm'
+       ENDIF
        WRITE(31,1)'noscatter'
       ELSE
        IF(ISCAT.EQ.1.OR.ISCAT.EQ.2)THEN

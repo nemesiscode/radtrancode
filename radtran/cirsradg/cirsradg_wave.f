@@ -757,7 +757,7 @@ C           transmission by the solar flux
             xfac=1.
             if(iread.eq.999.and.iform.eq.4)then
               call get_solar_wave(vwave,dist,xsolar)
-C              xfac=xsolar
+              xfac=xsolar
             endif
 
             DO j=1,nlays

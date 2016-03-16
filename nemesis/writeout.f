@@ -129,6 +129,11 @@ C      NemesisPT format
         write(lout,*)'Transit depth: 100*Planet_area/Stellar_area'
         xfac=1.
 
+C      Transmission*solar_flux
+       elseif(iform.eq.4) then
+        write(lout,*)'Solar flux: W cm-2 (cm-1)-1'
+        xfac=1.
+
 C      Default
        else
         print*,'Error in writeout - iform not defined. Default=0'
@@ -157,6 +162,11 @@ C      Spectral irradiance format
 C      NemesisPT format
        elseif(iform.eq.2)then
         write(lout,*)'Transit depth: 100*Planet_area/Stellar_area'
+        xfac=1.
+
+C      Transmission*solar_flux
+       elseif(iform.eq.4) then
+        write(lout,*)'Solar flux: W cm-2 um-1'
         xfac=1.
 
 C      Default format

@@ -722,7 +722,7 @@ C	pressure to 1d for passing into subroutine
 320			CONTINUE
 
 C	ID1= 0 means no diagnostic print statements while in CIACON.
-			id1 = 0
+			id1 = 1
 			XLEN = DELH(J)
 
 C       This goes off to do the collision induced-absorption
@@ -942,6 +942,14 @@ C     1			' creating output'
 C                        print*,'J,tau',J,taus(J)
 		ENDDO
 		corkout(Ipath,Ig) = exp(-corkout(Ipath,Ig))
+
+C               If a solar file exists and iform=4 we should multiply the
+C               transmission by the solar flux
+                if(iread.eq.999.and.iform.eq.4)then
+                 call get_solar_wave(x,dist,xsolar)
+                 corkout(Ipath,Ig)=corkout(Ipath,Ig)*xsolar
+                endif
+
 
 	ELSEIF (imod(ipath).EQ.1) THEN	
 

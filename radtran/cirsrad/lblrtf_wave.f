@@ -104,7 +104,7 @@ C       Run path file to create driver file.
 C
 C-----------------------------------------------------------------------
 
-        CALL subpath(opfile, npath)
+        CALL subpath(opfile)
 
         npath1= npath
 

@@ -20,7 +20,7 @@ C***********************************************************************
      2 MAXK=20, MAXMU=21, MAXSCATLAY=40, MAXPHAS=50, MAXOUT=100000,
      3 MAXF=41, MAXV=401, MPOINT=16000, MAXOUT3=MAXOUT,
      4 MAXOUT4=MAXOUT*35, MAXRANK=MAXG*MAXG, MAXINC=2*MAXPAT, 
-     5 MAXFIL=1000, MAXPRO=MAXPAT, IDIM=2048,IORDER=2,IORDP1=IORDER+1)
+     5 MAXFIL=1000, MAXPRO=MAXPAT, IDIM=1024,IORDER=2,IORDP1=IORDER+1)
 C     MAXLAY: maximum number of layers allowed.
 C     MAXPAT: maximum number of paths allowed.
 C     MAXGAS: maximum number of gases allowed.

@@ -96,6 +96,7 @@ openr,1,retname
       3: np = 1
       4: np = 3
       6: np = 2
+      7: np = 2
       8: np = 3
       9: np = 3
       10: np = 4
@@ -105,7 +106,14 @@ openr,1,retname
       14: np = 3
       15: np = 3
       16: np = 4
+      17: np = 2
+      18: np = 2
+      19: np = 4
+      20: np = 2
       222: np = 8
+      223: np = 9
+      224: np = 9
+      225: np = 11
       333: np = 1
       444: np = 2 + varparam(ivar,0)
       555: np = 1
@@ -358,10 +366,10 @@ if(irefl eq 1) then begin
 endif
 yname = 'Difference'
 
-y2=max([specf-spec,err])
-y1=min([specf-spec,-err])
-
-
+;y2=max([specf-spec,err],/NAN)
+;y1=min([specf-spec,-err],/NAN)
+y2=20*median(abs([specf-spec,err]))
+y1=-y2
 plot,wkeep,specf-spec,xtitle=xname,$
 ytitle=yname,xrange=xr,yrange=[y1,y2],xstyle=1
 oplot,wkeep,err,linestyle=1
@@ -442,7 +450,14 @@ for ivar=0,nvar-1 do begin
       14: np = 3
       15: np = 3
       16: np = 4
+      17: np = 2
+      18: np = 2
+      19: np = 4
+      20: np = 2
       222: np = 8
+      223: np = 9
+      224: np = 9
+      225: np = 11
       333: np = 1
       444: np = 2 + varparam(ivar,0)
       555: np = 1
@@ -478,6 +493,7 @@ for ivar=0,nvar-1 do begin
       oplot,xn+errn,press,linestyle=1
       oplot,xn-errn,press,linestyle=1
       oplot,xa,press,linestyle=2
+      oplot,xa+10,press,psym=1
       oplot,xa+erra,press,linestyle=3
       oplot,xa-erra,press,linestyle=3
 
@@ -514,8 +530,12 @@ for ivar=0,nvar-1 do begin
         title=tname,xtitle='Abundance'
       endif else begin
         if(n eq 0) then begin
-         plot_oo,xn,press,yrange=yr,$
-         ytitle='Pressure (bar)',xrange=[1e-10,1],$
+         a1=min([exp(alog(xn)-errn/xn),exp(alog(xa)-erra/xa)])
+         a2=max([exp(alog(xn)+errn/xn),exp(alog(xa)+erra/xa)])
+         xr=[a1,a2]
+;         xrange=[1e-10,1]
+         plot_oo,xn,press,yrange=yr,xrange=xr,$
+         ytitle='Pressure (bar)',$
          title=tname,xtitle='Abundance'
         endif else begin
          b = max([exp(alog(xn)+errn/xn),exp(alog(xa)+erra/xa)])

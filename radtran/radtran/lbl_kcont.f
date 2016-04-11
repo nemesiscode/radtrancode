@@ -270,6 +270,9 @@ C=======================================================================
 
       FSTBIN = INT((VMIN - VBOT)/WING)
       LSTBIN = INT((VMAX - VBOT)/WING) + 2
+      IF(FSTBIN.LT.1)THEN
+       FSTBIN=1
+      ENDIF
 
       DO 444 K=1,IORDP1
 C Wavenumbers to compute continuum at

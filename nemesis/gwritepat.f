@@ -246,7 +246,7 @@ c	** write reflecting atmosphere to pat file **
 221    CONTINUE
        READ(12,1,END=222)DUMMY
        WRITE(31,1)' '
-       WRITE(31,1)DUMMY             
+       WRITE(31,1)'process '//DUMMY             
        GOTO 221
 222   CLOSE(12)
 

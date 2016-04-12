@@ -80,6 +80,13 @@ C     **** all these are now defined by zgauleg.f ***
       rate = REAL(cr)
       call system_clock(time1)
 
+      PRINT*,'Enter IEXO, IPTF'
+      PRINT*,'(IEXO=1 uses temperature dependent line databases'
+      PRINT*,'relevant for exoplanet k-tables spanning a very large'
+      PRINT*,'temperature range. Set to 0 otherwise.)'
+      PRINT*,'(IPTF=1 uses partition functions for gases listed in'
+      PRINT*,'partfextra.dat file. IPTF=0 uses default partition'
+      PRINT*,'functions listed in gasinfo file'
       CALL PROMPT('Enter IEXO, IPTF : ')
       READ*,IEXO,IPTF
 
@@ -141,7 +148,12 @@ C      Calculate min/max wavelength/wavenumbers for continuum calculation
 
 C      Read min/max wavelength/wavenumbers for continuum calculation
        PRINT*,'Enter min,max wavenumber/wavelengths for'
-       CALL PROMPT('continuum calculation : ')
+       PRINT*,'Continuum calculation. These should cover the range'
+       PRINT*,'VMIN-(extreme lower spread of filter width) to'
+       PRINT*,'VMAX+(extreme upper spread of filter width).' 
+       PRINT*,'(N.B. it is better to overestimate rather than'
+       PRINT*,'underestimate these values)'
+       CALL PROMPT('Enter values : ')
        READ*,VMINC,VMAXC
 C      Convert wavelength range to wavenumber range if IWAVE=0
        IF(IWAVE.EQ.0)THEN

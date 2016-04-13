@@ -272,6 +272,12 @@ C-----------------------------------------------------------------------
      1   x0,x1
        read(11,*)wing,vrel,maxdv
        print*,'wing, vrel, maxdv : ',wing, vrel, maxdv
+       if(maxdv.ne.vrel)then
+        print*,'*Warning from lbldrv_wave.f: V_cutoff <> vrel.'
+        print*,'*These should usually be set equal'
+        print*,'V_cut_off = ',maxdv
+        print*,'VREL = ',vrel
+       endif
       close(11)
 
       WRITE(*,*)' CALLING lblrtf_wave'

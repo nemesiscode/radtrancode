@@ -225,6 +225,13 @@ C      Convert wavelength range to wavenumber range if IWAVE=0
       CALL PROMPT('Enter line wing cut-off (cm^-1) : ')
       READ*,MAXDV
 
+      IF(MAXDV.NE.VREL)THEN
+       PRINT*,'*Warning from calc_fnktablec.f: Cut-off and VREL'
+       PRINT*,'are different. It is usual to set these to be the same.'
+       PRINT*,'V_CUTOFF = ',MAXDV
+       PRINT*,'VREL = ',VREL
+      ENDIF
+
       IF(IEXO.EQ.0)THEN
        CALL PROMPT('Enter database name: ')
        READ(5,23)OPFILE

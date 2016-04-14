@@ -57,7 +57,9 @@ C-----------------------------------------------------------------------
 C
 	INTEGER ID,ISO,I
 	REAL V0,DV,AMOUNT,PPRESS,PRESS,TEMP,ABSORB
-        REAL CH4CONT,INTERPBASS1,INTERPO3,NH3CONT
+        REAL CH4CONT,INTERP_OZONE_SERDYUCHENKO
+C        REAL INTERPBASS1
+        REAL NH3CONT
 C
 C --- Define COMMON blocks containing H2O continuum data ---
 C
@@ -218,9 +220,8 @@ C           Lutz+Owen NH3 coefficients
 C           Bass Ozone coefficients
 C            ABSORB = AMOUNT*INTERPBASS1(FF,TEMP)
 
-C	    New Dawson O3 coefficients
-            ABSORB = AMOUNT*INTERPO3(FF,TEMP)
-
+C           Serdyuchenko ozone coefficients
+            ABSORB = AMOUNT*INTERP_OZONE_SERDYUCHENKO(FF,TEMP)
        ELSE
 
 	    ABSORB=0.

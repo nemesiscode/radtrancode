@@ -126,7 +126,7 @@ C-----------------------------------------------------------------------
         write (*,'('' Enter name of .xsc file to be created: '',$)')
         read (*,'(a60)') outfile
 	call file (outfile, outfile,'xsc')
-        open (12, file=outfile, status='unknown')
+        open (16, file=outfile, status='unknown')
 
         call prompt('Renormalise Phase Function (Y/N)? : ')
         read(5,1)ans
@@ -464,14 +464,14 @@ C	Now produce .XSC files
 C
 C-----------------------------------------------------------------------
 
-	write (12,*) nmode        
+	write (16,*) nmode        
 	do I = 1, nwave
 		w = wmin + (I-1) * wstep
-		write(12,*) w,(xsec(J,I,1), J=1, nmode)
-		write(12,*)(xsec(J,I,2), J=1, nmode)
+		write(16,*) w,(xsec(J,I,1), J=1, nmode)
+		write(16,*)(xsec(J,I,2), J=1, nmode)
 	enddo
 
-        close(12)
+        close(16)
 
 C-----------------------------------------------------------------------
 C

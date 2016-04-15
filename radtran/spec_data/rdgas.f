@@ -34,8 +34,10 @@ C--------------------------------------------------------------
 
 C     Skip past header : 
 233   READ(DBLUN,10)BUFFER
-      IF(BUFFER(1:2).EQ.'# ')GOTO 233
-
+      IF(BUFFER(1:2).EQ.'# ')THEN
+C       WRITE(*,10)BUFFER
+       GOTO 233
+      ENDIF
       L=0
 30    READ(DBLUN,*,END=100)
       READ(DBLUN,*,END=100)I

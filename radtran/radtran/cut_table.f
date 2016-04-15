@@ -73,28 +73,67 @@ C     Assume 4-byte words per record
       READ(LUN0,REC=9)IDGAS(1)
       READ(LUN0,REC=10)ISOGAS(1)
 
+      IREC = 11
+      DO 299 J=1,NG
+        READ(LUN0,REC=IREC)G_ORD(J)
+        IREC = IREC + 1
+299   CONTINUE
+      DO 399 J=1,NG
+        READ(LUN0,REC=IREC)DEL_G(J)
+        IREC=IREC+1
+399   CONTINUE
+      IREC = 11 + 2*NG + 2
+      DO 301 J=1,NP
+        READ(LUN0,REC=IREC)PRESS1(J)
+        IREC = IREC + 1
+301   CONTINUE
+      DO 302 J=1,NT
+        READ(LUN0,REC=IREC)TEMP1(J)
+        IREC = IREC + 1
+302   CONTINUE
 
-27    PRINT*,'Current range = ',VMIN,VMIN+(NPOINT-1)*DELV,DELV,NPOINT
-
-      IF(DELV.LE.0)THEN
-       Print*,'DELV is less than or equal to zero. Reset?'
-       READ(5,23)ANS
-       IF(ANS.EQ.'Y'.OR.ANS.EQ.'y')THEN
-        CALL PROMPT('Enter new value : ')
-        READ*,DELV
-       ENDIF
+      IF(DELV.LE.0.0)THEN
+       PRINT*,'Channel centres',NPOINT
+       DO 303 J=1,NPOINT
+        READ(LUN0,REC=IREC)VCEN(J)
+        PRINT*,J,VCEN(J)
+        IREC=IREC+1
+303    CONTINUE
       ENDIF
 
-      CALL PROMPT('Enter output wavelength/wavenumber range : ')
+
+27    CONTINUE
+
+      IF(DELV.GT.0)THEN
+        PRINT*,'Current range = ',VMIN,VMIN+(NPOINT-1)*DELV,DELV,NPOINT
+      ELSE
+        PRINT*,'Current range = ',VCEN(1),VCEN(NPOINT)
+      ENDIF
+
+      CALL PROMPT('Enter required output wavel./wavenum.r range : ')
       READ*,X1,X2
 
-      IF(X1.LT.VMIN)X1=VMIN
-      VMIN1 = VMIN + DELV*INT((X1-VMIN)/DELV)
-      print*,X1,X2,VMIN1,DELV
-      NPOINT1 = 1+INT((X2-VMIN1)/DELV)
-      print*,NPOINT1
-      PRINT*,'Extract range : ',VMIN1, VMIN1+(NPOINT1-1)*DELV,DELV,
+      IF(DELV.GT.0)THEN
+
+       IF(X1.LT.VMIN)X1=VMIN
+       VMIN1 = VMIN + DELV*INT((X1-VMIN)/DELV)
+       print*,X1,X2,VMIN1,DELV
+       NPOINT1 = 1+INT((X2-VMIN1)/DELV)
+       PRINT*,'Extract range : ',VMIN1, VMIN1+(NPOINT1-1)*DELV,DELV,
      &  NPOINT1
+
+      ELSE
+
+       DO J=1,NPOINT
+        IF(VCEN(J).LE.X1)J1=J
+        IF(VCEN(J).LE.X2)J2=J
+       ENDDO
+
+       VMIN1=VCEN(J1)
+       NPOINT1=1+J2-J1
+       PRINT*,'Extract range : ',VCEN(J1), VCEN(J2), NPOINT1
+
+      ENDIF
 
       CALL PROMPT('OK (Y/N)? : ')
       READ(5,23)ANS
@@ -113,35 +152,46 @@ C     Assume 4-byte words per record
       WRITE(LUN1,REC=10)ISOGAS(1)
 
       IREC = 11
-      DO 299 J=1,NG
-        READ(LUN0,REC=IREC)G_ORD(J)
+      DO 499 J=1,NG
         WRITE(LUN1,REC=IREC)G_ORD(J)
         IREC = IREC + 1
-299   CONTINUE
-      DO 399 J=1,NG
-        READ(LUN0,REC=IREC)DEL_G(J)
+499   CONTINUE
+      DO 599 J=1,NG
         WRITE(LUN1,REC=IREC)DEL_G(J)
         IREC=IREC+1
-399   CONTINUE
+599   CONTINUE
       IREC = 11 + 2*NG + 2
-      DO 301 J=1,NP
-        READ(LUN0,REC=IREC)PRESS1(J)
+      DO 401 J=1,NP
         WRITE(LUN1,REC=IREC)PRESS1(J)
         IREC = IREC + 1
-301   CONTINUE
-      DO 302 J=1,NT
-        READ(LUN0,REC=IREC)TEMP1(J)
+401   CONTINUE
+      DO 402 J=1,NT
         WRITE(LUN1,REC=IREC)TEMP1(J)
         IREC = IREC + 1
-302   CONTINUE
+402   CONTINUE
+
+      IF(DELV.LE.0.0)THEN
+       PRINT*,'Channel centres',NPOINT
+       DO 403 J=J1,J2
+        WRITE(LUN1,REC=IREC)VCEN(J)
+        PRINT*,J,VCEN(J)
+        IREC=IREC+1
+403    CONTINUE
+      ENDIF
 
 
-
-      N1 = 1 + NINT((VMIN1 - VMIN)/DELV)
+      IF(DELV.GT.0)THEN
+        N1 = 1 + NINT((VMIN1 - VMIN)/DELV)
+      ELSE
+        N1 = J1
+      ENDIF
       IREC = IREC0 + NP*NT*NG*(N1 - 1)
       IREC1 = IREC0
 
       WRITE(*,*)'IREC, IREC1 = ',IREC,IREC1
+
+
+
 
       DO 10 I=1,NPOINT1
        DO 20 J=1,NP

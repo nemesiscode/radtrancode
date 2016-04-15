@@ -38,8 +38,10 @@ C        print*,'chisq',chisq
       do i=1,3
        xt(i)=x(i)+da(i)
        if(i.eq.1)then
-        if(xt(i).gt.0.99)xt(i)=0.99
-        if(xt(i).lt.0.01)xt(i)=0.01
+C        if(xt(i).gt.0.99)xt(i)=0.99
+C        if(xt(i).lt.0.01)xt(i)=0.01
+        if(xt(i).gt.0.999999)xt(i)=0.999999
+        if(xt(i).lt.0.000001)xt(i)=0.000001
        else if(i.eq.2)then
         if(xt(i).gt.0.98)xt(i)=0.98
         if(xt(i).lt.0.0)xt(i)=0.0

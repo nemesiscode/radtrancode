@@ -46,10 +46,12 @@
 #			(previously: -10.499   -1647.8   0.15851    -3.1398E-4)
 #	11jan10	HCN replaced with LARA96 relation
 #	09jul13 NAT	CO and C6H6 added (from CRC92)
-#     29jan16 NAT PH3 updated based on fit to CRC94 online data for T<300K
+#	01oct14 PGJI	Added C2H5CN
+#       07dec14 PGJI	Corrected C2H5CN
+#       29jan16 NAT PH3 updated based on fit to CRC94 online data for T<300K
 #     
 ########################################################################
-17
+18
 1    15.278   -5980.3   8.8294E-3  -1.2169E-5
 2    2.524826e+01     -3.882969e+03     -2.722391e-02      0.000000e+00
 6    1.050377e+01     -1.116966e+03     -4.633456e-03      0.000000e+00
@@ -67,3 +69,4 @@
 30   37.9230 -6646.29 -0.0510657  0.
 49   1.360930e+01   -4.740271e+03    0.000000e+00    0.000000e+00
 5    9.847951e+00   -8.167098e+02    0.000000e+00    0.000000e+00
+57   11.8004     -4352.66          0.000000e+00    0.000000e+00

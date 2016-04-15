@@ -30,7 +30,7 @@ C     ****************************************************************
       real xs2,ys2,zs2,vec(3),svec(3),r0(3),sur_angle,a,b
       real x1,throt,xnow,znow,aa,bb,cc,xx(2)
       parameter (dtr=pi/180.)
-      integer ipzen,ilimb,nlay,ierr
+      integer ipzen,ilimb,nlay,ierr,igrad
  
       rbot=rad(1)
       rtop=rad(nlay+1)
@@ -68,13 +68,27 @@ C     See if ray hits surface
 
 C     turn ray into form z=a+bx
       a=rtop
-      b=1.0/tan(angle*dtr)
+C     If angle=0, then ray is straight down with a gradient of infinity.
+      igrad=0
+      if(angle.gt.0.)then
+        b=1.0/tan(angle*dtr)
+      else
+        igrad=1
+      endif
 
       if(ilimb.eq.0)then
 C       get ray to hit surface at x=0.
-        x1=(rbot-a)/b
-        a=rbot
-        b=1.0/tan(sur_angle*dtr)
+        if(angle.gt.0)then
+         x1=(rbot-a)/b
+        else
+         x1=0.
+        endif
+        if(sur_angle.gt.0.)then
+         a=rbot
+         b=1.0/tan(sur_angle*dtr)
+        else
+         igrad=1
+        endif
 C       if IPZEN=2 then rotate frame to correct solar vector
         if(ipzen.eq.2)then
            throt=(sur_angle-angle)*dtr
@@ -90,18 +104,20 @@ C       if IPZEN=2 then rotate frame to correct solar vector
       xnow=0.
       znow=rtop
 
-      aa=1.0+b**2
-      bb=2*a*b
+      if(igrad.eq.0)then
+       aa=1.0+b**2
+       bb=2*a*b
 
-      if(ilimb.eq.0)then
-       cc=a**2-rtop**2
-       call quadsolve(aa,bb,cc,xx,ierr)
-       if(xx(1).gt.xx(2))then
-         xnow=xx(1) 
-       else 
-         xnow=xx(2)
+       if(ilimb.eq.0)then
+        cc=a**2-rtop**2
+        call quadsolve(aa,bb,cc,xx,ierr)
+        if(xx(1).gt.xx(2))then
+          xnow=xx(1) 
+        else 
+          xnow=xx(2)
+        endif
+        znow=a+b*xnow
        endif
-       znow=a+b*xnow
       endif
 
       r0(1)=xnow

@@ -90,6 +90,7 @@ C	  print*,'No data defined for gas : ',IGAS
 C         print*,'IGAS,IREC0 : ',IGAS,IREC0
 C         print*,'delv,vmin,vwave = ',delv,vmin,vwave
 
+
          IF(delv.gt.0.0)then
 
 C         Set minimum closeness to tabulated wavenumbers to be 1/50 of 
@@ -130,7 +131,16 @@ C          print*,'GET_K: Zero k-data for GAS: ',IGAS
          IF(delv.gt.0.0)then
           tmp = VMIN + N1*DELV	! Calculate wavelength in table below
 C				  current wavelength
-          COINC=.FALSE.
+          frac = (vwave-tmp)/delv
+          if(frac.lt.eps)then
+C          delv > 0 and requested wavenumber close enough to tabulated to
+C          be considered coincident (and thus need to interrogate k-table once
+C          no twice.
+           COINC=.TRUE.
+          else
+           COINC=.FALSE.
+          endif
+
          ELSE
           if(delv.lt.0)then
 C          If delv < 0 then it is assumed that the calculation wavelengths 

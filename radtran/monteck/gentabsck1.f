@@ -56,10 +56,10 @@ C     ****************************************************************
      1 ngk
       real  xmink(maxbin,maxgas),delk(maxbin,maxgas),pk(maxk), 
      1 tk(maxk),g_ord(maxg),delg(maxg),vwave(nwave),del_g(maxg)
-      real delvk, fwhmk
+      real delvk, fwhmk,frack(maxbin,maxgas)
 
-      common/interpk/lun, ireck, xmink, delk, pk, npk, tk, ntk,
-     1   	ngk,delvk, fwhmk, g_ord, delg, kout
+      common/interpk/lun, ireck, xmink, delk, frack, pk, npk, tk, 
+     1      ntk, ngk,delvk, fwhmk, g_ord, delg, kout
 
       NG=NGK
 

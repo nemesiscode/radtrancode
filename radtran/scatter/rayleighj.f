@@ -33,6 +33,8 @@ C     calculate the Jupiter air's refractive index at STP (Actually n-1)
       nAir = fH2*nH2 + (1-fH2)*nHe
  
 C     H2,He Seem pretty isotropic to me?...Hence delta = 0.
+C     Penndorf (1957) quotes delta=0.0221 for H2 and 0.025 for He.
+C     (From Amundsen's thesis. Amundsen assumes delta=0.02 for H2-He atmospheres
       delta = 0.0
 
       temp = 32*(pi**3)*nAir**2

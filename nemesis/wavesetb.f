@@ -40,11 +40,11 @@ C     have been calculated with a built-in instrument function then
 C     just set the calculation wavelengths to be the convolution wavelengths
 
 
-C      print*,'vconv'
-C      print*,nconv
-C      do i=1,nconv
-C       print*,i,vconv(i)
-C      enddo
+      print*,'vconv'
+      print*,nconv
+      do i=1,nconv
+       print*,i,vconv(i)
+      enddo
       if(vkstep.lt.0.or.fwhm.eq.0)then
         ico=nconv
         do i=1,nconv
@@ -148,6 +148,7 @@ C     Now weed out repeated wavelengths
       vwave(1)=save(1)
       ico=1
       xdiff = 0.9*vkstep
+      if(xdiff.gt.0)then
       print*,'Weeding out repeated wavelengths. vkstep = ',
      &		vkstep
       do 446 i=2,nco
@@ -165,12 +166,12 @@ C         print*,'ico,vwave',ico,vwave(ico)
        end if
 446   continue
       nwave=ico
+      endif
 
-
-C      print*,'nwave = ',nwave
-C      do i=1,nwave
-C       print*,i,vwave(i)
-C      enddo
+      print*,'nwave = ',nwave
+      do i=1,nwave
+       print*,i,vwave(i)
+      enddo
 
       print*,'wavesetb: nwave = ',nwave
       return

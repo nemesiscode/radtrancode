@@ -65,7 +65,6 @@ C NG: Number of ordinates in k-distribution.
       REAL P1,T1,tmp,eps,KTEST
 C T1: Profile temperature at each atmospheric layer.
 C P1: LOG profile pressure at each atmospheric layer.
-      PARAMETER (eps=0.01)
 C EPS: Max allowed wavenumber difference between wavenumber and nearest 
 C tabulated wavenumber to be considered 'aligned'.
       REAL Y1,Y2,Y3,Y4,U,V,X
@@ -152,19 +151,27 @@ cc          WRITE(*,*)'GET_KG :: No data defined for gas : ',IGAS
           GOTO 999
         ENDIF
 
-C Find nearest point in table below current wavelength. Parameter eps is
-C there to prevent small numerical errors in VWAVE screwing things up
-C between platforms.
         IF(delv.gt.0)then
-          n1 = INT((vwave - vmin)/delv + eps)
+C        Find nearest point in table below current wavelength. Parameter eps is
+C        there to prevent small numerical errors in VWAVE screwing things up
+C        between platforms.
+
+C        Set minimum closeness to tabulated wavenumbers to be 1/50 of
+C        the separation to be considered aligned.
+         eps = 0.02*delv
+
+          n1 = INT((vwave + eps - vmin)/delv)
           irec = irec0 + np*nt*ng*n1
+
         ELSE
 
 C         For irregularly gridded tables IREC0 is assumed to hold the
 C         nearest record number in the table to the requested wavelength, not
 C         that of the start of the table. This has already been allocated
 C         by read_klist.f
+
           irec = irec0
+
         ENDIF
 
         READ(LUN0,REC=IREC)KTEST
@@ -185,6 +192,9 @@ C        Calculate wavelength in table below current wavelength
          tmp = vmin + delv*n1
          frac = (vwave-tmp)/delv
          if(frac.lt.eps)then
+C         delv > 0 and requested wavenumber close enough to tabulated to
+C         be considered coincident (and thus need to interrogate k-table once
+C         no twice.
           COINC=.TRUE.
          else
           COINC=.FALSE.

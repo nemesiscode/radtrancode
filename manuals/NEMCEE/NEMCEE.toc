@@ -1,0 +1,22 @@
+\contentsline {chapter}{\numberline {1}An Intro to EMCEE and MCMC}{2}{chapter.1}
+\contentsline {section}{\numberline {1.1}EMCEE}{3}{section.1.1}
+\contentsline {subsection}{\numberline {1.1.1}Markov Chain Monte Carlo}{3}{subsection.1.1.1}
+\contentsline {subsection}{\numberline {1.1.2}EMCEE}{4}{subsection.1.1.2}
+\contentsline {subsubsection}{Algorithm}{4}{subsubsection*.2}
+\contentsline {subsubsection}{NEMESIS Integration}{5}{subsubsection*.3}
+\contentsline {chapter}{\numberline {2}NEMCEE}{8}{chapter.2}
+\contentsline {section}{\numberline {2.1}Installation guide}{8}{section.2.1}
+\contentsline {subsection}{\numberline {2.1.1}The Easy Way}{8}{subsection.2.1.1}
+\contentsline {subsubsection}{The Virtual Environment}{8}{subsubsection*.5}
+\contentsline {subsubsection}{The Shared Object NEMESIS Files}{8}{subsubsection*.6}
+\contentsline {subsection}{\numberline {2.1.2}The Hard Way}{9}{subsection.2.1.2}
+\contentsline {subsubsection}{The Virtual Environment}{9}{subsubsection*.7}
+\contentsline {subsubsection}{The Shared Object NEMESIS Files}{9}{subsubsection*.8}
+\contentsline {section}{\numberline {2.2}How to setup NEMESIS Flags and Environment before Calculation}{10}{section.2.2}
+\contentsline {section}{\numberline {2.3}A Step-by-Step of the Code}{11}{section.2.3}
+\contentsline {subsection}{\numberline {2.3.1}Imports}{11}{subsection.2.3.1}
+\contentsline {subsection}{\numberline {2.3.2}Definitions}{11}{subsection.2.3.2}
+\contentsline {subsection}{\numberline {2.3.3}Inputs}{19}{subsection.2.3.3}
+\contentsline {subsection}{\numberline {2.3.4}Changes to the EMCEE Package}{27}{subsection.2.3.4}
+\contentsline {subsection}{\numberline {2.3.5}Changes to the NEMESIS Codes}{27}{subsection.2.3.5}
+\contentsline {subsection}{\numberline {2.3.6}The Checklist}{30}{subsection.2.3.6}

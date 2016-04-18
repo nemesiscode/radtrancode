@@ -1,0 +1,22 @@
+\begin{thebibliography}{}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+
+\bibitem[{{Foreman-Mackey} {et~al.}(2013){Foreman-Mackey}, {Hogg}, {Lang}, \&
+  {Goodman}}]{foreman-mackey13}
+{Foreman-Mackey}, D., {Hogg}, D.~W., {Lang}, D., \& {Goodman}, J. 2013, \pasp,
+  125, 306
+
+\bibitem[{Jullion \& Lambert(2007)}]{jullion07}
+Jullion, A., \& Lambert, P. 2007, Computational Statistics And Data Analysis,
+  51, 2542
+
+\bibitem[{Lang \& Brezger(2004)}]{lang04}
+Lang, S., \& Brezger, A. 2004, Journal of Computational and Graphical
+  Statistics, 13, 183
+
+\bibitem[{{Line} {et~al.}(2015){Line}, {Teske}, {Burningham}, {Fortney}, \&
+  {Marley}}]{line15}
+{Line}, M.~R., {Teske}, J., {Burningham}, B., {Fortney}, J.~J., \& {Marley},
+  M.~S. 2015, \apj, 807, 183
+
+\end{thebibliography}

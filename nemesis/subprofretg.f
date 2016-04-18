@@ -66,6 +66,7 @@ C     ***********************************************************************
       IMPLICIT NONE
       INCLUDE '../radtran/includes/arrdef.f'
       INCLUDE '../radtran/includes/constdef.f'
+      INCLUDE '../radtran/includes/emcee.f'
       INCLUDE 'arraylen.f'
 
       REAL XN(MX),DPEXP,DELH,XFAC,DXFAC,XTMP,SUM,PMIN
@@ -108,6 +109,7 @@ C     ***********************************************************************
       INTEGER NVP,ISWITCH(MAXGAS),IP1,IP2,JKNEE
       REAL XLDEEP,XLHIGH
       COMMON /SROM223/PCUT
+
 C----------------------------------------------------------------------------
 C
 C     First zero-fill HREF, PREF, TREF and VMRREF arrays
@@ -275,7 +277,13 @@ C      Make sure that vmrs add up to 1 if AMFORM=1
 
        ENDIF
 
-
+       IF(VMRflag.eq.1)THEN
+        DO 120 I=1,NPRO
+         DO 130 J=1, NVMR
+          VMR(I,J) = MCMCvmr(J)
+130      CONTINUE
+120     CONTINUE
+       ENDIF
 C     all processing below assumes that heights are in ascending order
 C     so sorting just in case
       DO 12 I=1,NPRO-1

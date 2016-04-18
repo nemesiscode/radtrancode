@@ -19,11 +19,13 @@ C     **************************************************************
       character*100 xbuffer,buffer,aname
       character*8 pname(mplanet),pname1
       include '../includes/planrad.f'
+      include '../includes/emcee.f'
 1     format(a)
 
       aname = 'gravity.dat'
+
       call datarchive(aname)
-C      write(6,1)aname
+
       open(12,file=aname,status='old')
       read(12,*)nplanet
       if(nplanet.gt.mplanet)then
@@ -63,7 +65,11 @@ C      Convert radius to units of cm
        stop
       endif
 
+
       xgm = plan_mass(iplanet)
+      if(GRAVflag.eq.1)then
+       xgm=MCMCmass*Grav*1e24*1e6
+      endif
       if(mass2.gt.0.0.and.jloggf.gt.0)then
 C       print*,'read_grav: updating mass with mass2 from planrad'
 C       print*,'common block'
@@ -79,6 +85,9 @@ C       print*,'New mass = ',mass2
        xcoeff(j)=Jcoeff(j,iplanet)
 30    continue
       xradius=aradius(iplanet)
+      if(GRAVflag.eq.1)then
+       xradius=MCMCrad*1e5
+      endif
       if(radius2.gt.0.0.and.jradf.gt.0)then
 C       print*,'read_grav: updating radius with radius2 from planrad'
 C       print*,'common block'

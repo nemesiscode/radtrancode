@@ -55,7 +55,7 @@ C General variables ...
 C NP: Number of k-table pressures.
 C NT: Number of k-table temperatures.
 C NG: Number of ordinates in k-distribution.
-      INTEGER igas,ilayer,irec
+      INTEGER igas,ilayer,irec,IRECX
 
       INTEGER ntab,loop,count
       INTEGER maxc,mtab
@@ -104,6 +104,7 @@ C******************************** CODE *********************************
       tmax = t(nt)
       tmin = t(1)
 
+      print*,'get_kg: ng =',ng
 C Work out where P,T for each layer lies in the tables
       DO 51 ilayer=1,NLAYER
         T1 = TEMP(ilayer)
@@ -174,7 +175,16 @@ C         by read_klist.f
 
         ENDIF
 
-        READ(LUN0,REC=IREC)KTEST
+        NTAB = NT*NP*NG
+        IRECX=IREC
+        KTEST=0.0   
+        DO I=1,NTAB
+         READ(LUN0,REC=IREC)TABLE(I) 
+         IF(TABLE(I).GT.KTEST)KTEST=TABLE(I)
+         IREC=IREC+1
+        ENDDO
+        IREC=IRECX
+
         IF(KTEST.EQ.0.0)THEN
 cc          WRITE(*,*)'GET_KG :: Zero k-data for GAS: ',IGAS
           DO ilayer=1,NLAYER

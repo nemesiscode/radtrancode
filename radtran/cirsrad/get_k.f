@@ -16,7 +16,7 @@ C-----------------------------------------------------------------------
 
 	INTEGER	NP, NT, NG, CP, CT, I, I1, I2, I3, I4, N1,IREC
 	INTEGER IWAVE,NGAS,NLAYER,IGAS,LAYER,LUN0,IREC0,maxc
-        INTEGER NTAB,loop,count,MTAB,J
+        INTEGER NTAB,loop,count,MTAB,J,IRECX
         LOGICAL NTEST,ISNAN
 	LOGICAL COINC
         parameter (maxc=2*maxg,MTAB=maxk*maxk*maxg)
@@ -106,6 +106,7 @@ C						  to prevent small numerical
 C						  errors in VWAVE screwing
 C					          things up between platforms
           IREC = IREC0+NP*NT*NG*N1
+C          print*,'IREC = ',IREC
          ELSE       
 C         For irregularly gridded tables IREC0 is assumed to hold the 
 C         nearest record number in the table to the requested wavelength, not
@@ -115,7 +116,15 @@ C         by read_klist.f
           N1=-1   
          ENDIF
 
-         READ(LUN0,REC=IREC)KTEST
+         NTAB = NT*NP*NG
+         IRECX=IREC
+         KTEST=0.0
+         DO I=1,NTAB
+          READ(LUN0,REC=IREC)TABLE(I)
+          IF(TABLE(I).GT.KTEST)KTEST=TABLE(I)
+          IREC=IREC+1
+         ENDDO
+         IREC=IRECX
 
          IF(KTEST.EQ.0.0)THEN
 C          print*,'GET_K: Zero k-data for GAS: ',IGAS

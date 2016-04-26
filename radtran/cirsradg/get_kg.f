@@ -178,15 +178,22 @@ C         by read_klist.f
         NTAB = NT*NP*NG
         IRECX=IREC
         KTEST=0.0   
+
         DO I=1,NTAB
          READ(LUN0,REC=IREC)TABLE(I) 
-         IF(TABLE(I).GT.KTEST)KTEST=TABLE(I)
+         IF(TABLE(I).GT.0.0)THEN
+          KTEST=TABLE(I)
+          GOTO 202
+         ENDIF
          IREC=IREC+1
         ENDDO
+
+202     CONTINUE
         IREC=IRECX
 
         IF(KTEST.EQ.0.0)THEN
-cc          WRITE(*,*)'GET_KG :: Zero k-data for GAS: ',IGAS
+          WRITE(*,*)'GET_KG :: Zero k-data for GAS: ',IGAS
+          WRITE(*,*)'Wavelength/Wavenumber = ',VWAVE
           DO ilayer=1,NLAYER
             DO I=1,NG
               KOUT(ilayer,IGAS,I) = 0.0

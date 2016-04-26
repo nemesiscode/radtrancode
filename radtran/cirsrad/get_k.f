@@ -119,15 +119,22 @@ C         by read_klist.f
          NTAB = NT*NP*NG
          IRECX=IREC
          KTEST=0.0
+
          DO I=1,NTAB
           READ(LUN0,REC=IREC)TABLE(I)
-          IF(TABLE(I).GT.KTEST)KTEST=TABLE(I)
+          IF(TABLE(I).GT.0.0)THEN
+           KTEST=TABLE(I)
+           GOTO 202
+          ENDIF
           IREC=IREC+1
          ENDDO
+
+202      CONTINUE
          IREC=IRECX
 
          IF(KTEST.EQ.0.0)THEN
-C          print*,'GET_K: Zero k-data for GAS: ',IGAS
+          print*,'GET_K: Zero k-data for GAS: ',IGAS
+          print*,'Wavelength/waveumber = ',VWAVE
           DO LAYER=1,NLAYER
            DO I=1,NG
             KOUT(LAYER,IGAS,I)=0.0

@@ -105,7 +105,7 @@ C     **************************************************************
      1  cellpress,celltemp
 
 
-c  ** variables for solar refelcted cloud **
+c  ** variables for solar reflected cloud **
 	real solar
       real refl_cloud_albedo
       logical reflecting_atmos

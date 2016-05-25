@@ -77,7 +77,7 @@ C     ****************************************************************
       real efsh,xfsh,varparam(mvar,mparam),flat,hknee,pre
       real ref(maxlat,maxpro),clen,SXMINFAC,arg,valb,alb
       real xknee,xrh,erh,xcdeep,ecdeep,radius,Grav,plim
-      real xcwid,ecwid,ptrop
+      real xcwid,ecwid,ptrop,refradius
       parameter (Grav=6.672E-11)
 C     SXMINFAC is minimum off-diagonal factor allowed in the
 C     a priori covariance matrix
@@ -998,6 +998,43 @@ C             *** vmr, para-H2 or cloud, take logs *********
 
              nx = nx+2
 
+           elseif (varident(ivar,3).eq.21)then
+C            ******** cloud profile held as total optical depth plus
+C            ******** base height. Below the knee
+C            ******** pressure the profile is set to zero
+C            ******** Fractional scale height is scaled from that
+C            ******** guessed by the radius of the associated size
+C            ******** distribution in the 444 section.
+C            Read in xdeep,fsh,pknee
+             read(27,*)hknee,eknee
+             read(27,*)xdeep,edeep
+             read(27,*)xfsh,refradius
+             ix = nx+1
+             if(varident(ivar,1).eq.0)then
+C             *** temperature, leave alone ********
+              x0(ix)=xdeep
+              err = edeep
+             else
+C             *** vmr, fcloud, para-H2 or cloud, take logs *********
+              if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+              else
+                print*,'Error in readapriori. xdeep must be > 0.0'
+                stop
+              endif
+              err = edeep/xdeep
+             endif
+             sx(ix,ix)=err**2
+             ix = nx+2
+             x0(ix) = hknee
+             sx(ix,ix) = eknee**2
+
+             varparam(ivar,1)=xfsh
+             varparam(ivar,2)=refradius
+
+             nx = nx+2
+
            else         
             print*,'vartype profile parametrisation not recognised'
             stop
@@ -1131,8 +1168,8 @@ C				wavenumbers)
        print*,'Error in readapriori.f. Number of wavelengths in ref.'
        print*,'index file does not match number of wavelengths in'
        print*,'xsc file. Wavelengths in these two files should match'
-                print*,rifile
-                print*,opfile
+                print*,rifile,np
+                print*,opfile,nwave
                 stop
                endif
 
@@ -1159,8 +1196,8 @@ C              read x-section normalising wavelength (-1 to not normalise)
               do j=i+1,np
                delv = vi(i)-vi(j)
                arg = abs(delv/clen)
-C               xfac = exp(-arg)
-               xfac = exp(-arg*arg)
+               xfac = exp(-arg)
+C               xfac = exp(-arg*arg)
                if(xfac.ge.SXMINFAC)then  
                 sx(nx+2+i,nx+2+j)=
      & sqrt(sx(nx+2+i,nx+2+i)*sx(nx+2+j,nx+2+j))*xfac

@@ -18,7 +18,7 @@ C     **************************************************************
       integer imod,np,npro
 
       np=1
-      if(imod.le.20)then
+      if(imod.le.21)then
         if(imod.eq.0)np = npro
         if(imod.eq.1)np = 2
         if(imod.eq.4)np = 3
@@ -37,6 +37,7 @@ C     **************************************************************
         if(imod.eq.18)np = 2
         if(imod.eq.19)np = 4
         if(imod.eq.20)np = 2
+        if(imod.eq.21)np = 2
       else
        print*,'npvar:  Model parameterisation not defined = ',imod
       endif

@@ -77,21 +77,21 @@ C     ***********************************************************************
       REAL DNDH(MAXPRO),DQDH(MAXPRO),FCLOUD(MAXPRO)
       DOUBLE PRECISION Q(MAXPRO),OD(MAXPRO),ND(MAXPRO),XOD
       INTEGER ISCALE(MAXGAS),XFLAG,NPVAR,MAXLAT,IERR
-      INTEGER NLATREF,ILATREF,JLAT,KLAT,ICUT
+      INTEGER NLATREF,ILATREF,JLAT,KLAT,ICUT,JX
       PARAMETER (MAXLAT=20)
       REAL HREF(MAXLAT,MAXPRO),TREF(MAXLAT,MAXPRO),FLAT
       REAL PREF(MAXLAT,MAXPRO),VMRREF(MAXLAT,MAXPRO,MAXGAS)
       REAL LATREF(MAXLAT),MOLWTREF(MAXLAT)
       REAL XRH,XCDEEP,P1,PS,PS1,PH,Y1,Y2,YY1,YY2
-      REAL XCH4,PCH4,PCUT
+      REAL XCH4,PCH4,PCUT,GETRADIUS,RPARTICLE
       INTEGER ICLOUD(MAXCON,MAXPRO),NCONT1,JSPEC,IFLA,I1
       INTEGER NPRO,NPRO1,NVMR,JZERO,IV,IP,IVAR,JCONT,JVMR
       INTEGER IDGAS(MAXGAS),ISOGAS(MAXGAS),IPAR,JPAR,IVMR,NP
       INTEGER IDAT,NCONT,FLAGH2P,JFSH,JPRE,JHYDRO,ISCAT,ICOND
-      REAL HTAN,PTAN,R
+      REAL HTAN,PTAN,R,REFRADIUS
       REAL GASDATA(20,5),XVMR(MAXGAS),XMOLWT,XXMOLWT(MAXPRO)
       REAL CALCMOLWT
-      INTEGER JSWITCH,ITEST
+      INTEGER JSWITCH,ITEST,ICL
       CHARACTER*100 IPFILE,BUFFER
       CHARACTER*100 ANAME
       INTEGER I,J,K,N,AMFORM,IPLANET,NGAS,IGAS,NX,NXTEMP,IX,ISPACE
@@ -238,7 +238,7 @@ C        Now interpolate to correct latitude
          ELSE
           READ(1,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
          ENDIF
-C         print*,IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+         print*,IPLANET,LATITUDE,NPRO,NVMR,MOLWT
          IF(NPRO.GT.MAXPRO)THEN
           PRINT*,'Error in subprofretg. NPRO>MAXPRO ',NPRO,MAXPRO
           STOP
@@ -257,6 +257,7 @@ C        Skip header
          READ(1,*)
          DO 30 I=1,NPRO
            READ(1,*)H(I),P(I),T(I),(VMR(I,J),J=1,NVMR)
+C           print*,H(I),P(I),T(I),(VMR(I,J),J=1,NVMR)
 30       CONTINUE
 
         CLOSE(UNIT=1)
@@ -267,10 +268,11 @@ C        Skip header
 C      Make sure that vmrs add up to 1 if AMFORM=1
        IF(AMFORM.EQ.1)THEN
         CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
-
+        
         DO 301 I=1,NPRO
          DO K=1,NVMR
           XVMR(K)=VMR(I,K)
+C          print*,I,K,XVMR(K)
          ENDDO
          XXMOLWT(I)=CALCMOLWT(NVMR,XVMR,IDGAS,ISOGAS)
 301     CONTINUE
@@ -877,25 +879,6 @@ C        ***************************************************************
           STOP 
          ENDIF
 
-         IF(AMFORM.EQ.0)THEN
-          XMOLWT=MOLWT
-         ELSE
-          XMOLWT=XXMOLWT(NPRO)
-         ENDIF
-
-C        Calculate density of atmosphere (g/cm3)
-         RHO = P(NPRO)*0.1013*XMOLWT/(R*T(NPRO))
-
-C        Start ND(NPRO) at a random value. Will be rescaled anyway
-         ND(NPRO)=1e-35
-C        OD is in units of particles/cm2 = particles/cm3 x length(cm)
-C        In this case this is the scale height at the top level.
-         OD(NPRO)=ND(NPRO)*SCALE(NPRO)*1E5
-C        Q is specific density = particles/gram = (particles/cm3) / (g/cm3)
-         Q(NPRO)=ND(NPRO)/RHO         
-         DNDH(NPRO)=0.0
-         DQDH(NPRO)=0.0
-
 
 C        Calculate gradient numerically as it's just too hard otherwise
          DO 22 ITEST=1,4
@@ -921,33 +904,80 @@ C            print*,'XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
           IF(ITEST.EQ.4)THEN
             HKNEE = XN(NXTEMP+3)+DX
           ENDIF
-C          print*,'Mod: XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
+C          print*,'Mod: ITEST,XDEEP,XFSH,HKNEE',ITEST,XDEEP,
+C     &		XFSH,HKNEE
 
-         
+
+
+
+C         Start ND,Q,OD at zero
+C         OD is in units of particles/cm2 = particles/cm3 x length(cm)
+C         Q is specific density = particles/gram = (particles/cm3) / (g/cm3)
+          DO J=1,NPRO
+           ND(J)=0.
+           OD(J)=0
+           Q(J)=0.
+           DNDH(J)=0.
+           DQDH(J)=0.
+          ENDDO
+
           JFSH=-1
-          DO J=NPRO-1,1,-1
-           DELH = H(J+1)-H(J)
-           XFAC = SCALE(J)*XFSH
-C          Calculate density of atmosphere (g/cm3)
+          IF(H(1).GE.HKNEE)THEN
+            IF(AMFORM.EQ.0)THEN
+             XMOLWT=MOLWT
+            ELSE
+             XMOLWT=XXMOLWT(1)
+            ENDIF
+C           Calculate density of atmosphere  (g/cm3)
+            ND(1)=1.0
+            RHO = P(1)*0.1013*XMOLWT/(R*T(1))
+            Q(1)=ND(1)/RHO
+            JFSH=1
+          ENDIF
 
-           IF(AMFORM.EQ.0)THEN
-            XMOLWT=MOLWT
-           ELSE
-            XMOLWT=XXMOLWT(J)
+          DO J=2,NPRO
+           DELH = H(J)-H(J-1)
+           XFAC = SCALE(J)*XFSH
+
+
+           IF(H(J).GE.HKNEE)THEN
+            IF(AMFORM.EQ.0)THEN
+             XMOLWT=MOLWT
+            ELSE
+             XMOLWT=XXMOLWT(J)
+            ENDIF
+
+C           Calculate density of atmosphere  (g/cm3)
+            RHO = (0.1013*XMOLWT/R)*(P(J)/T(J))
+
+            IF(JFSH.LT.0)THEN
+             ND(J)=1.0
+             JFSH=1
+            ELSE
+             ND(J)=ND(J-1)*DPEXP(-DELH/XFAC)
+             DNDH(J)=ND(J)*DELH/(XFAC**2)+DPEXP(-DELH/XFAC)*DNDH(J-1)
+            ENDIF
+            Q(J)=ND(J)/RHO
+            DQDH(J) = DNDH(J)/RHO
            ENDIF
 
-           RHO = (0.1013*XMOLWT/R)*(P(J)/T(J))
-           ND(J)=ND(J+1)*EXP(DELH/XFAC)
-           DNDH(J)=-ND(J)*DELH/(XFAC**2)+EXP(DELH/XFAC)*DNDH(J+1)
+C           print*,J,H(J),ND(J),Q(J)
 
-           OD(J)=OD(J+1)+(ND(J) - ND(J+1))*XFAC*1E5
-           Q(J)=ND(J)/RHO
-           DQDH(J) = DNDH(J)/RHO
+          ENDDO
+
+
+C         Integrate optical thickness
+          OD(NPRO)=ND(NPRO)*SCALE(NPRO)*XFSH*1E5
+          JFSH=-1
+          DO J=NPRO-1,1,-1
+           XFAC = SCALE(J)*XFSH         
+           OD(J)=OD(J+1)+0.5*(ND(J) + ND(J+1))*XFAC*1E5
            IF(H(J).LE.HKNEE.AND.JFSH.LT.0)THEN
             F = (HKNEE-H(J))/DELH
             XOD = (1.-F)*OD(J) + F*OD(J+1)
             JFSH=1
            ENDIF
+C           print*,'h',J,OD(J)
           ENDDO
 
 C         The following section was found not to be as accurate as
@@ -1798,6 +1828,25 @@ C         post-processing in gsetrad.f
            NTEST=ISNAN(Q(J))
            IF(NTEST)THEN
             print*,'Error in subprofretg.f, cloud density is NAN'
+            print*,'XDEEP,XOD,HKNEE = ',XDEEP,XOD,HKNEE
+            DO JX =1,NPRO
+             OD(JX)=XDEEP*OD(JX)/XOD
+             ND(JX)=XDEEP*ND(JX)/XOD
+             Q(JX)=XDEEP*Q(JX)/XOD
+             print*,'JX,OD,ND,Q = ',JX,OD(JX),ND(JX),Q(JX)
+             IF(H(JX).LT.HKNEE)THEN
+              IF(H(JX+1).GE.HKNEE)THEN
+               Q(JX)=Q(JX)*(1.0 - (HKNEE-H(JX))/(H(JX+1)-H(JX)))
+              ELSE
+               Q(JX) = 0.0
+              ENDIF
+              print*,'H(JX),H(JX+1),HKNEE',H(JX),H(JX+1),HKNEE
+              print*,HKNEE-H(JX),H(JX+1)-H(JX)
+              print*,(1.0 - (HKNEE-H(JX))/(H(JX+1)-H(JX)))
+             ENDIF
+             IF(Q(JX).GT.1e10)Q(JX)=1e10
+             IF(Q(JX).LT.1e-36)Q(JX)=1e-36
+            ENDDO
 	    STOP
            ENDIF
 
@@ -1869,6 +1918,170 @@ C        New gradient correction if fsh is held as logs
            X1(J)=1e-36
           ENDIF
          ENDDO
+
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.21)THEN
+C        Model 21. Similar to model 9. Profile is represented by a value 
+C        at a variable HEIGHT, rather than PRESSURE plus a fractional scale height. 
+C        Below the reference height the profile is set to zero. In addition,
+C        this model scales the profile to give the requested integrated cloud 
+C        optical depth.
+C        ***************************************************************
+         IF(VARIDENT(IVAR,1).GE.0)THEN
+          PRINT*,'Warning from SUBPROFRETG. You are using a'
+          PRINT*,'cloud profile parameterisation for a non-cloud'
+          PRINT*,'variable'         
+          STOP 
+         ENDIF
+
+
+C        Calculate gradient numerically as it's just too hard otherwise
+         DO 24 ITEST=1,3
+
+          XDEEP = EXP(XN(NXTEMP+1))
+          HKNEE = XN(NXTEMP+2)
+          XFSH  = VARPARAM(IVAR,1)
+
+C         Need radius from associated 444 particle parameterisation
+          ICL=-VARIDENT(IVAR,1)
+C          print*,'ICLOUD = ',ICL
+          RPARTICLE = GETRADIUS(ICL,NVAR,VARIDENT,VARPARAM,XN,NPRO)
+          IF(RPARTICLE.LT.0)THEN
+           PRINT*,'Particle size cannot be found'
+           STOP
+          ENDIF
+          REFRADIUS=VARPARAM(IVAR,2)
+          XFSH=XFSH*REFRADIUS/RPARTICLE
+
+C          print*,'Test rparticle,refradius,xfsh,icl = ',
+C     1     RPARTICLE,REFRADIUS,XFSH,ICL
+          DX=0.05*XN(NXTEMP+ITEST-1)
+          IF(DX.EQ.0.)DX=0.1
+
+          IF(ITEST.GT.1)THEN
+C            print*,'ITEST,IPAR,XN,DX = ',ITEST,IPAR,
+C     1		XN(NXTEMP+ITEST-1),DX
+C            print*,'XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
+          ENDIF
+          IF(ITEST.EQ.2)THEN
+            XDEEP=EXP(XN(NXTEMP+1)+DX)
+          ENDIF
+          IF(ITEST.EQ.3)THEN
+            HKNEE = XN(NXTEMP+3)+DX
+          ENDIF
+C          print*,'Mod: ITEST,XDEEP,XFSH,HKNEE',ITEST,XDEEP,
+C     &		XFSH,HKNEE
+
+
+
+
+C         Start ND,Q,OD at zero
+C         OD is in units of particles/cm2 = particles/cm3 x length(cm)
+C         Q is specific density = particles/gram = (particles/cm3) / (g/cm3)
+          DO J=1,NPRO
+           ND(J)=0.
+           OD(J)=0
+           Q(J)=0.
+           DNDH(J)=0.
+           DQDH(J)=0.
+          ENDDO
+
+          JFSH=-1
+          IF(H(1).GE.HKNEE)THEN
+            IF(AMFORM.EQ.0)THEN
+             XMOLWT=MOLWT
+            ELSE
+             XMOLWT=XXMOLWT(1)
+            ENDIF
+C           Calculate density of atmosphere  (g/cm3)
+            ND(1)=1.0
+            RHO = P(1)*0.1013*XMOLWT/(R*T(1))
+            Q(1)=ND(1)/RHO
+            JFSH=1
+          ENDIF
+
+          DO J=2,NPRO
+           DELH = H(J)-H(J-1)
+           XFAC = SCALE(J)*XFSH
+
+
+           IF(H(J).GE.HKNEE)THEN
+            IF(AMFORM.EQ.0)THEN
+             XMOLWT=MOLWT
+            ELSE
+             XMOLWT=XXMOLWT(J)
+            ENDIF
+
+C           Calculate density of atmosphere  (g/cm3)
+            RHO = (0.1013*XMOLWT/R)*(P(J)/T(J))
+
+            IF(JFSH.LT.0)THEN
+             ND(J)=1.0
+             JFSH=1
+            ELSE
+             ND(J)=ND(J-1)*DPEXP(-DELH/XFAC)
+             DNDH(J)=ND(J)*DELH/(XFAC**2)+DPEXP(-DELH/XFAC)*DNDH(J-1)
+            ENDIF
+            Q(J)=ND(J)/RHO
+            DQDH(J) = DNDH(J)/RHO
+           ENDIF
+
+C           print*,J,H(J),ND(J),Q(J)
+
+          ENDDO
+
+
+C         Integrate optical thickness
+          OD(NPRO)=ND(NPRO)*SCALE(NPRO)*XFSH*1E5
+          JFSH=-1
+          DO J=NPRO-1,1,-1
+           XFAC = SCALE(J)*XFSH         
+           OD(J)=OD(J+1)+0.5*(ND(J) + ND(J+1))*XFAC*1E5
+           IF(H(J).LE.HKNEE.AND.JFSH.LT.0)THEN
+            F = (HKNEE-H(J))/DELH
+            XOD = (1.-F)*OD(J) + F*OD(J+1)
+            JFSH=1
+           ENDIF
+C           print*,'h',J,OD(J)
+          ENDDO
+
+C         The following section was found not to be as accurate as
+C         desired due to misalignments at boundaries and so needs some 
+C         post-processing in gsetrad.f
+          DO J=1,NPRO
+           OD(J)=XDEEP*OD(J)/XOD
+           ND(J)=XDEEP*ND(J)/XOD
+           Q(J)=XDEEP*Q(J)/XOD
+           IF(H(J).LT.HKNEE)THEN
+            IF(H(J+1).GE.HKNEE)THEN
+             Q(J)=Q(J)*(1.0 - (HKNEE-H(J))/(H(J+1)-H(J)))
+            ELSE
+             Q(J) = 0.0
+            ENDIF
+           ENDIF
+           IF(Q(J).GT.1e10)Q(J)=1e10
+           IF(Q(J).LT.1e-36)Q(J)=1e-36
+           NTEST=ISNAN(Q(J))
+           IF(NTEST)THEN
+            print*,'Error in subprofretg.f, cloud density is NAN'
+	    STOP
+           ENDIF
+
+           IF(ITEST.EQ.1)THEN
+            X1(J)=Q(J)
+C            print*,'J,X1(J)',J,X1(J)
+           ELSE
+            XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
+C            PRINT*,'ITEST,J,XMAP',ITEST,J,Q(J),X1(J),(Q(J)-X1(J))/DX
+           ENDIF
+
+           DNDH(J)=DNDH(J)*XDEEP/XOD
+           DQDH(J)=DQDH(J)*XDEEP/XOD
+           DQDX(J)=Q(J)/XOD
+
+          ENDDO
+
+24       CONTINUE
 
 
         ELSE

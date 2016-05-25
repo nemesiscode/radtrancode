@@ -82,7 +82,8 @@ F_SOURCES = \
 	check_iteration.f \
 	check_profile.f \
 	setifix.f \
-	readcell.f
+	readcell.f \
+	getradius.f
 
 INCDIR = ../../radtran/includes
 INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/lincom.f $(INCDIR)/pathcom.f \

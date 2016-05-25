@@ -114,7 +114,7 @@ C     Set measurement vector and source vector lengths here.
       real wgeom(mgeom,mav),flat(mgeom,mav)
       real vwaveT(mwave),vconvT(mconv)
       integer nwaveT,nconvT,npvar,jj
-      logical gasgiant,abexist
+      logical gasgiant,abexist,ntest,isnan
 
       double precision s1d(mx,mx),sai(mx,mx)
       double precision s1e(my,my),sei(my,my)
@@ -274,11 +274,13 @@ C      Calc. gradient of all elements of xnx matrix.
      3    jradx,jloggx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter)
        else
         if(iscat.eq.0)then
+
          print*,'Calling forwardavfovX - A'
          CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,
      1    nav,wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
      2    lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jtanx,jprex,
      3    jradx,jloggx,RADIUS,nxx,xnx,ny,ynx,kkx)
+
         elseif(iscat.eq.1.or.iscat.eq.3.or.iscat.eq.4)then
          print*,'Calling forwardnogX - A'
          CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
@@ -363,8 +365,8 @@ C      Calculate inverse of se
       else
 
        if(iscat.eq.0)then
-        print*,'Calling forwardavfovX - B'
 
+        print*,'Calling forwardavfovX - B'
         CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
@@ -373,8 +375,8 @@ C      Calculate inverse of se
 C        print*,'forwardavfovX OK, jpre = ',jpre
 
        elseif(iscat.eq.1.or.iscat.eq.3.or.iscat.eq.4)then
-        print*,'Calling forwardnogX - B'
- 
+
+        print*,'Calling forwardnogX - B' 
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
@@ -455,21 +457,24 @@ C     vectors xn, yn
 C       Now calculate next iterated xn1
         call calcnextxn(nx,ny,xa,xn,y,yn,dd,aa,x_out)
 
-145     continue
         do i=1,nx
          xn1(i) = xn(i) + (x_out(i)-xn(i))/(1.0+alambda)
-c         print*,'i, x_old, x_next',i,xn(i),xn1(i)
+         print*,'i, x_old, x_next',i,xn(i),xn1(i)
+         ntest=isnan(xn1(i))
+         if(ntest)then
+          print*,'NAN detected. Increase brake and try again'
+          alambda=alambda*10.
+          if(alambda.gt.1e10)alambda=1e10
+          goto 401
+         endif
 C        Check to see if log numbers have gone out of range
          if(lx(i).eq.1)then
           if(xn1(i).gt.85.or.xn1(i).lt.-85)then
            print*,'Coreret - log(number gone out of range)'
            print*,'Increasing brake'
-           alambda = alambda*10.0		! increase Marquardt brake
-           if(alambda.gt.1e30)then
-            print*,'Death spiral - stopping'
-            stop
-           endif
-           goto 145
+           alambda=alambda*10
+           if(alambda.gt.1e10)alambda=1e10
+           goto 401
           else
            print*,'exp(x_old),exp(x_next)',exp(xn(i)),exp(xn1(i))
           endif
@@ -483,7 +488,7 @@ C       Test to see if any vmrs have gone negative.
         if (ierr.eq.1)then
           alambda = alambda*10.0             ! increase Marquardt brake
           if(alambda.gt.1e10)alambda=1e10
-          goto 145
+          goto 401
         endif
 
 
@@ -507,7 +512,7 @@ C       Test to see if any vmrs have gone negative.
              print*,'Temperature has gone negative, Increase alambda'
              alambda = alambda*10.0		! increase Marquardt brake
              if(alambda.gt.1e10)alambda=1e10
-             goto 145
+             goto 401
             endif
            endif
 
@@ -516,7 +521,7 @@ C       Test to see if any vmrs have gone negative.
              print*,'Temperature has gone negative, Increase alambda'
              alambda = alambda*10.0		! increase Marquardt brake
              if(alambda.gt.1e10)alambda=1e10
-             goto 145
+             goto 401
             endif
            endif
           endif
@@ -528,7 +533,7 @@ C       Test to see if any vmrs have gone negative.
              print*,'Increase alambda',alambda
              alambda = alambda*10.0		! increase Marquardt brake
              if(alambda.gt.1e10)alambda=1e10
-             goto 145
+             goto 401
            endif
           endif
 
@@ -549,12 +554,15 @@ C       temporary kernel matrix kk1. Does it improve the fit?
      3    RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter)
         else
          if(iscat.eq.0)then
+
          print*,'Calling forwardavfovX - C'
           CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
      2     lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,
      3     jrad,jlogg,RADIUS,nx,xn1,ny,yn1,kk1)
+
          elseif(iscat.eq.1.or.iscat.eq.3.or.iscat.eq.4)then
+
          print*,'Calling forwardnogX - C'
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
@@ -578,7 +586,7 @@ C        Increase brake and try again.
          print*,'Profile gone wobbly, increase brake and try again'
          alambda = alambda*10.0              ! increase Marquardt brake
          if(alambda.gt.1e10)alambda=1e10
-         goto 145
+         goto 401
         endif
 
 C       Calculate the cost function for this trial solution.
@@ -619,6 +627,7 @@ C           Has solution converged?
               print*,'%phi, phlimit : ',tphi,phlimit
               print*,'Phi has converged'
               print*,'Terminating retrieval'
+              oxchi=xchi
               GOTO 202                   
             else
               ophi=phi
@@ -653,7 +662,8 @@ C              If lambda is close to 1.0 or greater when condition met, accept t
 	       if (alambda.ge.1.0) then
 		 print*,'In addition, alambda is >= 1.0'
 	       endif	
-	       print*,'Terminating retrieval'
+	       print*,'Terminating retrieval under alternate conditions'
+               oxchi=xchi
 	       GOTO 202 
 	    endif														
 							

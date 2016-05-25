@@ -31,6 +31,7 @@ C       Variable is not temperature  - may need to take exponent
         if(imod.eq.18.and.ip.eq.1)iflag=1 ! extended profile         
         if(imod.eq.8.and.ip.eq.1)iflag=1 ! variable knee profile
         if(imod.eq.9.and.ip.eq.1)iflag=1 ! variable knee profile
+        if(imod.eq.21.and.ip.eq.1)iflag=1 ! variable knee profile
         if(imod.eq.16.and.ip.eq.1)iflag=1 ! lapse rate profile      
         if(imod.eq.19.and.ip.eq.1)iflag=1 ! lapse rate profile      
       endif

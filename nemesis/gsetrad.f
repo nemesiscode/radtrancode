@@ -226,6 +226,7 @@ C       ***************** Surface temperature correction ***********
       endif
 
       iflagcloud=.false.
+      iflagsrom=0
 
       do ivar=1,nvar
 
@@ -316,7 +317,7 @@ C     See if Sromovsky cloud layer model is specified.
      1    varparam,nx,xn,ncloud,cpbot,cptop,nlaycloud,codepth,
      2    cfsh,cwid,pmeth)
           
-       print*,'Calling gwritepatsrom'
+       print*,'Calling gwritepatsrom - ncloud = ',ncloud
        call gwritepatsrom(runname,gasgiant,iscat,sol_ang,
      1  emiss_ang,nconv,vconv,fwhm,layht,nlayer,
      2  laytyp,layint,flagh2p,ncloud,cpbot,cptop,nlaycloud,

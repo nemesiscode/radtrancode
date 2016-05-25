@@ -83,7 +83,9 @@ F_SOURCES = \
 	check_profile.f \
 	setifix.f \
 	readcell.f \
-	getradius.f
+	readnextiter.f \
+	getradius.f \
+	ackermanmarley.f
 
 INCDIR = ../../radtran/includes
 INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/lincom.f $(INCDIR)/pathcom.f \
@@ -125,7 +127,9 @@ bin :   \
 	Nemesisdisc \
 	Generatespx \
 	GenerateMCSspx \
-#	NemesisMCS
+	Convertitertomre \
+	Testack \
+	Calc_chisq
 
 Nemesis: nemesis.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Nemesis nemesis.f $(LIBRARY) \
@@ -188,4 +192,20 @@ GenerateMCSspx: generateMCSspx.f $(LIBRARY)
 	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/radtran.a \
 	$(LIB)/matrices.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
 	$(LIB)/lgregfov.a $(FRECIPES)
+
+Convertitertomre: convertitertomre.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Convertitertomre convertitertomre.f \
+	$(LIBRARY) $(LIB)/cirsradg.a $(LIB)/cirsrad.a \
+	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/radtran.a \
+	$(LIB)/matrices.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
+	$(FRECIPES)
+
+Testack: testack.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Testack testack.f \
+	$(LIBRARY) $(LIB)/path.a $(LIB)/radtran.a $(LIB)/rtm_util.a \
+	$(FRECIPES)
+
+Calc_chisq: calc_chisq.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Calc_chisq calc_chisq.f \
+	$(LIBRARY) $(LIB)/rtm_util.a $(FRECIPES)
 

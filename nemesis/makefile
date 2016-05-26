@@ -85,6 +85,7 @@ F_SOURCES = \
 	readcell.f \
 	readnextiter.f \
 	getradius.f \
+	getcloud21.f \
 	ackermanmarley.f
 
 INCDIR = ../../radtran/includes

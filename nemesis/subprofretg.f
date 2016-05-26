@@ -81,7 +81,7 @@ C     ***********************************************************************
       PARAMETER (MAXLAT=20)
       REAL HREF(MAXLAT,MAXPRO),TREF(MAXLAT,MAXPRO),FLAT
       REAL PREF(MAXLAT,MAXPRO),VMRREF(MAXLAT,MAXPRO,MAXGAS)
-      REAL LATREF(MAXLAT),MOLWTREF(MAXLAT)
+      REAL LATREF(MAXLAT),MOLWTREF(MAXLAT),XFSHREF
       REAL XRH,XCDEEP,P1,PS,PS1,PH,Y1,Y2,YY1,YY2
       REAL XCH4,PCH4,PCUT,GETRADIUS,RPARTICLE
       INTEGER ICLOUD(MAXCON,MAXPRO),NCONT1,JSPEC,IFLA,I1
@@ -2122,7 +2122,127 @@ C         print*,'Radius of Planet'
          NP = 1
         ELSEIF(VARIDENT(IVAR,1).EQ.444)THEN
 C         print*,'Variable size and RI'
+C        See if there is an associated IMOD=21 cloud. In which case
+C        modifying the radius will affect the vertical cloud distribution.
          IPAR = -1
+         ICL=VARIDENT(IVAR,2)
+         RPARTICLE=EXP(XN(NXTEMP+1))
+         CALL GETCLOUD21(ICLOUD,NVAR,VARIDENT,VARPARAM,XN,NPRO,
+     1 XDEEP,HKNEE,XFSHREF,REFRADIUS)
+
+         IF(XDEEP.GT.0)THEN
+          IPAR=NVMR+1+ICL
+          XFSH=XFSHREF*REFRADIUS/RPARTICLE
+
+C         Calculate gradient numerically as it's just too hard otherwise
+          DO 25 ITEST=1,2
+
+           DX=0.05*XN(NXTEMP+ITEST-1)
+           IF(DX.EQ.0.)DX=0.1
+
+           IF(ITEST.EQ.2)THEN
+            XFSH=XFSHREF*REFRADIUS/EXP(XN(NXTEMP+1)+DX)
+           ENDIF
+
+
+C          Start ND,Q,OD at zero
+C          OD is in units of particles/cm2 = particles/cm3 x length(cm)
+C          Q is specific density = particles/gram = (particles/cm3) / (g/cm3)
+           DO J=1,NPRO
+            ND(J)=0.
+            OD(J)=0
+            Q(J)=0.
+           ENDDO
+
+           JFSH=-1
+           IF(H(1).GE.HKNEE)THEN
+             IF(AMFORM.EQ.0)THEN
+              XMOLWT=MOLWT
+             ELSE
+              XMOLWT=XXMOLWT(1)
+             ENDIF
+C            Calculate density of atmosphere  (g/cm3)
+             ND(1)=1.0
+             RHO = P(1)*0.1013*XMOLWT/(R*T(1))
+             Q(1)=ND(1)/RHO
+             JFSH=1
+           ENDIF
+
+           DO J=2,NPRO
+            DELH = H(J)-H(J-1)
+            XFAC = SCALE(J)*XFSH
+
+
+            IF(H(J).GE.HKNEE)THEN
+             IF(AMFORM.EQ.0)THEN
+              XMOLWT=MOLWT
+             ELSE
+              XMOLWT=XXMOLWT(J)
+             ENDIF
+
+C            Calculate density of atmosphere  (g/cm3)
+             RHO = (0.1013*XMOLWT/R)*(P(J)/T(J)) 
+
+             IF(JFSH.LT.0)THEN
+              ND(J)=1.0
+              JFSH=1
+             ELSE
+              ND(J)=ND(J-1)*DPEXP(-DELH/XFAC)
+             ENDIF
+             Q(J)=ND(J)/RHO
+            ENDIF
+
+
+           ENDDO
+
+
+C          Integrate optical thickness
+           OD(NPRO)=ND(NPRO)*SCALE(NPRO)*XFSH*1E5
+           JFSH=-1
+           DO J=NPRO-1,1,-1
+            XFAC = SCALE(J)*XFSH         
+            OD(J)=OD(J+1)+0.5*(ND(J) + ND(J+1))*XFAC*1E5
+            IF(H(J).LE.HKNEE.AND.JFSH.LT.0)THEN
+             F = (HKNEE-H(J))/DELH
+             XOD = (1.-F)*OD(J) + F*OD(J+1)
+             JFSH=1
+            ENDIF
+C            print*,'h',J,OD(J)
+           ENDDO
+
+C          The following section was found not to be as accurate as
+C          desired due to misalignments at boundaries and so needs some 
+C          post-processing in gsetrad.f
+           DO J=1,NPRO
+            OD(J)=XDEEP*OD(J)/XOD
+            Q(J)=XDEEP*Q(J)/XOD
+            IF(H(J).LT.HKNEE)THEN
+             IF(H(J+1).GE.HKNEE)THEN
+              Q(J)=Q(J)*(1.0 - (HKNEE-H(J))/(H(J+1)-H(J)))
+             ELSE
+              Q(J) = 0.0
+             ENDIF
+            ENDIF
+            IF(Q(J).GT.1e10)Q(J)=1e10
+            IF(Q(J).LT.1e-36)Q(J)=1e-36
+            NTEST=ISNAN(Q(J))
+            IF(NTEST)THEN
+             print*,'Error in subprofretg.f, cloud density is NAN'
+	     STOP
+            ENDIF
+
+            IF(ITEST.EQ.1)THEN
+             X2(J)=Q(J)
+            ELSE
+             XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X2(J))/DX
+            ENDIF
+
+           ENDDO
+
+25       CONTINUE
+
+
+         ENDIF
          NP = 2+INT(VARPARAM(IVAR,1))
         ELSEIF(VARIDENT(IVAR,1).EQ.333)THEN
 C         print*,'Surface gravity (log10(g))'

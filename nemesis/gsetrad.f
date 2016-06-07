@@ -373,7 +373,7 @@ C     Compute the drv file to get the aerosol optical depths
          print*,'ivar = ',ivar
          if(varident(ivar,1).le.100)then
 
-          if(varident(ivar,3).eq.9)then
+          if(varident(ivar,3).eq.9.or.varident(ivar,3).eq.21)then
               icont=abs(varident(ivar,1))
               od1=exp(xn(nx1+1))
               xscal(icont)=xod(icont)/od1

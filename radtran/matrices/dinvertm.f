@@ -43,6 +43,7 @@ C     INDX: Index of the row permutation done within LUDCMP.f.
       DOUBLE PRECISION A(MDIM,MDIM),AINV(MDIM,MDIM),IDE(IDIM,IDIM)
       DOUBLE PRECISION D,B(IDIM,1),A1(IDIM,IDIM),DX,P(IDIM),X(IDIM)
       DOUBLE PRECISION B1(IDIM),DXMAX,AINV1(IDIM,IDIM)
+      LOGICAL NTEST,ISNAN
 
 C******************************** CODE *********************************
 
@@ -62,6 +63,7 @@ C******************************** CODE *********************************
       ENDIF
 
       IF(JMOD.EQ.0)THEN
+          print*,'dinvertm : LU decomposition'
 C         LU - DECOMPOSITION
 C         transfer input array and set up an identity matrix.
           DO 20 J=1,NDIM
@@ -89,7 +91,7 @@ C         AINV(1,J) is the address of the jth column of AINV.
 
       ELSEIF(JMOD.EQ.1)THEN
           
-C          print*,'Gaussian elimination'
+          print*,'dinvertm: Gaussian elimination'
 C         transfer input array and set up an identity matrix.
           DO 21 J=1,NDIM
            DO 31 I=1,NDIM
@@ -109,7 +111,7 @@ C         transfer input array and set up an identity matrix.
 
       ELSE
 C         CHOLESKY DECOMPOSITION
-C          print*,'Cholesky decomposition'
+          print*,'dinvertm: Cholesky decomposition'
 C         transfer input array and to upper triangle of A1 and set up 
 C         an identity matrix.
           DO 25 J=1,NDIM
@@ -144,6 +146,8 @@ C     Checking inversion is OK
        DO J=1,NDIM
         A1(I,J)=A(I,J)
         AINV1(I,J)=AINV(I,J)
+        NTEST=ISNAN(AINV1(I,J))
+        IF(NTEST)ICHECK=1
        ENDDO
       ENDDO
 

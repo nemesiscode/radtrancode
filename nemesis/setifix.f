@@ -35,7 +35,7 @@ C     Set minimum fractional error to fix variable.
 
             
       nxtemp=0
-
+      print*,'Calling setifix'
       do 299 ivar=1,nvar
        np=1
        if(varident(ivar,1).le.100)then
@@ -67,7 +67,7 @@ C     Set minimum fractional error to fix variable.
         else
          ifix(ix) = 0
         endif
-
+        print*,'ix,ifix : ',ix,ifix
        enddo
        
        nxtemp=nxtemp+np

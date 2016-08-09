@@ -59,10 +59,10 @@ C         bins, paths, etc.)
 	INTEGER		INormal,Iray, ispace,nem,IBS(2),IBD(2), IFLAG
 	REAL		Dist, FWHM1,X0,X1,WING1,VREL1,MAXDV
         REAL		VMAX,VBOT,DELV1,VV,X
-        REAL            vconv(nconv), convout(maxout3),
-     1                  output(maxpat), yp(maxpat,2)
-        REAL            yout(maxpat,mconv),tsurf,
-     2			vem(maxsec),emissivity(maxsec), ynor(maxpat,mconv)
+        REAL            vconv(nconv), convout(maxout3)
+        REAL            output(maxpat), yp(maxpat,2)                  
+        REAL            yout(maxpat,mconv),tsurf,ynor(maxpat,mconv)
+        REAL		vem(maxsec),emissivity(maxsec) 
 	REAL		AAMOUNT(maxlay,maxgas),XX0
 
         INTEGER         lun, ulog, iphi,NLINR

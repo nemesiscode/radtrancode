@@ -1,3 +1,11 @@
+Welcome to the new git repository of the radtrancode project. This project is the development area for the Radtrans and Nemesis codes for radiative transfer calculations and retrievals, written in Oxford.
+
+
+
+If you are new to the system and want to check out the radtrancode repository onto you local system, please do the following steps: 
+
+-------------------------
+
 First create a ‘key pair’ on your system. To do this (Linux or OSX) type:
 
 ssh-keygen –t rsa

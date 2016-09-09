@@ -1,0 +1,20 @@
+First create a ‘key pair’ on your system. To do this (Linux or OSX) type:
+
+ssh-keygen –t rsa
+
+It will default to writing to ~/.ssh/id_rsa. If a key already exists it will ask if you want to overwrite this or make a new key pair somewhere else.  It will then ask you for a passphrase. Please enter one to make the system more secure. The public part of the key is written (default) to ~/.ssh/id_rsa.pub
+
+Now log on to the physics gitlab system at
+https://gitlab.physics.ox.ac.uk
+
+Click on the icon at top right to access ‘profile settings’. Go to ‘SSH keys’. Copy and paste the contents of to ~/.ssh/id_rsa.pub into the box, give the key a title such as ‘Key on oxpln20’ and then click ‘add key’. 
+
+Now, on your system go to the directory where you want to put the radtrancode git repository, i.e.
+
+cd somewhere safe
+
+then type
+
+git clone git@gitlab.physics.ox.ac.uk:planetary/radtrancode.git
+
+You should now have the current git repository in your safe directory.

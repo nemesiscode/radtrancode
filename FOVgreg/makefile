@@ -43,8 +43,10 @@ bin :   \
 	Outputfov
 
 Test_driver_FOV_nick_pos: test_driver_FOV_nick_pos.f $(LIBRARY)
-	$(FC) $(FCFLAGS) -o $(BIN)/Test_driver_FOV_nick_pos test_driver_FOV_nick_pos.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Test_driver_FOV_nick_pos test_driver_FOV_nick_pos.f \
+	$(LIBRARY) $(LIB)/rtm_util.a
 
 Outputfov: outputfov.f $(LIBRARY)
-	$(FC) $(FCFLAGS) -o $(BIN)/Outputfov outputfov.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Outputfov outputfov.f $(LIBRARY) \
+	$(LIB)/rtm_util.a
 

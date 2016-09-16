@@ -48,6 +48,7 @@ C	The variables defined here are those normally used when
 C	calculating atmospheric paths. ! nptah. itype declared within
 	INCLUDE '../includes/arrdef.f'
 	INCLUDE '../includes/pathcom.f'
+        INCLUDE '../includes/laycom.f'
 
 C       Defines the maximum values for a series of variables (layers,
 C         bins, paths, etc.)
@@ -58,21 +59,21 @@ C         bins, paths, etc.)
         PARAMETER       (mconv=6000)
 	INTEGER		INormal,Iray, ispace,nem,IBS(2),IBD(2), IFLAG
 	REAL		Dist, FWHM1,X0,X1,WING1,VREL1,MAXDV
-        REAL		VMAX,VBOT,DELV1,VV,X
-        REAL            vconv(nconv), convout(maxout3)
+        REAL		VBOT,DELV1,VV,X,RADIUS1,radextra
+        REAL            vconv(nconv), convout(maxout3),zheight(maxpro)
         REAL            output(maxpat), yp(maxpat,2)                  
         REAL            yout(maxpat,mconv),tsurf,ynor(maxpat,mconv)
         REAL		vem(maxsec),emissivity(maxsec) 
 	REAL		AAMOUNT(maxlay,maxgas),XX0
 
-        INTEGER         lun, ulog, iphi,NLINR
+        INTEGER         lun, ulog, iphi,NLINR,ipzen1
         PARAMETER       (lun=2, ulog=17)
 
         INTEGER         nout, IB
 
         INTEGER         FSTREC
 	REAL		XNEXT,XCOM
-        LOGICAL         scatter, dust,solexist
+        LOGICAL         fscatter, fdust,solexist
         double precision mu1(maxmu), wt1(maxmu), galb
 
         CHARACTER*100   klist, opfile1, solname, solfile, buffer
@@ -84,6 +85,10 @@ C         bins, paths, etc.)
    
         INCLUDE '../includes/dbcom.f'
         INCLUDE '../includes/lincomc.f'
+
+        common/defang/ipzen1
+C       Need simple way of passing planetary radius to nemesis
+        INCLUDE '../includes/planrad.f'
 
     
 C-----------------------------------------------------------------------
@@ -168,13 +173,13 @@ C      Precompute temperature coeffients of layers
                 STOP
         ENDIF
 
-        scatter= .false.
+        fscatter= .false.
         DO I= 1, npath
-                IF (imod(I).EQ.15.OR.imod(I).EQ.16) scatter= .true.
-                IF (imod(I).EQ.21.OR.imod(I).eq.22) scatter = .true.
+                IF (imod(I).EQ.15.OR.imod(I).EQ.16) fscatter= .true.
+                IF (imod(I).EQ.21.OR.imod(I).eq.22) fscatter = .true.
         ENDDO
 
-        IF (scatter) THEN
+        IF (fscatter) THEN
                 CALL file(opfile, radfile, 'sca')
                 WRITE(*,*)'     CALLING get_scatter'
                 CALL get_scatter(radfile,ncont)
@@ -188,9 +193,9 @@ C       And the xsc files likewise
 C
 C-----------------------------------------------------------------------
 
-        dust= .false.
-        IF (ncont.gt.0) dust= .true.
-        IF (dust) THEN
+        fdust= .false.
+        IF (ncont.gt.0) fdust= .true.
+        IF (fdust) THEN
              CALL file(opfile, xscfil, 'xsc')
              WRITE(*,*)'lblrtf_wave: CALLING get_xsec. ncont = ', ncont
              CALL get_xsec(xscfil, ncont)
@@ -254,6 +259,22 @@ C       Call subroutine lblrad_wave:
 C
 C-----------------------------------------------------------------------
 
+C       Pass radius of planet to cirsradg
+C       radius2 is radius held in planrad common block. Pass this to
+C       cirsrad_wave in case it's been updated.
+        radius1=radius2
+
+C       Look to see if ipzen has been set to 2 and if so read in altitude of
+C       top of atmosphere
+        radextra=0.
+        ipzen1=ipzen
+        if(ipzen.eq.2)then
+C          need the current height profile
+           call readprfheight(opfile1,npro,zheight)
+           radextra=zheight(npro)
+        endif
+
+
         VV = VMIN-DELV
         IFLAG=0
         DO J=1,NCONV
@@ -281,7 +302,8 @@ C-----------------------------------------------------------------------
      1    ngas, maxlay, maxcon, totam, press, temp, pp, amount,
      2    nlayin, maxinc, layinc, cont, scale, imod, idgas,
      3    isogas,iproc,emtemp,iphi,nem,vem,emissivity,tsurf,
-     4    flagh2p,hfp,flagc, hfc, ifc, basep, baseh, output)
+     4    flagh2p,hfp,flagc, hfc, ifc, basep, baseh, RADIUS1,
+     5    radextra,output)
 
 
 

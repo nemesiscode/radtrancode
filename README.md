@@ -26,3 +26,23 @@ then type
 git clone git@gitlab.physics.ox.ac.uk:planetary/radtrancode.git
 
 You should now have the current git repository in your safe directory.
+
+Now on your system type the command:
+git config --global --list
+
+If you don’t see something like:
+user.name=Patrick Irwin						{obviously your name here}
+user.email=patrick.irwin@physics.ox.ac.uk             {obviously your email address here}
+
+then you should add them before checking anything in or out. To do this type:
+
+git config --global user.name “Patrick Irwin" 
+git config --global user.email “patrick.irwin@physics.ox.ac.uk “ 
+
+
+Also, if you want to change the default git editor from “vi” or “vim” type something like:
+git config --global core.editor “pico"
+
+Finally, if you want the system to give you colour-coded git status messages (which do look quite pretty) type:
+
+git config --global color.ui "auto"

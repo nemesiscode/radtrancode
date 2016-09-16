@@ -35,7 +35,7 @@ C ../includes/dbcom.f stores the linedata base variables (e.g. RELABU).
 C******************************** CODE *********************************
 
 cc      WRITE(*,*)' RDLINE.f :: DBFORM, DBRECL = ',DBFORM,DBRECL
-
+      DBFORM=0
       IF(DBFORM.EQ.0)THEN
 C=======================================================================
 C
@@ -73,6 +73,16 @@ C          HITRAN160
      1    F4.2,F8.6,A15,A15,A15,A15,6I1,6I2,A1,F7.1,F7.1)
 104       FORMAT(I2,I1,F12.6,F6.3,1X,I3,F6.3,1X,I3,F5.4,F5.4,F10.4,
      1    F4.2,F8.6,A15,A15,A15,A15,6I1,6I2,A1,F7.1,F7.1)
+        ELSE IF(DBRECL.EQ.52)THEN
+          IF(BUFFER(21:21).EQ.'E')THEN
+          READ(BUFFER,107,ERR=99)LNID,LNISO,LNWAVE,LNSTR,EXP,
+     1    LNLSE,LNWIDA,LNTDEP,LNWIDS,LNTDEPS
+          ELSE
+          READ(BUFFER,106,ERR=99)LNID,LNISO,LNWAVE,LNSTR,EXP,
+     1    LNLSE,LNWIDA,LNTDEP,LNWIDS,LNTDEPS
+          ENDIF
+106       FORMAT(I2,I1,F12.6,F6.3,1X,I3,F10.4,F5.4,F3.2,F6.4,F3.2)
+107       FORMAT(I2,I1,F12.6,F5.3,1X,I4,F10.4,F5.4,F3.2,F6.4,F3.2)
         ELSE
           WRITE(*,*)' RDLINE.f :: HITRAN format not recognised.'
           WRITE(*,*)' Stopping program.'
@@ -81,8 +91,22 @@ C          HITRAN160
           WRITE(*,*)' DBFORM, DBRECL = ',DBFORM,DBRECL
           STOP
         ENDIF
-        LNTDEPS= LNTDEP
- 
+        
+       IF(DBRECL.EQ.52)THEN
+        LNEINA=0.0
+        LNPROB= 0.0
+        EXP1= 1
+        LNPSH= 0.0
+        LNUGQI04= ''
+        LNLGQI04= ''
+        LNULQ04= ' '
+        LNLLQ04= ' '
+        LNACC04=0
+        LNREF04=''
+        LNFLAG=''
+        UWGHT=0
+        LWGHT=0
+       ENDIF
       ELSE IF(DBFORM.EQ.1)THEN
 C=======================================================================
 C
@@ -189,9 +213,19 @@ C probability column.
 C Scaling strengths by 1.E47 to avoid underflow and including exponent
 C Old versions used Avagadros constant as the scaling factor but new data
 C bases include many very weak lines
-      
+       if(EXP.LE.(-15))then
+        LNSTR= LNSTR*CC**(EXP+47)
+       elseif(EXP.LT.(-15).AND.EXP.GE.(-20))THEN
+        print*, 'Note: LNSTR EXP = ', EXP
+        print*, 'Possibly suspect!'
+        LNSTR= LNSTR*CC**(EXP+47)
+       else
+        LNSTR=0
+        print*, 'LNSTR exp > -10, setting to zero: rdline.f'
+        print*, 'EXP = ', EXP, LNWAVE
+       endif
 C      print*,LNSTR,EXP
-      LNSTR= LNSTR*CC**(EXP+47)
+      
 C      print*,'A',LNSTR
       IF(DBRECL.EQ.160)THEN
        LNEINA= LNEINA*CC**EXP1

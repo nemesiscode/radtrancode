@@ -31,7 +31,9 @@ Now on your system type the command:
 git config --global --list
 
 If you don’t see something like:
+
 user.name=Patrick Irwin						{obviously your name here}
+
 user.email=patrick.irwin@physics.ox.ac.uk             {obviously your email address here}
 
 then you should add them before checking anything in or out. To do this type:

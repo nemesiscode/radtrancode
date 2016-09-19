@@ -176,7 +176,7 @@ C     ****************************************************************
       integer i,jgas,mgas,mbin,imod,i1
       parameter (mgas=20,mbin=8000)
       real knu0,delad,y0,EL,E1,E2,A,SFB,qrot,tpart(4),P,T,q
-      real T1,xcorr,U,tautmp,dpexp,w(mbin),C1,C2
+      real T1,xcorr,U,tautmp,dpexp,w(mbin),C1,C2,SUMT
       integer NT,iav(mbin),nav,bandtyp(mgas),j
       real TGV3,TAU_EKS,TKARK,YV,TAU_MG_LOR
       real tpout(mbin,mgas,7),ALCORR
@@ -185,7 +185,7 @@ C     ****************************************************************
       logical MG
 
       T1 = 0.0
-
+      SUMT = 0.0
       do 101 i1=1,nav
         I = IAV(I1)
         IF(BANDTYP(JGAS).LT.4)THEN
@@ -264,9 +264,25 @@ C     1     qrot,tautmp
         ENDIF
 
         T1 = T1+w(i1)*DPEXP(-tautmp)
-C        print*,i1,w(i),T1
+        SUMT=SUMT+w(i1)
+C        print*,i1,w(i),tautmp,T1,SUMT
 
 101     continue
+
+        T1=T1/SUMT
+
+        if(T1.LT.0.0.OR.T1.GT.1.0)THEN
+         print*,'calc_tau: transmission out of range'
+         print*,'Transmission = ',T1
+         print*,'bandtyp = ',bandtyp
+         print*,'jgas,nav = ',jgas,nav
+         do i=1,nav
+          print*,iav(i),w(i)
+         enddo
+         print*,'U,P,T,q,qrot,tpart',U,P,T,q,qrot,tpart
+         print*,'Normalisation = ',SUMT
+         stop
+        ENDIF
 
         return
 

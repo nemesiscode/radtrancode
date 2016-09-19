@@ -151,10 +151,6 @@ bin :   \
 	Convert_table \
 	Direct_ktable \
 	Direct_ktablec \
-	Correct_ktablec \
-	Bodge_table \
-	Gasid_table \
-	Adjust_delv_table \
 	Par_ktable \
 	Li_spec \
 	Pl_spec \
@@ -164,8 +160,7 @@ bin :   \
 	Concat_table \
 	Concat_table_temperature \
 	Cut_table \
-	Mod_table \
-	Test_ozone_serdyuchenko
+	Mod_table
 	
 Aground : aground.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Aground aground.f $(LIBRARY) \
@@ -203,26 +198,6 @@ Direct_ktable : direct_ktable.f $(LIBRARY)
 
 Direct_ktablec : direct_ktablec.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Direct_ktablec direct_ktablec.f \
-	$(LIBRARY) $(LIB)/rtm_util.a \
-	$(FRECIPES) $(LIB)/matrices.a
-
-Correct_ktablec : correct_ktablec.f $(LIBRARY)
-	$(FC) $(FCFLAGS) -o $(BIN)/Correct_ktablec correct_ktablec.f \
-	$(LIBRARY) $(LIB)/rtm_util.a \
-	$(FRECIPES) $(LIB)/matrices.a
-
-Bodge_table : bodge_table.f $(LIBRARY)
-	$(FC) $(FCFLAGS) -o $(BIN)/Bodge_table bodge_table.f \
-	$(LIBRARY) $(LIB)/rtm_util.a \
-	$(FRECIPES) $(LIB)/matrices.a
-
-Gasid_table : gasid_table.f $(LIBRARY)
-	$(FC) $(FCFLAGS) -o $(BIN)/Gasid_table gasid_table.f \
-	$(LIBRARY) $(LIB)/rtm_util.a \
-	$(FRECIPES) $(LIB)/matrices.a
-
-Adjust_delv_table : adjust_delv_table.f $(LIBRARY)
-	$(FC) $(FCFLAGS) -o $(BIN)/Adjust_delv_table adjust_delv_table.f \
 	$(LIBRARY) $(LIB)/rtm_util.a \
 	$(FRECIPES) $(LIB)/matrices.a
 
@@ -289,7 +264,3 @@ Mod_table : mod_table.f $(LIBRARY) $(LIB)/spec_data.a
 Scale_table : scale_table.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Scale_table scale_table.f $(LIBRARY) \
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES)
-
-Test_ozone_serdyuchenko : test_ozone_serdyuchenko.f $(LIBRARY)
-	$(FC) $(FCFLAGS) -o $(BIN)/Test_ozone_serdyuchenko test_ozone_serdyuchenko.f \
-	$(LIBRARY) $(LIB)/rtm_util.a $(FRECIPES)

@@ -728,21 +728,20 @@ C check bins in layer 1
         CALL CALC_FINE(VV,WING,MAXDV,J,NLAYER,NGAS,PRESS,TEMP,
      1       FRAC,IDGAS,ISOGAS,IPROC,IBS,IFCONT,XK)
 
-C          print*,'calc_fine OK'
-
-        IF(IFCONT.EQ.1.AND.J.EQ.1)THEN
-C          If we are in the 1st layer and CALC_FINE indicates that we have run
-C          out of lines then we need to relabel <buffer 2> as <buffer 1> and
-C     read in a new <buffer 2>.
+        IF(IFCONT.EQ.1)THEN
+C          CALC_FINE indicates that we have run out of lines then we need 
+C           to relabel <buffer 2> as <buffer 1> and read in a new <buffer 2>.
            IB=IBS(1)
            FSTREC=NXTREC
+           print*,'calc_fine indicates we have run out of lines'
            print*,'Loading more lines into what was <buffer 1>, '
            print*,'but will now be <buffer 2>'
+           print*,'Requested wavenumber = ',VV
            print*,'FSTREC = ',FSTREC
            MAXLIN1 = MAXLIN
            print*,'lblrad_wave: MAXLIN = ',MAXLIN1
-           print*,IBS(1),IBS(2)
-           print*,IBD(1),IBD(2)
+           print*,'IBS before read : ',IBS(1),IBS(2)
+           print*,'IBD before rewad: ',IBD(1),IBD(2)
            print*,VMIN,VMAX,VREL
            
            CALL LOADBUFFER(VMIN-VREL,VMAX+VREL,FSTREC,MAXLIN1,MAXBIN,
@@ -750,9 +749,18 @@ C     read in a new <buffer 2>.
      3          ELIN,IDLIN,SBLIN,PSHIFT,DOUBV,TDW,TDWS,LLQ,NXTREC,
      3          FSTLIN,LSTLIN,LASTBIN)
            
+           do i=1,nbin
+            if(fstlin(ib,i).gt.0)then
+             print*,ib,i,vbin(i),fstlin(ib,i),lstlin(ib,i),
+     1        vlin(ib,fstlin(ib,i)),vlin(ib,lstlin(ib,i))
+            else
+             print*,ib,i,vbin(i),fstlin(ib,i),lstlin(ib,i)
+            endif
+           enddo
            NLINE(IB)=NLINR
            IBD(IB)=-1
-           
+           print*,'ib, nline(ib) = ',ib,nline(ib)
+
 C     Swap round the IBS and IBD arrays
            J1=IBS(1)
            IBS(1)=IBS(2)
@@ -763,32 +771,27 @@ C     Swap round the IBS and IBD arrays
            IBD(2)=J1
            
            
-           print*,IBS(1),IBS(2)
-           print*,IBD(1),IBD(2)
+           print*,'IBS after read : ',IBS(1),IBS(2)
+           print*,'IBD after read: ',IBD(1),IBD(2)
            
-
-C           print*,'IB,NLINE(IB),IBD',IB,NLINE(IB),IBD(IB)
-C           DO I=1,NBIN
-C     PRINT*,I,FSTLIN(IBS(1),I),LSTLIN(IBS(1),I),
-C     1        FSTLIN(IBS(2),I),LSTLIN(IBS(2),I)
-C     ENDDO
-           
-
 
         ENDIF
 
-C now loop over layers
-      	DO J = 1, nlayer
-C	  First compute continuum contributions as necessary in
-C         all continuum bins and all layers.
-          DO I=1,2
+C	Compute line wing continuum contributions as necessary in
+C       all continuum bins and all layers.
+        DO I=1,2
            IF(IBD(I).LT.0)THEN
-            print*,'Precalculating continuum from array : ',I
+            print*,'Precalculating continuum from array : ',IBS(I)
             CALL CALC_CONT(WING,MAXDV,NLAYER,NGAS,PRESS,TEMP,
      1       FRAC,IDGAS,ISOGAS,IPROC,IBS(I))
             IBD(I)=1
            ENDIF
-          ENDDO
+        ENDDO
+
+
+
+C       now loop over layers and calculate fine structure
+      	DO J = 1, nlayer
 C	  Now calculate fine structure for this layer and wavenumber
 C          print*,'Calculating fine structure. VV,Layer = ',VV,J
 
@@ -797,7 +800,6 @@ C          print*,'Calculating fine structure. VV,Layer = ',VV,J
 
 	  tautmp(J) = taucon(J) + xk
 	  taugas(J) = taugasc(J) + xk
-C          if(j.eq.1)print*,'X5',tautmp(j)
 
       	ENDDO
    

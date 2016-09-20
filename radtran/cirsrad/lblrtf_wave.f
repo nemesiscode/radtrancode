@@ -219,7 +219,10 @@ C
        PRINT*,'Calling init_cont',XX0,VMAX+VREL,WING
 
        CALL INIT_CONT(XX0,VMAX+VREL,WING)
-
+       print*,'NBIN = ',NBIN
+       do i=1,nbin
+        print*,i,vbin(i)
+       enddo
        VBOT=VBIN(1)
        PRINT*,'VBOT = ',VBOT
        IBS(1)=1
@@ -237,10 +240,18 @@ C      Read in 2 arrays of lines
        CALL LOADBUFFER(XX0,VMAX+VREL,FSTREC,MAXLIN1,MAXBIN,IB,
      1 NGAS,IDGAS,ISOGAS,VBOT,WING,NLINR,VLIN,SLIN,ALIN,ELIN,IDLIN,
      2 SBLIN,PSHIFT,DOUBV,TDW,TDWS,LLQ,NXTREC,FSTLIN,LSTLIN,LASTBIN)
-
-
+       print*,'FSTREC,NXTREC,LASTBIN',fstrec,nxtrec,lastbin(ib)
+       do i=1,nbin
+        if(fstlin(ib,i).gt.0)then
+         print*,ib,i,vbin(i),fstlin(ib,i),lstlin(ib,i),
+     1    vlin(ib,fstlin(ib,i)),vlin(ib,lstlin(ib,i))
+        else
+         print*,ib,i,vbin(i),fstlin(ib,i),lstlin(ib,i)
+        endif
+       enddo
        NLINE(IB)=NLINR
        IBD(IB)=-1
+       print*,'ib, nline(ib) = ',ib,nline(ib)
 
        IB=2
        FSTREC=NXTREC
@@ -250,8 +261,19 @@ C      Read in 2 arrays of lines
      1 NGAS,IDGAS,ISOGAS,VBOT,WING,NLINR,VLIN,SLIN,ALIN,ELIN,IDLIN,
      2 SBLIN,PSHIFT,DOUBV,TDW,TDWS,LLQ,NXTREC,FSTLIN,LSTLIN,LASTBIN)
 
+       print*,'FSTREC,NXTREC,LASTBIN',fstrec,nxtrec,lastbin(ib)
+       do i=1,nbin
+        if(fstlin(ib,i).gt.0)then
+         print*,ib,i,vbin(i),fstlin(ib,i),lstlin(ib,i),
+     1   vlin(ib,fstlin(ib,i)),vlin(ib,lstlin(ib,i))
+        else
+         print*,ib,i,vbin(i),fstlin(ib,i),lstlin(ib,i)
+        endif
+       enddo
+
        NLINE(IB)=NLINR
        IBD(IB)=-1
+       print*,'ib, nline(ib) = ',ib,nline(ib)
 
 C-----------------------------------------------------------------------
 C

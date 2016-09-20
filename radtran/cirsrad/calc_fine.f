@@ -27,7 +27,7 @@ C	SLIN(2,MAXLIN)	REAL	Line strength [cm^-1 molecule^-1 cm^-2] at
 C				STP.
 C	ALIN(2,MAXLIN)	REAL	Air-broadened halfwidth [cm^-1/atm] @ STP.
 C	ELIN(2,MAXLIN)	REAL	Lower state energy line position [cm^-1].
-C	IDLIN(2,MAXLIN)	REAL	Air Force Geospace Lab. identifier.
+C	IDLIN(2,MAXLIN)	INTEGER	Air Force Geospace Lab. identifier.
 C	SBLIN(2,MAXLIN)	REAL	Self broadening coefficient. NOTE: the
 C				self-broadening coefficient used in this
 C				program is the 'air'-broadened halfwidth

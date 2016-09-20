@@ -64,7 +64,7 @@ C ../includes/dbcom.f stores the line database variables (e.g. RELABU).
       INTEGER MAXLIN,NLINR,MAXBIN,CURBIN
       INTEGER IDLIN(2,MAXLIN),NGAS,IDGAS(NGAS),ISOGAS(NGAS)
       INTEGER FSTLIN(2,MAXBIN),LSTLIN(2,MAXBIN),NBINX
-      INTEGER LASTBIN(2)
+      INTEGER LASTBIN(2),FIRSTBIN(2),NBINY
       REAL VMIN,VMAX
       REAL VLIN(2,MAXLIN)
       DOUBLE PRECISION SLIN(2,MAXLIN)
@@ -99,18 +99,31 @@ C      do i=1,NGAS
 C       print*,idgas(i),isogas(i)
 C      enddo
 C      print*,'VBOT,WING = ',VBOT,WING
-
+   
       IREC=FSTREC-1
       LINE=0
 
       print*,'IREC,LINE = ',IREC,LINE
-
+    
       DO I=1,MAXBIN
        FSTLIN(IB,I)=-1
        LSTLIN(IB,I)=-1
       ENDDO
+      FIRSTBIN(IB)=-1
       LASTBIN(IB)=-1
-
+      DO I=1,MAXLIN
+       VLIN(IB,I)=0.
+       SLIN(IB,I)=0.
+       ALIN(IB,I)=0.
+       ELIN(IB,I)=0.
+       IDLIN(IB,I)=0
+       SBLIN(IB,I)=0.
+       PSHIFT(IB,I)=0.
+       DOUBV(IB,I)=0.
+       TDW(IB,I)=0.
+       TDWS(IB,I)=0.
+       LLQ(IB,I)=' '
+      ENDDO
 111   IREC=IREC+1
 
 C      print*,'IREC = ',irec
@@ -220,11 +233,26 @@ C NOTE: SBLIN is the correction to air broadening so that zero is valid
 101   CONTINUE
       NBINX = 1+ INT((VMAX-VBOT)/WING) 
       DO I=1,NBINX
-C       PRINT*,I,VBOT+(I-1)*WING,FSTLIN(IB,I),LSTLIN(IB,I)
-       IF(FSTLIN(IB,I).GT.0)LASTBIN(IB)=I
+       IF(FSTLIN(IB,I).GT.0)THEN
+        LASTBIN(IB)=I
+        IF(FIRSTBIN(IB).LT.0)THEN
+         FIRSTBIN(IB)=I
+        ENDIF
+       ENDIF
       ENDDO
-      print*,'IB,NLINR,NXTREC,LASTBIN',IB,NLINR,NXTREC,LASTBIN(IB)
-
+      print*,'IB,NLINR,NXTREC,FIRSTBIN,LASTBIN',IB,NLINR,NXTREC,
+     1 FIRSTBIN(IB),LASTBIN(IB)
+      NBINY = 1+LASTBIN(IB)-FIRSTBIN(IB)
+      IF(FIRSTBIN(IB).GT.0)THEN
+       print*,'Bins covered = ',NBINY
+       IF(NBINY.LT.3)THEN
+        print*,'Error in loadbuffer.f -'
+        print*,'Line buffers should cover more than 2 wing bins.'
+        print*,'You need to increase MAXLIN in lincomc.f and'
+        print*,'recompile.'
+        stop
+       ENDIF
+      ENDIF
       RETURN
 
       END

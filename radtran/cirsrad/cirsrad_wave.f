@@ -722,7 +722,7 @@ C	pressure to 1d for passing into subroutine
 320			CONTINUE
 
 C	ID1= 0 means no diagnostic print statements while in CIACON.
-			id1 = 1
+			id1 = 0
 			XLEN = DELH(J)
 
 C       This goes off to do the collision induced-absorption

@@ -55,9 +55,9 @@ C     TIME2: System time at the end of program execution.
       real wgeom(mgeom,mav),flat(mgeom,mav),flon(mgeom,mav)
       real vwave1(mwave),vconv1(mconv)
       double precision aa(mx,mx),dd(mx,my)
-      real vkstart,vkend,vkstep
+      real vkstart,vkend,vkstep,RADIUS
       integer idump,kiter,jtan,jtanx,jalbx,jpre,jprex
-      integer jrad,jradx,lx(mx),jlogg,jloggx
+      integer jrad,jradx,lx(mx),jlogg,jloggx,iplanet
 C     ********** Scattering variables **********************
       real xwave(maxsec),xf(maxcon,maxsec),xg1(maxcon,maxsec)
       real xg2(maxcon,maxsec)
@@ -372,6 +372,13 @@ C       Write out all the error matrices if only one case retrieved
         call write_covariance(runname,npro,nvar,varident,varparam,
      1    nx,ny,sa,sm,sn,st,se,aa,dd,kk)
       endif
+
+      CALL readrefiplan(runname,iplanet,xlat,RADIUS)
+
+C     write out setup files for last successful iteration
+      call calc_input_files(runname,ispace,fwhm,flat,nconv,
+     1 vconv,angles,gasgiant,lin,nvar,varident,varparam,jsurf,
+     2 jalb,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
 
 2999  continue
 

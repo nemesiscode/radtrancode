@@ -86,7 +86,8 @@ F_SOURCES = \
 	readnextiter.f \
 	getradius.f \
 	getcloud21.f \
-	ackermanmarley.f
+	ackermanmarley.f \
+	calc_input_files.f
 
 INCDIR = ../../radtran/includes
 INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/lincom.f $(INCDIR)/pathcom.f \

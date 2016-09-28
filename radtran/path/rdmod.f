@@ -31,6 +31,7 @@ C***********************************************************************
 C ../includes/pathcom.f holds the variables used by the software when
 C calculating atmospheric paths (e.g. NPATH and IMOD).
       INCLUDE '../includes/laycom.f'
+      INCLUDE '../includes/emcee.f'
 C ../includes/laycom.f holds variables used only by the path software
 C parameters are passed between routines mostly using common blocks
 C because of the extensive use of large arrays. NOTE: laycom uses
@@ -55,6 +56,7 @@ C IPFILE: Input filename.
 C********************************* CODE ********************************
 
 C Reading in in vertical profiles produced by profile.f
+
       ilun = 1
       READ(text,1)ipfile
 1     FORMAT(A)
@@ -94,6 +96,17 @@ C        print*,id(i),iso(i)
         READ(ILUN,*)H(I),P(I),T(I),(VMR(I,J),J=1,NVMR)
 30    CONTINUE
       CLOSE(UNIT=82)
+
+      IF(VMRflag.eq.1)THEN
+       DO 120 I=1,NPRO
+        DO 130 J=1, NVMR
+         VMR(I,J) = MCMCvmr(J)
+130     CONTINUE
+        T(I) = MCMCtemp(i)
+        H(I) = MCMCheight(i)
+120    CONTINUE
+
+      ENDIF
 
       MODEL = .TRUE.
       LAYERS = .FALSE.

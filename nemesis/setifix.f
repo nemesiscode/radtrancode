@@ -27,7 +27,7 @@ C     ***************************************************************
       include '../radtran/includes/arrdef.f'
       include 'arraylen.f'
       integer nvar,varident(mvar,3),ifix(mx),nxtemp,ivar,i,np
-      integer npvar,iflag,logflag,npro,ix
+      integer npvar,iflag,logflag,npro,ix,j
       real xa1,ea1,ferr,minferr
 C     Set minimum fractional error to fix variable.
       parameter (minferr = 1e-6)
@@ -67,12 +67,13 @@ C     Set minimum fractional error to fix variable.
         else
          ifix(ix) = 0
         endif
-        print*,'ix,ifix : ',ix,ifix
        enddo
        
        nxtemp=nxtemp+np
 
 299   continue
+
+      print*,'ix,ifix : ',ix,(ifix(j),j=1,nxtemp)
 
       return
 

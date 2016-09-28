@@ -102,7 +102,6 @@ C          HITRAN160
         LNULQ04= ' '
         LNLLQ04= ' '
         LNACC04=0
-        LNREF04=''
         LNFLAG=''
         UWGHT=0
         LWGHT=0

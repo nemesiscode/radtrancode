@@ -27,6 +27,7 @@ C***********************************************************************
 
       INCLUDE '../includes/arrdef.f'
       INCLUDE '../includes/pathcom.f'
+      include '../includes/emcee.f'
 C ../includes/pathcom.f holds the variables used by the software when
 C calculating atmospheric paths (e.g. NPATH and IMOD).
       INCLUDE '../includes/laycom.f'
@@ -62,10 +63,17 @@ C First skip header (if any)
       READ(BUFFER,*)NN,NDUST
       WRITE(*,*)' RDDMOD.f :: dust-model has ',ndust,' aerosol types'
       NCONT = NDUST
-      DO 105 J=1,NN
-        READ(ILUN,*)DUSTH(J),(DUST(I,J),I=1,NDUST)
+      IF(CLOUDflag.ne.1)then
+       DO 105 J=1,NN
+         READ(ILUN,*)DUSTH(J),(DUST(I,J),I=1,NDUST)
 C        WRITE(*,*)DUSTH(J),(DUST(I,J),I=1,NDUST)
-105   CONTINUE
+105    CONTINUE
+      ELSE
+       DO 106 J=1,NN
+        DUSTH(J)=MCMCheight(J)
+106    CONTINUE
+      ENDIF
+
       IF(J.LT.2)THEN
         WRITE(*,*)' RDDMOD.f :: error reading dust-profile.'
         GOTO 119

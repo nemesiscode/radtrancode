@@ -970,6 +970,7 @@ C         Integrate optical thickness
           OD(NPRO)=ND(NPRO)*SCALE(NPRO)*XFSH*1E5
           JFSH=-1
           DO J=NPRO-1,1,-1
+           DELH = H(J+1)-H(J)
            XFAC = SCALE(J)*XFSH         
            OD(J)=OD(J+1)+0.5*(ND(J) + ND(J+1))*XFAC*1E5
            IF(H(J).LE.HKNEE.AND.JFSH.LT.0)THEN

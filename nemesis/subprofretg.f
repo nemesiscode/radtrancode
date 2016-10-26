@@ -73,7 +73,7 @@ C     ***********************************************************************
       REAL H(MAXPRO),P(MAXPRO),T(MAXPRO),VMR(MAXPRO,MAXGAS)
       REAL CONT(MAXCON,MAXPRO),XLAT,X,XREF(MAXPRO),X1(MAXPRO)
       REAL PKNEE,HKNEE,XDEEP,XFSH,PARAH2(MAXPRO),XH,XKEEP,X2(MAXPRO)
-      REAL RHO,F,DQDX(MAXPRO),DX,PLIM,XFACP,CWID,PTROP
+      REAL RHO,F,DQDX(MAXPRO),DX,PLIM,XFACP,CWID,PTROP, NEWF
       REAL DNDH(MAXPRO),DQDH(MAXPRO),FCLOUD(MAXPRO)
       DOUBLE PRECISION Q(MAXPRO),OD(MAXPRO),ND(MAXPRO),XOD
       INTEGER ISCALE(MAXGAS),XFLAG,NPVAR,MAXLAT,IERR
@@ -180,9 +180,17 @@ C         Skip header
           DO 33 I=1,NPRO
             READ(1,*)HREF(ILATREF,I),PREF(ILATREF,I),
      & TREF(ILATREF,I),(VMRREF(ILATREF,I,J),J=1,NVMR)
+            IF(VMRflag.eq.1)THEN
+             HREF(ILATREF,I)=MCMCheight(I)
+             TREF(ILATREF,I)=MCMCtemp(I)
+             DO J=1, NVMR
+              VMRREF(ILATREF,I,J)=MCMCvmr(J)
+             ENDDO
+            ENDIF
 33        CONTINUE
-
 601      CONTINUE
+
+         
 
 C        Now interpolate to correct latitude
          IF(NLATREF.EQ.1)THEN
@@ -257,7 +265,13 @@ C        Skip header
          READ(1,*)
          DO 30 I=1,NPRO
            READ(1,*)H(I),P(I),T(I),(VMR(I,J),J=1,NVMR)
-C           print*,H(I),P(I),T(I),(VMR(I,J),J=1,NVMR)
+            IF(VMRflag.eq.1)THEN
+             H(I)=MCMCheight(I)
+             T(I)=MCMCtemp(I)
+             DO J=1, NVMR
+              VMR(I,J)=MCMCvmr(J)
+             ENDDO
+            ENDIF
 30       CONTINUE
 
         CLOSE(UNIT=1)
@@ -272,20 +286,13 @@ C      Make sure that vmrs add up to 1 if AMFORM=1
         DO 301 I=1,NPRO
          DO K=1,NVMR
           XVMR(K)=VMR(I,K)
-C          print*,I,K,XVMR(K)
+c          print*,I,K,XVMR(K)
          ENDDO
          XXMOLWT(I)=CALCMOLWT(NVMR,XVMR,IDGAS,ISOGAS)
 301     CONTINUE
-
        ENDIF
 
-       IF(VMRflag.eq.1)THEN
-        DO 120 I=1,NPRO
-         DO 130 J=1, NVMR
-          VMR(I,J) = MCMCvmr(J)
-130      CONTINUE
-120     CONTINUE
-       ENDIF
+
 C     all processing below assumes that heights are in ascending order
 C     so sorting just in case
       DO 12 I=1,NPRO-1
@@ -329,6 +336,7 @@ C **************** Modify profile via hydrostatic equation ********
        CALL XHYDROSTATP(AMFORM,IPLANET,LATITUDE,NPRO,NVMR,MOLWT,
      1  IDGAS,ISOGAS,H,P,T,VMR,HTAN,PTAN,SCALE)
       ENDIF
+
 C     Read in reference AEROSOL profile
       IF(XFLAG.EQ.0)THEN
        OPEN(UNIT=1,FILE='aerosol.ref',STATUS='OLD')
@@ -922,6 +930,13 @@ C         Q is specific density = particles/gram = (particles/cm3) / (g/cm3)
           ENDDO
 
           JFSH=-1
+
+          if(VMRflag.eq.1)then
+           if(HKNEE.ge.H(NPRO))THEN
+            HKNEE = H(NPRO)
+           endif
+          endif
+
           IF(H(1).GE.HKNEE)THEN
             IF(AMFORM.EQ.0)THEN
              XMOLWT=MOLWT
@@ -961,7 +976,7 @@ C           Calculate density of atmosphere  (g/cm3)
             DQDH(J) = DNDH(J)/RHO
            ENDIF
 
-C           print*,J,H(J),ND(J),Q(J)
+c           print*,'BLAH:',J,H(J), HKNEE, ND(J),JFSH
 
           ENDDO
 
@@ -970,7 +985,7 @@ C         Integrate optical thickness
           OD(NPRO)=ND(NPRO)*SCALE(NPRO)*XFSH*1E5
           JFSH=-1
           DO J=NPRO-1,1,-1
-           DELH = H(J+1)-H(J)
+           DELH = H(J+1) - H(J)
            XFAC = SCALE(J)*XFSH         
            OD(J)=OD(J+1)+0.5*(ND(J) + ND(J+1))*XFAC*1E5
            IF(H(J).LE.HKNEE.AND.JFSH.LT.0)THEN
@@ -978,7 +993,7 @@ C         Integrate optical thickness
             XOD = (1.-F)*OD(J) + F*OD(J+1)
             JFSH=1
            ENDIF
-C           print*,'h',J,OD(J)
+c           print*, 'OD F XOD JFSH',OD(J),F,XOD,JFSH,ND(J),ND(J+1)
           ENDDO
 
 C         The following section was found not to be as accurate as
@@ -995,6 +1010,7 @@ C         post-processing in gsetrad.f
              Q(J) = 0.0
             ENDIF
            ENDIF
+c           print*, 'Q: ', Q(J), XDEEP, XOD
            IF(Q(J).GT.1e10)Q(J)=1e10
            IF(Q(J).LT.1e-36)Q(J)=1e-36
            NTEST=ISNAN(Q(J))
@@ -2391,6 +2407,7 @@ C     AMFORM=1 profile
         CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
       ENDIF
 
+
 C     ********  Modify profile with hydrostatic equation ********
       IF(JHYDRO.EQ.0)THEN
        CALL XHYDROSTATH(AMFORM,IPLANET,LATITUDE,NPRO,NVMR,MOLWT,
@@ -2562,6 +2579,7 @@ C      print*,'subprofretg. Writing aerosol.prf'
       WRITE(2,*)NPRO, NCONT
       DO 41 I=1,NPRO
         WRITE(2,*) H(I),(CONT(J,I),J=1,NCONT)
+c        print*, 'AERO:', H(I), CONT(1,I)
 41    CONTINUE
       CLOSE(2)
 

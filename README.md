@@ -58,3 +58,5 @@ To check in your updates to github you type
 git push origin <branchname>
 
 If you are a git 'master' you can push your copy of the master branch onto the repository. If you are a 'developer' you can only push branches with a different name. I can then choose to merge them with the master branch from within github.
+
+Note that if you get weird arcane error messages when you try to 'push' it's probably because the repository has since changed and you need to type 'git pull origin' first to make sure everything is in sync.

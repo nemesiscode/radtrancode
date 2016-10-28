@@ -220,12 +220,13 @@ C bases include many very weak lines
         LNSTR= LNSTR*CC**(EXP+47)
        else
         LNSTR=0
-        print*, 'LNSTR exp > -14, setting to zero: rdline.f'
-        print*, 'EXP = ', EXP, LNWAVE
+        print*, 'Problem in rdline.f'
+        print*, 'LNSTR EXP > -14, code in danger of overflow'
+        print*, 'LNWAVE, LNSTR, EXP = ', LNWAVE, LNSTR, EXP
+        print*, 'Aborting'
+        stop        
        endif
-C      print*,LNSTR,EXP
       
-C      print*,'A',LNSTR
       IF(DBRECL.EQ.160)THEN
        LNEINA= LNEINA*CC**EXP1
       ELSE

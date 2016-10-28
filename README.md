@@ -48,3 +48,13 @@ git config --global core.editor “pico"
 Finally, if you want the system to give you colour-coded git status messages (which do look quite pretty) type:
 
 git config --global color.ui "auto"
+
+To update your copy with the latest version on github the command is:
+
+git pull origin
+(updates the default branch master)
+
+To check in your updates to github you type
+git push origin <branchname>
+
+If you are a git 'master' you can push your copy of the master branch onto the repository. If you are a 'developer' you can only push branches with a different name. I can then choose to merge them with the master branch from within github.

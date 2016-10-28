@@ -212,15 +212,15 @@ C probability column.
 C Scaling strengths by 1.E47 to avoid underflow and including exponent
 C Old versions used Avagadros constant as the scaling factor but new data
 C bases include many very weak lines
-       if(EXP.LE.(-15))then
+       if(EXP.LE.(-14))then
         LNSTR= LNSTR*CC**(EXP+47)
-       elseif(EXP.LT.(-15).AND.EXP.GE.(-20))THEN
+       elseif(EXP.LT.(-14).AND.EXP.GE.(-20))THEN
         print*, 'Note: LNSTR EXP = ', EXP
         print*, 'Possibly suspect!'
         LNSTR= LNSTR*CC**(EXP+47)
        else
         LNSTR=0
-        print*, 'LNSTR exp > -10, setting to zero: rdline.f'
+        print*, 'LNSTR exp > -14, setting to zero: rdline.f'
         print*, 'EXP = ', EXP, LNWAVE
        endif
 C      print*,LNSTR,EXP

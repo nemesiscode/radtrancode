@@ -51,7 +51,7 @@ C--------------------------------------------------------------
       INCLUDE '../includes/pathcom.f'
       INCLUDE '../includes/bincom.f'
 C-----------------------------------------------------------------------------
-      INTEGER LUN,LOOP,LUN0,LUN1,MDATA,MFIL,NGMAX
+      INTEGER LUN,LOOP,LUN0,LUN1,MDATA,MFIL,NGMAX,N1
       PARAMETER (LUN=2,LUN0=30,LUN1=31,MFIL=1000)
       PARAMETER (NGMAX=51)
       REAL X,PMIN,PMAX,TMIN,TMAX,DT,DP
@@ -68,6 +68,7 @@ C-----------------------------------------------------------------------------
       REAL QROT,FRAC1,MAXDV
 
       REAL P1,TE1,TEMP1(MAXK),PRESS1(MAXK),VCEN(MPOINT)
+      REAL TEMP2(MAXK,MAXK)
       REAL TABLE(MAXK,MAXK,MAXG)
       REAL G_ORD(MAXG),K_G(MAXG),DEL_G(MAXG),ERRK(MAXG)
 C     G_ORD: Gauss-Legendre ordinates for calculating the k-distribution.
@@ -204,16 +205,32 @@ C      Convert wavelength range to wavenumber range if IWAVE=0
         PRINT*,J,press1(J)
 5     CONTINUE
 
+      PRINT*,'Entering NT < 0 activates new pressure-dependent'
+      PRINT*,'temperatures'
       CALL PROMPT('Enter number of temperature points ( < 20 ) : ')
       READ*,NT
-      CALL PROMPT('Enter Tmin, Tmax : ')
-      READ*,TMIN,TMAX
-      DT=(TMAX-TMIN)/(NT-1)
+      IF(NT.GT.0.AND.NT.LE.MAXK)THEN
+       CALL PROMPT('Enter Tmin, Tmax : ')
+       READ*,TMIN,TMAX
+       DT=(TMAX-TMIN)/(NT-1)
 
-      DO 6 J=1,NT
-        TEMP1(J)=TMIN + (J-1)*DT
-        PRINT*,J,TEMP1(J)
-6     CONTINUE
+       DO 6 J=1,NT
+         TEMP1(J)=TMIN + (J-1)*DT
+         PRINT*,J,TEMP1(J)
+6      CONTINUE
+      ELSE
+       IF(NT.LT.0)THEN
+        DO 7 I=1,NP
+         PRINT*,'Pressure level = ',I,PRESS1(I)
+         CALL PROMPT('Enter Tmin, Tmax : ')
+         READ*,TMIN,TMAX
+         DT=(TMAX-TMIN)/(ABS(NT)-1)
+         DO 8 J=1,ABS(NT)
+          TEMP2(I,J)=TMIN+(J-1)*DT
+8        CONTINUE
+7       CONTINUE
+       ENDIF
+      ENDIF
 
       WRITE(*,*)'Enter fractional abundance of absorber'
       WRITE(*,*)'0.0 will set the line width to be completely foreign'
@@ -255,7 +272,11 @@ C      (for exoplanet k-tables)
       IRECL=ISYS()
       OPEN(UNIT=LUN0,FILE=KTAFIL,STATUS='UNKNOWN',ACCESS='DIRECT',
      1 RECL=IRECL)
-      IREC0=11 + 2*NG + 2 + NP + NT + 2
+      IF(NT.LT.0)THEN
+       IREC0=11 + 2*NG + 2 + NP + NP*ABS(NT) + 2
+      ELSE
+       IREC0=11 + 2*NG + 2 + NP + NT + 2
+      ENDIF
 C     Add in extra buffer to list wavelengths if a non-uniform grid is
 C     specified
       IF(DELV.LE.0.0)THEN 
@@ -286,10 +307,19 @@ c     PRINT*,'IREC0 = ',irec0
         WRITE(LUN0,REC=IREC)PRESS1(J)
         IREC=IREC+1
 301   CONTINUE
-      DO 302 J=1,NT
-        WRITE(LUN0,REC=IREC)TEMP1(J)
-        IREC=IREC+1
-302   CONTINUE
+      IF(NT.GT.0)THEN
+        DO 302 J=1,NT
+          WRITE(LUN0,REC=IREC)TEMP1(J)
+          IREC=IREC+1
+302     CONTINUE
+      ELSE
+       DO 303 I=1,NP
+        DO 304 J=1,ABS(NT)
+          WRITE(LUN0,REC=IREC)TEMP2(I,J)
+          IREC=IREC+1         
+304     CONTINUE
+303    CONTINUE
+      ENDIF
 C     Write out central wavelengths if non-uniform grid
       IF(DELV.LE.0.0)THEN
        DO 303 J=1,NPOINT
@@ -304,10 +334,16 @@ C     Calculate continuum absorption for all pressures/temperatures
       PRINT*,'Calculating Continuum' 
       PRINT*,'VMIN1,VMAX1,WING,VREL',VMIN1,VMAX1,WING,VREL
 
-      DO 102 K=1,NT
+      N1=ABS(NT)
+      DO 102 K=1,N1
 
          IF(IEXO.NE.0)THEN
 C          Read in temperature specific linedata file.
+           IF(NT.LT.0)THEN
+             PRINT*,'IEXO <> 0 AND NT<0 not yet implemented'
+             STOP
+           ENDIF
+
            OPFILE=OPFILE1
            DO I=1,LEN(OPFILE)
             IF(OPFILE(I:I).NE.' ')KK=I
@@ -323,20 +359,27 @@ C          Read in temperature specific linedata file.
            CALL RDISO
          ENDIF
 
-
          DO 105 J=1,NP
 
-            PRINT*,'Continuum. J,K = ',J,K,' P = ',PRESS1(J),' T = ',
-     & 	    TEMP1(K)
+            P1=PRESS1(J)
+            IF(NT.LT.0)THEN
+             TE1=TEMP2(J,K)
+            ELSE
+             TE1=TEMP1(K)
+            ENDIF
+
+            PRINT*,'Continuum. J,K = ',J,K,' P = ',P1,' T = ',
+     & 	    TE1
    
 cc            WRITE(*,*)'CALLING lbl_kcont'
-            CALL LBL_KCONT(VMIN1,VMAX1,WING,VREL,PRESS1(J),TEMP1(K),
+            CALL LBL_KCONT(VMIN1,VMAX1,WING,VREL,P1),TE1,
      1      IDGAS(1),ISOGAS(1),FRAC1,IPROC(1),J,K,MAXDV,IPTF,IEXO)
 cc            WRITE(*,*)'lbl_kcont COMPLETE'
 cc            WRITE(*,*)' '
+
 105      CONTINUE
 102   CONTINUE
- 
+
       PRINT*,'Continuum OK'
 
       IREC=IREC0
@@ -428,10 +471,15 @@ C        DO I=1,NFIL
 C         PRINT*,VFIL(I),TFIL(I)
 C        ENDDO
            
-        DO 30 K=1,NT
+
+        N1=ABS(NT)
+        DO 30 K=1,N1
 
           IF(IEXO.NE.0)THEN
 C            Read in temperature specific line data file
+             IF(NT.LT.0)THEN
+               STOP
+             ENDIF
              OPFILE=OPFILE1
              DO I=1,LEN(OPFILE)
               IF(OPFILE(I:I).NE.' ')KK=I
@@ -453,7 +501,11 @@ C            defined by lbl_kcont.f)
 
           DO 20 J=1,NP
             P1=PRESS1(J)
-            TE1=TEMP1(K)
+            IF(NT.LT.0)THEN
+             TE1=TEMP2(J,K)
+            ELSE
+             TE1=TEMP1(K)
+            ENDIF
 
             WRITE(*,*)'Pressure, temperature: ',P1,TE1
             WRITE(LUN1,*)'Pressure, temperature: ',P1,TE1

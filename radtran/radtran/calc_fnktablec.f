@@ -313,12 +313,12 @@ c     PRINT*,'IREC0 = ',irec0
           IREC=IREC+1
 302     CONTINUE
       ELSE
-       DO 303 I=1,NP
+       DO 307 I=1,NP
         DO 304 J=1,ABS(NT)
           WRITE(LUN0,REC=IREC)TEMP2(I,J)
           IREC=IREC+1         
 304     CONTINUE
-303    CONTINUE
+307    CONTINUE
       ENDIF
 C     Write out central wavelengths if non-uniform grid
       IF(DELV.LE.0.0)THEN
@@ -372,7 +372,7 @@ C          Read in temperature specific linedata file.
      & 	    TE1
    
 cc            WRITE(*,*)'CALLING lbl_kcont'
-            CALL LBL_KCONT(VMIN1,VMAX1,WING,VREL,P1),TE1,
+            CALL LBL_KCONT(VMIN1,VMAX1,WING,VREL,P1,TE1,
      1      IDGAS(1),ISOGAS(1),FRAC1,IPROC(1),J,K,MAXDV,IPTF,IEXO)
 cc            WRITE(*,*)'lbl_kcont COMPLETE'
 cc            WRITE(*,*)' '

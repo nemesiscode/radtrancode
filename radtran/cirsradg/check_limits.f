@@ -48,7 +48,7 @@ C     **************************************************************
                 stop
       endif
 
-      if ((npk.gt.maxk).or.(ntk.gt.maxk)) then
+      if ((npk.gt.maxk).or.(abs(ntk).gt.maxk)) then
                 write (*,*) ' CHECK_LIMITS: Too many P/T points in K',
      1                  ' tables'
                 write (*,*) ' Npk = ',npk,' Maxk = ',maxk

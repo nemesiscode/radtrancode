@@ -32,7 +32,7 @@ C stored in the same directory as the rest of the code
       INTEGER IREC,IREC0
       REAL P1,T1,PRESS1(MAXK),TEMP1(MAXK),VCEN(MAXBIN)
       REAL G_ORD(MAXG),K_G(MAXG),DEL_G(MAXG),TABLE(MAXK,MAXK,MAXG)
-
+      REAL TEMP2(MAXK,MAXK)
       CHARACTER*100 KTAFIL,OPFILE1
       CHARACTER*1 ANS
 
@@ -97,11 +97,22 @@ C******************************** CODE *********************************
         IREC = IREC + 1
 301   CONTINUE
       WRITE(*,*)'Temperatures : '
-      DO 302 J=1,NT
-        READ(LUN0,REC=IREC)TEMP1(J)
-        WRITE(*,*)temp1(j)
-        IREC = IREC + 1
-302   CONTINUE
+      IF(NT.GT.0)THEN
+       DO 302 J=1,NT
+         READ(LUN0,REC=IREC)TEMP1(J)
+         WRITE(*,*)temp1(j)
+         IREC = IREC + 1
+302    CONTINUE
+      ELSE
+       DO 307 I=1,NP
+        DO 308 J=1,ABS(NT)
+         READ(LUN0,REC=IREC)TEMP2(I,J)
+         WRITE(*,*)temp2(i,j)
+         IREC = IREC + 1
+308     CONTINUE
+307    CONTINUE       
+      ENDIF
+
 C     Read in central wavelengths if non-uniform grid
       IF(DELV.LE.0.0)THEN
        PRINT*,'Channel centres'
@@ -163,8 +174,15 @@ C     Read in central wavelengths if non-uniform grid
         WRITE(*,*)'Setting P equal to PMAX.'
         P1 = PMAX
        ENDIF
-       TMAX = TEMP1(NT)
-       TMIN = TEMP1(1)
+       CP = PINDEX(PRESS1,NP,P1)
+       V = (P1 - PRESS1(CP))/(PRESS1(CP+1) - PRESS1(CP))
+
+       IF(NT.GT.0)THEN
+        TMAX = TEMP1(NT)
+        TMIN = TEMP1(1)
+
+*** STOP
+
        IF(T1.LT.TMIN)THEN
         WRITE(*,*)'**WARNING** T < TMIN ==> T, TMIN = ',T1,TMIN
         WRITE(*,*)' '
@@ -178,13 +196,11 @@ C     Read in central wavelengths if non-uniform grid
         T1 = TMAX
        END IF
 
-       CP = PINDEX(PRESS1,NP,P1)
        CT = PINDEX(TEMP1,NT,T1)
 
        WRITE(*,*)'Pressure index (CP), temperature index (CT) = ',CP,CT
        WRITE(*,*)' '
        IF(PRESS1(CP+1).NE.PRESS1(CP))THEN
-        T = (P1 - PRESS1(CP))/(PRESS1(CP+1) - PRESS1(CP))
        ELSE
         T=0.
        ENDIF

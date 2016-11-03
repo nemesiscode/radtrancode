@@ -34,12 +34,12 @@ C       bins, paths, etc.)
 	REAL KOUT(MAXLAY,MAXGAS,MAXG),K_G(MAXG),G_ORD(MAXG)
         REAL DELG(MAXG),fracx(maxbin,maxgas)
         REAL dkoutdt(maxlay,maxgas,maxg)
-        REAL P(MAXK),T(MAXK)
+        REAL P(MAXK),T(MAXK),T2(MAXK,MAXK)
 	REAL UT(MAXLAY),VT(MAXLAY),FWHMK,DELVK
         INTEGER IOFF(MAXLAY,4)
         LOGICAL INTERP
 
-	COMMON /INTERPK/LUN,IRECK,XMIN,DELX,FRACX,P,NP,T,NT,
+	COMMON /INTERPK/LUN,IRECK,XMIN,DELX,FRACX,P,NP,T,T2,NT,
      1			NG,DELVK,FWHMK,G_ORD,DELG,KOUT,DKOUTDT
 C-----------------------------------------------------------------------
 
@@ -63,8 +63,13 @@ C        print*,'kout(1,1,1)=',kout(1,1,1)
         eps=0.01
         PMAX = P(NP)
         PMIN = P(1)
-        TMAX = T(NT)
-        TMIN = T(1)
+        IF(NT.GT.0)THEN
+         TMAX = T(NT)
+         TMIN = T(1)
+        ELSE
+         TMAX = T2(NP,ABS(NT))
+         TMIN = T2(1,1)
+        ENDIF
 
         INTERP = .TRUE.
 
@@ -105,7 +110,7 @@ C						  Parameter eps is there
 C						  to prevent small numerical
 C						  errors in VWAVE screwing
 C					          things up between platforms
-          IREC = IREC0+NP*NT*NG*N1
+          IREC = IREC0+NP*ABS(NT)*NG*N1
 C          print*,'IREC = ',IREC
          ELSE       
 C         For irregularly gridded tables IREC0 is assumed to hold the 
@@ -116,7 +121,7 @@ C         by read_klist.f
           N1=-1   
          ENDIF
 
-         NTAB = NT*NP*NG
+         NTAB = ABS(NT)*NP*NG
          IRECX=IREC
          KTEST=0.0
 
@@ -174,7 +179,7 @@ C          table BELOW that requested, already set up in read_klist.f.
          ENDIF
 
 
-         NTAB = NT*NP*NG
+         NTAB = ABS(NT)*NP*NG
          if(NTAB.gt.MTAB)then
           print*,'Error in get_kg, NTAB>MTAB'
           print*,NTAB,MTAB

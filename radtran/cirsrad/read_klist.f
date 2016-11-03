@@ -55,7 +55,7 @@ C IRECK: Beginning record number in file.
       REAL pmin,pmax,tmin,tmax,fwhmk,delvk
       REAL vwave(nwave),vcen(mpoint),xcenk(mpoint)
       REAL xmin(maxkfil),xmax(maxkfil),delx(maxkfil),fwhm1(maxkfil)
-      REAL pk(maxk),tk(maxk)
+      REAL pk(maxk),tk(maxk),t2k(maxk,maxk)
 C PK: Pressure values in k-tables.
 C TK@ Temperature values in k-tables.
       REAL g_ord(maxg),delg(maxg)
@@ -68,8 +68,8 @@ C DELK: Wavenumber step of evaluation points.
       REAL kout(maxlay,maxgas,maxg),dkoutdt(maxlay,maxgas,maxg)
       CHARACTER*100 klist,ktafil(maxkfil),null
 
-      COMMON /interpk/ lun,ireck,xmink,delk,frack,pk,npk,tk,ntk,ngk,
-     1 delvk,fwhmk,g_ord,delg,kout,dkoutdt
+      COMMON /interpk/ lun,ireck,xmink,delk,frack,pk,npk,tk,t2k,ntk,
+     2 ngk,delvk,fwhmk,g_ord,delg,kout,dkoutdt
 
 C********************************* CODE ********************************
 
@@ -106,15 +106,20 @@ C-----------------------------------------------------------------------
         unit(i) = 100 + i
         WRITE(*,1035)KTAFIL(i)
         CALL read_khead(ktafil(i),unit(i),npt(i),xmin(i),delx(i),
-     1  fwhm1(i),vcen,idgask(i),isogask(i),pk,tk,np(i),nt(i),g_ord,
-     2  delg,ng(i),irec(i))
+     1   fwhm1(i),vcen,idgask(i),isogask(i),pk,tk,t2k,np(i),nt(i),
+     2   g_ord,delg,ng(i),irec(i))
         xmax(i) = xmin(i) + (npt(i) - 1) * delx(i)
 
         IF (i.EQ.1) THEN
           pmin = pk(1)
           pmax = pk(np(i))
-          tmin = tk(1)
-          tmax = tk(nt(i))
+          if(nt(i).gt.0)then
+           tmin = tk(1)
+           tmax = tk(nt(i))
+          else
+           tmin = t2k(1,1)
+           tmax = t2k(np(i),nt(i))
+          endif
           npoint = npt(i)
           if(npoint.gt.mpoint)then
            print*,'Error in READ_KLIST: npoint > mpoint'

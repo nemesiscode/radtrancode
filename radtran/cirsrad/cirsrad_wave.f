@@ -132,7 +132,7 @@ C		K table variables
      1		npk, ntk, ng, intmod(maxbin,maxgas), ntab
 	REAL	xmink(maxbin,maxgas), delk(maxbin,maxgas), xmin, delx, 
      1		k_g(maxg), k_g1(maxg), k_g2(maxg), q1, q2, 
-     2		pk(maxk), tk(maxk), g_ord(maxg), 
+     2		pk(maxk), tk(maxk), g_ord(maxg), t2k(maxk,maxk), 
      3		delg(maxg), kl_g(maxg,maxlay),
      4		kout(maxlay,maxgas,maxg),p1,p2,frack(maxbin,maxgas)
 
@@ -214,7 +214,7 @@ C       Solar reference spectrum common block
 
 	common/dust/vsec,xsec,nsec,ncont
 	common/interpk/lun, ireck, xmink, delk, frack, pk, npk, tk, 
-     1      ntk, ng, delvk, fwhmk, g_ord, delg, kout
+     1      t2k,ntk, ng, delvk, fwhmk, g_ord, delg, kout
 	common/scatd/mu1, wt1, galb
 	common/scatter1/nmu, isol, dist1, lowbc, liscat, lnorm,
      1		lncons, lcons, sol_ang, emiss_ang, aphi, nf
@@ -275,7 +275,7 @@ C-----------------------------------------------------------------------
 		stop
 	endif
 
-	if ((npk.gt.maxk).or.(ntk.gt.maxk)) then
+	if ((npk.gt.maxk).or.(abs(ntk).gt.maxk)) then
 		write (*,*) ' CIRSRAD_WAVE: Too many P/T points in K',
      1			' tables' 
 		write (*,*) ' Npk = ',npk,' Maxk = ',maxk
@@ -359,7 +359,7 @@ C       Set flag for code to read in modified PHASE*.DAT files if required
 
 c	Isec = min(4,nsec)
 
-	ntab = npk * ntk * ng
+	ntab = npk * abs(ntk) * ng
 
 C-----------------------------------------------------------------------
 C

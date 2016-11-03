@@ -16,14 +16,16 @@ C
 C-----------------------------------------------------------------------
 
       SUBROUTINE READ_KHEAD(KTAFIL,LUN0,NPOINT,VMIN,DELV,FWHM,VCEN,
-     1		IDGAS,ISOGAS, PRESS,TEMP,NP,NT,G_ORD,DEL_G,NG,IREC0)
+     1		IDGAS,ISOGAS,PRESS,TEMP,TEMP2,NP,NT,G_ORD,DEL_G,NG,
+     2          IREC0)
 
 	implicit none
         include '../includes/arrdef.f'
 	integer		LUN0, NPOINT, IDGAS, ISOGAS, NP, NT, NG, IREC0,
      1			IREC, N1, IRECL, J, ISYS, I
 	real		VMIN, DELV, FWHM, PRESS(MAXK), TEMP(MAXK), 
-     1			G_ORD(MAXG), DEL_G(MAXG), VCEN (MAXBIN)
+     1			G_ORD(MAXG), DEL_G(MAXG), VCEN (MAXBIN),
+     2                  TEMP2(MAXK,MAXK)
 	character*100	KTAFIL,IPFILE
 
       IRECL=ISYS()
@@ -80,10 +82,20 @@ C     Check to see if NG is within limits
        PRESS(J)=LOG(PRESS(J))
        IREC=IREC+1
 301   CONTINUE
-      DO 302 J=1,NT
-       READ(LUN0,REC=IREC)TEMP(J)
-       IREC=IREC+1
-302   CONTINUE
+      N1=ABS(NT)
+      IF(NT.LT.0)THEN
+       DO 307 I=1,NP
+        DO 308 J=1,N1
+        READ(LUN0,REC=IREC)TEMP2(I,J)
+        IREC=IREC+1 
+308     CONTINUE
+307    CONTINUE
+      ELSE
+       DO 302 J=1,NT
+        READ(LUN0,REC=IREC)TEMP(J)
+        IREC=IREC+1
+302    CONTINUE
+      ENDIF
       IF(DELV.LE.0.0)THEN
        DO 303 J=1,NPOINT   
        READ(LUN0,REC=IREC)VCEN(J)

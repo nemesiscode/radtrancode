@@ -16,7 +16,7 @@ C-----------------------------------------------------------------------
 
 	INTEGER	NP, NT, NG, CP, CT, I, I1, I2, I3, I4, N1,IREC
 	INTEGER IWAVE,NGAS,NLAYER,IGAS,LAYER,LUN0,IREC0,maxc
-        INTEGER NTAB,loop,count,MTAB,J,IRECX,CT1,CT2
+        INTEGER NTAB,loop,count,MTAB,J,IRECX,CT1,CT2, NX
         LOGICAL NTEST,ISNAN
 	LOGICAL COINC
         parameter (maxc=2*maxg,MTAB=maxk*maxk*maxg)
@@ -257,11 +257,11 @@ C-----------------------------------------------------------------------
  	      IF(ct2.lt.1)ct2 = 1
               IF(ct2.ge.ABS(nt))ct2=ABS(nt)-1
               UT2(LAYER)=(T1-TN(CT2))/(TN(CT2+1)-TN(CT2))
-
-              IOFF(LAYER,1) = (nt * ng * (cp-1)) + (ng * (ct1-1))
-              IOFF(LAYER,2) = (nt * ng * cp) + (ng * (ct2-1))
-              IOFF(LAYER,3) = (nt * ng * cp) + (ng * ct2)
-              IOFF(LAYER,4) = (nt * ng * (cp-1)) + (ng * ct1)
+              nx=abs(nt)
+              IOFF(LAYER,1) = (nx * ng * (cp-1)) + (ng * (ct1-1))
+              IOFF(LAYER,2) = (nx * ng * cp) + (ng * (ct2-1))
+              IOFF(LAYER,3) = (nx * ng * cp) + (ng * ct2)
+              IOFF(LAYER,4) = (nx * ng * (cp-1)) + (ng * ct1)
 
             ENDIF            
 
@@ -340,7 +340,7 @@ C             print*,'weight',vwave,tmp,weight(1),weight(2)
              weight(2)=1.0-frac
            endif
 C           print*,'vwave,Weight : ',vwave,weight(1),weight(2)
-           NTAB = NP*NT*NG
+           NTAB = NP*ABS(NT)*NG
            count = 0
            do loop = 1, 2
                 DO I = 1, NG

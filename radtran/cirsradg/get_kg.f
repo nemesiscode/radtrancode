@@ -51,7 +51,7 @@ C The input and output variables ...
 
 
 C General variables ...
-      INTEGER NP,NT,NG,CP,CT,I,I1,I2,I3,I4,J,N1
+      INTEGER NP,NT,NG,CP,CT,I,I1,I2,I3,I4,J,N1,NX
 C NP: Number of k-table pressures.
 C NT: Number of k-table temperatures.
 C NG: Number of ordinates in k-distribution.
@@ -159,11 +159,11 @@ C First check range is fine
          IF(ct2.ge.ABS(nt))ct2=ABS(nt)-1
          UT2(iLAYER)=(T1-TN(CT2))/(TN(CT2+1)-TN(CT2))
          TDUDT2(ilayer) = 1.0/(tn(ct2 + 1) - tn(ct2))
-
-         IOFF(ilayer,1) = (nt*ng*(cp - 1)) + (ng*(ct1 - 1))
-         IOFF(ilayer,2) = (nt*ng*cp) + (ng*(ct2 - 1))
-         IOFF(ilayer,3) = (nt*ng*cp) + (ng*ct2)
-         IOFF(ilayer,4) = (nt*ng*(cp - 1)) + (ng*ct1)
+         nx=abs(nt)
+         IOFF(ilayer,1) = (nx*ng*(cp - 1)) + (ng*(ct1 - 1))
+         IOFF(ilayer,2) = (nx*ng*cp) + (ng*(ct2 - 1))
+         IOFF(ilayer,3) = (nx*ng*cp) + (ng*ct2)
+         IOFF(ilayer,4) = (nx*ng*(cp - 1)) + (ng*ct1)
 
         ENDIF
 51    CONTINUE
@@ -196,7 +196,7 @@ C        the separation to be considered aligned.
          eps = 0.02*delv
 
           n1 = INT((vwave + eps - vmin)/delv)
-          irec = irec0 + np*nt*ng*n1
+          irec = irec0 + np*abs(nt)*ng*n1
 
         ELSE
 
@@ -209,7 +209,7 @@ C         by read_klist.f
 
         ENDIF
 
-        NTAB = NT*NP*NG
+        NTAB = ABS(NT)*NP*NG
         IRECX=IREC
         KTEST=0.0   
 
@@ -268,7 +268,7 @@ C          table BELOW that requested, already set up in read_klist.f.
           endif
         ENDIF
 
-        ntab = np*nt*ng
+        ntab = np*abs(nt)*ng
         if(ntab.gt.MTAB)then
          print*,'Error in get_kg, NTAB>MTAB'
          print*,NTAB,MTAB
@@ -379,7 +379,7 @@ c Fletcher: Initialised cont and dcont arrays, and the parameter X.
             ENDDO
 	    X=0.0
 
-            NTAB = np*nt*ng
+            NTAB = np*abs(nt)*ng
             count = 0
             DO loop=1,2
               DO I=1,NG

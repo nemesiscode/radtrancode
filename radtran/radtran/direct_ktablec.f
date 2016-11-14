@@ -9,7 +9,7 @@ C     ****************************************************************
       INCLUDE '../includes/arrdef.f'
       INTEGER NLMAX
       PARAMETER (NLMAX=2000)
-      INTEGER IDGAS,ISOGAS,NPOINT,I,LUNOUT,ISHAPE
+      INTEGER IDGAS,ISOGAS,NPOINT,I,LUNOUT,ISHAPE,J
       REAL TWAVEN(MAXBIN,2),TPOUT(MAXBIN,7),WAVEIN(MAXBIN)
       REAL WCEN(MAXBIN)
       REAL G_ORD(MAXG),K_G(MAXG),DEL_G(MAXG),FWHMIN(MAXBIN)
@@ -107,7 +107,7 @@ C       print*,I1,TWAVEN(I,1)
       DO 10 I=1,NPOINT
 
        DO 20 IP=1,NP
-        DO 30 IT=1,NT
+        DO 30 IT=1,ABS(NT)
          DO K=1,NG
           K_G(K)=KSTORE(I,IP,IT,K)
          ENDDO

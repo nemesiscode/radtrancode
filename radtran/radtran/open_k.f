@@ -1,5 +1,6 @@
 	SUBROUTINE OPEN_K(LUN1, XMIN, nx, delx, fwhm, IDGAS,
-     1		ISOGAS, NG, np, nt, press1, temp1, del_g, g_ord, irec)
+     1		ISOGAS, NG, np, nt, press1, temp1, temp2,
+     2          del_g, g_ord, irec)
 
 C     ****************************************************************
 C     Subroutine to open a .kta k-coefficient lookup file for output
@@ -28,9 +29,9 @@ C     ****************************************************************
 
 	implicit none
 	integer		NP, NT, NG, IRECL, LUN1, IDGAS, ISOGAS,
-     1			IREC0, nx, J, ISYS, IREC
+     1			IREC0, nx, J, ISYS, IREC, I
       	real 		PRESS1(20),TEMP1(20),G_ORD(ng),DEL_G(ng),
-     1			delx, fwhm, xmin
+     1			delx, fwhm, xmin,TEMP2(20,20)
 	character*100	KTAFIL, OPFILE 
 
       write (*,'(''Enter output filename: '',$)')
@@ -41,7 +42,11 @@ C     ****************************************************************
       IRECL=ISYS()			! New tables use 1 words/record
       OPEN(UNIT=LUN1,FILE=KTAFIL,STATUS='UNKNOWN',ACCESS='DIRECT',
      1RECL=IRECL)
-      IREC0=11 + 2*NG + 2 + NP+NT + 2
+      IF(NT.GT.0)THEN
+       IREC0=11 + 2*NG + 2 + NP+NT + 2
+      ELSE
+       IREC0=11 + 2*NG + 2 + NP+ NP*ABS(NT) + 2
+      ENDIF
       WRITE(LUN1,REC=1)IREC0
       WRITE(LUN1,REC=2)nx
       WRITE(LUN1,REC=3)xmin
@@ -66,10 +71,19 @@ C     ****************************************************************
        WRITE(LUN1,REC=IREC) PRESS1(J)
        IREC=IREC+1
 301   CONTINUE
-      DO 302 J=1,NT
-       WRITE(LUN1,REC=IREC)TEMP1(J)
-       IREC=IREC+1
-302   CONTINUE
+      IF(NT.GT.0)THEN
+       DO 302 J=1,NT
+        WRITE(LUN1,REC=IREC)TEMP1(J)
+        IREC=IREC+1
+302    CONTINUE
+      ELSE
+       DO 303 I=1,NP
+        DO 304 J=1,NT
+         WRITE(LUN1,REC=IREC)TEMP2(I,J)
+         IREC=IREC+1
+304     CONTINUE
+303    CONTINUE
+      ENDIF
 
 
       IREC=IREC0

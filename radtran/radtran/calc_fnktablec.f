@@ -272,6 +272,7 @@ C      (for exoplanet k-tables)
       IRECL=ISYS()
       OPEN(UNIT=LUN0,FILE=KTAFIL,STATUS='UNKNOWN',ACCESS='DIRECT',
      1 RECL=IRECL)
+      print*,'NT = ',NT
       IF(NT.LT.0)THEN
        IREC0=11 + 2*NG + 2 + NP + NP*ABS(NT) + 2
       ELSE
@@ -282,7 +283,7 @@ C     specified
       IF(DELV.LE.0.0)THEN 
         IREC0=IREC0+NPOINT
       ENDIF
-c     PRINT*,'IREC0 = ',irec0
+      PRINT*,'IREC0 = ',irec0
       WRITE(LUN0,REC=1)IREC0
       WRITE(LUN0,REC=2)NPOINT
       WRITE(LUN0,REC=3)VMIN
@@ -534,7 +535,7 @@ C       followed by pressure. Hence, we need to reverse the order for
 C       output
 
         DO J=1,NP
-         DO K=1,NT
+         DO K=1,ABS(NT)
 
           DO LOOP=1,NG
            K_G(LOOP)=TABLE(J,K,LOOP)

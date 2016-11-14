@@ -214,7 +214,7 @@ C       Solar reference spectrum common block
 
 	common/dust/vsec,xsec,nsec,ncont
 	common/interpk/lun, ireck, xmink, delk, frack, pk, npk, tk, 
-     1      t2k,ntk, ng, delvk, fwhmk, g_ord, delg, kout
+     1      t2k, ntk, ng, delvk, fwhmk, g_ord, delg, kout
 	common/scatd/mu1, wt1, galb
 	common/scatter1/nmu, isol, dist1, lowbc, liscat, lnorm,
      1		lncons, lcons, sol_ang, emiss_ang, aphi, nf

@@ -36,7 +36,7 @@ C Defines the maximum values for a series of variables (layers, bins,
 C paths, etc.)
 
       INTEGER maxkfil,imatch,ipo1,jpo
-      real MAXDX,MAXDX1
+      real MAXDX,MAXDX1,ta1,ta2
       PARAMETER (maxkfil=100,MAXDX=1e-4)
 
       INTEGER ngas,nwave,nkl,npk,ntk,ngk,i,j,i1,i2,k,npoint
@@ -118,7 +118,7 @@ C-----------------------------------------------------------------------
            tmax = tk(nt(i))
           else
            tmin = t2k(1,1)
-           tmax = t2k(np(i),nt(i))
+           tmax = t2k(np(i),abs(nt(i)))
           endif
           npoint = npt(i)
           if(npoint.gt.mpoint)then
@@ -168,18 +168,26 @@ C          print*,'read_klist : ngk = ',ngk
            ENDDO
           ENDIF
 
+          if(nt(i).gt.0)then
+           ta1 = tk(1)
+           ta2 = tk(nt(i))
+          else
+           ta1 = t2k(1,1)
+           ta2 = t2k(np(i),abs(nt(i)))
+          endif
+
           IF ((abs(pk(1)-pmin).GT.MAXDX).OR.
      1    (abs(pk(npk)-pmax).GT.MAXDX).OR.
-     2    (abs(tk(1)-tmin).GT.MAXDX).or.
-     3    (abs(tk(ntk)-tmax).GT.MAXDX)) THEN
+     2    (abs(ta1-tmin).GT.MAXDX).or.
+     3    (abs(ta2-tmax).GT.MAXDX)) THEN
             WRITE(*,*)' READ_KLIST.f :: Error: Problems reading'
             WRITE(*,*)' k-tables PT Grid. Stopping program.'
             WRITE(*,*)' '
             WRITE(*,*)' ktafil(I) ',ktafil(I)
             WRITE(*,*)' pmin = ',pmin,' pk(1) = ',pk(1)
             WRITE(*,*)' pmax = ',pmax,' pk(npk) = ',pk(npk)
-            WRITE(*,*)' tmin = ',tmin,' tk(1) = ',tk(1)
-            WRITE(*,*)' tmax = ',tmax,' tk(ntk) = ',tk(ntk)
+            WRITE(*,*)' tmin = ',tmin,' ta1 = ',ta1
+            WRITE(*,*)' tmax = ',tmax,' ta2 = ',ta2
             STOP
           ENDIF
 
@@ -201,7 +209,7 @@ C      print*,'test'
         STOP
       ENDIF
 
-      IF ((npk.GT.maxk).OR.(ntk.GT.maxk)) THEN
+      IF ((npk.GT.maxk).OR.(abs(ntk).GT.maxk)) THEN
         WRITE(*,*)' READ_KLIST.f :: Error: Too many P/T points in'
         WRITE(*,*)' k-tables. Stopping program.' 
         WRITE(*,*)' '
@@ -261,7 +269,7 @@ C                print*,ipo,xcenk(ipo),vwave(k)
                   lun(k,i) = unit(j)
                   xmink(k,i) = xmin(j)
                   delk(k,i) = delx(j)
-                  ireck(k,i) = irec(j)+npk*ntk*ngk*(ipo-1)
+                  ireck(k,i) = irec(j)+npk*abs(ntk)*ngk*(ipo-1)
                   if(ipo.lt.npoint)then
                      dx = xcenk(ipo+1)-xcenk(ipo)
                      frack(k,i) = 1.0 - (vwave(k)-XCENK(ipo))/dx
@@ -282,7 +290,7 @@ C              and 'snap' the calculation to this wavelength.
                   lun(k,i) = unit(j)
                   xmink(k,i) = xmin(j)
                   delk(k,i) = delx(j)
-                  ireck(k,i) = irec(j)+npk*ntk*ngk*(ipo-1)
+                  ireck(k,i) = irec(j)+npk*abs(ntk)*ngk*(ipo-1)
                   frack(k,i) = 1.
                   MAXDX1=dx
                 ENDIF

@@ -12,7 +12,7 @@ C     ****************************************************************
       INTEGER IDGAS,ISOGAS,NPOINT,I,LUNOUT
       REAL TWAVEN(MBIN,2),TPOUT(MBIN,7),WAVEIN(MBIN)
       REAL G_ORD(MG),K_G(MG),DEL_G(MG),FWHMIN(MBIN)
-      REAL P(MPAR),T(MPAR),PRESS,TEMP
+      REAL P(MPAR),T(MPAR),PRESS,TEMP,T2(MPAR,MPAR)
       REAL VSTART,VEND,XFAC
       REAL DELV,FWHM,STEP,QROT,ERR,Q
       REAL KSTORE(MBIN,MPAR,MPAR,MG)
@@ -93,12 +93,12 @@ C       print*,I1,TWAVEN(I,1)
       CLOSE(12)
 
       CALL OPEN_K(LUNOUT,VSTART,NPOINT,DELV,FWHM,IDGAS,ISOGAS,
-     1  NG,NP,NT,P,T,DEL_G,G_ORD,IREC)
+     1  NG,NP,NT,P,T,T2,DEL_G,G_ORD,IREC)
 
       DO 10 I=1,NPOINT
 
        DO 20 IP=1,NP
-        DO 30 IT=1,NT
+        DO 30 IT=1,ABS(NT)
          DO K=1,NG
           K_G(K)=KSTORE(I,IP,IT,K)
          ENDDO

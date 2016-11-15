@@ -16,11 +16,11 @@ C-----------------------------------------------------------------------
 
 	INTEGER	NP, NT, NG, CP, CT, I, I1, I2, I3, I4, N1,IREC
 	INTEGER IWAVE,NGAS,NLAYER,IGAS,LAYER,LUN0,IREC0,maxc
-        INTEGER NTAB,loop,count,MTAB,J,IRECX
+        INTEGER NTAB,loop,count,MTAB,J,IRECX,CT1,CT2, NX
         LOGICAL NTEST,ISNAN
 	LOGICAL COINC
         parameter (maxc=2*maxg,MTAB=maxk*maxk*maxg)
-        REAL TABLE(MTAB),TABLE2(MTAB)
+        REAL TABLE(MTAB),TABLE2(MTAB),X1,X2,U2
 
 	REAL	P1, T1,DELV,VMIN, tmp, eps, KTEST,
      1		Y1, Y2, Y3, Y4, U, V, pmax, pmin, tmax, tmin, X, Z
@@ -34,12 +34,12 @@ C       bins, paths, etc.)
 	REAL KOUT(MAXLAY,MAXGAS,MAXG),K_G(MAXG),G_ORD(MAXG)
         REAL DELG(MAXG),fracx(maxbin,maxgas)
         REAL dkoutdt(maxlay,maxgas,maxg)
-        REAL P(MAXK),T(MAXK)
-	REAL UT(MAXLAY),VT(MAXLAY),FWHMK,DELVK
+        REAL P(MAXK),T(MAXK),T2(MAXK,MAXK),TN(MAXK)
+	REAL UT(MAXLAY),VT(MAXLAY),FWHMK,DELVK,UT2(MAXLAY)
         INTEGER IOFF(MAXLAY,4)
         LOGICAL INTERP
 
-	COMMON /INTERPK/LUN,IRECK,XMIN,DELX,FRACX,P,NP,T,NT,
+	COMMON /INTERPK/LUN,IRECK,XMIN,DELX,FRACX,P,NP,T,T2,NT,
      1			NG,DELVK,FWHMK,G_ORD,DELG,KOUT,DKOUTDT
 C-----------------------------------------------------------------------
 
@@ -63,8 +63,13 @@ C        print*,'kout(1,1,1)=',kout(1,1,1)
         eps=0.01
         PMAX = P(NP)
         PMIN = P(1)
-        TMAX = T(NT)
-        TMIN = T(1)
+        IF(NT.GT.0)THEN
+         TMAX = T(NT)
+         TMIN = T(1)
+        ELSE
+         TMAX = T2(NP,ABS(NT))
+         TMIN = T2(1,1)
+        ENDIF
 
         INTERP = .TRUE.
 
@@ -105,7 +110,7 @@ C						  Parameter eps is there
 C						  to prevent small numerical
 C						  errors in VWAVE screwing
 C					          things up between platforms
-          IREC = IREC0+NP*NT*NG*N1
+          IREC = IREC0+NP*ABS(NT)*NG*N1
 C          print*,'IREC = ',IREC
          ELSE       
 C         For irregularly gridded tables IREC0 is assumed to hold the 
@@ -116,7 +121,7 @@ C         by read_klist.f
           N1=-1   
          ENDIF
 
-         NTAB = NT*NP*NG
+         NTAB = ABS(NT)*NP*NG
          IRECX=IREC
          KTEST=0.0
 
@@ -174,7 +179,7 @@ C          table BELOW that requested, already set up in read_klist.f.
          ENDIF
 
 
-         NTAB = NT*NP*NG
+         NTAB = ABS(NT)*NP*NG
          if(NTAB.gt.MTAB)then
           print*,'Error in get_kg, NTAB>MTAB'
           print*,NTAB,MTAB
@@ -204,42 +209,68 @@ C           Work out where P,T for each layer lies in the tables
 C        ------------------------------------
 	  IF(INTERP)THEN
 C	    First check range is fine.
-            T1 = TEMP(LAYER)
             P1 = LOG(PRESS(LAYER))
 
-            IF(P1.LT.PMIN)P1=PMIN
-            IF(P1.GT.PMAX)P1=PMAX
-            IF(T1.LT.TMIN)T1=TMIN
-            IF(T1.GT.TMAX)T1=TMAX
-
-C            print*,'P1,T1',P1,T1
 C	    Find position of temp and pressure values in k table, then
 C	    interpolate
 C-----------------------------------------------------------------------
-
+            IF(P1.LT.PMIN)P1=PMIN
+            IF(P1.GT.PMAX)P1=PMAX
  	    CALL locate(p, np, p1, cp)
-	    CALL locate(t, nt, t1, ct)
-
  	    IF(cp.lt.1)cp = 1
-	    IF(ct.lt.1)ct = 1
-	    IF(cp.ge.np)cp=np-1
-	    IF(ct.ge.nt)ct=nt-1
+	    IF(cp.ge.np)cp = np-1
+            VT(LAYER)=(P1-P(CP))/(P(CP+1)-P(CP))
 
-C            PRINT*,'CP,P(CP),P(CP+1),P1',CP,P(CP),P(CP+1),P1
-C            PRINT*,'CT,T(CT),T(CT+1),T1',CT,T(CT),T(CT+1),T1
+            IF(NT.GT.0)THEN
+              T1 = TEMP(LAYER)
+              IF(T1.LT.TMIN)T1=TMIN
+              IF(T1.GT.TMAX)T1=TMAX
+              CALL locate(t, nt, t1, ct)
+ 	      IF(ct.lt.1)ct = 1
+              IF(ct.ge.nt)ct=nt-1
+              UT(LAYER)=(T1-T(CT))/(T(CT+1)-T(CT))
 
- 	    VT(LAYER)=(P1-P(CP))/(P(CP+1)-P(CP))
-	    UT(LAYER)=(T1-T(CT))/(T(CT+1)-T(CT))
+              IOFF(LAYER,1) = (nt * ng * (cp-1)) + (ng * (ct-1))
+              IOFF(LAYER,2) = (nt * ng * cp) + (ng * (ct-1))
+              IOFF(LAYER,3) = (nt * ng * cp) + (ng * ct)
+              IOFF(LAYER,4) = (nt * ng * (cp-1)) + (ng * ct)
 
- 	   IOFF(LAYER,1) = (nt * ng * (cp-1)) + (ng * (ct-1))
-	   IOFF(LAYER,2) = (nt * ng * cp) + (ng * (ct-1))
-	   IOFF(LAYER,3) = (nt * ng * cp) + (ng * ct)
-	   IOFF(LAYER,4) = (nt * ng * (cp-1)) + (ng * ct)
+            ELSE
+              DO I=1,ABS(NT)
+               TN(I)=T2(CP,I)
+              ENDDO
+              T1=TEMP(LAYER)
+              IF(T1.LT.TN(1))T1=TN(1)
+              IF(T1.GT.TN(ABS(NT)))T1=TN(ABS(NT))
+              CALL LOCATE(TN,ABS(NT),T1,CT1)
+ 	      IF(ct1.lt.1)ct1 = 1
+              IF(ct1.ge.ABS(nt))ct1=ABS(nt)-1
+              UT(LAYER)=(T1-TN(CT1))/(TN(CT1+1)-TN(CT1))
+
+              DO I=1,ABS(NT)
+               TN(I)=T2(CP+1,I)
+              ENDDO
+              T1=TEMP(LAYER)
+              IF(T1.LT.TN(1))T1=TN(1)
+              IF(T1.GT.TN(ABS(NT)))T1=TN(ABS(NT))
+              CALL LOCATE(TN,ABS(NT),T1,CT2)
+ 	      IF(ct2.lt.1)ct2 = 1
+              IF(ct2.ge.ABS(nt))ct2=ABS(nt)-1
+              UT2(LAYER)=(T1-TN(CT2))/(TN(CT2+1)-TN(CT2))
+              nx=abs(nt)
+              IOFF(LAYER,1) = (nx * ng * (cp-1)) + (ng * (ct1-1))
+              IOFF(LAYER,2) = (nx * ng * cp) + (ng * (ct2-1))
+              IOFF(LAYER,3) = (nx * ng * cp) + (ng * ct2)
+              IOFF(LAYER,4) = (nx * ng * (cp-1)) + (ng * ct1)
+
+            ENDIF            
+
 
           ENDIF
 
 C         IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
 	  U=UT(LAYER)
+	  U2=UT2(LAYER)
 	  V=VT(LAYER)
 	  I1 = IOFF(LAYER,1)
 	  I2 = IOFF(LAYER,2)
@@ -280,8 +311,14 @@ C           print*,'Wavenumber coincides with tabulated value'
 			Z = 1.0
                 ENDIF
 
-		X=(1.0-V)*(1.0-U)*Y1 + V*(1.0-U)*Y2 + 
+                IF(NT.GT.0)THEN
+		 X=(1.0-V)*(1.0-U)*Y1 + V*(1.0-U)*Y2 + 
      1			V*U*Y3 + (1.0-V)*U*Y4
+                ELSE
+                 X1=(1.0-U)*Y1 + U*Y4
+                 X2=(1.0-U2)*Y2 + U2*Y3
+                 X = (1.0-V)*X1 + V*X2
+                ENDIF
 
 		IF(Z.LE.0.0)THEN
 			K_G(I)=X
@@ -303,7 +340,7 @@ C             print*,'weight',vwave,tmp,weight(1),weight(2)
              weight(2)=1.0-frac
            endif
 C           print*,'vwave,Weight : ',vwave,weight(1),weight(2)
-           NTAB = NP*NT*NG
+           NTAB = NP*ABS(NT)*NG
            count = 0
            do loop = 1, 2
                 DO I = 1, NG
@@ -318,9 +355,15 @@ C           print*,'vwave,Weight : ',vwave,weight(1),weight(2)
                          Y3=TABLE2(I3+I)
                          Y4=TABLE2(I4+I)
 		 endif
-
-                 K_g(I)=(1.0-V)*(1.0-U)*Y1 + V*(1.0-U)
+                 IF(NT.GT.0)THEN
+                  K_g(I)=(1.0-V)*(1.0-U)*Y1 + V*(1.0-U)
      1              *Y2 + V*U*Y3 + (1.0-V)*U*Y4
+                 ELSE
+                  X1=(1.0-U)*Y1 + U*Y4
+                  X2=(1.0-U2)*Y2 + U2*Y3
+                  K_G(I) = (1.0-V)*X1 + V*X2
+                 ENDIF
+
                  count = count + 1
                  cont(count) = k_g(I)
                  fac(count) = delg(I) * weight(loop)

@@ -51,7 +51,7 @@ C The input and output variables ...
 
 
 C General variables ...
-      INTEGER NP,NT,NG,CP,CT,I,I1,I2,I3,I4,J,N1
+      INTEGER NP,NT,NG,CP,CT,I,I1,I2,I3,I4,J,N1,NX
 C NP: Number of k-table pressures.
 C NT: Number of k-table temperatures.
 C NG: Number of ordinates in k-distribution.
@@ -85,53 +85,87 @@ C K_G: Calculated k-distribution.
 C G_ORD: Gauss-Legendre ordinates for calculating the k-distribution.
 C DEL_G: Gauss-Legendre weights for integration.
 
-      REAL P(MAXK),T(MAXK)
+      REAL P(MAXK),T(MAXK),T2(MAXK,MAXK),TN(MAXK),X1,X2,U2
 C P: K-table pressures [atm].
 C T: K-table temperatures [Kelvin].
 
-      INTEGER IOFF(MAXLAY,4)
+      INTEGER IOFF(MAXLAY,4),CT1,CT2,DUDT2
       REAL UT(MAXLAY),VT(MAXLAY),TDUDT(MAXLAY),FWHMK,DELVK
+      REAL UT2(MAXLAY),TDUDT2(MAXLAY)
 
       LOGICAL COINC,KLOG,NTEST,ISNAN
 
-      COMMON /INTERPK/ LUN,IRECK,XMIN,DELX,FRACX,P,NP,T,NT,NG,
+      COMMON /INTERPK/ LUN,IRECK,XMIN,DELX,FRACX,P,NP,T,T2,NT,NG,
      1 DELVK,FWHMK,G_ORD,DELG,KOUT,DKOUTDT
 
 C******************************** CODE *********************************
 
       pmax = p(np)
       pmin = p(1)
-      tmax = t(nt)
-      tmin = t(1)
+      if(NT.GT.0)THEN
+       tmax = t(nt)
+       tmin = t(1)
+      endif
 
       print*,'get_kg: ng =',ng
 C Work out where P,T for each layer lies in the tables
       DO 51 ilayer=1,NLAYER
-        T1 = TEMP(ilayer)
         P1 = LOG(PRESS(ilayer))
-
 C First check range is fine
         IF(P1.LT.PMIN)P1 = PMIN
         IF(P1.GT.PMAX)P1 = PMAX
-        IF(T1.LT.TMIN)T1 = TMIN
-        IF(T1.GT.TMAX)T1 = TMAX
-
         CALL locate(p,np,p1,cp)
-        CALL locate(t,nt,t1,ct)
-
         IF(cp.LT.1)cp = 1
-        IF(ct.LT.1)ct = 1
         IF(cp.GE.np)cp = np - 1
-        IF(ct.GE.nt)ct = nt - 1
-
         VT(ilayer) = (p1 - p(cp))/(p(cp + 1) - p(cp))
-        UT(ilayer) = (t1 - t(ct))/(t(ct + 1) - t(ct))
-        TDUDT(ilayer) = 1.0/(t(ct + 1) - t(ct))
 
-        IOFF(ilayer,1) = (nt*ng*(cp - 1)) + (ng*(ct - 1))
-        IOFF(ilayer,2) = (nt*ng*cp) + (ng*(ct - 1))
-        IOFF(ilayer,3) = (nt*ng*cp) + (ng*ct)
-        IOFF(ilayer,4) = (nt*ng*(cp - 1)) + (ng*ct)
+        IF(NT.GT.0)THEN
+         T1 = TEMP(ilayer)
+         IF(T1.LT.TMIN)T1 = TMIN
+         IF(T1.GT.TMAX)T1 = TMAX
+         CALL locate(t,nt,t1,ct)
+         IF(ct.LT.1)ct = 1
+         IF(ct.GE.nt)ct = nt - 1
+         UT(ilayer) = (t1 - t(ct))/(t(ct + 1) - t(ct))
+         TDUDT(ilayer) = 1.0/(t(ct + 1) - t(ct))
+
+         IOFF(ilayer,1) = (nt*ng*(cp - 1)) + (ng*(ct - 1))
+         IOFF(ilayer,2) = (nt*ng*cp) + (ng*(ct - 1))
+         IOFF(ilayer,3) = (nt*ng*cp) + (ng*ct)
+         IOFF(ilayer,4) = (nt*ng*(cp - 1)) + (ng*ct)
+
+        ELSE
+
+         DO I=1,ABS(NT)
+          TN(I)=T2(CP,I)
+         ENDDO
+         T1=TEMP(ilayer)
+         IF(T1.LT.TN(1))T1=TN(1)
+         IF(T1.GT.TN(ABS(NT)))T1=TN(ABS(NT))
+         CALL LOCATE(TN,ABS(NT),T1,CT1)
+         IF(ct1.lt.1)ct1 = 1
+         IF(ct1.ge.ABS(nt))ct1=ABS(nt)-1
+         UT(iLAYER)=(T1-TN(CT1))/(TN(CT1+1)-TN(CT1))
+         TDUDT(ilayer) = 1.0/(tn(ct1 + 1) - tn(ct1))
+
+         DO I=1,ABS(NT)
+          TN(I)=T2(CP+1,I)
+         ENDDO
+         T1=TEMP(ilayer)
+         IF(T1.LT.TN(1))T1=TN(1)
+         IF(T1.GT.TN(ABS(NT)))T1=TN(ABS(NT))
+         CALL LOCATE(TN,ABS(NT),T1,CT2)
+         IF(ct2.lt.1)ct2 = 1
+         IF(ct2.ge.ABS(nt))ct2=ABS(nt)-1
+         UT2(iLAYER)=(T1-TN(CT2))/(TN(CT2+1)-TN(CT2))
+         TDUDT2(ilayer) = 1.0/(tn(ct2 + 1) - tn(ct2))
+         nx=abs(nt)
+         IOFF(ilayer,1) = (nx*ng*(cp - 1)) + (ng*(ct1 - 1))
+         IOFF(ilayer,2) = (nx*ng*cp) + (ng*(ct2 - 1))
+         IOFF(ilayer,3) = (nx*ng*cp) + (ng*ct2)
+         IOFF(ilayer,4) = (nx*ng*(cp - 1)) + (ng*ct1)
+
+        ENDIF
 51    CONTINUE
 
       DO 1000 IGAS=1,NGAS
@@ -162,7 +196,7 @@ C        the separation to be considered aligned.
          eps = 0.02*delv
 
           n1 = INT((vwave + eps - vmin)/delv)
-          irec = irec0 + np*nt*ng*n1
+          irec = irec0 + np*abs(nt)*ng*n1
 
         ELSE
 
@@ -175,7 +209,7 @@ C         by read_klist.f
 
         ENDIF
 
-        NTAB = NT*NP*NG
+        NTAB = ABS(NT)*NP*NG
         IRECX=IREC
         KTEST=0.0   
 
@@ -234,7 +268,7 @@ C          table BELOW that requested, already set up in read_klist.f.
           endif
         ENDIF
 
-        ntab = np*nt*ng
+        ntab = np*abs(nt)*ng
         if(ntab.gt.MTAB)then
          print*,'Error in get_kg, NTAB>MTAB'
          print*,NTAB,MTAB
@@ -258,8 +292,10 @@ C       If not in-line, read in k-coeffs for next bin also
 C       Now interpolate k-coefficients for conditions in each layer
         DO 1050 ilayer=1,NLAYER
           U = UT(ilayer)
+          U2 = UT2(ilayer)
           V = VT(ilayer)
           DUDT = TDUDT(ilayer)
+          DUDT2 = TDUDT2(ilayer)
 
           I1 = IOFF(ilayer,1)
           I2 = IOFF(ilayer,2)
@@ -300,10 +336,17 @@ C=======================================================================
                 Y4 = LOG(Y4)
               ENDIF
 
-              X = (1.0 - V)*(1.0 - U)*Y1 + V*(1.0 - U)*Y2 + V*U*Y3 +
-     1        (1.0 - V)*U*Y4
-              DXDT = (-(1.0 - V)*Y1 - V*Y2 + V*Y3 + (1 - V)*Y4)*DUDT
- 
+              IF(NT.GT.0)THEN
+               X = (1.0 - V)*(1.0 - U)*Y1 + V*(1.0 - U)*Y2 + V*U*Y3 +
+     1          (1.0 - V)*U*Y4             
+               DXDT = (-(1.0 - V)*Y1 - V*Y2 + V*Y3 + (1 - V)*Y4)*DUDT
+              ELSE              
+               X1=(1.0-U)*Y1 + U*Y4
+               X2=(1.0-U2)*Y2 + U2*Y3
+               X = (1.0-V)*X1 + V*X2
+               DXDT = (1.0-V)*(-Y1+Y4)*DUDT+V*(-Y2+Y3)*DUDT2 
+              ENDIF
+
               IF(KLOG)THEN
                 K_G(I) = EXP(X)
                 DKDT(I) = EXP(X)*DXDT
@@ -336,7 +379,7 @@ c Fletcher: Initialised cont and dcont arrays, and the parameter X.
             ENDDO
 	    X=0.0
 
-            NTAB = np*nt*ng
+            NTAB = np*abs(nt)*ng
             count = 0
             DO loop=1,2
               DO I=1,NG
@@ -352,13 +395,17 @@ c Fletcher: Initialised cont and dcont arrays, and the parameter X.
                   Y4 = TABLE2(I4+I)
                 ENDIF
 
-                X = (1.0 - V)*(1.0 - U)*Y1 + V*(1.0 - U)*Y2 +
-     1          V*U*Y3 + (1.0 - V)*U*Y4
-c     		write(*,*)i,k_g(i),u,v,y1,y2,y3,y4
-
-                DXDT = (-(1.0 - V)*Y1 - V*Y2 + V*Y3 + 
+                IF(NT.GT.0)THEN
+                 X = (1.0 - V)*(1.0 - U)*Y1 + V*(1.0 - U)*Y2 +
+     1            V*U*Y3 + (1.0 - V)*U*Y4
+                 DXDT = (-(1.0 - V)*Y1 - V*Y2 + V*Y3 + 
      1            (1 - V)*Y4)*DUDT
-
+                ELSE
+                 X1=(1.0-U)*Y1 + U*Y4
+                 X2=(1.0-U2)*Y2 + U2*Y3
+                 X = (1.0-V)*X1 + V*X2
+                 DXDT = (1.0-V)*(-Y1+Y4)*DUDT+V*(-Y2+Y3)*DUDT2 
+                ENDIF
                 count = count + 1
                 cont(count) = X
                 dcont(count) = DXDT

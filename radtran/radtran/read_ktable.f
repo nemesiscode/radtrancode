@@ -48,6 +48,12 @@ C     MAXOUT the maximum number of output points
       READ(LUN0,REC=9)IDGAS1
       READ(LUN0,REC=10)ISOGAS1
 
+      IF(NT.LT.0)THEN
+       print*,'Error in read_ktable.f. Cannot deal with new ktable'
+       print*,'format - NT = ',NT
+       stop
+      ENDIF
+
       PRINT*,'IREC0 = ',IREC0
       IF(IDGAS1.NE.IDGAS)THEN
        PRINT*,'Read_ktable. IDGAS1 <> IDGAS'

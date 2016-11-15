@@ -132,7 +132,7 @@ C		K table variables
      1		npk, ntk, ng, intmod(maxbin,maxgas), ntab
 	REAL	xmink(maxbin,maxgas), delk(maxbin,maxgas), xmin, delx, 
      1		k_g(maxg), k_g1(maxg), k_g2(maxg), q1, q2, 
-     2		pk(maxk), tk(maxk), g_ord(maxg), 
+     2		pk(maxk), tk(maxk), g_ord(maxg), t2k(maxk,maxk), 
      3		delg(maxg), kl_g(maxg,maxlay),
      4		kout(maxlay,maxgas,maxg),frack(maxbin,maxgas)
 
@@ -196,7 +196,7 @@ C		Common blocks and parameters
 
 	common/dust/vsec,xsec,nsec,ncont
 	common/interpk/lun, ireck, xmink, delk, frack, pk, npk, 
-     1      tk, ntk, ng, delvk, fwhmk, g_ord, delg, kout
+     1      tk, t2k, ntk, ng, delvk, fwhmk, g_ord, delg, kout
 	common/scatd/mu1, wt1, galb
 	common/scatter1/nmu, isol, dist1, lowbc, liscat, lnorm,
      1		lncons, lcons, sol_ang, emiss_ang, aphi, nf
@@ -298,7 +298,7 @@ C        enddo
 		stop
 	endif
 
-	if ((npk.gt.maxk).or.(ntk.gt.maxk)) then
+	if ((npk.gt.maxk).or.(abs(ntk).gt.maxk)) then
 		write (*,*) ' CIRSRAD_WAVES: Too many P/T points in K',
      1			' tables' 
 		write (*,*) ' Npk = ',npk,' Maxk = ',maxk
@@ -375,7 +375,7 @@ cc	print*,'TEST: cirsrad_waveS: nwave,nmu=',nwave,nmu
 
 c	Isec = min(4,nsec)
 
-	ntab = npk * ntk * ng
+	ntab = npk * abs(ntk) * ng
 
 
 C-----------------------------------------------------------------------

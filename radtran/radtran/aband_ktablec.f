@@ -20,7 +20,7 @@ C     ***************************************************************
       REAL P(MPAR),T(MPAR),PRESS,TEMP,LPMIN,LPMAX,TMIN,TMAX
       REAL KNU0,DELAD,Y0,EL,SFB,C1,C2,VSTART,VEND
       REAL VMIN,DELV,FWHM,STEP,TMP,QROT,ALAMBDA,ERR,Q
-      REAL DP,DT,X,BDUM(9),TPART(4)
+      REAL DP,DT,X,BDUM(9),TPART(4),T2(MPAR,MPAR)
       INTEGER NG,JGAS,NP,NT,NTRAN,IMOD,IAV(MBIN),IFORM
       INTEGER IP,IT,K,ISTEP,IMETHOD,IBIN,NAV,BANDTYP(MGAS)
       LOGICAL IODD
@@ -147,31 +147,60 @@ c     First skip header
 6      CONTINUE
       ENDIF
 
-
+      PRINT*,'Entering NT < 0 activates new pressure-dependent'
+      PRINT*,'temperatures'
       CALL PROMPT('Enter number of temperature points ( < 20 ) : ')
       READ*,NT
-4     CALL PROMPT('Enter range(1) or individual temperatures(2) : ')
-      READ*,IT
-      IF(IT.LT.1.OR.IT.GT.2)GOTO 4
-      IF(IT.EQ.1)THEN 
-       CALL PROMPT('Enter Tmin, Tmax : ')
-       READ*,TMIN,TMAX
-       DT=(TMAX-TMIN)/(NT-1)
-       DO 7 J=1,NT
-         T(J)=TMIN + (J-1)*DT
-         PRINT*,J,T(J)
-7      CONTINUE
+      IF(NT.GT.0)THEN
+4       CALL PROMPT('Enter range(1) or individual temperatures(2) : ')
+        READ*,IT
+        IF(IT.LT.1.OR.IT.GT.2)GOTO 4
+        IF(IT.EQ.1)THEN 
+          CALL PROMPT('Enter Tmin, Tmax : ')
+          READ*,TMIN,TMAX
+          DT=(TMAX-TMIN)/(NT-1)
+          DO J=1,NT
+            T(J)=TMIN + (J-1)*DT
+            PRINT*,J,T(J)
+          ENDDO
      
+        ELSE
+
+          PRINT*,'Enter Temperatures (in K)'
+          DO J=1,NT
+            READ*,T(J)   
+            PRINT*,J,T(J) 
+          ENDDO
+
+        ENDIF
+
       ELSE
 
-       PRINT*,'Enter Temperatures (in K)'
-       DO 8 J=1,NT
-         READ*,T(J)   
-         PRINT*,J,T(J) 
-8      CONTINUE
+       CALL PROMPT('Enter range(1) or individual temperatures(2) : ')
+       READ*,IT
+     
+       DO I=1,NP
+         PRINT*,'Pressure level = ',I,P(I)
+         IF(IT.EQ.1)THEN
+           CALL PROMPT('Enter Tmin, Tmax : ')
+           READ*,TMIN,TMAX
+           DT=(TMAX-TMIN)/(ABS(NT)-1)
+           DO J=1,ABS(NT)
+             T2(I,J)=TMIN + (J-1)*DT
+             PRINT*,J,T2(I,J)
+           ENDDO
+         ELSE
+           PRINT*,'Enter Temperatures (in K)'
+           DO J=1,ABS(NT)
+             READ*,T2(I,J)   
+             PRINT*,J,T2(I,J)         
+           ENDDO
+         ENDIF
+
+       ENDDO
 
       ENDIF
-        
+  
 C      CALL PROMPT('Enter number of points in transmission curves : ')
 C      READ*,NTRAN 
       NTRAN=20
@@ -274,7 +303,13 @@ c ---------------------------------------------------------------------
       WRITE(14,*)NP,' ! Number of pressures'
       WRITE(14,*)(P(I),I=1,NP)
       WRITE(14,*)NT,' ! Number of temperatures'
-      WRITE(14,*)(T(I),I=1,NT)
+      IF(NT.GT.0)THEN
+       WRITE(14,*)(T(I),I=1,NT)
+      ELSE
+       DO J=1,NP
+        WRITE(14,*)(T2(J,I),I=1,ABS(NT))
+       ENDDO
+      ENDIF
       WRITE(14,*)NG,' ! Number of g-ordinates'
       WRITE(14,*)(DEL_G(I),I=1,NG)
       WRITE(14,*)NTRAN,' ! Number of transmission points'
@@ -291,7 +326,13 @@ c ---------------------------------------------------------------------
       WRITE(13,*)NP,' ! Number of pressures'
       WRITE(13,*)(P(I),I=1,NP)
       WRITE(13,*)NT,' ! Number of temperatures'
-      WRITE(13,*)(T(I),I=1,NT)
+      IF(NT.GT.0)THEN
+       WRITE(13,*)(T(I),I=1,NT)
+      ELSE
+       DO J=1,NP
+        WRITE(13,*)(T2(J,I),I=1,ABS(NT))
+       ENDDO
+      ENDIF
       WRITE(13,*)NG,' ! Number of g-ordinates'
       WRITE(13,*)(DEL_G(I),I=1,NG)
       WRITE(13,*)NTRAN,' ! Number of transmission points'
@@ -356,8 +397,12 @@ C       print*,'Sum of weights = ',tmp
 C         WRITE(6,*)IP,PRESS,' ! IP,PRESS'
          WRITE(14,*)IP,PRESS,' ! IP,PRESS'
          WRITE(13,*)IP,PRESS,' ! IP,PRESS'
-         DO 200 IT=1,NT
-          TEMP=T(IT)
+         DO 200 IT=1,ABS(NT)
+          IF(NT.GT.0)THEN
+           TEMP=T(IT)
+          ELSE
+           TEMP=T2(IP,IT)
+          ENDIF
 C          WRITE(6,*)IT,TEMP,' ! IT,TEMP'
           WRITE(14,*)IT,TEMP,' ! IT,TEMP'
           WRITE(13,*)IT,TEMP,' ! IT,TEMP'

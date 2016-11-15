@@ -9,11 +9,11 @@ C     ****************************************************************
       INCLUDE '../includes/arrdef.f'
       INTEGER NLMAX
       PARAMETER (NLMAX=2000)
-      INTEGER IDGAS,ISOGAS,NPOINT,I,LUNOUT,ISHAPE
+      INTEGER IDGAS,ISOGAS,NPOINT,I,LUNOUT,ISHAPE,J
       REAL TWAVEN(MAXBIN,2),TPOUT(MAXBIN,7),WAVEIN(MAXBIN)
       REAL WCEN(MAXBIN)
       REAL G_ORD(MAXG),K_G(MAXG),DEL_G(MAXG),FWHMIN(MAXBIN)
-      REAL P(MAXK),T(MAXK),PRESS,TEMP
+      REAL P(MAXK),T(MAXK),PRESS,TEMP,T2(MAXK,MAXK)
       REAL VSTART,VEND,XFAC
       REAL DELV,FWHM,STEP,QROT,ERR,Q
       REAL KSTORE(MAXBIN,MAXK,MAXK,MAXG)
@@ -51,7 +51,13 @@ C     ****************************************************************
       READ(12,*)NP
       READ(12,*)(P(I),I=1,NP)
       READ(12,*)NT
-      READ(12,*)(T(I),I=1,NT)
+      IF(NT.GT.0)THEN
+        READ(12,*)(T(I),I=1,NT)
+      ELSE
+        DO J=1,NP
+         READ(12,*)(T2(J,I),I=1,ABS(NT))
+        ENDDO
+      ENDIF
       READ(12,*)NG
       READ(12,*)(DEL_G(I),I=1,NG)
       READ(12,*)NTRAN
@@ -81,7 +87,7 @@ C       print*,I1,TWAVEN(I,1)
        
        DO 150 IP=1,NP
          READ(12,*)IP1,PRESS
-         DO 200 IT=1,NT
+         DO 200 IT=1,ABS(NT)
           READ(12,*)IT1,TEMP
 
           READ(12,*)(KSTORE(I,IP,IT,K),K=1,NG)
@@ -96,12 +102,12 @@ C       print*,I1,TWAVEN(I,1)
       CLOSE(12)
 
       CALL OPEN_KC(LUNOUT,NPOINT,WCEN,IDGAS,ISOGAS,
-     1  NG,NP,NT,P,T,DEL_G,G_ORD,IREC)
+     1  NG,NP,NT,P,T,T2,DEL_G,G_ORD,IREC)
 
       DO 10 I=1,NPOINT
 
        DO 20 IP=1,NP
-        DO 30 IT=1,NT
+        DO 30 IT=1,ABS(NT)
          DO K=1,NG
           K_G(K)=KSTORE(I,IP,IT,K)
          ENDDO

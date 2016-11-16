@@ -105,6 +105,9 @@ C******************************** CODE *********************************
       if(NT.GT.0)THEN
        tmax = t(nt)
        tmin = t(1)
+      else
+       tmax = t2(np,abs(nt))
+       tmin = t2(1,1)
       endif
 
       print*,'get_kg: ng =',ng

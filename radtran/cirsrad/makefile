@@ -23,6 +23,7 @@ F_SOURCES = \
 	findloc.f \
 	mradfield.f \
         get_k.f \
+        get_klbl.f \
         get_albedo.f \
 	get_scatter.f \
 	opensol.f \
@@ -33,6 +34,8 @@ F_SOURCES = \
 	rank.f \
 	read_khead.f \
 	read_klist.f \
+	read_klblhead.f \
+	read_klbllist.f \
 	subpath.f \
 	limbscatter.f \
         scatsource.f \

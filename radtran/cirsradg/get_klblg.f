@@ -180,6 +180,10 @@ C       the separation to be considered aligned.
         eps = 0.02*delv
 
         n1 = INT((vwave + eps - vmin)/delv)
+        if(n1.lt.0.or.n1.gt.npoint)then
+         print*,'Wavelength/wavenumber is out of range'
+         print*,vwave,vmin,vmin+(npoint-1)*delv
+        endif
         vwavex = VMIN + (N1-1)*DELV
         XT = ABS(vwave - vwavex)
         IF(XT.GT.EPS)THEN

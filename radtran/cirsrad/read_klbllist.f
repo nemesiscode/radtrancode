@@ -39,16 +39,13 @@ C paths, etc.)
       real MAXDX,MAXDX1,ta1,ta2
       PARAMETER (maxkfil=100,MAXDX=1e-4)
 
-      INTEGER ngas,nwave,nkl,npk,ntk,i,j,i1,i2,k,npoint
+      INTEGER ngas,nwave,nkl,npk,ntk,i,j,i1,i2,k,npointk
 C NPK: Number of pressure points in k-tables.
 C NTK: Number of temperature points in k-tables.
-      INTEGER idgas(ngas),isogas(ngas)
+      INTEGER idgas(ngas),isogas(ngas),lun(maxgas)
       INTEGER unit(maxkfil),npt(maxkfil),idgask(maxkfil),
      1 isogask(maxkfil),np(maxkfil),nt(maxkfil),irec(maxkfil)
-      INTEGER iflag(maxbin,maxgas),lun(maxbin,maxgas),
-C LUN: Unit number of file. Set to -99 for missing points.
-     1 ireck(maxbin,maxgas),ipo
-C IRECK: Beginning record number in file.
+      INTEGER irec0,ipo
 
       REAL pmin,pmax,tmin,tmax,delvk
       REAL vwave(nwave)
@@ -56,15 +53,14 @@ C IRECK: Beginning record number in file.
       REAL pk(maxk),tk(maxk),t2k(maxk,maxk)
 C PK: Pressure values in k-tables.
 C TK: Temperature values in k-tables.
-      REAL xmink(maxbin,maxgas),delk(maxbin,maxgas),DX
-      REAL frack(maxbin,maxgas)
+      REAL xmink
 C XMINK: Beginning wavenumber in table.
 C DELK: Wavenumber step of evaluation points.
       REAL kout(maxlay,maxgas),dkoutdt(maxlay,maxgas)
       CHARACTER*100 klist,ktafil(maxkfil),null
 
-      COMMON /interpklbl/ lun,ireck,xmink,delk,frack,pk,npk,tk,t2k,ntk,
-     2 delvk,kout,dkoutdt
+      COMMON /interpklbl/ lun,irec0,xmink,delvk,npointk,pk,npk,tk,
+     1 t2k,ntk,kout,dkoutdt
 
 C********************************* CODE ********************************
 
@@ -114,10 +110,13 @@ C-----------------------------------------------------------------------
            tmin = t2k(1,1)
            tmax = t2k(np(i),abs(nt(i)))
           endif
-          npoint = npt(i)
-          if(npoint.gt.mpoint)then
+          npointk = npt(i)
+          xmink = xmin(i)
+          delvk = delx(i)
+          irec0 = irec(i)
+          if(npointk.gt.mpoint)then
            print*,'Error in READ_KLBLLIST: npoint > mpoint'
-           print*,npoint,mpoint
+           print*,npointk,mpoint
            print*,'Use smaller k-tables or modify MPOINT in arrdef.f'
            print*,'and recompile everything'
            stop
@@ -127,7 +126,8 @@ C-----------------------------------------------------------------------
           delvk = delx(i)
         ELSE
           IF((np(i).NE.npk).OR.(nt(i).NE.ntk).OR.
-     &		(delx(i).NE.delvk)) THEN
+     &		(delx(i).NE.delvk).OR.(npt(i).NE.npointk).OR.
+     &           (xmin(i).NE.xmink).OR.(irec0.NE.irec(i))) THEN
             WRITE(*,*)' READ_KLBLLIST.f :: Error: Problems reading'
             WRITE(*,*)' lbl-tables array sizes. Stopping program.'
             WRITE(*,*)' '
@@ -135,6 +135,9 @@ C-----------------------------------------------------------------------
             WRITE(*,*)' npk = ',npk,' np(i) = ',np(i)
             WRITE(*,*)' ntk = ',ntk,' nt(i) = ',nt(i)
             WRITE(*,*)' delvk = ',delvk,' delx(i) = ',delx(i)
+            WRITE(*,*)' npointk = ',npointk,' npt(i) = ',delx(i)
+            WRITE(*,*)' xmink = ',xmink,' xmin(i) = ',xmin(i)
+            WRITE(*,*)' irec0 = ',irec0,' irec(i) = ',irec(i)
             STOP
           ENDIF
 
@@ -179,59 +182,14 @@ C-----------------------------------------------------------------------
         STOP
       ENDIF
 
-C-----------------------------------------------------------------------
-C
-C	Assign relevant correlated KLBL files by wavenumber and gas. 
-C	For H2, He, N2, H2S assign dummy values. H2 and He are calculated as
-C	continuum contributions only. Iflag is used so that variables set
-C	by the first K table encountered are not reset, (thus overlapping
-C	K tables can be used, their priorities decided by the order in
-C	which they appear in the KLS file.)
-C
-C-----------------------------------------------------------------------
 
+C     See which gases are included and assign unit numbers
       DO i=1,ngas
-        DO j=1,nwave
-          iflag(j,i) = 0
-        ENDDO
-      ENDDO
-
-      DO i=1,ngas
+        lun(i)=-99
         DO j=1,nkl
           IF ((idgas(i).EQ.idgask(j)).AND.
-     1	  (isogas(i).EQ.isogask(j))) THEN
-              CALL findloc(vwave,nwave,xmin(j),xmax(j),i1,i2)
-              IF((i1.NE.0).AND.(i2.NE.0))THEN
-                DO k=i1,i2
-                  IF (iflag(k,i).EQ.0) THEN
-                    iflag(k,i) = 1
-                    lun(k,i) = unit(j)
-                    xmink(k,i) = xmin(j)
-                    delk(k,i) = delx(j)
-                    ireck(k,i) = irec(j)
-                    frack(k,i) = 1
-                  ENDIF
-                ENDDO
-              ENDIF
-          ENDIF
-        ENDDO
-30    ENDDO
-
-C-----------------------------------------------------------------------
-C
-C	Finally, step through and and check that each wavenumber has
-C	assigned variables for each gas. If not, write a warning and
-C	flag the wavenumber/gas.
-C
-C-----------------------------------------------------------------------
-
-      DO i=1,ngas
-        DO j=1,nwave
-          IF (iflag(j,i).EQ.0) THEN
-C            WRITE(*,*)' READ_KLBLLIST.f :: Error: Match not found in'
-C            WRITE(*,*)' klbl-table for gas ',idgas(i),isogas(i)
-C            WRITE(*,*)' at', vwave(j)
-            lun(j,i) = -99
+     1    (isogas(i).EQ.isogask(j))) THEN
+              lun(i)=unit(j)
           ENDIF
         ENDDO
       ENDDO
@@ -243,7 +201,7 @@ C
 C-----------------------------------------------------------------------
 
 1020  FORMAT (A100)
-1030  FORMAT (' lLBLtable filenames: ', A)
+1030  FORMAT (' LBLtable filenames: ', A)
 1035  FORMAT (' Calling read_klblhead. reading: ', A)
 
       RETURN

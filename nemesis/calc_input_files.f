@@ -1,6 +1,6 @@
-      subroutine calc_input_files(runname,ispace,fwhm,flat,nconv,
-     1 vconv,angles,gasgiant,lin,nvar,varident,varparam,jsurf,
-     2 jalb,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
+      subroutine calc_input_files(runname,ispace,iscat,fwhm,flat,
+     1 nconv,vconv,angles,gasgiant,lin,nvar,varident,varparam,
+     2 jsurf,jalb,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
 C     $Id:
 C     **************************************************************
 C     Subroutine to seup input files for last successful iteration of

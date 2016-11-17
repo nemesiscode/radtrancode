@@ -376,7 +376,7 @@ C       Write out all the error matrices if only one case retrieved
       CALL readrefiplan(runname,iplanet,xlat,RADIUS)
 
 C     write out setup files for last successful iteration
-      call calc_input_files(runname,ispace,fwhm,flat,nconv,
+      call calc_input_files(runname,ispace,iscat,fwhm,flat,nconv,
      1 vconv,angles,gasgiant,lin,nvar,varident,varparam,jsurf,
      2 jalb,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
 

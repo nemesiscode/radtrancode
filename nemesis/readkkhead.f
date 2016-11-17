@@ -12,7 +12,7 @@ C     ****************************************************************
       integer lun0,npoint,idgas,isogas,np,nt,ng,irec0
       real vcen(MAXBIN)
       real vmin,delv,fwhm,press(MAXK),temp(MAXK),g_ord(MAXG),del_g(MAXG)
-      real vkstart,vkend,vkstep
+      real vkstart,vkend,vkstep,temp2(MAXK,MAXK)
 
       call file(runname,runname,'kls')
 1     format(a100)
@@ -29,7 +29,8 @@ C      write(6,1)kname
       lun0 = 100
 
       call read_khead(kname,lun0,npoint,vmin,delv,fwhm,vcen,
-     1  idgas,isogas,press,temp,np,nt,g_ord,del_g,ng,irec0)
+     1  idgas,isogas,press,temp,temp2,np,nt,g_ord,del_g,ng,
+     2  irec0)
       close(100)
 
 

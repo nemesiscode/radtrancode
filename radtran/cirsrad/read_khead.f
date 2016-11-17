@@ -21,10 +21,10 @@ C-----------------------------------------------------------------------
 
 	implicit none
         include '../includes/arrdef.f'
-	integer		LUN0, NPOINT, IDGAS, ISOGAS, NP, NT, NG, IREC0,
-     1			IREC, N1, IRECL, J, ISYS, I
+	integer		LUN0, NPOINT, IDGAS, ISOGAS, NP, NT, NG,
+     1			IREC, N1, IRECL, J, ISYS, I, IREC0
 	real		VMIN, DELV, FWHM, PRESS(MAXK), TEMP(MAXK), 
-     1			G_ORD(MAXG), DEL_G(MAXG), VCEN (MAXBIN),
+     1			G_ORD(MAXG), DEL_G(MAXG), VCEN(MAXBIN),
      2                  TEMP2(MAXK,MAXK)
 	character*100	KTAFIL,IPFILE
 
@@ -52,7 +52,6 @@ C-----------------------------------------------------------------------
       READ(LUN0,REC=8)NG
       READ(LUN0,REC=9)IDGAS
       READ(LUN0,REC=10)ISOGAS
-
 
 C-----------------------------------------------------------------------
 C

@@ -58,10 +58,11 @@ C     ****************************************************************
      1 ngk
       real  xmink(maxbin,maxgas),delk(maxbin,maxgas),pk(maxk), 
      1 tk(maxk),g_ord(maxg),delg(maxg),vwave(nwave),del_g(maxg),
-     2 delvk,fwhmk,dkoutdt(maxlay,maxgas,maxg),frack(maxbin,maxgas)
+     2 delvk,fwhmk,dkoutdt(maxlay,maxgas,maxg),frack(maxbin,maxgas),
+     3 t2k(maxk,maxk)
 
-      common/interpk/lun, ireck, xmink, delk, frack, pk, npk, tk, ntk,
-     1   	ngk,delvk,fwhmk,g_ord,delg,kout,dkoutdt
+      common/interpk/lun, ireck, xmink, delk, frack, pk, npk, tk, t2k,
+     1   ntk,ngk,delvk,fwhmk,g_ord,delg,kout,dkoutdt
 
       IF(VV.EQ.VWAVE(1))THEN
 

@@ -229,7 +229,7 @@ C NG: Number of Gauss-Legendre ordinates in k-distribution.
 
       REAL fwhmk,delvk
 C FWHMK: Full-Width Half Maximum of the k-table.
-      REAL pk(maxk),tk(maxk),tk2(maxk,maxk)
+      REAL pk(maxk),tk(maxk),t2k(maxk,maxk)
 C PK: K-table pressures [atm].
 C TK: K-table temperatures [Kelvin].
       REAL xmink(maxbin,maxgas),delk(maxbin,maxgas) 
@@ -300,7 +300,7 @@ C     Solar reference spectrum common block
 
 C Common blocks ...
       COMMON /dust/ vsec,xsec,nsec,ncont
-      COMMON /interpk/ lun,ireck,xmink,delk,frack,pk,npk,tk,tk2,ntk,
+      COMMON /interpk/ lun,ireck,xmink,delk,frack,pk,npk,tk,t2k,ntk,
      1 ng, delvk,fwhmk,g_ord,delg,kout,dkoutdt
       COMMON /scatd/ mu1,wt1,galb 
       common/alb/nalb,valb,alb

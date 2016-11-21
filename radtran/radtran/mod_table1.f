@@ -82,6 +82,8 @@ C     Assume 4-byte words per record
        PRINT*,'DELV = ',DELV
        PRINT*,'Enter new DELV'
        READ*,DELV
+       PRINT*,'Enter new FWHM'
+       READ*,FWHM
        IREC01=11 + 2*NG + 2 + NP + NT + 2
       ELSE
        DELV = -1.

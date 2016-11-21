@@ -4,7 +4,8 @@ C***********************************************************************
 C_TITL:	LBL_KNOW.f
 C
 C_ARGS:	Input variables:
-C	IWAVE		INTEGER	Wavespace of final k-table
+C	IWAVE		INTEGER	Wavespace of final k-table (0=wavelength,
+C							    1=wavenumber)
 C	VMIN		REAL	Wavenumber of beginning of range.
 C	DELV		REAL	Wavenumber step
 C	PRESS		REAL	Total pressure [atm].
@@ -113,7 +114,7 @@ C ../includes/parcom.f stores the parameter values such as MAXLAY,
 
 C Continuum variables ...
       INTEGER ISUM,IPTF
-      REAL TAUTMP,PARTF
+      REAL TAUTMP,PARTF,XX
       REAL CONTINK(IORDP1,MAXK,MAXK,MAXBIN)
       REAL CONVAL(NWAV),CONWAV(NWAV)
       REAL MATRIX(IORDP1,IORDP1),UNIT(IORDP1,IORDP1)
@@ -220,13 +221,16 @@ c     pretabulate some line calculation parameters
       do itest=1,maxlin
          line_done(itest) = 0
       enddo
-      IF(IWAVE.EQ.0)THEN
-       print*,'Not yet able to calculate wavelength tables'
-       stop
-      ENDIF
 
       do i=1,npoint
-        V = VMIN + FLOAT(I - 1)*DELV
+        XX = VMIN + FLOAT(I - 1)*DELV
+C       Set current wavenumber        
+        IF(IWAVE.EQ.0)THEN
+         V=1E4/XX
+        ELSE
+         V=XX
+        ENDIF
+
         CURBIN = INT((V - VBIN(1))/WING) + 1
         IBIN1 = CURBIN - 1
         IBIN2 = CURBIN + 1
@@ -262,7 +266,14 @@ c###################################################
 
 C Infinite resolution
       DO 103 I=1,NPOINT
-        V = VMIN + FLOAT(I - 1)*DELV
+        XX = VMIN + FLOAT(I - 1)*DELV
+C       Set current wavenumber        
+        IF(IWAVE.EQ.0)THEN
+         V=1E4/XX
+        ELSE
+         V=XX
+        ENDIF
+
         ASSIGN 2001 TO LABEL
         GOTO 2000
 

@@ -61,7 +61,7 @@ C	calculating atmospheric paths. ! nptah. itype declared within
 C       Defines the maximum values for a series of variables (layers,
 C       bins, paths, etc.)
 
-        INTEGER         lun, ulog, iphi, itype1,ipzen1
+        INTEGER         lun, ulog, iphi, itype1,ipzen1,ILBL
 	PARAMETER       (lun=2, ulog=17)
 
 	INTEGER		nwave, I, J, npath1, nout, ispace
@@ -80,6 +80,8 @@ C       bins, paths, etc.)
 
         common/scatd/mu1, wt1, galb
         common/defang/ipzen1
+        commob/lbltable/ilbl
+
 C       Need simple way of passing planetary radius to nemesis
         INCLUDE '../includes/planrad.f'
 
@@ -146,18 +148,27 @@ C-----------------------------------------------------------------------
 
 C-----------------------------------------------------------------------
 C
-C	Read the ktables.
+C	Read the ktables or lbltables
 C
 C-----------------------------------------------------------------------
 
-	CALL file (opfile, klist, 'kls')
-	WRITE(*,1050)klist
+        IF(ILBL.EQ.0)THEN
+  	 CALL file (opfile, klist, 'kls')
+	 WRITE(*,1050)klist
 
-	WRITE(*,*)'     CALLING read_klist'
-	CALL read_klist (klist, ngas, idgas, isogas, nwave, vwave)
-	WRITE(*,*)'     read_klist COMPLETE'
-	WRITE(*,*)' '
+	 WRITE(*,*)'     CALLING read_klist'
+	 CALL read_klist (klist, ngas, idgas, isogas, nwave, vwave)
+	 WRITE(*,*)'     read_klist COMPLETE'
+	 WRITE(*,*)' '
+        ELSE
+  	 CALL file (opfile, klist, 'lls')
+	 WRITE(*,1050)klist
 
+	 WRITE(*,*)'     CALLING read_klbllist'
+	 CALL read_klbllist (klist, ngas, idgas, isogas, nwave, vwave)
+	 WRITE(*,*)'     read_klist COMPLETE'
+	 WRITE(*,*)' '
+        ENDIF
 C-----------------------------------------------------------------------
 C
 C	Now read the scattering files if required.

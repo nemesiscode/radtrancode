@@ -117,7 +117,7 @@ C		Passed variables
      6		eoutput(npath,nwave)
         REAL    vem(MAXSEC),emissivity(MAXSEC),interpem
         REAL	xmu,dtr,xt1,radextra
-        INTEGER ifc(limcont,nlayer),nem,j0
+        INTEGER ifc(limcont,nlayer),nem,j0,ILBL
 
 	REAL	XCOM,XNEXT,FPARA,vv,XRAY,RAYLEIGHJ,RAYLEIGHA,RAYLEIGHV
 
@@ -129,13 +129,14 @@ C		Dust variables
 C		K table variables
 
 	INTEGER	lun(maxbin,maxgas), ireck(maxbin,maxgas), lun0, irec0, 
-     1		npk, ntk, ng, intmod(maxbin,maxgas), ntab
+     1		npk, ntk, ng, intmod(maxbin,maxgas), ntab,
+     2		lunlbl(maxgas)
 	REAL	xmink(maxbin,maxgas), delk(maxbin,maxgas), xmin, delx, 
      1		k_g(maxg), k_g1(maxg), k_g2(maxg), q1, q2, 
      2		pk(maxk), tk(maxk), g_ord(maxg), t2k(maxk,maxk), 
-     3		delg(maxg), kl_g(maxg,maxlay),
+     3		delg(maxg), kl_g(maxg,maxlay),xminklbl,
      4		kout(maxlay,maxgas,maxg),p1,p2,frack(maxbin,maxgas)
-
+	REAL	delvklbl,koutlbl(maxlay,maxgas)
         REAL    basehf(maxlay),basepf(maxlay),basehS(maxlay)
         REAL    scaleS(maxlay),Jsource(maxlay),delhs(maxlay)
 C		Scattering variables
@@ -161,6 +162,7 @@ C		Scattering variables
 C		Internal variables
 
 	INTEGER	I, J, K, L, Ipath, Ig, nlays, lstcel,Jpath
+	INTEGER irec0lbl
 	REAL	utotl(maxlay), qh(maxlay), qhe(maxlay),
      1		frac(maxlay,maxgas), qh_he(maxlay), dist1,
      2		x, taucon(maxlay)
@@ -200,6 +202,7 @@ C		Misc variables or continuum variables
         integer jtrace(maxlay),startlay,npathLOS,ipzen,icont
         integer jtraceLOS(maxlay),npathsol,JLAY,ILAY,KLAY
         common/defang/ipzen
+        common/lbltable/ILBL
 
         INTEGER LUNIS,IRECL,IOFF,NLAYERF,NMUF,NWAVEF,NGF,IFLUX,NFF
         integer fintrad,first
@@ -215,6 +218,8 @@ C       Solar reference spectrum common block
 	common/dust/vsec,xsec,nsec,ncont
 	common/interpk/lun, ireck, xmink, delk, frack, pk, npk, tk, 
      1      t2k, ntk, ng, delvk, fwhmk, g_ord, delg, kout
+	common/interpklbl/lunlbl,irec0lbl,xminklbl,delklbl,npointk, 
+     1    pk,npk,tk,t2k,ntk,koutlbl
 	common/scatd/mu1, wt1, galb
 	common/scatter1/nmu, isol, dist1, lowbc, liscat, lnorm,
      1		lncons, lcons, sol_ang, emiss_ang, aphi, nf
@@ -269,11 +274,15 @@ C-----------------------------------------------------------------------
 		stop
 	endif
 
-	if (ng.gt.maxg) then
+        IF(ILBL.EQ.2)THEN
+         NG=1
+        ELSE
+ 	  if (ng.gt.maxg) then
 		write (*,*) ' CIRSRAD_WAVE: Too many g ordinates'
 		write (*,*) ' Ng = ',ng,' Maxg = ',maxg
 		stop
-	endif
+	  endif
+        ENDIF
 
 	if ((npk.gt.maxk).or.(abs(ntk).gt.maxk)) then
 		write (*,*) ' CIRSRAD_WAVE: Too many P/T points in K',
@@ -543,8 +552,12 @@ C-----------------------------------------------------------------------
 		pastint = 0.
 
 C     read in k-coefffients for each gas and each layer
-                CALL GET_K(NLAYER,PRESS,TEMP,NGAS,I,X)
- 
+                IF(ILBL.EQ.0)THEN
+                  CALL GET_K(NLAYER,PRESS,TEMP,NGAS,I,X)
+                ELSE
+                  CALL GET_KLBL(NLAYER,PRESS,TEMP,NGAS,I,X)
+                ENDIF
+
 		DO J = 1, nlayer
 			taucon(J) = 0.
 			taugasc(J) = 0.
@@ -793,6 +806,8 @@ C	summed K coefficients. End the loop over each layer.
 C
 C-----------------------------------------------------------------------
 
+
+        IF(ILBL.EQ.0)THEN
 			DO K = 1, ngas
 C                         print*,'I,K',I,K,lun(I,K)
 			 IF (lun(I,K).LT.0) THEN
@@ -847,7 +862,18 @@ C                                print*,k,j,kl_g(k,j)
 			ENDDO
 		ENDDO
 
+        ELSE
 
+			NG=1
+                        KL_G(1,J)=0.
+
+			DO K = 1, ngas
+
+                         KL_G(1,J)=KL_G(1,J)+KOUTLBL(J,K)*FRAC(J,K)
+
+			ENDDO
+
+        ENDIF
 C-----------------------------------------------------------------------
 C
 C	For each bin, we must step over each g-ordinate.
@@ -2051,11 +2077,15 @@ C-----------------------------------------------------------------------
 
 		DO Ipath = 1, npath
 			output(Ipath,I) = 0.
-			DO Ig = 1, ng
+                        IF(ILBL.EQ.2)THEN
 			 output(Ipath,I) = output(Ipath,I) + 
+     1					corkout(Ipath,1)
+                        ELSE
+			 DO Ig = 1, ng
+			  output(Ipath,I) = output(Ipath,I) + 
      1					corkout(Ipath,Ig) * delg(Ig)
-			ENDDO
-
+			 ENDDO
+                        ENDIF
 C		 	print*,'Ipath, I, output',Ipath,I,
 C     1				output(Ipath,I)
 		ENDDO

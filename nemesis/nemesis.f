@@ -133,10 +133,17 @@ C     Also read in whether scattering is required (iscat)
 C     Also read in whether lbl calculation is required (ilbl)
       READ(32,*)ispace,iscat,ilbl
 
-      if(ilbl.gt.0) then 
+      if(ilbl.eq.1) then 
        print*,'Nemesis - LBL calculation'
       endif
-      if(ilbl.eq.0)CALL readkkhead(runname,vkstart,vkend,vkstep)
+      if(ilbl.eq.0)then
+       print*,'Nemesis - corr-k calculation
+       CALL readkkhead(runname,vkstart,vkend,vkstep)
+      endif
+      if(ilbl.eq.2)then
+       print*,'Nemesis - lbl-table calculation
+       CALL readkklblhead(runname,vkstart,vkend,vkstep)
+      endif
 
 C     Read any wavenumber offset to add to measured spectra
       READ(32,*)woff   

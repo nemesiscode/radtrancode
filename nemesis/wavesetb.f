@@ -54,7 +54,7 @@ C     just set the calculation wavelengths to be the convolution wavelengths
        ico = 0
        if(fwhm.lt.0.0)then
         call file(runname,runname,'fil')
-        print*,'Reading : ',runname
+        print*,'Reading filter file : ',runname
         open(12,file=runname,status='old')
          read(12,*)nconv1
          if(nconv.ne.nconv1)then

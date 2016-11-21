@@ -254,7 +254,7 @@ C       the Rayleigh scattering phase function
         NCONT1=NCONT+1
         J1=NCONT+1
         NORM=1
-
+        IF(IDUMP.GT.0)PRINT*,'Calculating Rayleigh scattering phase'
         DO 800 IC=0,NF
          CALL CALC_PMAT6(NF, IC, PPLPL, PPLMI, MU, WTMU, 
      1    NMU, ISCAT, CONS8, NCONS, NORM, J1, NCONT1, VWAVE, NPHI)
@@ -429,8 +429,8 @@ C         TAUT = TAUT + TAUR
          OMEGA = (TAUSCAT+TAUR)/TAUT
          
          if(idump.gt.0)then
-          print*,'Rayleigh: TAUR,TAUSCAT,TAUT-TAUR,OMEGA',TAUR,
-     &          TAUSCAT,TAUT-TAUR,OMEGA
+          print*,'Rayleigh: TAUT,TAUR,TAUSCAT,TAUT-TAUR,OMEGA',
+     &       TAUT,TAUR,TAUSCAT,TAUT-TAUR,OMEGA
          endif
          if(lrep)then
           print*,'Rayleigh: TAUR,TAUSCAT,TAUT-TAUR,OMEGA',TAUR,

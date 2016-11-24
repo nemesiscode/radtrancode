@@ -194,13 +194,13 @@ C     creating the key file
       WRITE(*,23)INDFIL
       WRITE(*,24)GASFIL
       WRITE(*,25)ISOFIL
-20    FORMAT(1X,1A56,'  original key name ')
-21    FORMAT(1X,1A56,'  original database ')
-22    FORMAT(1X,1A56,'  main database file')
-23    FORMAT(1X,1A56,'  index file        ')
-24    FORMAT(1X,1A56,'  gas file          ')
-25    FORMAT(1X,1A56,'  isotope file      ')
-26    FORMAT(1X,1A16,40X,'  data base name    ')
+20    FORMAT(1X,A)
+21    FORMAT(1X,A)
+22    FORMAT(1X,A)
+23    FORMAT(1X,A)
+24    FORMAT(1X,A)
+25    FORMAT(1X,A)
+26    FORMAT(1X,A)
 C
       IF(OLDFIL)THEN
 C       just need to find size of data base

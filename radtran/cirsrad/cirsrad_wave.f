@@ -130,12 +130,13 @@ C		K table variables
 
 	INTEGER	lun(maxbin,maxgas), ireck(maxbin,maxgas), lun0, irec0, 
      1		npk, ntk, ng, intmod(maxbin,maxgas), ntab,
-     2		lunlbl(maxgas)
+     2		lunlbl(maxgas),npklbl,ntklbl
 	REAL	xmink(maxbin,maxgas), delk(maxbin,maxgas), xmin, delx, 
      1		k_g(maxg), k_g1(maxg), k_g2(maxg), q1, q2, 
      2		pk(maxk), tk(maxk), g_ord(maxg), t2k(maxk,maxk), 
      3		delg(maxg), kl_g(maxg,maxlay),xminklbl,
      4		kout(maxlay,maxgas,maxg),p1,p2,frack(maxbin,maxgas)
+	REAL    pklbl(maxk),tklbl(maxk),t2klbl(maxk,maxk)
 	REAL	delvklbl,koutlbl(maxlay,maxgas)
         REAL    basehf(maxlay),basepf(maxlay),basehS(maxlay)
         REAL    scaleS(maxlay),Jsource(maxlay),delhs(maxlay)
@@ -219,7 +220,7 @@ C       Solar reference spectrum common block
 	common/interpk/lun, ireck, xmink, delk, frack, pk, npk, tk, 
      1      t2k, ntk, ng, delvk, fwhmk, g_ord, delg, kout
 	common/interpklbl/lunlbl,irec0lbl,xminklbl,delklbl,npointk, 
-     1    pk,npk,tk,t2k,ntk,koutlbl
+     1    pklbl,npklbl,tklbl,t2klbl,ntklbl,koutlbl
 	common/scatd/mu1, wt1, galb
 	common/scatter1/nmu, isol, dist1, lowbc, liscat, lnorm,
      1		lncons, lcons, sol_ang, emiss_ang, aphi, nf
@@ -289,6 +290,14 @@ C-----------------------------------------------------------------------
      1			' tables' 
 		write (*,*) ' Npk = ',npk,' Maxk = ',maxk
 		write (*,*) ' Ntk = ',ntk,' Maxk = ',maxk
+		stop
+	endif
+
+	if ((npklbl.gt.maxk).or.(abs(ntklbl).gt.maxk)) then
+		write (*,*) ' CIRSRAD_WAVE: Too many P/T points in K',
+     1			' tables' 
+		write (*,*) ' Npklbl = ',npklbl,' Maxk = ',maxk
+		write (*,*) ' Ntklbl = ',ntklbl,' Maxk = ',maxk
 		stop
 	endif
 
@@ -368,8 +377,11 @@ C       Set flag for code to read in modified PHASE*.DAT files if required
 
 c	Isec = min(4,nsec)
 
-	ntab = npk * abs(ntk) * ng
-
+        if(ng.gt.1)then
+ 	 ntab = npk * abs(ntk) * ng
+        else
+         ntab = npklbl*abs(ntklbl)
+        endif
 C-----------------------------------------------------------------------
 C
 C	Precompute volume fractions. The factor of 1e-20 applied to
@@ -808,7 +820,7 @@ C-----------------------------------------------------------------------
 
 
         IF(ILBL.EQ.0)THEN
-			DO K = 1, ngas
+		DO K = 1, ngas
 C                         print*,'I,K',I,K,lun(I,K)
 			 IF (lun(I,K).LT.0) THEN
 				DO L = 1, ng
@@ -853,12 +865,11 @@ C                                if(q1.gt.0)then leave k_g unchanged.
 				q1 = q1 + q2
 C                                print*,'CC',q1,k_g(5)
 			 ENDIF
-			ENDDO
 
 C                        print*,'Final'
-			DO K = 1, ng
-				kl_g(K,J) = k_g(K)
-C                                print*,k,j,kl_g(k,j)
+			DO L = 1, ng
+				kl_g(L,J) = k_g(L)
+C                                print*,L,j,kl_g(L,j)
 			ENDDO
 		ENDDO
 

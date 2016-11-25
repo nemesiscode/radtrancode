@@ -137,12 +137,12 @@ C		K table variables
      3		delg(maxg), kl_g(maxg,maxlay),xminklbl,
      4		kout(maxlay,maxgas,maxg),p1,p2,frack(maxbin,maxgas)
 	REAL    pklbl(maxk),tklbl(maxk),t2klbl(maxk,maxk)
-	REAL	delvklbl,koutlbl(maxlay,maxgas)
+	REAL	delvklbl,koutlbl(maxlay,maxgas),delklbl
         REAL    basehf(maxlay),basepf(maxlay),basehS(maxlay)
         REAL    scaleS(maxlay),Jsource(maxlay),delhs(maxlay)
 C		Scattering variables
 
-	INTEGER	liscat(maxcon), isol, nmu, lowbc, 
+	INTEGER	liscat(maxcon), isol, nmu, lowbc, npointk,
      1          lncons(maxcon), ibaseH(maxlay),
      2		kf,nf, lnorm(maxcon), itype
 	REAL	lfrac(maxcon,maxlay), solar, pi, theta0, dist, 
@@ -819,8 +819,8 @@ C
 C-----------------------------------------------------------------------
 
 
-        IF(ILBL.EQ.0)THEN
-		DO K = 1, ngas
+        	IF(ILBL.EQ.0)THEN
+	  	  DO K = 1, ngas
 C                         print*,'I,K',I,K,lun(I,K)
 			 IF (lun(I,K).LT.0) THEN
 				DO L = 1, ng
@@ -871,9 +871,9 @@ C                        print*,'Final'
 				kl_g(L,J) = k_g(L)
 C                                print*,L,j,kl_g(L,j)
 			ENDDO
-		ENDDO
+		  ENDDO
 
-        ELSE
+	        ELSE
 
 			NG=1
                         KL_G(1,J)=0.
@@ -884,7 +884,9 @@ C                                print*,L,j,kl_g(L,j)
 
 			ENDDO
 
-        ENDIF
+	        ENDIF
+
+        ENDDO
 C-----------------------------------------------------------------------
 C
 C	For each bin, we must step over each g-ordinate.

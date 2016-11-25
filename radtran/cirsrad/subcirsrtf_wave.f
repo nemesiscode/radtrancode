@@ -80,7 +80,7 @@ C       bins, paths, etc.)
 
         common/scatd/mu1, wt1, galb
         common/defang/ipzen1
-        commob/lbltable/ilbl
+        common/lbltable/ilbl
 
 C       Need simple way of passing planetary radius to nemesis
         INCLUDE '../includes/planrad.f'

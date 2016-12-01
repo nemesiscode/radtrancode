@@ -121,7 +121,8 @@ C		Passed variables
 
 	REAL	XCOM,XNEXT,FPARA,vv,XRAY,RAYLEIGHJ,RAYLEIGHA,RAYLEIGHV
         REAL    WING,MAXDV,VMIN,VMAX
-
+        REAL    RAYLEIGHLS,fheh2,fch4h2,fh2,fhe,fch4,fnh3
+        INTEGER jnh3,jch4,jh2,jhe,igas
         double precision get_albedo
 
 C		Dust variables
@@ -369,6 +370,8 @@ C	Precompute volume fractions.
 C
 C-----------------------------------------------------------------------
 
+
+
 	DO I= 1, nlayer
 		DO J= 1, ngas
 			frac(I,J) = pp(I,J) / press(I)
@@ -465,6 +468,11 @@ C-----------------------------------------------------------------------
 		f(J) = 0.
 		p = press(J)
 		t = temp(J)
+
+                IF(JNH3.GT.0.)FNH3 = FRAC(J,JNH3)
+                IF(JCH4.GT.0.)FCH4 = FRAC(J,JCH4)
+                IF(JH2.GT.0.)FH2 = FRAC(J,JH2)
+                IF(JHE.GT.0.)FHE = FRAC(J,JHE)
 
 C-----------------------------------------------------------------------
 C
@@ -678,8 +686,17 @@ C	The code below is if Rayleigh scattering is considered.
                    xray = RAYLEIGHJ(vv,p,t)
  		  elseif(IRAY.EQ.2)then
                    xray = RAYLEIGHV(vv,p,t)
-		  else
+		  elseif(IRAY.EQ.3)then
                    xray = RAYLEIGHA(vv,p,t)
+                  else
+                  if(FH2.GT.0.0)THEN
+                   fheh2=FHE/FH2
+                   fch4h2=FCH4/FH2
+                  else
+                   fheh2=0.
+                   fch4h2=0.
+                  endif
+                  xray = RAYLEIGHLS(vv,fheh2,fch4h2,fnh3)
 		  endif
                   avgcontmp = totam(J)*xray
                   tauray(J)=avgcontmp

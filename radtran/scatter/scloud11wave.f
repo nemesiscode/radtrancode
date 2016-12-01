@@ -394,7 +394,16 @@ C       Assign phase function coefficients for each atmospheric layer
      1      MAXMU,MAXMU)
            CALL MADD(FRAC,PPLMIS,PPLMI,PPLMIS,NMU,NMU,
      1      MAXMU,MAXMU)
-
+           if(idump.gt.0)then
+            print*,'PPLPL'
+            DO JP=1,NMU
+             PRINT*,(PPLPLS(JP,IP),IP=1,NMU)
+            ENDDO
+            PRINT*,'PPLMI'
+            DO JP=1,NMU
+             PRINT*,(PPLMIS(JP,IP),IP=1,NMU)
+            ENDDO
+           endif
           ENDIF
 
          END DO
@@ -408,6 +417,7 @@ C       Assign phase function coefficients for each atmospheric layer
          SFRAC = SFRAC+FRAC
 
          if(lrep)print*,'Ray ',FRAC,SFRAC      
+         if(idump.gt.0)print*,'Ray ',FRAC,SFRAC
          IF(FRAC.GT.0)THEN
           DO JP = 1,NMU
             DO IP = 1,NMU
@@ -423,6 +433,19 @@ C       Assign phase function coefficients for each atmospheric layer
      1      MAXMU,MAXMU)
           CALL MADD(FRAC,PPLMIS,PPLMI,PPLMIS,NMU,NMU,
      1      MAXMU,MAXMU)
+
+           if(idump.gt.0)then
+            print*,'PPLPL'
+            DO JP=1,NMU
+             PRINT*,(PPLPLS(JP,IP),IP=1,NMU)
+            ENDDO
+            PRINT*,'PPLMI'
+            DO JP=1,NMU
+             PRINT*,(PPLMIS(JP,IP),IP=1,NMU)
+            ENDDO
+           endif
+
+
          ENDIF
 
 C         TAUT = TAUT + TAUR

@@ -1,4 +1,5 @@
-      SUBROUTINE CONRAY(IRAY,V0,DV,PRESS,TEMP,TOTAM,POLY)
+      SUBROUTINE CONRAY(IRAY,V0,DV,PRESS,TEMP,fheh2,fch4h2,fnh3,
+     & TOTAM,POLY)
 C     *****************************************************************
 C     Subroutine to calculate Rayleigh scattering optical depth in
 C     Jovian-type atmosphere
@@ -10,6 +11,7 @@ C     *****************************************************************
       INTEGER IP,NX,IORDP,IRAY
       REAL V,DV,PRESS,TEMP,TOTAM,POLY(IORDP1)
       REAL XX(IORDP1),YY(IORDP1),XMIN,XMAX
+      REAL fheh2,fch4h2,fnh3
 
       DO 10 IP=1,IORDP1
 
@@ -18,8 +20,10 @@ C     *****************************************************************
            POLY(IP) = TOTAM*RAYLEIGHJ(FF,PRESS,TEMP)*1E20
           ELSEIF(IRAY.EQ.2)THEN
            POLY(IP) = TOTAM*RAYLEIGHV(FF,PRESS,TEMP)*1E20
-          ELSE
+          ELSEIF(IRAY.EQ.3)THEN
            POLY(IP) = TOTAM*RAYLEIGHA(FF,PRESS,TEMP)*1E20
+          ELSE
+           POLY(IP) = TOTAM*RAYLEIGHLS(FF,fheh2,fch4h2,fnh3)*1E20
           ENDIF
 10    CONTINUE
 

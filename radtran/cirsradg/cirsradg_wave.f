@@ -180,10 +180,12 @@ C Definition of input and output variables ...
 C Definition of general variables ...
       INTEGER i,j,k,l,ipath,ig,iray,ipath1,lstcel,ipath2
       INTEGER k1,nlays,nparam
+      INTEGER jnh3,jch4,jh2,jhe,igas
       REAL ppp(maxgas),aamount(maxgas),vv
       REAL dbdt(maxlay,maxpat),bb(maxlay,maxpat)
       REAL fpara,xray
       REAL rayleighj,rayleigha,rayleighv,planck_wave,planckg_wave
+      REAL rayleighls,fheh2,fch4h2,fh2,fhe,fch4,fnh3
       REAL p,t,tau,tau2,dpexp,dist1
       REAL muemiss,intscat,pastint
       REAL utotl(maxlay),taucon(maxlay),tauscat(maxlay)
@@ -365,6 +367,31 @@ C	underflow, the CIRSRAD routines multiply k-coefficients in
 C	the k-tables by 1e20
 C
 C=======================================================================
+ 
+      JH2 = -1
+      JNH3 = -1
+      JHE = -1
+      JCH4 = -1
+      DO IGAS=1,NGAS
+          IF(IDGAS(IGAS).EQ.39.AND.
+     1     (ISOGAS(IGAS).EQ.0.OR.ISOGAS(IGAS).EQ.1))THEN
+            JH2 = IGAS
+          ENDIF
+          IF(IDGAS(IGAS).EQ.40.AND.
+     1     (ISOGAS(IGAS).EQ.0.OR.ISOGAS(IGAS).EQ.1))THEN
+            JHE = IGAS
+          ENDIF
+          IF(IDGAS(IGAS).EQ.6.AND.
+     1     (ISOGAS(IGAS).EQ.0.OR.ISOGAS(IGAS).EQ.1))THEN
+            JCH4 = IGAS
+          ENDIF
+          IF(IDGAS(IGAS).EQ.11.AND.
+     1     (ISOGAS(IGAS).EQ.0.OR.ISOGAS(IGAS).EQ.1))THEN
+            JNH3 = IGAS
+          ENDIF
+      ENDDO
+
+
 
       DO i=1,nlayer
         utotl(i) = 0.0
@@ -461,6 +488,11 @@ C Read in k-coefffients for each gas and each layer
         f(j) = 0.0
         p = press(j)
         t = temp(j)
+
+        IF(JNH3.GT.0.)FNH3 = FRAC(J,JNH3)
+        IF(JCH4.GT.0.)FCH4 = FRAC(J,JCH4)
+        IF(JH2.GT.0.)FH2 = FRAC(J,JH2)
+        IF(JHE.GT.0.)FHE = FRAC(J,JHE)
 
 C=======================================================================
 C
@@ -595,9 +627,19 @@ C Para-H2 fraction:
            xray = RAYLEIGHJ(vv,press(j),temp(j))*1E20
           ELSEIF(iray.eq.2)then
            xray = RAYLEIGHV(vv,press(j),temp(j))*1E20
-          ELSE
+          ELSEIF(iray.eq.3)then
            xray = RAYLEIGHA(vv,press(j),temp(j))*1E20
+          ELSE
+           if(FH2.GT.0.0)THEN
+             fheh2=FHE/FH2
+             fch4h2=FCH4/FH2
+           else
+             fheh2=0.
+             fch4h2=0.
+           endif
+           xray = RAYLEIGHLS(vv,fheh2,fch4h2,fnh3)*1E20
           ENDIF
+
           avgcontmp = utotl(j)*xray
           tauray(j) = avgcontmp
 

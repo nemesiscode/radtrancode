@@ -40,6 +40,7 @@ F_SOURCES = \
 	phasint2.f \
 	rayleigha.f \
 	rayleighj.f \
+	rayleighls.f \
 	rayleighv.f \
 	read_hg.f \
 	read_xsc.f \
@@ -84,7 +85,9 @@ $(LIBRARY)(%.o): %.f $(INCLUDES)
 bin :    \
         Makephase \
 	Normxsc \
-        Readphase
+        Readphase \
+	Testray \
+	Test_pmat6
 
 Makephase : makephase.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Makephase makephase.f $(LIBRARY) \
@@ -97,3 +100,11 @@ Normxsc : normxsc.f $(LIBRARY)
 Readphase : readphase.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Readphase readphase.f $(LIBRARY) \
 	$(LIB)/rtm_util.a $(FRECIPES)
+
+Testray : testray.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Testray testray.f $(LIBRARY) \
+	$(LIB)/rtm_util.a $(FRECIPES)
+
+Test_pmat6 : test_pmat6.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Test_pmat6 test_pmat6.f $(LIBRARY) \
+	$(LIB)/path.a $(LIB)/rtm_util.a $(FRECIPES)

@@ -106,7 +106,7 @@ C		Passed variables
 	INTEGER	Inormal,ik,iray,flagh2p,flagc,ispace,jf
 	INTEGER	nlayer, npath, ngas, limlay, limcont, nwave, 
      1		nlayin(npath), incdim, layinc(incdim, npath), 
-     2          idgas(ngas), isogas(ngas), imod(npath)
+     2          idgas(ngas), isogas(ngas), imod(npath), igas
 
 	REAL	press(nlayer), temp(nlayer), pp(limlay,ngas), 
      1		amount(limlay,ngas), vwave(nwave), cont(limcont,nlayer), 
@@ -115,10 +115,11 @@ C		Passed variables
      4          hfc(nlayer),vwavef(maxbin),basep(nlayer),baseh(nlayer),
      5          jb(maxlay,maxpat),esurf,totam(nlayer)
         REAL    vem(MAXSEC),emissivity(MAXSEC),interpem
-        INTEGER ifc(limcont,nlayer),nem
+        INTEGER ifc(limcont,nlayer),nem,jnh3,jch4,jh2,jhe
         LOGICAL modsource
 
 	REAL	XCOM,XNEXT,FPARA,vv,XRAY,RAYLEIGHJ,RAYLEIGHA,RAYLEIGHV
+        REAL    RAYLEIGHLS,fheh2,fch4h2,fh2,fhe,fch4,fnh3
         double precision get_albedo
 
 C		Dust variables
@@ -377,7 +378,6 @@ c	Isec = min(4,nsec)
 
 	ntab = npk * abs(ntk) * ng
 
-
 C-----------------------------------------------------------------------
 C
 C	Precompute volume fractions. The factor of 1e-20 applied to
@@ -390,6 +390,30 @@ C	tables, and 1.e-20 applied to the amounts where they are used in
 C	conjunction with the K tables.
 C
 C-----------------------------------------------------------------------
+
+        JH2 = -1
+        JNH3 = -1
+        JHE = -1
+        JCH4 = -1
+        DO IGAS=1,NGAS
+          IF(IDGAS(IGAS).EQ.39.AND.
+     1     (ISOGAS(IGAS).EQ.0.OR.ISOGAS(IGAS).EQ.1))THEN
+            JH2 = IGAS
+          ENDIF
+          IF(IDGAS(IGAS).EQ.40.AND.
+     1     (ISOGAS(IGAS).EQ.0.OR.ISOGAS(IGAS).EQ.1))THEN
+            JHE = IGAS
+          ENDIF
+          IF(IDGAS(IGAS).EQ.6.AND.
+     1     (ISOGAS(IGAS).EQ.0.OR.ISOGAS(IGAS).EQ.1))THEN
+            JCH4 = IGAS
+          ENDIF
+          IF(IDGAS(IGAS).EQ.11.AND.
+     1     (ISOGAS(IGAS).EQ.0.OR.ISOGAS(IGAS).EQ.1))THEN
+            JNH3 = IGAS
+          ENDIF
+        ENDDO
+
 
 	DO I= 1, nlayer
 		utotl(I)= 0.
@@ -521,13 +545,23 @@ C-----------------------------------------------------------------------
 C     read in k-coefffients for each gas and each layer
                 CALL GET_K(NLAYER,PRESS,TEMP,NGAS,I,X)
  
+
+                FNH3=0.
+                FH2=0.
+                FHe=0.
+                FCH4=0.
+
 		DO J = 1, nlayer
-			taucon(J) = 0.
-			taugasc(J) = 0.
-			tauscat(J) = 0.
-			f(J) = 0.
-			p = press(J)
-			t = temp(J)
+		 taucon(J) = 0.
+		 taugasc(J) = 0.
+		 tauscat(J) = 0.
+		 f(J) = 0.
+		 p = press(J)
+		 t = temp(J)
+                 IF(JNH3.GT.0.)FNH3 = FRAC(J,JNH3)
+                 IF(JCH4.GT.0.)FCH4 = FRAC(J,JCH4)
+                 IF(JH2.GT.0.)FH2 = FRAC(J,JH2)
+                 IF(JHE.GT.0.)FHE = FRAC(J,JHE)
 
 C-----------------------------------------------------------------------
 C
@@ -739,9 +773,19 @@ C               Set vv to the current WAVENUMBER
                  xray = RAYLEIGHJ(vv,p,t)*1E20
                 elseif(IRAY.EQ.2)then
                  xray = RAYLEIGHV(vv,p,t)*1E20
-                else
+                elseif(IRAY.EQ.3)then
                  xray = RAYLEIGHA(vv,p,t)*1E20
+                else
+                 if(FH2.GT.0.0)THEN
+                  fheh2=FHE/FH2
+                  fch4h2=FCH4/FH2
+                 else
+                  fheh2=0.
+                  fch4h2=0.
+                 endif
+                 xray = RAYLEIGHLS(vv,fheh2,fch4h2,fnh3)*1E20
                 endif
+
                 avgcontmp = totam(j)*xray
                 tauray(J)=avgcontmp
 

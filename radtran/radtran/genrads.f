@@ -210,8 +210,9 @@ C     Input variables
       INTEGER IPROC(MAXGAS),NPOINT,ICONV,IMOD(MAXPAT),NFILT,NCONT
       INTEGER INLTE,IRAY,IPTF
       REAL AMOUNT(MAXLAY,MAXGAS),PP(MAXLAY,MAXGAS),PRESS(MAXLAY),NU
-      REAL HFP(MAXLAY),LINECONTRIB,FH2,FNH3
-      INTEGER JH2,JNH3
+      REAL HFP(MAXLAY),LINECONTRIB,FH2,FNH3,FCH4,FHE
+      REAL fch4h2,fheh2
+      INTEGER JH2,JNH3,JHE,JCH4
       REAL TEMP(MAXLAY),SCALE(MAXINC,MAXPAT),EMTEMP(MAXINC,MAXPAT)
       REAL VMIN,DELV,FWHM,WINGIP,VRELIP,FILTER(NFILT),VFILT(NFILT)
       REAL CONT(MAXCON,MAXLAY),DOP(MAXLAY),ERRLIM(MAXPAT),DELH(MAXLAY)
@@ -495,10 +496,20 @@ C     Identify which gas is NH3 and H2 (if applicable) so that the
 C     weird new NH3 lineshape can be used.
       JH2 = -1
       JNH3 = -1       
+      JHE = -1
+      JCH4 = -1
       DO IGAS=1,NGAS
        IF(IDGAS(IGAS).EQ.39.AND.
      1  (ISOGAS(IGAS).EQ.0.OR.ISOGAS(IGAS).EQ.1))THEN
         JH2 = IGAS
+       ENDIF
+       IF(IDGAS(IGAS).EQ.40.AND.
+     1  (ISOGAS(IGAS).EQ.0.OR.ISOGAS(IGAS).EQ.1))THEN
+        JHE = IGAS
+       ENDIF
+       IF(IDGAS(IGAS).EQ.6.AND.
+     1  (ISOGAS(IGAS).EQ.0.OR.ISOGAS(IGAS).EQ.1))THEN
+        JCH4 = IGAS
        ENDIF
        IF(IDGAS(IGAS).EQ.11.AND. 
      1  (ISOGAS(IGAS).EQ.0.OR.ISOGAS(IGAS).EQ.1))THEN
@@ -1237,8 +1248,26 @@ C and partial pressure to 1d for passing to subroutine
  313         CONTINUE
 
              IF(IRAY.GT.0)THEN
+              
+              FNH3=0.
+              FH2=0.
+              FCH4=0.
+              FHE=0.   
+              IF(JNH3.GT.0.) FNH3 = FRAC(LAYER,JNH3)
+              IF(JH2.GT.0.) FH2 = FRAC(LAYER,JH2)
+              IF(JCH4.GT.0.) FCH4 = FRAC(LAYER,JCH4)
+              IF(JHE.GT.0.) FHE = FRAC(LAYER,JHE)
+
+              IF(FH2.GT.0.0)THEN
+               fheh2=FHE/FH2
+               fch4h2=FCH4/FH2
+              ELSE
+               fheh2=0.
+               fch4h2=0.
+              ENDIF
+
               CALL CONRAY(IRAY,VBMIN,WIDTH,PRESS(I),TEMP(I),
-     1		UTOTL(I),CONTMP)
+     1		fheh2,fch4h2,fnh3,UTOTL(I),CONTMP)
 
               DO 315 L=1,IORDP1
                 CONTIN(L,I,K)=CONTIN(L,I,K)+CONTMP(L)

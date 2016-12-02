@@ -133,6 +133,9 @@
 #                       mean molecular weight of 50.94396.
 #                       Set partition function to default linear rotor in
 #                       absence of any better information.
+#	PGJI		Updated partition functions of TiO and VO to those
+#			values used by Ryan Garland. Also updated
+#			molecular weights.
 
  ------------------------------------------------
   1                 gas identifier
@@ -676,14 +679,14 @@
  62                 gas identifier
  TiO
   1                 number of isotopes
-  1 1.0000000   63.8617   (486)  isotope id, relative abun, mass #
-      +0.00000E+00 +1.00000E+00 +0.00000E+00 +0.00000E+00
+  1 1.0000000   63.8664   (486)  isotope id, relative abun, mass #
+    -860.00527      5.25794      4.11768e-03  4.44797e-07
  ------------------------------------------------
  63                 gas identifier
  VO
   1                 number of isotopes
-  1 1.0000000   66.9389   (516)  isotope id, relative abun, mass #
-      +0.00000E+00 +1.00000E+00 +0.00000E+00 +0.00000E+00
+  1 1.0000000   66.9409   (516)  isotope id, relative abun, mass #
+    -922.20713      4.96349      2.42690e-03  1.66643e-07
  ------------------------------------------------
  64                 gas identifier
  CH2CCH2

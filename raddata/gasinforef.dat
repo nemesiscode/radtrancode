@@ -133,9 +133,9 @@
 #                       mean molecular weight of 50.94396.
 #                       Set partition function to default linear rotor in
 #                       absence of any better information.
-#	PGJI		Updated partition functions of TiO and VO to those
-#			values used by Ryan Garland. Also updated
-#			molecular weights.
+#       PGJI            Updated partition functions of TiO and VO to those
+#                       values used by Ryan Garland. Also updated
+#                       molecular weights.
 
  ------------------------------------------------
   1                 gas identifier

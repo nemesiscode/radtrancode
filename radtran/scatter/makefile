@@ -41,6 +41,9 @@ F_SOURCES = \
 	rayleigha.f \
 	rayleighj.f \
 	rayleighls.f \
+	ramanh2.f \
+	raman_wallace_srom.f \
+	calc_raman.f \
 	rayleighv.f \
 	read_hg.f \
 	read_xsc.f \

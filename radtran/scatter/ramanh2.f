@@ -4,16 +4,16 @@ C     Subroutine to return the Raman scattering cross sections for molecular
 C     hydrogen, computed using the fits of 
 C     Ford and Browne, Atomic Data, 5, 305-313, 1973
 C
-C     Transitions are:
-C	1 : J=0, Pure Rayleigh
-C	2 : J=0, Rotational S-branch
-C	3 : J=0, Vibrational Q-branch
-C	4 : J=0, Vibrational S-Branch
+C     Transitions are:                  Srom_ID
+C	1 : J=0, Pure Rayleigh          R(0) 
+C	2 : J=0, Rotational S-branch    S(0)
+C	3 : J=0, Vibrational Q-branch   Q(0)
+C	4 : J=0, Vibrational S-Branch   S_1(0)
 C
-C	5 : J=1, Pure Rayleigh
-C	6 : J=1, Rotational S-branch
-C	7 : J=1, Vibrational Q-branch
-C	8 : J=1, Vibrational S-Branch
+C	5 : J=1, Pure Rayleigh          R(1)
+C	6 : J=1, Rotational S-branch    S(1)
+C	7 : J=1, Vibrational Q-branch   Q(1)
+C	8 : J=1, Vibrational S-Branch   S_1(1)
 C
 C	9 : J=2, Pure Rayleigh
 C	10: J=2, Rotational Q-branch

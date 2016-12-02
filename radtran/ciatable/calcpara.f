@@ -13,9 +13,11 @@ C
 C     Added multiple comments to original. 
 C     Also modified to force the ortho/para ratio to a user-specified
 C     value if NORMAL=1, instead of just the normal deep value 3:1
+C     
 C
 C 	Pat Irwin	11/7/01	Original
 C       Pat Irwin	2/3/12	Updated for Radtrans2.0
+C	Pat Irwin	2/12/16 Commented out unused sections.
 C     *******************************************************************
 C
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)      
@@ -43,7 +45,7 @@ C     Internal function PH2 calculates the density of states function
       WH2(1)=1.D0	! Degeneracy of even states
       WH2(2)=3.D0	! Degeneracy of odd states
 
-      NORMAL=1
+C      NORMAL=1
 
 C     Calculate the Rotational Partition Function Q. Terminate
 C     when converged to within Q/900.0. Sum over successively higher
@@ -56,13 +58,14 @@ C     J-states
       IF (DQ.GT.Q/900.) GO TO 10
       JRANGE1=J		! Maximum J-level needed in summing Q
 
-      IF (NORMAL) 20,20,30
-   20 CONTINUE
+C      IF (NORMAL) 20,20,30
+C   20 CONTINUE
 C     Come here if INORMAL = -1,0. Just return
 C      print*,'Leaving WH2 unadjusted'
-      RETURN
+C      RETURN
 
 C     Come here if INORMAL = 1 force para fraction to F
+
    30 J=-1
       S=0.			! Sum of all states
       SEV=0.			! Sum of even states only

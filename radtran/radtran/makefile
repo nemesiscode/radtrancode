@@ -161,7 +161,8 @@ bin :   \
 	Concat_table_temperature \
 	Cut_table \
 	Mod_table \
-	Mod_table1
+	Mod_table1 \
+	Mod_table2
 	
 Aground : aground.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Aground aground.f $(LIBRARY) \
@@ -267,6 +268,8 @@ Mod_table1 : mod_table1.f $(LIBRARY) $(LIB)/spec_data.a
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
 	$(LIB)/scatter.a $(LIB)/path.a
 
-Scale_table : scale_table.f $(LIBRARY) $(LIB)/spec_data.a
-	$(FC) $(FCFLAGS) -o $(BIN)/Scale_table scale_table.f $(LIBRARY) \
-	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES)
+Mod_table2 : mod_table2.f $(LIBRARY) $(LIB)/spec_data.a
+	$(FC) $(FCFLAGS) -o $(BIN)/Mod_table2 mod_table2.f $(LIBRARY) \
+	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
+	$(LIB)/scatter.a $(LIB)/path.a
+

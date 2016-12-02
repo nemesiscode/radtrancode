@@ -29,7 +29,7 @@ C--------------------------------------------------------------
       INCLUDE '../includes/dbcom.f' 
 C--------------------------------------------------------------
       INTEGER I,J,K,L
-      CHARACTER*10 BUFFER
+      CHARACTER*100 BUFFER
       OPEN(UNIT=DBLUN,FILE=GASFIL,STATUS='OLD')
 
 C     Skip past header : 

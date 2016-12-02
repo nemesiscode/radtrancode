@@ -20,6 +20,7 @@ F_SOURCES = \
       nh2he.f \
       npartsum.f \
       calcpara.f \
+      calcfracpara.f \
       ch4ch4_s.f \
       h2ch4_s.f \
       h2ch4_sub.f \
@@ -67,7 +68,8 @@ $(LIBRARY)(%.o): %.f $(INCLUDES)
 bin :   \
 	Makeciatable \
 	Makeisotable \
-	Makefptable
+	Makefptable \
+	Testfracpara
 
 Makeciatable: makeciatable.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Makeciatable makeciatable.f $(LIBRARY)
@@ -77,4 +79,7 @@ Makeisotable: makeisotable.f $(LIBRARY)
 
 Makefptable: makefptable.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Makefptable makefptable.f $(LIBRARY)
+
+Testfracpara: testfracpara.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Testfracpara testfracpara.f $(LIBRARY)
 

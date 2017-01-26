@@ -35,7 +35,6 @@ C ../includes/dbcom.f stores the linedata base variables (e.g. RELABU).
 C******************************** CODE *********************************
 
 cc      WRITE(*,*)' RDLINE.f :: DBFORM, DBRECL = ',DBFORM,DBRECL
-      DBFORM=0
       IF(DBFORM.EQ.0)THEN
 C=======================================================================
 C

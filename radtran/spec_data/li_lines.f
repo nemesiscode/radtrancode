@@ -99,12 +99,14 @@ C
         WRITE(IW,*)IDGAS(I),ISOGAS(I)
        ENDDO
       ENDIF
-
+      WRITE(IW,202)
       DO 200 I=1,NLIN
 
         IF(MOD(I,20).EQ.1)THEN
-	 IF(IW.EQ.6.AND.I.NE.1)READ(5,101)ANS
-         WRITE(IW,202)
+	 IF(IW.EQ.6.AND.I.NE.1)THEN
+          READ(5,101)ANS
+          WRITE(IW,202)
+         ENDIF
 	ENDIF
 C       now need to rescale strengths by 1.E-47.
 C       can't do this trivially since 1.e-47 is not a valid number and

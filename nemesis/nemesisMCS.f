@@ -38,7 +38,7 @@ C     TIME: Temporary variable returned by GETTIME containing the system time.
 C     TIME1: System time at the beginning of program execution.
 C     TIME2: System time at the end of program execution.
 
-      character*200 buffer,ename
+      character*100 buffer,ename
       integer i,j,iscat,ica,k,lspec,lout,ispec,nspec,nspecx,ioff
       real xn(mx),se(my),err1(mx),woff,xdiff
       real fwhm,xlat,xlon,st(mx,mx),varparam(mvar,mparam)

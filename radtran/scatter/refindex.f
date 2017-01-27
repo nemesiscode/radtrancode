@@ -1034,7 +1034,7 @@ C-----------------------------------------------------------------------
 	real		lambda, ncr, nci, nu, table(n,7), tmp, frac
         real		xr(3),xi(3),xp(3),x1,xconc
         data (xp(j),j=1,3) / 75.,85.,96./
-        character*200   ipfile,buffer
+        character*100   ipfile,buffer
 
         ipfile='palmer_williams_wl.dat'
 
@@ -1106,7 +1106,7 @@ C-----------------------------------------------------------------------
 	parameter	(n=450)
 	integer		I, J, k, m
 	real		lambda, ncr, nci, nu, table(n,3), tmp, frac
-        character*200   ipfile,buffer
+        character*100   ipfile,buffer
 
 
         ipfile = 'wolff06dust_bandfieldbasalt.um'

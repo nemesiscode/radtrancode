@@ -12,7 +12,7 @@ C     *********************************************************************
       INCLUDE '../includes/constdef.f'
       INCLUDE '../includes/dbcom.f'
 C      CHARACTER*100 IPFILE
-      CHARACTER*200 BUFFER
+      CHARACTER*100 BUFFER
       CHARACTER*8 PNAME
       INTEGER I,J,NPRO,NCONT,NVMR,ID(15),ISO(15),N,AMFORM,IPLANET
       REAL CONT(100,1000),VMR(1000,15),CP0,CXS,CSUM(1000)

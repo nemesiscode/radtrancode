@@ -44,6 +44,7 @@ C     of the filename
 30    NAME2(LE+1:LE+1)='.'
       NAME2(LE+2:LE+4)=EXT
 
+      CALL REMSP(NAME2)
      
 20    RETURN
       END 

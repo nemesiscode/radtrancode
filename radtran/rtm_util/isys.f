@@ -24,7 +24,7 @@ C	28/2/00	PGJI	This version.
 C	17/5/12 PGJI	Updated headers
 C     ********************************************************************
 
-      ISYS=4
+      ISYS=1
 
       RETURN
       END

@@ -37,7 +37,7 @@ C     TIME2: System time at the end of program execution.
       real tot_time
       real rate
       integer c1,c2,cr,time1,time2,cm
-      character*200 buffer,ename
+      character*100 buffer,ename
       integer i,j,iscat,ica,k,lspec,lout,ispec,nspec,nspecx,ioff
       integer linfo,npvar,iplanet
       real altbore,marsradius,satrad,thetrot,RADIUS

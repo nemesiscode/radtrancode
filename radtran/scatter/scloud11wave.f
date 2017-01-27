@@ -468,7 +468,7 @@ C         TAUT = TAUT + TAUR
          END IF
 
 C         IF(IC.EQ.0.AND.SFRAC.GT.0.0)THEN
-C           CALL HANSEN( IC, PPLPL, PPLMI, MAXMU, WTMU, NMU)
+C           CALL HANSEN( IC, PPLPLS, PPLMIS, MAXMU, WTMU, NMU)
 C         ENDIF
 
          DO KL=1,NMU
@@ -515,6 +515,7 @@ C       P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P
         ELSE
          iscl(l) = 1
          if(idump.gt.0.or.lrep)print*,'cloud layer ',l,iscl(l)
+C         OMEGA=0.3
  	 CALL DOUBLE1(IC,L,RL(1,1,L),TL(1,1,L),JL(1,1,L),NMU,MAXMU)
 
         END IF

@@ -159,6 +159,7 @@ bin :   \
 	Zerotable \
 	Radtrans \
 	Read_table \
+	Read_lbltable \
 	Concat_table \
 	Concat_table_temperature \
 	Cut_table \
@@ -244,6 +245,11 @@ Radtrans : radtrans.f $(LIBRARY) $(LIB)/spec_data.a
 
 Read_table : read_table.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Read_table read_table.f $(LIBRARY) \
+	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
+	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/ciatable.a
+
+Read_lbltable : read_lbltable.f $(LIBRARY) $(LIB)/spec_data.a
+	$(FC) $(FCFLAGS) -o $(BIN)/Read_lbltable read_lbltable.f $(LIBRARY) \
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
 	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/ciatable.a
 

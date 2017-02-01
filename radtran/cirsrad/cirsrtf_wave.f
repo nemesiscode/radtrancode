@@ -53,11 +53,12 @@ C         bins, paths, etc.)
 
         CHARACTER*100	opfile
         INTEGER         nwave, nconv, npath, itype, I, J, K
-	INTEGER		INormal,Iray,ispace,nem
+	INTEGER		INormal,Iray,ispace,nem,ILBL
 	REAL		Dist, FWHM
         REAL          vwave(nwave), vconv(nconv), convout(maxout3),
      1                  output(maxout3), y(maxout), yout(maxout),tsurf,
      2			vem(MAXSEC),emissivity(MAXSEC)
+        common/lbltable/ilbl
 
 C-----------------------------------------------------------------------
 C
@@ -90,16 +91,19 @@ C-----------------------------------------------------------------------
            STOP
         ENDIF
 
-
         DO I= 1, npath
            DO J= 1, nwave
               K= I+(J-1)*npath
               y(J)= output(K)
            ENDDO
 
-
-           CALL cirsconv(opfile,fwhm, nwave, vwave, y, nconv, 
+           if(ilbl.eq.0)then
+            CALL cirsconv(opfile,fwhm, nwave, vwave, y, nconv, 
      1      vconv,yout)
+           else
+            CALL lblconv1(opfile,fwhm,ishape, vwave, y, nconv,
+     1      vconv,yout)
+           endif
 
            DO J= 1, nconv
               K= I+(J-1)*npath

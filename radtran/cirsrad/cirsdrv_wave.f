@@ -60,9 +60,9 @@ C paths, etc.)
       INCLUDE '../includes/arrdef.f'
 
       INTEGER		intmod, nconv, nwave, I, npath, J, K,
-     1			itype, ispace, idump
+     1			itype, ispace, idump, ilbl
       INTEGER		NPoints, Planet, INormal, ichannel,nem
-      INTEGER		IRAY,IPTF,IMIE,IMIE1
+      INTEGER		IRAY,IPTF,IMIE,IMIE1,ishape
       REAL		vconv(maxbin), vwave(maxbin), spec(maxout3),
      1                  uspec(maxout3)
       REAL		VREF,DELVK,VMIN,VMAX
@@ -76,7 +76,7 @@ C paths, etc.)
       integer c1,c2,cr,time1,time2,cm
       CHARACTER*80	TEXT
       CHARACTER*100	opfile, patfile, outfile, idlfile, ciafil
-      CHARACTER*100     confil
+      CHARACTER*100     confil,sfile
       CHARACTER*1 ANS
 
       REAL xwave(MAXSEC),xf(MAXCON,MAXSEC),xg1(MAXCON,MAXSEC)
@@ -85,13 +85,14 @@ C paths, etc.)
       COMMON /hgphas/xwave,xf,xg1,xg2,tnco,twave,frac,tico
       COMMON /SCATDUMP/ IDUMP
       COMMON /IMIESCAT/ IMIE1
+      COMMON /LBLTABLE/ ILBL
 
       INCLUDE '../includes/ciacom.f'
       INCLUDE '../includes/gascom.f'
       INCLUDE '../includes/planrad.f'
 
       CHARACTER*100 ANAME
-      REAL DNU
+      REAL DNU,DV
       INTEGER IPARA     
 
 C     Solar spectrum variables and flags      
@@ -176,12 +177,21 @@ C Calculate number of points in output array
       if(ans.ne.'y'.and.ans.ne.'Y')then
        call prompt('Enter nconv : ')
        read*,nconv
-       print*,'Enter wavenumbers:'
+       print*,'Enter wavenumbers/wavelengths:'
        read*,(vconv(i),i=1,nconv)
        ichannel=1
        fwhm=0.0
       endif
 
+      CALL PROMPT('Enter ILBL (0=k-table, 2=lbl-table) : ')
+      READ*,ILBL
+
+      IF(ILBL.EQ.2)THEN
+       call file(opfile,sfile,'sha')
+        open(13,file=sfile,status='old')
+        READ(13,*)ISHAPE
+       close(13)
+      ENDIF
 
 10    WRITE(*,*)'Select a planet (1-9) to look up solar distance: '
       WRITE(*,*)'(Enter 10 to enter this distance manually)'
@@ -245,17 +255,27 @@ C-----------------------------------------------------------------------
        if(ichannel.eq.0)then
         WRITE(*,*)'Enter reference wavenumber and step in ktables'
         READ (*,*) VREF,DelVK
+        DV=0.5*FWHM
+        IF(ILBL.EQ.2)THEN
+          if(ishape.eq.0)then
+           dv = 0.5*fwhm
+          elseif(ishape.eq.1)then
+           dv = fwhm
+          elseif(ishape.eq.2)then
+           dv = 3*0.5*fwhm/sqrt(alog(2.0))
+          else
+           dv = 3*fwhm
+          endif
+        ENDIF
 
-        VMIN = VREF+DELVK*INT((WNumBot-0.5*FWHM-VREF)/DELVK)
-        VMAX = VREF+DELVK*(NINT((WNumTop+0.5*FWHM-VREF)/DELVK)+1)
+        VMIN = VREF+DELVK*INT((WNumBot-DV-VREF)/DELVK)
+        VMAX = VREF+DELVK*(NINT((WNumTop+DV-VREF)/DELVK)+1)
 
 
 C Calculate number of points in tabulated wavenumber array plus one to
 C account for the end point if FWHM <> 0.0
 
         NWave = 1 + NINT((VMAX-VMIN) / DelVK)
-
-        IF(FWHM.EQ.0.0)Nwave=Nwave-1
 
         DO j= 1, NWave
           VWave(j)= VMIN + ((j-1) * DelVK)

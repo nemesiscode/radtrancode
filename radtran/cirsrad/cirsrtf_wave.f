@@ -51,14 +51,23 @@ C       Defines the maximum values for a series of variables (layers,
 C         bins, paths, etc.)
 	INCLUDE '../includes/arrdef.f'
 
-        CHARACTER*100	opfile
+        CHARACTER*100	opfile,sfile
         INTEGER         nwave, nconv, npath, itype, I, J, K
-	INTEGER		INormal,Iray,ispace,nem,ILBL
+	INTEGER		INormal,Iray,ispace,nem,ILBL,ishape
 	REAL		Dist, FWHM
         REAL          vwave(nwave), vconv(nconv), convout(maxout3),
      1                  output(maxout3), y(maxout), yout(maxout),tsurf,
      2			vem(MAXSEC),emissivity(MAXSEC)
         common/lbltable/ilbl
+
+
+        call file(opfile,sfile,'sha')
+        open(13,file=sfile,status='old')
+        READ(13,*)ISHAPE
+        close(13)
+
+        print*,'ISHAPE = ',ISHAPE
+
 
 C-----------------------------------------------------------------------
 C
@@ -101,7 +110,7 @@ C-----------------------------------------------------------------------
             CALL cirsconv(opfile,fwhm, nwave, vwave, y, nconv, 
      1      vconv,yout)
            else
-            CALL lblconv1(opfile,fwhm,ishape, vwave, y, nconv,
+            CALL lblconv1(opfile,fwhm,ishape, nwave, vwave, y, nconv,
      1      vconv,yout)
            endif
 

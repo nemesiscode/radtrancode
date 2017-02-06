@@ -11,6 +11,7 @@ FRECIPES = $(LIB)/libfrecipes.a
 F_SOURCES = \
 	cirsconv.f \
 	lblconv.f \
+	lblconv1.f \
 	cirsrad_wave.f \
 	cirsrad_waveS.f \
 	cirsrad_waveMC.f \

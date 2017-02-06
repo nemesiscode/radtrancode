@@ -44,9 +44,9 @@ C     TIME2: System time at the end of program execution.
       real fwhm,xlat,xlon,st(mx,mx),varparam(mvar,mparam)
       real sn(mx,mx),sm(mx,mx),xlatx,varparamx(mvar,mparam)
       real stx(mx,mx),xlonx
-      integer varident(mvar,3),varidentx(mvar,3),iform
+      integer varident(mvar,3),varidentx(mvar,3),iform,ilbl1
       integer npro,nvmr,ispace,nav(mgeom),lraw,nprox,lpre
-      character*100 runname
+      character*100 runname,sfile
       integer ngeom, nwave(mgeom),nconv(mgeom), nx, ny, jsurf, jsurfx
       integer ngas,ncont,nvar,nvarx,lin,nxx,igeom,nconv1,nwave1,jalb
       real vwave(mgeom,mwave),vconv(mgeom,mconv),angles(mgeom,mav,3)
@@ -56,7 +56,7 @@ C     TIME2: System time at the end of program execution.
       real vwave1(mwave),vconv1(mconv)
       double precision aa(mx,mx),dd(mx,my)
       real vkstart,vkend,vkstep,RADIUS
-      integer idump,kiter,jtan,jtanx,jalbx,jpre,jprex
+      integer idump,kiter,jtan,jtanx,jalbx,jpre,jprex,ishape
       integer jrad,jradx,lx(mx),jlogg,jloggx,iplanet
 C     ********** Scattering variables **********************
       real xwave(maxsec),xf(maxcon,maxsec),xg1(maxcon,maxsec)
@@ -66,6 +66,7 @@ C     ********** Scattering variables **********************
       logical gasgiant
       COMMON /hgphas/xwave,xf,xg1,xg2,tnco,twave,frac,tico
       COMMON /scatdump/ idump
+      COMMON /lbltable/ ilbl1
 
       include '../radtran/includes/ciacom.f'
 
@@ -137,11 +138,11 @@ C     Also read in whether lbl calculation is required (ilbl)
        print*,'Nemesis - LBL calculation'
       endif
       if(ilbl.eq.0)then
-       print*,'Nemesis - corr-k calculation
+       print*,'Nemesis - corr-k calculation'
        CALL readkkhead(runname,vkstart,vkend,vkstep)
       endif
       if(ilbl.eq.2)then
-       print*,'Nemesis - lbl-table calculation
+       print*,'Nemesis - lbl-table calculation'
        CALL readkklblhead(runname,vkstart,vkend,vkstep)
       endif
 
@@ -302,19 +303,40 @@ C     wavelengths in the spx file as we're calculating both WB and SB
 C     outputs
 
       if(ilbl.eq.0)then
-C     Calculate the tabulated wavelengths of c-k look up tables
-      do igeom=1,ngeom
-       nconv1=nconv(igeom)
-       do j=1,nconv1
-        vconv1(j)=vconv(igeom,j)
-       enddo
-       CALL wavesetb(runname,vkstart,vkend,vkstep,nconv1,vconv1,
+C      Calculate the tabulated wavelengths of c-k look up tables
+       do igeom=1,ngeom
+        nconv1=nconv(igeom)
+        do j=1,nconv1
+         vconv1(j)=vconv(igeom,j)
+        enddo
+        CALL wavesetb(runname,vkstart,vkend,vkstep,nconv1,vconv1,
      1  fwhm,nwave1,vwave1)
-       do j=1,nwave1
-        vwave(igeom,j)=vwave1(j)
+        do j=1,nwave1
+         vwave(igeom,j)=vwave1(j)
+        enddo
+        nwave(igeom)=nwave1
        enddo
-       nwave(igeom)=nwave1
-      enddo
+      endif
+
+      if(ilbl.eq.2)then
+       call file(runname,sfile,'sha')
+        open(13,file=sfile,status='old')
+        READ(13,*)ISHAPE
+       close(13)
+
+C      Calculate the tabulated wavelengths of lbl look up tables
+       do igeom=1,ngeom
+        nconv1=nconv(igeom)
+        do j=1,nconv1
+         vconv1(j)=vconv(igeom,j)
+        enddo
+        CALL wavesetc(runname,vkstart,vkend,vkstep,nconv1,vconv1,
+     1  fwhm,ishape,nwave1,vwave1)
+        do j=1,nwave1
+         vwave(igeom,j)=vwave1(j)
+        enddo
+        nwave(igeom)=nwave1
+       enddo
       endif
 
 C     set up a priori of x and its covariance
@@ -353,6 +375,7 @@ C     set up a priori of x and its covariance
        IPARA2=IPARA
       ENDIF
 
+      ilbl1=ilbl
 	
       call coreret(runname,ispace,iscat,ilbl,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,

@@ -27,8 +27,8 @@ C       bins, paths, etc.)
 	REAL		vwave(nwave), y(maxout), vconv(nconv),
      1			yout(maxout), ynor(maxout), f1
 	REAL		vfil(1000),fil(1000),yy,delv,hanning
-        REAL		hamming,dv,xoff,NFW,V1,V2,SIG,VCEN,V1A
-	REAL		vcentral,V2A
+        REAL		hamming,dv,xoff,NFW,V1,V2,SIG,VCEN
+	REAL		vcentral
 	CHARACTER*100	runname
 C-----------------------------------------------------------------------
 
@@ -58,18 +58,26 @@ C         Find limits of instrument width in wavenumbers
           VCEN=VCONV(J)
 
 C         Find relevant points in tabulated files.
-          V1A=-1.
+          I1=-1
+          I2=-1
           DO I=1,NWAVE
-           IF(VWAVE(I).GE.V1.AND.V1A.LT.0)THEN
+           IF(VWAVE(I).GE.V1.AND.I1.LT.0)THEN
             I1=I
-            V1A=VWAVE(I)
            ENDIF
            IF(VWAVE(I).LE.V2)THEN
             I2=I
-            V2A=VWAVE(I)
            ENDIF
           ENDDO
- 
+
+          IF(I1.LT.0.OR.I2.LT.0)THEN
+           PRINT*,'Error in lblconv1 - wavelength/wavenumber not'
+           PRINT*,'covered by lbltables'
+           STOP         
+          ENDIF 
+
+          YOUT(J)=0.
+          YNOR(J)=0.
+
           DO 102 I=I1,I2
            F1=0.
            IF(ISHAPE.EQ.0)THEN
@@ -108,7 +116,7 @@ C           Hanning Instrument Shape
 
 102       CONTINUE
 
-         YOUT(J)=YOUT(J)/YNOR(J)
+          YOUT(J)=YOUT(J)/YNOR(J)
 
 101      CONTINUE
 
@@ -134,17 +142,25 @@ C           channel requested.
              V2 = VFIL(NSUB)
 
 C            Find relevant points in tabulated files.
-             V1A=-1.
+             I1=-1
+             I2=-1
              DO I=1,NWAVE
-              IF(VWAVE(I).GE.V1.AND.V1A.LT.0)THEN
+              IF(VWAVE(I).GE.V1.AND.I1.LT.0)THEN
                I1=I
-               V1A=VWAVE(I)
               ENDIF
               IF(VWAVE(I).LE.V2)THEN
                I2=I
-               V2A=VWAVE(I)
               ENDIF
              ENDDO
+
+             IF(I1.LT.0.OR.I2.LT.0)THEN
+              PRINT*,'Error in lblconv1 - wavelength/wavenumber not'
+              PRINT*,'covered by lbltables'
+              STOP         
+             ENDIF 
+
+             YOUT(J)=0.
+             YNOR(J)=0.
 
              DO 202 I=I1,I2
 
@@ -156,6 +172,8 @@ C            Find relevant points in tabulated files.
               ENDIF
 
 202          CONTINUE
+
+             YOUT(J)=YOUT(J)/YNOR(J)
 
             endif
 

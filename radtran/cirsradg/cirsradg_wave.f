@@ -179,7 +179,7 @@ C Definition of input and output variables ...
 
 C Definition of general variables ...
       INTEGER i,j,k,l,ipath,ig,iray,ipath1,lstcel,ipath2
-      INTEGER k1,nlays,nparam
+      INTEGER k1,nlays,nparam,ILBL
       REAL ppp(maxgas),aamount(maxgas),vv
       REAL dbdt(maxlay,maxpat),bb(maxlay,maxpat)
       REAL fpara,xray
@@ -226,8 +226,11 @@ C NPK: Number of pressures in the k-table.
 C NTK: Number of temperatures in the k-table.
 C NG: Number of Gauss-Legendre ordinates in k-distribution.
       INTEGER lun(maxbin,maxgas),ireck(maxbin,maxgas) 
-
-      REAL fwhmk,delvk
+      INTEGER lunlbl(maxgas),irec0lbl,npointk,npklbl,ntklbl
+      REAL fwhmk,delvk,xminklbl,delklbl
+      REAL pklbl(maxk),tklbl(maxk),t2klbl(maxk,maxk)
+      REAL koutlbl(maxlay,maxgas)
+      REAL dkoutdtlbl(maxlay,maxgas)
 C FWHMK: Full-Width Half Maximum of the k-table.
       REAL pk(maxk),tk(maxk),tk2(maxk,maxk)
 C PK: K-table pressures [atm].
@@ -302,6 +305,10 @@ C Common blocks ...
       COMMON /dust/ vsec,xsec,nsec,ncont
       COMMON /interpk/ lun,ireck,xmink,delk,frack,pk,npk,tk,tk2,ntk,
      1 ng, delvk,fwhmk,g_ord,delg,kout,dkoutdt
+      common/interpklbl/lunlbl,irec0lbl,xminklbl,delklbl,npointk,
+     1    pklbl,npklbl,tklbl,t2klbl,ntklbl,koutlbl,dkoutdtlbl
+      common /lbltable/ILBL
+
       COMMON /scatd/ mu1,wt1,galb 
       common/alb/nalb,valb,alb
       COMMON /scatter1/ nmu,isol,dist1,lowbc,liscat,lnorm,
@@ -314,6 +321,12 @@ C********************************* CODE ********************************
 
       CALL check_limits(nlayer,npath,ngas,ncont,nsec,
      1 ng,npk,ntk,nlayin,layinc)
+
+      IF(ILBL.EQ.2)THEN
+       NG=1
+       DELG(1)=1.0
+      ENDIF
+
 
 C=======================================================================
 C
@@ -450,7 +463,12 @@ C=======================================================================
       pastint = 0.0
 
 C Read in k-coefffients for each gas and each layer
-      CALL get_kg(nlayer,press,temp,ngas,iwave,vwave)
+       IF(ILBL.EQ.0)THEN
+        CALL get_kg(nlayer,press,temp,ngas,iwave,vwave)
+       ELSE
+        CALL get_klblg(nlayer,press,temp,ngas,vwave)
+       ENDIF
+ 
  
       DO j=1,nlayer
         taucon(j) = 0.0
@@ -622,21 +640,29 @@ C=======================================================================
 
         DO k=1,ngas
           amo(k) = amount(j,k)*1.0e-20
-          IF(lun(i,k).LT.0)
-     1    THEN
+          if(ILBL.EQ.0)THEN
+           IF(lun(iwave,k).LT.0) THEN
             DO l=1,ng
               k_gn(l,k) = 0.0
               dkgndt(l,k) = 0.0
             ENDDO
-          ELSE
+           ELSE
             DO l=1,ng
               k_gn(l,k) = kout(j,k,l)
               dkgndt(l,k) = dkoutdt(j,k,l)
             ENDDO
-          ENDIF
+           ENDIF
+          else
+           if(lunlbl(k).lt.0)then
+                k_gn(1,k) = 0.0
+                dkgndt(1,k) = 0.0
+           else
+                k_gn(1,k) = koutlbl(j,k)
+                dkgndt(1,k) = dkoutdtlbl(j,k)
+           endif
+          endif
         ENDDO
 
-        idump = 0
         CALL noverlapg(idump,delg,ng,ngas,amo,k_gn,dkgndt,k_g,dkdq)
 
         DO l=1,ng

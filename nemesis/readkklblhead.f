@@ -14,7 +14,7 @@ C     ****************************************************************
       real vmin,delv,fwhm,press(MAXK),temp(MAXK)
       real vkstart,vkend,vkstep,temp2(MAXK,MAXK)
 
-      call file(runname,runname,'kls')
+      call file(runname,runname,'lls')
 1     format(a100)
 
 
@@ -23,15 +23,15 @@ C     ****************************************************************
       close(12)
 
 
-C      print*,'Reading header information from : '
-C      write(6,1)kname
+      print*,'Reading header information from : '
+      write(6,1)kname
 
       lun0 = 100
 
-      call read_klblhead(kname,lun0,npoint,vmin,delv,fwhm,vcen,
+      call read_klblhead(kname,lun0,npoint,vmin,delv,
      1  idgas,isogas,press,temp,temp2,np,nt,irec0)
-      close(100)
 
+      close(lun0)
 
       vkstep = delv
       vkstart = vmin

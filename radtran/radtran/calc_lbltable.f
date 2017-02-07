@@ -42,6 +42,7 @@ C				option to calculate k-table for spectral
 C				channels.
 C   
 C---------------------------------------------------------------------------
+C     IMPLICIT NONE
 C     note dbcom defines the linedata base variables. it is not normally stored
 C     in the same directory as the rest of the code
       INCLUDE '../includes/arrdef.f'
@@ -201,6 +202,9 @@ C      (for exoplanet k-tables)
        IREC0=10 + NP + NT + 2
       ENDIF
       PRINT*,'IREC0 = ',irec0
+      print*,IREC0,NPOINT,VMIN,DELV
+      print*,NP,NT,IDGAS(1),ISOGAS(1)
+
       WRITE(LUN0,REC=1)IREC0
       WRITE(LUN0,REC=2)NPOINT
       WRITE(LUN0,REC=3)VMIN

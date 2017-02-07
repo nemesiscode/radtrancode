@@ -150,7 +150,7 @@ C     First skip header
 
 C     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-      if(ilbl.eq.0)then
+      if(ilbl.eq.0.or.ilbl.eq.2)then
 C      Find all the calculation and convolution wavelengths and rank
 C      in order
 

@@ -136,6 +136,8 @@ C		K table variables
      2		pk(maxk), tk(maxk), g_ord(maxg), t2k(maxk,maxk), 
      3		delg(maxg), kl_g(maxg,maxlay),xminklbl,
      4		kout(maxlay,maxgas,maxg),p1,p2,frack(maxbin,maxgas)
+        REAL    dkoutdt(maxlay,maxgas,maxg)
+        REAL    dkoutdtlbl(maxlay,maxgas,maxg)   
 	REAL    pklbl(maxk),tklbl(maxk),t2klbl(maxk,maxk)
 	REAL	delvklbl,koutlbl(maxlay,maxgas),delklbl
         REAL    basehf(maxlay),basepf(maxlay),basehS(maxlay)
@@ -218,9 +220,9 @@ C       Solar reference spectrum common block
 
 	common/dust/vsec,xsec,nsec,ncont
 	common/interpk/lun, ireck, xmink, delk, frack, pk, npk, tk, 
-     1      t2k, ntk, ng, delvk, fwhmk, g_ord, delg, kout
+     1      t2k, ntk, ng, delvk, fwhmk, g_ord, delg, kout, dkoutdt
 	common/interpklbl/lunlbl,irec0lbl,xminklbl,delklbl,npointk, 
-     1    pklbl,npklbl,tklbl,t2klbl,ntklbl,koutlbl
+     1    pklbl,npklbl,tklbl,t2klbl,ntklbl,koutlbl,dkoutdtlbl
 	common/scatd/mu1, wt1, galb
 	common/scatter1/nmu, isol, dist1, lowbc, liscat, lnorm,
      1		lncons, lcons, sol_ang, emiss_ang, aphi, nf
@@ -277,6 +279,7 @@ C-----------------------------------------------------------------------
 
         IF(ILBL.EQ.2)THEN
          NG=1
+         DELG(1)=1.
         ELSE
  	  if (ng.gt.maxg) then
 		write (*,*) ' CIRSRAD_WAVE: Too many g ordinates'
@@ -567,7 +570,7 @@ C     read in k-coefffients for each gas and each layer
                 IF(ILBL.EQ.0)THEN
                   CALL GET_K(NLAYER,PRESS,TEMP,NGAS,I,X)
                 ELSE
-                  CALL GET_KLBL(NLAYER,PRESS,TEMP,NGAS,I,X)
+                  CALL GET_KLBL(NLAYER,PRESS,TEMP,NGAS,X)
                 ENDIF
 
 		DO J = 1, nlayer
@@ -875,7 +878,6 @@ C                                print*,L,j,kl_g(L,j)
 
 	        ELSE
 
-			NG=1
                         KL_G(1,J)=0.
 
 			DO K = 1, ngas
@@ -2090,15 +2092,10 @@ C-----------------------------------------------------------------------
 
 		DO Ipath = 1, npath
 			output(Ipath,I) = 0.
-                        IF(ILBL.EQ.2)THEN
+			DO Ig = 1, ng
 			 output(Ipath,I) = output(Ipath,I) + 
-     1					corkout(Ipath,1)
-                        ELSE
-			 DO Ig = 1, ng
-			  output(Ipath,I) = output(Ipath,I) + 
      1					corkout(Ipath,Ig) * delg(Ig)
-			 ENDDO
-                        ENDIF
+			ENDDO
 C		 	print*,'Ipath, I, output',Ipath,I,
 C     1				output(Ipath,I)
 		ENDDO

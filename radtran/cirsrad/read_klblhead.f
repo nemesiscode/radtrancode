@@ -43,12 +43,14 @@ C-----------------------------------------------------------------------
        PRINT*,NPOINT,MAXBIN
        STOP
       ENDIF
+      print*,IREC0,NPOINT
       READ(LUN0,REC=3)VMIN
       READ(LUN0,REC=4)DELV
       READ(LUN0,REC=5)NP
       READ(LUN0,REC=6)NT
       READ(LUN0,REC=7)IDGAS
       READ(LUN0,REC=8)ISOGAS
+      print*,NP,NT,IDGAS,ISOGAS
 
 
 C-----------------------------------------------------------------------
@@ -61,23 +63,29 @@ C-----------------------------------------------------------------------
       DO 301 J=1,NP
        READ(LUN0,REC=IREC)PRESS(J)
        PRESS(J)=LOG(PRESS(J))
+       print*,J,press(j)
        IREC=IREC+1
 301   CONTINUE
       N1=ABS(NT)
+      print*,NT,N1
       IF(NT.LT.0)THEN
        DO 307 I=1,NP
         DO 308 J=1,N1
         READ(LUN0,REC=IREC)TEMP2(I,J)
+        print*,'A',I,J,temp2(i,J)
         IREC=IREC+1 
 308     CONTINUE
 307    CONTINUE
       ELSE
        DO 302 J=1,NT
         READ(LUN0,REC=IREC)TEMP(J)
+        print*,'B',temp(j)
         IREC=IREC+1
 302    CONTINUE
       ENDIF
  
+      print*,'Hurrah'
+
       RETURN
       END
 

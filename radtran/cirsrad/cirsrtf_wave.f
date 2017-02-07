@@ -61,13 +61,15 @@ C         bins, paths, etc.)
         common/lbltable/ilbl
 
 
-        call file(opfile,sfile,'sha')
-        open(13,file=sfile,status='old')
-        READ(13,*)ISHAPE
-        close(13)
+        PRINT*,'CIRSRTF_WAVE - ILBL = ',ILBL
+        IF(ILBL.EQ.2)THEN
+         call file(opfile,sfile,'sha')
+         open(13,file=sfile,status='old')
+         READ(13,*)ISHAPE
+         close(13)
 
-        print*,'ISHAPE = ',ISHAPE
-
+         print*,'ISHAPE = ',ISHAPE
+        ENDIF
 
 C-----------------------------------------------------------------------
 C

@@ -16,7 +16,7 @@ C	pindex
 C
 C_HIST:	10feb95	PGJI	ORIGINAL VERSION
 C***************************** VARIABLES *******************************
-
+      IMPLICIT NONE
       INCLUDE '../includes/arrdef.f'
       INCLUDE '../includes/bincom.f'
       INCLUDE '../includes/dbcom.f'
@@ -24,10 +24,13 @@ C NOTE: dbcom defines the linedata base variables. it is not normally
 C stored in the same directory as the rest of the code
       INCLUDE '../includes/pathcom.f'
 
-      INTEGER LUN,LUN0
+      INTEGER LUN,LUN0,IRECL,ISYS
       PARAMETER (LUN=2,LUN0=30)
 
-      INTEGER PINDEX,CP,CT,IPFORM
+      INTEGER PINDEX,CP,CT,IPFORM,I,J,K
+      REAL U,U2,Y1,Y2,Y3,Y4,VV,PMAX,PMIN,TMAX,TMIN,X
+      REAL V,KABS
+      INTEGER NP,NT,N1
 
       INTEGER IREC,IREC0,CT2
       REAL P1,T1,PRESS1(MAXK),TEMP1(MAXK),VCEN(MAXBIN)

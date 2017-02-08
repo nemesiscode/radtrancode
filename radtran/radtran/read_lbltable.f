@@ -142,7 +142,12 @@ C            print*,j,k,irec,table(j,k)
        CP = PINDEX(PRESS1,NP,P1)
        IF(CP.LT.1)CP=1
        IF(CP.GE.NP)CP=NP-1
-       V = (P1 - PRESS1(CP))/(PRESS1(CP+1) - PRESS1(CP))
+       IF(NP.EQ.1)THEN
+        CP=1
+        V=0.
+       ELSE
+        V = (P1 - PRESS1(CP))/(PRESS1(CP+1) - PRESS1(CP))
+       ENDIF
 
        WRITE(*,*)'Pressure index CP,NP = ',CP,NP
        WRITE(*,*)'P,P(CP),P(CP+1)=',P1,PRESS1(CP),PRESS1(CP+1)
@@ -168,9 +173,13 @@ C            print*,j,k,irec,table(j,k)
          CT = PINDEX(TEMP1,NT,T1)
          IF(CT.LT.1)CT=1
          IF(CT.GE.NT)CT=NT-1
-
+         IF(NT.EQ.1)THEN
+          CT=1
+          U=0.
+         ELSE
+          U = (T1 - TEMP1(CT))/(TEMP1(CT+1) - TEMP1(CT))
+         ENDIF
          WRITE(*,*)'temperature index CT,NT = ',CT,NT
-         U = (T1 - TEMP1(CT))/(TEMP1(CT+1) - TEMP1(CT))
          WRITE(*,*)'T,T(CT),T(CT+1)=',T1,TEMP1(CT),TEMP1(CT+1)
          WRITE(*,*)'(T1 - TEMP1(CT))/(TEMP1(CT+1) - TEMP1(CT)) = ',
      &    U
@@ -186,7 +195,12 @@ C            print*,j,k,irec,table(j,k)
          CT = PINDEX(TN,ABS(NT),TX)
          IF(CT.LT.1)CT=1
          IF(CT.GE.ABS(NT))CT=ABS(NT)-1
-         U = (TX - TN(CT))/(TN(CT+1) - TN(CT))
+         IF(ABS(NT).EQ.1)THEN
+          CT=1
+          U=0.
+         ELSE
+          U = (TX - TN(CT))/(TN(CT+1) - TN(CT))
+         ENDIF
 
          WRITE(*,*)'temperature index CT,NT = ',CT,ABS(NT)
          WRITE(*,*)'T,T(CP,CT),T(CP,CT+1)=',TX,TEMP2(CP,CT),
@@ -213,7 +227,6 @@ C            print*,j,k,irec,table(j,k)
 
        ENDIF
        WRITE(*,*)' '
-       WRITE(*,*)'    G_ORD    |      K_G     |   K_G*26850'
 
        IF(TABLE(CP,CT).GT.0.0)THEN
           IF(NT.GT.0)THEN
@@ -239,7 +252,7 @@ C            print*,j,k,irec,table(j,k)
           KABS=0.
 
        ENDIF
-       WRITE(*,*)KABS
+       WRITE(*,*)'KABS = ',KABS
 
        OPEN(12,FILE='read_table.dat',status='unknown')
         WRITE(12,*)NP,ABS(NT)

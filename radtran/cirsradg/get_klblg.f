@@ -1,4 +1,4 @@
-      SUBROUTINE GET_KG(NLAYER,PRESS,TEMP,NGAS,VWAVE)
+      SUBROUTINE GET_KLBLG(NLAYER,PRESS,TEMP,NGAS,VWAVE)
 C***********************************************************************
 C_TITL:	GET_KG
 C
@@ -15,9 +15,9 @@ C	NGAS		INTEGER	Number of gases.
 C	VWAVE		REAL	Desired 'calculation' wavenumber.
 C
 C	Output variables (via common block):
-C	KOUT(NLAYER,NGAS,NG)	REAL	K-coefficients for each layer and
+C	KOUT(NLAYER,NGAS)	REAL	K-coefficients for each layer and
 C					each gas.	
-C	DKOUTDT(NLAYER,NGAS,NG)	REAL	Rate of change of the above
+C	DKOUTDT(NLAYER,NGAS)	REAL	Rate of change of the above
 C					k-coefficients with temperature.
 C
 C_FILE:	No files openned.
@@ -49,7 +49,7 @@ C The input and output variables ...
 
 
 C General variables ...
-      INTEGER NP,NT,NG,CP,CT,I,I1,I2,I3,I4,J,N1,NX
+      INTEGER NP,NT,CP,CT,I,I1,I2,I3,I4,J,N1,NX
 C NP: Number of k-table pressures.
 C NT: Number of k-table temperatures.
 C NG: Number of ordinates in k-distribution.
@@ -178,27 +178,34 @@ C       between platforms.
 C       Set minimum closeness to tabulated wavenumbers to be 1/50 of
 C       the separation to be considered aligned.
         eps = 0.02*delv
+C        eps = 0.99*delv
 
-        n1 = INT((vwave + eps - vmin)/delv)
-        if(n1.lt.0.or.n1.gt.npoint)then
+        n1 = 1+INT((vwave + eps - vmin)/delv)
+        if(n1.lt.1.or.n1.gt.npoint)then
          print*,'Wavelength/wavenumber is out of range'
          print*,vwave,vmin,vmin+(npoint-1)*delv
         endif
-        vwavex = VMIN + (N1-1)*DELV
-        XT = ABS(vwave - vwavex)
-        IF(XT.GT.EPS)THEN
-          print*,'Wavenumber does not match'
-          print*,vwave,vwavex
-          stop
-        ENDIF
-
+C        vwavex = VMIN + (N1-1)*DELV
+C        XT = ABS(vwave - vwavex)
+C        IF(XT.GT.EPS)THEN
+C          print*,'Wavenumber does not match'
+C          print*,vmin,delv,n1
+C          print*,vwave,vwavex,xt,eps,delv
+C          stop
+C        ENDIF
+C        if(vwave.eq.12.096)then
+C         print*,'VWAVE ',VWAVE,VWAVEX
+C         print*,'VWAVE',vmin,delv,vwave,n1,irec
+C        endif
         irec = irec0 + np*abs(nt)*(n1-1)
-
-        NTAB = ABS(NT)*NG
+        NTAB = ABS(NT)
         KTEST=0.0   
-
+C        print*,'NTAB,KTEST,IREC',NTAB,KTEST,IREC
         DO I=1,NTAB
          READ(LUN0,REC=IREC)TABLE(I) 
+C         if(vwave.eq.12.096)then
+C          print*,'LUN0,IGAS',LUN0,IGAS,IREC,I,TABLE(I)
+C         endif
          IF(TABLE(I).GT.0.0)THEN
           KTEST=TABLE(I)
           GOTO 202
@@ -211,6 +218,7 @@ C       the separation to be considered aligned.
         IF(KTEST.EQ.0.0)THEN
           WRITE(*,*)'GET_KBLG :: Zero k-data for GAS: ',IGAS
           WRITE(*,*)'Wavelength/Wavenumber = ',VWAVE
+C          if(VWAVE.EQ.12.096)print*,'VWAVE,IREC = ',VWAVE,IREC
           DO ilayer=1,NLAYER
               KOUT(ilayer,IGAS) = 0.0
               DKOUTDT(ilayer,IGAS) = 0.0
@@ -224,6 +232,8 @@ C       the separation to be considered aligned.
           ENDDO
         ENDIF
 
+C        print*,'IGAS,KTEST ',IGAS,KTEST
+        
 C       Now interpolate k-coefficients for conditions in each layer
         DO 1050 ilayer=1,NLAYER
           U = UT(ilayer)
@@ -291,9 +301,10 @@ C       Now interpolate k-coefficients for conditions in each layer
      1        PRESS(ILAYER),TEMP(ILAYER)
             STOP
           ENDIF
+C          print*,ilayer,press(ilayer),temp(ilayer),igas,
+C     1     kout(ilayer,igas)
 
 1050    CONTINUE
-
  999    CONTINUE
 
 1000  CONTINUE

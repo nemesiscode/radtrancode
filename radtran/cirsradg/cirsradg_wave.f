@@ -463,12 +463,13 @@ C=======================================================================
       pastint = 0.0
 
 C Read in k-coefffients for each gas and each layer
-       IF(ILBL.EQ.0)THEN
+      IF(ILBL.EQ.0)THEN
         CALL get_kg(nlayer,press,temp,ngas,iwave,vwave)
-       ELSE
+      ELSE
         CALL get_klblg(nlayer,press,temp,ngas,vwave)
-       ENDIF
+      ENDIF
  
+      print*,'OK here'  
  
       DO j=1,nlayer
         taucon(j) = 0.0
@@ -660,21 +661,19 @@ C=======================================================================
                 k_gn(1,k) = koutlbl(j,k)
                 dkgndt(1,k) = dkoutdtlbl(j,k)
            endif
+           print*,K,k_gn(1,k)
           endif
         ENDDO
 
-        CALL noverlapg(idump,delg,ng,ngas,amo,k_gn,dkgndt,k_g,dkdq)
+        IF(ILBL.EQ.0)THEN
+         CALL noverlapg(idump,delg,ng,ngas,amo,k_gn,dkgndt,k_g,
+     1    dkdq)
+        ELSE
+         CALL noverlapg1(idump,delg,ng,ngas,amo,k_gn,dkgndt,k_g,
+     1    dkdq)
+         print*,'K_G : ',k_g(1)
+        ENDIF
 
-        DO l=1,ng
-          kl_g(l,j) = k_g(l)
-C Need to correct for the 1e20 term again to get the right gradient with
-C absorber amount.
-          DO k=1,ngas
-            dkdql(l,k,j) = dkdq(l,k)*1.0e-20 
-          ENDDO
-C Temperature
-          dkdql(l,ngas+1,j) = dkdq(l,ngas+1) 
-        ENDDO
       ENDDO
 
 C=======================================================================

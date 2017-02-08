@@ -18,6 +18,7 @@ F_SOURCES= \
 	map2pro.f \
 	map2xvec.f \
 	noverlapg.f \
+	noverlapg1.f \
 	rankg.f \
 	rankk.f \
 	sort2g.f \

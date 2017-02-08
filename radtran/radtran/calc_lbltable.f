@@ -120,8 +120,11 @@ C     **** all these are now defined by zgauleg.f ***
       READ*,NP
       CALL PROMPT('Enter log(pmin), log(pmax) : ')
       READ*,PMIN,PMAX
-      DP=(PMAX-PMIN)/(NP-1)
-
+      IF(NP.GT.1)THEN
+       DP=(PMAX-PMIN)/(NP-1)
+      ELSE
+       DP=0.
+      ENDIF
       DO 5 J=1,NP
         X=PMIN + (J-1)*DP
         PRESS1(J)=EXP(X)
@@ -135,8 +138,11 @@ C     **** all these are now defined by zgauleg.f ***
       IF(NT.GT.0.AND.NT.LE.MAXK)THEN
        CALL PROMPT('Enter Tmin, Tmax : ')
        READ*,TMIN,TMAX
-       DT=(TMAX-TMIN)/(NT-1)
-
+       IF(NT.GT.1)THEN
+        DT=(TMAX-TMIN)/(NT-1)
+       ELSE
+        DT=0.
+       ENDIF
        DO 6 J=1,NT
          TEMP1(J)=TMIN + (J-1)*DT
          PRINT*,J,TEMP1(J)
@@ -274,11 +280,11 @@ C          Read in temperature specific linedata file.
             PRINT*,'Continuum. J,K = ',J,K,' P = ',P1,' T = ',
      & 	    TE1
    
-cc            WRITE(*,*)'CALLING lbl_kcont'
+C            WRITE(*,*)'CALLING lbl_kcont'
             CALL LBL_KCONT(VMIN1,VMAX1,WING,VREL,P1,TE1,
      1      IDGAS(1),ISOGAS(1),FRAC1,IPROC(1),J,K,MAXDV,IPTF,IEXO)
-cc            WRITE(*,*)'lbl_kcont COMPLETE'
-cc            WRITE(*,*)' '
+C            WRITE(*,*)'lbl_kcont COMPLETE'
+C            WRITE(*,*)' '
 
 105      CONTINUE
 102   CONTINUE
@@ -332,6 +338,7 @@ C            defined by lbl_kcont.f)
 
              DO I=1,NPOINT
               IREC=IREC0 + (I-1)*NP*N1+(J-1)*N1+K-1
+C              print*,I,VMIN+(I-1)*DELV,IREC0,IREC,OUTPUT(I)
               WRITE(LUN0,REC=IREC)OUTPUT(I)
              ENDDO
 

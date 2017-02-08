@@ -310,6 +310,7 @@ C coefficients held in CONTINK.
         TAUTMP = TAUTMP + CONTINK(ISUM,IP,IT,CURBIN)*VTMP
         VTMP = VTMP*VTMP
 51    CONTINUE
+C      print*,'v,tautmp = ',v,tautmp
 
 C The text within the IF statement below should probably be kept
 C commented-out unless you are specifically debugging for errors. I make
@@ -354,6 +355,7 @@ C=======================================================================
 
 C Compute absorption coefficient for normal incidence
         DO 52 LINE=FSTLIN(JBIN),LSTLIN(JBIN)
+C          print*,'jbin,line,vline',jbin,line,vlin(line)
           DV=vlin(line)-v
           IF(ABS(DV).LE.MAXDV)THEN
            X  = abs(vlin(line)-v)/ad_arr(line)

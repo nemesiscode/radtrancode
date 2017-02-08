@@ -198,14 +198,12 @@ C         print*,'VWAVE ',VWAVE,VWAVEX
 C         print*,'VWAVE',vmin,delv,vwave,n1,irec
 C        endif
         irec = irec0 + np*abs(nt)*(n1-1)
-        NTAB = ABS(NT)
-        KTEST=0.0   
-C        print*,'NTAB,KTEST,IREC',NTAB,KTEST,IREC
+        NTAB = ABS(NT)*NP
+        KTEST=0.0 
+C        print*,'VWAVE,N1,LUN0',VWAVE,N1,LUN0  
+C        print*,'IREC0,NTAB,IREC',IREC0,NTAB,IREC
         DO I=1,NTAB
          READ(LUN0,REC=IREC)TABLE(I) 
-C         if(vwave.eq.12.096)then
-C          print*,'LUN0,IGAS',LUN0,IGAS,IREC,I,TABLE(I)
-C         endif
          IF(TABLE(I).GT.0.0)THEN
           KTEST=TABLE(I)
           GOTO 202

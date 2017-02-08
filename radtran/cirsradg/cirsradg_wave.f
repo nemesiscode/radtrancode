@@ -661,8 +661,14 @@ C=======================================================================
                 k_gn(1,k) = koutlbl(j,k)
                 dkgndt(1,k) = dkoutdtlbl(j,k)
            endif
-           print*,K,k_gn(1,k)
           endif
+
+C          if(ng.eq.1)then
+C             print*,K,k_gn(1,k)
+C          else
+C             print*,K,k_gn(ng/2,k)
+C          endif
+
         ENDDO
 
         IF(ILBL.EQ.0)THEN
@@ -671,9 +677,25 @@ C=======================================================================
         ELSE
          CALL noverlapg1(idump,delg,ng,ngas,amo,k_gn,dkgndt,k_g,
      1    dkdq)
-         print*,'K_G : ',k_g(1)
         ENDIF
 
+
+        DO l=1,ng
+          kl_g(l,j) = k_g(l)
+C Need to correct for the 1e20 term again to get the right gradient with
+C absorber amount.
+          DO k=1,ngas
+            dkdql(l,k,j) = dkdq(l,k)*1.0e-20
+          ENDDO
+C Temperature
+          dkdql(l,ngas+1,j) = dkdq(l,ngas+1)
+        ENDDO
+C        if(ng.eq.1)then
+C         print*,'K',J,press(J),kl_g(1,j)
+C        else
+C         print*,'K',J,press(J),kl_g(ng/2,j)
+C        endif
+C        stop
       ENDDO
 
 C=======================================================================
@@ -693,7 +715,7 @@ C=======================================================================
       DO ig=1,ng
         DO j=1,nlayer
           tautmp(j) = taucon(j) + kl_g(ig,j) 
-C          print*,j,taucon(j),kl_g(ig,j),tautmp(j)
+C          print*,j,press(j),taucon(j),kl_g(ig,j),tautmp(j)
 C Continuum component to gradients:
           DO k=1,nparam
             dtautmpdq(j,k) = dtaucondq(j,k)

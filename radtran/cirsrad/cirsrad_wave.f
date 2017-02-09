@@ -627,11 +627,11 @@ C-----------------------------------------------------------------------
      1					nsec, x, tau2)
 
 				if(tau.lt.0)then
-             			 print*,'tau lt 0: Particle type ',K
-                                 print*,nsec,vsec(1),vsec(nsec)
-                                 print*,nsec,asec(1),asec(nsec)
-                                 print*,x,tau
-                                 print*,'Do linear interpolation'
+C             			 print*,'tau lt 0: Particle type ',K
+C                                 print*,nsec,vsec(1),vsec(nsec)
+C                                 print*,nsec,asec(1),asec(nsec)
+C                                 print*,x,tau
+C                                 print*,'Do linear interpolation'
                                  jf=-1
                                  do l=1,nsec-1
                          if(x.ge.vsec(l).and.x.lt.vsec(l+1))then
@@ -642,20 +642,20 @@ C-----------------------------------------------------------------------
                                  enddo
                                  if(x.le.vsec(1))tau=asec(1)
                                  if(x.ge.vsec(nsec))tau=asec(nsec)
-                                 print*,'new tau ',tau
-				 if(jf.gt.0)then
-                                  print*,jf,vsec(jf),vsec(jf+1),xf
-                                  print*,asec(jf),asec(jf+1)
-                                 endif
+C                                 print*,'new tau ',tau
+C				 if(jf.gt.0)then
+C                                  print*,jf,vsec(jf),vsec(jf+1),xf
+C                                  print*,asec(jf),asec(jf+1)
+C                                 endif
                                 endif
 
 
 				if(tau2.lt.0)then
-             			 print*,'tau2 lt 0: Particle type ',K
-                                 print*,nsec,vsec(1),vsec(nsec)
-                                 print*,nsec,bsec(1),bsec(nsec)
-                                 print*,x,tau2
-                                 print*,'Do linear interpolation'
+C              			  print*,'tau2 lt 0: Particle type ',K
+C                                 print*,nsec,vsec(1),vsec(nsec)
+C                                 print*,nsec,bsec(1),bsec(nsec)
+C                                 print*,x,tau2
+C                                 print*,'Do linear interpolation'
                                  jf=-1
                                  do l=1,nsec-1
                          if(x.ge.vsec(l).and.x.lt.vsec(l+1))then
@@ -666,11 +666,11 @@ C-----------------------------------------------------------------------
                                  enddo
                                  if(x.le.vsec(1))tau2=bsec(1)
                                  if(x.ge.vsec(nsec))tau2=bsec(nsec)
-                                 print*,'new tau2 ',tau2
-				 if(jf.gt.0)then
-				  print*,jf,vsec(jf),vsec(jf+1),xf
-				  print*,bsec(jf),bsec(jf+1)
-				 endif
+C                                 print*,'new tau2 ',tau2
+C				 if(jf.gt.0)then
+C				  print*,jf,vsec(jf),vsec(jf+1),xf
+C				  print*,bsec(jf),bsec(jf+1)
+C				 endif
                                 endif
 
                                 if(cont(K,J).lt.0)then

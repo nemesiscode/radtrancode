@@ -311,9 +311,16 @@ C get convoluted spectra.
            ygt(iwave) = tempgtsurf(ioff1)
         ENDDO		
 
-        CALL cirsconv(runname,fwhm1,nwave,vwave,y,nconv,vconv,yout)	
-        CALL cirsconv(runname,fwhm1,nwave,vwave,ygt,nconv,vconv,
-     1			youtgt)	
+        if(Ilbl.eq.0)then
+         CALL cirsconv(runname,fwhm1,nwave,vwave,y,nconv,vconv,yout)	
+         CALL cirsconv(runname,fwhm1,nwave,vwave,ygt,nconv,vconv,
+     1			youtgt)
+        else
+         CALL lblconv1(runname,fwhm1,ishape,nwave,vwave,y,nconv,
+     1     vconv,yout)	
+         CALL lblconv1(runname,fwhm1,ishape,nwave,vwave,ygt,nconv,
+     1     vconv,youtgt)
+        endif
         DO iconv=1,nconv
           ioff1 = nconv*(ipath - 1) + iconv
           calcout(ioff1) = yout(iconv)
@@ -328,7 +335,12 @@ C     1     gradtsurf(ioff1)
             y(iwave) = tgrad(ioff2)
           ENDDO
 
-          CALL cirsconv(runname,fwhm1,nwave,vwave,y,nconv,vconv,yout)
+          if(ilbl.eq.0)then
+           CALL cirsconv(runname,fwhm1,nwave,vwave,y,nconv,vconv,yout)
+          else
+           CALL lblconv1(runname,fwhm1,ishape,nwave,vwave,y,nconv,
+     1      vconv,yout)
+          endif
 
           DO iconv=1,nconv
             ioff2 = nconv*nv*(ipath - 1) + (iv - 1)*nconv + iconv

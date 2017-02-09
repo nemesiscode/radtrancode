@@ -14,9 +14,11 @@ F_SOURCES= \
 	cirsradg_wave.f \
 	close_scat.f \
         get_kg.f \
+        get_klblg.f \
 	map2pro.f \
 	map2xvec.f \
 	noverlapg.f \
+	noverlapg1.f \
 	rankg.f \
 	rankk.f \
 	sort2g.f \

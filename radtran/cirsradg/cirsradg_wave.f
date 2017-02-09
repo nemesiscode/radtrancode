@@ -179,7 +179,7 @@ C Definition of input and output variables ...
 
 C Definition of general variables ...
       INTEGER i,j,k,l,ipath,ig,iray,ipath1,lstcel,ipath2
-      INTEGER k1,nlays,nparam
+      INTEGER k1,nlays,nparam,ILBL
       INTEGER jnh3,jch4,jh2,jhe,igas
       REAL ppp(maxgas),aamount(maxgas),vv
       REAL dbdt(maxlay,maxpat),bb(maxlay,maxpat)
@@ -228,8 +228,11 @@ C NPK: Number of pressures in the k-table.
 C NTK: Number of temperatures in the k-table.
 C NG: Number of Gauss-Legendre ordinates in k-distribution.
       INTEGER lun(maxbin,maxgas),ireck(maxbin,maxgas) 
-
-      REAL fwhmk,delvk
+      INTEGER lunlbl(maxgas),irec0lbl,npointk,npklbl,ntklbl
+      REAL fwhmk,delvk,xminklbl,delklbl
+      REAL pklbl(maxk),tklbl(maxk),t2klbl(maxk,maxk)
+      REAL koutlbl(maxlay,maxgas)
+      REAL dkoutdtlbl(maxlay,maxgas)
 C FWHMK: Full-Width Half Maximum of the k-table.
       REAL pk(maxk),tk(maxk),t2k(maxk,maxk)
 C PK: K-table pressures [atm].
@@ -304,6 +307,10 @@ C Common blocks ...
       COMMON /dust/ vsec,xsec,nsec,ncont
       COMMON /interpk/ lun,ireck,xmink,delk,frack,pk,npk,tk,t2k,ntk,
      1 ng, delvk,fwhmk,g_ord,delg,kout,dkoutdt
+      common/interpklbl/lunlbl,irec0lbl,xminklbl,delklbl,npointk,
+     1    pklbl,npklbl,tklbl,t2klbl,ntklbl,koutlbl,dkoutdtlbl
+      common /lbltable/ILBL
+
       COMMON /scatd/ mu1,wt1,galb 
       common/alb/nalb,valb,alb
       COMMON /scatter1/ nmu,isol,dist1,lowbc,liscat,lnorm,
@@ -316,6 +323,12 @@ C********************************* CODE ********************************
 
       CALL check_limits(nlayer,npath,ngas,ncont,nsec,
      1 ng,npk,ntk,nlayin,layinc)
+
+      IF(ILBL.EQ.2)THEN
+       NG=1
+       DELG(1)=1.0
+      ENDIF
+
 
 C=======================================================================
 C
@@ -477,7 +490,13 @@ C=======================================================================
       pastint = 0.0
 
 C Read in k-coefffients for each gas and each layer
-      CALL get_kg(nlayer,press,temp,ngas,iwave,vwave)
+      IF(ILBL.EQ.0)THEN
+        CALL get_kg(nlayer,press,temp,ngas,iwave,vwave)
+      ELSE
+        CALL get_klblg(nlayer,press,temp,ngas,vwave)
+      ENDIF
+ 
+      print*,'OK here'  
  
       DO j=1,nlayer
         taucon(j) = 0.0
@@ -664,33 +683,61 @@ C=======================================================================
 
         DO k=1,ngas
           amo(k) = amount(j,k)*1.0e-20
-          IF(lun(i,k).LT.0)
-     1    THEN
+          if(ILBL.EQ.0)THEN
+           IF(lun(iwave,k).LT.0) THEN
             DO l=1,ng
               k_gn(l,k) = 0.0
               dkgndt(l,k) = 0.0
             ENDDO
-          ELSE
+           ELSE
             DO l=1,ng
               k_gn(l,k) = kout(j,k,l)
               dkgndt(l,k) = dkoutdt(j,k,l)
             ENDDO
-          ENDIF
+           ENDIF
+          else
+           if(lunlbl(k).lt.0)then
+                k_gn(1,k) = 0.0
+                dkgndt(1,k) = 0.0
+           else
+                k_gn(1,k) = koutlbl(j,k)
+                dkgndt(1,k) = dkoutdtlbl(j,k)
+           endif
+          endif
+
+C          if(ng.eq.1)then
+C             print*,K,k_gn(1,k)
+C          else
+C             print*,K,k_gn(ng/2,k)
+C          endif
+
         ENDDO
 
-        idump = 0
-        CALL noverlapg(idump,delg,ng,ngas,amo,k_gn,dkgndt,k_g,dkdq)
+        IF(ILBL.EQ.0)THEN
+         CALL noverlapg(idump,delg,ng,ngas,amo,k_gn,dkgndt,k_g,
+     1    dkdq)
+        ELSE
+         CALL noverlapg1(idump,delg,ng,ngas,amo,k_gn,dkgndt,k_g,
+     1    dkdq)
+        ENDIF
+
 
         DO l=1,ng
           kl_g(l,j) = k_g(l)
 C Need to correct for the 1e20 term again to get the right gradient with
 C absorber amount.
           DO k=1,ngas
-            dkdql(l,k,j) = dkdq(l,k)*1.0e-20 
+            dkdql(l,k,j) = dkdq(l,k)*1.0e-20
           ENDDO
 C Temperature
-          dkdql(l,ngas+1,j) = dkdq(l,ngas+1) 
+          dkdql(l,ngas+1,j) = dkdq(l,ngas+1)
         ENDDO
+C        if(ng.eq.1)then
+C         print*,'K',J,press(J),kl_g(1,j)
+C        else
+C         print*,'K',J,press(J),kl_g(ng/2,j)
+C        endif
+C        stop
       ENDDO
 
 C=======================================================================
@@ -710,7 +757,7 @@ C=======================================================================
       DO ig=1,ng
         DO j=1,nlayer
           tautmp(j) = taucon(j) + kl_g(ig,j) 
-C          print*,j,taucon(j),kl_g(ig,j),tautmp(j)
+C          print*,j,press(j),taucon(j),kl_g(ig,j),tautmp(j)
 C Continuum component to gradients:
           DO k=1,nparam
             dtautmpdq(j,k) = dtaucondq(j,k)

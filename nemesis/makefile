@@ -32,8 +32,10 @@ F_SOURCES = \
 	modxvecMCMCA.f \
 	modxvecMCMC.f \
 	wavesetb.f \
+	wavesetc.f \
 	mod_scatter.f \
 	readkkhead.f \
+	readkklblhead.f \
 	forwarderr.f \
 	forwardavfovX.f \
 	forwardavfovMCS.f \

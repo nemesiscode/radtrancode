@@ -817,6 +817,7 @@ C          print*,'Calculating fine structure. VV,Layer = ',VV,J
 
 	  tautmp(J) = taucon(J) + xk
 	  taugas(J) = taugasc(J) + xk
+C          print*,J,press(j),taucon(j),xk,tautmp(j)
 
       	ENDDO
    

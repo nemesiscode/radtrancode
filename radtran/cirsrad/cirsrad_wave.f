@@ -117,7 +117,7 @@ C		Passed variables
      6		eoutput(npath,nwave)
         REAL    vem(MAXSEC),emissivity(MAXSEC),interpem
         REAL	xmu,dtr,xt1,radextra
-        INTEGER ifc(limcont,nlayer),nem,j0,jnh3,jch4,jh2,jhe
+        INTEGER ifc(limcont,nlayer),nem,j0,jnh3,jch4,jh2,jhe,ILBL
 
 	REAL	XCOM,XNEXT,FPARA,vv,XRAY,RAYLEIGHJ,RAYLEIGHA,RAYLEIGHV
         REAL    RAYLEIGHLS,fheh2,fch4h2,fh2,fhe,fch4,fnh3
@@ -129,18 +129,22 @@ C		Dust variables
 C		K table variables
 
 	INTEGER	lun(maxbin,maxgas), ireck(maxbin,maxgas), lun0, irec0, 
-     1		npk, ntk, ng, intmod(maxbin,maxgas), ntab
+     1		npk, ntk, ng, intmod(maxbin,maxgas), ntab,
+     2		lunlbl(maxgas),npklbl,ntklbl
 	REAL	xmink(maxbin,maxgas), delk(maxbin,maxgas), xmin, delx, 
      1		k_g(maxg), k_g1(maxg), k_g2(maxg), q1, q2, 
      2		pk(maxk), tk(maxk), g_ord(maxg), t2k(maxk,maxk), 
-     3		delg(maxg), kl_g(maxg,maxlay),
+     3		delg(maxg), kl_g(maxg,maxlay),xminklbl,
      4		kout(maxlay,maxgas,maxg),p1,p2,frack(maxbin,maxgas)
-
+        REAL    dkoutdt(maxlay,maxgas,maxg)
+        REAL    dkoutdtlbl(maxlay,maxgas,maxg)   
+	REAL    pklbl(maxk),tklbl(maxk),t2klbl(maxk,maxk)
+	REAL	delvklbl,koutlbl(maxlay,maxgas),delklbl
         REAL    basehf(maxlay),basepf(maxlay),basehS(maxlay)
         REAL    scaleS(maxlay),Jsource(maxlay),delhs(maxlay)
 C		Scattering variables
 
-	INTEGER	liscat(maxcon), isol, nmu, lowbc, 
+	INTEGER	liscat(maxcon), isol, nmu, lowbc, npointk,
      1          lncons(maxcon), ibaseH(maxlay),
      2		kf,nf, lnorm(maxcon), itype
 	REAL	lfrac(maxcon,maxlay), solar, pi, theta0, dist, 
@@ -161,6 +165,7 @@ C		Scattering variables
 C		Internal variables
 
 	INTEGER	I, J, K, L, Ipath, Ig, nlays, lstcel,Jpath
+	INTEGER irec0lbl
 	REAL	utotl(maxlay), qh(maxlay), qhe(maxlay),
      1		frac(maxlay,maxgas), qh_he(maxlay), dist1,
      2		x, taucon(maxlay)
@@ -200,6 +205,7 @@ C		Misc variables or continuum variables
         integer jtrace(maxlay),startlay,npathLOS,ipzen,icont
         integer jtraceLOS(maxlay),npathsol,JLAY,ILAY,KLAY
         common/defang/ipzen
+        common/lbltable/ILBL
 
         INTEGER LUNIS,IRECL,IOFF,NLAYERF,NMUF,NWAVEF,NGF,IFLUX,NFF
         integer fintrad,first
@@ -214,7 +220,9 @@ C       Solar reference spectrum common block
 
 	common/dust/vsec,xsec,nsec,ncont
 	common/interpk/lun, ireck, xmink, delk, frack, pk, npk, tk, 
-     1      t2k, ntk, ng, delvk, fwhmk, g_ord, delg, kout
+     1      t2k, ntk, ng, delvk, fwhmk, g_ord, delg, kout, dkoutdt
+	common/interpklbl/lunlbl,irec0lbl,xminklbl,delklbl,npointk, 
+     1    pklbl,npklbl,tklbl,t2klbl,ntklbl,koutlbl,dkoutdtlbl
 	common/scatd/mu1, wt1, galb
 	common/scatter1/nmu, isol, dist1, lowbc, liscat, lnorm,
      1		lncons, lcons, sol_ang, emiss_ang, aphi, nf
@@ -269,17 +277,30 @@ C-----------------------------------------------------------------------
 		stop
 	endif
 
-	if (ng.gt.maxg) then
+        IF(ILBL.EQ.2)THEN
+         NG=1
+         DELG(1)=1.
+        ELSE
+ 	  if (ng.gt.maxg) then
 		write (*,*) ' CIRSRAD_WAVE: Too many g ordinates'
 		write (*,*) ' Ng = ',ng,' Maxg = ',maxg
 		stop
-	endif
+	  endif
+        ENDIF
 
 	if ((npk.gt.maxk).or.(abs(ntk).gt.maxk)) then
 		write (*,*) ' CIRSRAD_WAVE: Too many P/T points in K',
      1			' tables' 
 		write (*,*) ' Npk = ',npk,' Maxk = ',maxk
 		write (*,*) ' Ntk = ',ntk,' Maxk = ',maxk
+		stop
+	endif
+
+	if ((npklbl.gt.maxk).or.(abs(ntklbl).gt.maxk)) then
+		write (*,*) ' CIRSRAD_WAVE: Too many P/T points in K',
+     1			' tables' 
+		write (*,*) ' Npklbl = ',npklbl,' Maxk = ',maxk
+		write (*,*) ' Ntklbl = ',ntklbl,' Maxk = ',maxk
 		stop
 	endif
 
@@ -359,8 +380,11 @@ C       Set flag for code to read in modified PHASE*.DAT files if required
 
 c	Isec = min(4,nsec)
 
-	ntab = npk * abs(ntk) * ng
-
+        if(ng.gt.1)then
+ 	 ntab = npk * abs(ntk) * ng
+        else
+         ntab = npklbl*abs(ntklbl)
+        endif
 C-----------------------------------------------------------------------
 C
 C	Precompute volume fractions. The factor of 1e-20 applied to
@@ -570,12 +594,18 @@ C-----------------------------------------------------------------------
 		pastint = 0.
 
 C     read in k-coefffients for each gas and each layer
-                CALL GET_K(NLAYER,PRESS,TEMP,NGAS,I,X)
+                IF(ILBL.EQ.0)THEN
+                  CALL GET_K(NLAYER,PRESS,TEMP,NGAS,I,X)
+                ELSE
+                  CALL GET_KLBL(NLAYER,PRESS,TEMP,NGAS,X)
+                ENDIF
+
  
                 FNH3=0.
                 FH2=0.
                 FHe=0.
                 FCH4=0.
+
 		DO J = 1, nlayer
 		 taucon(J) = 0.
 		 taugasc(J) = 0.
@@ -635,11 +665,11 @@ C-----------------------------------------------------------------------
      1					nsec, x, tau2)
 
 				if(tau.lt.0)then
-             			 print*,'tau lt 0: Particle type ',K
-                                 print*,nsec,vsec(1),vsec(nsec)
-                                 print*,nsec,asec(1),asec(nsec)
-                                 print*,x,tau
-                                 print*,'Do linear interpolation'
+C             			 print*,'tau lt 0: Particle type ',K
+C                                 print*,nsec,vsec(1),vsec(nsec)
+C                                 print*,nsec,asec(1),asec(nsec)
+C                                 print*,x,tau
+C                                 print*,'Do linear interpolation'
                                  jf=-1
                                  do l=1,nsec-1
                          if(x.ge.vsec(l).and.x.lt.vsec(l+1))then
@@ -650,20 +680,20 @@ C-----------------------------------------------------------------------
                                  enddo
                                  if(x.le.vsec(1))tau=asec(1)
                                  if(x.ge.vsec(nsec))tau=asec(nsec)
-                                 print*,'new tau ',tau
-				 if(jf.gt.0)then
-                                  print*,jf,vsec(jf),vsec(jf+1),xf
-                                  print*,asec(jf),asec(jf+1)
-                                 endif
+C                                 print*,'new tau ',tau
+C				 if(jf.gt.0)then
+C                                  print*,jf,vsec(jf),vsec(jf+1),xf
+C                                  print*,asec(jf),asec(jf+1)
+C                                 endif
                                 endif
 
 
 				if(tau2.lt.0)then
-             			 print*,'tau2 lt 0: Particle type ',K
-                                 print*,nsec,vsec(1),vsec(nsec)
-                                 print*,nsec,bsec(1),bsec(nsec)
-                                 print*,x,tau2
-                                 print*,'Do linear interpolation'
+C              			  print*,'tau2 lt 0: Particle type ',K
+C                                 print*,nsec,vsec(1),vsec(nsec)
+C                                 print*,nsec,bsec(1),bsec(nsec)
+C                                 print*,x,tau2
+C                                 print*,'Do linear interpolation'
                                  jf=-1
                                  do l=1,nsec-1
                          if(x.ge.vsec(l).and.x.lt.vsec(l+1))then
@@ -674,11 +704,11 @@ C-----------------------------------------------------------------------
                                  enddo
                                  if(x.le.vsec(1))tau2=bsec(1)
                                  if(x.ge.vsec(nsec))tau2=bsec(nsec)
-                                 print*,'new tau2 ',tau2
-				 if(jf.gt.0)then
-				  print*,jf,vsec(jf),vsec(jf+1),xf
-				  print*,bsec(jf),bsec(jf+1)
-				 endif
+C                                 print*,'new tau2 ',tau2
+C				 if(jf.gt.0)then
+C				  print*,jf,vsec(jf),vsec(jf+1),xf
+C				  print*,bsec(jf),bsec(jf+1)
+C				 endif
                                 endif
 
                                 if(cont(K,J).lt.0)then
@@ -838,7 +868,9 @@ C	summed K coefficients. End the loop over each layer.
 C
 C-----------------------------------------------------------------------
 
-			DO K = 1, ngas
+
+        	IF(ILBL.EQ.0)THEN
+	  	  DO K = 1, ngas
 C                         print*,'I,K',I,K,lun(I,K)
 			 IF (lun(I,K).LT.0) THEN
 				DO L = 1, ng
@@ -883,16 +915,27 @@ C                                if(q1.gt.0)then leave k_g unchanged.
 				q1 = q1 + q2
 C                                print*,'CC',q1,k_g(5)
 			 ENDIF
-			ENDDO
 
 C                        print*,'Final'
-			DO K = 1, ng
-				kl_g(K,J) = k_g(K)
-C                                print*,k,j,kl_g(k,j)
+			DO L = 1, ng
+				kl_g(L,J) = k_g(L)
+C                                print*,L,j,kl_g(L,j)
 			ENDDO
-		ENDDO
+		  ENDDO
 
+	        ELSE
 
+                        KL_G(1,J)=0.
+
+			DO K = 1, ngas
+
+                         KL_G(1,J)=KL_G(1,J)+KOUTLBL(J,K)*FRAC(J,K)
+
+			ENDDO
+
+	        ENDIF
+
+        ENDDO
 C-----------------------------------------------------------------------
 C
 C	For each bin, we must step over each g-ordinate.
@@ -2100,7 +2143,6 @@ C-----------------------------------------------------------------------
 			 output(Ipath,I) = output(Ipath,I) + 
      1					corkout(Ipath,Ig) * delg(Ig)
 			ENDDO
-
 C		 	print*,'Ipath, I, output',Ipath,I,
 C     1				output(Ipath,I)
 		ENDDO

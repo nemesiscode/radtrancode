@@ -69,6 +69,7 @@ F_SOURCES = \
 	lbl_kcont.f \
 	lbl_kdists.f \
 	lbl_fknew.f \
+	lbl_know.f \
 	loadbins.f \
 	malkmus_lor.f \
 	ml_lacis.f \
@@ -145,6 +146,7 @@ bin :   \
 	Aground \
 	Ave_table \
 	Calc_fnktablec \
+	Calc_lbltable \
 	Aband_ktable \
 	Aband_ktablec \
 	Conv_spec \
@@ -157,6 +159,7 @@ bin :   \
 	Zerotable \
 	Radtrans \
 	Read_table \
+	Read_lbltable \
 	Concat_table \
 	Concat_table_temperature \
 	Cut_table \
@@ -175,6 +178,11 @@ Ave_table : ave_table.f $(LIBRARY) $(LIB)/spec_data.a
 
 Calc_fnktablec : calc_fnktablec.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Calc_fnktablec calc_fnktablec.f $(LIBRARY) \
+	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
+	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a
+
+Calc_lbltable : calc_lbltable.f $(LIBRARY) $(LIB)/spec_data.a
+	$(FC) $(FCFLAGS) -o $(BIN)/Calc_lbltable calc_lbltable.f $(LIBRARY) \
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
 	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a
 
@@ -239,6 +247,11 @@ Radtrans : radtrans.f $(LIBRARY) $(LIB)/spec_data.a
 
 Read_table : read_table.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Read_table read_table.f $(LIBRARY) \
+	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
+	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/ciatable.a
+
+Read_lbltable : read_lbltable.f $(LIBRARY) $(LIB)/spec_data.a
+	$(FC) $(FCFLAGS) -o $(BIN)/Read_lbltable read_lbltable.f $(LIBRARY) \
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
 	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/ciatable.a
 

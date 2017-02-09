@@ -87,7 +87,7 @@ C     NTAB1: = NPATH*NWAVE, must be less than maxout3
 C     NTAB2: = NPATH*NWAVE*NV, must be less than maxout4.
       INTEGER nwave,i,j,nparam,jj,icont,nconv
 
-      INTEGER itype1,npath1,ispace,nem
+      INTEGER itype1,npath1,ispace,nem,ILBL,ishape
       REAL fwhm1,vem(maxsec),emissivity(maxsec),tsurf
       real gtsurf(maxpat)
       REAL RADIUS1
@@ -108,7 +108,7 @@ C     XCOMP: % complete printed in increments of 10.
       REAL calcout(maxout3),gradients(maxout4)
       REAL xmap(maxv,maxgas+2+maxcon,maxpro)
       REAL y(maxout),yout(maxout),vv,ygt(maxout),youtgt(maxout)
-      CHARACTER*100 drvfil,radfile,xscfil,runname
+      CHARACTER*100 drvfil,radfile,xscfil,runname,sfile
       CHARACTER*100 klist
       INTEGER iwave,ipath,k,igas,ioff1,ioff2,iv,nv
       REAL zheight(maxpro),radextra
@@ -117,7 +117,19 @@ C     XCOMP: % complete printed in increments of 10.
 
 C     Need simple way of passing planetary radius to nemesis
       INCLUDE '../includes/planrad.f'
+      common/lbltable/ilbl
+
 C     ************************* CODE ***********************
+
+      PRINT*,'CIRSRTF_WAVE - ILBL = ',ILBL
+      IF(ILBL.EQ.2)THEN
+         call file(runname,sfile,'sha')
+         open(13,file=sfile,status='old')
+         READ(13,*)ISHAPE
+         close(13)
+
+         print*,'ISHAPE = ',ISHAPE
+      ENDIF
 
 
 C Call subpathg to create layers, paths and the driver file.
@@ -126,11 +138,26 @@ C	  MOLWTX = XXMOLWT
       npath1 = npath           ! npath is initilised in subpathg, set to
                                ! npath1 here so that it can be passed out
 
-C Read the ktables.
-      CALL file (runname, klist, 'kls')
-      WRITE(*,1050)klist
+C Read the ktables or lbltables
 
-      CALL read_klist(klist,ngas,idgas,isogas,nwave,vwave)
+      IF(ILBL.EQ.0)THEN
+         CALL file (opfile, klist, 'kls')
+         WRITE(*,1050)klist
+
+         WRITE(*,*)'     CALLING read_klist'
+         CALL read_klist (klist, ngas, idgas, isogas, nwave, vwave)
+         WRITE(*,*)'     read_klist COMPLETE'
+         WRITE(*,*)' '
+      ELSE
+         CALL file (opfile, klist, 'lls')
+         WRITE(*,1050)klist
+
+         WRITE(*,*)'     CALLING read_klbllist'
+         CALL read_klbllist (klist, ngas, idgas, isogas, nwave, vwave)
+         WRITE(*,*)'     read_klist COMPLETE'
+         WRITE(*,*)' '
+      ENDIF
+
 
 C Now read the scattering files if required.
       scatterf = .FALSE.
@@ -284,9 +311,16 @@ C get convoluted spectra.
            ygt(iwave) = tempgtsurf(ioff1)
         ENDDO		
 
-        CALL cirsconv(runname,fwhm1,nwave,vwave,y,nconv,vconv,yout)	
-        CALL cirsconv(runname,fwhm1,nwave,vwave,ygt,nconv,vconv,
-     1			youtgt)	
+        if(Ilbl.eq.0)then
+         CALL cirsconv(runname,fwhm1,nwave,vwave,y,nconv,vconv,yout)	
+         CALL cirsconv(runname,fwhm1,nwave,vwave,ygt,nconv,vconv,
+     1			youtgt)
+        else
+         CALL lblconv1(runname,fwhm1,ishape,nwave,vwave,y,nconv,
+     1     vconv,yout)	
+         CALL lblconv1(runname,fwhm1,ishape,nwave,vwave,ygt,nconv,
+     1     vconv,youtgt)
+        endif
         DO iconv=1,nconv
           ioff1 = nconv*(ipath - 1) + iconv
           calcout(ioff1) = yout(iconv)
@@ -301,7 +335,12 @@ C     1     gradtsurf(ioff1)
             y(iwave) = tgrad(ioff2)
           ENDDO
 
-          CALL cirsconv(runname,fwhm1,nwave,vwave,y,nconv,vconv,yout)
+          if(ilbl.eq.0)then
+           CALL cirsconv(runname,fwhm1,nwave,vwave,y,nconv,vconv,yout)
+          else
+           CALL lblconv1(runname,fwhm1,ishape,nwave,vwave,y,nconv,
+     1      vconv,yout)
+          endif
 
           DO iconv=1,nconv
             ioff2 = nconv*nv*(ipath - 1) + (iv - 1)*nconv + iconv

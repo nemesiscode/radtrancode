@@ -223,6 +223,7 @@ C     a simple menu list is used to ensure program will work anywhere
       WRITE(*,433)
       WRITE(*,434)
       WRITE(*,435)
+      WRITE(*,438)
       WRITE(*,436)
       WRITE(*,437)
       WRITE(*,2010)
@@ -240,6 +241,8 @@ C     a simple menu list is used to ensure program will work anywhere
 77    FORMAT(' L - add temperature offset tp T - profile')
 50    FORMAT(' Q - quit')
 435   FORMAT(' M - multiply vmr profile by constant')
+438   FORMAT(' N - create new profile by multiplying existing profile
+     & by constant')
 433   FORMAT(' I - multiply pressure by const (e.g. scale bar-atm)')
 434   FORMAT(' P - output IDL compatable profile data')
 436   FORMAT(' G - Map profile on to new pressure grid')
@@ -519,6 +522,30 @@ C --------------------------------------------------------------------
         DO 610 I=1,NPRO
          VMR(I,NCONV)=VMR(I,NCONV)*VMRCONV
 610     CONTINUE
+
+        IF(AMFORM.EQ.1)THEN
+         ISCALE(NCONV)=0
+         CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
+         IF(IERR.EQ.1)THEN
+             PRINT*,'Warning: A VMR has gone negative'
+         ENDIF
+        ENDIF
+
+C --------------------------------------------------------------------
+      ELSE IF(COMM.EQ.'N')THEN
+        CALL PROMPT('Enter exisiting vmr profile number : ')
+        READ*,NCONV
+        CALL PROMPT('Enter constant : ')
+        READ*,VMRCONV
+
+	CALL PROMPT('enter new gas and isotope identifier')
+	NVMR=NVMR+1
+	READ(*,*)ID(NVMR),ISO(NVMR)
+        IF(AMFORM.EQ.1)ISCALE(NVMR)=1
+
+        DO 622 I=1,NPRO
+         VMR(I,NVMR)=VMR(I,NCONV)*VMRCONV
+622     CONTINUE
 
         IF(AMFORM.EQ.1)THEN
          ISCALE(NCONV)=0

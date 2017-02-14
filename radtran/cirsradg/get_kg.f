@@ -229,8 +229,8 @@ C         by read_klist.f
         IREC=IRECX
 
         IF(KTEST.EQ.0.0)THEN
-          WRITE(*,*)'GET_KG :: Zero k-data for GAS: ',IGAS
-          WRITE(*,*)'Wavelength/Wavenumber = ',VWAVE
+C          WRITE(*,*)'GET_KG :: Zero k-data for GAS: ',IGAS
+C          WRITE(*,*)'Wavelength/Wavenumber = ',VWAVE
           DO ilayer=1,NLAYER
             DO I=1,NG
               KOUT(ilayer,IGAS,I) = 0.0

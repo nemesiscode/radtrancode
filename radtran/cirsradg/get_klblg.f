@@ -193,7 +193,6 @@ C          print*,vmin,delv,n1
 C          print*,vwave,vwavex,xt,eps,delv
 C          stop
 C        ENDIF
-C        if(vwave.eq.12.096)then
 C         print*,'VWAVE ',VWAVE,VWAVEX
 C         print*,'VWAVE',vmin,delv,vwave,n1,irec
 C        endif
@@ -214,9 +213,8 @@ C        print*,'IREC0,NTAB,IREC',IREC0,NTAB,IREC
 202     CONTINUE
 
         IF(KTEST.EQ.0.0)THEN
-          WRITE(*,*)'GET_KBLG :: Zero k-data for GAS: ',IGAS
-          WRITE(*,*)'Wavelength/Wavenumber = ',VWAVE
-C          if(VWAVE.EQ.12.096)print*,'VWAVE,IREC = ',VWAVE,IREC
+C          WRITE(*,*)'GET_KBLG :: Zero k-data for GAS: ',IGAS
+C          WRITE(*,*)'Wavelength/Wavenumber = ',VWAVE
           DO ilayer=1,NLAYER
               KOUT(ilayer,IGAS) = 0.0
               DKOUTDT(ilayer,IGAS) = 0.0

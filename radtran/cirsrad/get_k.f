@@ -138,8 +138,8 @@ C         by read_klist.f
          IREC=IRECX
 
          IF(KTEST.EQ.0.0)THEN
-          print*,'GET_K: Zero k-data for GAS: ',IGAS
-          print*,'Wavelength/waveumber = ',VWAVE
+c          print*,'GET_K: Zero k-data for GAS: ',IGAS
+c          print*,'Wavelength/waveumber = ',VWAVE
           DO LAYER=1,NLAYER
            DO I=1,NG
             KOUT(LAYER,IGAS,I)=0.0

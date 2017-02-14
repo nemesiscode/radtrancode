@@ -110,8 +110,8 @@ C         ENDIF
 202      CONTINUE
 
          IF(KTEST.EQ.0.0)THEN
-          print*,'GET_K: Zero k-data for GAS: ',IGAS
-          print*,'Wavelength/waveumber = ',VWAVE
+C          print*,'GET_K: Zero k-data for GAS: ',IGAS
+C          print*,'Wavelength/waveumber = ',VWAVE
           DO LAYER=1,NLAYER
             KOUT(LAYER,IGAS)=0.0
           ENDDO

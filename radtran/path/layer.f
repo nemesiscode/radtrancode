@@ -20,6 +20,7 @@ C
 C_END:
 C--------------------------------------------------------------
       CHARACTER TEXT*(*)
+      CHARACTER*100 HEADER
 C--------------------------------------------------------------
 C     Variables to hold calculated layers and the details of each paths and
 C     calculation requested.
@@ -168,6 +169,29 @@ C       splitting by equal distance
         BASEH(I)=SQRT(SIN2A*(Z0)**2+(S+COSA*(Z0))**2)
      1  -RADIUS
 105     CONTINUE
+       ELSE IF(LAYTYP.EQ.4)THEN
+C       splitting by reading in set of base pressures.
+        OPEN(12,FILE='pressure.lay',STATUS='old')
+C        Read in one line of header
+         READ(12,1)HEADER
+C        Overwrite NLAY
+         READ(12,*)NLAY
+         DO 106 I=1,NLAY
+          READ(12,*)PNOW
+          CALL VERINT(P,H,NPRO,BASEH(I),PNOW)
+106      CONTINUE
+        CLOSE(12)
+       ELSE IF(LAYTYP.EQ.5)THEN
+C       splitting by reading in set of base heights.
+        OPEN(12,FILE='height.lay',STATUS='old')
+C        Read in one line of header
+         READ(12,1)HEADER
+C        Overwrite NLAY
+         READ(12,*)NLAY
+         DO 107 I=1,NLAY
+          READ(12,*)BASEH(I)
+107      CONTINUE
+        CLOSE(12)
        ELSE
         WRITE(*,102)
 102     FORMAT(' no code for tangent layer type')

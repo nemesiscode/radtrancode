@@ -73,7 +73,7 @@ C DUDS: Number of molecules per cm2 per km along the path
       REAL HEIGHT,VMR1,X,DELS,stmp,XMOLWT,CALCMOLWT,XVMR(MAXGAS)
 
       CHARACTER*(*) TEXT
-
+      CHARACTER*100 HEADER
 C********************************* CODE ********************************
 
 C Setting defaults for the layer parameters defined in laycom.f
@@ -191,6 +191,32 @@ C Splitting by equal distance
           S = FLOAT(I-1)*SMAX/FLOAT(NLAY)
           BASEH(I) = SQRT(SIN2A*(Z0)**2 + (S + COSA*(Z0))**2) -RADIUS
 105     CONTINUE
+
+       ELSE IF(LAYTYP.EQ.4)THEN
+C Splitting by reading in set of base pressures.
+        OPEN(12,FILE='pressure.lay',STATUS='old')
+C        Read in one line of header
+         READ(12,1)HEADER
+C        Overwrite NLAY
+         READ(12,*)NLAY
+         DO 106 I=1,NLAY
+          READ(12,*)PNOW
+          CALL VERINT(P,H,NPRO,BASEH(I),PNOW)
+106      CONTINUE
+        CLOSE(12)
+
+       ELSE IF(LAYTYP.EQ.5)THEN
+C Splitting by reading in set of base heights.
+        OPEN(12,FILE='height.lay',STATUS='old')
+C        Read in one line of header
+         READ(12,1)HEADER
+C        Overwrite NLAY
+         READ(12,*)NLAY
+         DO 107 I=1,NLAY
+          READ(12,*)BASEH(I)
+107      CONTINUE
+        CLOSE(12)
+
       ELSE
 
         WRITE(*,*)' LAYERG.f :: Error: no code for tangent layer type.'

@@ -1,4 +1,4 @@
-58
+59
 # *****************************************************************
 # Data for solar system planets extracted from Astronomical Almanac 1994, pE88
 # *****************************************************************
@@ -60,7 +60,8 @@
 55  model5.5 231720.9     0.0      0.0      0.0  69911.0   0.0    100000.0        0
 56  model3.5   2317.2     0.0      0.0      0.0  69911.0   0.0    100000.0        0
 57  WASP-52b    873.45    0.0      0.0      0.0  90794.8   0.0    100000.0        0
-58  WFIRSTa    1467.20    0.0      0.0      0.0  69911.00  0.0    100000.0        0
+58  WFIRSTa    1467.20    0.0      0.0      0.0  69911.0   0.0    100000.0        0
+59  UpsAnde    3038.08    0.0      0.0      0.0  62919.9   0.0    100000.0        0
 # Notes. Some disagreement of radius of HD189733b. Originally set here to be 79021.71 
 # from somewhere, but this was based on an older estimate of the star radius. Current
 # estimate of plan size (via Wikipedia) is 81357.9 km, but this is still not quite 

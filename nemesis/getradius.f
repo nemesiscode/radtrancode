@@ -47,6 +47,7 @@ C        print*,'D',(VARIDENT(IVAR,J),J=1,3),NP
         IF(VARIDENT(IVAR,1).EQ.223)NP=9
         IF(VARIDENT(IVAR,1).EQ.224)NP=9
         IF(VARIDENT(IVAR,1).EQ.225)NP=11
+        IF(VARIDENT(IVAR,1).EQ.226)NP=8
        ENDIF
 
 C       print*,'B',NP,XN(NXTEMP+1:NXTEMP+NP)

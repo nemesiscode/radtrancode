@@ -52,6 +52,7 @@ F_SOURCES = \
 	gwritepat.f \
 	gwritepatsrom.f \
 	extractsrom.f \
+	extracttwocloud.f \
 	calc_serr.f \
 	writeout.f \
 	calcfwderr.f \

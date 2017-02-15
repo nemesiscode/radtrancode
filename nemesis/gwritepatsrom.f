@@ -134,15 +134,20 @@ C     sol_ang is then the tangent altitude)
       IF(IFLAGSROM.GE.222.AND.IFLAGSROM.LE.223)THEN
        WRITE(31,1)'ncomplayer'
       ELSE
-       IF(IFLAGSROM.EQ.224)THEN
-        WRITE(31,1)'ncomplayerA'
+       IF(IFLAGSROM.EQ.225)THEN
+        WRITE(31,1)'ncomplayerB'
        ELSE
-        WRITE(31,1)'ncomplayerB'   
+        WRITE(31,1)'ncomplayer'   
        ENDIF  
       ENDIF
       nlayg=4
       nlaybot=4
       nlaytop=5
+      if(iflagsrom.eq.226)then
+        nlayg=2
+        nlaybot=10
+        nlaytop=20
+      endif
       write(31,2)'nlayg ',nlayg
       write(31,2)'nlaybot ',nlaybot
       write(31,2)'nlaytop ',nlaytop

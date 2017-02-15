@@ -2353,7 +2353,13 @@ C          ENDIF
 C         ENDDO
 
          NP = 11
+        ELSEIF(VARIDENT(IVAR,1).EQ.226)THEN
+C         print*,'Two cloud layering'
+         IPAR = -1
+         NP = 8
+
         ELSE
+
          PRINT*,'SUBPROFRETG: VARTYPE NOT RECOGNISED'
          STOP
         ENDIF

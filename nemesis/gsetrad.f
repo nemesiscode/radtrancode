@@ -301,7 +301,7 @@ C      ***************** Tangent height correction ***********
        endif
 
        iflagtest=varident(ivar,1)
-       if(iflagtest.ge.222.and.iflagtest.le.225)then
+       if(iflagtest.ge.222.and.iflagtest.le.226)then
         iflagcloud=.true.
         iflagsrom=iflagtest
        endif
@@ -313,10 +313,16 @@ C     See if Sromovsky cloud layer model is specified.
 
       if(iflagcloud)then
 
-        call extractsrom(runname,iflagsrom,nvar,varident,
+        if(iflagsrom.ne.226)then
+         call extractsrom(runname,iflagsrom,nvar,varident,
      1    varparam,nx,xn,ncloud,cpbot,cptop,nlaycloud,codepth,
      2    cfsh,cwid,pmeth)
-          
+        else
+         call extracttwocloud(runname,iflagsrom,nvar,varident,
+     1    varparam,nx,xn,ncloud,cpbot,cptop,nlaycloud,codepth,
+     2    cfsh)
+        endif 
+        
        print*,'Calling gwritepatsrom - ncloud = ',ncloud
        call gwritepatsrom(runname,gasgiant,iscat,sol_ang,
      1  emiss_ang,nconv,vconv,fwhm,layht,nlayer,
@@ -414,6 +420,7 @@ C     Compute the drv file to get the aerosol optical depths
           if(varident(ivar,1).eq.223)np = 9
           if(varident(ivar,1).eq.224)np = 9
           if(varident(ivar,1).eq.225)np = 11
+          if(varident(ivar,1).eq.226)np = 8
 
          endif
 
@@ -452,6 +459,7 @@ C       check that rescaling has happened correctly
        if(varident(ivar,1).eq.223)np = 9
        if(varident(ivar,1).eq.224)np = 9
        if(varident(ivar,1).eq.225)np = 11
+       if(varident(ivar,1).eq.226)np = 8
           
 
        if(varident(ivar,1).eq.444)then

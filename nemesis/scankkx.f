@@ -65,6 +65,7 @@ C     **************************** CODE ********************************
          if(varidentx(ivarx,1).eq.223)np = 9
          if(varidentx(ivarx,1).eq.224)np = 9
          if(varidentx(ivarx,1).eq.225)np = 11
+         if(varidentx(ivarx,1).eq.226)np = 8
          if(varidentx(ivarx,1).eq.999)np = 1
          if(varidentx(ivarx,1).eq.888)np = int(varparamx(ivarx,1))
          if(varidentx(ivarx,1).eq.444)np = 2+int(varparamx(ivarx,1))

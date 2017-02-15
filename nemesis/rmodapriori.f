@@ -85,6 +85,7 @@ C             dx=xamp*err(ix+i)
             if(varident(ivar,1).eq.223)np = 9
             if(varident(ivar,1).eq.224)np = 9
             if(varident(ivar,1).eq.225)np = 11
+            if(varident(ivar,1).eq.226)np = 8
             
 
             do i=1,np

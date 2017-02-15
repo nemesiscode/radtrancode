@@ -504,6 +504,7 @@ C       Test to see if any vmrs have gone negative.
          if(varident(ivar,1).eq.223)np = 9
          if(varident(ivar,1).eq.224)np = 9
          if(varident(ivar,1).eq.225)np = 11
+         if(varident(ivar,1).eq.226)np = 8
 
          do j=ix,ix+np-1
           if(varident(ivar,1).eq.0)then

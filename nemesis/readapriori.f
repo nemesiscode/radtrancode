@@ -1516,6 +1516,69 @@ C           read in haze p1,p2,p3,n1,n2
 
             nx = nx+11
 
+C **************** Two Cloud Model  ***************
+           elseif(varident(ivar,1).eq.226)then
+C           **** Simple two cloud model *******
+
+C           LTC base pressure
+            ix = nx+1
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           LTC top pressure
+            ix = nx+2
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           LTC fsh
+            ix = nx+3
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           LTC opacity
+            ix = nx+4
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+
+C           UTC base pressure
+            ix = nx+5
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           UTC top pressure
+            ix = nx+6
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           UTC fsh
+            ix = nx+7
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           UTC opacity
+            ix = nx+8
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+            nx = nx+8
+
            else
             print*,'vartype not recognised'
             stop

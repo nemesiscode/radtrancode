@@ -242,7 +242,7 @@ C because the error is seemingly small.
       open(12,file=opfile,form='unformatted',status='unknown')
 
       write(12) temps
-      write(12) k
+      write(12) kcia
       close(12)
 
       end

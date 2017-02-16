@@ -74,6 +74,7 @@ C      enddo
       print*,'W1,W2',W1,W2
       print*,'X1,X2,DELX',X1,X2,X2-X1  
       CALL FINDLOC(WAVEIN,NPOINT,X1,X2,IS1,IS2)
+      print*,'Intermediate IS1, IS2 = ',IS1,IS2
       IS1 = MAX(1,IS1-2)
       IS2 = MIN(NPOINT,IS2+2)
 

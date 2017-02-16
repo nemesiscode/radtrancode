@@ -41,6 +41,8 @@ C-----------------------------------------------------------------------
      1		(y2.gt.xtop))) then
 		I1 = 0
 		I2 = 0
+                print*,'findloc : ',xbot,xtop,y1,y2
+                print*,'Abort'
 		goto 10
 	endif
 

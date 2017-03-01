@@ -55,11 +55,19 @@ C-----------------------------------------------------------------------
         kabs = table(k,2) + frac*(table(k+1,2)-table(k,2))
 
 C       LutzOwen data in units of m-1 amagat-1
+C       1 amagat = 2.6867805e25 molecule/m3
+C       Therefore 1 m-amagat = 2.6867805e25 molecule/m2
+C       Therefore 1 m-amagat = 2.6867805e21 molecule/cm2 
+C       therefore 1 (m-1 amagat-1) = 3.72193e-22 cm2/molecule
+C       therefore 1 (m-1 amagat-1) = 3.72193e-2 (1e20) cm2/molecule
+C       Check - 1000/26850 = 0.0372439, which is the same.
+
         nh3cont = 1000*kabs/26850.0	! Convert to units of 1e20 cm2/mol 
 
 C       For some reason seem to need extra factor of 10 to make this
-C       consistent with Bowles data at longer wavelengths
-        nh3cont=nh3cont*10.
+C       consistent with Bowles data at longer wavelengths. This seems odd
+C       and may indicate misunderstanding of Bowles Data.
+C        nh3cont=nh3cont*10.
 
 	return
 

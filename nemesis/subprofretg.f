@@ -2121,6 +2121,10 @@ C        no atmospheric mapping
 C         print*,'Surface albedo spectrum'
          IPAR = -1
          NP = INT(VARPARAM(IVAR,1))
+        ELSEIF(VARIDENT(IVAR,1).EQ.887)THEN
+C         print*,'Cloud x-section spectrum'
+         IPAR = -1
+         NP = INT(VARPARAM(IVAR,1))
         ELSEIF(VARIDENT(IVAR,1).EQ.889)THEN
 C         print*,'Surface albedo spectrum multiplier'
          IPAR = -1

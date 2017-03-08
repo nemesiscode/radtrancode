@@ -269,6 +269,7 @@ C     Read in forward modelling errors
            np=npvar(varident(ivar,3).eq.0,npro)
          endif
          if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
+         if(varident(ivar,1).eq.887)np = int(varparam(ivar,1))
          if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
          if(varident(ivar,1).eq.222)np = 8
          if(varident(ivar,1).eq.223)np = 9
@@ -284,6 +285,7 @@ C     Read in forward modelling errors
              npx=npvar(varidentx(ivarx,3),npro)
            endif
            if(varidentx(ivarx,1).eq.888)npx = int(varparamx(ivarx,1))
+           if(varidentx(ivarx,1).eq.887)npx = int(varparamx(ivarx,1))
            if(varidentx(ivarx,1).eq.444)npx = 2+int(varparamx(ivarx,1))
 
            if(varidentx(ivarx,1).eq.0.and.npx.eq.npro)then

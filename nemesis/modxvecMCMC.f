@@ -163,6 +163,12 @@ C         **** Surface albedo spectrum of planet *******
             do i=1,np
              xn(ix+i)=x0(ix+i)+err(ix+i)*gasdev1(idum)
             enddo
+          elseif(varident(ivar,3).eq.887)then  
+C         **** cloud x-section spectrum  *******
+            np = int(varparam(ivar,1))
+            do i=1,np
+             xn(ix+i)=x0(ix+i)+err(ix+i)*gasdev1(idum)
+            enddo
           elseif(varident(ivar,3).eq.444)then  
 C         **** Particle refractive index spectrum *******
             np = 2+int(varparam(ivar,1))

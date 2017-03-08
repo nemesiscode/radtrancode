@@ -417,6 +417,7 @@ C     Compute the drv file to get the aerosol optical depths
 
           np=1
           if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
+          if(varident(ivar,1).eq.887)np = int(varparam(ivar,1))
           if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
           if(varident(ivar,1).eq.222)np = 8
           if(varident(ivar,1).eq.223)np = 9
@@ -457,6 +458,7 @@ C       check that rescaling has happened correctly
            np=npvar(varident(ivar,3),npro)
        endif
        if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
+       if(varident(ivar,1).eq.887)np = int(varparam(ivar,1))
        if(varident(ivar,1).eq.222)np = 8
        if(varident(ivar,1).eq.223)np = 9
        if(varident(ivar,1).eq.224)np = 9

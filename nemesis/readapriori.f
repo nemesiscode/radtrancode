@@ -1670,6 +1670,7 @@ C     the mass using the a priori log(g) AND radius
           npx=npvar(varidentx(ivarx,3),npro)
         endif
         if(varidentx(ivarx,1).eq.888)npx=int(varparamx(ivarx,1))
+        if(varidentx(ivarx,1).eq.887)npx=int(varparamx(ivarx,1))
         if(varidentx(ivarx,1).eq.444)npx=2+int(varparamx(ivarx,1))
      
         ioff=0
@@ -1679,6 +1680,7 @@ C     the mass using the a priori log(g) AND radius
            np=npvar(varident(ivar,3),npro)
          endif
          if(varident(ivar,1).eq.888)np=int(varparam(ivar,1))
+         if(varident(ivar,1).eq.887)np=int(varparam(ivar,1))
          if(varident(ivar,1).eq.444)np=2+int(varparam(ivar,1))
 
 

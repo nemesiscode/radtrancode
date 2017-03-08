@@ -97,8 +97,9 @@ C******************************** CODE *********************************
 C        We have now run past the end of buffer 1 and need to read in a 
 C        new load of lines
 C        Pass back flag  
-         print*,IBIN,B1,F1,L1
-         IFCONT = 1
+C         print*,IBIN,IBX,IB,F1,L1,B1
+C         IFCONT = 1
+C        Error arose while doing LBL simulations in visible range. Problem not yet fixed properly.
         ENDIF
 
         IF(F1.GT.0) THEN

@@ -1,8 +1,8 @@
       subroutine coreretMCS(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
-     2  gasgiant,lin,lpre,nvar,varident,varparam,jsurf,jalb,jtan,
-     3  jpre,jrad,jlogg,marsradius,satrad,thetrot,altbore,wgeom,flat,
-     4  nx,lx,xa,sa,ny,y,se1,xn,sm,sn,st,yn,kk,aa,dd)
+     2  gasgiant,lin,lpre,nvar,varident,varparam,jsurf,jalb,jxsc,
+     3  jtan,jpre,jrad,jlogg,marsradius,satrad,thetrot,altbore,wgeom,
+     4  flat,nx,lx,xa,sa,ny,y,se1,xn,sm,sn,st,yn,kk,aa,dd)
 C     $Id:
 C     ******************************************************************
 C
@@ -47,6 +47,8 @@ C	jsurf		integer	Position of surface temperature element in
 C				xa (if included)
 C       jalb            integer Position of surface albedo spectrum in
 C                               xa (if included)
+C       jxsc            integer Position of x-section spectrum in
+C                               xa (if included)
 C       jtan            integer Position of tangent height correction in
 C                               xa (if included)
 C       jpre            integer Position of tangent pressure in
@@ -85,7 +87,7 @@ C     Set measurement vector and source vector lengths here.
       INCLUDE 'arraylen.f'
       integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,jsurf
       integer jalb,jalbx,jtan,jpre,jtanx,jprex,iscat1,i1,k1
-      integer jrad,jradx,lx(mx),jlogg,jloggx
+      integer jrad,jradx,lx(mx),jlogg,jloggx,jxsc,jxscx
       real phlimit,alambda,xtry,tphi
       integer xflag,ierr,ncont,flagh2p,npro1,jpara
       real xdnu,xmap(maxv,maxgas+2+maxcon,maxpro)
@@ -204,7 +206,7 @@ C     Load state vector with a priori
 
        if(lin.eq.1)then
         call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,varparamx,
-     1   jsurfx,jalbx,jtanx,jprex,jradx,jloggx,nxx,xnx,stx)
+     1   jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,nxx,xnx,stx)
 
         xdiff = abs(xlat-xlatx)
         if(xdiff.gt.lat_tolerance)then
@@ -231,7 +233,7 @@ C     Load state vector with a priori
 
 C       Write out x-data to temporary .str file for later routines.
         call writextmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1   nxx,xnx,stx,jsurfx,jalbx,jtanx,jprex,jradx,jloggx)
+     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
 
        else
 C       substituting and retrieving parameters from .pre file.
@@ -239,7 +241,7 @@ C       Current record frrom .pre file already read in by
 C       readapriori.f. Hence just read in from temporary .str file
 
         call readxtmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1   nxx,xnx,stx,jsurfx,jalbx,jtanx,jprex,jradx,jloggx)
+     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
        
        endif
 
@@ -260,14 +262,14 @@ C      Place holder, setting viewing parameters to default.
        if(iscat.eq.0)then
         CALL forwardavfovMCS(runname,ispace,fwhm,xlat,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
-     2   nvarx,varidentx,varparamx,jsurfx,jalbx,jtanx,jprex,
+     2   nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
      3   marsradiusx,satradx,thetrotx,altborex,nxx,xnx,ny,ynx,kkx)
 
        elseif(iscat.eq.2)then
 
         CALL forwardnogMCS(runname,ispace,iscat1,fwhm,xlat,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
-     2   nvarx,varidentx,varparamx,jsurfx,jalbx,jtanx,jprex,
+     2   nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
      3   marsradiusx,satradx,thetrotx,altborex,nxx,xnx,ny,ynx,kkx,
      4   kiter)
 
@@ -343,14 +345,14 @@ C       enddo
 
        CALL forwardavfovMCS(runname,ispace,fwhm,xlat,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,marsradius,
-     3   satrad,thetrot,altbore,nx,xn,ny,yn,kk)
+     2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
+     3   marsradius,satrad,thetrot,altbore,nx,xn,ny,yn,kk)
 
       elseif(iscat.eq.2)then
 
        CALL forwardnogMCS(runname,ispace,iscat1,fwhm,xlat,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,marsradius,
+     2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,marsradius,
      3   satrad,thetrot,altbore,nx,xn,ny,yn,kk,kiter)
 
       else
@@ -452,13 +454,13 @@ C       temporary kernel matrix kk1. Does it improve the fit?
 
         CALL forwardavfovMCS(runname,ispace,fwhm,xlat,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
-     2     lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,
+     2     lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
      3     marsradius,satrad,thetrot,altbore,nx,xn1,ny,yn1,kk1)
 
         elseif(iscat.eq.2)then
           CALL forwardnogMCS(runname,ispace,iscat1,fwhm,xlat,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,
+     2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
      3     marsradius,satrad,thetrot,altbore,nx,xn1,ny,yn1,kk1,
      4     kiter)
         else

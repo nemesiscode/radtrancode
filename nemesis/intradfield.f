@@ -1,6 +1,6 @@
       subroutine intradfield(runname,ispace,xlat,nwave,vwave,
      1 nconv,vconv,gasgiant,lin,nvar,varident,
-     2 varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
+     2 varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
 C
 C     $Id:
 C     **************************************************************
@@ -27,6 +27,8 @@ C       varparam(nvar,mparam) real Additional arameters constraining profile.
 C       jsurf           integer Position of surface temperature element in
 C                               xn (if included)
 C       jalb            integer position of first surface albedo element in
+C                               xn (if included)
+C       jxsc            integer position of first x-section element in
 C                               xn (if included)
 C       jtan            integer position of tangent ht. correction element in
 C                               xn (if included)
@@ -67,7 +69,7 @@ C     **************************************************************
       parameter (Grav=6.672E-11)
       real layht,tsurf
       real xn(mx),dtr
-      integer jsurf,jalb,jtan,jpre,nem,jlogg,jrad
+      integer jsurf,jalb,jxsc,jtan,jpre,nem,jlogg,jrad
       integer nphi,ipath,fintrad
       character*100 fintname
       integer nmu,isol,lowbc,nf,nx2,kiter
@@ -180,7 +182,7 @@ C      Set up all files for a direct cirsrad run
        call gsetrad(intname,iscat,nmu,mu,wtmu,isol,dist,
      1     lowbc,galb,nf,nconv,vconv,fwhm,ispace,gasgiant,
      2     layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
-     3     nvar,varident,varparam,nx,xn,jalb,jtan,jpre,tsurf,xmap)
+     3     nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
 
        print*,'Calling cirsrtf_wave'
        call CIRSrtf_wave(intname, dist, inormal, iray, fwhm, ispace,

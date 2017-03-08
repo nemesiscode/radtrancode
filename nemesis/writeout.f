@@ -76,7 +76,7 @@ C     ***********************************************************************
       real xlatx,varidentx(mvar,3),varparamx(mvar,mparam)
       real stx(mx,mx)
       integer nxx,xnx(mx),nvarx,nprox,jtanx,jprex,jradx
-      integer jsurfx,jalbx,icread,jloggx,ierr,ierrx
+      integer icread,jloggx,ierr,ierrx
       character*100 runname,aname,buffer,cellfile
       logical gasgiant,cellexist
 

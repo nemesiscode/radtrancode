@@ -1,6 +1,6 @@
       subroutine forwardnogMCS(runname,ispace,iscat,fwhm,xlat,ngeom,nav,
      1 wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
-     2 lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,RADIUS,
+     2 lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,RADIUS,
      3 SATRAD,thetrot,altbore,nx,xn,ny,yn,kk,kiter)
 C     $Id:
 C     **************************************************************
@@ -38,6 +38,8 @@ C       varparam(nvar,mparam) real Additional arameters constraining profile.
 C       jsurf           integer Position of surface temperature element in
 C                               xn (if included)
 C	jalb		integer position of first surface albedo element in
+C				xn (if included)
+C	jxsc		integer position of first x-section element in
 C				xn (if included)
 C	jtan		integer position of tangent ht. correction element in
 C				xn (if included)
@@ -87,7 +89,7 @@ C     **************************************************************
       real xn(mx),yn(my),kk(my,mx),ytmp(my),yn1(my)
       real vconv1(mconv),vwave1(mwave)
       integer ny,jsurf,jalb,jtan,jpre,nem,nav(mgeom)
-      integer nphi,ipath
+      integer nphi,ipath,jxsc
       integer nmu,isol,lowbc,nf,nf1,nx2,kiter
       real dist,galb,sol_ang,emiss_ang,z_ang,aphi
       double precision mu(maxmu),wtmu(maxmu)
@@ -270,7 +272,7 @@ C       emissivity spectrum
        print*,'Calling intradfield'
        CALL intradfield(runname,ispace,xlat,nwave1,vwave1,nconv1,
      1   vconv1,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
-     2   jtan,jpre,nx,xn)
+     2   jxsc,jtan,jpre,nx,xn)
   
 
 C      Modifying internal radiation field.
@@ -437,7 +439,7 @@ C         Set up all files for a direct cirsrad run
           call gsetrad(intname,iscat1,nmu,mu,wtmu,isol,dist,   
      1     lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
      2     layht,nlayer1,laytyp,layint,sol_ang,emiss_ang,aphi,
-     3     xlat,lin,nvar,varident,varparam,nx,xn,jalb,jtan,
+     3     xlat,lin,nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,
      4     jpre,tsurf,xmap)
 
 C          print*,'Calling scattering calc : sol_ang, emiss_ang',

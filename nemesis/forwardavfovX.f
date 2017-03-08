@@ -1,7 +1,7 @@
       subroutine forwardavfovX(runname,ispace,iscat,fwhm,ngeom,
      1 nav,wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
-     2 lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3 RADIUS,nx,xn,ny,yn,kk)
+     2 lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
+     3 jlogg,RADIUS,nx,xn,ny,yn,kk)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate an FOV-averaged spectrum and
@@ -36,6 +36,8 @@ C       varparam(nvar,mparam) real Additional arameters constraining profile.
 C	jsurf		integer	Position of surface temperature element in
 C				xn (if included)
 C	jalb		integer	Position of surface albedo spectrum in
+C				xn (if included)
+C	jxsc		integer	Position of x-section spectrum in
 C				xn (if included)
 C	jtan		integer	Position of tangent height correction in
 C				xn (if included)
@@ -76,7 +78,7 @@ C     **************************************************************
       real loggR,dellg
       integer layint,inormal,iray,itype,nlayer,laytyp,iscat
       integer nwave(mgeom),jsurf,nem,nav(mgeom),nwave1
-      integer jalb,jtan,jpre,k,iptf,jrad,imie,imie1,jlogg
+      integer jalb,jxsc,jtan,jpre,k,iptf,jrad,imie,imie1,jlogg
       real vwave(mgeom,mwave),angles(mgeom,mav,3),vwave1(mwave)
       real calcout(maxout3),fwhm,RADIUS
       real gradients(maxout4),vv
@@ -236,7 +238,7 @@ C        Set up all files for a direct cirsrad run
          call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,
      1    lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
      2    layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
-     3    nvar,varident,varparam,nx,xn,jalb,jtan,jpre,tsurf,xmap)
+     3    nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
 
 
          call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
@@ -482,7 +484,7 @@ C         Set up all files for a direct cirsrad run
           call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,
      1     lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
      2     layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
-     3     nvar,varident,varparam,nx,xn,jalb,jtan,jpre,tsurf,xmap)
+     3     nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
 
 
           call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 

@@ -41,6 +41,7 @@ C     TIME2: System time at the end of program execution.
       character*100 runname
       integer ngeom, nwave(mgeom),nconv(mgeom), nx, ny, jsurf, jsurfx
       integer ngas,ncont,nvar,nvarx,lin,nxx,igeom,nconv1,nwave1,jalb
+      integer jxsc,jxscx
       real vwave(mgeom,mwave),vconv(mgeom,mconv),angles(mgeom,mav,3)
       real xa(mx),rerr(mgeom,mconv),sa(mx,mx),y(my),yn(my)
       real xnx(mx),kk(my,mx)
@@ -200,7 +201,7 @@ C     Calculate the tabulated wavelengths of c-k look up tables
 
 C     set up a priori of x and its covariance
       CALL readapriori(runname,lin,lpre,xlat,npro,nvar,varident,
-     1  varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,nx,xa,sa,lx)
+     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,nx,xa,sa,lx)
 	
 
       write(lout,*)nx,' ! nx'
@@ -240,7 +241,7 @@ C     set up a priori of x and its covariance
 	
       call coreretMCMC(runname,ispace,iscat,ilbl,ica,miter,niter,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
-     2  gasgiant,nvar,varident,varparam,npro,jsurf,jalb,jtan,
+     2  gasgiant,nvar,varident,varparam,npro,jsurf,jalb,jxsc,jtan,
      3  jpre,jrad,jlogg,wgeom,flat,nx,lx,xa,sa,ny,y,se,idum)
 
       if(ica.eq.1)close(39)

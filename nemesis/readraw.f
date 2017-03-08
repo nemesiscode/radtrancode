@@ -1,5 +1,5 @@
       subroutine readraw(lraw,xlat,xlon,npro,nvar,varident,
-     1  varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,nx,xn,st)
+     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,nx,xn,st)
 C     $Id:
 C     ***********************************************************************
 C     Output the results of retrieval code
@@ -16,6 +16,7 @@ C	varparam(mvar,mparam) real 	Extra parameters as required
 C	jsurf		integer		Position of surface temperature
 C					element (if retrieved)
 C	jalb		integer		Position of surface albedo spec
+C	jxsc		integer		Position of x-section spec
 C	jtan		integer		Position of tangent ht correction
 C	jpre		integer		Position of tangent pressure
 C	jrad		integer		Position of surface radius
@@ -34,7 +35,7 @@ C     ***********************************************************************
       integer nx,i,j,ispec,lraw,npro,ivar1
       real xn(mx),st(mx,mx),xlat,xlon,varparam(mvar,mparam)
       integer varident(mvar,3),nvar,ivar,jsurf,ioff,np,jalb,jtan
-      integer jpre, jrad, npvar, jlogg
+      integer jpre, jrad, npvar, jlogg, jxsc
 
       read(lraw,*)ispec
       read(lraw,*)xlat,xlon
@@ -43,6 +44,7 @@ C     ***********************************************************************
 
       jsurf = -1
       jalb = -1
+      jxsc = -1
       jtan = -1
       jpre = -1
       jrad = -1
@@ -66,6 +68,7 @@ C     ***********************************************************************
 
         ioff=ioff+np
         if(varident(ivar,1).eq.999)jsurf=ioff
+        if(varident(ivar,1).eq.887)jxsc=ioff
         if(varident(ivar,1).eq.888)jalb=ioff
         if(varident(ivar,1).eq.889)jalb=ioff
         if(varident(ivar,1).eq.777)jtan=ioff

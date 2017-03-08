@@ -50,6 +50,7 @@ C     TIME2: System time at the end of program execution.
       integer npro,ispace,nav(mgeom),lraw,nprox,lpre, nvmr
       integer ngeom, nwave(mgeom),nconv(mgeom), nx, ny, jsurf, jsurfx
       integer ngas,ncont,nvar,nvarx,lin,nxx,igeom,nconv1,nwave1,jalb
+      integer jxsc,jxscx
       real vwave(mgeom,mwave),vconv(mgeom,mconv),angles(mgeom,mav,3)
       real xa(mx),rerr(mgeom,mconv),sa(mx,mx),y(my),yn(my)
       real xnx(mx),kk(my,mx),xerr, radius 
@@ -274,7 +275,7 @@ C      and if so, skipped
        if(lin.gt.0)then
       
         call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,
-     1    varparamx,jsurfx,jalbx,jtanx,jprex,jradx,jloggx,nxx,
+     1    varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,nxx,
      2    xnx,stx)
       
        endif
@@ -328,7 +329,7 @@ C     Calculate the tabulated wavelengths of c-k look up tables
 
 C     set up a priori of x and its covariance
       CALL readaprioriMCMC(runname,lin,lpre,xlat,npro,nvar,varident,
-     1  varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,nx,xa,sa,lx)
+     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,nx,xa,sa,lx)
 
       DO i = 1, nx
         xn(i)=xa(i)
@@ -368,8 +369,8 @@ C      jsurf=-1
 
       call coreretPT(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
-     2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jtan,
-     3  jpre,jrad,jlogg,radius,wgeom,flat,nx,lx,xa,sa,ny,y,se,
+     2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jxsc,
+     3  jtan,jpre,jrad,jlogg,radius,wgeom,flat,nx,lx,xa,sa,ny,y,se,
      4  inumeric,xn,sm,sn,st,yn,kk,aa,dd)
 
 C     Calculate retrieval errors.

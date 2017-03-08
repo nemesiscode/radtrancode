@@ -1,7 +1,7 @@
       subroutine gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,
      1 lowbc,galb,nf,nconv,vconv,fwhm,ispace,gasgiant,
      2 layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
-     3 nvar,varident,varparam,nx,xn,jalb,jtan,jpre,tsurf,xmap)
+     3 nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
 C     $Id:
 C     ************************************************************************
 C     Subroutine to write out the .pat, .prf, .xsc and .sca and aerosol 
@@ -49,6 +49,8 @@ C	nx		integer		Number of elements in state vector
 C	xn(mx)		real		state vector
 C	jalb		integer		Position of surface albedo spectrum
 C					in xn
+C	jxsc		integer		Position of x-section spectrum
+C					in xn
 C	jtan		integer		Position of tangent height correction
 C					in xn
 C	jpre		integer		Position of tangent pressure
@@ -84,8 +86,8 @@ C     ************************************************************************
       integer layint,iprfcheck,check_profile,nmode,inorm
       real layht,xod(maxcon),xscal(maxcon),cwid,pmeth
       real vconv(mconv),minlam,lambda0
-      integer nmu,isol,lowbc,nf,flagh2p,jalb,jtan,jpre
-      integer jsurfx,jalbx,jtanx,jprex,nprox,icheck,icont
+      integer nmu,isol,lowbc,nf,flagh2p,jalb,jxsc,jtan,jpre
+      integer jsurfx,jalbx,jxscx,jtanx,jprex,nprox,icheck,icont
       integer jradx,npvar,jloggx,npro,nvmr,ierr,ierrx
       real x,y
       double precision mu(maxmu),wtmu(maxmu)
@@ -132,7 +134,7 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
 
       if(lin.eq.1.or.lin.eq.3)then
        call readxtmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1  nxx,xnx,stx,jsurfx,jalbx,jtanx,jprex,jradx,jloggx)
+     1  nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
 
        call stripvar(nvarx,varidentx,varparamx,nprox,nvar,varident,
      1  nxx,xnx)

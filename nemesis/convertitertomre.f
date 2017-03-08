@@ -15,7 +15,7 @@ C     Set measurement vector and source vector lengths here.
       integer ilbl,nspec,ioff,i,j,nvmr,lspec,nav(mgeom)
       integer igeom,nconv(mgeom),nconv1,vconv1(mconv)
       integer k,nwave1,nwave(mgeom),lpre,jsurf
-      integer jalb,jtan,lx(mx)
+      integer jalb,jxsc,jtan,lx(mx)
       real xlat,xlon,varparam(mvar,mparam),fwhm,sa(mx,mx)
       real angles(mgeom,mav,3),wgeom(mgeom,mav),flat(mgeom,mav)
       real vkstart,vkend,vkstep,rerr(mgeom,mconv)
@@ -137,7 +137,7 @@ C     Calculate the tabulated wavelengths of c-k look up tables
 
 C     set up a priori of x and its covariance
       CALL readapriori(runname,lin,lpre,xlat,npro,nvar,varident,
-     1  varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,nx,xa,sa,lx)
+     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,nx,xa,sa,lx)
 
 
       print*,'D iform = ',iform

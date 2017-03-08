@@ -1,8 +1,8 @@
       subroutine coreretdisc(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
-     2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jtan,
-     3  jpre,jrad,jlogg,wgeom,flat,nx,lx,xa,sa,ny,y,se1,xn,sm,sn,st,
-     4  yn,kk,aa,dd)
+     2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jxsc,
+     3  jtan,jpre,jrad,jlogg,wgeom,flat,nx,lx,xa,sa,ny,y,se1,xn,sm,sn,
+     4  st,yn,kk,aa,dd)
 C     $Id:
 C     ******************************************************************
 C
@@ -52,6 +52,8 @@ C	jsurf		integer	Position of surface temperature element in
 C				xa (if included)
 C	jalb		integer	Position of surface albedo spectrum in
 C				xa (if included)
+C	jxsc		integer	Position of x-section spectrum in
+C				xa (if included)
 C	jtan		integer	Position of tangent height correction in
 C				xa (if included)
 C	jpre		integer	Position of tangent pressure in
@@ -84,7 +86,7 @@ C     Set measurement vector and source vector lengths here.
       INCLUDE 'arraylen.f'
       integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,jsurf
       integer jalb,jalbx,jtan,jtanx,jpre,jprex,jrad,jradx
-      integer lx(mx),jlogg,jloggx
+      integer lx(mx),jlogg,jloggx,jxsc,jxscx
       real phlimit,alambda,xtry,tphi
       integer xflag,ierr,ncont,flagh2p,npro1,jpara
       real xdnu,xmap(maxv,maxgas+2+maxcon,maxpro)
@@ -205,7 +207,7 @@ C     Load state vector with a priori
        if(lin.eq.1) then
 C        Just substituting parameters from .pre file
          call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,varparamx,
-     1  jsurfx,jalbx,jtanx,jprex,jradx,jloggx,nxx,xnx,stx)
+     1  jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,nxx,xnx,stx)
        
         xdiff = abs(xlat-xlatx)
         if(xdiff.gt.lat_tolerance)then
@@ -232,7 +234,7 @@ C        Just substituting parameters from .pre file
 
 C       Write out x-data to temporary .str file for later routines.
         call writextmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1   nxx,xnx,stx,jsurfx,jalbx,jtanx,jprex,jradx,jloggx)
+     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
 
        else
 C       substituting and retrieving parameters from .pre file. 
@@ -240,7 +242,7 @@ C       Current record frrom .pre file already read in by
 C       readapriori.f. Hence just read in from temporary .str file
  
         call readxtmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1   nxx,xnx,stx,jsurfx,jalbx,jtanx,jprex,jradx,jloggx)
+     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
 
        endif
  
@@ -250,8 +252,8 @@ C       readapriori.f. Hence just read in from temporary .str file
         print*,'Calling forwarddisc - A'
         CALL forwarddisc(runname,ispace,iscat,fwhm,ngeom,
      1   nav,wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
-     2   lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jtanx,jprex,
-     3   jradx,jloggx,RADIUS,nxx,xnx,ny,ynx,kkx)
+     2   lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,
+     3   jprex,jradx,jloggx,RADIUS,nxx,xnx,ny,ynx,kkx)
        else
         print*,'Option not supported for disc-averaging'
        endif
@@ -307,8 +309,8 @@ C      Calculate inverse of se
         print*,'Calling forwarddisc - B'
         CALL forwarddisc(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3   RADIUS,nx,xn,ny,yn,kk)
+     2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
+     3   jlogg,RADIUS,nx,xn,ny,yn,kk)
 
       else
 
@@ -444,8 +446,8 @@ C       temporary kernel matrix kk1. Does it improve the fit?
           print*,'Calling forwarddisc - C'
           CALL forwarddisc(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
-     2     lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,
-     3     jlogg,RADIUS,nx,xn1,ny,yn1,kk1)
+     2     lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
+     3     jrad,jlogg,RADIUS,nx,xn1,ny,yn1,kk1)
         else
           print*,'Option not supported'
         endif

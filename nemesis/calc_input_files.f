@@ -1,6 +1,6 @@
       subroutine calc_input_files(runname,ispace,iscat,fwhm,flat,
      1 nconv,vconv,angles,gasgiant,lin,nvar,varident,varparam,
-     2 jsurf,jalb,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
+     2 jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
 C     $Id:
 C     **************************************************************
 C     Subroutine to seup input files for last successful iteration of
@@ -25,6 +25,8 @@ C       varparam(nvar,mparam) real Additional arameters constraining profile.
 C       jsurf           integer Position of surface temperature element in
 C                               xn (if included)
 C	jalb		integer position of first surface albedo element in
+C				xn (if included)
+C	jxsc		integer position of first x-section element in
 C				xn (if included)
 C	jtan		integer position of tangent ht. correction element in
 C				xn (if included)
@@ -63,7 +65,7 @@ C     **************************************************************
       real layht,tsurf,esurf,angles(mgeom,mav,3)
       real xn(mx)
       real vconv1(mconv)
-      integer ny,jsurf,jalb,jtan,jpre,nem
+      integer ny,jsurf,jalb,jxsc,jtan,jpre,nem
       integer nphi,ipath,iconv,k
       integer nmu,isol,lowbc,nf,nf1,nx2,kiter
       real dist,galb,sol_ang,emiss_ang,z_ang,aphi,vv
@@ -145,7 +147,7 @@ C     Set up all files for a direct cirsrad run
       call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,
      1     lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
      2     layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
-     3     nvar,varident,varparam,nx,xn,jalb,jtan,jpre,tsurf,xmap)
+     3     nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
       print*,'gsetrad called OK'
 
       return

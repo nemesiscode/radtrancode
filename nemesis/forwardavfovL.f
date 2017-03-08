@@ -1,6 +1,6 @@
       subroutine forwardavfovL(runname,ispace,fwhm,ngeom,nav,
      1 wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,nvar,
-     2 varident,varparam,jsurf,jalb,jtan,jpre,nx,xn,ny,yn,kk)
+     2 varident,varparam,jsurf,jalb,jxsc,jtan,jpre,nx,xn,ny,yn,kk)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate an FOV-averaged limb spectra and
@@ -34,6 +34,8 @@ C       varparam(nvar,mparam) real Additional arameters constraining profile.
 C	jsurf		integer	Position of surface temperature element in
 C				xn (if included)
 C       jalb            integer Position of surface albedo spectrum in
+C                               xn (if included)
+C       jxsc            integer Position of x-section spectrum in
 C                               xn (if included)
 C       jtan            integer Position of tangent height correction in
 C                               xn (if included)
@@ -74,7 +76,7 @@ C     **************************************************************
       real vconv(mgeom,mconv),vconv1(mconv)
       real layht,tsurf,esurf,gradtsurf(maxout3),pressR,delp
       real xn(mx),yn(my),kk(my,mx),yn1(my)
-      integer ny,iscat,jalb,jtan,jpre
+      integer ny,iscat,jalb,jxsc,jtan,jpre
       integer nphi,ipath
       integer nmu,isol,lowbc,nf
       real dist,galb,sol_ang,emiss_ang,aphi
@@ -291,7 +293,8 @@ C     Read in base heights from '.drv' file
            call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,lowbc,
      1      galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,layht,
      2      nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
-     3      nvar,varident,varparam,nx,xn,jalb,jtan,jpre,tsurf,xmap)
+     3      nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,
+     4      xmap)
       
 
            call CIRSrtfg_wave(runname,dist,inormal,iray,fwhm,ispace,

@@ -1,5 +1,5 @@
       subroutine readxtmp(runname,xlat,nvar,varident,varparam,npro,
-     1 nx,xn,sx,jsurf,jalb,jtan,jpre,jrad,jlogg)
+     1 nx,xn,sx,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg)
 C     $Id:
 C     ************************************************************************
 C     Subroutine to read in a .str file which is stripped retrieved
@@ -27,7 +27,7 @@ C     ************************************************************************
       include 'arraylen.f'
 
       real xlat
-      integer nx,jlogg
+      integer nx,jlogg,jxsc
       real xn(mx),sx(mx,mx)
       integer nvar,npro,varident(mvar,3),i,j,jsurf,jalb,jtan,jpre,jrad
       real varparam(mvar,mparam)
@@ -46,7 +46,7 @@ C     ************************************************************************
         do i=1,nx
          read(12,*)(sx(j,i),j=1,nx)
         enddo
-        read(12,*)jsurf,jalb,jtan,jpre,jrad,jlogg
+        read(12,*)jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg
       close(12)
 
       return

@@ -1,7 +1,7 @@
       subroutine forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1 wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
-     2 lin,nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3 RADIUS,nx,xn,ifix,ny,yn,kk,kiter,icheck)
+     2 lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
+     3 jlogg,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,icheck)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate a synthetic spectrum and KK-matrix using
@@ -41,6 +41,8 @@ C       varparam(nvar,mparam) real Additional arameters constraining profile.
 C       jsurf           integer Position of surface temperature element in
 C                               xn (if included)
 C	jalb		integer position of first surface albedo element in
+C				xn (if included)
+C	jxsc		integer position of first x-section element in
 C				xn (if included)
 C	jtan		integer position of tangent ht. correction element in
 C				xn (if included)
@@ -94,7 +96,7 @@ C     **************************************************************
       real xn(mx),yn(my),kk(my,mx),ytmp(my),ystore(my)
       real vconv1(mconv),vwave1(mwave)
       integer ny,jsurf,jalb,jtan,jpre,nem,nav(mgeom)
-      integer nphi,ipath,iconv,k
+      integer nphi,ipath,iconv,k,jxsc
       integer nmu,isol,lowbc,nf,nf1,nx2,kiter
       real dist,galb,sol_ang,emiss_ang,z_ang,aphi,vv
       double precision mu(maxmu),wtmu(maxmu)
@@ -298,7 +300,7 @@ C         Set up all files for a direct cirsrad run
           call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,
      1     lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
      2     layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
-     3     nvar,varident,varparam,nx,xn,jalb,jtan,jpre,tsurf,xmap)
+     3     nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
           print*,'gsetrad called OK'
 
 C         If planet is not a gas giant and observation is not at limb then

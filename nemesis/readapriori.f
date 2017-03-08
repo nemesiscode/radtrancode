@@ -1,5 +1,5 @@
       subroutine readapriori(opfile,lin,lpre,xlat,npro,nvar,varident,
-     1  varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,nx,x0,sx,lx)
+     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,nx,x0,sx,lx)
 C     $Id:
 C     ****************************************************************
 C     Subroutine to read in apriori vector and covariance matrix
@@ -29,6 +29,8 @@ C	jsurf		integer		Position of surface temperature
 C					element (if included)
 C 	jalb		integer		Position of start of surface
 C					albedo spectrum
+C 	jxsc		integer		Position of start of x-section
+C					spectrum
 C	jtan		integer		Position of tangent altitude
 C					correction
 C	jpre		integer		Position of ref. tangent  pressure
@@ -59,7 +61,7 @@ C     ****************************************************************
       implicit none
 
       integer i,j,nx,ix,jx,npro,jsurf,np,jalb,jtan,jpre,jrad,maxlat,k
-      integer jlogg,nmode,nwave,max_mode, max_wave
+      integer jlogg,nmode,nwave,max_mode, max_wave,jxsc,icloud
       parameter (max_mode = 10)
       parameter (max_wave = 1000)
       parameter(maxlat=100)
@@ -77,7 +79,7 @@ C     ****************************************************************
       real efsh,xfsh,varparam(mvar,mparam),flat,hknee,pre
       real ref(maxlat,maxpro),clen,SXMINFAC,arg,valb,alb
       real xknee,xrh,erh,xcdeep,ecdeep,radius,Grav,plim
-      real xcwid,ecwid,ptrop,refradius
+      real xcwid,ecwid,ptrop,refradius,xsc
       parameter (Grav=6.672E-11)
 C     SXMINFAC is minimum off-diagonal factor allowed in the
 C     a priori covariance matrix
@@ -86,7 +88,7 @@ C     a priori covariance matrix
       integer varident(mvar,3),ivar,nvar,nlevel,lin,jsurfx
       integer jalbx,jtanx,jprex,jradx,jlat,ilat,nlat,lx(mx)
       integer nprox,nvarx,varidentx(mvar,3),lpre,ioffx,ivarx
-      integer npx,ioff,icond,npvar,jloggx,iplanet
+      integer npx,ioff,icond,npvar,jloggx,iplanet,jxscx
       character*100 opfile,buffer,ipfile,runname,rifile
       integer nxx 
       real xwid,ewid,y,y0,lambda0,vi(mx)
@@ -104,6 +106,7 @@ C     Initialise a priori parameters
       end do
       jsurf = -1
       jalb = -1
+      jxsc = -1
       jtan = -1
       jpre = -1
       jrad = -1
@@ -1096,6 +1099,43 @@ C           **** Surface albedo scaling value *******
 
             nx = nx+1
 
+           elseif(varident(ivar,1).eq.887)then
+C           **** Cloud x-section spectrum *******
+C           Read in number of points, cloud id, and correlation between elements.
+            read(27,*)np, icloud, clen
+            varparam(ivar,1)=np
+            varparam(ivar,2)=icloud
+            varparam(ivar,1)=clen
+            jxsc = nx+1
+            do i=1,np             
+             ix = jxsc+i-1
+             read(27,*)vi(i),xsc,err
+             if(xsc.gt.0.0)then
+               x0(ix)=alog(xsc)
+               lx(ix)=1
+             else
+               print*,'Error in readapriori - xsc must be > 0'
+               stop
+             endif
+             sx(ix,ix) = (err/xsc)**2
+             print*,ix,err,xsc,x0(ix),sx(ix,ix)
+            enddo
+
+            do i=1,np
+             do j=1,np
+               delv = vi(i)-vi(j)
+               arg = abs(delv/clen)
+               xfac = exp(-arg)
+               if(xfac.ge.SXMINFAC)then  
+                sx(nx+2+i,nx+2+j)=
+     & sqrt(sx(nx+2+i,nx+2+i)*sx(nx+2+j,nx+2+j))*xfac
+                sx(nx+2+j,nx+2+i)=sx(nx+2+i,nx+2+j)
+               endif
+             enddo
+            enddo
+   
+            nx = nx+np
+
            elseif(varident(ivar,1).eq.777)then
 C           **** Tangent altitude correction *******
             ix = nx+1
@@ -1608,8 +1648,8 @@ C     the mass using the a priori log(g) AND radius
      1 update apriori'
 
        call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,
-     1  varparamx,jsurfx,jalbx,jtanx,jprex,jradx,jloggx,nxx,xnx,
-     2  sxx)
+     1  varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+     2  nxx,xnx,sxx)
 
        xdiff = abs(xlat-xlatx)
        if(xdiff.gt.5.0)then
@@ -1672,7 +1712,7 @@ C     the mass using the a priori log(g) AND radius
 C     Write out x-data to temporary .str file for later routines.
       if(lin.eq.3)then
        call writextmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1  nxx,xnx,sxx,jsurfx,jalbx,jtanx,jprex,jradx,jloggx)
+     1  nxx,xnx,sxx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
       endif
 
       return

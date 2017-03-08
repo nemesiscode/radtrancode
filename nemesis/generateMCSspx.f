@@ -53,7 +53,7 @@ C     TIME2: System time at the end of program execution.
 C dummy: Character variable, used for reading-in header on info file   
       integer ngeom, nwave(mgeom), nconv(mgeom), nx, ny, jsurf, jsurfx
       integer np,lin1,ioffx,ivarx,npx,iform
-      integer nwaveT(mgeom), nconvT(mgeom)
+      integer nwaveT(mgeom), nconvT(mgeom),jxsc
       integer ngas,ncont,nvar,nvarx,lin,nxx,igeom,nconv1,nwave1,jalb
       real vwave(mgeom,mwave),vconv(mgeom,mconv),angles(mgeom,mav,3)
       real vwaveT(mgeom,mwave),vconvT(mgeom,mconv)
@@ -64,7 +64,7 @@ C dummy: Character variable, used for reading-in header on info file
       double precision aa(mx,mx),dd(mx,my)
       real vkstart,vkend,vkstep
       integer idump,kiter,jtan,jtanx,jalbx,jpre,jprex,idum,lvec
-      integer ivar,jrad,jlogg
+      integer ivar,jrad,jlogg,jxscx
 C     ********** Scattering variables **********************
       real xwave(maxsec),xf(maxcon,maxsec),xg1(maxcon,maxsec)
       real xg2(maxcon,maxsec)
@@ -216,7 +216,7 @@ C     Calculate the tabulated wavelengths of c-k look up tables
 C     set up a priori of x and its covariance
       lin1=0
       CALL readapriori(runname,lin1,lpre,xlat,npro,nvar,varident,
-     1  varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,nx,xa,sa,lx)
+     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,nx,xa,sa,lx)
 	
       write(lvec,*)nvar,'   ! nvar'     ! Number of variable profiles
 
@@ -260,7 +260,7 @@ C     Read in forward modelling errors
 
        if(lin.gt.0) then
         call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,
-     1   varparamx,jsurfx,jalbx,jtanx,jprex,nxx,xnx,stx)
+     1   varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,nxx,xnx,stx)
 
         ioff=0
         do ivar=1,nvar
@@ -305,27 +305,27 @@ C     Read in forward modelling errors
        if(iscat.eq.0)then
         CALL forwardavfovMCS(runname,ispace,fwhm,xlat,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,marsradius,
+     2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,marsradius,
      3   satrad,thetrot,altbore,nx,xn,ny,yn,kk)
       elseif(iscat.eq.1)then 
        CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
+     2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
      3   RADIUS,nx,xn,ny,yn,kk,kiter)
       elseif(iscat.eq.2)then
        CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1   vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
-     2   jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
+     2   jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
        iscat1=1
        CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
+     2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
      3   RADIUS,nx,xn,ny,yn,kk,kiter)
       else
        iscat1=1
        CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
+     2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
      3   RADIUS,nx,xn,ny,yn,kk,kiter)
       endif
 

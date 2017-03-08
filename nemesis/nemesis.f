@@ -49,6 +49,7 @@ C     TIME2: System time at the end of program execution.
       character*100 runname,sfile
       integer ngeom, nwave(mgeom),nconv(mgeom), nx, ny, jsurf, jsurfx
       integer ngas,ncont,nvar,nvarx,lin,nxx,igeom,nconv1,nwave1,jalb
+      integet jxsc,jxscx
       real vwave(mgeom,mwave),vconv(mgeom,mconv),angles(mgeom,mav,3)
       real xa(mx),rerr(mgeom,mconv),sa(mx,mx),y(my),yn(my)
       real xnx(mx),kk(my,mx),xerr
@@ -260,7 +261,7 @@ C      and if so, read in
        if(lin.gt.0)then
       
         call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,
-     1   varparamx,jsurfx,jalbx,jtanx,jprex,jradx,jloggx,nxx,
+     1   varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,nxx,
      2   xnx,stx)
       
        endif
@@ -341,7 +342,7 @@ C      Calculate the tabulated wavelengths of lbl look up tables
 
 C     set up a priori of x and its covariance
       CALL readapriori(runname,lin,lpre,xlat,npro,nvar,varident,
-     1  varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,nx,xa,sa,lx)
+     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,nx,xa,sa,lx)
 	
       print*,'OK here'
       DO i = 1, nx
@@ -379,9 +380,9 @@ C     set up a priori of x and its covariance
 	
       call coreret(runname,ispace,iscat,ilbl,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
-     2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jtan,
-     3  jpre,jrad,jlogg,wgeom,flat,nx,lx,xa,sa,ny,y,se,xn,sm,sn,st,yn,
-     4  kk,aa,dd)
+     2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jxsc,
+     3  jtan,jpre,jrad,jlogg,wgeom,flat,nx,lx,xa,sa,ny,y,se,xn,sm,sn,
+     4  st,yn,kk,aa,dd)
 
 C     Calculate retrieval errors.
 C     Simple errors, set to sqrt of diagonal of ST
@@ -408,7 +409,7 @@ C       Write out all the error matrices if only one case retrieved
 C     write out setup files for last successful iteration
       call calc_input_files(runname,ispace,iscat,fwhm,flat,nconv,
      1 vconv,angles,gasgiant,lin,nvar,varident,varparam,jsurf,
-     2 jalb,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
+     2 jalb,jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
 
 2999  continue
 

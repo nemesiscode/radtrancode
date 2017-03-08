@@ -1,7 +1,7 @@
       subroutine coreretMCMC(runname,ispace,iscat,ilbl,ica,miter,
      1  niter,fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,
-     2  angles,gasgiant,nvar,varident,varparam,npro,jsurf,jalb,jtan,
-     3  jpre,jrad,jlogg,wgeom,flat,nx,lx,xa,sa,ny,y,se1,idum)
+     2  angles,gasgiant,nvar,varident,varparam,npro,jsurf,jalb,jxsc,
+     3  jtan,jpre,jrad,jlogg,wgeom,flat,nx,lx,xa,sa,ny,y,se1,idum)
 C     $Id:
 C     ******************************************************************
 C
@@ -48,6 +48,8 @@ C	jsurf		integer	Position of surface temperature element in
 C				xa (if included)
 C	jalb		integer	Position of surface albedo spectrum in
 C				xa (if included)
+C	jxsc		integer	Position of x-section spectrum in
+C				xa (if included)
 C	jtan		integer	Position of tangent height correction in
 C				xa (if included)
 C	jpre		integer	Position of tangent pressure in
@@ -74,7 +76,7 @@ C     Set measurement vector and source vector lengths here.
       INCLUDE 'arraylen.f'
       integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,jsurf,lin
       integer jalb,jtan,jpre,ilbl,jrad,jlogg,miter,niter,idum,itry
-      integer xflag,ierr,ncont,flagh2p,npro1,jpara
+      integer xflag,ierr,ncont,flagh2p,npro1,jpara,jxsc,jxscx
       real xdnu,xmap(maxv,maxgas+2+maxcon,maxpro)
       CHARACTER*100 runname,itname,abort,aname,buffer
 
@@ -181,7 +183,7 @@ C     Set lin=0 to prevent code looking for previous retrievals
          print*,'Calling forwardnoglbl - B'
          CALL forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,nconv,vconv,angles,gasgiant,lin,
-     2    nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,
+     2    nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
      3    jlogg,RADIUS,nx,xn,ifix,ny,yn,kk,kiter)
       else
 
@@ -189,17 +191,17 @@ C     Set lin=0 to prevent code looking for previous retrievals
  
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
+     2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
      3   RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
        else
 
         CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1   vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
-     2   jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
+     2   jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
 
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
+     2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
      3   RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
 
        endif
@@ -269,22 +271,22 @@ C       Put output spectrum into temporary spectrum yn1.
         if(ilbl.eq.1)then
          CALL forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,     
      1    wgeom,flat,nconv,vconv,angles,gasgiant,lin,
-     2    nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
+     2    nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
      3    RADIUS,nx,xn1,ifix,ny,yn1,kk,kiter)
         else
          if(iscat.ne.2)then
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3     RADIUS,nx,xn1,ifix,ny,yn1,kk,kiter,iprfcheck)
+     2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
+     3     jlogg,RADIUS,nx,xn1,ifix,ny,yn1,kk,kiter,iprfcheck)
          else
           CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1     vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
-     2     jtan,jpre,jrad,jlogg,RADIUS,nx,xn1)
+     2     jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn1)
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2     nvar,varident,varparam,jsurf,jalb,jtan,jpre,jrad,jlogg,
-     3     RADIUS,nx,xn1,ifix,ny,yn1,kk,kiter,iprfcheck)
+     2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
+     3     jlogg,RADIUS,nx,xn1,ifix,ny,yn1,kk,kiter,iprfcheck)
          endif
         endif
 

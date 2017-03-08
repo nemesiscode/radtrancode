@@ -88,7 +88,7 @@ C     ************************************************************************
       real vconv(mconv),minlam,lambda0
       integer nmu,isol,lowbc,nf,flagh2p,jalb,jxsc,jtan,jpre
       integer jsurfx,jalbx,jxscx,jtanx,jprex,nprox,icheck,icont
-      integer jradx,npvar,jloggx,npro,nvmr,ierr,ierrx
+      integer jradx,npvar,jloggx,npro,nvmr,ierr,ierrx,nxsc
       real x,y
       double precision mu(maxmu),wtmu(maxmu)
       real dist,galb,xn(mx),xnx(mx),aphi,emiss_ang,sol_ang
@@ -101,7 +101,8 @@ C     ************************************************************************
       integer nvar,ivar,varident(mvar,3),i,j,nalb,nalb1
       real varparam(mvar,mparam),alb(maxsec),valb(maxsec)
       integer nvarx,varidentx(mvar,3),ivarx,iflagsrom,iflagtest
-      real varparamx(mvar,mparam),od1
+      real varparamx(mvar,mparam),od1,xsc(maxsec,maxgas)
+      real ssa(maxsec,maxgas)
       logical gasgiant,iflagcloud
       integer NN,NDUST
       REAL DUSTH(MAXLAY),DUST(MAXCON,MAXLAY)
@@ -145,6 +146,43 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
      2  ierrx)
 
        do ivarx = 1,nvarx
+
+
+        if(varidentx(ivarx,1).eq.887)then
+
+C        ********* Adjust cloud cross-section spectrum  **********
+         nxsc = int(varparamx(ivarx,1))
+         icont = int(varparamx(ivarx,2))
+         call file(runname,runname,'rxsc')
+         open(9,file=runname,status='old')
+51       read(9,1)buffer
+         if(buffer(1:1).eq.'#')goto 51
+         read(buffer,*)ncont1
+         if(ncont1.ne.ncont)then
+          print*,'Error in gsetrad ncont1 <> ncont'
+          print*,ncont1,ncont
+          print*,'file : ',runname
+         endif
+
+         do i=1,nxsc
+          read(9,*)valb(i),(xsc(i,j),j=1,ncont)
+          read(9,*)(ssa(i,j),j=1,ncont)
+         enddo
+         close(9)
+
+         call file(runname,runname,'xsc')
+         open(9,file=runname,status='unknown')
+         write(9,*)ncont
+         do i=1,nxsc
+          xsc(i,icont)=exp(xnx(jxscx+i-1))
+          write(9,*)valb(i),(xsc(i,j),j=1,ncont)
+          write(9,*)(ssa(i,j),j=1,ncont)
+         enddo
+         close(9)
+
+        endif
+
+
         if(varidentx(ivarx,1).eq.888)then
 
 C        ********* reset surface albedo spectrum  **********
@@ -233,6 +271,44 @@ C       ***************** Surface temperature correction ***********
       do ivar=1,nvar
 
        print*,'gsetrad - ',ivar,varident(ivar,1)
+
+
+       if(varident(ivar,1).eq.887)then
+
+C        ********* Adjust cloud cross-section spectrum  **********
+         nxsc = int(varparam(ivar,1))
+         icont = int(varparam(ivar,2))
+         call file(runname,runname,'rxsc')
+         open(9,file=runname,status='old')
+52       read(9,1)buffer
+         if(buffer(1:1).eq.'#')goto 52
+         read(buffer,*)ncont1
+         if(ncont1.ne.ncont)then
+          print*,'Error in gsetrad ncont1 <> ncont'
+          print*,ncont1,ncont
+          print*,'file : ',runname
+         endif
+
+         do i=1,nxsc
+          read(9,*)valb(i),(xsc(i,j),j=1,ncont)
+          read(9,*)(ssa(i,j),j=1,ncont)
+         enddo
+         close(9)
+
+         call file(runname,runname,'xsc')
+         open(9,file=runname,status='unknown')
+         write(9,*)ncont
+         do i=1,nxsc
+          xsc(i,icont)=exp(xn(jxsc+i-1))
+          write(9,*)valb(i),(xsc(i,j),j=1,ncont)
+          write(9,*)(ssa(i,j),j=1,ncont)
+         enddo
+         close(9)
+
+       endif
+
+
+
        if (varident(ivar,1).eq.888)then
 C       ********* surface albedo spectrum retrieval **********
         nalb = int(varparam(ivar,1))

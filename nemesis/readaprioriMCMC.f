@@ -1082,7 +1082,6 @@ C           Read in number of points, cloud id, and correlation between elements
             read(27,*)np, icloud, clen
             varparam(ivar,1)=np
             varparam(ivar,2)=icloud
-            varparam(ivar,1)=clen
             jxsc = nx+1
             do i=1,np
              ix = jxsc+i-1

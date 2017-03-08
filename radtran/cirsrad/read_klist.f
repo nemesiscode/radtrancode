@@ -66,8 +66,8 @@ C DELG: g-weights.
 C XMINK: Beginning wavenumber in table.
 C DELK: Wavenumber step of evaluation points.
       REAL kout(maxlay,maxgas,maxg),dkoutdt(maxlay,maxgas,maxg)
-      CHARACTER*100 klist,ktafil(maxkfil),null
-
+      CHARACTER*100 klist
+      CHARACTER*200 ktafil(maxkfil),null
       COMMON /interpk/ lun,ireck,xmink,delk,frack,pk,npk,tk,t2k,ntk,
      2 ngk,delvk,fwhmk,g_ord,delg,kout,dkoutdt
 
@@ -85,8 +85,10 @@ C-----------------------------------------------------------------------
       OPEN (UNIT=11,FILE=klist,STATUS='old')
 
 10    nkl = nkl + 1
+      print*,'A'
       READ(11,1020,END=20)ktafil(nkl)
       IF(ktafil(nkl).EQ.null)GOTO 20
+      print*,ktafil(nkl)
 
       CALL file(ktafil(nkl),ktafil(nkl),'kta')
       WRITE(*,1030)ktafil(nkl)
@@ -345,7 +347,7 @@ C	Return and end
 C
 C-----------------------------------------------------------------------
 
-1020  FORMAT (A100)
+1020  FORMAT (A200)
 1030  FORMAT (' Ktable filenames: ', A)
 1035  FORMAT (' Calling read_khead. reading: ', A)
 

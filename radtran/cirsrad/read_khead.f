@@ -26,8 +26,8 @@ C-----------------------------------------------------------------------
 	real		VMIN, DELV, FWHM, PRESS(MAXK), TEMP(MAXK), 
      1			G_ORD(MAXG), DEL_G(MAXG), VCEN(MAXBIN),
      2                  TEMP2(MAXK,MAXK)
-	character*100	KTAFIL,IPFILE
-
+	character*200	KTAFIL
+   
       IRECL=ISYS()
 
       WRITE(*,41)KTAFIL

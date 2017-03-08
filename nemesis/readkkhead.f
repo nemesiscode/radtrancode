@@ -8,14 +8,15 @@ C
 C     ****************************************************************
       implicit none
       include '../radtran/includes/arrdef.f'
-      character*100 kname,runname
+      character*100 runname
+      character*200 kname
       integer lun0,npoint,idgas,isogas,np,nt,ng,irec0
       real vcen(MAXBIN)
       real vmin,delv,fwhm,press(MAXK),temp(MAXK),g_ord(MAXG),del_g(MAXG)
       real vkstart,vkend,vkstep,temp2(MAXK,MAXK)
 
       call file(runname,runname,'kls')
-1     format(a100)
+1     format(a200)
 
 
       open(12,file=runname,status='old')

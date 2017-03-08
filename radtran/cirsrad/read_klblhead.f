@@ -25,7 +25,7 @@ C-----------------------------------------------------------------------
      1			IREC, N1, IRECL, J, ISYS, I
 	real		VMIN, DELV, PRESS(MAXK), TEMP(MAXK), 
      1                  TEMP2(MAXK,MAXK)
-	character*100	KTAFIL,IPFILE
+	character*200	KTAFIL
 
       IRECL=ISYS()
 

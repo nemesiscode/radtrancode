@@ -57,7 +57,8 @@ C TK: Temperature values in k-tables.
 C XMINK: Beginning wavenumber in table.
 C DELK: Wavenumber step of evaluation points.
       REAL kout(maxlay,maxgas),dkoutdt(maxlay,maxgas)
-      CHARACTER*100 klist,ktafil(maxkfil),null
+      CHARACTER*100 klist
+      CHARACTER*200 ktafil(maxkfil),null
 
       COMMON /interpklbl/ lun,irec0,xmink,delvk,npointk,pk,npk,tk,
      1 t2k,ntk,kout,dkoutdt
@@ -200,7 +201,7 @@ C	Return and end
 C
 C-----------------------------------------------------------------------
 
-1020  FORMAT (A100)
+1020  FORMAT (A200)
 1030  FORMAT (' LBLtable filenames: ', A)
 1035  FORMAT (' Calling read_klblhead. reading: ', A)
 

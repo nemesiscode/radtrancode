@@ -95,9 +95,9 @@ C     a priori covariance matrix
       integer nprox,nvarx,varidentx(mvar,3),lpre,ioffx,ivarx
       integer npx,ioff,icond,npvar,jloggx,iplanet,jxscx
       character*100 opfile,buffer,ipfile,runname,rifile
-      integer nxx 
-      real xwid,ewid,y,y0,lambda0,vi(mx)
-      real r0,er0,dr,edr,vm,nm,nimag,delv
+      integer nxx,nsec,ncont1 
+      real xwid,ewid,y,y0,lambda0,vi(mx),vtmp(mx),xt(mx)
+      real r0,er0,dr,edr,vm,nm,nimag,delv,xy
       real xldeep,eldeep,xlhigh,elhigh,v1
       integer ntemp, nvmr
 C     Initialise a priori parameters
@@ -1109,6 +1109,33 @@ C           Read in number of points, cloud id, and correlation between elements
              sx(ix,ix) = (err/xsc)**2
              print*,ix,err,xsc,x0(ix),sx(ix,ix)
             enddo
+
+C           Check the wavelengths are consistent with the .rxs file
+            call file(runname,xscfil,'rxs')
+            open(28,file=xscfil,status='old')
+54          read(28,1)buffer
+            if(buffer(1:1).eq.'#')goto 54
+            read(buffer,*)ncont1
+            j=0
+105         j=j+1
+            read(28,*,end=106)vtmp(j),(xt(i),i=1,ncont1)
+            read(28,*,end=106)(xt(i),i=1,ncont1)
+            xy=abs(vi(j)-vtmp(j))
+            if(xy.gt.0.01) then
+             print*,'Possible problem in readapriori.f. Model 887'
+             print*,'Wavelngth/wavenumb. in .rxs inconsistent with .apr'
+             print*,j,vi(j),vtmp(j)
+            endif
+            goto 105
+106         continue
+            nsec=j-1
+            if (nsec.ne.np)then
+             print*,'Error in readapriori.f'
+             print*,'Model 887: np = ',np
+             print*,'nsec in .rxs file = ',nsec
+             stop
+            endif
+            close(28)
 
             do i=1,np
              do j=1,np

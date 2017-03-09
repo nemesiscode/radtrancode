@@ -110,14 +110,17 @@ openr,1,retname
       18: np = 2
       19: np = 4
       20: np = 2
+      21: np = 2
       222: np = 8
       223: np = 9
       224: np = 9
       225: np = 11
+      226: np = 8
       333: np = 1
       444: np = 2 + varparam(ivar,0)
       555: np = 1
       888: np = varparam(ivar,0)
+      887: np = varparam(ivar,0)
       889: np = 1
       999: np = 1
       777: np = 1
@@ -203,13 +206,35 @@ if(irefl eq 1) then begin
 ;   readf,1,solar
 ;   close,1
 
-   ipfile = '/home/oxpln98/plan/irwin/radtrancode/trunk/raddata/houghtonsolarwl.dat'
+   ipfile = '/network/aopp/oxpln98/plan/irwin/gitradtran/radtrancode/raddata/houghtonsolarwl.dat'
    print,'Sun file = ',ipfile
+   print,'OK?'
+   ans=''
+   read,ans
+   ans=strupcase(ans)
+   if((ans ne 'Y') and (ans ne 'y')) then begin
+    print,'Enter new solfile name : '
+    read,ipfile
+   endif
    openr,1,ipfile
    head=''
    for i=1,4 do readf,1,head
-   solar = fltarr(2,78)
-   readf,1,solar
+   solx=fltarr(2,9000)
+   t1=fltarr(2)
+   A=''
+   i1=-1
+   while ~ eof(1) do begin
+    readf,1,A
+    reads,A,t1
+    i1=i1+1
+    print,i1,t1
+    solx(*,i1)=t1(*)
+   endwhile
+   nl=i1+1
+;   solar = fltarr(2,78)
+   solar = fltarr(2,nl)
+   for i=0,nl-1 do solar(*,i)=solx(*,i)
+;   readf,1,solar
    close,1
 
   endif
@@ -454,14 +479,17 @@ for ivar=0,nvar-1 do begin
       18: np = 2
       19: np = 4
       20: np = 2
+      21: np = 2
       222: np = 8
       223: np = 9
       224: np = 9
       225: np = 11
+      226: np = 8
       333: np = 1
       444: np = 2 + varparam(ivar,0)
       555: np = 1
       888: np = varparam(ivar,0)
+      887: np = varparam(ivar,0)
       889: np = 1
       999: np = 1
       777: np = 1
@@ -493,7 +521,7 @@ for ivar=0,nvar-1 do begin
       oplot,xn+errn,press,linestyle=1
       oplot,xn-errn,press,linestyle=1
       oplot,xa,press,linestyle=2
-      oplot,xa+10,press,psym=1
+;      oplot,xa+10,press,psym=1
       oplot,xa+erra,press,linestyle=3
       oplot,xa-erra,press,linestyle=3
 

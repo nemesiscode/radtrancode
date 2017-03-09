@@ -16,7 +16,7 @@ itname = strcompress(filename + '.itr',/REMOVE_ALL)
 readcirsspavX,spename,fwhm,xlat,xlon,ngeom,nav,nconv,wave,angles,spec,error
 
 ; ******* Read in .prf file to get pressure grid *******
-readprfhead,prfname,npro,press
+readprfhead4,prfname,npro,press
 
 ; ******* Read in .apr file to get a priori measurement vector *******
 readapriori,apname,npro,nvar,varident,varparam,nx,xa,erra
@@ -62,18 +62,55 @@ openr,1,itname
    kk(*,i)=tmp(*)
   endfor
 
-  !p.multi=[0,1,2]
+  window,0,xsize=1800,ysize=800
+  !p.multi=[0,1,3]
   a = min([y(*)-sqrt(se(*)),yn(*)])
   b = max([y(*)+sqrt(se(*)),yn(*)])
+
+;  plot,wave,y(*),title='Measured and fitted y-vector',ytitle='Radiance',$
+;    yrange=[a,b]
+;  oplot,wave,y(*)+sqrt(se(*)),linestyle=1
+;  oplot,wave,y(*)-sqrt(se(*)),linestyle=1
+;  oplot,wave,yn(*),linestyle=2
+;  oplot,wave,yn(*),psym=1 
+;  oplot,wave,yn1(*),linestyle=3
+;  oplot,wave,yn1(*),psym=2
+
   plot,y(*),title='Measured and fitted y-vector',ytitle='Radiance',$
     yrange=[a,b]
   oplot,y(*)+sqrt(se(*)),linestyle=1
   oplot,y(*)-sqrt(se(*)),linestyle=1
   oplot,yn(*),linestyle=2
-  oplot,yn(*),psym=1 
+;  oplot,yn(*),psym=1 
   oplot,yn1(*),linestyle=3
-  oplot,yn1(*),psym=2
+;  oplot,yn1(*),psym=2
+
+
+  a = min(yn(*))
+  b = max(yn(*))
+
+;  plot_io,wave,y(*),title='Measured and fitted y-vector',ytitle='Radiance',$
+;    yrange=[a,b]
+;  oplot,wave,y(*)+sqrt(se(*)),linestyle=1
+;  oplot,wave,y(*)-sqrt(se(*)),linestyle=1
+;  oplot,wave,yn(*),linestyle=2
+;  oplot,wave,yn(*),psym=1 
+;  oplot,wave,yn1(*),linestyle=3
+;  oplot,wave,yn1(*),psym=2
+
+  plot_io,y(*),title='Measured and fitted y-vector',ytitle='Radiance',$
+    yrange=[a,b]
+  oplot,y(*)+sqrt(se(*)),linestyle=1
+  oplot,y(*)-sqrt(se(*)),linestyle=1
+  oplot,yn(*),linestyle=2
+;  oplot,yn(*),psym=1 
+  oplot,yn1(*),linestyle=3
+;  oplot,yn1(*),psym=2
+
  
+;  plot,wave,y(*)-yn1(*),title = 'Measured - Calculated',ytitle='Radiance'
+;  oplot,wave,y(*)-yn(*),linestyle=1
+
   plot,y(*)-yn1(*),title = 'Measured - Calculated',ytitle='Radiance'
   oplot,y(*)-yn(*),linestyle=1
 
@@ -111,17 +148,23 @@ openr,1,itname
      11: np=2
      12: np=3
      13: np=3
+     444:np=2+long(varparam(ivar,0))
      555:np=1
      666:np=1
      888:np=long(varparam(ivar,0))
+     887:np=long(varparam(ivar,0))
      889:np=1
      999:np=1
+     222:np=8
+     223:np=9
+     224:np=9
+     225:np=11
      777:np=1
     endcase
 
     if(itype eq 0) then begin
      if(varident(ivar,0) ne 0) then begin
-      plot_io,exp(xn(istart:(istart+np-1))),press,yrange=[10,0.01],$
+      plot_oo,exp(xn(istart:(istart+np-1))),press,yrange=[10,0.01],$
        ytitle='Pressure (atm)',$
        title=string(varident(ivar,0),varident(ivar,1),varident(ivar,2))
        oplot,exp(xa(istart:(istart+np-1))),press,linestyle=1

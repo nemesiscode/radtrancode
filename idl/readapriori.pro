@@ -110,12 +110,30 @@ for ivar=0,nvar-1 do begin
   readf,5,head  
  endif 
 
+ if(itype eq 21) then begin
+  np = 2
+  tmp = fltarr(2,np)
+  readf,5,tmp
+  xa(istart:istart+1)=tmp(0,*)
+  erra(istart:istart+1)=tmp(1,*)
+  head=''
+  readf,5,head  
+ endif 
+
  if(itype ge 12 and itype le 15) then begin
   np = 3
   tmp = fltarr(2,np)
   readf,5,tmp
   xa(istart:istart+2)=tmp(0,*)
   erra(istart:istart+2)=tmp(1,*)
+ endif 
+
+ if(itype eq 19) then begin
+  np = 4
+  tmp = fltarr(2,np)
+  readf,5,tmp
+  xa(istart:istart+3)=tmp(0,*)
+  erra(istart:istart+3)=tmp(1,*)
  endif 
 
  if(itype eq 555) then begin
@@ -135,13 +153,78 @@ for ivar=0,nvar-1 do begin
   erra(istart:istart+np-1)=tmp(2,*)
  endif
 
+ if(itype eq 887)then begin
+  readf,5,np
+  varparam(ivar,0) = np
+  tmp = fltarr(3,np)
+  readf,5,tmp
+  xa(istart:istart+np-1)=tmp(1,*)
+  erra(istart:istart+np-1)=tmp(2,*)
+ endif
+
+ if(itype eq 222)then begin
+  np=8
+  tmp = fltarr(2,np)
+  xx=fltarr(2)
+  for k=0,7 do begin
+    readf,5,xx
+    tmp(*,k)=xx(*)
+  endfor
+  xtmp=fltarr(5)
+  readf,5,xtmp
+  varparam(ivar,0:4) = xtmp(*)
+
+  xa(istart:istart+np-1)=tmp(0,*)
+  erra(istart:istart+np-1)=tmp(1,*)
+
+ endif
+
+ if(itype eq 225)then begin
+  np=11
+  tmp = fltarr(2,np)
+  xx=fltarr(2)
+  for k=0,10 do begin
+    readf,5,xx
+    tmp(*,k)=xx(*)
+  endfor
+  xtmp=fltarr(5)
+  readf,5,xtmp
+  varparam(ivar,0:4) = xtmp(*)
+
+  xa(istart:istart+np-1)=tmp(0,*)
+  erra(istart:istart+np-1)=tmp(1,*)
+
+ endif
+
+
+ if(itype eq 223 or itype eq 224)then begin
+  np=9
+  tmp = fltarr(2,np)
+  xx=fltarr(2)
+  for k=0,8 do begin
+    readf,5,xx
+    tmp(*,k)=xx(*)
+  endfor
+  xtmp=fltarr(5)
+  readf,5,xtmp
+  varparam(ivar,0:4) = xtmp(*)
+
+  xa(istart:istart+np-1)=tmp(0,*)
+  erra(istart:istart+np-1)=tmp(1,*)
+
+ endif
+
  if(itype eq 444)then begin
   cloudfil=''
   readf,5,cloudfil
   openr,10,cloudfil
    np=2
+   xx=fltarr(2)
    tmp=fltarr(2,np)
-   readf,10,tmp
+   for k=0,1 do begin
+    readf,10,xx
+    tmp(*,k)=xx(*)
+   endfor
    print,tmp
    xa(istart:istart+1)=tmp(0,*)
    erra(istart:istart+1)=tmp(1,*)

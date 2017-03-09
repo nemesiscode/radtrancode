@@ -1039,7 +1039,7 @@ C           Read in surface temperature and error
            elseif(varident(ivar,1).eq.888)then
 C           **** Surface albedo spectrum *******
 C           Read in number of points
-            read(27,*)np
+            read(27,*)np,clen
             varparam(ivar,1)=np
             jalb = nx+1
             do i=1,np             
@@ -1054,6 +1054,19 @@ C           Read in number of points
              endif
              sx(ix,ix) = (err/alb)**2
              print*,ix,err,alb,x0(ix),sx(ix,ix)
+            enddo
+
+            do i=1,np
+             do j=1,np
+               delv = vi(i)-vi(j)
+               arg = abs(delv/clen)
+               xfac = exp(-arg)
+               if(xfac.ge.SXMINFAC)then
+                sx(nx+2+i,nx+2+j)=
+     & sqrt(sx(nx+2+i,nx+2+i)*sx(nx+2+j,nx+2+j))*xfac
+                sx(nx+2+j,nx+2+i)=sx(nx+2+i,nx+2+j)
+               endif
+             enddo
             enddo
 
             nx = nx+np

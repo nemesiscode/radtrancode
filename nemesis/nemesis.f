@@ -49,7 +49,7 @@ C     TIME2: System time at the end of program execution.
       character*100 runname,sfile
       integer ngeom, nwave(mgeom),nconv(mgeom), nx, ny, jsurf, jsurfx
       integer ngas,ncont,nvar,nvarx,lin,nxx,igeom,nconv1,nwave1,jalb
-      integet jxsc,jxscx
+      integer jxsc,jxscx
       real vwave(mgeom,mwave),vconv(mgeom,mconv),angles(mgeom,mav,3)
       real xa(mx),rerr(mgeom,mconv),sa(mx,mx),y(my),yn(my)
       real xnx(mx),kk(my,mx),xerr

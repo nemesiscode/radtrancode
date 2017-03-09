@@ -275,14 +275,22 @@ C      Calc. gradient of all elements of xnx matrix.
      2    nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
      3    jradx,jloggx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter)
        else
-        if(iscat.eq.0)then
-
-         print*,'Calling forwardavfovX - A'
-         CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,
-     1    nav,wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
-     2    lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,
-     3    jprex,jradx,jloggx,RADIUS,nxx,xnx,ny,ynx,kkx)
-
+ 
+       if(iscat.eq.0)then
+         if(jalbx.lt.0.and.jxscx.lt.0)then
+          print*,'Calling forwardavfovX - A'
+          CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,
+     1     nav,wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
+     2     lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,
+     3     jprex,jradx,jloggx,RADIUS,nxx,xnx,ny,ynx,kkx)
+         else
+          print*,'Calling forwardnogX - A'
+          CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
+     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
+     2     nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
+     3     jradx,jloggx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,
+     4	   iprfcheck)
+         endif
         elseif(iscat.eq.1.or.iscat.eq.3.or.iscat.eq.4)then
          print*,'Calling forwardnogX - A'
          CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
@@ -367,12 +375,19 @@ C      Calculate inverse of se
       else
 
        if(iscat.eq.0)then
-
-        print*,'Calling forwardavfovX - B'
-        CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3   jlogg,RADIUS,nx,xn,ny,yn,kk)
+        if(jalb.lt.0.and.jxsc.lt.0)then
+         print*,'Calling forwardavfovX - B'
+         CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,nav,
+     1    wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     2    nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
+     3    jlogg,RADIUS,nx,xn,ny,yn,kk)
+        else
+         print*,'Calling forwardnogX - B' 
+         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
+     1    wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     2    nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
+     3    jlogg,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
+        endif
 
 C        print*,'forwardavfovX OK, jpre = ',jpre
 
@@ -558,12 +573,19 @@ C       temporary kernel matrix kk1. Does it improve the fit?
      3    jlogg,RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter)
         else
          if(iscat.eq.0)then
-
-         print*,'Calling forwardavfovX - C'
-          CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,nav,
-     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
-     2     lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
-     3     jrad,jlogg,RADIUS,nx,xn1,ny,yn1,kk1)
+          if(jalb.lt.0.and.jxsc.lt.0)then
+           print*,'Calling forwardavfovX - C'
+           CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,nav,
+     1      wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
+     2      lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
+     3      jrad,jlogg,RADIUS,nx,xn1,ny,yn1,kk1)
+          else
+           print*,'Calling forwardnogX - C'
+           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
+     1      wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     2      nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
+     3      jlogg,RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter,iprfcheck)
+          endif
 
          elseif(iscat.eq.1.or.iscat.eq.3.or.iscat.eq.4)then
 

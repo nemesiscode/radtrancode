@@ -1103,6 +1103,7 @@ C           **** Surface albedo scaling value *******
 C           **** Cloud x-section spectrum *******
 C           Read in number of points, cloud id, and correlation between elements.
             read(27,*)np, icloud, clen
+            print*,np, icloud, clen
             varparam(ivar,1)=np
             varparam(ivar,2)=icloud
             jxsc = nx+1
@@ -1113,7 +1114,7 @@ C           Read in number of points, cloud id, and correlation between elements
                x0(ix)=alog(xsc)
                lx(ix)=1
              else
-               print*,'Error in readapriori - xsc must be > 0'
+               print*,'Error in readapriori - xsc must be >= 0'
                stop
              endif
              sx(ix,ix) = (err/xsc)**2

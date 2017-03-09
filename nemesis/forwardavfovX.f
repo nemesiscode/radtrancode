@@ -164,6 +164,13 @@ C     Initialise arrays
        stop
       endif
 
+      if(jxsc.gt.1)then
+       print*,'Warning from forwardavfovX'
+       print*,'Can not currently do x-section retrievals with'
+       print*,'gradient code'
+       stop
+      endif
+
       call setup(runname,gasgiant,nmu,mu,wtmu,isol,dist,lowbc,
      1 galb,nf,nphi,layht,tsurf,nlayer,laytyp,layint)
 

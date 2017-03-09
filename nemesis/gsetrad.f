@@ -153,7 +153,7 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
 C        ********* Adjust cloud cross-section spectrum  **********
          nxsc = int(varparamx(ivarx,1))
          icont = int(varparamx(ivarx,2))
-         call file(runname,runname,'rxsc')
+         call file(runname,runname,'rxs')
          open(9,file=runname,status='old')
 51       read(9,1)buffer
          if(buffer(1:1).eq.'#')goto 51

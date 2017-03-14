@@ -43,7 +43,8 @@
 #       polyatomic molecules we have set the coeffs to:
 #               (-0.44219E+02, +0.58047E+01, +0.50145E-01, -0.37316E-04)
 #       which is a reasonable approximation to T**1.5 (rotation partition
-#       function of polyatomic rotor.
+#       function of polyatomic rotor. For monatomic gases we have set the
+#       partition function coeffs to (1.0,0.0,0.0,0.0)
 #
 #
 #       As far as can be seen there have been no changes to the partition
@@ -735,7 +736,7 @@
   2
   1 0.5055790    95.921076  (169)  isotope id, relative abun, mass # 
      -0.44219E+02 +0.58047E+01 +0.50145E-01 -0.37316E-04
-  1 0.4918940    97.919027  (161)  isotope id, relative abun, mass # 
+  2 0.4918940    97.919027  (161)  isotope id, relative abun, mass # 
      -0.44219E+02 +0.58047E+01 +0.50145E-01 -0.37316E-04
  ------------------------------------------------
  72                 gas identifier
@@ -743,7 +744,7 @@
   2
   1 0.5009950    93.941811  (219)  isotope id, relative abun, mass # 
      -0.44219E+02 +0.58047E+01 +0.50145E-01 -0.37316E-04
-  1 0.487433     95.939764  (211)  isotope id, relative abun, mass # 
+  2 0.487433     95.939764  (211)  isotope id, relative abun, mass # 
      -0.44219E+02 +0.58047E+01 +0.50145E-01 -0.37316E-04
  ------------------------------------------------
  73                 gas identifier
@@ -757,3 +758,23 @@
   1
   1 0.943400    79.95682  (26)  isotope id, relative abun, mass # 
      -0.44219E+02 +0.58047E+01 +0.50145E-01 -0.37316E-04
+ ------------------------------------------------
+ 75                 gas identifier
+ Ne
+  3
+  1 0.9048    19.992440  (20)  isotope id, relative abun, mass # 
+     +0.10000E+01 +0.00000E+00 +0.00000E+00 +0.00000E+00
+  2 0.0925    21.991385  (22)  isotope id, relative abun, mass # 
+     +0.10000E+01 +0.00000E+00 +0.00000E+00 +0.00000E+00
+  3 0.0027    20.993847  (21)  isotope id, relative abun, mass # 
+     +0.10000E+01 +0.00000E+00 +0.00000E+00 +0.00000E+00
+ ------------------------------------------------
+ 76                 gas identifier
+ Ar
+  3
+  1 0.996035   39.962383  (40)  isotope id, relative abun, mass # 
+     +0.10000E+01 +0.00000E+00 +0.00000E+00 +0.00000E+00
+  2 0.003336   35.967545  (36)  isotope id, relative abun, mass # 
+     +0.10000E+01 +0.00000E+00 +0.00000E+00 +0.00000E+00
+  3 0.000629   37.962732  (38)  isotope id, relative abun, mass # 
+     +0.10000E+01 +0.00000E+00 +0.00000E+00 +0.00000E+00

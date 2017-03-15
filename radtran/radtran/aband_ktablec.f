@@ -215,7 +215,7 @@ C      READ*,NTRAN
       ENDDO
       QROT=1.5
        
-      IF(BANDTYP(JGAS).LT.3)THEN   
+      IF(BANDTYP(JGAS).LT.3.OR.BANDTYP(JGAS).GT.4)THEN   
        CALL PROMPT('Enter QROT : ')
        READ*,QROT   
       ELSEIF(BANDTYP(JGAS).EQ.3)THEN

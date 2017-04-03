@@ -52,8 +52,8 @@ C--------------------------------------------------------------
       INCLUDE '../includes/pathcom.f'
       INCLUDE '../includes/bincom.f'
 C-----------------------------------------------------------------------------
-      INTEGER LUN,LOOP,LUN0,LUN1,MDATA,MFIL,NGMAX,N1
-      PARAMETER (LUN=2,LUN0=30,LUN1=31,MFIL=1000)
+      INTEGER LUN,LOOP,LUN0,MDATA,MFIL,NGMAX,N1
+      PARAMETER (LUN=2,LUN0=30,MFIL=1000)
       PARAMETER (NGMAX=51)
       REAL X,PMIN,PMAX,TMIN,TMAX,DT,DP
       REAL VMINC,VMAXC
@@ -172,7 +172,7 @@ C     **** all these are now defined by zgauleg.f ***
       READ*,MAXDV
 
       IF(MAXDV.NE.VREL)THEN
-       PRINT*,'*Warning from calc_fnktablec.f: Cut-off and VREL'
+       PRINT*,'*Warning from calc_lbltable.f: Cut-off and VREL'
        PRINT*,'are different. It is usual to set these to be the same.'
        PRINT*,'V_CUTOFF = ',MAXDV
        PRINT*,'VREL = ',VREL
@@ -331,7 +331,6 @@ C            defined by lbl_kcont.f)
             ENDIF
 
             WRITE(*,*)'Pressure, temperature: ',P1,TE1
-            WRITE(LUN1,*)'Pressure, temperature: ',P1,TE1
             CALL LBL_KNOW(IWAVE,VMIN,DELV,NPOINT,P1,TE1,
      1          IDGAS(1),ISOGAS(1),IPROC(1),J,K,FRAC1,MAXDV,IPTF,
      2		OUTPUT)
@@ -351,11 +350,8 @@ C
 C	Close files and shut down the program.
 C
 C-------------------------------------------------------------------------
-C If the code succeeds in completion, delete the "tempk.dat" file since 
-C its main usefulness is when the code crashes prior to completion.
-      CLOSE(UNIT= LUN1,STATUS= 'DELETE')
 
-      CALL WTEXT('%CALC_KTABLEC.f :: calculation complete')
+      CALL WTEXT('%CALC_LBLTABLE.f :: calculation complete')
       call system_clock(time2)
       tot_time=(time2-time1)/rate
       WRITE(*,244)tot_time

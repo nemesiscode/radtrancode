@@ -17,6 +17,19 @@ C     *****************************************************************
 
 C      data isocode /26,36,28,27,38,37/
 
+      LNUGQI04 = '---------------'
+      LNLGQI04 = '---------------'
+      LNULQ04 = LNLGQI04
+      LNLLQ04 = LNLGQI04
+      do i=1,6
+       LNACC04(i)=0
+       LNREF04(i)=0
+      enddo
+      LNFLAG=' '
+      UWGHT=0.
+      LWGHT=0.
+      LNEINA=0.
+      LNPSH=0.
       
       print*,'Enter input filename : '
       print*,'NB: This file should contain lines from one gas only'
@@ -30,7 +43,7 @@ C      data isocode /26,36,28,27,38,37/
       call prompt('Enter number of isotopes for this gas (NISO): ')
       read*,niso
 
-      call prompt('Enter new isotopes IDs for the NISO isotopes : ')
+      call prompt('Enter isotopes IDs for the NISO isotopes : ')
       read*,(isocode(i),i=1,niso)
 
       call prompt('Enter converted Gas ID : ')

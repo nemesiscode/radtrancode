@@ -85,8 +85,8 @@ C Skip if first k-distribution = 0.0
           IF(k_g1(1).EQ.0.0)THEN
               k_g(1) = k_g2(1)*a2
               dkdq(1,igas) = 0.0
-              dkdq(1,igas+1) = k_g2(I)
-              dkdq(1,igas+2) = dk2dT(I)*a2
+              dkdq(1,igas+1) = k_g2(1)
+              dkdq(1,igas+2) = dk2dT(1)*a2
             GOTO 99
           ENDIF
 

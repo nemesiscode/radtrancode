@@ -107,6 +107,11 @@ c     First skip header
 179     CONTINUE
         BANDTYP(I)=4 
        ELSE
+        IF(HEAD(1:2).EQ.'GL')THEN
+         BANDTYP(I)=5
+        ELSE
+         BANDTYP(I)=0
+        ENDIF
         DO 110 J=1,NPOINT
          READ(12,932)TWAVEN(J,1),TWAVEN(J,2),TPOUT(J,I,1),TPOUT(J,I,2),
      1 TPOUT(J,I,3),TPOUT(J,I,4),TPOUT(J,I,5)
@@ -210,7 +215,7 @@ C      READ*,NTRAN
       ENDDO
       QROT=1.5
        
-      IF(BANDTYP(JGAS).LT.3)THEN   
+      IF(BANDTYP(JGAS).LT.3.OR.BANDTYP(JGAS).GT.4)THEN   
        CALL PROMPT('Enter QROT : ')
        READ*,QROT   
       ELSEIF(BANDTYP(JGAS).EQ.3)THEN

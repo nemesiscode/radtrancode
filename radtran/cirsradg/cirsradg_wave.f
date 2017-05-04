@@ -496,7 +496,7 @@ C Read in k-coefffients for each gas and each layer
         CALL get_klblg(nlayer,press,temp,ngas,vwave)
       ENDIF
  
-      print*,'OK here'  
+C      print*,'OK here'  
  
       DO j=1,nlayer
         taucon(j) = 0.0

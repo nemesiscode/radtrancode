@@ -150,6 +150,9 @@ C       direct under Unix
       ELSEIF(DBRECL.EQ.160)THEN
         ISOFIL='/home/oxpln98/plan/teanby/linedata/lib/isotopes_h2k.dat'
         DBFORM=0
+      ELSEIF(DBRECL.EQ.52)THEN
+        ISOFIL='/home/oxpln98/plan/teanby/linedata/lib/isotopes_h2k.dat'
+        DBFORM=0
       ELSE
         ISOFIL='/home/oxpln98/plan/teanby/linedata/lib/isotopes_g97.dat'
         DBFORM=1

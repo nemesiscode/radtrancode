@@ -141,7 +141,7 @@ Modifyband : modifyband.f $(LIBRARY)
 
 Pl_lines : pl_lines.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Pl_lines pl_lines.f $(LIBRARY) \
-	$(LIB)/rtm_util.a
+	$(LIB)/rtm_util.a $(LIB)/path.a $(LIB)/radtran.a
 
 Pl_elines : pl_elines.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Pl_elines pl_elines.f $(LIBRARY) \

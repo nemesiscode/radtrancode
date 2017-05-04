@@ -344,7 +344,6 @@ C     set up a priori of x and its covariance
       CALL readapriori(runname,lin,lpre,xlat,npro,nvar,varident,
      1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,nx,xa,sa,lx)
 	
-      print*,'OK here'
       DO i = 1, nx
         xn(i)=xa(i)
       ENDDO 

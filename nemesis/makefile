@@ -90,7 +90,8 @@ F_SOURCES = \
 	getradius.f \
 	getcloud21.f \
 	ackermanmarley.f \
-	calc_input_files.f
+	calc_input_files.f \
+	tbrownrc.f
 
 INCDIR = ../../radtran/includes
 INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/lincom.f $(INCDIR)/pathcom.f \
@@ -134,7 +135,8 @@ bin :   \
 	GenerateMCSspx \
 	Convertitertomre \
 	Testack \
-	Calc_chisq
+	Calc_chisq \
+	Testbrown
 
 Nemesis: nemesis.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Nemesis nemesis.f $(LIBRARY) \
@@ -212,5 +214,9 @@ Testack: testack.f $(LIBRARY)
 
 Calc_chisq: calc_chisq.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Calc_chisq calc_chisq.f \
+	$(LIBRARY) $(LIB)/rtm_util.a $(FRECIPES)
+
+Testbrown: testbrown.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Testbrown testbrown.f \
 	$(LIBRARY) $(LIB)/rtm_util.a $(FRECIPES)
 

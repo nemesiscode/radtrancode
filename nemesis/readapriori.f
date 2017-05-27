@@ -94,7 +94,8 @@ C     a priori covariance matrix
       real xwid,ewid,y,y0,lambda0,vi(mx),vtmp(mx),xt(mx)
       real r0,er0,dr,edr,vm,nm,nimag,delv,xy
       real xldeep,eldeep,xlhigh,elhigh,v1
-
+      real tau0,ntemp,teff,alpha,T0
+      real etau0,entemp,eteff,ealpha,eT0
 
 C     Initialise a priori parameters
       do i=1,mx
@@ -1038,6 +1039,42 @@ C             *** vmr, fcloud, para-H2 or cloud, take logs *********
 
              nx = nx+2
 
+           elseif (varident(ivar,3).eq.22)then
+C           Parameterised Brown Dwarf T-profile
+C            Read in tau0, n, Teff, alpha, T0
+             read(27,*)tau0,etau0
+             read(27,*)ntemp,entemp
+             read(27,*)teff,eteff
+             read(27,*)alpha,ealpha
+             read(27,*)T0,eT0
+             ix=nx+1
+             x0(ix)=alog(tau0)
+             lx(ix)=1
+             err = etau0/tau0
+             sx(ix,ix)=err**2
+             ix=nx+2
+             x0(ix)=alog(ntemp)
+             lx(ix)=1
+             err = entemp/ntemp
+             sx(ix,ix)=err**2
+             ix=nx+3
+             x0(ix)=alog(teff)
+             lx(ix)=1
+             err = eteff/teff
+             sx(ix,ix)=err**2
+             ix=nx+4
+             x0(ix)=alog(alpha)
+             lx(ix)=1
+             err = ealpha/alpha
+             sx(ix,ix)=err**2
+             ix=nx+5
+             x0(ix)=alog(T0)
+             lx(ix)=1
+             err = eT0/T0
+             sx(ix,ix)=err**2
+
+             nx=nx+5
+
            else         
             print*,'vartype profile parametrisation not recognised'
             stop
@@ -1215,7 +1252,7 @@ C           **** Radius of planet *******
             radius2 = radius+x0(ix)
 
 C	    print*,jrad,ix,sx(ix,ix),'jm2'
-
+            print*,'radius2 = ',radius2
             nx = nx+1
 
            elseif (varident(ivar,1).eq.444)then
@@ -1298,7 +1335,7 @@ C           **** surface ln(g) of planet *******
 
             call readrefiplan(opfile,iplanet,xlat,radius)
             mass2 = 1e-20*10**(x0(ix))*(radius**2)/Grav
-
+            print*,'mass2 = ',mass2
             nx = nx+1
 
 

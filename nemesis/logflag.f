@@ -68,6 +68,10 @@ C       Variable is not temperature  - may need to take exponent
       if(imod.eq.10)iflag=1	! Log scaling factor
       if(imod.eq.11)iflag=1	! Log scaling factor
 
+      if(imod.eq.22)then 
+       iflag=1			! Brown dwarf T-profile
+      endif
+
       if(ivar.eq.887)iflag=1	! X-section spectrum
       if(ivar.eq.888)iflag=1	! Surface albedo spectrum
       if(ivar.eq.889)iflag=1	! Surface albedo spectrum multiplier

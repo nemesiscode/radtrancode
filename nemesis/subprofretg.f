@@ -75,6 +75,7 @@ C     ***********************************************************************
       REAL PKNEE,HKNEE,XDEEP,XFSH,PARAH2(MAXPRO),XH,XKEEP,X2(MAXPRO)
       REAL RHO,F,DQDX(MAXPRO),DX,PLIM,XFACP,CWID,PTROP, NEWF
       REAL DNDH(MAXPRO),DQDH(MAXPRO),FCLOUD(MAXPRO)
+      REAL dtempdx(MAXPRO,5),T0,Teff,alpha,ntemp,tau0
       DOUBLE PRECISION Q(MAXPRO),OD(MAXPRO),ND(MAXPRO),XOD
       INTEGER ISCALE(MAXGAS),XFLAG,NPVAR,MAXLAT,IERR
       INTEGER NLATREF,ILATREF,JLAT,KLAT,ICUT,JX
@@ -511,6 +512,7 @@ C     1    VARIDENT(IVAR,3)
 C       Look up number of parameters needed to define this type of profile
         NP = NPVAR(VARIDENT(IVAR,3),NPRO)
 C        print*,'IVAR,VARIDENT,NP',IVAR,(VARIDENT(IVAR,I),I=1,3),NP
+C        print*,'IPAR = ',IPAR
         IF(VARIDENT(IVAR,3).EQ.0)THEN
 C        Model 0. Continuous profile
 C        ***************************************************************
@@ -2100,6 +2102,24 @@ C            PRINT*,'ITEST,J,XMAP',ITEST,J,Q(J),X1(J),(Q(J)-X1(J))/DX
 
 24       CONTINUE
 
+        ELSEIF(VARIDENT(IVAR,3).EQ.22)THEN
+C        Brown dwarf parameterised temperature profile.
+
+         tau0=EXP(XN(NXTEMP+1))
+         ntemp=EXP(XN(NXTEMP+2))
+         Teff=EXP(XN(NXTEMP+3))
+         alpha=EXP(XN(NXTEMP+4))
+         T0=EXP(XN(NXTEMP+5))
+
+         call tbrownrc(npro,p,T0,Teff,tau0,ntemp,alpha,x1,
+     &	dtempdx)
+
+        do J=1,npro
+C         print*,p(J),x1(J)
+         do K=1,np
+          XMAP(NXTEMP+K,IPAR,J)=dtempdx(J,K)*EXP(XN(NXTEMP+K))
+         enddo
+        enddo
 
         ELSE
 

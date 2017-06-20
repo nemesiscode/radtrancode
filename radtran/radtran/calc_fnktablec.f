@@ -102,10 +102,14 @@ c  ** calc g_ord and del_g **
       READ*,IWAVE
 
       PRINT*,'For bin centres do you want a regular wave step (0)'
-      CALL PROMPT('or irregular (1) : ')
+      PRINT*'and have Nemesis interpolate the table to the requested'
+      PRINT*,'wavelength/wavenumber or have an irregular (1) step'
+      PRINT*,'and have code snap to nearest entry, or have a regular'
+      PRINT*,'wave step, but still have code snap to the nearest'
+      CALL PROMPT('entry (2)?'
       READ*,IREG
 
-      IF(IREG.EQ.0)THEN
+      IF(IREG.EQ.0.OR.IREG.EQ.2)THEN
        CALL PROMPT('Enter minumum wavenumber/wavelength X: ')
        READ*,VMIN
        CALL PROMPT('Enter DELX and NPOINT : ')
@@ -278,6 +282,13 @@ C      (for exoplanet k-tables)
       ELSE
        IREC0=11 + 2*NG + 2 + NP + NT + 2
       ENDIF
+
+C     If we want code to 'snap' to nearest point in table, even if
+C     regularly gridded, set DELV=-1 now.
+      IF(IREG.EQ.2)THEN
+       DELV=-1.
+      ENDIF
+
 C     Add in extra buffer to list wavelengths if a non-uniform grid is
 C     specified
       IF(DELV.LE.0.0)THEN 

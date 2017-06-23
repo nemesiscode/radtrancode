@@ -42,6 +42,7 @@ F_SOURCES = \
 	linecontrib.f \
 	fparacon.f \
 	nparacon.f \
+	nparacon_all.f \
 	ciaread.f \
 	ch4cont.f \
 	nh3cont.f \
@@ -65,6 +66,7 @@ F_SOURCES = \
 	humlic.f \
 	intrpk.f \
 	fpread.f \
+	fpread_all.f \
 	kml.f \
 	lbl_kcont.f \
 	lbl_kdists.f \

@@ -110,7 +110,7 @@ C******************************** CODE *********************************
        tmin = t2(1,1)
       endif
 
-      print*,'get_kg: ng =',ng
+c      print*,'get_kg: ng =',ng
 C Work out where P,T for each layer lies in the tables
       DO 51 ilayer=1,NLAYER
         P1 = LOG(PRESS(ilayer))

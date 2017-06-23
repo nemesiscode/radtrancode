@@ -616,13 +616,15 @@ C idump= 0 means no diagnostic print statements while in NCIACON.
 
         IF(flagh2p.EQ.1)THEN
           fpara = hfp(j)
-          CALL NPARACON(vv,p,t,ngas,idgas,isogas,aamount,
+          CALL NPARACON_ALL(vv,p,t,ngas,idgas,isogas,aamount,
      1    ppp,fpara,xlen,avgcontmp,iabsorb,dabsorb,idump)
         ELSE
           CALL NCIACON(vv,p,t,inormal,ngas,idgas,isogas,aamount,
      1    ppp,xlen,avgcontmp,iabsorb,dabsorb,idump)
         ENDIF
-
+c	idump=0
+c	print*,'IABSORB:',iabsorb
+	
         taucon(j) = taucon(j) + avgcontmp
 
         DO ii=1,5

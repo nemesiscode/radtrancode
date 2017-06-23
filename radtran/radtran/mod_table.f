@@ -65,9 +65,19 @@ C     Assume 4-byte words per record
       IDGAS(1)=I1
       ISOGAS(1)=I2
 
-
       WRITE(LUN0,REC=9)IDGAS(1)
       WRITE(LUN0,REC=10)ISOGAS(1)
+
+      READ(LUN0,REC=4)DELV
+      READ(LUN0,REC=5)FWHM
+
+      print*,'Current gas DELV, FWHM = ',DELV,FWHM
+      print*,'Enter new values : '
+      read*, DELV,FWHM
+
+      WRITE(LUN0,REC=4)DELV
+      WRITE(LUN0,REC=5)FWHM
+
 
       CLOSE(LUN0)
 

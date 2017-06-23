@@ -106,7 +106,7 @@ c  ** calc g_ord and del_g **
       PRINT*,'wavelength/wavenumber or have an irregular (1) step'
       PRINT*,'and have code snap to nearest entry, or have a regular'
       PRINT*,'wave step, but still have code snap to the nearest'
-      CALL PROMPT('entry (2) ')
+      CALL PROMPT('entry (2)?')
       READ*,IREG
 
       IF(IREG.EQ.0.OR.IREG.EQ.2)THEN

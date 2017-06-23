@@ -1,9 +1,9 @@
-      PROGRAM MOD_TABLE
-C     $Id: cut_table.f,v 1.1 2011-06-17 15:25:43 irwin Exp $
+      PROGRAM MOD_TABLE1A
+C     $Id:
 C***********************************************************************
 C_TITL:	CUT_TABLE.f
 C
-C_DESC: Changes gas ID of a k-table
+C_DESC: Changes k-table from channel to continuous
 C
 C_ARGS:	See the definitions below.
 C
@@ -25,13 +25,13 @@ C NOTE: dbcom defines the linedata base variables. it is not normally
 C stored in the same directory as the rest of the code
       INCLUDE '../includes/pathcom.f'
 
-      INTEGER LUN,LUN0,LUN1      
+      INTEGER LUN,LUN0,LUN1,IX
       PARAMETER (LUN=2,LUN0=30,LUN1=31)
 C MAXOUT the maximum number of output points
 
       INTEGER PINDEX,CP,CT,LOOP,I1,I2
 
-      INTEGER IREC,IREC0
+      INTEGER IREC,IREC0,IREC1,IREC01
       REAL P1,T1,PRESS1(MAXK),TEMP1(MAXK),VCEN(MAXBIN),X1,X2
       REAL G_ORD(MAXG),K_G(MAXG),DEL_G(MAXG),KVAL
 
@@ -55,29 +55,34 @@ C     Assume 4-byte words per record
      1 RECL=IRECL)
 
 
+      READ(LUN0,REC=1)IREC0
+      READ(LUN0,REC=2)NPOINT
+      READ(LUN0,REC=3)VMIN
+      READ(LUN0,REC=4)DELV
+      READ(LUN0,REC=5)FWHM
+      READ(LUN0,REC=6)NP
+      READ(LUN0,REC=7)NT
+      READ(LUN0,REC=8)NG
       READ(LUN0,REC=9)IDGAS(1)
       READ(LUN0,REC=10)ISOGAS(1)
 
+      IF(DELV.GT.0)THEN
+       IX=1
+      ELSE
+       IX=0
+      ENDIF
+      IF(IX.EQ.0)THEN
+       PRINT*,'DELV = ',DELV
+       PRINT*,'Enter new DELV'
+       READ*,DELV
+       PRINT*,'Enter new FWHM'
+       READ*,FWHM
 
-      print*,'Current gas ID,ISO = ',IDGAS(1),ISOGAS(1)
-      print*,'Enter new values : '
-      read*, I1,I2
-      IDGAS(1)=I1
-      ISOGAS(1)=I2
-
-      WRITE(LUN0,REC=9)IDGAS(1)
-      WRITE(LUN0,REC=10)ISOGAS(1)
-
-      READ(LUN0,REC=4)DELV
-      READ(LUN0,REC=5)FWHM
-
-      print*,'Current gas DELV, FWHM = ',DELV,FWHM
-      print*,'Enter new values : '
-      read*, DELV,FWHM
-
-      WRITE(LUN0,REC=4)DELV
-      WRITE(LUN0,REC=5)FWHM
-
+       WRITE(LUN0,REC=4)DELV
+       WRITE(LUN0,REC=5)FWHM
+      ELSE
+       PRINT*,'Cannot modify this file. Use Mod_table1 instead'
+      ENDIF
 
       CLOSE(LUN0)
 

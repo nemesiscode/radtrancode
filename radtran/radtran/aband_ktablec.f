@@ -47,7 +47,6 @@ c ------------------------------------------------------
       DATA DEL_G/0.033336, 0.074726, 0.109543, 0.134633, 0.147762,
      1          0.147762, 0.134633, 0.109543, 0.074726, 0.033336/
 
-
       CALL PROMPT('Enter name of input band file : ')
       READ(5,1)IPFILE
 1     FORMAT(A)
@@ -122,6 +121,14 @@ c     First skip header
 110     CONTINUE
        ENDIF
        print*,'Gas ',I,'Bandtype: ',BANDTYP(I)
+       print*,'Allowed bandtypes are '
+       print*,'-1 = Goody-Voigt - Kim Strong Type'
+       print*,' 0 = Goody-Voigt - extended'
+       print*,' 1 = Goody-Voigt - Kam Sihra type (C1,C2)'
+       print*,' 2 = Goody-Voigt - 2-EL, T**QROT'
+       print*,' 3 = Goody-Voigt - 2-EL, tpart(4)'
+       print*,' 4 = Karkoschka and Tomasko (2009)'
+       print*,' 5 = Goody-Lorentz (Neil Bowles)'
 105   CONTINUE
 
       CLOSE(12)

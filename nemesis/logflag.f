@@ -71,6 +71,8 @@ C       Variable is not temperature  - may need to take exponent
       if(imod.eq.22)then 
        iflag=1			! Brown dwarf T-profile
       endif
+      
+      if(imod.eq.23)iflag=1  ! 2 point gradient
 
       if(ivar.eq.887)iflag=1	! X-section spectrum
       if(ivar.eq.888)iflag=1	! Surface albedo spectrum

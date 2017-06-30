@@ -100,17 +100,23 @@ C     ************************************************************************
 
       integer nvar,ivar,varident(mvar,3),i,j,nalb,nalb1
       real varparam(mvar,mparam),alb(maxsec),valb(maxsec)
-      integer nvarx,varidentx(mvar,3),ivarx,iflagsrom,iflagtest
+      integer nvarx,varidentx(mvar,3),ivarx,iflagsrom,iflagtest,iflagcb
       real varparamx(mvar,mparam),od1,xsc(maxsec,maxgas)
       real ssa(maxsec,maxgas)
-      logical gasgiant,iflagcloud
+      logical gasgiant,iflagcloud,cbflag
       integer NN,NDUST
       REAL DUSTH(MAXLAY),DUST(MAXCON,MAXLAY)
 
-      integer mcloud,ncloud
+      integer mcloud,ncloud,bcloud
       parameter (mcloud=10)
       real cpbot(mcloud),cptop(mcloud),codepth(mcloud),cfsh(mcloud)
       integer nlaycloud(mcloud)
+      real cbpbot(mcloud),cbptop(mcloud),cbodepth(mcloud),cbfsh(mcloud)
+      integer ncblaycloud(mcloud)
+
+      real vi(mx),csx,nrealfix(mx),nimagfix(mx)
+      integer fixtoggle(mvar)
+      common /maltmieser/vi,nrealfix,nimagfix,fixtoggle
 
      
       print*,'gsetrad, lin = ',lin
@@ -266,7 +272,9 @@ C       ***************** Surface temperature correction ***********
       endif
 
       iflagcloud=.false.
+      cbflag=.false.
       iflagsrom=0
+      iflagcb=0
 
       do ivar=1,nvar
 
@@ -382,12 +390,19 @@ C      ***************** Tangent height correction ***********
        if(iflagtest.ge.222.and.iflagtest.le.226)then
         iflagcloud=.true.
         iflagsrom=iflagtest
+       else
+        if(iflagtest.eq.227)then!flag if creme brulee model
+         cbflag=.true.
+         iflagcb=iflagtest
+         print*,'iflagtest = ',iflagtest
+        endif
        endif
 
       enddo
 
 C     See if Sromovsky cloud layer model is specified.
       print*,'gsetrad - iflagcloud,iflagsrom = ',iflagcloud,iflagsrom
+      print*,'gsetrad - cbflag, iflagcb = ',cbflag,iflagcb
 
       if(iflagcloud)then
 
@@ -406,6 +421,17 @@ C     See if Sromovsky cloud layer model is specified.
      1  emiss_ang,nconv,vconv,fwhm,layht,nlayer,
      2  laytyp,layint,flagh2p,ncloud,cpbot,cptop,nlaycloud,
      3  codepth,cfsh,iflagsrom,cwid,pmeth)
+
+      elseif(cbflag)then!see if creme brulee model is specified
+        call extractcb(runname,iflagcb,nvar,varident,
+     1    varparam,xn,ncloud,cbpbot,cbptop,ncblaycloud,cbodepth,
+     2    cbfsh)
+          
+       print*,'Calling gwritepatcb'
+       call gwritepatcb(runname,gasgiant,iscat,sol_ang,
+     1  emiss_ang,nconv,vconv,fwhm,layht,nlayer,
+     2  laytyp,layint,flagh2p,ncloud,cbpbot,cbptop,ncblaycloud,
+     3  cbodepth,cbfsh,iflagcb)
 
       else
 
@@ -495,11 +521,13 @@ C     Compute the drv file to get the aerosol optical depths
           if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
           if(varident(ivar,1).eq.887)np = int(varparam(ivar,1))
           if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
+          if(varident(ivar,1).eq.445)np = 3+int(varparam(ivar,1))
           if(varident(ivar,1).eq.222)np = 8
           if(varident(ivar,1).eq.223)np = 9
           if(varident(ivar,1).eq.224)np = 9
           if(varident(ivar,1).eq.225)np = 11
           if(varident(ivar,1).eq.226)np = 8
+          if(varident(ivar,1).eq.227)np = 7
 
          endif
 
@@ -540,9 +568,10 @@ C       check that rescaling has happened correctly
        if(varident(ivar,1).eq.224)np = 9
        if(varident(ivar,1).eq.225)np = 11
        if(varident(ivar,1).eq.226)np = 8
+       if(varident(ivar,1).eq.227)np = 7
           
 
-       if(varident(ivar,1).eq.444)then
+       if(varident(ivar,1).eq.444.or.varident(ivar,1).eq.445)then
 
            iwave=ispace
            if(iwave.eq.0)iwave=2
@@ -551,6 +580,11 @@ C       check that rescaling has happened correctly
 
            r0 = exp(xn(nx1+1))
            v0 = exp(xn(nx1+2))
+           if(varident(ivar,1).eq.445)then
+            csx = exp(xn(nx1+3))
+           else
+            csx = -1.0
+           endif
            np1 = int(varparam(ivar,1))
            clen = varparam(ivar,2)           
            vm = varparam(ivar,3)
@@ -565,7 +599,11 @@ C          np1 should now match nwave
              print*,'different from that in .xsc file.'
            endif
            do i=1,nwave
-            nimag(i)=exp(xn(nx1+2+i))
+            if(varident(ivar,1).eq.445)then
+             nimag(i)=exp(xn(nx1+3+i))
+            else
+             nimag(i)=exp(xn(nx1+2+i))
+            endif
            enddo
 
 C          Compute nreal from KK
@@ -614,7 +652,12 @@ C          Find minimum wavelength
            do i=1,nwave
             srefind(i,1)=nreal(i)
             srefind(i,2)=nimag(i)
-            write(12,*)wave(i),nreal(i),nimag(i)
+	    if(varident(ivar,1).eq.445)then
+	     write(12,*)wave(i),nreal(i),nimag(i),
+     1                  nrealfix(i),nimagfix(i)
+	    else
+             write(12,*)wave(i),nreal(i),nimag(i)
+	    endif
            enddo
            close(12)
 
@@ -627,9 +670,14 @@ C          Find minimum wavelength
            rs(3)=rs(1)
 
            call modmakephase(iwave,imode,inorm,iscat,
-     1   parm,rs,srefind,runname,lambda0)
+     1   parm,rs,srefind,runname,lambda0,csx,
+     2   nrealfix,nimagfix,fixtoggle(ivar))
 
-           np=2+np1
+           if(varident(ivar,1).eq.445)then
+            np=3+np1
+           else
+            np=2+np1
+           endif
 
        endif
 

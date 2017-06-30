@@ -271,11 +271,13 @@ C     Read in forward modelling errors
          if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
          if(varident(ivar,1).eq.887)np = int(varparam(ivar,1))
          if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
+         if(varident(ivar,1).eq.445)np = 3+int(varparam(ivar,1))
          if(varident(ivar,1).eq.222)np = 8
          if(varident(ivar,1).eq.223)np = 9
          if(varident(ivar,1).eq.224)np = 9
          if(varident(ivar,1).eq.225)np = 11
          if(varident(ivar,1).eq.226)np = 8
+         if(varident(ivar,1).eq.227)np = 7
 
          if(varident(ivar,1).eq.0.and.np.eq.npro)then
           ioffx=0
@@ -287,6 +289,7 @@ C     Read in forward modelling errors
            if(varidentx(ivarx,1).eq.888)npx = int(varparamx(ivarx,1))
            if(varidentx(ivarx,1).eq.887)npx = int(varparamx(ivarx,1))
            if(varidentx(ivarx,1).eq.444)npx = 2+int(varparamx(ivarx,1))
+           if(varidentx(ivarx,1).eq.445)npx = 3+int(varparamx(ivarx,1))
 
            if(varidentx(ivarx,1).eq.0.and.npx.eq.npro)then
             do i=1,npro

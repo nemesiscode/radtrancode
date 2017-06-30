@@ -518,11 +518,13 @@ C       Test to see if any vmrs have gone negative.
          if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
          if(varident(ivar,1).eq.887)np = int(varparam(ivar,1))
          if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
+         if(varident(ivar,1).eq.445)np = 3+int(varparam(ivar,1))
          if(varident(ivar,1).eq.222)np = 8
          if(varident(ivar,1).eq.223)np = 9
          if(varident(ivar,1).eq.224)np = 9
          if(varident(ivar,1).eq.225)np = 11
          if(varident(ivar,1).eq.226)np = 8
+         if(varident(ivar,1).eq.227)np = 7
 
          do j=ix,ix+np-1
           if(varident(ivar,1).eq.0)then
@@ -555,6 +557,63 @@ C       Test to see if any vmrs have gone negative.
              goto 401
            endif
           endif
+
+          if(varident(ivar,1).eq.445.and.j.eq.ix+1)then
+           if(exp(xn1(j)).lt.0.01)then
+             print*,'Variance of size distribution gone too small',
+     1		exp(xn1(j))
+             print*,'Increase alambda',alambda
+             alambda = alambda*10.0		! increase Marquardt brake
+             if(alambda.gt.1e10)alambda=1e10
+             goto 401
+           endif
+          endif
+
+          if(varident(ivar,1).eq.445.and.j.eq.ix+2)then
+           if(xn1(j).ge.0)then
+             print*,'Particle shell:core ratio greater than 1',
+     1		exp(xn1(j))
+             print*,'Increase alambda',alambda
+             alambda = alambda*10.0		! increase Marquardt brake
+             if(alambda.gt.1e10)alambda=1e10
+             goto 401
+           endif
+          endif
+
+          if(varident(ivar,1).eq.227.and.j.eq.ix)then!if TC altitude is too low (MIGHT NEED TO CHANGE THIS FOR OTHER WAVELENGTHS)
+           if(exp(xn1(j)).gt.5)then
+              print*,'TC altitude too low:',exp(xn1(j))
+              print*,'Increase alambda',alambda
+              alambda = alambda*10.0		! increase Marquardt brake
+              if(alambda.gt.1e10)alambda=1e10
+              goto 401
+           endif
+          endif
+
+          if(varident(ivar,1).eq.227.and.j.eq.ix+1)then!if TC opacity becomes too large
+           if(exp(xn1(j)).ge.1000)then
+              print*,'TC opacity too high:',exp(xn1(j))
+              print*,'Increase alambda',alambda
+              alambda = alambda*10.0		! increase Marquardt brake
+              if(alambda.gt.1e10)alambda=1e10
+              goto 401
+           endif
+          endif
+
+          if(varident(ivar,1).eq.227.and.j.eq.ix+3)then!if CB altitude goes above SH altitude or below TC base altitude, or if TC becomes too narrow
+           if(exp(xn1(j-3)).lt.1.5*exp(xn1(j)).or.
+     1       0.8*exp(xn1(j)).lt.exp(xn1(j+2)))then
+              print*,'Breakdown of cloud structure:'
+              print*,'TC base pressure = ',exp(xn1(j-3))
+              print*,'CB pressure = ',exp(xn1(j))
+              print*,'SH pressure = ',exp(xn1(j+2))
+              print*,'Increase alambda',alambda
+              alambda = alambda*10.0		! increase Marquardt brake
+              if(alambda.gt.1e10)alambda=1e10
+              goto 401
+           endif
+          endif
+
 
          enddo
          ix=ix+np

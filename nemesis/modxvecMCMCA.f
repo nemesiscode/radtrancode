@@ -179,6 +179,12 @@ C         **** Two cloud model  *******
             do i=1,np
              xn(ix+i)=x0(ix+i)+err(ix+i)*gasdev1(idum)
             enddo
+          elseif(varident(ivar,3).eq.227)then  
+C         **** Larry's cloud model *******
+            np = 7
+            do i=1,np
+             xn(ix+i)=x0(ix+i)+err(ix+i)*gasdev1(idum)
+            enddo
           elseif(varident(ivar,3).eq.887)then
 C         **** Cloud x-section spectrum *******
             np = int(varparam(ivar,1))
@@ -194,6 +200,12 @@ C         **** Surface albedo spectrum of planet *******
           elseif(varident(ivar,3).eq.444)then
 C         **** Particle refractive index spectrum *******
             np = 2+int(varparam(ivar,1))
+            do i=1,np
+             xn(ix+i)=x0(ix+i)+err(ix+i)*gasdev1(idum)
+            enddo
+          elseif(varident(ivar,3).eq.445)then
+C         **** Particle refractive index spectrum *******
+            np = 3+int(varparam(ivar,1))
             do i=1,np
              xn(ix+i)=x0(ix+i)+err(ix+i)*gasdev1(idum)
             enddo

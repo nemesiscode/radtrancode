@@ -91,7 +91,10 @@ F_SOURCES = \
 	getcloud21.f \
 	ackermanmarley.f \
 	calc_input_files.f \
-	tbrownrc.f
+	tbrownrc.f \
+	extractcb.f \
+	gwritepatcb.f \
+	readmmr.f
 
 INCDIR = ../../radtran/includes
 INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/lincom.f $(INCDIR)/pathcom.f \

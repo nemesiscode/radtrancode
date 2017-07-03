@@ -82,7 +82,7 @@ for ivar=0,nvar-1 do begin
   erra(istart)=tmp(1)
  endif 
 
- if(itype eq 4 or itype eq 23) then begin
+ if(itype eq 4 or itype eq 24) then begin
   np = 3
   tmp = fltarr(2,np)
   readf,5,tmp

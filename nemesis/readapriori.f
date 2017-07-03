@@ -96,7 +96,8 @@ C     a priori covariance matrix
       integer nxx,nsec,ncont1
       real xwid,ewid,y,y0,lambda0,vi(mx),vtmp(mx),xt(mx)
       real r0,er0,dr,edr,vm,nm,nimag,delv,xy
-      real xldeep,eldeep,xlhigh,elhigh,v1
+      real xldeep,eldeep,xlhigh,elhigh
+      real v1,v1err,v2,v2err,p1,p1err,p2,p2err
       real tau0,ntemp,teff,alpha,T0
       real etau0,entemp,eteff,ealpha,eT0
       real csx,cserr,nrealfix(mx),nimagfix(mx)
@@ -1087,6 +1088,82 @@ C            Read in tau0, n, Teff, alpha, T0
              nx=nx+5
 
            elseif (varident(ivar,3).eq.23)then
+C            ******** 2 point gradient profile (NAT)
+c		Profile is defined by two (p,v) points, with a linear gradient (in log p)
+c		in between. The low pressure point is at (p1,v1) and the high pressure point 
+c		is at (p2,v2). Profile is constant above/below this gradient region (i.e.
+c		p<p1 v=v1 and p>p2 v=v2.) All variable are retrieved. 
+c		Not yet fully implemented for T	
+             read(27,*) v1,v1err
+             read(27,*) p1,p1err
+             read(27,*) v2,v2err
+             read(27,*) p2,p2err
+             if (p1.gt.p2)then
+               print*,'Error p1 should be less than p2'
+               stop
+             endif
+c            ** param1 (low pressure limit)
+             ix = nx+1
+             if(varident(ivar,1).eq.0)then
+C             *** temperature, leave alone ********
+              x0(ix)= v1
+              err   = v1err
+             else
+C             *** vmr, fcloud, para-H2 or cloud, take logs *********
+              if(v1.gt.0.0)then
+                x0(ix)=alog(v1)
+                lx(ix)=1
+              else
+                print*,'Error in readapriori. v1 must be > 0.0'
+                stop
+              endif
+              err = v1err/v1
+             endif
+             sx(ix,ix)=err**2
+c            ** param2 (low pressure transition pressure)
+             ix = nx+2
+             if(p1.gt.0.0)then
+                x0(ix)=alog(p1)
+                lx(ix)=1
+             else
+                print*,'Error in readapriori. p1 must be > 0.0'
+                stop
+             endif
+             err = p1err/p1
+             sx(ix,ix)=err**2
+c            ** param3 (high pressure limit)
+             ix = nx+3
+             if(varident(ivar,1).eq.0)then
+C             *** temperature, leave alone ********
+              x0(ix)= v2
+              err   = v2err
+             else
+C             *** vmr, fcloud, para-H2 or cloud, take logs *********
+              if(v2.gt.0.0)then
+                x0(ix)=alog(v2)
+                lx(ix)=1
+              else
+                print*,'Error in readapriori. v2 must be > 0.0'
+                stop
+              endif
+              err = v2err/v2
+             endif
+             sx(ix,ix)=err**2
+c            ** param4 (high pressure transition pressure)
+             ix = nx+4
+             if(p2.gt.0.0)then
+                x0(ix)=alog(p2)
+                lx(ix)=1
+             else
+                print*,'Error in readapriori. p must be > 0.0'
+                stop
+             endif
+             err = p2err/p2
+             sx(ix,ix)=err**2
+             
+             nx = nx+4
+
+           elseif (varident(ivar,3).eq.24)then
 C            ******** profile held as variable knee pressure, one fixed value below knee and other fixed value above knee (REVIEW THIS IF DOING TEMP RETRIEVALS)
 C            Read in xdeep,fsh,pknee
              read(27,*)pknee,eknee

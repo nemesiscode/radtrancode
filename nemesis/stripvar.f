@@ -61,6 +61,7 @@ C     **************************** CODE ********************************
          if(varidentx(ivarx,3).eq.19)np = 4
          if(varidentx(ivarx,3).eq.20)np = 2
          if(varidentx(ivarx,3).eq.23)np = 4
+         if(varidentx(ivarx,3).eq.24)np = 3
         else
          if(varidentx(ivarx,1).eq.555)np = 1
          if(varidentx(ivarx,1).eq.333)np = 1

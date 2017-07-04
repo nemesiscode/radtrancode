@@ -15,6 +15,7 @@ F_SOURCES = \
 	calc_pmat6.f \
 	double1.f \
 	dmie.f \
+	dmiess.f \
 	get_hg.f \
 	get_theta.f \
 	get_input.f \

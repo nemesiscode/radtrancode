@@ -2,7 +2,7 @@
      1 XDEEP,HKNEE,XFSH,REFRADIUS)
 C     **************************************************************
 C     Function to sift through XN and VARIDENT FILES to find the mean 
-C     radius of particles defined though IMOD=444 model for cloud
+C     radius of particles defined though IMOD=444/445 model for cloud
 C     type ICLOUD.
 C
 C     Input variables
@@ -52,11 +52,13 @@ C        print*,'D',(VARIDENT(IVAR,J),J=1,3),NP
         IF(VARIDENT(IVAR,1).EQ.888)NP=INT(VARPARAM(IVAR,1))
         IF(VARIDENT(IVAR,1).EQ.887)NP=INT(VARPARAM(IVAR,1))
         IF(VARIDENT(IVAR,1).EQ.444)NP=2+INT(VARPARAM(IVAR,1))
+        IF(VARIDENT(IVAR,1).EQ.445)NP=2+INT(VARPARAM(IVAR,1))
         IF(VARIDENT(IVAR,1).EQ.222)NP=8
         IF(VARIDENT(IVAR,1).EQ.223)NP=9
         IF(VARIDENT(IVAR,1).EQ.224)NP=9
         IF(VARIDENT(IVAR,1).EQ.225)NP=11
         IF(VARIDENT(IVAR,1).EQ.226)NP=8
+        IF(VARIDENT(IVAR,1).EQ.227)NP=7
        ENDIF
 
 C       print*,'B',NP,XN(NXTEMP+1:NXTEMP+NP)

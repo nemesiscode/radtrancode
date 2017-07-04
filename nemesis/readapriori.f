@@ -41,6 +41,9 @@ C	x0(mx)		real		a priori vector
 C	sx(mx,mx)	real		a priori covariance matrix
 C	lx(mx)		integer		Log flag. 0 if real number
 C						  1 if log number 
+C	csx(mvar)	real		Ratio volume of shell/total volume of particle
+C					for Maltmieser coated sphere model
+C					For homogeneous sphere model, csx(ivar)=-1  
 C
 C     N.B. In this code, the apriori and retrieved vectors x are usually 
 C     converted to logs, all except for temperature and fractional scale
@@ -76,7 +79,7 @@ C     ****************************************************************
       real x0(mx),sx(mx,mx),err,err1,ref1,pref(maxpro)
       real eref(maxlat,maxpro),reflat(maxlat),htan
       real delp,xfac,pknee,eknee,edeep,xdeep,xlat,xlatx,xlonx,pshld
-      real efsh,xfsh,varparam(mvar,mparam),flat,hknee,pre
+      real xstep,estep,efsh,xfsh,varparam(mvar,mparam),flat,hknee,pre
       real ref(maxlat,maxpro),clen,SXMINFAC,arg,valb,alb
       real xknee,xrh,erh,xcdeep,ecdeep,radius,Grav,plim
       real xcwid,ecwid,ptrop,refradius,xsc
@@ -93,9 +96,16 @@ C     a priori covariance matrix
       integer nxx,nsec,ncont1
       real xwid,ewid,y,y0,lambda0,vi(mx),vtmp(mx),xt(mx)
       real r0,er0,dr,edr,vm,nm,nimag,delv,xy
-      real xldeep,eldeep,xlhigh,elhigh,v1
+      real xldeep,eldeep,xlhigh,elhigh
+      real v1,v1err,v2,v2err,p1,p1err,p2,p2err
       real tau0,ntemp,teff,alpha,T0
       real etau0,entemp,eteff,ealpha,eT0
+      real csx,cserr,nrealfix(mx),nimagfix(mx)
+      integer fixtoggle(mvar)
+
+C     I'm sure there's a better way of doing this, but I don't want to change the value of mparam,
+C     so common blocks it is.
+      common /maltmieser/vi,nrealfix,nimagfix,fixtoggle
 
 C     Initialise a priori parameters
       do i=1,mx
@@ -147,6 +157,8 @@ C     3 scale profile in .ref file by the exponent of a number.
 
       nx = 0 
       do 10 ivar=1,nvar
+         csx = -1.0			!particles are assumed to be homogeneous by default
+	 fixtoggle(ivar) = -1	
          read(27,*)(varident(ivar,j),j=1,3)
          if(varident(ivar,1).le.100)then
 C          parameter must be an atmospheric one.
@@ -1008,7 +1020,7 @@ C            ******** base height. Below the knee
 C            ******** pressure the profile is set to zero
 C            ******** Fractional scale height is scaled from that
 C            ******** guessed by the radius of the associated size
-C            ******** distribution in the 444 section.
+C            ******** distribution in the 444/445 section.
 C            Read in xdeep,fsh,pknee
              read(27,*)hknee,eknee
              read(27,*)xdeep,edeep
@@ -1074,6 +1086,122 @@ C            Read in tau0, n, Teff, alpha, T0
              sx(ix,ix)=err**2
 
              nx=nx+5
+
+           elseif (varident(ivar,3).eq.23)then
+C            ******** 2 point gradient profile (NAT)
+c		Profile is defined by two (p,v) points, with a linear gradient (in log p)
+c		in between. The low pressure point is at (p1,v1) and the high pressure point 
+c		is at (p2,v2). Profile is constant above/below this gradient region (i.e.
+c		p<p1 v=v1 and p>p2 v=v2.) All variable are retrieved. 
+c		Not yet fully implemented for T	
+             read(27,*) v1,v1err
+             read(27,*) p1,p1err
+             read(27,*) v2,v2err
+             read(27,*) p2,p2err
+             if (p1.gt.p2)then
+               print*,'Error p1 should be less than p2'
+               stop
+             endif
+c            ** param1 (low pressure limit)
+             ix = nx+1
+             if(varident(ivar,1).eq.0)then
+C             *** temperature, leave alone ********
+              x0(ix)= v1
+              err   = v1err
+             else
+C             *** vmr, fcloud, para-H2 or cloud, take logs *********
+              if(v1.gt.0.0)then
+                x0(ix)=alog(v1)
+                lx(ix)=1
+              else
+                print*,'Error in readapriori. v1 must be > 0.0'
+                stop
+              endif
+              err = v1err/v1
+             endif
+             sx(ix,ix)=err**2
+c            ** param2 (low pressure transition pressure)
+             ix = nx+2
+             if(p1.gt.0.0)then
+                x0(ix)=alog(p1)
+                lx(ix)=1
+             else
+                print*,'Error in readapriori. p1 must be > 0.0'
+                stop
+             endif
+             err = p1err/p1
+             sx(ix,ix)=err**2
+c            ** param3 (high pressure limit)
+             ix = nx+3
+             if(varident(ivar,1).eq.0)then
+C             *** temperature, leave alone ********
+              x0(ix)= v2
+              err   = v2err
+             else
+C             *** vmr, fcloud, para-H2 or cloud, take logs *********
+              if(v2.gt.0.0)then
+                x0(ix)=alog(v2)
+                lx(ix)=1
+              else
+                print*,'Error in readapriori. v2 must be > 0.0'
+                stop
+              endif
+              err = v2err/v2
+             endif
+             sx(ix,ix)=err**2
+c            ** param4 (high pressure transition pressure)
+             ix = nx+4
+             if(p2.gt.0.0)then
+                x0(ix)=alog(p2)
+                lx(ix)=1
+             else
+                print*,'Error in readapriori. p must be > 0.0'
+                stop
+             endif
+             err = p2err/p2
+             sx(ix,ix)=err**2
+             
+             nx = nx+4
+
+           elseif (varident(ivar,3).eq.24)then
+C            ******** profile held as variable knee pressure, one fixed value below knee and other fixed value above knee (REVIEW THIS IF DOING TEMP RETRIEVALS)
+C            Read in xdeep,fsh,pknee
+             read(27,*)pknee,eknee
+             read(27,*)xdeep,edeep
+             read(27,*)xstep,estep
+             ix = nx+1
+             if(varident(ivar,1).eq.0)then
+C             *** temperature, leave alone ********
+              x0(ix)=xdeep
+              err = edeep
+             else
+C             *** vmr, fcloud, para-H2 or cloud, take logs *********
+              if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+              else
+                print*,'Error in readapriori. xdeep must be > 0.0'
+                stop
+              endif
+              err = edeep/xdeep
+             endif
+             sx(ix,ix)=err**2
+             ix = nx+2
+             if(xstep.gt.0.0)then
+               x0(ix) = alog(xstep)
+               lx(ix)=1
+             else
+               print*,'Error in readapriori - xstep must be > 0'
+               stop
+             endif
+             sx(ix,ix) = (estep/xstep)**2
+             ix = nx+3
+             x0(ix) = alog(pknee)
+             lx(ix)=1
+
+             sx(ix,ix) = (eknee/pknee)**2
+
+             nx = nx+3
 
            else         
             print*,'vartype profile parametrisation not recognised'
@@ -1323,6 +1451,108 @@ C               xfac = exp(-arg*arg)
              enddo
 
              nx = nx+2+np
+
+           elseif (varident(ivar,1).eq.445)then
+C            ** Variable cloud particle size distribution and composition using Maltmieser coated sphere model **
+C            ** where the complex ref index of the 'core' is fixed to a set of reference values **
+C            ** and the complex ref index of the 'shell' is to be retrieved (or vice versa) **
+             read(27,1)rifile
+
+             open(28,file=rifile,status='old')	!open cloud.dat
+C              Read mean radius and error
+               read(28,*)r0,er0
+               ix=nx+1				!nx = number of elements in state vector
+               x0(ix)=alog(r0)			!set a priori vector at position ix to the log of the mean radius
+               sx(ix,ix)=(er0/r0)**2		!set a priori covar matrix at position (ix,ix) to (error/mean radius)^2
+               lx(ix)=1				!set log flag
+C              Read radius variance and error
+               read(28,*)dr,edr
+               ix=nx+2
+               x0(ix)=alog(dr)			!do the same with the radius variance at the next position in the a priori vector and covar matrix
+               sx(ix,ix)=(edr/dr)**2
+               lx(ix)=1
+
+C              Read ratio of shell volume wrt total volume of particle, with error                
+               read(28,*)csx,cserr
+               if((csx.ge.1).or.(csx.le.0))then
+                print*,'Error readapriori:'
+                print*,'csx must be between 0 and 1'
+                print*,'csx = ', csx
+                stop
+               endif
+               if((csx+cserr.ge.1).and.(csx-cserr.le.0))then
+                print*,'Error readapriori:'
+                print*,'cserr too large'
+                print*,'csx+cserr = ', csx+cserr
+                print*,'csx-cserr = ', csx-cserr
+                stop
+               endif
+               ix=nx+3
+               x0(ix)=alog(csx)
+               sx(ix,ix)=(cserr/csx)**2
+               lx(ix)=1
+
+C              Read whether to fix the shell- or the core complex refractive index spectrum:
+C              fixtoggle = 1: Retrieve shell index, fix core index
+C              fixtoggle = 0: Retrieve core index, fix shell index
+               read(28,*)fixtoggle(ivar)
+               if((fixtoggle(ivar).ne.1).and.(fixtoggle(ivar).ne.0))then
+                print*,'Error readapriori:'
+                print*,'Fixtoggle must equal 0 or 1'
+                stop
+               endif
+C              Read number of wavelengths and correlation length (wavelength/
+C				wavenumbers)
+               read(28,*)np,clen
+               varparam(ivar,1)=np
+
+C		Read .xsc file and get extinction cross-sec and sing-scat albedo for each aerosol type (both output in variable xsec) for each wavelength (wave)
+               call get_xsecA(opfile,nmode,nwave,wave,xsec)
+               if(np.ne.nwave)then
+       print*,'Error in readapriori.f. Number of wavelengths in ref.'
+       print*,'index file does not match number of wavelengths in'
+       print*,'xsc file. Wavelengths in these two files should match'
+                print*,rifile,np
+                print*,opfile,nwave
+                stop
+               endif
+
+               varparam(ivar,2)=clen
+
+C              read reference wavelength and nr at that wavelength (shell)
+               read(28,*)vm,nm
+               varparam(ivar,3)=vm
+               varparam(ivar,4)=nm
+
+C              read x-section normalising wavelength (-1 to not normalise)
+               read(28,*)lambda0
+               varparam(ivar,5)=lambda0
+               do i=1,np             
+                read(28,*)vi(i),nimag,err	!read in imaginary ref index to retrieve (wavelength, imag ri, error)
+		 call readmmr(runname,vi(i),nrealfix(i),nimagfix(i))!read in imaginary ref index to fix (wavelength, imag ri, error)
+                ix=nx+3+i
+                x0(ix)=alog(nimag)		!set next position in a priori vector to imag ref index
+                sx(ix,ix)=(err/nimag)**2	!set a priori covariance matrix
+                lx(ix)=1
+               enddo
+             close(28)
+
+             do i=1,np
+              do j=i+1,np
+               delv = vi(i)-vi(j)
+               arg = abs(delv/clen)
+               xfac = exp(-arg)
+C               xfac = exp(-arg*arg)
+               if(xfac.ge.SXMINFAC)then  
+                sx(nx+3+i,nx+3+j)=
+     & sqrt(sx(nx+3+i,nx+3+i)*sx(nx+3+j,nx+3+j))*xfac
+                sx(nx+3+j,nx+3+i)=sx(nx+3+i,nx+3+j)
+               endif
+              enddo
+             enddo
+
+             nx = nx+3+np
+
  
 C **************** add mass variable  ***************
            elseif(varident(ivar,1).eq.333)then
@@ -1695,6 +1925,62 @@ C           UTC opacity
 
             nx = nx+8
 
+C********************** Creme Brulee Model *******************************
+           elseif(varident(ivar,1).eq.227)then
+C           TC base pressure
+            ix = nx+1
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           TC opacity
+            ix = nx+2
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           TC fsh
+            ix = nx+3
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           TC top pressure/CB base pressure
+            ix = nx+4
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           CB opacity
+            ix = nx+5
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           SH base pressure
+            ix = nx+6
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C           SH opacity
+            ix = nx+7
+            read(27,*)r0,err
+            x0(ix)=alog(r0)
+            sx(ix,ix) = (err/r0)**2
+            lx(ix)=1
+
+C	    Varparam is not used here, leave it blank
+	    read(27,*),(varparam(ivar,j),j=1,2)
+
+            nx = nx+7
+
            else
             print*,'vartype not recognised'
             stop
@@ -1748,6 +2034,7 @@ C     the mass using the a priori log(g) AND radius
         if(varidentx(ivarx,1).eq.888)npx=int(varparamx(ivarx,1))
         if(varidentx(ivarx,1).eq.887)npx=int(varparamx(ivarx,1))
         if(varidentx(ivarx,1).eq.444)npx=2+int(varparamx(ivarx,1))
+        if(varidentx(ivarx,1).eq.445)npx=3+int(varparamx(ivarx,1))
      
         ioff=0
         do 22 ivar=1,nvar
@@ -1758,6 +2045,7 @@ C     the mass using the a priori log(g) AND radius
          if(varident(ivar,1).eq.888)np=int(varparam(ivar,1))
          if(varident(ivar,1).eq.887)np=int(varparam(ivar,1))
          if(varident(ivar,1).eq.444)np=2+int(varparam(ivar,1))
+         if(varident(ivar,1).eq.445)np=3+int(varparam(ivar,1))
 
 
          if(varidentx(ivarx,1).eq.varident(ivar,1))then

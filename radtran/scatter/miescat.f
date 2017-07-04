@@ -64,7 +64,8 @@ C
 C-----------------------------------------------------------------------
 
       SUBROUTINE MIESCAT (XLAM, ISCAT, DSIZE, NMODE, RS, REFINDX, THETA, 
-     1		NTHETA, XSCAT, XEXT, PHAS, NPHAS)
+     1		NTHETA, XSCAT, XEXT, PHAS, NPHAS,csratio,
+     2  	RE2,TMAG2,toggle)
 
       IMPLICIT NONE
       INTEGER		MAXTH, MAXMODE
@@ -74,12 +75,14 @@ C-----------------------------------------------------------------------
       INTEGER   ISCAT(NMODE)
       REAL 	XLAM, DSIZE(3,NMODE), RS(3), REFINDX(2), PHAS(NPHAS), 
      1 		THETA(NTHETA), XSCAT, XEXT
+	REAL	R2, RE2,TMAG2, csratio
+	INTEGER	toggle
       DOUBLE PRECISION NQMAX(MAXMODE), RMAX(MAXMODE)
       DOUBLE PRECISION RFR, RFI, RR, ANR, DELR, R1, XX, AA, BB, 
      1          ALPHA, GAMMA, CC,
      2		KSCAT, KEXT, ANORM, FUNC(4,2*MAXTH), VV, PHAS0(2*MAXTH), 
      3		CQ, X1, DX, QEXT, QSCAT, ELTRMX(4, MAXTH, 2), ANR1,
-     4		THETD(MAXTH), PI,PI2
+     4		THETD(MAXTH), PI,PI2,R2DOB, RE2DOB,TMAG2DOB
       LOGICAL CONT, CONT0
 
       PARAMETER (PI = 3.1415926535897932D0)
@@ -194,12 +197,38 @@ C-----------------------------------------------------------------------
 	DO M = 1,INR
 
 		RR = R1 + (M-1)* DELR
-		XX = 2.0*PI*RR/XLAM
 
 C		print*,M,INR,RR,XX
+C		Use homogeneous sphere scattering model unless otherwise specified
+		if(csratio.eq.-1.0)then
+			XX = 2.0*PI*RR/XLAM
+			CALL DMIE (XX, RFR, RFI, THETD, NTHETA, QEXT,
+     1				QSCAT, CQ, ELTRMX)
 
-		CALL DMIE (XX, RFR, RFI, THETD, NTHETA, QEXT, QSCAT, 
-     1			CQ, ELTRMX)
+C		Use coated sphere scattering model if Maltmieser explicitly specified
+		else
+			R2DOB = R2		!convert to double precision
+			RE2DOB = RE2
+			TMAG2DOB = TMAG2
+			XX = 2.0*PI/XLAM
+			R2 = RR*(1.0-csratio)**(1.0/3.0)!find core rad
+			if(toggle.eq.1)then!fix core ref index and retrieve shell ref index
+C			print*, 'MM fixed core: Calling DMIESS'
+			CALL DMIESS(RR, RFR, RFI, THETD, NTHETA, QEXT, 
+     1				 QSCAT, CQ, ELTRMX, 
+     2				R2DOB, RE2DOB, TMAG2DOB, XX)	
+			elseif(toggle.eq.0)then!fix shell ref index and retrieve core ref index
+C			print*, 'MM fixed shell: Calling DMIESS'
+			CALL DMIESS(RR, RE2DOB, TMAG2DOB,
+     1				 THETD, NTHETA, QEXT, QSCAT,
+     2				 CQ, ELTRMX, R2DOB, RFR, RFI, XX)
+			else
+				print*,'Error miescat:'
+				print*,'(fix)toggle must equal 0 or 1'
+				print*,csratio,toggle
+				stop
+			endif 
+		endif
 
 		DO J = 1, NTHETA		! THETA <,= 90
 			DO I = 1,4

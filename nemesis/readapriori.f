@@ -1203,6 +1203,39 @@ C             *** vmr, fcloud, para-H2 or cloud, take logs *********
 
              nx = nx+3
 
+           elseif (varident(ivar,3).eq.25)then
+C           Continuous profile but represented with fewer points than in profile to achieve 
+C           implicit smoothing and faster retrieval times
+C            Read in number of points and any cross-corelation
+             read(27,*)np,clen
+             varparam(ivar,1)=np
+             do i=1,np
+              read(27,*)xdeep,edeep
+              ix=nx+i
+              if(varident(ivar,1).eq.0)then
+               x0(ix)=xdeep
+               sx(ix,ix)=edeep**2
+              else
+               x0(ix)=alog(xdeep)
+               sx(ix,ix)=(edeep/xdeep)**2
+               lx(ix)=1
+              endif
+             enddo
+
+             do i=1,np
+              do j=1,np
+               delv = float(i-j)
+               arg = abs(delv/clen)
+               xfac = exp(-arg)
+               if(xfac.ge.SXMINFAC)then  
+                sx(nx+i,nx+j)= sqrt(sx(nx+i,nx+i)*sx(nx+j,nx+j))*xfac
+                sx(nx+j,nx+i)=sx(nx+i,nx+j)
+               endif
+              enddo
+             enddo
+
+             nx=nx+np
+
            else         
             print*,'vartype profile parametrisation not recognised'
             stop
@@ -2029,7 +2062,7 @@ C     the mass using the a priori log(g) AND radius
        do 21 ivarx=1,nvarx
         npx=1
         if(varidentx(ivarx,1).le.100)then
-          npx=npvar(varidentx(ivarx,3),npro)
+          npx=npvar(varidentx(ivarx,3),npro,varparamx(ivarx,1))
         endif
         if(varidentx(ivarx,1).eq.888)npx=int(varparamx(ivarx,1))
         if(varidentx(ivarx,1).eq.887)npx=int(varparamx(ivarx,1))
@@ -2040,7 +2073,7 @@ C     the mass using the a priori log(g) AND radius
         do 22 ivar=1,nvar
          np=1
          if(varident(ivar,1).le.100)then
-           np=npvar(varident(ivar,3),npro)
+           np=npvar(varident(ivar,3),npro,varparam(ivar,1))
          endif
          if(varident(ivar,1).eq.888)np=int(varparam(ivar,1))
          if(varident(ivar,1).eq.887)np=int(varparam(ivar,1))

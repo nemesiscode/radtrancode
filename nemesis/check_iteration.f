@@ -17,7 +17,7 @@ C     **********************************************************
        imod=varident(ivar,3)
        itype=varident(ivar,1)
        if(itype.le.100)then
-         np = npvar(imod,npro)
+         np = npvar(imod,npro,varparam(ivar,1))
        endif
        if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
        if(varident(ivar,1).eq.887)np = int(varparam(ivar,1))

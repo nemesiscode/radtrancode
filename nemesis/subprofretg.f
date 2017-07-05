@@ -76,6 +76,8 @@ C     ***********************************************************************
       REAL RHO,F,DQDX(MAXPRO),DX,PLIM,XFACP,CWID,PTROP, NEWF
       REAL DNDH(MAXPRO),DQDH(MAXPRO),FCLOUD(MAXPRO)
       REAL dtempdx(MAXPRO,5),T0,Teff,alpha,ntemp,tau0
+      REAL XP1(MAXPRO),LP1(MAXPRO),XP2(MAXPRO)
+      REAL LPMIN,LPMAX,DLP,XPS(MAXPRO),XP2S(MAXPRO)
       DOUBLE PRECISION Q(MAXPRO),OD(MAXPRO),ND(MAXPRO),XOD
       INTEGER ISCALE(MAXGAS),XFLAG,NPVAR,MAXLAT,IERR
       INTEGER NLATREF,ILATREF,JLAT,KLAT,ICUT,JX
@@ -86,7 +88,7 @@ C     ***********************************************************************
       REAL XRH,XCDEEP,P1,PS,PS1,PH,Y1,Y2,YY1,YY2
       real plog,p1log,p2log,p2,v1log,v2log,grad
       REAL XCH4,PCH4,PCUT,GETRADIUS,RPARTICLE
-      INTEGER ICLOUD(MAXCON,MAXPRO),NCONT1,JSPEC,IFLA,I1
+      INTEGER ICLOUD(MAXCON,MAXPRO),NCONT1,JSPEC,IFLA,I1,I2
       INTEGER NPRO,NPRO1,NVMR,JZERO,IV,IP,IVAR,JCONT,JVMR
       INTEGER IDGAS(MAXGAS),ISOGAS(MAXGAS),IPAR,JPAR,IVMR,NP
       INTEGER IDAT,NCONT,FLAGH2P,JFSH,JPRE,JHYDRO,ISCAT,ICOND
@@ -104,7 +106,7 @@ C     ***********************************************************************
 
       INTEGER NVAR,VARIDENT(MVAR,3)
       REAL VARPARAM(MVAR,MPARAM)
-      REAL XWID,Y,Y0,XX
+      REAL XWID,Y,Y0,XX,L1
       LOGICAL GASGIANT,FEXIST,VPEXIST,NTEST,ISNAN
       REAL VP(MAXGAS),VP1
       INTEGER SVPFLAG(MAXGAS),SVPFLAG1
@@ -2215,9 +2217,93 @@ C        to roughly optimise the Heaviside step function given the orders of mag
            XMAP(NXTEMP+3,IPAR,J)=(-HVS*PKNEE*(XDEEP-XSTEP)) / 
      1                            (2*cosh(HVS*(P(J)-PKNEE))**2)
           ENDIF
+
+          IF(X1(J).LT.1e-36)X1(J)=1e-36
+
          ENDDO
 
-         IF(X1(J).LT.1e-36)X1(J)=1e-36
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.25)THEN
+C        Model 25: Continuous profile with fewer than NPRO vertical levels
+C        ***************************************************************
+         LPMAX=ALOG(P(1))
+         LPMIN=ALOG(P(NPRO))
+         NP = INT(VARPARAM(IVAR,1))
+         DLP = (LPMAX-LPMIN)/FLOAT(NP-1)      
+C        Find tabulated pressures and profile
+         DO J=1,NP
+          LP1(J)=LPMIN + DLP*FLOAT(J-1)
+C         Reverse profile array which by convention goes up in the atmosphere
+          XP1(1+NP-J)=XN(NXTEMP+J)
+         ENDDO
+C         DO J=1,NP
+C          PRINT*,J,LP1(J),exp(LP1(J)),XP1(J)
+C         ENDDO
+
+C        Fit a cubic spline to the points
+         CALL CSPLINE(LP1,XP1,NP,1e30,1e30,XP2)
+
+         DO J=1,NPRO
+          L1 = ALOG(P(J))
+          CALL CSPLINT(LP1,XP1,XP2,NP,L1,XX)
+          IF(VARIDENT(IVAR,1).EQ.0)THEN
+           X1(J)=XX
+          ELSE
+           X1(J)=EXP(XX)
+          ENDIF
+          IF(X1(J).LT.1e-36)X1(J)=1e-36
+         ENDDO
+
+C        Numerical differentiation
+         XPS=XP1
+         DO I = 1,NP
+           IF(VARIDENT(IVAR,1).EQ.0)THEN
+            DX=2.0
+           ELSE
+            DX=0.1
+           ENDIF
+           XPS(1+NP-I)=XP1(1+NP-I)+DX
+C          Fit a cubic spline to the points
+           CALL CSPLINE(LP1,XPS,NP,1e30,1e30,XP2S)
+           DO J=1,NPRO
+            L1 = ALOG(P(J))
+            CALL CSPLINT(LP1,XPS,XP2S,NP,L1,XX)
+            IF(VARIDENT(IVAR,1).EQ.0)THEN
+             X2(J)=XX
+            ELSE
+             X2(J)=EXP(XX)
+            ENDIF
+            IF(X2(J).LT.1e-36)X2(J)=1e-36
+            XMAP(NXTEMP+I,IPAR,J)=(X2(J)-X1(J))/DX
+           ENDDO
+           XPS(1+NP-I)=XP1(1+NP-I)
+         ENDDO
+
+C        I thought that getting accurate gradients from a cubic spline 
+C        interpolated curve was going to be well hard. So I did a linear 
+C        interpolation for this part instead. This actually turned out to
+C        be too inaccurate, but I have left the code here for reference.
+
+C         DO J=1,NPRO
+C          L1 = ALOG(P(J))          
+C          I = 1+INT((NP-1)*(L1-LPMIN)/(LPMAX-LPMIN))
+C          print*,'A',J,P(J),L1,NP*(L1-LPMIN)/(LPMAX-LPMIN),I
+C          IF(I.LT.1)I=1
+C          IF(I.GE.NP)I=NP-1
+C          XX = (L1-LP1(I))/DLP
+C          print*,'B',J,P(J),L1,I,LP1(I),XX,1.0-XX
+C          I1 = NP+1-I
+C          I2 = NP+1-(I+1)
+C          IF(VARIDENT(IVAR,1).EQ.0)THEN
+C           XMAP(NXTEMP+I1,IPAR,J)=XX
+C           XMAP(NXTEMP+I2,IPAR,J)=1.-XX
+C          ELSE
+C           XMAP(NXTEMP+I1,IPAR,J)=X1(J)*XX
+C           XMAP(NXTEMP+I2,IPAR,J)=X1(J)*(1.-XX)
+C          ENDIF
+C         ENDDO
+C         stop
+C         IF(X1(J).LT.1e-36)X1(J)=1e-36
 
         ELSE
 

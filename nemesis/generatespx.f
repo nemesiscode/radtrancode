@@ -272,7 +272,7 @@ C     Add forward errors to measurement covariances
         do ivar=1,nvar
          np=1
          if(varident(ivar,1).le.100)then
-           np=npvar(varident(ivar,3),npro)
+           np=npvar(varident(ivar,3),npro,varparam(ivar,1))
          endif
          if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
          if(varident(ivar,1).eq.887)np = int(varparam(ivar,1))
@@ -290,7 +290,7 @@ C     Add forward errors to measurement covariances
           do ivarx=1,nvarx
            npx=1
            if(varidentx(ivarx,1).le.100)then
-             npx=npvar(varidentx(ivarx,3),npro)
+             npx=npvar(varidentx(ivarx,3),npro,varparamx(ivarx,1))
            endif
            if(varidentx(ivarx,1).eq.888)npx = int(varparamx(ivarx,1))
            if(varidentx(ivarx,1).eq.887)npx = int(varparamx(ivarx,1))

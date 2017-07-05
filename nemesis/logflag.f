@@ -35,6 +35,7 @@ C       Variable is not temperature  - may need to take exponent
         if(imod.eq.24.and.ip.eq.1)iflag=1 ! deep profile
         if(imod.eq.16.and.ip.eq.1)iflag=1 ! lapse rate profile      
         if(imod.eq.19.and.ip.eq.1)iflag=1 ! lapse rate profile      
+        if(imod.eq.25)iflag=1  ! Shortened continuous model
       endif
 
       if(imod.eq.1.and.ip.eq.2)iflag=1 ! log fsh - fixed knee
@@ -77,9 +78,6 @@ C       Variable is not temperature  - may need to take exponent
       endif
       
       if(imod.eq.23)iflag=1  ! 2 point gradient
-
-      if(imod.eq.23)iflag=1  ! 2 point gradient
-
 
       if(ivar.eq.887)iflag=1	! X-section spectrum
       if(ivar.eq.888)iflag=1	! Surface albedo spectrum

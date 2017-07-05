@@ -56,7 +56,7 @@ C     ***********************************************************************
         read(lraw,*)(varparam(ivar,j),j=1,mparam)
         np = 1
         if(varident(ivar,1).le.100)then
-          np = npvar(varident(ivar,3),npro)
+          np = npvar(varident(ivar,3),npro,varparam(ivar,1))
         endif
         if(varident(ivar,1).eq.888)np = int(varparam(ivar,1)) 
         if(varident(ivar,1).eq.887)np = int(varparam(ivar,1)) 

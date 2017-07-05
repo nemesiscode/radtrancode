@@ -33,7 +33,7 @@ C     **************************************************************
 C       Skip to right point in xn array
         np=1
         if(varident(ivar,1).le.100)then
-          np = npvar(varident(ivar,3),npro)
+          np = npvar(varident(ivar,3),npro,varparam(ivar,1))
         endif
         if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))      
         if(varident(ivar,1).eq.887)np = int(varparam(ivar,1))      
@@ -48,12 +48,24 @@ C       Skip to right point in xn array
        else
 
 C       LTC
+C        cpbot(1)=exp(xn(ix))/1.013
+C        ix=ix+1
+C        cptop(1)=exp(xn(ix))/1.013
+C        nlaycloud(1)=5
+C        ix=ix+1
+C        cfsh(1)=exp(xn(ix))
+C        ix=ix+1
+C        codepth(1)=exp(xn(ix))
+
         cpbot(1)=exp(xn(ix))/1.013
         ix=ix+1
-        cptop(1)=exp(xn(ix))/1.013
-        nlaycloud(1)=5
+C        cptop(1)=exp(xn(ix))/1.013
+        cptop(1)=cpbot(1)*0.93
+C        nlaycloud(1)=5
+        nlaycloud(1)=1
         ix=ix+1
-        cfsh(1)=exp(xn(ix))
+C        cfsh(1)=exp(xn(ix))
+        cfsh(1)=1.0
         ix=ix+1
         codepth(1)=exp(xn(ix))
       
@@ -62,7 +74,7 @@ C       MTC
         cpbot(2)=exp(xn(ix))/1.013
         ix=ix+1
         cptop(2)=exp(xn(ix))/1.013
-        nlaycloud(2)=2
+        nlaycloud(2)=5
         ix=ix+1
         cfsh(2)=exp(xn(ix))
         ix=ix+1

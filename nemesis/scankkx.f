@@ -57,7 +57,7 @@ C     **************************** CODE ********************************
       do ivarx = 1,nvarx
         np=-1
         if(varidentx(ivarx,1).le.100)then
-          np = npvar(varidentx(ivarx,3),nprox)
+          np = npvar(varidentx(ivarx,3),nprox,varparamx(ivarx,1))
         else
          if(varidentx(ivarx,1).eq.555)np = 1
          if(varidentx(ivarx,1).eq.333)np = 1

@@ -3,7 +3,7 @@
      2 jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
 C     $Id:
 C     **************************************************************
-C     Subroutine to seup input files for last successful iteration of
+C     Subroutine to write out input files for last successful iteration of
 C     xn.
 C
 C     Input variables:

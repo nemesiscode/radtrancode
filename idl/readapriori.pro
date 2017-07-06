@@ -228,9 +228,9 @@ for ivar=0,nvar-1 do begin
   readf,5,tmp
   xa(istart:istart+np-1)=tmp(0,*)
   erra(istart:istart+np-1)=tmp(1,*)
-  tmp = fltarr(2)
+  tmp = 1.0
   readf,5,tmp
-  for i=0,1 do varparam(ivar, i) = tmp(i)
+  varparam(ivar, 1) = tmp
  endif
 
  if(itype eq 444)then begin

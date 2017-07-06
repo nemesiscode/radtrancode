@@ -140,7 +140,7 @@ C     sol_ang is then the tangent altitude)
       print*,'gwritepatcb: IFLAG',IFLAGCB,NCLOUD
       WRITE(31,1)'ncomplayer'!this may need changing
       if(ncloud.eq.3)then
-       nlayg=9
+       nlayg=11-ncblaycloud(2)
        nlaybot=7
        nlaytop=8
       else

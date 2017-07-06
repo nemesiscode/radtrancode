@@ -38,7 +38,6 @@ C       Skip to right point in xn array
         endif
         if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))      
         if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
-        !if(varident(ivar,1).eq.445)np = 2+int(varparam(ivar,1))
         if(varident(ivar,1).eq.445)np = 3+int(varparam(ivar,1))
         if(varident(ivar,1).eq.222)np = 8
         if(varident(ivar,1).eq.223)np = 9
@@ -63,8 +62,15 @@ C        Upper tropospheric haze
          ix=ix+1
          cbodepth(2)=exp(xn(ix))
          cbpbot(2)=cbptop(1)
-         cbptop(2)=(0.9*cbpbot(2))
-         ncblaycloud(2)=2
+         if(varparam(ivar,1).lt.1e-4.or.varparam(ivar,1).gt.0.8)then
+C         Creme Brulee model as specified by Sromovsky et al (2017)
+          cbptop(2)=(0.9*cbpbot(2))
+          ncblaycloud(2)=2
+         else
+C         Option of a more extended haze 
+          cbptop(2)=(varparam(ivar,1)*cbpbot(2))
+          ncblaycloud(2)=5  
+         endif
          cbfsh(2)=1.
 
 C        Stratospheric haze

@@ -2009,8 +2009,15 @@ C           SH opacity
             sx(ix,ix) = (err/r0)**2
             lx(ix)=1
 
-C	    Varparam is not used here, leave it blank
-	    read(27,*),(varparam(ivar,j),j=1,2)
+C           CB top pressure, specified as a ratio of the CB base pressure.
+C           (for instance, if set to 0.2 then CB top pressure = 0.2 x CB base pressure)
+C           If set to 0, default Creme Brulee model is used where CB top pressure = 0.9 x CB base pressure)
+	    read(27,*)varparam(ivar,1)
+            if(varparam(ivar,1).gt.0.9)then
+             print*,'Error readapriori:'
+             print*,'Varparam(ivar,1) must be less than 0.9'
+             stop
+            endif
 
             nx = nx+7
 

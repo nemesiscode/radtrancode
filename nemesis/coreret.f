@@ -602,7 +602,7 @@ C       Test to see if any vmrs have gone negative.
 
           if(varident(ivar,1).eq.227.and.j.eq.ix+3)then!if CB altitude goes above SH altitude or below TC base altitude, or if TC becomes too narrow
            if(exp(xn1(j-3)).lt.1.5*exp(xn1(j)).or.
-     1       0.8*exp(xn1(j)).lt.exp(xn1(j+2)))then
+     1       (varparam(ivar,1)*exp(xn1(j)))-0.02.lt.exp(xn1(j+2)))then
               print*,'Breakdown of cloud structure:'
               print*,'TC base pressure = ',exp(xn1(j-3))
               print*,'CB pressure = ',exp(xn1(j))

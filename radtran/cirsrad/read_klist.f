@@ -156,11 +156,12 @@ C          print*,'read_klist : ngk = ',ngk
 
           IF(delx(i).le.0)THEN
            IF(npt(i).NE.npoint)THEN
-            WRITE(*,*)'Error in READ_KLIST: npoints dont match'
-            WRITE(*,*)' npoint = ',npoint,' npt(i) = ',npt(i)
-            STOP
+            WRITE(*,*)'Warning in READ_KLIST: npoints dont match'
+            WRITE(*,*)' npoint (of first file in list) = ',npoint
+            WRITE(*,*)' npoint of current file, npt(i) = ',npt(i)
+            WRITE(*,*)' proceeding anyway'
            ENDIF
-           DO j=1,npoint
+           DO j=1,npt(i)
             dx = 100*ABS((VCEN(J)-XCENK(J))/VCEN(J))
             IF(dx.gt.MAXDX)THEN
              WRITE(*,*)'Error in READ_KLIST: wave centres dont match'

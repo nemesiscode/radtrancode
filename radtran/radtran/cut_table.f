@@ -1,5 +1,5 @@
       PROGRAM CUT_TABLE
-C     $Id: cut_table.f,v 1.1 2011-06-17 15:25:43 irwin Exp $
+C     $Id:
 C***********************************************************************
 C_TITL:	CUT_TABLE.f
 C
@@ -16,6 +16,7 @@ C	pindex
 C
 C_HIST:	10feb95	PGJI	ORIGINAL VERSION
 C	13jan11 PGJI	Modified to cut data
+C	06jun17 PGJI	Modified to strip out NANs
 C***************************** VARIABLES *******************************
 
       INCLUDE '../includes/arrdef.f'
@@ -37,6 +38,7 @@ C MAXOUT the maximum number of output points
 
       CHARACTER*100 KTAFIL,OPFILE1,OPFILE2,OUTFIL
       CHARACTER*1 ANS
+      LOGICAL ISNAN,NTEST
 C******************************** CODE *********************************
 
       CALL PROMPT('Enter input filename : ')
@@ -198,6 +200,12 @@ C     Assume 4-byte words per record
         DO 30 K=1,NT
           DO 40 LOOP=1,NG
             READ(LUN0,REC=IREC)KVAL
+            NTEST=ISNAN(KVAL)
+            IF(NTEST)THEN
+             print*,'NAN detected at IPOINT,IP,IT,IG = ',I,J,K,LOOP
+             print*,'Setting to zero'
+             KVAL=0.
+            ENDIF
             WRITE(LUN1,REC=IREC1)KVAL
             IREC = IREC + 1
             IREC1 = IREC1 + 1

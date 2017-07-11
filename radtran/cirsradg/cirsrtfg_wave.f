@@ -109,11 +109,15 @@ C     XCOMP: % complete printed in increments of 10.
       REAL xmap(maxv,maxgas+2+maxcon,maxpro)
       REAL y(maxout),yout(maxout),vv,ygt(maxout),youtgt(maxout)
       CHARACTER*100 drvfil,radfile,xscfil,runname,sfile
-      CHARACTER*100 klist
+      CHARACTER*100 klist, FWHMFILE
       INTEGER iwave,ipath,k,igas,ioff1,ioff2,iv,nv
       REAL zheight(maxpro),radextra
       INTEGER nsw,isw(maxgas+2+maxcon),iswitch,rdamform
       LOGICAL scatterf,dustf,solexist,fexist
+      INTEGER NFWHM,MFWHM
+      PARAMETER (MFWHM=1000)
+      LOGICAL FWHMEXIST
+      REAL VFWHM(MFWHM),XFWHM(MFWHM)
 
 C     Need simple way of passing planetary radius to nemesis
       INCLUDE '../includes/planrad.f'
@@ -129,6 +133,20 @@ C     ************************* CODE ***********************
          close(13)
 
          print*,'ISHAPE = ',ISHAPE
+      ENDIF
+
+
+C     See if file is present forcing FWHM to vary with wavelength/wavenumber
+      CALL FILE(OPFILE,FWHMFILE,'fwhm')
+      INQUIRE(FILE=FWHMFILE,EXIST=FWHMEXIST)
+C     If such a file exists then read in the data
+      IF(FWHMEXIST)THEN
+         OPEN(13,FILE=FWHMFILE,status='old')
+          READ(13,*)NFWHM
+          DO I=1,NFWHM
+           READ(13,*)VFWHM(I),XFWHM(I)
+          ENDDO
+         CLOSE(13)
       ENDIF
 
 
@@ -311,15 +329,17 @@ C get convoluted spectra.
            ygt(iwave) = tempgtsurf(ioff1)
         ENDDO		
 
+
         if(Ilbl.eq.0)then
-         CALL cirsconv(runname,fwhm1,nwave,vwave,y,nconv,vconv,yout)	
-         CALL cirsconv(runname,fwhm1,nwave,vwave,ygt,nconv,vconv,
-     1			youtgt)
+         CALL cirsconv(runname,fwhm,nwave,vwave,y,nconv,vconv,yout,
+     1  FWHMEXIST,NFWHM,VFWHM,XFWHM)	
+         CALL cirsconv(runname,fwhm,nwave,vwave,ygt,nconv,vconv,
+     1	youtgt,FWHMEXIST,NFWHM,VFWHM,XFWHM)
         else
-         CALL lblconv1(runname,fwhm1,ishape,nwave,vwave,y,nconv,
-     1     vconv,yout)	
-         CALL lblconv1(runname,fwhm1,ishape,nwave,vwave,ygt,nconv,
-     1     vconv,youtgt)
+         CALL lblconv1(runname,fwhm,ishape,nwave,vwave,y,nconv,
+     1     vconv,yout,FWHMEXIST,NFWHM,VFWHM,XFWHM)	
+         CALL lblconv1(runname,fwhm,ishape,nwave,vwave,ygt,nconv,
+     1     vconv,youtgt,FWHMEXIST,NFWHM,VFWHM,XFWHM)
         endif
         DO iconv=1,nconv
           ioff1 = nconv*(ipath - 1) + iconv
@@ -336,10 +356,11 @@ C     1     gradtsurf(ioff1)
           ENDDO
 
           if(ilbl.eq.0)then
-           CALL cirsconv(runname,fwhm1,nwave,vwave,y,nconv,vconv,yout)
+           CALL cirsconv(runname,fwhm,nwave,vwave,y,nconv,vconv,yout,
+     1 FWHMEXIST,NFWHM,VFWHM,XFWHM)
           else
-           CALL lblconv1(runname,fwhm1,ishape,nwave,vwave,y,nconv,
-     1      vconv,yout)
+           CALL lblconv1(runname,fwhm,ishape,nwave,vwave,y,nconv,
+     1      vconv,yout,FWHMEXIST,NFWHM,VFWHM,XFWHM)
           endif
 
           DO iconv=1,nconv

@@ -10,7 +10,7 @@ C
 C-----------------------------------------------------------------------
 
 	SUBROUTINE cirsconv(runname,fwhm, nwave, vwave, y, 
-     1    nconv, vconv,yout)
+     1    nconv, vconv,yout,FWHMEXIST,NFWHM,VFWHM,XFWHM)
 
 	IMPLICIT NONE
 
@@ -19,11 +19,11 @@ C       bins, paths, etc.)
 	INCLUDE '../includes/arrdef.f'
 
 	REAL		fwhm
-	INTEGER		nstep
+	INTEGER		nstep,NFWHM
 	PARAMETER	(nstep=20)
-
+        REAL		VFWHM(NFWHM),XFWHM(NFWHM),YFWHM
         INTEGER		nwave, nconv, nc, I, J,nconv1,nsub,k,nc1
-        LOGICAL		FLAGNAN
+        LOGICAL		FLAGNAN,FWHMEXIST
 	REAL		vwave(nwave), y(maxout), vconv(nconv),
      1			yout(maxout), xc(maxbin), yc(maxbin),
      2			y2(maxbin), x1, x2, delx, xi, dv, y1,
@@ -129,8 +129,12 @@ C         Delete the NaNs and fit output spectrum to remaining points
 	  CALL cspline (xc, yc, nc, 5.e30, 5.e30, y2)
 
 	  DO I = 1, nconv
-		x1 = vconv(I) - fwhm/2.
-		x2 = vconv(I) + fwhm/2.
+                yfwhm=fwhm
+                if(fwhmexist)then
+                 call verint(vfwhm,xfwhm,nfwhm,yfwhm,vconv(i))
+                endif
+		x1 = vconv(I) - yfwhm/2.
+		x2 = vconv(I) + yfwhm/2.
 
 		delx = (x2-x1)/FLOAT(nstep-1)
 		DO J = 1, nstep

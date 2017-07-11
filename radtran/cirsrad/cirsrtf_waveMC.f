@@ -48,14 +48,16 @@ C       Defines the maximum values for a series of variables (layers,
 C         bins, paths, etc.)
 	INCLUDE '../includes/arrdef.f'
 
-        CHARACTER*100	opfile,opfile1
+        CHARACTER*100	opfile,opfile1,FWHMFILE
         INTEGER         nwave, nconv, npath, I, J, K
-	INTEGER		INormal,Iray, ispace,nem
+	INTEGER		INormal,Iray, ispace,nem,NFWHM,MFWHM
+        PARAMETER	(MFWHM=1000)
 	REAL		Dist, FWHM,sol_ang,emiss_ang,aphi
         REAL          vwave(nwave), vconv(nconv), convout(maxout3),
      1                  output(maxout3), y(maxout), yout(maxout),tsurf,
      2			vem(MAXSEC),emissivity(MAXSEC)
-
+        REAL		VFWHM(MFWHM),XFWHM(MFWHM)
+        LOGICAL		FWHMEXIST
 C-----------------------------------------------------------------------
 C
 C       Call subroutine subCIRSrtf_wave:
@@ -63,6 +65,20 @@ C
 C-----------------------------------------------------------------------
 
         opfile=opfile1
+
+C       See if file is present forcing FWHM to vary with wavelength/wavenumber
+        CALL FILE(OPFILE,FWHMFILE,'fwhm')
+        INQUIRE(FILE=FWHMFILE,EXIST=FWHMEXIST)
+C       If such a file exists then read in the data
+        IF(FWHMEXIST)THEN
+         OPEN(13,FILE=FWHMFILE,status='old')
+          READ(13,*)NFWHM
+          DO I=1,NFWHM
+           READ(13,*)VFWHM(I),XFWHM(I)
+          ENDDO
+         CLOSE(13)
+        ENDIF
+
         print*,'cirsrtf, opfile = ',opfile
         CALL subcirsrtf_waveMC(opfile, Dist, INormal, Iray, ispace, 
      1          vwave,nwave,npath,sol_ang, emiss_ang,aphi,nem,vem,
@@ -95,7 +111,7 @@ C-----------------------------------------------------------------------
 
 
            CALL cirsconv(opfile,fwhm, nwave, vwave, y, nconv, 
-     1      vconv,yout)
+     1      vconv,yout,FWHMEXIST,NFWHM,VFWHM,XFWHM)
 
            DO J= 1, nconv
               K= I+(J-1)*npath

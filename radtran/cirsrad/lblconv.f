@@ -10,7 +10,8 @@ C
 C-----------------------------------------------------------------------
 
 	SUBROUTINE lblconv(runname,fwhm, ishape, npath, ispace, 
-     1     vwave, delv, y, nconv, vconv,yout,ynor)
+     1     vwave, delv, y, nconv, vconv,yout,ynor,FWHMEXIST,NFWHM,
+     2     VFWHM,XFWHM)
 
 	IMPLICIT NONE
 
@@ -19,8 +20,10 @@ C       bins, paths, etc.)
 	INCLUDE '../includes/arrdef.f'
 
 	REAL		fwhm,x,sig
-	INTEGER		nstep,mconv,npath,ispace,ishape
+	INTEGER		nstep,mconv,npath,ispace,ishape,NFWHM
 	PARAMETER	(nstep=20, mconv=2000)
+        REAL		VFWHM(NFWHM),XFWHM(NFWHM),YFWHM
+        LOGICAL		FWHMEXIST
 
         INTEGER		nconv, nc, I, J,nconv1,nsub,k
 	REAL		vwave, y(maxpat,2), vconv(nconv),vwave1,
@@ -57,20 +60,25 @@ C        numbers of FWHMs for ISHAPE=3 and ISHAPE=4
 
          DO J=1,NCONV
 
+          YFWHM=FWHM
+          if(fwhmexist)then
+             call verint(vfwhm,xfwhm,nfwhm,yfwhm,vconv(i))
+          endif
+
 C         Find limits of instrument width in wavenumbers
           IF(ISHAPE.EQ.0)THEN
-           V1=VCONV(J)-0.5*FWHM
-           V2=V1+FWHM
+           V1=VCONV(J)-0.5*YFWHM
+           V2=V1+YFWHM
           ELSEIF(ISHAPE.EQ.1)THEN
-           V1=VCONV(J)-FWHM
-           V2=VCONV(J)+FWHM
+           V1=VCONV(J)-YFWHM
+           V2=VCONV(J)+YFWHM
           ELSEIF(ISHAPE.EQ.2)THEN
-           SIG = 0.5*FWHM/SQRT(ALOG(2.0))
+           SIG = 0.5*YFWHM/SQRT(ALOG(2.0))
            V1=VCONV(J)-3.*SIG
            V2=VCONV(J)+3.*SIG
           ELSE
-           V1=VCONV(J)-NFW*FWHM
-           V2=VCONV(J)+NFW*FWHM
+           V1=VCONV(J)-NFW*YFWHM
+           V2=VCONV(J)+NFW*YFWHM
           ENDIF
           VCEN=VCONV(J)
 
@@ -92,17 +100,17 @@ C          Square Instrument Shape
 C          Triangular Instrument Shape
            IF(VWAVE.GE.V1.AND.VWAVE.LE.V2)THEN
             IF(ISPACE.EQ.0)THEN
-             F2=1.0 - ABS(VWAVE-VCEN)/FWHM
+             F2=1.0 - ABS(VWAVE-VCEN)/YFWHM
             ELSE
-             F2=1.0 - ABS(1E4/VWAVE-VCEN)/FWHM          
+             F2=1.0 - ABS(1E4/VWAVE-VCEN)/YFWHM          
             ENDIF
            ENDIF
 
            IF(VWAVE1.GE.V1.AND.VWAVE1.LE.V2)THEN
             IF(ISPACE.EQ.0)THEN
-             F1=1.0 - ABS(VWAVE1-VCEN)/FWHM
+             F1=1.0 - ABS(VWAVE1-VCEN)/YFWHM
             ELSE
-             F1=1.0 - ABS(1E4/VWAVE1-VCEN)/FWHM
+             F1=1.0 - ABS(1E4/VWAVE1-VCEN)/YFWHM
             ENDIF
            ENDIF           
            IF(F2.LT.0.0)THEN
@@ -139,7 +147,7 @@ C          Hamming Instrument Shape
             ELSE
              XOFF = 1E4/VWAVE - VCEN
             ENDIF
-            F2 = HAMMING(FWHM,XOFF)
+            F2 = HAMMING(YFWHM,XOFF)
            ENDIF
 
            IF(VWAVE1.GE.V1.AND.VWAVE1.LE.V2)THEN
@@ -148,7 +156,7 @@ C          Hamming Instrument Shape
             ELSE
              XOFF = 1E4/VWAVE1-VCEN
             ENDIF
-            F1 = HAMMING(FWHM,XOFF)
+            F1 = HAMMING(YFWHM,XOFF)
            ENDIF           
 
           ELSE
@@ -159,7 +167,7 @@ C          Hanning Instrument Shape
             ELSE
              XOFF = 1E4/VWAVE - VCEN
             ENDIF
-            F2 = HANNING(FWHM,XOFF)
+            F2 = HANNING(YFWHM,XOFF)
            ENDIF
 
            IF(VWAVE1.GE.V1.AND.VWAVE1.LE.V2)THEN
@@ -168,7 +176,7 @@ C          Hanning Instrument Shape
             ELSE
              XOFF = 1E4/VWAVE1-VCEN
             ENDIF
-            F1 = HANNING(FWHM,XOFF)
+            F1 = HANNING(YFWHM,XOFF)
            ENDIF           
 
           ENDIF

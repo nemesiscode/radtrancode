@@ -114,9 +114,9 @@ C     ************************************************************************
       real cbpbot(mcloud),cbptop(mcloud),cbodepth(mcloud),cbfsh(mcloud)
       integer ncblaycloud(mcloud)
 
-      real vi(mx),csx,nrealfix(mx),nimagfix(mx)
-      integer fixtoggle(mvar)
-      common /maltmieser/vi,nrealfix,nimagfix,fixtoggle
+      real csx,nrealfix(mx),nimagfix(mx)
+      integer fixtoggle
+      common /maltmieser/nrealfix,nimagfix
 
      
       print*,'gsetrad, lin = ',lin
@@ -590,6 +590,7 @@ C       check that rescaling has happened correctly
            vm = varparam(ivar,3)
            nm = varparam(ivar,4)
            lambda0 = varparam(ivar,5)
+           fixtoggle = varparam(ivar,6)
 
            call get_xsecA(runname,nmode,nwave,wave,xsec)
 
@@ -671,7 +672,7 @@ C          Find minimum wavelength
 
            call modmakephase(iwave,imode,inorm,iscat,
      1   parm,rs,srefind,runname,lambda0,csx,
-     2   nrealfix,nimagfix,fixtoggle(ivar))
+     2   nrealfix,nimagfix,fixtoggle)
 
            if(varident(ivar,1).eq.445)then
             np=3+np1

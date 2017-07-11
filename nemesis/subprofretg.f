@@ -515,7 +515,7 @@ C     1    VARIDENT(IVAR,3)
 C       Look up number of parameters needed to define this type of profile
         NP = NPVAR(VARIDENT(IVAR,3),NPRO)
 C        print*,'IVAR,VARIDENT,NP',IVAR,(VARIDENT(IVAR,I),I=1,3),NP
-C        print*,'IPAR = ',IPAR
+        print*,'IPAR = ',IPAR
         IF(VARIDENT(IVAR,3).EQ.0)THEN
 C        Model 0. Continuous profile
 C        ***************************************************************
@@ -2226,19 +2226,26 @@ C        to roughly optimise the Heaviside step function given the orders of mag
         ELSEIF(VARIDENT(IVAR,3).EQ.25)THEN
 C        Model 25: Continuous profile with fewer than NPRO vertical levels
 C        ***************************************************************
-         LPMAX=ALOG(P(1))
-         LPMIN=ALOG(P(NPRO))
-         NP = INT(VARPARAM(IVAR,1))
-         DLP = (LPMAX-LPMIN)/FLOAT(NP-1)      
-C        Find tabulated pressures and profile
-         DO J=1,NP
-          LP1(J)=LPMIN + DLP*FLOAT(J-1)
-C         Reverse profile array which by convention goes up in the atmosphere
-          XP1(1+NP-J)=XN(NXTEMP+J)
-         ENDDO
+C         LPMAX=ALOG(P(1))
+C         LPMIN=ALOG(P(NPRO))
+C         NP = INT(VARPARAM(IVAR,1))
+C         DLP = (LPMAX-LPMIN)/FLOAT(NP-1)    
+CC        Find tabulated pressures and profile
 C         DO J=1,NP
-C          PRINT*,J,LP1(J),exp(LP1(J)),XP1(J)
+C          LP1(J)=LPMIN + DLP*FLOAT(J-1)
+CC         Reverse profile array which by convention goes up in the atmosphere
+C          XP1(1+NP-J)=XN(NXTEMP+J)
 C         ENDDO
+CC         DO J=1,NP
+CC          PRINT*,J,LP1(J),exp(LP1(J)),XP1(J)
+CC         ENDDO
+
+         NP = INT(VARPARAM(IVAR,1))
+         DO J=1,NP
+C         Reverse profile array which by convention goes up in the atmosphere
+          LP1(1+NP-J)=ALOG(VARPARAM(IVAR,J+1))!read in pressure grid
+          XP1(1+NP-J)=XN(NXTEMP+J)!read in profile
+         ENDDO
 
 C        Fit a cubic spline to the points
          CALL CSPLINE(LP1,XP1,NP,1e30,1e30,XP2)

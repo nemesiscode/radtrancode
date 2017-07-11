@@ -90,6 +90,21 @@ for ivar=0,nvar-1 do begin
   erra(istart:istart+2)=tmp(1,*)
  endif 
 
+ if(itype eq 25) then begin
+  apfile=''
+  readf,5,apfile
+  apfile = strcompress(apfile,/REMOVE_ALL)
+  openr,6,apfile
+   readf,6,np,clen
+   data = fltarr(3,np)
+   readf,6,data
+  close,6
+  varparam(ivar,0) = np 
+  xa(istart:istart+np-1)=data(1,*)
+  erra(istart:istart+np-1)=data(2,*)
+  varparam(ivar,1:np) = data(0,*)
+ endif 
+
  if(itype eq 8 or itype eq 9) then begin
   np = 3
   tmp = fltarr(2,np)

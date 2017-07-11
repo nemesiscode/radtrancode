@@ -1,6 +1,6 @@
       subroutine modmakephase(iwave,imode,inorm,iscat,
      1   parm,rs,srefind,runname,lambda0,csratio,nrealfix,
-     2   nimagfix,toggle)
+     2   nimagfix,fixtoggle)
 C     ****************************************************************
 C     Subroutine to allow Makephase functionality from within other programs
 C
@@ -48,7 +48,7 @@ C
 	character*512 	buffer
 
 	real csratio,nrealfix(mx),nimagfix(mx)
-	integer toggle
+	integer fixtoggle
       
 
         integer         ilist, nspec, idspec
@@ -184,7 +184,7 @@ C-----------------------------------------------------------------------
      1				refind, theta, 
      2				ntheta, scat, ext, phase, 
      3			        nphase,csratio,nrealfix(J),
-     4				nimagfix(J),toggle)
+     4				nimagfix(J),fixtoggle)
 			omega = scat/ext
 
 		end if

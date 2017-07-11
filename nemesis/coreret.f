@@ -122,7 +122,7 @@ C     Set measurement vector and source vector lengths here.
       double precision s1e(my,my),sei(my,my)
       double precision dd(mx,my),aa(mx,mx)
 
-      real phi,ophi,chisq,xchi,oxchi
+      real phi,ophi,chisq,xchi,oxchi,tmpvar
 C     **************************** CODE ********************************
 
 C     ++++++++++++++++++ Read in extra parameters to test vmr profile +++
@@ -601,8 +601,13 @@ C       Test to see if any vmrs have gone negative.
           endif
 
           if(varident(ivar,1).eq.227.and.j.eq.ix+3)then!if CB altitude goes above SH altitude or below TC base altitude, or if TC becomes too narrow
+           if(varparam(ivar,1).eq.0)then
+            tmpvar = 0.9
+           else
+            tmpvar = varparam(ivar,1)
+           endif
            if(exp(xn1(j-3)).lt.1.5*exp(xn1(j)).or.
-     1       (varparam(ivar,1)*exp(xn1(j)))-0.02.lt.exp(xn1(j+2)))then
+     1       (tmpvar*exp(xn1(j)))-0.02.lt.exp(xn1(j+2)))then
               print*,'Breakdown of cloud structure:'
               print*,'TC base pressure = ',exp(xn1(j-3))
               print*,'CB pressure = ',exp(xn1(j))

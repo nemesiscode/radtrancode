@@ -101,11 +101,9 @@ C     a priori covariance matrix
       real tau0,ntemp,teff,alpha,T0
       real etau0,entemp,eteff,ealpha,eT0
       real csx,cserr,nrealfix(mx),nimagfix(mx)
-      integer fixtoggle(mvar)
+      integer fixtoggle
 
-C     I'm sure there's a better way of doing this, but I don't want to change the value of mparam,
-C     so common blocks it is.
-      common /maltmieser/vi,nrealfix,nimagfix,fixtoggle
+      common /maltmieser/nrealfix,nimagfix
 
 C     Initialise a priori parameters
       do i=1,mx
@@ -158,7 +156,6 @@ C     3 scale profile in .ref file by the exponent of a number.
       nx = 0 
       do 10 ivar=1,nvar
          csx = -1.0			!particles are assumed to be homogeneous by default
-	 fixtoggle(ivar) = -1	
          read(27,*)(varident(ivar,j),j=1,3)
          if(varident(ivar,1).le.100)then
 C          parameter must be an atmospheric one.
@@ -1204,23 +1201,50 @@ C             *** vmr, fcloud, para-H2 or cloud, take logs *********
              nx = nx+3
 
            elseif (varident(ivar,3).eq.25)then
-C           Continuous profile but represented with fewer points than in profile to achieve 
+C           Continuous profile but represented with fewer points than in .prf to achieve 
 C           implicit smoothing and faster retrieval times
-C            Read in number of points and any cross-corelation
-             read(27,*)np,clen
+C            Read in number of points and any cross-correlation
+
+             read(27,1)ipfile
+             print*,'reading variable ',ivar,' from ',ipfile
+             open(28,file=ipfile,status='old')
+             read(28,*)np,clen!np = number of points over which to retrieve profile (as opposed to npro which is total number of points in .prf)
              varparam(ivar,1)=np
+             if(np.gt.npro)then
+              print*,'Error readapriori:'
+              print*,'np > npro'
+              stop
+             endif
              do i=1,np
-              read(27,*)xdeep,edeep
-              ix=nx+i
+              read(28,*)pknee,xdeep,edeep!pressure, aerosol density, error
+              ix = i+nx
+C             For vmrs and cloud density always hold the log. 
+C             Avoids instabilities arising from greatly different profiles 
+C             such as T and vmrs
               if(varident(ivar,1).eq.0)then
+C              *** temperature, leave alone ****
                x0(ix)=xdeep
                sx(ix,ix)=edeep**2
               else
+C              **** vmr, cloud, para-H2 , fcloud, take logs ***
+               if(pknee.lt.0.0) then
+                 print*,'Error in readapriori.f.'
+                 print*,'Cannot have negative pressures'
+                 stop
+               endif
+               if(xdeep.lt.0.0) then
+                 print*,'Error in readapriori.f.'
+                 print*,'Cannot take log of negative values'
+                 stop
+               endif
                x0(ix)=alog(xdeep)
                sx(ix,ix)=(edeep/xdeep)**2
                lx(ix)=1
               endif
+              varparam(ivar,i+1)=pknee
+
              enddo
+             close(28)
 
              do i=1,np
               do j=1,np
@@ -1528,12 +1552,13 @@ C              Read ratio of shell volume wrt total volume of particle, with err
 C              Read whether to fix the shell- or the core complex refractive index spectrum:
 C              fixtoggle = 1: Retrieve shell index, fix core index
 C              fixtoggle = 0: Retrieve core index, fix shell index
-               read(28,*)fixtoggle(ivar)
-               if((fixtoggle(ivar).ne.1).and.(fixtoggle(ivar).ne.0))then
+               read(28,*)fixtoggle
+               if((fixtoggle.ne.1).and.(fixtoggle.ne.0))then
                 print*,'Error readapriori:'
                 print*,'Fixtoggle must equal 0 or 1'
                 stop
                endif
+               varparam(ivar,6)=fixtoggle
 C              Read number of wavelengths and correlation length (wavelength/
 C				wavenumbers)
                read(28,*)np,clen

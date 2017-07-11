@@ -819,64 +819,160 @@ C        Model 8. Profile is represented by a value at a variable pressure level
 C        plus a fractional scale height. Below the knee pressure the profile is 
 C        set to zero - a simple cloud in other words!
 C        ***************************************************************
-         IF(VARIDENT(IVAR,1).EQ.0)THEN
-           XDEEP = XN(NXTEMP+1)
-         ELSE
-           XDEEP = EXP(XN(NXTEMP+1))
+
+         IF(VARIDENT(IVAR,1).GE.0)THEN
+          PRINT*,'Warning from SUBPROFRETG. You are using a'
+          PRINT*,'cloud profile parameterisation for a non-cloud'
+          PRINT*,'variable'         
+          STOP 
          ENDIF
-         XFSH  = EXP(XN(NXTEMP+2))
-         XFAC = (1.0-XFSH)/XFSH
-         DXFAC = -1.0/XFSH
-         PKNEE = EXP(XN(NXTEMP+3))
 
-         CALL VERINT(P,H,NPRO,HKNEE,PKNEE)
-         JFSH = 0
-      
-         DO J=1,NPRO
+C        Calculate gradient numerically as it's just too hard otherwise
+         DO 27 ITEST=1,4
 
-          X1(J)=1e-36
 
-          IF(P(J).LT.PKNEE)THEN  
-             IF(JFSH.EQ.0)THEN
-               DELH = H(J)-HKNEE
-               XKEEP = XDEEP
+          XDEEP = EXP(XN(NXTEMP+1))
+          XFSH  = EXP(XN(NXTEMP+2))
+          PKNEE = EXP(XN(NXTEMP+3))
 
-               IF(VARIDENT(IVAR,1).EQ.0)THEN
-                XMAP1=1.
-               ELSE
-                XMAP1=XDEEP
-               ENDIF
+          DX=0.05*XN(NXTEMP+ITEST-1)
+          IF(DX.EQ.0.)DX=0.1
 
-               XMAP(NXTEMP+1,IPAR,J)=XMAP1*
-     1                  EXP(-DELH*XFAC/SCALE(J))
-             ELSE
+          IF(ITEST.GT.1)THEN
+C            print*,'ITEST,IPAR,XN,DX = ',ITEST,IPAR,
+C     1		XN(NXTEMP+ITEST-1),DX
+C            print*,'XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
+          ENDIF
+          IF(ITEST.EQ.2)THEN
+            XDEEP=EXP(XN(NXTEMP+1)+DX)
+          ENDIF
+          IF(ITEST.EQ.3)THEN
+            XFSH  = EXP(XN(NXTEMP+2)+DX)
+          ENDIF
+          IF(ITEST.EQ.4)THEN
+            PKNEE = EXP(XN(NXTEMP+3)+DX)
+          ENDIF
 
-               DELH=H(J)-H(J-1)
-               XKEEP = X1(J-1)
-               XMAP(NXTEMP+1,IPAR,J)=XMAP(NXTEMP+1,IPAR,J-1)*
-     1                  EXP(-DELH*XFAC/SCALE(J))
-             ENDIF
 
-             X1(J)=XKEEP*EXP(-DELH*XFAC/SCALE(J))
+C         Start ND,Q,OD at zero
+C         OD is in units of particles/cm2 = particles/cm3 x length(cm)
+C         Q is specific density = particles/gram = (particles/cm3) / (g/cm3)
+          DO J=1,NPRO
+           ND(J)=0.
+           OD(J)=0
+           Q(J)=0.
+           DNDH(J)=0.
+           DQDH(J)=0.
+          ENDDO
 
-             XMAP(NXTEMP+2,IPAR,J)=(-DELH/SCALE(J))*DXFAC*
-     1          XKEEP*EXP(-DELH*XFAC/SCALE(J)) +
-     2          XMAP(NXTEMP+2,IPAR,J-1)*EXP(-DELH*XFAC/SCALE(J))
+          JFSH=-1
 
-             IF(JFSH.EQ.0)THEN
-               XMAP(NXTEMP+3,IPAR,J)=PKNEE*(XFAC/P(J))*
-     1             XKEEP*EXP(-DELH*XFAC/SCALE(J))
-             ENDIF
-             XMAP(NXTEMP+3,IPAR,J)=XMAP(NXTEMP+3,IPAR,J)+
-     1          XMAP(NXTEMP+2,IPAR,J-1)*EXP(-DELH*XFAC/SCALE(J))
+          CALL VERINT(P,H,NPRO,HKNEE,PKNEE)
 
-             JFSH = 1
+          if(VMRflag.eq.1)then
+           if(HKNEE.ge.H(NPRO))THEN
+            PKNEE = P(NPRO)
+            HKNEE = H(NPRO)
+           endif
+          endif
 
-             IF(X1(J).LT.1e-36)X1(J)=1e-36
 
-           END IF
+          IF(H(1).GE.HKNEE)THEN
+            IF(AMFORM.EQ.0)THEN
+             XMOLWT=MOLWT
+            ELSE
+             XMOLWT=XXMOLWT(1)
+            ENDIF
+C           Calculate density of atmosphere  (g/cm3)
+            ND(1)=1.0
+            RHO = P(1)*0.1013*XMOLWT/(R*T(1))
+            Q(1)=ND(1)/RHO
+            JFSH=1
+          ENDIF
 
-         ENDDO
+          DO J=2,NPRO
+           DELH = H(J)-H(J-1)
+           XFAC = SCALE(J)*XFSH
+
+
+           IF(H(J).GE.HKNEE)THEN
+            IF(AMFORM.EQ.0)THEN
+             XMOLWT=MOLWT
+            ELSE
+             XMOLWT=XXMOLWT(J)
+            ENDIF
+
+C           Calculate density of atmosphere  (g/cm3)
+            RHO = (0.1013*XMOLWT/R)*(P(J)/T(J))
+
+            IF(JFSH.LT.0)THEN
+             ND(J)=1.0
+             JFSH=1
+           ELSE
+             ND(J)=ND(J-1)*DPEXP(-DELH/XFAC)
+             DNDH(J)=ND(J)*DELH/(XFAC**2)+DPEXP(-DELH/XFAC)*DNDH(J-1)
+            ENDIF
+            Q(J)=ND(J)/RHO
+            DQDH(J) = DNDH(J)/RHO
+           ENDIF
+
+c           print*,'BLAH:',J,H(J), HKNEE, ND(J),JFSH
+
+          ENDDO
+
+C         Integrate optical thickness
+          OD(NPRO)=ND(NPRO)*SCALE(NPRO)*XFSH*1E5
+          JFSH=-1
+          DO J=NPRO-1,1,-1
+           DELH = H(J+1) - H(J)
+           XFAC = SCALE(J)*XFSH         
+           OD(J)=OD(J+1)+0.5*(ND(J) + ND(J+1))*XFAC*1E5
+           IF(H(J).LE.HKNEE.AND.JFSH.LT.0)THEN
+            F = (HKNEE-H(J))/DELH
+            XOD = (1.-F)*OD(J) + F*OD(J+1)
+            JFSH=1
+           ENDIF
+c           print*, 'OD F XOD JFSH',OD(J),F,XOD,JFSH,ND(J),ND(J+1)
+          ENDDO
+
+C         The following section was found not to be as accurate as
+C         desired due to misalignments at boundaries and so needs some 
+C         post-processing in gsetrad.f
+          DO J=1,NPRO
+           OD(J)=XDEEP*OD(J)/XOD
+           ND(J)=XDEEP*ND(J)/XOD
+           Q(J)=XDEEP*Q(J)/XOD
+           IF(H(J).LT.HKNEE)THEN
+            IF(H(J+1).GE.HKNEE)THEN
+             Q(J)=Q(J)*(1.0 - (HKNEE-H(J))/(H(J+1)-H(J)))
+            ELSE
+             Q(J) = 0.0
+            ENDIF
+           ENDIF
+c           print*, 'Q: ', Q(J), XDEEP, XOD
+           IF(Q(J).GT.1e10)Q(J)=1e10
+           IF(Q(J).LT.1e-36)Q(J)=1e-36
+           NTEST=ISNAN(Q(J))
+           IF(NTEST)THEN
+            print*,'Error in subprofretg.f, cloud density is NAN'
+	    STOP
+           ENDIF
+
+           IF(ITEST.EQ.1)THEN
+            X1(J)=Q(J)
+C            print*,'J,X1(J)',J,X1(J)
+           ELSE
+            XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
+C            PRINT*,'ITEST,J,XMAP',ITEST,J,Q(J),X1(J),(Q(J)-X1(J))/DX
+           ENDIF
+
+           DNDH(J)=DNDH(J)*XDEEP/XOD
+           DQDH(J)=DQDH(J)*XDEEP/XOD
+           DQDX(J)=Q(J)/XOD
+
+          ENDDO
+
+27       CONTINUE
 
         ELSEIF(VARIDENT(IVAR,3).EQ.9)THEN
 C        Model 9. Similar to model 8. Profile is represented by a value 

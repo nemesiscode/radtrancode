@@ -117,14 +117,14 @@ C-----------------------------------------------------------------------
         CALL subpath(opfile)
 
         npath1= npath
-
+        PRINT*,'LBLRTF_WAVE called.'
 
 C       See if file is present forcing FWHM to vary with wavelength/wavenumber
         CALL FILE(OPFILE,FWHMFILE,'fwh')
         INQUIRE(FILE=FWHMFILE,EXIST=FWHMEXIST)
 C       If such a file exists then read in the data
         IF(FWHMEXIST)THEN
-         print*,'Reading FWHM infomration from : ',FWHMFILE
+         print*,'Reading FWHM information from : ',FWHMFILE
          OPEN(13,FILE=FWHMFILE,status='old')
           READ(13,*)NFWHM
           DO I=1,NFWHM

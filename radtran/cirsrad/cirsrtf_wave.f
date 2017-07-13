@@ -71,7 +71,6 @@ C         bins, paths, etc.)
          open(13,file=sfile,status='old')
          READ(13,*)ISHAPE
          close(13)
-
          print*,'ISHAPE = ',ISHAPE
         ENDIF
 

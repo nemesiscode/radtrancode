@@ -125,7 +125,7 @@ C     Need simple way of passing planetary radius to nemesis
 
 C     ************************* CODE ***********************
 
-      PRINT*,'CIRSRTF_WAVE - ILBL = ',ILBL
+      PRINT*,'CIRSRTFG_WAVE - ILBL = ',ILBL
       IF(ILBL.EQ.2)THEN
          call file(runname,sfile,'sha')
          open(13,file=sfile,status='old')
@@ -139,11 +139,11 @@ C     Copy required FWHM to common block variable
       FWHM = FWHM1
 
 C     See if file is present forcing FWHM to vary with wavelength/wavenumber
-      CALL FILE(OPFILE,FWHMFILE,'fwh')
+      CALL FILE(runname,FWHMFILE,'fwh')
       INQUIRE(FILE=FWHMFILE,EXIST=FWHMEXIST)
 C     If such a file exists then read in the data
       IF(FWHMEXIST)THEN
-         print*,'Reading FWHM infomration from : ',FWHMFILE
+         print*,'Reading FWHM information from : ',FWHMFILE
          OPEN(13,FILE=FWHMFILE,status='old')
           READ(13,*)NFWHM
           DO I=1,NFWHM

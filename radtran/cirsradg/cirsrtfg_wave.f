@@ -135,6 +135,8 @@ C     ************************* CODE ***********************
          print*,'ISHAPE = ',ISHAPE
       ENDIF
 
+C     Copy required FWHM to common block variable
+      FWHM = FWHM1
 
 C     See if file is present forcing FWHM to vary with wavelength/wavenumber
       CALL FILE(OPFILE,FWHMFILE,'fwh')

@@ -62,7 +62,7 @@ C        numbers of FWHMs for ISHAPE=3 and ISHAPE=4
 
           YFWHM=FWHM
           if(fwhmexist)then
-             call verint(vfwhm,xfwhm,nfwhm,yfwhm,vconv(i))
+             call verint(vfwhm,xfwhm,nfwhm,yfwhm,vconv(j))
           endif
 
 C         Find limits of instrument width in wavenumbers

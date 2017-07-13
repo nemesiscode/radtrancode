@@ -45,12 +45,31 @@ C       Defines the maximum values for a series of variables (layers,
 C         bins, paths, etc.)
 	INCLUDE '../includes/arrdef.f'
 
-        CHARACTER*100	opfile
+        CHARACTER*100	opfile,FWHMFILE
         INTEGER         nwave, nconv, npath, itype, I, J, K
 	INTEGER		INormal
+        INTEGER         NFWHM,MFWHM
+        PARAMETER       (MFWHM=1000)
 	REAL		Dist, FWHM
         REAL          vwave(nwave), vconv(nconv), convout(maxout3),
      1                  output(maxout3), y(maxout), yout(maxout)
+        LOGICAL         FWHMEXIST
+        REAL            VFWHM(MFWHM),XFWHM(MFWHM)
+
+
+C       See if file is present forcing FWHM to vary with wavelength/wavenumber
+        CALL FILE(OPFILE,FWHMFILE,'fwh')
+        INQUIRE(FILE=FWHMFILE,EXIST=FWHMEXIST)
+C       If such a file exists then read in the data
+        IF(FWHMEXIST)THEN
+         print*,'Reading FWHM infomration from : ',FWHMFILE
+         OPEN(13,FILE=FWHMFILE,status='old')
+          READ(13,*)NFWHM
+          DO I=1,NFWHM
+           READ(13,*)VFWHM(I),XFWHM(I)
+          ENDDO
+         CLOSE(13)
+        ENDIF
 
 C-----------------------------------------------------------------------
 C
@@ -88,7 +107,8 @@ C-----------------------------------------------------------------------
            ENDDO
 
 
-           CALL cirsconv(opfile,fwhm, nwave,vwave,y,nconv,vconv,yout)
+           CALL cirsconv(opfile,fwhm, nwave,vwave,y,nconv,vconv,yout,
+     1 FWHMEXIST,NFWHM,VFWHM,XFWHM)
 
            DO J= 1, nconv
               K= I+(J-1)*npath

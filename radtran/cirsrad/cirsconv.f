@@ -41,7 +41,7 @@ C-----------------------------------------------------------------------
 C       set the FWHM to be the same as the spacing of k-distribs
 C       in look-up table
 
-C	WRITE(*,*)'CIRSCONV: FWHM of boxcar = ',FWHM
+	WRITE(*,*)'CIRSCONV: FWHM of boxcar = ',FWHM
 
 	IF (nwave.eq.1.and.fwhm.ne.0.0) THEN
 		WRITE(*,*)'CIRSCONV: Too few input points: nwave= ',nwave
@@ -133,6 +133,8 @@ C         Delete the NaNs and fit output spectrum to remaining points
                 if(fwhmexist)then
                  call verint(vfwhm,xfwhm,nfwhm,yfwhm,vconv(i))
                 endif
+                print*,'I,VCONV(I),YFWHM',I,VCONV(I),YFWHM
+
 		x1 = vconv(I) - yfwhm/2.
 		x2 = vconv(I) + yfwhm/2.
 

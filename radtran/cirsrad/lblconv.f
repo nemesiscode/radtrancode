@@ -34,6 +34,10 @@ C       bins, paths, etc.)
 	REAL		v1,v2,f1,f2,vt,XOFF,HAMMING,NFW,HANNING
 	CHARACTER*100	runname
 
+        print*,'LBLCONV --> FWHM = ',FWHM
+
+
+
         IF(fwhm.gt.0.0)THEN
 
 C         print*,vwave,delv,fwhm,npath
@@ -64,7 +68,7 @@ C        numbers of FWHMs for ISHAPE=3 and ISHAPE=4
           if(fwhmexist)then
              call verint(vfwhm,xfwhm,nfwhm,yfwhm,vconv(j))
           endif
-
+          print*,'J,VCONV(J),YFWHM',J,VCONV(J),YFWHM
 C         Find limits of instrument width in wavenumbers
           IF(ISHAPE.EQ.0)THEN
            V1=VCONV(J)-0.5*YFWHM

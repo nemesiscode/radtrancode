@@ -48,7 +48,7 @@ C        numbers of FWHMs for ISHAPE=3 and ISHAPE=4
           IF(FWHMEXIST)THEN
            CALL VERINT(VFWHM,XFWHM,NFWHM,YFWHM,VCONV(J))
           ENDIF
-          print*,'J,VCONV(J),YFWHM',J,VCONV(J),YFWHM
+C          print*,'J,VCONV(J),YFWHM',J,VCONV(J),YFWHM
 C         Find limits of instrument width in wavenumbers
           IF(ISHAPE.EQ.0)THEN
            V1=VCONV(J)-0.5*YFWHM

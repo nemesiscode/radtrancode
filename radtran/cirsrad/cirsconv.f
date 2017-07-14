@@ -133,7 +133,7 @@ C         Delete the NaNs and fit output spectrum to remaining points
                 if(fwhmexist)then
                  call verint(vfwhm,xfwhm,nfwhm,yfwhm,vconv(i))
                 endif
-                print*,'I,VCONV(I),YFWHM',I,VCONV(I),YFWHM
+C                print*,'I,VCONV(I),YFWHM',I,VCONV(I),YFWHM
 
 		x1 = vconv(I) - yfwhm/2.
 		x2 = vconv(I) + yfwhm/2.

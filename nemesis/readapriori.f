@@ -1258,6 +1258,30 @@ C              **** vmr, cloud, para-H2 , fcloud, take logs ***
               enddo
              enddo
 
+             do i = 1,np
+              ix = nx + i         
+              do j = i+1,np
+               jx = nx + j
+               if(pref(i).lt.0.0) then
+                 print*,'Error in readapriori.f. A priori file '
+                 print*,'must be on pressure grid '
+                 stop
+               endif            
+c               print*,'DIAG1',pref(i),pref(j),alog(pref(j))
+               delp = log(varparam(ivar,j+1))-log(varparam(ivar,i+1))
+c               print*,'168: CLEN:',clen
+c               print*,'169: DELP:',delp
+               
+               arg = abs(delp/clen)
+               xfac = exp(-arg)
+C               xfac = exp(-arg*arg)
+               if(xfac.ge.SXMINFAC)then  
+                sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
+                sx(jx,ix) = sx(ix,jx)
+               endif
+              enddo
+             enddo
+
              nx=nx+np
 
            else         

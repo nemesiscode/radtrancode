@@ -1246,18 +1246,6 @@ C              **** vmr, cloud, para-H2 , fcloud, take logs ***
              enddo
              close(28)
 
-             do i=1,np
-              do j=1,np
-               delv = float(i-j)
-               arg = abs(delv/clen)
-               xfac = exp(-arg)
-               if(xfac.ge.SXMINFAC)then  
-                sx(nx+i,nx+j)= sqrt(sx(nx+i,nx+i)*sx(nx+j,nx+j))*xfac
-                sx(nx+j,nx+i)=sx(nx+i,nx+j)
-               endif
-              enddo
-             enddo
-
              do i = 1,np
               ix = nx + i         
               do j = i+1,np

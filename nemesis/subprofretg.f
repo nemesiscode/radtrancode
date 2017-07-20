@@ -2339,7 +2339,7 @@ CC         ENDDO
          NP = INT(VARPARAM(IVAR,1))
          DO J=1,NP
 C         Reverse profile array which by convention goes up in the atmosphere
-          LP1(1+NP-J)=ALOG(VARPARAM(IVAR,J+1))!read in pressure grid
+          LP1(1+NP-J)=ALOG(VARPARAM(IVAR,J+2))!read in pressure grid
           XP1(1+NP-J)=XN(NXTEMP+J)!read in profile
          ENDDO
 
@@ -2407,6 +2407,21 @@ C          ENDIF
 C         ENDDO
 C         stop
 C         IF(X1(J).LT.1e-36)X1(J)=1e-36
+
+         IF(VARPARAM(IVAR,3).LT.P(1))THEN
+          print*,'Warning subprofretg:'
+          print*,'Maximum pressure in interpolated grid lower'
+          print*,'than maximum pressure in jupiter.ref.'
+          print*,'This could lead to infinity errors'
+          stop
+         ENDIF
+         IF(VARPARAM(IVAR,NP+2).GT.P(NPRO))THEN
+          print*,'Warning subprofretg:'
+          print*,'Minimum pressure in interpolated grid higher'
+          print*,'than minimum pressure in jupiter.ref.'
+          print*,'This could lead to infinity errors'
+          stop
+         ENDIF
 
         ELSE
 

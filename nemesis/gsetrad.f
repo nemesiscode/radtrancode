@@ -386,6 +386,21 @@ C      ***************** Tangent height correction ***********
 
        endif
 
+C      Make sure laytyp and nlayer consistent for varident(ivar,3)=25 model
+       if(varident(ivar,3).eq.25)then
+        if(laytyp.ne.4)then
+         print*,'Error gsetrad: laytyp =/= 4'
+         print*,'Need to set laytyp=4 in jupiter.set'
+         print*,'to use varident(ivar,3)=25 model'
+         stop
+        endif
+        if(nlayer.ne.varparam(ivar,2))then
+         print*,'Error gsetrad:'
+         print*,'nlayer in jupiter.set =/= nlayer in jupiter.apr'
+         stop
+        endif
+       endif
+
        iflagtest=varident(ivar,1)
        if(iflagtest.ge.222.and.iflagtest.le.226)then
         iflagcloud=.true.

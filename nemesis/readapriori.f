@@ -93,7 +93,7 @@ C     a priori covariance matrix
       integer nprox,nvarx,varidentx(mvar,3),lpre,ioffx,ivarx
       integer npx,ioff,icond,npvar,jloggx,iplanet,jxscx
       character*100 opfile,buffer,ipfile,runname,rifile,xscfil
-      integer nxx,nsec,ncont1
+      integer nxx,nsec,ncont1,nlay,tmp
       real xwid,ewid,y,y0,lambda0,vi(mx),vtmp(mx),xt(mx)
       real r0,er0,dr,edr,vm,nm,nimag,delv,xy
       real xldeep,eldeep,xlhigh,elhigh
@@ -102,6 +102,8 @@ C     a priori covariance matrix
       real etau0,entemp,eteff,ealpha,eT0
       real csx,cserr,nrealfix(mx),nimagfix(mx)
       integer fixtoggle
+      logical filexist
+      real tmpgrid(mparam),findgen(mparam),yout
 
       common /maltmieser/nrealfix,nimagfix
 
@@ -1208,8 +1210,11 @@ C            Read in number of points and any cross-correlation
              read(27,1)ipfile
              print*,'reading variable ',ivar,' from ',ipfile
              open(28,file=ipfile,status='old')
-             read(28,*)np,clen!np = number of points over which to retrieve profile (as opposed to npro which is total number of points in .prf)
+C            np = number of points over which to retrieve profile (as opposed to npro which is total number of points in .prf)
+C            nlay = number of homogeneous layers in .drv file
+             read(28,*)np,clen,nlay
              varparam(ivar,1)=np
+             varparam(ivar,2)=nlay
              if(np.gt.npro)then
               print*,'Error readapriori:'
               print*,'np > npro'
@@ -1241,7 +1246,7 @@ C              **** vmr, cloud, para-H2 , fcloud, take logs ***
                sx(ix,ix)=(edeep/xdeep)**2
                lx(ix)=1
               endif
-              varparam(ivar,i+1)=pknee
+              varparam(ivar,i+2)=pknee
 
              enddo
              close(28)
@@ -1254,9 +1259,15 @@ C              **** vmr, cloud, para-H2 , fcloud, take logs ***
                  print*,'Error in readapriori.f. A priori file '
                  print*,'must be on pressure grid '
                  stop
+               endif
+               if(np.gt.mparam-2)then
+                print*,'Error readapriori.f: np + 2 > MPARAM'
+                print*,'Either reduce value of np in ',ipfile
+                print*,'or increase value of MPARAM (arraylen.f)'
+                stop
                endif            
 c               print*,'DIAG1',pref(i),pref(j),alog(pref(j))
-               delp = log(varparam(ivar,j+1))-log(varparam(ivar,i+1))
+               delp = log(varparam(ivar,j+2))-log(varparam(ivar,i+2))
 c               print*,'168: CLEN:',clen
 c               print*,'169: DELP:',delp
                
@@ -1271,6 +1282,39 @@ C               xfac = exp(-arg*arg)
              enddo
 
              nx=nx+np
+
+C            Write out pressure.lay for layer splitting in .drv file according to pressure grid specified in this parametrisation
+C            Note that if more than one VARIDENT(IVAR,3) = 25 profile to be retrieved, pressure.lay will only be computed for the first profile listed in jupiter.apr
+C            Therefore if more than one VARIDENT(IVAR,3) = 25 profile to be retrieved, best to make the first profile the one with the highest pressure resolution
+             inquire(file='pressure.lay',exist=filexist)
+             if(filexist.eq..FALSE.)then
+              open(901,file='pressure.lay',status='unknown')
+               write(901,*)'*********Header***********'
+               write(901,*)nlay
+               if(mod(nlay,np-1).eq.0)then
+                do i=3,np+1
+                 delp = log(varparam(ivar,i+1))-log(varparam(ivar,i))
+                 write(901,*)varparam(ivar,i)
+                 tmp = nlay/(np-1)
+                 do j=1,tmp-1
+                  write(901,*)exp(log(varparam(ivar,i)) + j*delp/tmp)
+                 enddo
+                enddo
+               else
+C               Interpolate homogeneous levels from pressure grid
+                do i=1,np
+                 tmpgrid(i) = log(varparam(ivar,i+2))
+                 findgen(i) = float(i-1)
+                enddo
+                do i=1,nlay
+                 call verint(findgen,tmpgrid,np,yout,
+     1                        (i-1)*(findgen(np)/float(nlay)))
+                 print*,i,(i-1)*(findgen(np)/float(nlay)),exp(yout)
+                 write(901,*)exp(yout)
+                enddo
+               endif
+              close(901)
+             endif
 
            else         
             print*,'vartype profile parametrisation not recognised'

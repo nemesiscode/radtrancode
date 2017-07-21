@@ -1086,12 +1086,17 @@ C            Read in tau0, n, Teff, alpha, T0
 
              nx=nx+5
 
-           elseif (varident(ivar,3).eq.23)then
+           elseif ( (varident(ivar,3).eq.23) .or. 
+     >              (varident(ivar,3).eq.26) ) then
 C            ******** 2 point gradient profile (NAT)
 c		Profile is defined by two (p,v) points, with a linear gradient (in log p)
 c		in between. The low pressure point is at (p1,v1) and the high pressure point 
-c		is at (p2,v2). Profile is constant above/below this gradient region (i.e.
-c		p<p1 v=v1 and p>p2 v=v2.) All variable are retrieved. 
+c		is at (p2,v2). 
+c		23: Profile is constant above/below this gradient region (i.e.
+c		p<p1 v=v1 and p>p2 v=v2.) 
+c		26: Profile is constant above this gradient region and zero below (i.e.
+c		p<p1 v=v1 and p>p2 v=0.) 
+c		All variable are retrieved. 
 c		Not yet fully implemented for T	
              read(27,*) v1,v1err
              read(27,*) p1,p1err
@@ -1287,7 +1292,7 @@ C            Write out pressure.lay for layer splitting in .drv file according t
 C            Note that if more than one VARIDENT(IVAR,3) = 25 profile to be retrieved, pressure.lay will only be computed for the first profile listed in jupiter.apr
 C            Therefore if more than one VARIDENT(IVAR,3) = 25 profile to be retrieved, best to make the first profile the one with the highest pressure resolution
              inquire(file='pressure.lay',exist=filexist)
-             if(filexist.eq..FALSE.)then
+             if(filexist.eqv..FALSE.)then
               open(901,file='pressure.lay',status='unknown')
                write(901,*)'*********Header***********'
                write(901,*)nlay

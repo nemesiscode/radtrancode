@@ -77,7 +77,8 @@ C       Variable is not temperature  - may need to take exponent
        iflag=1			! Brown dwarf T-profile
       endif
       
-      if(imod.eq.23)iflag=1  ! 2 point gradient
+      if(imod.eq.23)iflag=1  ! 2 point vmr gradient
+      if(imod.eq.26)iflag=1  ! 2 point vmr gradient (zero vmr for deep atmos)
 
       if(ivar.eq.887)iflag=1	! X-section spectrum
       if(ivar.eq.888)iflag=1	! Surface albedo spectrum

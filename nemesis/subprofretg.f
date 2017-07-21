@@ -2220,12 +2220,17 @@ C         print*,p(J),x1(J)
          enddo
         enddo
 
-        ELSEIF(VARIDENT(IVAR,3).EQ.23)THEN
-C        Model 23. 2 point gradient (NAT)
+        ELSEIF( (VARIDENT(IVAR,3).EQ.23) .or. 
+     >          (VARIDENT(IVAR,3).EQ.26) )THEN
+C        Model 23/26. 2 point vmr gradient (NAT)
 c		Profile is defined by two (p,v) points, with a linear gradient (in log p)
 c		in between. The low pressure point is at (p1,v1) and the high pressure point 
-c		is at (p2,v2). Profile is constant above/below this gradient region (i.e.
-c		p<p1 v=v1 and p>p2 v=v2.) All variable are retrieved. 
+c		is at (p2,v2). 
+c		23: Profile is constant above/below this gradient region (i.e.
+c		p<p1 v=v1 and p>p2 v=v2.)
+c		26: Profile is constant above this gradient region and zero below (i.e.
+c		p<p1 v=v1 and p>p2 v=0.)
+c		All variable are retrieved. 
 c		Not yet fully implemented for T	
 C        ***************************************************************
          IF(VARIDENT(IVAR,1).EQ.0)THEN
@@ -2254,12 +2259,21 @@ c         * low pressure, constant continuance of vmr at p1
             XMAP(NXTEMP+3,IPAR,J)=0.0
             XMAP(NXTEMP+4,IPAR,J)=0.0
           elseif (p(j).ge.p2) then
-c         * high pressure, constant continuance of vmr at p2
-            x1(j) = exp(v2log)
-            XMAP(NXTEMP+1,IPAR,J)=0.0
-            XMAP(NXTEMP+2,IPAR,J)=0.0
-            XMAP(NXTEMP+3,IPAR,J)=exp(xn(nxtemp+3))
-            XMAP(NXTEMP+4,IPAR,J)=0.0
+            if (VARIDENT(IVAR,3).EQ.23) then
+c           * high pressure, constant continuance of vmr at p2
+              x1(j) = exp(v2log)
+              XMAP(NXTEMP+1,IPAR,J)=0.0
+              XMAP(NXTEMP+2,IPAR,J)=0.0
+              XMAP(NXTEMP+3,IPAR,J)=exp(xn(nxtemp+3))
+              XMAP(NXTEMP+4,IPAR,J)=0.0
+            else
+c           * high pressure, vmr=0 for p>p2
+              x1(j) = 0.0
+              XMAP(NXTEMP+1,IPAR,J)=0.0
+              XMAP(NXTEMP+2,IPAR,J)=0.0
+              XMAP(NXTEMP+3,IPAR,J)=0.0
+              XMAP(NXTEMP+4,IPAR,J)=0.0
+            endif
           else
 c         * linear interpolation in log pressure / log vmr *
             x1(j)=exp( v1log + grad*(plog-p1log) )
@@ -2274,7 +2288,7 @@ c         * d X1 /d log p2 *
             XMAP(NXTEMP+4,IPAR,J)= -x1(j)*
      >        (plog-p1log)*(v2log-v1log)*(p2log-p1log)**(-2)
           endif
-		  if(X1(J).LT.1e-36)X1(J)=1e-36
+	    if(X1(J).LT.1e-36)X1(J)=1e-36
          ENDDO
 
         ELSEIF(VARIDENT(IVAR,3).EQ.24)THEN

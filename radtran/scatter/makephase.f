@@ -88,6 +88,11 @@ C-----------------------------------------------------------------------
         real          table(5000,3)
         common /store/ ilist,nspec,idspec,table
 
+C	Variables needed so that Miescat subroutine can be called.
+C	In the future these could be used to be able to calculate scattering phase functions using a coated sphere model
+C	but in the meantime, these are just going to be made dummy variables.
+	REAL	RE2,TMAG2,csratio
+	INTEGER	fixtoggle
 
 	pi = 3.141592654
 	wavetype(1) = 'wavelength'
@@ -157,6 +162,9 @@ C-----------------------------------------------------------------------
 	else
 		minlam = 1.e4/wmax	! From wavenumbers
 	endif
+
+C	Assume homogeneous sphere, not coated sphere
+	csratio = -1.0
 
 C-----------------------------------------------------------------------
 C
@@ -315,8 +323,9 @@ C-----------------------------------------------------------------------
 				call miescat(lambda, iscat,parm, 1, rs,
      1					refind, theta, 
      2					ntheta, scat, ext, phase, 
-     3				        nphase)
-			omega = scat/ext
+     3				        nphase,csratio,
+     4  				RE2,TMAG2,fixtoggle)
+				omega = scat/ext
 
 			end if
 

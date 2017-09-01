@@ -59,6 +59,7 @@ C     TIME2: System time at the end of program execution.
       real vkstart,vkend,vkstep,RADIUS
       integer idump,kiter,jtan,jtanx,jalbx,jpre,jprex,ishape
       integer jrad,jradx,lx(mx),jlogg,jloggx,iplanet
+      logical percbool
 C     ********** Scattering variables **********************
       real xwave(maxsec),xf(maxcon,maxsec),xg1(maxcon,maxsec)
       real xg2(maxcon,maxsec)
@@ -176,12 +177,15 @@ C              used to fix all other parameters (including effect of
 C              propagation of retrieval errors).
       READ(32,*)lin
       iform1=0
+      percbool = .false.
       READ(32,*,END=999)iform1
+      READ(32,*,END=999)percbool
 999   continue
       CLOSE(32)
 
 
       print*,'iform1 = ',iform1
+      print*,'percbool = ', percbool
 
       if(iform1.eq.2)then
        print*,'Error in input file. Iform can be 0, 1 or 3 for Nemesis'
@@ -294,6 +298,7 @@ C     Add forward errors to measurement covariances
        do j=1,nconv(i)
         k = k+1
         xerr=rerr(i,j)
+        if(percbool.eqv..true.)xerr=rerr(i,j)*(y(j)/100) 
         if(iform.eq.3)xerr=xerr*1e-18
         se(k)=se(k)+xerr**2
        enddo

@@ -33,6 +33,7 @@ C stored in the same directory as the rest of the code
       REAL P1,T1,PRESS1(MAXK),TEMP1(MAXK),VCEN(MAXBIN)
       REAL G_ORD(MAXG),K_G(MAXG),DEL_G(MAXG),TABLE(MAXK,MAXK,MAXG)
       REAL TEMP2(MAXK,MAXK),TN(MAXK),TX,X1,X2
+      REAL KOUT
       CHARACTER*100 KTAFIL,OPFILE1
       CHARACTER*1 ANS
 
@@ -294,7 +295,11 @@ C            print*,j,k,loop,irec,table(j,k,loop)
        
       ELSE
   
+c      write a simple opacity spectrum that can be plotted        
+       OPEN(16,FILE='read_table_kspec.dat',status='unknown')
+c      tabulated output         
        OPEN(12,FILE='read_table_wv.dat',status='unknown')
+       
         WRITE(12,*)NPOINT
         IF(DELV.GT.0.0)THEN
          DO I = 1,NPOINT
@@ -376,9 +381,17 @@ C            print*,j,k,loop,irec,table(j,k,loop)
 
          WRITE(12,*)(TABLE(CP,CT,LOOP),LOOP=1,NG)
 
+c        integrate k over all ng points
+	   kout = 0.
+	   do LOOP=1,ng
+	      kout = kout + TABLE(CP,CT,LOOP)*DEL_G(LOOP)
+	   enddo
+         write(16,*) vcen(i),kout
+
         ENDDO
 
        CLOSE(12)
+       CLOSE(16)
 
       ENDIF
 

@@ -182,7 +182,7 @@ C           channel requested.
 C            dv = 100*abs(vcentral-vconv(i))/vconv(i)
            dv = abs(vcentral-vconv(i))
 C           print*,'averaged consistency',i,vconv(i),vcentral
-            if(dv.lt.0.0001)then
+            if(dv.lt.0.00001)then
              do j=1,nwave
               if(vwave(j).ge.vfil(1).and.vwave(j).le.vfil(nsub))then
                CALL interp(vfil,fil,nsub,yy,vwave(j))

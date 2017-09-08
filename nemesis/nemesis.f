@@ -351,6 +351,9 @@ C     set up a priori of x and its covariance
 	
       DO i = 1, nx
         xn(i)=xa(i)
+        DO j=1,nx
+         st(i,j)=sa(i,j)
+        ENDDO
       ENDDO 
 
       idump=0	! flag for diagnostic print dumps

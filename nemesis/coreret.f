@@ -802,6 +802,15 @@ C      print*,'chisq/ny is equal to : ',chisq/float(ny)
       CALL calc_serr(nx,ny,sa,se,aa,dd,st,sn,sm)
       print*,'Matrix calculated'
 
+C     Make sure errors stay as a priori for kiter < 0
+      if(kiter.lt.0)then
+       do i=1,nx
+        do j=1,nx
+         st(i,j)=sa(i,j)
+        enddo
+       enddo
+      endif
+      
       return
 
       end

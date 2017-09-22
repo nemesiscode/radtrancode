@@ -13,7 +13,8 @@ C     Input variables
 C       runname         character*100    Root run name.
 C	iscat		integer		0=thermal emission	
 C					1=plane parallel scattering 
-C					2= limb/near-limb scattering 
+C					2= limb/near-limb scattering
+C					3= single-scattering calculations 
 C	nmu		integer		Number of zenith ordinates
 C	mu(maxmu)	double pr.	Cos(zenith angles)
 C	wtmu(maxmu)	double pr.	Quadrature weights
@@ -82,7 +83,7 @@ C     ************************************************************************
       real nreal(max_wave),r0,v0,clen,k2(mx)
       real srefind(max_wave,2),parm(3),rs(3),vm,nm
       real v1(max_wave),k1(max_wave),vm1,n1(max_wave)
-      integer nlayer,laytyp,iscat,nx,nxx,ncont,nx1
+      integer nlayer,laytyp,iscat,nx,nxx,ncont,nx1,iscatmie
       integer layint,iprfcheck,check_profile,nmode,inorm
       real layht,xod(maxcon),xscal(maxcon),cwid,pmeth
       real vconv(mconv),minlam,lambda0
@@ -659,7 +660,7 @@ C          If nimag is in wavelength space, need to convert to wavenumbers
            endif
 
            inorm=1
-           iscat=1
+           iscatmie=1
 C          Find minimum wavelength
            if(ispace.eq.0)then
             minlam=1e4/wave(nwave)
@@ -687,7 +688,7 @@ C          Find minimum wavelength
            rs(2)=0.
            rs(3)=rs(1)
 
-           call modmakephase(iwave,imode,inorm,iscat,
+           call modmakephase(iwave,imode,inorm,iscatmie,
      1   parm,rs,srefind,runname,lambda0,csx,
      2   nrealfix,nimagfix,fixtoggle)
 

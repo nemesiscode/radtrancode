@@ -94,7 +94,8 @@ F_SOURCES = \
 	tbrownrc.f \
 	extractcb.f \
 	gwritepatcb.f \
-	readmmr.f
+	readmmr.f \
+	readrdw.f
 
 INCDIR = ../../radtran/includes
 INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/lincom.f $(INCDIR)/pathcom.f \

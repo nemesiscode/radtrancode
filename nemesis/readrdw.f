@@ -1,17 +1,24 @@
 	subroutine readrdw(runname,nconvfull,vconvfull,ngeom,nconv,
-     1   vconv,rdwindices)
+     1   vconv,rdwindices,rank,irank,nconvi,vconvi,rdwindicesi)
 C	****************************************************************
-C       Routine to read in a reduced wavelength grid
+C       Routine to read in a reduced wavelength grid, and rank each wavelength so 
+C       that the most important wavelengths are used in the earliest iterations of
+C	Nemesis, while lesser-ranked wavelengths are saved to later iterations.
 C  
 C	Input variable
 C	runname	character*100	Name of file to read
 C 	nconvfull		integer		Number of wavelengths in full grid
 C	vconvfull		real		Full wavelength grid array
+C	irank			irank		Highest wavelength rank (lowest in value) to be taken into account in given set of iterations
 C
 C	Output variables
 C 	nconv		integer		Number of wavelengths in reduced grid
 C	vconv		real		Reduced wavelength grid array
 C       rdwindices	integer		Subscripts of the full wavelength array where wavelengths in the reduced grid are found
+C       rank		integer		'Ranking' of each wavelength
+C 	nconvi		integer		Number of wavelengths of specific rank in reduced grid
+C	vconvi		real		Reduced wavelength grid array (specific rank only)
+C       rdwindicesi	integer		Subscripts of the full wavelength array where wavelengths of specific rank in the reduced grid are found
 C
 C	Ashwin Braude	04.10.2017	Original
 C 
@@ -21,14 +28,17 @@ C     ****************************************************************
         include '../radtran/includes/arrdef.f'
         INCLUDE 'arraylen.f'
 	character*100 runname,buffer,rdw
-	real tmp,vconv(mgeom,mconv),vconvfull(mgeom,mconv)
-        integer rdwindices(mgeom,mconv)
-	integer io,ispec,counter,cindex,cindex2,ngeom,igeom
-        integer nconv(mgeom),nconvfull(mgeom),nconvtmp
+	real tmp1,tmp2,vconv(mgeom,mconv),vconvfull(mgeom,mconv)
+        integer rdwindices(mgeom,mconv),rank(mgeom,mconv)
+	integer io,ispec,counter,cindex,cindex2,ngeom,igeom,irank
+        integer nconv(mgeom),nconvfull(mgeom),nconvtmp,nconvi(mgeom)
+        integer cindex3,rdwindicesi(mgeom,mconv),maxirank
+        real vconvi(mgeom,mconv)
 
         counter = 1!position in full wavelength grid
         cindex = 1!position in retrieved reduced grid
         cindex2 = 1!position in .rdw file
+        cindex3 = 1!position in wavelength grid containing only wavelengths of irank
 
         print*,'Reading reduced wavelength grid .rdw'
 
@@ -41,19 +51,31 @@ C     ****************************************************************
 
 	  read(46,*)nconvtmp!read no of wavelengths in file
 	  read(46,*)ispec!if =1, data in wavelengths, if =0 data in wavenumbers
+          read(46,*)maxirank!maximum ranking of wavelengths displayed in .rdw file
 
           do while (cindex2.le.nconvtmp)
-	   read(46,*,iostat=io)tmp
+	   read(46,*,iostat=io)tmp1,tmp2
            if(counter.gt.nconvfull(igeom))then!if last wavelengths in reduced grid not present in full grid, skip last wavelengths
             goto 402
            endif
-57         if(abs(tmp-vconvfull(igeom,counter)).lt.1e-5)then!if specified wavelength in reduced grid also present in full grid, store wavelength and subscript
-            vconv(igeom,cindex)=tmp
-            rdwindices(igeom,cindex)=counter
-            counter=counter+1
-            cindex=cindex+1
-            cindex2=cindex2+1
-           elseif(vconvfull(igeom,counter).gt.(1e-5+tmp))then!if specified wavelength in reduced grid not present in full grid, try again with next wavelength in reduced grid
+57         if(abs(tmp1-vconvfull(igeom,counter)).lt.1e-5)then!if specified wavelength in reduced grid also present in full grid, store wavelength and subscript
+            if(tmp2.le.irank)then!only select wavelengths with correct rank
+             vconv(igeom,cindex)=tmp1
+             rank(igeom,cindex)=tmp2
+             rdwindices(igeom,cindex)=counter
+             if(tmp2.eq.irank)then
+              vconvi(igeom,cindex3)=tmp1
+              rdwindicesi(igeom,cindex3)=cindex
+              cindex3 = cindex3 + 1
+             endif
+             counter=counter+1
+             cindex=cindex+1
+             cindex2=cindex2+1
+            else!if a wavelength is of the wrong rank, go to next wavelength in reduced grid
+             counter=counter+1
+             cindex2=cindex2+1
+            endif
+           elseif(vconvfull(igeom,counter).gt.(1e-5+tmp1))then!if specified wavelength in reduced grid not present in full grid, try again with next wavelength in reduced grid
             cindex2=cindex2+1
            else!if specified wavelength in full grid not found in reduced grid, try again with next wavelength in full grid
             counter=counter+1
@@ -64,14 +86,34 @@ C     ****************************************************************
          close(46)
 
 402      nconv(igeom)=cindex-1
+         nconvi(igeom)=cindex3-1
 
-         print*,'Reduced wavelength grid for igeom=',igeom
-         print*,'has number of wavelengths ',nconv(igeom)
-         print*,'Selected wavelengths:',vconv(igeom,1:nconv(igeom))
+         if(irank.gt.maxirank)then!if maximum rank reached, read indices of all wavelengths not present in .rdw
+          counter = 1
+          cindex = 1
+          cindex3 = 1
+          do counter=1,nconvfull(igeom)
+           if(counter.ne.rdwindices(igeom,cindex))then
+            vconvi(igeom,cindex3)=vconvfull(igeom,counter)
+            rdwindicesi(igeom,cindex3)=counter
+            cindex3 = cindex3 + 1
+           else
+            cindex = cindex + 1
+           endif
+          enddo
+          nconvi(igeom)=cindex3-1
+         endif
+
+         if(irank.le.maxirank)then
+          print*,'Reduced wavelength grid for igeom=',igeom
+          print*,'has number of wavelengths ',nconv(igeom)
+          print*,'Selected wavelengths:',vconv(igeom,1:nconv(igeom))
+         endif
 
          counter=1!reset counters for next geometry
          cindex=1
          cindex2=1
+         cindex3=1
 
         enddo
 

@@ -104,7 +104,7 @@ C     Set measurement vector and source vector lengths here.
       integer n_alambda
       real st(mx,mx),varparamx(mvar,mparam)
       real sn(mx,mx),sm(mx,mx),xnx(mx),stx(mx,mx),ynx(my)
-      integer ifix(mx),ifixx(mx)
+      integer ifix(mx),ifixx(mx),rank(mgeom,mconv),nconvold(mgeom)
 
       integer nvar,varident(mvar,3),lin,lin0,lpre,ispace,nav(mgeom),k
       real varparam(mvar,mparam)
@@ -112,7 +112,7 @@ C     Set measurement vector and source vector lengths here.
       integer ngeom, nwave(mgeom), nconv(mgeom), nx, ny, nxf,ivar,ivarx
       real vwave(mgeom,mwave),vconv(mgeom,mconv),angles(mgeom,mav,3)
       real xa(mx),kk1(my,mx),sa(mx,mx),y(my),yn(my),kkx(my,mx)
-      real yn1(my),s1(mx,mx),kk(my,mx)
+      real yn1(my),s1(mx,mx),kk(my,mx),kkold(my,mx),ynold(my)
       real wgeom(mgeom,mav),flat(mgeom,mav)
       real vwaveT(mwave),vconvT(mconv)
       integer nwaveT,nconvT,npvar,jj,nyfull,tmpvarint,iterred
@@ -122,9 +122,11 @@ C     Set measurement vector and source vector lengths here.
       double precision s1e(my,my),sei(my,my)
       double precision dd(mx,my),aa(mx,mx)
 
-      integer nconvfull(mgeom),nwavefull(mgeom),igeom,igeom2
+      integer nconvfull(mgeom),nwavefull(mgeom),igeom,igeom2,irank
       integer nrdw(mgeom),rdwindices(mgeom,mconv),rdwi1,rdwi2
       real vwavefull(mgeom,mwave),vconvfull(mgeom,mconv),yfull(my)
+      real vconvi(mgeom,mconv),vwavei(mgeom,mwave)
+      integer nconvi(mgeom),nwavei(mgeom),rdwindicesi(mgeom,mconv)
 
       real phi,ophi,chisq,xchi,oxchi,tmpvar
 C     **************************** CODE ********************************
@@ -170,8 +172,9 @@ C      Store full wavelength grid parameters
        yfull=y
 
 C      Read in reduced wavelength grid
-       call readrdw(rdw,nconvfull,vconvfull,ngeom,
-     1  nconv,vconv,rdwindices)
+       irank=1
+       call readrdw(rdw,nconvfull,vconvfull,ngeom,nconv,vconv,
+     1  rdwindices,rank,irank,nconvi,vconvi,rdwindicesi)
        nwave=nconv
        ny=0
        do igeom=1,ngeom
@@ -419,7 +422,7 @@ C      Calculate inverse of se
       endif
 
 
-199   if(ilbl.eq.1)then
+198   if(ilbl.eq.1)then
          print*,'Calling forwardnoglbl - B'
          CALL forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,nconv,vconv,angles,gasgiant,lin,
@@ -480,7 +483,7 @@ C        print*,'forwardnogX OK, jpre = ',jpre
 
 
 C     Now calculate the gain matrix and averaging kernels
-      call calc_gain_matrix(nx,ny,kk,sa,sai,se,sei,dd,aa)
+199   call calc_gain_matrix(nx,ny,kk,sa,sai,se,sei,dd,aa)
 
 C     Calculate initial value of cost function phi.
       phi = calc_phiret(ny,y,yn,sei,nx,xn,xa,sai,chisq)
@@ -791,8 +794,8 @@ C           Has solution converged?
             endif
 
 C           If a reduced wavelength grid is being used but the retrieval still hasn't converged to a solution, 
-C           perform the last 3 iterations using the full wavelength grid
-            if((redwavbool.eqv..true.).and.(iter.ge.kiter-5))goto 201
+C           perform the last 2 iterations using the full wavelength grid
+            if((redwavbool.eqv..true.).and.(iter.ge.kiter-2))goto 201
 
           
         elseif (iter.ge.5.and.abstphi.le.phlimit)then
@@ -851,42 +854,128 @@ C	    If alternate criterions aren't met either, leave xn and kk alone and try a
        
 401   continue       
 
+C     If using the reduced wavelength scheme
 201   if(redwavbool.eqv..true.)then
 
-       print*,'Replacing reduced wavelength grid with full grid'
-       print*,'for last few iterations'
+       irank = irank + 1
+       nconvold = nconv
+       call readrdw(rdw,nconvfull,vconvfull,ngeom,nconv,vconv,
+     1  rdwindices,rank,irank,nconvi,vconvi,rdwindicesi)
+      
+C      Extend wavelength grid to next-ranked wavelengths, re-initialise measurement vector/covariance matrix
+C      and run initial forward model again using extended grid
+       if(nconv(1).ne.nconvold(1))then
+        nwave=nconv
+        nwavei=nconvi
+        ny=0
+        do igeom=1,ngeom
+         ny=ny+nconv(igeom)
+         vwave(igeom,1:nwave(igeom))=vconv(igeom,1:nconv(igeom))
+         vwavei(igeom,1:nwavei(igeom))=vconvi(igeom,1:nconvi(igeom))
+        enddo
+        do i=1,my
+         y(i)=0.0
+        enddo
+        j1=0
+        j2=0
+        do igeom=1,ngeom
+         do i=1,nwave(igeom)
+          tmpvarint=rdwindices(igeom,i)+j1
+          y(i+j2)=yfull(tmpvarint)
+         enddo
+         j1=j1+nwavefull(igeom)
+         j2=j2+nwave(igeom)
+        enddo
 
-C      Replace reduced grid parameters with full grid parameters
-       nrdw=nwave
-       nwave=nwavefull
-       vwave=vwavefull
-       nconv=nconvfull
-       vconv=vconvfull
-       ny=nyfull
-       y=yfull
-
-       if(ilbl.eq.0.or.ilbl.eq.2)then
-C       Find all the calculation and convolution wavelengths and rank
-C       in order
-
-        call rankwave(ngeom,nwave,vwave,nconv,vconv,nwaveT,vwaveT,
-     1   nconvT,vconvT)
-
-       endif
-
-C      For reduced wavelengths, set se equal to retrieved values, initialise for remaining wavelengths
-       seold=se
-       do i=1,my
-        do j=1,my
+C       Re-initialise s1e and se
+        do i=1,my
+         do j=1,my
           sei(i,j)=0.0
           se(i,j)=0.0
+         enddo
         enddo
-       enddo
 
-       do i=1,ny
-         se(i,i)=se1(i)
-         sei(i,i)=1.0/dble(se1(i))
-       enddo
+        j1=0
+        do igeom=1,ngeom
+         do i=1,nconv(igeom)
+          rdwi1=rdwindices(igeom,i)+j1
+          se(i,i)=se1(rdwi1)
+          sei(i,i)=1.0/dble(se1(rdwi1))
+         enddo
+         j1=j1+nwavefull(igeom)
+        enddo
+
+        iterred=iter+1
+
+        if((iscat.eq.1.or.iscat.ge.3).and.(ilbl.ne.1))then
+
+         kkold = kk
+         ynold = yn
+
+         print*,'Performing forward model on new wavelengths'
+         print*,'Calling forwardnogX - D'
+         CALL forwardnogXrdw(runname,ispace,iscat,fwhm,ngeom,nav,
+     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
+     3     jlogg,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck,
+     4     rdwindicesi,kkold,nconvi,vconvi,ynold)
+
+           if(ilbl.eq.0.or.ilbl.eq.2)then
+C          Find all the calculation and convolution wavelengths and rank
+C          in order
+
+            call rankwave(ngeom,nwave,vwave,nconv,vconv,nwaveT,vwaveT,
+     1       nconvT,vconvT)
+
+           endif
+           goto 199
+        else
+         print*,'Warning coreret.f: '
+         print*,'forwardnoglbl.f, forwardavfovX.f and intradfield.f'
+         print*,'not yet completely optimised for reduced wavelength'
+         print*,'scheme. Refer to forwardnogXrdw.f for reference.'
+
+         if(ilbl.eq.0.or.ilbl.eq.2)then
+C        Find all the calculation and convolution wavelengths and rank
+C        in order
+
+          call rankwave(ngeom,nwave,vwave,nconv,vconv,nwaveT,vwaveT,
+     1     nconvT,vconvT)
+
+         endif
+         goto 198
+        endif
+C      
+       else
+C       If impossible to extend wavelength grid further, use full wavelength grid and
+C       replace reduced grid parameters with full grid parameters
+
+        print*,'Replacing reduced wavelength grid with full grid'
+        print*,'for last few iterations'
+        nrdw=nwave
+        nwave=nwavefull
+        vwave=vwavefull
+        nconv=nconvfull
+        vconv=vconvfull
+        ny=nyfull
+        y=yfull
+
+        do igeom=1,ngeom
+         vwavei(igeom,1:nwavei(igeom))=vconvi(igeom,1:nconvi(igeom))
+        enddo
+
+        seold=se
+        do i=1,my
+         do j=1,my
+           sei(i,j)=0.0
+           se(i,j)=0.0
+         enddo
+        enddo
+
+        do i=1,ny
+          se(i,i)=se1(i)
+          sei(i,i)=1.0/dble(se1(i))
+        enddo
 
 C       j1=0
 C       j2=0
@@ -911,10 +1000,49 @@ C        j1=j1+nwavefull(igeom)
 C        j3=j3+nwave(igeom)
 C       enddo
 
-C      Run initial forward model using full wavelength grid and then continue retrieval
-       redwavbool=.false.
-       iterred=iter+1!makes sure retrieval doesn't completely start from scratch
-       goto 199
+C       Run initial forward model using full wavelength grid and then continue retrieval
+        redwavbool=.false.
+        iterred=iter+1!makes sure retrieval doesn't completely start from scratch
+        kkold=kk
+        if((iscat.eq.1.or.iscat.ge.3).and.(ilbl.ne.1))then
+
+         ynold = yn
+         kkold = kk
+
+         print*,'Performing forward model on new wavelengths'
+         print*,'Calling forwardnogX - D'
+         CALL forwardnogXrdw(runname,ispace,iscat,fwhm,ngeom,nav,
+     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
+     3     jlogg,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck,
+     4     rdwindicesi,kkold,nconvi,vconvi,ynold)
+
+         if(ilbl.eq.0.or.ilbl.eq.2)then
+C         Find all the calculation and convolution wavelengths and rank
+C         in order
+
+          call rankwave(ngeom,nwave,vwave,nconv,vconv,nwaveT,vwaveT,
+     1     nconvT,vconvT)
+
+         endif
+         goto 199
+        else
+         print*,'Warning coreret.f: '
+         print*,'forwardnoglbl.f, forwardavfovX.f and intradfield.f'
+         print*,'not yet completely optimised for reduced wavelength'
+         print*,'scheme. Refer to forwardnogXrdw.f for reference.'
+         if(ilbl.eq.0.or.ilbl.eq.2)then
+C         Find all the calculation and convolution wavelengths and rank
+C         in order
+
+          call rankwave(ngeom,nwave,vwave,nconv,vconv,nwaveT,vwaveT,
+     1     nconvT,vconvT)
+
+         endif
+         goto 198
+        endif
+       endif
+
       endif
 
 202   if(ica.eq.1)close(37)

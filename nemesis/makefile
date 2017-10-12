@@ -40,6 +40,7 @@ F_SOURCES = \
 	forwardavfovX.f \
 	forwardavfovMCS.f \
 	forwardnogX.f \
+	forwardnogXrdw.f \
 	forwardnoglbl.f \
 	forwardPT.f \
 	forwardnogPT.f \

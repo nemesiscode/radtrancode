@@ -1212,6 +1212,11 @@ C           Continuous profile but represented with fewer points than in .prf to
 C           implicit smoothing and faster retrieval times
 C            Read in number of points and any cross-correlation
 
+             do i=1,np
+C             References to pref can probably be removed entirely from this section,
+C             but this is a temporary fix just to get rid of compiler issues
+              pref(i)=0
+             enddo
              read(27,1)ipfile
              print*,'reading variable ',ivar,' from ',ipfile
              open(28,file=ipfile,status='old')

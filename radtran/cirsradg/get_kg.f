@@ -199,8 +199,8 @@ C          Set minimum closeness to tabulated wavenumbers to be 1/50 of
 C          the separation to be considered aligned.
            eps = 0.02*delv
          else
-C          For very small delv use 1/10 as close to limit of real precision
-           eps = 0.1*delv
+C          For very small delv use 1/4 as close to limit of real precision
+           eps = 0.25*delv
          endif
 
 c         use double precision for this calc in case numbers are very small

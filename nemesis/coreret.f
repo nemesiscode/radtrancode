@@ -291,15 +291,16 @@ C      Calc. gradient of all elements of xnx matrix.
      3     jradx,jloggx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,
      4	   iprfcheck)
          endif
-        elseif(iscat.eq.1.or.iscat.eq.3.or.iscat.eq.4)then
-         print*,'Calling forwardnogX - A'
+       elseif(iscat.eq.1.or.iscat.eq.3.or.iscat.eq.4)then
+         print*,'Calling forwardnogX - A1. iscat = ',iscat
          CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2    nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
      3    jradx,jloggx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,
      4	  iprfcheck)
-        elseif(iscat.eq.2)then
-         print*,'Calling intradfield - A'
+         print*,'forwardnogX - A1 - called OK'
+       elseif(iscat.eq.2)then
+         print*,'Calling intradfield - A1'
          CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1    vconvT,gasgiant,lin0,nvarx,varidentx,
      2    varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
@@ -310,7 +311,7 @@ C      Calc. gradient of all elements of xnx matrix.
      2    nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
      3    jradx,jloggx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,
      4	  iprfcheck)
-        else
+       else
          print*,'Coreret: iscat invalid',iscat
          stop
         endif
@@ -324,11 +325,13 @@ C        this run.
      1  kkx,stx,nxx)
        endif
 
+       print*,'Calc forward model error'
        call calcfwderr(nxx,ny,kkx,stx,sf)
 
 C      Add effect of previous retrieval errors to measurement covariance
 C      matrix
 
+       print*,'Writing sef file'
        call file(runname,runname,'sef')
        open(35,file=runname,status='unknown')
        write(35,*)'Additional measurement covariance matrix due to'
@@ -350,6 +353,7 @@ C      Recalculate inverse of se
         enddo
        enddo
 
+       print*,'Calculating inverse'
 C      Calculate inverse of se
        jmod = 2
        icheck=0
@@ -361,8 +365,8 @@ C      Calculate inverse of se
         print*,'***********************************'
         stop
        endif
-
-      endif
+       print*,'Inverse OK'
+      endif 
 
 
       if(ilbl.eq.1)then
@@ -393,7 +397,8 @@ C        print*,'forwardavfovX OK, jpre = ',jpre
 
        elseif(iscat.eq.1.or.iscat.eq.3.or.iscat.eq.4)then
 
-        print*,'Calling forwardnogX - B' 
+        print*,'Calling forwardnogX - B1, iscat = ',iscat
+
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,

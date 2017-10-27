@@ -203,6 +203,7 @@ C     Initialise arrays
       endif
 
       ioff = 0
+      ioff2 = 0
 
       do 100 igeom=1,ngeom
        print*,'ForwardnogX. Spectrum ',igeom,' of ',ngeom
@@ -394,7 +395,7 @@ C         Unless an SCR calculation, first path is assumed to be thermal emissio
 C           Read old wavelengths (ones modelled in forwardnogX - C) back into yn
             do j=1,nconvc1
              k = rdwindicesc(igeom,j)
-             yn(ioff+k)=ynold(ioff+j)
+             yn(ioff+k)=ynold(ioff2+j)
             enddo
            else
             do j=1,nconvi1
@@ -405,7 +406,7 @@ C           Read old wavelengths (ones modelled in forwardnogX - C) back into yn
             do j=1,nconvc1
 C           Read old gradients (ones modelled in forwardnogX - C) back into Jacobian
              k = rdwindicesc(igeom,j)
-             kk(ioff+k,ix)=kkold(ioff+j,ix)
+             kk(ioff+k,ix)=kkold(ioff2+j,ix)
             enddo 
             xn(ix)=xref
             if(ix.eq.jlogg)then
@@ -431,6 +432,7 @@ C           Read old gradients (ones modelled in forwardnogX - C) back into Jaco
 
        if(icread.ne.1)then
         ioff = ioff + nconv1
+        ioff2 = ioff2 + nconvc1
        else
         ioff = ioff + 2*nconv1
        endif

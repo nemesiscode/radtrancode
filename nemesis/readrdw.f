@@ -1,5 +1,6 @@
 	subroutine readrdw(runname,nconvfull,vconvfull,ngeom,nconv,
-     1   vconv,rdwindices,rank,irank,nconvi,vconvi,rdwindicesi)
+     1   vconv,rdwindices,rank,irank,nconvi,vconvi,rdwindicesi,
+     2   maxirank,rankdiff)
 C	****************************************************************
 C       Routine to read in a reduced wavelength grid, and rank each wavelength so 
 C       that the most important wavelengths are used in the earliest iterations of
@@ -19,6 +20,8 @@ C       rank		integer		'Ranking' of each wavelength
 C 	nconvi		integer		Number of wavelengths of specific rank in reduced grid
 C	vconvi		real		Reduced wavelength grid array (specific rank only)
 C       rdwindicesi	integer		Subscripts of the full wavelength array where wavelengths of specific rank in the reduced grid are found
+C       maxirank        integer         Maximum rank displayed in the .rdw file
+C       rankdiff        integer         Difference between old rank and new rank (usually =1 unless towards end of retrieval)
 C
 C	Ashwin Braude	04.10.2017	Original
 C 
@@ -32,7 +35,7 @@ C     ****************************************************************
         integer rdwindices(mgeom,mconv),rank(mgeom,mconv)
 	integer io,ispec,counter,cindex,cindex2,ngeom,igeom,irank
         integer nconv(mgeom),nconvfull(mgeom),nconvtmp,nconvi(mgeom)
-        integer cindex3,rdwindicesi(mgeom,mconv),maxirank
+        integer cindex3,rdwindicesi(mgeom,mconv),maxirank,rankdiff
         real vconvi(mgeom,mconv)
 
         counter = 1!position in full wavelength grid
@@ -52,6 +55,10 @@ C     ****************************************************************
 	  read(46,*)nconvtmp!read no of wavelengths in file
 	  read(46,*)ispec!if =1, data in wavelengths, if =0 data in wavenumbers
           read(46,*)maxirank!maximum ranking of wavelengths displayed in .rdw file
+          if(maxirank.lt.1)then
+           print*,'Error readrdw: Maxirank must be greater than 0'
+           stop
+          endif
 
           do while (cindex2.le.nconvtmp)
 	   read(46,*,iostat=io)tmp1,tmp2
@@ -63,7 +70,7 @@ C     ****************************************************************
              vconv(igeom,cindex)=tmp1
              rank(igeom,cindex)=tmp2
              rdwindices(igeom,cindex)=counter
-             if(tmp2.eq.irank)then
+             if((tmp2.le.irank).and.(tmp2.gt.irank-rankdiff))then
               vconvi(igeom,cindex3)=tmp1
               rdwindicesi(igeom,cindex3)=cindex
               cindex3 = cindex3 + 1
@@ -87,22 +94,6 @@ C     ****************************************************************
 
 402      nconv(igeom)=cindex-1
          nconvi(igeom)=cindex3-1
-
-         if(irank.gt.maxirank)then!if maximum rank reached, read indices of all wavelengths not present in .rdw
-          counter = 1
-          cindex = 1
-          cindex3 = 1
-          do counter=1,nconvfull(igeom)
-           if(counter.ne.rdwindices(igeom,cindex))then
-            vconvi(igeom,cindex3)=vconvfull(igeom,counter)
-            rdwindicesi(igeom,cindex3)=counter
-            cindex3 = cindex3 + 1
-           else
-            cindex = cindex + 1
-           endif
-          enddo
-          nconvi(igeom)=cindex3-1
-         endif
 
          if(irank.le.maxirank)then
           print*,'Reduced wavelength grid for igeom=',igeom

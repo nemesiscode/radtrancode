@@ -1,7 +1,10 @@
       subroutine nemesisPyMult(runname, specsize, mcntemp, 
-     1 mcnvmr, ith, intemp, invmr, 
+     1 mcnvmr, ith, intemp, inpres, invmr, 
      2 inmass, inrad, inheight, inknee,indeep, infsh, 
-     3  inpartr, inpartvar, inimag, inreal, MCMCspec)
+     3 inpartr, inpartvar, imagnum, inimag, inreal, inknee2, 
+     4 indeep2, infsh2, 
+     4 innav, inflat, inflon, insolzen, inemzen, inazi, inwt,
+     5 MCMCspec)
 C     $Id:
 C     ******************************************************************
 C
@@ -47,7 +50,7 @@ C     TIME2: System time at the end of program execution.
       real fwhm,xlat,xlon,st(mx,mx),varparam(mvar,mparam)
       real sn(mx,mx),sm(mx,mx),xlatx,varparamx(mvar,mparam)
       real stx(mx,mx),xlonx
-      integer varident(mvar,3),varidentx(mvar,3),iform,jxsc
+      integer varident(mvar,3),varidentx(mvar,3),iform
       integer npro,ispace,nav(mgeom),lraw,nprox,lpre, nvmr
       integer ngeom, nwave(mgeom),nconv(mgeom), nx, ny, jsurf, jsurfx
       integer ngas,ncont,nvar,nvarx,lin,nxx,igeom,nconv1,nwave1,jalb
@@ -59,7 +62,8 @@ C     TIME2: System time at the end of program execution.
       double precision aa(mx,mx),dd(mx,my)
       real vkstart,vkend,vkstep
       integer idump,kiter,jtan,jtanx,jalbx,jpre,jprex
-      integer jrad,jradx,lx(mx),jlogg,jloggx,jxscx
+      integer jrad,jradx,lx(mx),jlogg,jloggx,jxscx,jxsc
+      logical percbool
 C     ********** Scattering variables **********************
       real xwave(maxsec),xf(maxcon,maxsec),xg1(maxcon,maxsec)
       real xg2(maxcon,maxsec)
@@ -92,28 +96,45 @@ c and change the shape of the array
       character*100 runname
       integer arrsize, specsize,ith, vflag, gflag, cflag
       real MCMCspec(specsize), xfac
-      real intemp(mcntemp), invmr(mcnvmr), inheight(mcntemp)
-      real incont(mcntemp)
-      real inrad, inmass, MCMCsum
+      real intemp(mcntemp), invmr(mcntemp,mcnvmr), inheight(mcntemp)
+      real incont(mcntemp), inpres(mcntemp)
+      integer innav
+      real inflat(innav), inflon(innav), insolzen(innav)
+      real inemzen(innav), inazi(innav), inwt(innav)
+      real inrad, inmass, MCMCsum(mcntemp)
       real indeep, infsh, inknee
-      real inpartr, inpartvar, inimag, inreal
-      integer mcntemp, mcnvmr
+      real indeep2, infsh2, inknee2
+      real inpartr, inpartvar, inimag(imagnum), inreal
+      integer mcntemp, mcnvmr, imagnum, MCMCimnum
       character*3 sith
       character*255 path, path1, oldpath, path2
       logical countexist
 
 
 cf2py intent(in) runname, specsize,mcntemp,mcnvmr
-cf2py intent(in) intemp,invmr,ith
+cf2py intent(in) intemp,invmr,ith,inpres
 cf2py intent(in) inmass, inrad
 cf2py intent(in) inheight
 cf2py intent(in) indeep, infsh, inknee
+cf2py intent(in) indeep2, infsh2, inknee2
 cf2py intent(in) inpartr, inpartvar, inimag, inreal
+cf2py intent(in) innav, inflat, inflon, insolzen, inemzen, inazi 
+cf2py intent(in) inwt, imagnum
 cf2py intent(out) MCMCspec
+cf2py depend(inflat) innav
+cf2py depend(inflon) innav
+cf2py depend(insolzen) innav
+cf2py depend(inemzen) innav
+cf2py depend(inazi) innav
+cf2py depend(inwt) innav
 cf2py depend(mcntemp) inheight
 cf2py depend(mcntemp) intemp
-cf2py depend(mcnvmr) invmr
+cf2py depend(imagnum) inimag
+cf2py depend(mcntemp) inpres
+cf2py depend(invmr) :: mcntemp=shape(invmr,0), mcnvmr=shape(invmr,1)
+cf2py depend(mcntemp) MCMCsum
 cf2py depend(specsize) MCMCspec
+
 
 C     ******************************************************
 
@@ -142,38 +163,79 @@ c RG assign array elements. This intermediate way of passing is due to
 c being unable to pass the allocatable arrays (necessary for the F77-Py
 c interface so that dimensions match during passing) in a common block. 
 
-      VMRflag = 1
-      GRAVflag = 1
-      CLOUDflag = 1
+      MCMCflag = 1
+
+c if number of averaging points = 0, use regular .spx file.
+
+      MCMCnav = innav
+
+      if(MCMCnav.ne.0)then
+       PHASEflag=1
+       DO i=1, MCMCnav
+        MCMCflat(i)= inflat(i)
+        MCMCflon(i)= inflon(i)
+        MCMCsolzen(i)= insolzen(i)
+        MCMCemzen(i)=inemzen(i)
+        MCMCazi(i)=inazi(i)
+        MCMCwt(i)= inwt(i)
+c        print*, MCMCnav, MCMCflat(i), MCMCflon(i), MCMCsolzen(i), 
+c     1   MCMCemzen(i), MCMCazi(i), MCMCwt(i)
+       ENDDO    
+      else
+       PHASEflag=0
+      endif        
+      
+      MCMCimnum = imagnum
+      if(MCMCimnum.ge.1)then
+       DO i=1, MCMCimnum
+        MCMCimag(i) = inimag(i)
+       enddo
+      else
+       MCMCimag = 0.0
+      endif
 
       MCMChknee = inknee
       MCMCdeep = 10**indeep
       MCMCfsh = infsh
 
+      MCMChknee2 = inknee2
+      MCMCdeep2 = 10**indeep2
+      MCMCfsh2 = infsh2
+
       MCMCpr = inpartr
       MCMCpvar = inpartvar
-      MCMCimag = inimag
       MCMCreal = inreal
 
       MCMCmass = inmass
       MCMCrad = inrad
-      MCMCsum = 0.0
+
       MCMCrad=MCMCrad*69911.0
       MCMCmass = MCMCmass*1898.0
       MCtemplen = mcntemp
-      DO i=1, mcnvmr
-       MCMCvmr(i) = 10**(invmr(i))
-       MCMCsum = MCMCsum + MCMCvmr(i)
+
+      DO i =1, mcntemp
+       MCMCsum(i)=0.0
       ENDDO
 
-      DO i=1, mcnvmr
-       MCMCvmr(i) = MCMCvmr(i)/MCMCsum
+      DO i =1, mcntemp
+       DO j=1, mcnvmr
+        MCMCvmr(i,j) = 10**(invmr(i,j))
+        MCMCsum(i) = MCMCsum(i) + MCMCvmr(i,j)
+       ENDDO
+      ENDDO
+
+      DO i =1, mcntemp
+       DO j=1, mcnvmr
+        MCMCvmr(i,j) = MCMCvmr(i,j)/MCMCsum(i)
+       ENDDO
       ENDDO
 
       DO i=1, mcntemp
        MCMCtemp(i) = intemp(i)
        MCMCheight(i) = inheight(i)
+       MCMCpres(i) = inpres(i)
       ENDDO
+
 
 C     Read in reference gas information data
       CALL RESERVEGAS
@@ -249,12 +311,15 @@ C              used to fix all other parameters (including effect of
 C              propagation of retrieval errors).
       READ(32,*)lin
       iform1=0
+      percbool = .false.
       READ(32,*,END=999)iform1
+      READ(32,*,END=999)percbool
 999   continue
       CLOSE(32)
 
 
       print*,'iform1 = ',iform1
+      print*,'percbool = ', percbool
 
       if(iform1.eq.2)then
        print*,'Error in input file. Iform can be 0, 1 or 3 for Nemesis'
@@ -363,6 +428,7 @@ C     Add forward errors to measurement covariances
        do j=1,nconv(i)
         k = k+1
         xerr=rerr(i,j)
+        if(percbool.eqv..true.)xerr=rerr(i,j)*(y(j)/100) 
         if(iform.eq.3)xerr=xerr*1e-18
         se(k)=se(k)+xerr**2
        enddo
@@ -388,11 +454,14 @@ C     Calculate the tabulated wavelengths of c-k look up tables
       enddo
       endif
 C     set up a priori of x and its covariance
-      CALL readaprioriMCMC(runname,lin,lpre,xlat,npro,nvar,varident,
+      CALL readapriori(runname,lin,lpre,xlat,npro,nvar,varident,
      1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,nx,xa,sa,lx)
 	
       DO i = 1, nx
         xn(i)=xa(i)
+        DO j=1,nx
+         st(i,j)=sa(i,j)
+        ENDDO
       ENDDO 
 
       idump=0	! flag for diagnostic print dumps

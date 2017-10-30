@@ -67,7 +67,7 @@ C      Convert radius to units of cm
 
 
       xgm = plan_mass(iplanet)
-      if(GRAVflag.eq.1)then
+      if(MCMCflag.eq.1)then
        xgm=MCMCmass*Grav*1e24*1e6
       endif
       if(mass2.gt.0.0.and.jloggf.gt.0)then
@@ -85,7 +85,7 @@ C       print*,'New mass = ',mass2
        xcoeff(j)=Jcoeff(j,iplanet)
 30    continue
       xradius=aradius(iplanet)
-      if(GRAVflag.eq.1)then
+      if(MCMCflag.eq.1)then
        xradius=MCMCrad*1e5
       endif
       if(radius2.gt.0.0.and.jradf.gt.0)then

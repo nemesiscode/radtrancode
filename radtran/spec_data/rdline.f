@@ -22,7 +22,7 @@ C_HIST:	4feb91	SBC	Original version
 C***************************** VARIABLES *******************************
 
       CHARACTER*(*) BUFFER
-
+      CHARACTER*1 ALNISO
 C ../includes/dbcom.f stores the linedata base variables (e.g. RELABU).
       INCLUDE '../includes/dbcom.f' 
 
@@ -67,14 +67,27 @@ C          HITEMP160
            LNTDEPS=LNTDEP
           ELSE
 C          HITRAN160
-           READ(BUFFER,104,ERR=99)LNID,LNISO,LNWAVE,LNSTR,EXP,LNEINA,
+           READ(BUFFER,104,ERR=99)LNID,ALNISO,LNWAVE,LNSTR,EXP,LNEINA,
      1     EXP1,LNWIDA,LNWIDS,LNLSE,LNTDEP,LNPSH,LNUGQI04,LNLGQI04,
      2     LNULQ04,LNLLQ04,LNACC04,LNREF04,LNFLAG,UWGHT,LWGHT
            LNTDEPS=LNTDEP
+           IF(ALNISO.NE.'A'.AND.ALNISO.NE.'0')THEN
+            LNISO=ICHAR(ALNISO)-48
+           ELSE
+            IF(ALNISO.EQ.'0')THEN
+             LNISO=10
+            ELSEIF(ALNISO.EQ.'A')THEN
+             LNISO=11
+            ELSE
+             print*,'rdline.f : LNISO not defined'
+             print*,'ALNISO = ',alniso
+             stop
+            ENDIF
+           ENDIF
           ENDIF
 102       FORMAT(I2,I1,F12.6,F5.3,1X,I4,F6.3,1X,I3,F5.4,F5.4,F10.4,
      1    F4.2,F8.6,A15,A15,A15,A15,6I1,6I2,A1,F7.1,F7.1)
-104       FORMAT(I2,I1,F12.6,F6.3,1X,I3,F6.3,1X,I3,F5.4,F5.4,F10.4,
+104       FORMAT(I2,A1,F12.6,F6.3,1X,I3,F6.3,1X,I3,F5.4,F5.4,F10.4,
      1    F4.2,F8.6,A15,A15,A15,A15,6I1,6I2,A1,F7.1,F7.1)
         ELSE IF(DBRECL.EQ.52)THEN
           IF(BUFFER(21:21).EQ.'E')THEN
@@ -236,7 +249,9 @@ C bases include many very weak lines
        LNPROB= LNPROB*CC**EXP1
       ENDIF
 
-      IF(LNLSE.LT.0.0)THEN
+C     LSE can sometimes be  < 0, so deleting this section
+C
+C      IF(LNLSE.LT.0.0)THEN
 C       WRITE(*,*)' '
 C       WRITE(*,*)' RDLINE.f :: ELIN < 0 '
 C       WRITE(*,*)' No temperature variation of line strength'
@@ -245,8 +260,8 @@ C       DO 13 I=1,DBRECL,20
 C        WRITE(*,*)I,'!',BUFFER(I:I+19),'@'
 C13     CONTINUE
 C       WRITE(*,*)' Setting ELIN to zero'
-       LNLSE=0.0
-      ENDIF
+C       LNLSE=0.0
+C      ENDIF
 
       RETURN
 

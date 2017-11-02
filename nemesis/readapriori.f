@@ -72,6 +72,7 @@ C     ****************************************************************
 C     ****************************************************************
       include '../radtran/includes/arrdef.f'
       include '../radtran/includes/planrad.f'
+      include '../radtran/includes/emcee.f'
       include 'arraylen.f'
 C     ****************************************************************
 
@@ -536,6 +537,22 @@ C            Read in xdeep,fsh,pknee
              read(27,*)xdeep,edeep
              read(27,*)xfsh,efsh
              ix = nx+1
+             if(MCMCflag.eq.1)then
+              if(varident(ivar,1).eq.-1)then
+               hknee = MCMChknee
+               xdeep = MCMCdeep
+               xfsh = MCMCfsh
+              else
+               hknee = MCMChknee2
+               xdeep = MCMCdeep2
+               xfsh = MCMCfsh2
+              endif
+
+              eknee = 0.5*MCMChknee
+              edeep = 0.5*MCMCdeep
+              efsh = 0.5*MCMCfsh
+             endif
+
              if(varident(ivar,1).eq.0)then
 C             *** temperature, leave alone ********
               x0(ix)=xdeep
@@ -1514,11 +1531,23 @@ C            ** Variable cloud particle size distribution and composition
 C              Read mean radius and error
                read(28,*)r0,er0
                ix=nx+1
+
+               if(MCMCflag.eq.1)then
+                r0 = MCMCpr
+                er0 = 1.0e-7*r0
+               endif
+
                x0(ix)=alog(r0)
                sx(ix,ix)=(er0/r0)**2
                lx(ix)=1
 C              Read radius variance and error
                read(28,*)dr,edr
+
+               if(MCMCflag.eq.1)then
+                dr = MCMCpvar
+                edr = 1.0e-7*dr
+               endif
+
                ix=nx+2
                x0(ix)=alog(dr)
                sx(ix,ix)=(edr/dr)**2
@@ -1544,6 +1573,9 @@ C				wavenumbers)
 
 C              read reference wavelength and nr at that wavelength
                read(28,*)vm,nm
+               if(MCMCflag.eq.1)then
+                nm = MCMCreal
+               endif
                varparam(ivar,3)=vm
                varparam(ivar,4)=nm
 
@@ -1552,6 +1584,10 @@ C              read x-section normalising wavelength (-1 to not normalise)
                varparam(ivar,5)=lambda0
                do i=1,np             
                 read(28,*)vi(i),nimag,err
+                if(MCMCflag.eq.1)then
+                 nimag = MCMCimag(i)
+                 err = 0.1*nimag
+                endif
                 ix=nx+2+i
                 x0(ix)=alog(nimag)
                 sx(ix,ix)=(err/nimag)**2

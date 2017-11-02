@@ -184,11 +184,12 @@ C         Skip header
           DO 33 I=1,NPRO
             READ(1,*)HREF(ILATREF,I),PREF(ILATREF,I),
      & TREF(ILATREF,I),(VMRREF(ILATREF,I,J),J=1,NVMR)
-            IF(VMRflag.eq.1)THEN
+            IF(MCMCflag.eq.1)THEN
              HREF(ILATREF,I)=MCMCheight(I)
              TREF(ILATREF,I)=MCMCtemp(I)
+             PREF(ILATREF,I)=MCMCpres(I)
              DO J=1, NVMR
-              VMRREF(ILATREF,I,J)=MCMCvmr(J)
+              VMRREF(ILATREF,I,J)=MCMCvmr(I,J)
              ENDDO
             ENDIF
 33        CONTINUE
@@ -269,11 +270,12 @@ C        Skip header
          READ(1,*)
          DO 30 I=1,NPRO
            READ(1,*)H(I),P(I),T(I),(VMR(I,J),J=1,NVMR)
-            IF(VMRflag.eq.1)THEN
+            IF(MCMCflag.eq.1)THEN
              H(I)=MCMCheight(I)
              T(I)=MCMCtemp(I)
+             P(I)=MCMCpres(I)
              DO J=1, NVMR
-              VMR(I,J)=MCMCvmr(J)
+              VMR(I,J)=MCMCvmr(I,J)
              ENDDO
             ENDIF
 30       CONTINUE
@@ -867,9 +869,15 @@ C         Q is specific density = particles/gram = (particles/cm3) / (g/cm3)
 
           JFSH=-1
 
+          if(MCMCflag.eq.1)then
+           if(HKNEE.ge.H(NPRO))THEN
+            HKNEE = H(NPRO)
+           endif
+          endif
+
           CALL VERINT(P,H,NPRO,HKNEE,PKNEE)
 
-          if(VMRflag.eq.1)then
+          if(MCMCflag.eq.1)then
            if(HKNEE.ge.H(NPRO))THEN
             PKNEE = P(NPRO)
             HKNEE = H(NPRO)
@@ -1033,7 +1041,7 @@ C         Q is specific density = particles/gram = (particles/cm3) / (g/cm3)
 
           JFSH=-1
 
-          if(VMRflag.eq.1)then
+          if(MCMCflag.eq.1)then
            if(HKNEE.ge.H(NPRO))THEN
             HKNEE = H(NPRO)
            endif

@@ -955,7 +955,8 @@ c           print*, 'Q: ', Q(J), XDEEP, XOD
            NTEST=ISNAN(Q(J))
            IF(NTEST)THEN
             print*,'Error in subprofretg.f, cloud density is NAN'
-	    STOP
+            print*,'Setting to 1e-36'
+	    Q(J)=1e-36
            ENDIF
 
            IF(ITEST.EQ.1)THEN
@@ -1117,7 +1118,8 @@ c           print*, 'Q: ', Q(J), XDEEP, XOD
            NTEST=ISNAN(Q(J))
            IF(NTEST)THEN
             print*,'Error in subprofretg.f, cloud density is NAN'
-	    STOP
+            print*,'Setting to 1e-36'
+            Q(J)=1e-36
            ENDIF
 
            IF(ITEST.EQ.1)THEN
@@ -2182,7 +2184,8 @@ C         post-processing in gsetrad.f
            NTEST=ISNAN(Q(J))
            IF(NTEST)THEN
             print*,'Error in subprofretg.f, cloud density is NAN'
-	    STOP
+            print*,'Setting to 1e-36'
+            Q(J)=1e-36
            ENDIF
 
            IF(ITEST.EQ.1)THEN
@@ -2585,7 +2588,8 @@ C          post-processing in gsetrad.f
             NTEST=ISNAN(Q(J))
             IF(NTEST)THEN
              print*,'Error in subprofretg.f, cloud density is NAN'
-	     STOP
+             print*,'Setting to 1e-36'
+             Q(J)=1e-36
             ENDIF
 
             IF(ITEST.EQ.1)THEN

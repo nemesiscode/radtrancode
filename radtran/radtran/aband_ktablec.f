@@ -47,7 +47,6 @@ c ------------------------------------------------------
       DATA DEL_G/0.033336, 0.074726, 0.109543, 0.134633, 0.147762,
      1          0.147762, 0.134633, 0.109543, 0.074726, 0.033336/
 
-
       CALL PROMPT('Enter name of input band file : ')
       READ(5,1)IPFILE
 1     FORMAT(A)
@@ -107,6 +106,11 @@ c     First skip header
 179     CONTINUE
         BANDTYP(I)=4 
        ELSE
+        IF(HEAD(1:2).EQ.'GL')THEN
+         BANDTYP(I)=5
+        ELSE
+         BANDTYP(I)=0
+        ENDIF
         DO 110 J=1,NPOINT
          READ(12,932)TWAVEN(J,1),TWAVEN(J,2),TPOUT(J,I,1),TPOUT(J,I,2),
      1 TPOUT(J,I,3),TPOUT(J,I,4),TPOUT(J,I,5)
@@ -117,6 +121,14 @@ c     First skip header
 110     CONTINUE
        ENDIF
        print*,'Gas ',I,'Bandtype: ',BANDTYP(I)
+       print*,'Allowed bandtypes are '
+       print*,'-1 = Goody-Voigt - Kim Strong Type'
+       print*,' 0 = Goody-Voigt - extended'
+       print*,' 1 = Goody-Voigt - Kam Sihra type (C1,C2)'
+       print*,' 2 = Goody-Voigt - 2-EL, T**QROT'
+       print*,' 3 = Goody-Voigt - 2-EL, tpart(4)'
+       print*,' 4 = Karkoschka and Tomasko (2009)'
+       print*,' 5 = Goody-Lorentz (Neil Bowles)'
 105   CONTINUE
 
       CLOSE(12)
@@ -210,7 +222,7 @@ C      READ*,NTRAN
       ENDDO
       QROT=1.5
        
-      IF(BANDTYP(JGAS).LT.3)THEN   
+      IF(BANDTYP(JGAS).LT.3.OR.BANDTYP(JGAS).GT.4)THEN   
        CALL PROMPT('Enter QROT : ')
        READ*,QROT   
       ELSEIF(BANDTYP(JGAS).EQ.3)THEN

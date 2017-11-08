@@ -110,7 +110,7 @@ C******************************** CODE *********************************
        tmin = t2(1,1)
       endif
 
-      print*,'get_kg: ng =',ng
+c      print*,'get_kg: ng =',ng
 C Work out where P,T for each layer lies in the tables
       DO 51 ilayer=1,NLAYER
         P1 = LOG(PRESS(ilayer))
@@ -194,11 +194,18 @@ C        Find nearest point in table below current wavelength. Parameter eps is
 C        there to prevent small numerical errors in VWAVE screwing things up
 C        between platforms.
 
-C        Set minimum closeness to tabulated wavenumbers to be 1/50 of
-C        the separation to be considered aligned.
-         eps = 0.02*delv
+         if (delv.ge.0.0001) then
+C          Set minimum closeness to tabulated wavenumbers to be 1/50 of
+C          the separation to be considered aligned.
+           eps = 0.02*delv
+         else
+C          For very small delv use 1/4 as close to limit of real precision
+           eps = 0.25*delv
+         endif
 
-          n1 = INT((vwave + eps - vmin)/delv)
+c         use double precision for this calc in case numbers are very small
+c	    (NB. IDINT is double precision version of INT)
+          n1 = IDINT((dble(vwave) + dble(eps) - dble(vmin))/dble(delv))
           irec = irec0 + np*abs(nt)*ng*n1
 
         ELSE
@@ -244,7 +251,7 @@ C          WRITE(*,*)'Wavelength/Wavenumber = ',VWAVE
         IF(delv.gt.0)THEN
 C        Calculate wavelength in table below current wavelength
          tmp = vmin + delv*n1
-         frac = (vwave-tmp)/delv
+         frac = abs(real(dble(vwave)-dble(tmp)))
          if(frac.lt.eps)then
 C         delv > 0 and requested wavenumber close enough to tabulated to
 C         be considered coincident (and thus need to interrogate k-table once

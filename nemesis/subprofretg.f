@@ -69,12 +69,15 @@ C     ***********************************************************************
       INCLUDE '../radtran/includes/emcee.f'
       INCLUDE 'arraylen.f'
 
-      REAL XN(MX),DPEXP,DELH,XFAC,DXFAC,XTMP,SUM,PMIN
+      REAL XN(MX),DPEXP,DELH,XFAC,DXFAC,XTMP,SUM,PMIN,XSTEP
       REAL H(MAXPRO),P(MAXPRO),T(MAXPRO),VMR(MAXPRO,MAXGAS)
       REAL CONT(MAXCON,MAXPRO),XLAT,X,XREF(MAXPRO),X1(MAXPRO)
       REAL PKNEE,HKNEE,XDEEP,XFSH,PARAH2(MAXPRO),XH,XKEEP,X2(MAXPRO)
       REAL RHO,F,DQDX(MAXPRO),DX,PLIM,XFACP,CWID,PTROP, NEWF
       REAL DNDH(MAXPRO),DQDH(MAXPRO),FCLOUD(MAXPRO)
+      REAL dtempdx(MAXPRO,5),T0,Teff,alpha,ntemp,tau0
+      REAL XP1(MAXPRO),LP1(MAXPRO),XP2(MAXPRO)
+      REAL LPMIN,LPMAX,DLP,XPS(MAXPRO),XP2S(MAXPRO)
       DOUBLE PRECISION Q(MAXPRO),OD(MAXPRO),ND(MAXPRO),XOD
       INTEGER ISCALE(MAXGAS),XFLAG,NPVAR,MAXLAT,IERR
       INTEGER NLATREF,ILATREF,JLAT,KLAT,ICUT,JX
@@ -83,8 +86,9 @@ C     ***********************************************************************
       REAL PREF(MAXLAT,MAXPRO),VMRREF(MAXLAT,MAXPRO,MAXGAS)
       REAL LATREF(MAXLAT),MOLWTREF(MAXLAT),XFSHREF
       REAL XRH,XCDEEP,P1,PS,PS1,PH,Y1,Y2,YY1,YY2
+      real plog,p1log,p2log,p2,v1log,v2log,grad
       REAL XCH4,PCH4,PCUT,GETRADIUS,RPARTICLE
-      INTEGER ICLOUD(MAXCON,MAXPRO),NCONT1,JSPEC,IFLA,I1
+      INTEGER ICLOUD(MAXCON,MAXPRO),NCONT1,JSPEC,IFLA,I1,I2
       INTEGER NPRO,NPRO1,NVMR,JZERO,IV,IP,IVAR,JCONT,JVMR
       INTEGER IDGAS(MAXGAS),ISOGAS(MAXGAS),IPAR,JPAR,IVMR,NP
       INTEGER IDAT,NCONT,FLAGH2P,JFSH,JPRE,JHYDRO,ISCAT,ICOND
@@ -102,12 +106,12 @@ C     ***********************************************************************
 
       INTEGER NVAR,VARIDENT(MVAR,3)
       REAL VARPARAM(MVAR,MPARAM)
-      REAL XWID,Y,Y0,XX
+      REAL XWID,Y,Y0,XX,L1
       LOGICAL GASGIANT,FEXIST,VPEXIST,NTEST,ISNAN
       REAL VP(MAXGAS),VP1
       INTEGER SVPFLAG(MAXGAS),SVPFLAG1
       INTEGER NVP,ISWITCH(MAXGAS),IP1,IP2,JKNEE
-      REAL XLDEEP,XLHIGH
+      REAL XLDEEP,XLHIGH,HVS
       COMMON /SROM223/PCUT
 
 C----------------------------------------------------------------------------
@@ -180,11 +184,12 @@ C         Skip header
           DO 33 I=1,NPRO
             READ(1,*)HREF(ILATREF,I),PREF(ILATREF,I),
      & TREF(ILATREF,I),(VMRREF(ILATREF,I,J),J=1,NVMR)
-            IF(VMRflag.eq.1)THEN
+            IF(MCMCflag.eq.1)THEN
              HREF(ILATREF,I)=MCMCheight(I)
              TREF(ILATREF,I)=MCMCtemp(I)
+             PREF(ILATREF,I)=MCMCpres(I)
              DO J=1, NVMR
-              VMRREF(ILATREF,I,J)=MCMCvmr(J)
+              VMRREF(ILATREF,I,J)=MCMCvmr(I,J)
              ENDDO
             ENDIF
 33        CONTINUE
@@ -265,11 +270,12 @@ C        Skip header
          READ(1,*)
          DO 30 I=1,NPRO
            READ(1,*)H(I),P(I),T(I),(VMR(I,J),J=1,NVMR)
-            IF(VMRflag.eq.1)THEN
+            IF(MCMCflag.eq.1)THEN
              H(I)=MCMCheight(I)
              T(I)=MCMCtemp(I)
+             P(I)=MCMCpres(I)
              DO J=1, NVMR
-              VMR(I,J)=MCMCvmr(J)
+              VMR(I,J)=MCMCvmr(I,J)
              ENDDO
             ENDIF
 30       CONTINUE
@@ -511,6 +517,7 @@ C     1    VARIDENT(IVAR,3)
 C       Look up number of parameters needed to define this type of profile
         NP = NPVAR(VARIDENT(IVAR,3),NPRO)
 C        print*,'IVAR,VARIDENT,NP',IVAR,(VARIDENT(IVAR,I),I=1,3),NP
+        print*,'IPAR = ',IPAR
         IF(VARIDENT(IVAR,3).EQ.0)THEN
 C        Model 0. Continuous profile
 C        ***************************************************************
@@ -814,64 +821,167 @@ C        Model 8. Profile is represented by a value at a variable pressure level
 C        plus a fractional scale height. Below the knee pressure the profile is 
 C        set to zero - a simple cloud in other words!
 C        ***************************************************************
-         IF(VARIDENT(IVAR,1).EQ.0)THEN
-           XDEEP = XN(NXTEMP+1)
-         ELSE
-           XDEEP = EXP(XN(NXTEMP+1))
+
+         IF(VARIDENT(IVAR,1).GE.0)THEN
+          PRINT*,'Warning from SUBPROFRETG. You are using a'
+          PRINT*,'cloud profile parameterisation for a non-cloud'
+          PRINT*,'variable'         
+          STOP 
          ENDIF
-         XFSH  = EXP(XN(NXTEMP+2))
-         XFAC = (1.0-XFSH)/XFSH
-         DXFAC = -1.0/XFSH
-         PKNEE = EXP(XN(NXTEMP+3))
 
-         CALL VERINT(P,H,NPRO,HKNEE,PKNEE)
-         JFSH = 0
-      
-         DO J=1,NPRO
+C        Calculate gradient numerically as it's just too hard otherwise
+         DO 27 ITEST=1,4
 
-          X1(J)=1e-36
 
-          IF(P(J).LT.PKNEE)THEN  
-             IF(JFSH.EQ.0)THEN
-               DELH = H(J)-HKNEE
-               XKEEP = XDEEP
+          XDEEP = EXP(XN(NXTEMP+1))
+          XFSH  = EXP(XN(NXTEMP+2))
+          PKNEE = EXP(XN(NXTEMP+3))
 
-               IF(VARIDENT(IVAR,1).EQ.0)THEN
-                XMAP1=1.
-               ELSE
-                XMAP1=XDEEP
-               ENDIF
+          DX=0.05*XN(NXTEMP+ITEST-1)
+          IF(DX.EQ.0.)DX=0.1
 
-               XMAP(NXTEMP+1,IPAR,J)=XMAP1*
-     1                  EXP(-DELH*XFAC/SCALE(J))
-             ELSE
+          IF(ITEST.GT.1)THEN
+C            print*,'ITEST,IPAR,XN,DX = ',ITEST,IPAR,
+C     1		XN(NXTEMP+ITEST-1),DX
+C            print*,'XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
+          ENDIF
+          IF(ITEST.EQ.2)THEN
+            XDEEP=EXP(XN(NXTEMP+1)+DX)
+          ENDIF
+          IF(ITEST.EQ.3)THEN
+            XFSH  = EXP(XN(NXTEMP+2)+DX)
+          ENDIF
+          IF(ITEST.EQ.4)THEN
+            PKNEE = EXP(XN(NXTEMP+3)+DX)
+          ENDIF
 
-               DELH=H(J)-H(J-1)
-               XKEEP = X1(J-1)
-               XMAP(NXTEMP+1,IPAR,J)=XMAP(NXTEMP+1,IPAR,J-1)*
-     1                  EXP(-DELH*XFAC/SCALE(J))
-             ENDIF
 
-             X1(J)=XKEEP*EXP(-DELH*XFAC/SCALE(J))
+C         Start ND,Q,OD at zero
+C         OD is in units of particles/cm2 = particles/cm3 x length(cm)
+C         Q is specific density = particles/gram = (particles/cm3) / (g/cm3)
+          DO J=1,NPRO
+           ND(J)=0.
+           OD(J)=0
+           Q(J)=0.
+           DNDH(J)=0.
+           DQDH(J)=0.
+          ENDDO
 
-             XMAP(NXTEMP+2,IPAR,J)=(-DELH/SCALE(J))*DXFAC*
-     1          XKEEP*EXP(-DELH*XFAC/SCALE(J)) +
-     2          XMAP(NXTEMP+2,IPAR,J-1)*EXP(-DELH*XFAC/SCALE(J))
+          JFSH=-1
 
-             IF(JFSH.EQ.0)THEN
-               XMAP(NXTEMP+3,IPAR,J)=PKNEE*(XFAC/P(J))*
-     1             XKEEP*EXP(-DELH*XFAC/SCALE(J))
-             ENDIF
-             XMAP(NXTEMP+3,IPAR,J)=XMAP(NXTEMP+3,IPAR,J)+
-     1          XMAP(NXTEMP+2,IPAR,J-1)*EXP(-DELH*XFAC/SCALE(J))
+          if(MCMCflag.eq.1)then
+           if(HKNEE.ge.H(NPRO))THEN
+            HKNEE = H(NPRO)
+           endif
+          endif
 
-             JFSH = 1
+          CALL VERINT(P,H,NPRO,HKNEE,PKNEE)
 
-             IF(X1(J).LT.1e-36)X1(J)=1e-36
+          if(MCMCflag.eq.1)then
+           if(HKNEE.ge.H(NPRO))THEN
+            PKNEE = P(NPRO)
+            HKNEE = H(NPRO)
+           endif
+          endif
 
-           END IF
 
-         ENDDO
+          IF(H(1).GE.HKNEE)THEN
+            IF(AMFORM.EQ.0)THEN
+             XMOLWT=MOLWT
+            ELSE
+             XMOLWT=XXMOLWT(1)
+            ENDIF
+C           Calculate density of atmosphere  (g/cm3)
+            ND(1)=1.0
+            RHO = P(1)*0.1013*XMOLWT/(R*T(1))
+            Q(1)=ND(1)/RHO
+            JFSH=1
+          ENDIF
+
+          DO J=2,NPRO
+           DELH = H(J)-H(J-1)
+           XFAC = SCALE(J)*XFSH
+
+
+           IF(H(J).GE.HKNEE)THEN
+            IF(AMFORM.EQ.0)THEN
+             XMOLWT=MOLWT
+            ELSE
+             XMOLWT=XXMOLWT(J)
+            ENDIF
+
+C           Calculate density of atmosphere  (g/cm3)
+            RHO = (0.1013*XMOLWT/R)*(P(J)/T(J))
+
+            IF(JFSH.LT.0)THEN
+             ND(J)=1.0
+             JFSH=1
+           ELSE
+             ND(J)=ND(J-1)*DPEXP(-DELH/XFAC)
+             DNDH(J)=ND(J)*DELH/(XFAC**2)+DPEXP(-DELH/XFAC)*DNDH(J-1)
+            ENDIF
+            Q(J)=ND(J)/RHO
+            DQDH(J) = DNDH(J)/RHO
+           ENDIF
+
+c           print*,'BLAH:',J,H(J), HKNEE, ND(J),JFSH
+
+          ENDDO
+
+C         Integrate optical thickness
+          OD(NPRO)=ND(NPRO)*SCALE(NPRO)*XFSH*1E5
+          JFSH=-1
+          DO J=NPRO-1,1,-1
+           DELH = H(J+1) - H(J)
+           XFAC = SCALE(J)*XFSH         
+           OD(J)=OD(J+1)+0.5*(ND(J) + ND(J+1))*XFAC*1E5
+           IF(H(J).LE.HKNEE.AND.JFSH.LT.0)THEN
+            F = (HKNEE-H(J))/DELH
+            XOD = (1.-F)*OD(J) + F*OD(J+1)
+            JFSH=1
+           ENDIF
+c           print*, 'OD F XOD JFSH',OD(J),F,XOD,JFSH,ND(J),ND(J+1)
+          ENDDO
+
+C         The following section was found not to be as accurate as
+C         desired due to misalignments at boundaries and so needs some 
+C         post-processing in gsetrad.f
+          DO J=1,NPRO
+           OD(J)=XDEEP*OD(J)/XOD
+           ND(J)=XDEEP*ND(J)/XOD
+           Q(J)=XDEEP*Q(J)/XOD
+           IF(H(J).LT.HKNEE)THEN
+            IF(H(J+1).GE.HKNEE)THEN
+             Q(J)=Q(J)*(1.0 - (HKNEE-H(J))/(H(J+1)-H(J)))
+            ELSE
+             Q(J) = 0.0
+            ENDIF
+           ENDIF
+c           print*, 'Q: ', Q(J), XDEEP, XOD
+           IF(Q(J).GT.1e10)Q(J)=1e10
+           IF(Q(J).LT.1e-36)Q(J)=1e-36
+           NTEST=ISNAN(Q(J))
+           IF(NTEST)THEN
+            print*,'Error in subprofretg.f, cloud density is NAN'
+            print*,'Setting to 1e-36'
+	    Q(J)=1e-36
+           ENDIF
+
+           IF(ITEST.EQ.1)THEN
+            X1(J)=Q(J)
+C            print*,'J,X1(J)',J,X1(J)
+           ELSE
+            XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
+C            PRINT*,'ITEST,J,XMAP',ITEST,J,Q(J),X1(J),(Q(J)-X1(J))/DX
+           ENDIF
+
+           DNDH(J)=DNDH(J)*XDEEP/XOD
+           DQDH(J)=DQDH(J)*XDEEP/XOD
+           DQDX(J)=Q(J)/XOD
+
+          ENDDO
+
+27       CONTINUE
 
         ELSEIF(VARIDENT(IVAR,3).EQ.9)THEN
 C        Model 9. Similar to model 8. Profile is represented by a value 
@@ -931,7 +1041,7 @@ C         Q is specific density = particles/gram = (particles/cm3) / (g/cm3)
 
           JFSH=-1
 
-          if(VMRflag.eq.1)then
+          if(MCMCflag.eq.1)then
            if(HKNEE.ge.H(NPRO))THEN
             HKNEE = H(NPRO)
            endif
@@ -1016,7 +1126,8 @@ c           print*, 'Q: ', Q(J), XDEEP, XOD
            NTEST=ISNAN(Q(J))
            IF(NTEST)THEN
             print*,'Error in subprofretg.f, cloud density is NAN'
-	    STOP
+            print*,'Setting to 1e-36'
+            Q(J)=1e-36
            ENDIF
 
            IF(ITEST.EQ.1)THEN
@@ -1959,7 +2070,7 @@ C        Calculate gradient numerically as it's just too hard otherwise
           HKNEE = XN(NXTEMP+2)
           XFSH  = VARPARAM(IVAR,1)
 
-C         Need radius from associated 444 particle parameterisation
+C         Need radius from associated 444/445 particle parameterisation
           ICL=-VARIDENT(IVAR,1)
 C          print*,'ICLOUD = ',ICL
           RPARTICLE = GETRADIUS(ICL,NVAR,VARIDENT,VARPARAM,XN,NPRO)
@@ -2081,7 +2192,8 @@ C         post-processing in gsetrad.f
            NTEST=ISNAN(Q(J))
            IF(NTEST)THEN
             print*,'Error in subprofretg.f, cloud density is NAN'
-	    STOP
+            print*,'Setting to 1e-36'
+            Q(J)=1e-36
            ENDIF
 
            IF(ITEST.EQ.1)THEN
@@ -2100,6 +2212,241 @@ C            PRINT*,'ITEST,J,XMAP',ITEST,J,Q(J),X1(J),(Q(J)-X1(J))/DX
 
 24       CONTINUE
 
+        ELSEIF(VARIDENT(IVAR,3).EQ.22)THEN
+C        Brown dwarf parameterised temperature profile.
+
+         tau0=EXP(XN(NXTEMP+1))
+         ntemp=EXP(XN(NXTEMP+2))
+         Teff=EXP(XN(NXTEMP+3))
+         alpha=EXP(XN(NXTEMP+4))
+         T0=EXP(XN(NXTEMP+5))
+
+         call tbrownrc(npro,p,T0,Teff,tau0,ntemp,alpha,x1,
+     &	dtempdx)
+
+        do J=1,npro
+C         print*,p(J),x1(J)
+         do K=1,np
+          XMAP(NXTEMP+K,IPAR,J)=dtempdx(J,K)*EXP(XN(NXTEMP+K))
+         enddo
+        enddo
+
+        ELSEIF( (VARIDENT(IVAR,3).EQ.23) .or. 
+     >          (VARIDENT(IVAR,3).EQ.26) )THEN
+C        Model 23/26. 2 point vmr gradient (NAT)
+c		Profile is defined by two (p,v) points, with a linear gradient (in log p)
+c		in between. The low pressure point is at (p1,v1) and the high pressure point 
+c		is at (p2,v2). 
+c		23: Profile is constant above/below this gradient region (i.e.
+c		p<p1 v=v1 and p>p2 v=v2.)
+c		26: Profile is constant above this gradient region and zero below (i.e.
+c		p<p1 v=v1 and p>p2 v=0.)
+c		All variable are retrieved. 
+c		Not yet fully implemented for T	
+C        ***************************************************************
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+           print*,'ERROR: not coded for temperature yet'
+           stop
+         ENDIF
+         if(xn(nxtemp+2).gt.xn(nxtemp+4)) then
+           print*,'Warning: p1>p2 non-single valued profile.'
+           print*,'       : setting p2=p1'
+           xn(nxtemp+4) = xn(nxtemp+2)
+         endif
+         v1log = xn(nxtemp+1)
+         p1log = xn(nxtemp+2)
+         v2log = xn(nxtemp+3)
+         p2log = xn(nxtemp+4)
+         p1 = exp(p1log)
+         p2 = exp(p2log)
+         grad = (v2log-v1log)/(p2log-p1log)
+         DO J=1,NPRO
+          plog = alog(p(j))
+          if (p(j).le.p1) then
+c         * low pressure, constant continuance of vmr at p1
+            x1(j) = exp(v1log)
+            XMAP(NXTEMP+1,IPAR,J)=exp(xn(nxtemp+1))
+            XMAP(NXTEMP+2,IPAR,J)=0.0
+            XMAP(NXTEMP+3,IPAR,J)=0.0
+            XMAP(NXTEMP+4,IPAR,J)=0.0
+          elseif (p(j).ge.p2) then
+            if (VARIDENT(IVAR,3).EQ.23) then
+c           * high pressure, constant continuance of vmr at p2
+              x1(j) = exp(v2log)
+              XMAP(NXTEMP+1,IPAR,J)=0.0
+              XMAP(NXTEMP+2,IPAR,J)=0.0
+              XMAP(NXTEMP+3,IPAR,J)=exp(xn(nxtemp+3))
+              XMAP(NXTEMP+4,IPAR,J)=0.0
+            else
+c           * high pressure, vmr=0 for p>p2
+              x1(j) = 0.0
+              XMAP(NXTEMP+1,IPAR,J)=0.0
+              XMAP(NXTEMP+2,IPAR,J)=0.0
+              XMAP(NXTEMP+3,IPAR,J)=0.0
+              XMAP(NXTEMP+4,IPAR,J)=0.0
+            endif
+          else
+c         * linear interpolation in log pressure / log vmr *
+            x1(j)=exp( v1log + grad*(plog-p1log) )
+c         * d X1 /d log v1 *
+            XMAP(NXTEMP+1,IPAR,J)=(1-(plog-p1log)/(p2log-p1log))*x1(j)
+c         * d X1 /d log p1 *
+            XMAP(NXTEMP+2,IPAR,J)=-grad*x1(j) +
+     >        x1(j)*(plog-p1log)*(v2log-v1log)*(p2log-p1log)**(-2)
+c         * d X1 /d log v2 *
+            XMAP(NXTEMP+3,IPAR,J)=(  (plog-p1log)/(p2log-p1log))*x1(j)
+c         * d X1 /d log p2 *
+            XMAP(NXTEMP+4,IPAR,J)= -x1(j)*
+     >        (plog-p1log)*(v2log-v1log)*(p2log-p1log)**(-2)
+          endif
+	    if(X1(J).LT.1e-36)X1(J)=1e-36
+         ENDDO
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.24)THEN
+C        Model 24: Variable constant vmr below knee, variable constant vmr above knee, variable knee pressure.
+C        ***************************************************************
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+           XDEEP = XN(NXTEMP+1)
+           XSTEP = XN(NXTEMP+2)
+         ELSE
+           XDEEP = EXP(XN(NXTEMP+1))
+           XSTEP = EXP(XN(NXTEMP+2))
+         ENDIF
+
+         PKNEE = EXP(XN(NXTEMP+3))
+
+C        Technically, this profile would be parametrised by a Heaviside step function (X1(P)=(XDEEP-XSTEP)*H(P-PKNEE)+XSTEP).
+C        However, this would also have the effect of making XMAP(NXTEMP+3,IPAR,J) = 0 for all values of J,
+C        as the derivative of X1(J)/PKNEE is a multiple of a Dirac delta centred on PKNEE.
+C        Hence, we use the approximation H(P) = 0.5(1+tanh(HVS*P)) where we choose an arbitrary value of HVS = 20
+C        to roughly optimise the Heaviside step function given the orders of magnitude of the other input parameters and the pressure grid.
+         CALL VERINT(P,H,NPRO,HKNEE,PKNEE)
+         HVS = 20.0
+         JFSH = 0
+         DO J=1,NPRO
+          X1(J)=0.5*(XDEEP-XSTEP)*(1+tanh(HVS*(P(J)-PKNEE)))+XSTEP
+          IF(VARIDENT(IVAR,1).EQ.0)THEN
+           XMAP(NXTEMP+1,IPAR,J)=0.5*(1+tanh(HVS*(P(J)-PKNEE)))
+           XMAP(NXTEMP+2,IPAR,J)=1-0.5*(1+tanh(HVS*(P(J)-PKNEE)))
+          ELSE
+           XMAP(NXTEMP+1,IPAR,J)=XDEEP*(1+tanh(HVS*(P(J)-PKNEE)))/2
+           XMAP(NXTEMP+2,IPAR,J)=XSTEP*(1-tanh(HVS*(P(J)-PKNEE)))/2
+          ENDIF
+          IF(HVS*(P(J)-PKNEE).GT.40)THEN!get rid of infinity errors (cosh goes to infinity very quickly)
+           XMAP(NXTEMP+3,IPAR,J)=0
+          ELSE
+           XMAP(NXTEMP+3,IPAR,J)=(-HVS*PKNEE*(XDEEP-XSTEP)) / 
+     1                            (2*cosh(HVS*(P(J)-PKNEE))**2)
+          ENDIF
+
+          IF(X1(J).LT.1e-36)X1(J)=1e-36
+
+         ENDDO
+
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.25)THEN
+C        Model 25: Continuous profile with fewer than NPRO vertical levels
+C        ***************************************************************
+C         LPMAX=ALOG(P(1))
+C         LPMIN=ALOG(P(NPRO))
+C         NP = INT(VARPARAM(IVAR,1))
+C         DLP = (LPMAX-LPMIN)/FLOAT(NP-1)    
+CC        Find tabulated pressures and profile
+C         DO J=1,NP
+C          LP1(J)=LPMIN + DLP*FLOAT(J-1)
+CC         Reverse profile array which by convention goes up in the atmosphere
+C          XP1(1+NP-J)=XN(NXTEMP+J)
+C         ENDDO
+CC         DO J=1,NP
+CC          PRINT*,J,LP1(J),exp(LP1(J)),XP1(J)
+CC         ENDDO
+
+         NP = INT(VARPARAM(IVAR,1))
+         DO J=1,NP
+C         Reverse profile array which by convention goes up in the atmosphere
+          LP1(1+NP-J)=ALOG(VARPARAM(IVAR,J+2))!read in pressure grid
+          XP1(1+NP-J)=XN(NXTEMP+J)!read in profile
+         ENDDO
+
+C        Fit a cubic spline to the points
+         CALL CSPLINE(LP1,XP1,NP,1e30,1e30,XP2)
+
+         DO J=1,NPRO
+          L1 = ALOG(P(J))
+          CALL CSPLINT(LP1,XP1,XP2,NP,L1,XX)
+          IF(VARIDENT(IVAR,1).EQ.0)THEN
+           X1(J)=XX
+          ELSE
+           X1(J)=EXP(XX)
+          ENDIF
+          IF(X1(J).LT.1e-36)X1(J)=1e-36
+         ENDDO
+
+C        Numerical differentiation
+         XPS=XP1
+         DO I = 1,NP
+           IF(VARIDENT(IVAR,1).EQ.0)THEN
+            DX=2.0
+           ELSE
+            DX=0.1
+           ENDIF
+           XPS(1+NP-I)=XP1(1+NP-I)+DX
+C          Fit a cubic spline to the points
+           CALL CSPLINE(LP1,XPS,NP,1e30,1e30,XP2S)
+           DO J=1,NPRO
+            L1 = ALOG(P(J))
+            CALL CSPLINT(LP1,XPS,XP2S,NP,L1,XX)
+            IF(VARIDENT(IVAR,1).EQ.0)THEN
+             X2(J)=XX
+            ELSE
+             X2(J)=EXP(XX)
+            ENDIF
+            IF(X2(J).LT.1e-36)X2(J)=1e-36
+            XMAP(NXTEMP+I,IPAR,J)=(X2(J)-X1(J))/DX
+           ENDDO
+           XPS(1+NP-I)=XP1(1+NP-I)
+         ENDDO
+
+C        I thought that getting accurate gradients from a cubic spline 
+C        interpolated curve was going to be well hard. So I did a linear 
+C        interpolation for this part instead. This actually turned out to
+C        be too inaccurate, but I have left the code here for reference.
+
+C         DO J=1,NPRO
+C          L1 = ALOG(P(J))          
+C          I = 1+INT((NP-1)*(L1-LPMIN)/(LPMAX-LPMIN))
+C          print*,'A',J,P(J),L1,NP*(L1-LPMIN)/(LPMAX-LPMIN),I
+C          IF(I.LT.1)I=1
+C          IF(I.GE.NP)I=NP-1
+C          XX = (L1-LP1(I))/DLP
+C          print*,'B',J,P(J),L1,I,LP1(I),XX,1.0-XX
+C          I1 = NP+1-I
+C          I2 = NP+1-(I+1)
+C          IF(VARIDENT(IVAR,1).EQ.0)THEN
+C           XMAP(NXTEMP+I1,IPAR,J)=XX
+C           XMAP(NXTEMP+I2,IPAR,J)=1.-XX
+C          ELSE
+C           XMAP(NXTEMP+I1,IPAR,J)=X1(J)*XX
+C           XMAP(NXTEMP+I2,IPAR,J)=X1(J)*(1.-XX)
+C          ENDIF
+C         ENDDO
+C         stop
+C         IF(X1(J).LT.1e-36)X1(J)=1e-36
+
+         IF(VARPARAM(IVAR,3).LT.P(1))THEN
+          print*,'Warning subprofretg:'
+          print*,'Maximum pressure in interpolated grid lower'
+          print*,'than maximum pressure in jupiter.ref.'
+          print*,'This could lead to infinity errors'
+          stop
+         ENDIF
+         IF(VARPARAM(IVAR,NP+2).GT.P(NPRO))THEN
+          print*,'Warning subprofretg:'
+          print*,'Minimum pressure in interpolated grid higher'
+          print*,'than minimum pressure in jupiter.ref.'
+          print*,'This could lead to infinity errors'
+          stop
+         ENDIF
 
         ELSE
 
@@ -2141,7 +2488,7 @@ C         print*,'Tangent pressure'
 C         print*,'Radius of Planet'
          IPAR = -1
          NP = 1
-        ELSEIF(VARIDENT(IVAR,1).EQ.444)THEN
+        ELSEIF(VARIDENT(IVAR,1).EQ.444.OR.VARIDENT(IVAR,1).EQ.445)THEN
 C         print*,'Variable size and RI'
 C        See if there is an associated IMOD=21 cloud. In which case
 C        modifying the radius will affect the vertical cloud distribution.
@@ -2249,7 +2596,8 @@ C          post-processing in gsetrad.f
             NTEST=ISNAN(Q(J))
             IF(NTEST)THEN
              print*,'Error in subprofretg.f, cloud density is NAN'
-	     STOP
+             print*,'Setting to 1e-36'
+             Q(J)=1e-36
             ENDIF
 
             IF(ITEST.EQ.1)THEN
@@ -2361,6 +2709,11 @@ C         ENDDO
 C         print*,'Two cloud layering'
          IPAR = -1
          NP = 8
+
+        ELSEIF(VARIDENT(IVAR,1).EQ.227)THEN
+C         print*,'Creme Brulee layering'
+         IPAR = -1
+         NP = 7
 
         ELSE
 

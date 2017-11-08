@@ -78,7 +78,12 @@ C         bins, paths, etc.)
 
         CHARACTER*100   klist, opfile1, solname, solfile, buffer
 
-        CHARACTER*100    logfil, drvfil, sfile
+        CHARACTER*100   logfil, drvfil, sfile, FWHMFILE
+        INTEGER         NFWHM,MFWHM
+        PARAMETER(MFWHM=1000)
+        LOGICAL         FWHMEXIST
+        REAL            VFWHM(MFWHM),XFWHM(MFWHM)
+
 
         common/scatd/mu1, wt1, galb
 
@@ -112,7 +117,21 @@ C-----------------------------------------------------------------------
         CALL subpath(opfile)
 
         npath1= npath
+        PRINT*,'LBLRTF_WAVE called.'
 
+C       See if file is present forcing FWHM to vary with wavelength/wavenumber
+        CALL FILE(OPFILE,FWHMFILE,'fwh')
+        INQUIRE(FILE=FWHMFILE,EXIST=FWHMEXIST)
+C       If such a file exists then read in the data
+        IF(FWHMEXIST)THEN
+         print*,'Reading FWHM information from : ',FWHMFILE
+         OPEN(13,FILE=FWHMFILE,status='old')
+          READ(13,*)NFWHM
+          DO I=1,NFWHM
+           READ(13,*)VFWHM(I),XFWHM(I)
+          ENDDO
+         CLOSE(13)
+        ENDIF
 
 C-----------------------------------------------------------------------
 C
@@ -335,10 +354,11 @@ C          need the current height profile
          yp(I,2)= output(I)
         ENDDO
 
+
         IF(IFLAG.EQ.1)THEN
 
            CALL lblconv(opfile,fwhm,ishape,npath,ispace,vv,delv,yp,
-     1      nconv,vconv,yout,ynor)
+     1      nconv,vconv,yout,ynor,FWHMEXIST,NFWHM,VFWHM,XFWHM)
 
         ENDIF
 

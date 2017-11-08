@@ -44,10 +44,6 @@ C******************************** CODE *********************************
 23    FORMAT(A)
       CALL FILE(OPFILE1,KTAFIL,'kta')
 
-      CALL PROMPT('Enter output filename : ')
-      READ(5,23)OPFILE2
-      CALL FILE(OPFILE2,OUTFIL,'kta')
-
 
 C     Assume 4-byte words per record
       NW=1
@@ -58,18 +54,7 @@ C     Assume 4-byte words per record
       OPEN(UNIT=LUN0,FILE=KTAFIL,STATUS='OLD',ACCESS='DIRECT',
      1 RECL=IRECL)
 
-      OPEN(UNIT=LUN1,FILE=OUTFIL,STATUS='UNKNOWN',ACCESS='DIRECT',
-     1 RECL=IRECL)
 
-
-      READ(LUN0,REC=1)IREC0
-      READ(LUN0,REC=2)NPOINT
-      READ(LUN0,REC=3)VMIN
-      READ(LUN0,REC=4)DELV
-      READ(LUN0,REC=5)FWHM
-      READ(LUN0,REC=6)NP
-      READ(LUN0,REC=7)NT
-      READ(LUN0,REC=8)NG
       READ(LUN0,REC=9)IDGAS(1)
       READ(LUN0,REC=10)ISOGAS(1)
 
@@ -80,58 +65,20 @@ C     Assume 4-byte words per record
       IDGAS(1)=I1
       ISOGAS(1)=I2
 
+      WRITE(LUN0,REC=9)IDGAS(1)
+      WRITE(LUN0,REC=10)ISOGAS(1)
 
-      WRITE(LUN1,REC=1)IREC0
-      WRITE(LUN1,REC=2)NPOINT
-      WRITE(LUN1,REC=3)VMIN
-      WRITE(LUN1,REC=4)DELV
-      WRITE(LUN1,REC=5)FWHM
-      WRITE(LUN1,REC=6)NP
-      WRITE(LUN1,REC=7)NT
-      WRITE(LUN1,REC=8)NG
-      WRITE(LUN1,REC=9)IDGAS(1)
-      WRITE(LUN1,REC=10)ISOGAS(1)
+      READ(LUN0,REC=4)DELV
+      READ(LUN0,REC=5)FWHM
 
-      IREC = 11
-      DO 299 J=1,NG
-        READ(LUN0,REC=IREC)G_ORD(J)
-        WRITE(LUN1,REC=IREC)G_ORD(J)
-        IREC = IREC + 1
-299   CONTINUE
-      DO 399 J=1,NG
-        READ(LUN0,REC=IREC)DEL_G(J)
-        WRITE(LUN1,REC=IREC)DEL_G(J)
-        IREC=IREC+1
-399   CONTINUE
-      IREC = 11 + 2*NG + 2
-      DO 301 J=1,NP
-        READ(LUN0,REC=IREC)PRESS1(J)
-        WRITE(LUN1,REC=IREC)PRESS1(J)
-        IREC = IREC + 1
-301   CONTINUE
-      DO 302 J=1,NT
-        READ(LUN0,REC=IREC)TEMP1(J)
-        WRITE(LUN1,REC=IREC)TEMP1(J)
-        IREC = IREC + 1
-302   CONTINUE
+      print*,'Current gas DELV, FWHM = ',DELV,FWHM
+      print*,'Enter new values : '
+      read*, DELV,FWHM
 
+      WRITE(LUN0,REC=4)DELV
+      WRITE(LUN0,REC=5)FWHM
 
-
-     IREC = IREC0
-
-      DO 10 I=1,NPOINT
-       DO 20 J=1,NP
-        DO 30 K=1,NT
-          DO 40 LOOP=1,NG
-            READ(LUN0,REC=IREC)KVAL
-            WRITE(LUN1,REC=IREC)KVAL
-            IREC = IREC + 1
-40        CONTINUE
-30      CONTINUE
-20     CONTINUE
-10    CONTINUE
 
       CLOSE(LUN0)
-      CLOSE(LUN1)
 
       END

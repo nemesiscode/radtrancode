@@ -43,14 +43,14 @@ C-----------------------------------------------------------------------
        PRINT*,NPOINT,MAXBIN
        STOP
       ENDIF
-      print*,IREC0,NPOINT
+      print*,'IREC0,NPOINT =',IREC0,NPOINT
       READ(LUN0,REC=3)VMIN
       READ(LUN0,REC=4)DELV
       READ(LUN0,REC=5)NP
       READ(LUN0,REC=6)NT
       READ(LUN0,REC=7)IDGAS
       READ(LUN0,REC=8)ISOGAS
-      print*,NP,NT,IDGAS,ISOGAS
+      print*,'NP,NT,IDGAS,ISOGAS = ',NP,NT,IDGAS,ISOGAS
 
 
 C-----------------------------------------------------------------------
@@ -84,8 +84,6 @@ C        print*,'B',temp(j)
 302    CONTINUE
       ENDIF
  
-C      print*,'Hurrah'
-
       RETURN
       END
 

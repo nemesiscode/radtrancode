@@ -43,13 +43,13 @@ C--------------------------------------------------------------
       INTEGER I,L,ISOGAS,IDGAS,ILAST,NLIN,NGAS,IFIRST,MAXLIN
       REAL YMIN,YMAX,VMIN,VMAX,DX,DY,DELV,DVMIN,DVLIN
       CHARACTER*100 BUFFER
-      INTEGER ISCALE,IXFORM,IYFORM
+      INTEGER ISCALE,IXFORM,IYFORM,IPTF
       CHARACTER*12 XFORM,YFORM
-      REAL SCALE
+      REAL SCALE,PARTF,TCORS1,TCORS2,TS1,TS2,TSTIM,DPEXP
       REAL VLIN(LINLIM),ALIN(LINLIM),ELIN(LINLIM),
      1 SBLIN(LINLIM),TDW(LINLIM),TDWS(LINLIM),PSHIFT(LINLIM),
      2 DOUBV(LINLIM)
-      DOUBLE PRECISION SLIN(LINLIM)
+      DOUBLE PRECISION SLIN(LINLIM),LNABSCO
       CHARACTER*15 LLQ(LINLIM)
       INTEGER IDLIN(LINLIM)
 C     variables relating to gases
@@ -73,6 +73,14 @@ C
       CALL RDISO
       CALL PROMPT('gas id, isotope code?')
       READ(*,*)IDGAS,ISOGAS
+      
+      IPTF=0
+      CALL PROMPT('Enter calculation temperature (296 default) : ')
+      READ(*,*)TEMP
+      
+      TCORS1 = PARTF(IDGAS,ISOGAS,TEMP,IPTF)
+      TCORS2 = 1.439*(TEMP - 296.)/(296.*TEMP)
+
       LINEAR=ASKYN('linear plot? [Y/N]')
       IF(POINTS)TDYPLT=.FALSE.
       CALL PROMPT('vmin,vmax?')
@@ -90,6 +98,21 @@ C     and very long plots
       WRITE(*,110)NLIN
 110   FORMAT(' found ',I8,' lines')
       IF(NLIN.EQ.0)STOP
+
+      DO 207 I=1,NLIN
+
+       TS1 = (1.0 - DPEXP(-1.439*VLIN(I)/TEMP))
+       TS2 = (1.0 - DPEXP(-1.439*VLIN(I)/296.0))
+       TSTIM=1.0
+       IF(TS2.NE.0.)TSTIM=TS1/TS2
+C       print*,SLIN(I)
+       LNABSCO=LOG(SLIN(I))+LOG(TCORS1)+TCORS2*ELIN(I)+LOG(TSTIM)
+       SLIN(I)=DEXP(LNABSCO)
+C       print*,LNSABSCO,LOG(TCORS1),TCORS2*ELIN(I),LOG(TSTIM)
+C       print*,SLIN(I)
+C       stop
+207   CONTINUE
+
       IF(LINEAR)THEN
         DO 203 I=1,NLIN
         YMAX=SNGL(MAX(DBLE(YMAX),SLIN(I)))

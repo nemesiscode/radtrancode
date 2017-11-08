@@ -507,11 +507,12 @@ C       Test to see if any vmrs have gone negative.
         do ivar = 1,nvar
          np=1
          if(varident(ivar,1).le.100)then
-           np=npvar(varident(ivar,3),npro)
+           np=npvar(varident(ivar,3),npro,varparam(ivar,1))
          endif
          if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
          if(varident(ivar,1).eq.887)np = int(varparam(ivar,1))
          if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
+         if(varident(ivar,1).eq.445)np = 3+int(varparam(ivar,1))
 
          do j=ix,ix+np-1
           if(varident(ivar,1).eq.0)then
@@ -657,6 +658,15 @@ C      Write out k-matrix for reference
 C      print*,'Calculating final covariance matrix'
       CALL calc_serr(nx,ny,sa,se,aa,dd,st,sn,sm)
 C      print*,'Matrix calculated'
+
+C     Make sure errors stay as a priori for kiter < 0
+      if(kiter.lt.0)then
+       do i=1,nx
+        do j=1,nx
+         st(i,j)=sa(i,j)
+        enddo
+       enddo
+      endif
 
       return
 

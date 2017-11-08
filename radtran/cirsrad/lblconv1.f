@@ -10,7 +10,7 @@ C
 C-----------------------------------------------------------------------
 
 	SUBROUTINE lblconv1(runname,fwhm, ishape,nwave, vwave, y, 
-     1    nconv, vconv,yout)
+     1    nconv, vconv,yout,FWHMEXIST,NFWHM,VFWHM,XFWHM)
 
 	IMPLICIT NONE
 
@@ -19,9 +19,10 @@ C       bins, paths, etc.)
 	INCLUDE '../includes/arrdef.f'
 
 	REAL		fwhm
-	INTEGER		nstep,ishape
+	INTEGER		nstep,ishape,NFWHM
 	PARAMETER	(nstep=20)
-
+        REAL            VFWHM(NFWHM),XFWHM(NFWHM),YFWHM
+        LOGICAL		FWHMEXIST
         INTEGER		nwave, nconv, nc, I, J,nconv1,nsub,k,nc1
         INTEGER		I1,I2
 	REAL		vwave(nwave), y(maxout), vconv(nconv),
@@ -32,6 +33,7 @@ C       bins, paths, etc.)
 	CHARACTER*100	runname
 C-----------------------------------------------------------------------
 
+        print*,'LBLCONV1 --> FWHM = ',FWHM
 
         IF(fwhm.gt.0.0)THEN
 
@@ -39,21 +41,28 @@ C        Set total width of Hamming/Hanning function window in terms of
 C        numbers of FWHMs for ISHAPE=3 and ISHAPE=4
          NFW = 3.
 
+    
+ 
          DO 101 J=1,NCONV
+          YFWHM=FWHM
+          IF(FWHMEXIST)THEN
+           CALL VERINT(VFWHM,XFWHM,NFWHM,YFWHM,VCONV(J))
+          ENDIF
+C          print*,'J,VCONV(J),YFWHM',J,VCONV(J),YFWHM
 C         Find limits of instrument width in wavenumbers
           IF(ISHAPE.EQ.0)THEN
-           V1=VCONV(J)-0.5*FWHM
-           V2=V1+FWHM
+           V1=VCONV(J)-0.5*YFWHM
+           V2=V1+YFWHM
           ELSEIF(ISHAPE.EQ.1)THEN
-           V1=VCONV(J)-FWHM
-           V2=VCONV(J)+FWHM
+           V1=VCONV(J)-YFWHM
+           V2=VCONV(J)+YFWHM
           ELSEIF(ISHAPE.EQ.2)THEN
-           SIG = 0.5*FWHM/SQRT(ALOG(2.0))
+           SIG = 0.5*YFWHM/SQRT(ALOG(2.0))
            V1=VCONV(J)-3.*SIG
            V2=VCONV(J)+3.*SIG
           ELSE
-           V1=VCONV(J)-NFW*FWHM
-           V2=VCONV(J)+NFW*FWHM
+           V1=VCONV(J)-NFW*YFWHM
+           V2=VCONV(J)+NFW*YFWHM
           ENDIF
           VCEN=VCONV(J)
 
@@ -85,18 +94,18 @@ C           Square Instrument Shape
             F1=1.0
            ELSEIF(ISHAPE.EQ.1)THEN
 C           Triangular Instrument Shape
-            F1=1.0 - ABS(VWAVE(I)-VCEN)/FWHM
+            F1=1.0 - ABS(VWAVE(I)-VCEN)/YFWHM
            ELSEIF(ISHAPE.EQ.2)THEN
 C           Gaussian Instrument Shape
             F1=EXP(-((VWAVE(I)-VCEN)/SIG)**2)
            ELSEIF(ISHAPE.EQ.3)THEN
 C           Hamming Instrument Shape
             XOFF = VWAVE(I)-VCEN
-            F1 = HAMMING(FWHM,XOFF)
+            F1 = HAMMING(YFWHM,XOFF)
            ELSEIF(ISHAPE.EQ.4)THEN
 C           Hanning Instrument Shape
             XOFF = VWAVE(I)-VCEN
-            F1 = HANNING(FWHM,XOFF)
+            F1 = HANNING(YFWHM,XOFF)
            ELSE
             F1=0.
            ENDIF

@@ -88,13 +88,13 @@ C     ************************ VARIABLES *******************************
 C     Set measurement vector and source vector lengths here.
       include '../radtran/includes/arrdef.f'
       INCLUDE 'arraylen.f'
-      integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,jsurf
+      integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,j3,j4,jsurf
       integer jalb,jalbx,jtan,jtanx,jpre,jprex,ilbl,jrad,jradx
       integer iprfcheck,iplanet,lx(mx),jlogg,jloggx,jxsc,jxscx
       real phlimit,alambda,xtry,tphi,abstphi
       integer xflag,ierr,ncont,flagh2p,npro1,jpara
       real xdnu,xmap(maxv,maxgas+2+maxcon,maxpro)
-      CHARACTER*100 runname,itname,abort,aname,buffer
+      CHARACTER*100 runname,itname,abort,aname,buffer,rdw
 
       
       real xn(mx),se1(my),se(my,my),calc_phiret,sf(my,my)
@@ -112,17 +112,24 @@ C     Set measurement vector and source vector lengths here.
       integer ngeom, nwave(mgeom), nconv(mgeom), nx, ny, nxf,ivar,ivarx
       real vwave(mgeom,mwave),vconv(mgeom,mconv),angles(mgeom,mav,3)
       real xa(mx),kk1(my,mx),sa(mx,mx),y(my),yn(my),kkx(my,mx)
-      real yn1(my),s1(mx,mx),kk(my,mx)
+      real yn1(my),s1(mx,mx),kk(my,mx),kkold(my,mx),ynold(my)
       real wgeom(mgeom,mav),flat(mgeom,mav)
       real vwaveT(mwave),vconvT(mconv)
-      integer nwaveT,nconvT,npvar,jj
-      logical gasgiant,abexist,ntest,isnan
+      integer nwaveT,nconvT,npvar,jj,nyfull,tmpvarint,iterred
+      logical gasgiant,abexist,ntest,isnan,redwavbool,finalbool
 
       double precision s1d(mx,mx),sai(mx,mx)
       double precision s1e(my,my),sei(my,my)
       double precision dd(mx,my),aa(mx,mx)
 
-      real phi,ophi,chisq,xchi,oxchi
+      integer nconvfull(mgeom),nwavefull(mgeom),igeom,igeom2,irank
+      integer nrdw(mgeom),rdwindices(mgeom,mconv),rdwi1,rdwi2,maxirank
+      real vwavefull(mgeom,mwave),vconvfull(mgeom,mconv),yfull(my)
+      real vconvi(mgeom,mconv),vwavei(mgeom,mwave),seold(my,my)
+      integer nconvi(mgeom),nwavei(mgeom),rdwindicesi(mgeom,mconv)
+      integer rank(mgeom,mconv),nconvold(mgeom),rankdiff
+
+      real phi,ophi,chisq,xchi,oxchi,tmpvar
 C     **************************** CODE ********************************
 
 C     ++++++++++++++++++ Read in extra parameters to test vmr profile +++
@@ -151,6 +158,48 @@ C     First skip header
 1     FORMAT(A)
 
 C     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+C     If a reduced wavelength grid exists, do as many iterations of the retrieval as possible
+C     using the reduced grid to save time, and then do the final few iterations using the full grid.
+      finalbool = .false.
+      call file(runname,rdw,'rdw')
+      inquire(file=rdw,exist=redwavbool)
+      if(redwavbool)then
+C      Store full wavelength grid parameters
+       nconvfull=nconv
+       vconvfull=vconv
+       nwavefull=nwave
+       vwavefull=vwave
+       nyfull=ny
+       yfull=y
+
+C      Read in reduced wavelength grid
+       irank=1
+       rankdiff = 1
+       call readrdw(rdw,nconvfull,vconvfull,ngeom,nconv,vconv,
+     1  rdwindices,rank,irank,nconvi,vconvi,rdwindicesi,maxirank,
+     2  rankdiff)
+       nwave=nconv
+       ny=0
+       do igeom=1,ngeom
+        ny=ny+nconv(igeom)
+        vwave(igeom,1:nwave(igeom))=vconv(igeom,1:nconv(igeom))
+       enddo
+       do i=1,my
+        y(i)=0.0
+       enddo
+       j1=0
+       j2=0
+       do igeom=1,ngeom
+        do i=1,nwave(igeom)
+         tmpvarint=rdwindices(igeom,i)+j1
+         y(i+j2)=yfull(tmpvarint)
+        enddo
+        j1=j1+nwavefull(igeom)
+        j2=j2+nwave(igeom)
+       enddo
+      endif
+      iterred=1!iteration at which to commence retrieval
 
       if(ilbl.eq.0.or.ilbl.eq.2)then
 C      Find all the calculation and convolution wavelengths and rank
@@ -202,10 +251,24 @@ C     Initialise s1e and se
        enddo
       enddo
 
-      do i=1,ny
+      if(redwavbool.eqv..true.)then
+       j1=0
+       j2=0
+       do igeom=1,ngeom
+        do i=1,nconv(igeom)
+         rdwi1=rdwindices(igeom,i)+j1
+         se(j2+i,j2+i)=se1(rdwi1)
+         sei(j2+i,j2+i)=1.0/dble(se1(rdwi1))
+        enddo
+        j1=j1+nwavefull(igeom)
+        j2=j2+nconv(igeom)
+       enddo
+      else
+       do i=1,ny
         se(i,i)=se1(i)
         sei(i,i)=1.0/dble(se1(i))
-      enddo
+       enddo
+      endif
 
 
       CALL readrefiplan(runname,iplanet,xlat,RADIUS)
@@ -291,15 +354,16 @@ C      Calc. gradient of all elements of xnx matrix.
      3     jradx,jloggx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,
      4	   iprfcheck)
          endif
-        elseif(iscat.eq.1.or.iscat.eq.3.or.iscat.eq.4)then
-         print*,'Calling forwardnogX - A'
+       elseif(iscat.eq.1.or.iscat.eq.3.or.iscat.eq.4)then
+         print*,'Calling forwardnogX - A1. iscat = ',iscat
          CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2    nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
      3    jradx,jloggx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,
      4	  iprfcheck)
-        elseif(iscat.eq.2)then
-         print*,'Calling intradfield - A'
+         print*,'forwardnogX - A1 - called OK'
+       elseif(iscat.eq.2)then
+         print*,'Calling intradfield - A1'
          CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1    vconvT,gasgiant,lin0,nvarx,varidentx,
      2    varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
@@ -310,7 +374,7 @@ C      Calc. gradient of all elements of xnx matrix.
      2    nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
      3    jradx,jloggx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,
      4	  iprfcheck)
-        else
+       else
          print*,'Coreret: iscat invalid',iscat
          stop
         endif
@@ -324,11 +388,13 @@ C        this run.
      1  kkx,stx,nxx)
        endif
 
+       print*,'Calc forward model error'
        call calcfwderr(nxx,ny,kkx,stx,sf)
 
 C      Add effect of previous retrieval errors to measurement covariance
 C      matrix
 
+       print*,'Writing sef file'
        call file(runname,runname,'sef')
        open(35,file=runname,status='unknown')
        write(35,*)'Additional measurement covariance matrix due to'
@@ -350,6 +416,7 @@ C      Recalculate inverse of se
         enddo
        enddo
 
+       print*,'Calculating inverse'
 C      Calculate inverse of se
        jmod = 2
        icheck=0
@@ -361,11 +428,11 @@ C      Calculate inverse of se
         print*,'***********************************'
         stop
        endif
+       print*,'Inverse OK'
+      endif 
 
-      endif
 
-
-      if(ilbl.eq.1)then
+198   if(ilbl.eq.1)then
          print*,'Calling forwardnoglbl - B'
          CALL forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,nconv,vconv,angles,gasgiant,lin,
@@ -393,7 +460,8 @@ C        print*,'forwardavfovX OK, jpre = ',jpre
 
        elseif(iscat.eq.1.or.iscat.eq.3.or.iscat.eq.4)then
 
-        print*,'Calling forwardnogX - B' 
+        print*,'Calling forwardnogX - B1, iscat = ',iscat
+
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
@@ -426,7 +494,7 @@ C        print*,'forwardnogX OK, jpre = ',jpre
 
 
 C     Now calculate the gain matrix and averaging kernels
-      call calc_gain_matrix(nx,ny,kk,sa,sai,se,sei,dd,aa)
+199   call calc_gain_matrix(nx,ny,kk,sa,sai,se,sei,dd,aa)
 
 C     Calculate initial value of cost function phi.
       phi = calc_phiret(ny,y,yn,sei,nx,xn,xa,sai,chisq)
@@ -438,9 +506,14 @@ C     Assess whether retrieval is likely to be OK
       call assess(nx,ny,kk,sa,se)
  
       if(ica.eq.1)then       ! Open and write only for single spec ret.
-       call file(runname,itname,'itr')
-       open(37,file=itname,status='unknown')
-       write(37,*)nx,ny,kiter
+       inquire(file=itname, number=tmpvarint)!check that .itr file hasn't already been opened before opening it
+       if(tmpvarint.ne.37)then
+        call file(runname,itname,'itr')
+        open(37,file=itname,status='unknown')
+        write(37,*)'' 
+       else
+        write(37,*)'###'
+       endif
       endif
 
 C     alambda is a Marquardt-Levenberg-type 'braking parameter'
@@ -456,9 +529,11 @@ C     vectors xn, yn
        yn1(i)=yn(i)
       enddo
 
-      do 401 iter = 1, kiter
+      do 401 iter = iterred, kiter
 
         if(ica.eq.1)then
+         write(37,*)''
+         write(37,*)nx,ny,kiter
          write(37,*)chisq,phi
          write(37,*)(xn1(i),i=1,nx)
          write(37,*)(xa(i),i=1,nx)
@@ -513,16 +588,18 @@ C       Test to see if any vmrs have gone negative.
         do ivar = 1,nvar
          np=1
          if(varident(ivar,1).le.100)then
-           np=npvar(varident(ivar,3),npro)
+           np=npvar(varident(ivar,3),npro,varparam(ivar,1))
          endif
          if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
          if(varident(ivar,1).eq.887)np = int(varparam(ivar,1))
          if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
+         if(varident(ivar,1).eq.445)np = 3+int(varparam(ivar,1))
          if(varident(ivar,1).eq.222)np = 8
          if(varident(ivar,1).eq.223)np = 9
          if(varident(ivar,1).eq.224)np = 9
          if(varident(ivar,1).eq.225)np = 11
          if(varident(ivar,1).eq.226)np = 8
+         if(varident(ivar,1).eq.227)np = 7
 
          do j=ix,ix+np-1
           if(varident(ivar,1).eq.0)then
@@ -555,6 +632,68 @@ C       Test to see if any vmrs have gone negative.
              goto 401
            endif
           endif
+
+          if(varident(ivar,1).eq.445.and.j.eq.ix+1)then
+           if(exp(xn1(j)).lt.0.01)then
+             print*,'Variance of size distribution gone too small',
+     1		exp(xn1(j))
+             print*,'Increase alambda',alambda
+             alambda = alambda*10.0		! increase Marquardt brake
+             if(alambda.gt.1e10)alambda=1e10
+             goto 401
+           endif
+          endif
+
+          if(varident(ivar,1).eq.445.and.j.eq.ix+2)then
+           if(xn1(j).ge.0)then
+             print*,'Particle shell:core ratio greater than 1',
+     1		exp(xn1(j))
+             print*,'Increase alambda',alambda
+             alambda = alambda*10.0		! increase Marquardt brake
+             if(alambda.gt.1e10)alambda=1e10
+             goto 401
+           endif
+          endif
+
+          if(varident(ivar,1).eq.227.and.j.eq.ix)then!if TC altitude is too low (MIGHT NEED TO CHANGE THIS FOR OTHER WAVELENGTHS)
+           if(exp(xn1(j)).gt.5)then
+              print*,'TC altitude too low:',exp(xn1(j))
+              print*,'Increase alambda',alambda
+              alambda = alambda*10.0		! increase Marquardt brake
+              if(alambda.gt.1e10)alambda=1e10
+              goto 401
+           endif
+          endif
+
+          if(varident(ivar,1).eq.227.and.j.eq.ix+1)then!if TC opacity becomes too large
+           if(exp(xn1(j)).ge.1000)then
+              print*,'TC opacity too high:',exp(xn1(j))
+              print*,'Increase alambda',alambda
+              alambda = alambda*10.0		! increase Marquardt brake
+              if(alambda.gt.1e10)alambda=1e10
+              goto 401
+           endif
+          endif
+
+          if(varident(ivar,1).eq.227.and.j.eq.ix+3)then!if CB altitude goes above SH altitude or below TC base altitude, or if TC becomes too narrow
+           if(varparam(ivar,1).eq.0)then
+            tmpvar = 0.9
+           else
+            tmpvar = varparam(ivar,1)
+           endif
+           if(exp(xn1(j-3)).lt.1.5*exp(xn1(j)).or.
+     1       (tmpvar*exp(xn1(j)))-0.02.lt.exp(xn1(j+2)))then
+              print*,'Breakdown of cloud structure:'
+              print*,'TC base pressure = ',exp(xn1(j-3))
+              print*,'CB pressure = ',exp(xn1(j))
+              print*,'SH pressure = ',exp(xn1(j+2))
+              print*,'Increase alambda',alambda
+              alambda = alambda*10.0		! increase Marquardt brake
+              if(alambda.gt.1e10)alambda=1e10
+              goto 401
+           endif
+          endif
+
 
          enddo
          ix=ix+np
@@ -654,13 +793,16 @@ C           Has solution converged?
               print*,'Phi has converged'
               print*,'Terminating retrieval'
               oxchi=xchi
-              GOTO 202                   
+              if((redwavbool.eqv..true.).and.(irank.lt.maxirank))then
+               GOTO 201
+              else
+               GOTO 202     
+              endif              
             else
               ophi=phi
               oxchi = xchi
               alambda = alambda*0.3		! reduce Marquardt brake
             endif
-
           
         elseif (iter.ge.5.and.abstphi.le.phlimit)then
 C       If phi > ophi, accept new xn and kk only if current solution 
@@ -690,13 +832,34 @@ C              If lambda is close to 1.0 or greater when condition met, accept t
 	       endif	
 	       print*,'Terminating retrieval under alternate conditions'
                oxchi=xchi
-	       GOTO 202 
+               if((redwavbool.eqv..true.).and.(irank.lt.maxirank))then
+                GOTO 201
+               else
+                GOTO 202     
+               endif   
 	    endif														
 							
 C	    If alternate criterions aren't met either, leave xn and kk alone and try again with more braking
 	else
             alambda = alambda*10.0		! increase Marquardt brake
             if(alambda.gt.1e10)alambda=1e10
+        endif
+
+
+C       If a reduced wavelength grid is being used but the retrieval still hasn't converged to a solution, 
+C       perform the last 2 iterations using the highest-ranked grid
+        if((redwavbool.eqv..true.).and.(iter.ge.kiter-2).and.
+     1   (finalbool.eqv..false.))then
+         if((iter.ge.2).and.(irank.lt.maxirank)) then 
+          rankdiff = maxirank - irank
+          irank = maxirank - 1
+          finalbool = .true.
+          print*, 'Replacing current wavelength grid with'
+          print*, 'highest-ranked grid for last few iterations'
+          goto 201
+         else
+          goto 202
+         endif
         endif
 
 
@@ -713,6 +876,111 @@ C	    If alternate criterions aren't met either, leave xn and kk alone and try a
         endif
        
 401   continue       
+
+C     If using the reduced wavelength scheme
+201   if(redwavbool.eqv..true.)then
+
+       irank = irank + 1
+      
+C      Extend wavelength grid to next-ranked wavelengths, re-initialise measurement vector/covariance matrix
+C      and run initial forward model again using extended grid
+       if(irank.le.maxirank)then
+       nconvold = nconv
+       call readrdw(rdw,nconvfull,vconvfull,ngeom,nconv,vconv,
+     1  rdwindices,rank,irank,nconvi,vconvi,rdwindicesi,maxirank,
+     2  rankdiff)
+        nwave=nconv
+        nwavei=nconvi
+        ny=0
+        do igeom=1,ngeom
+         ny=ny+nconv(igeom)
+         vwave(igeom,1:nwave(igeom))=vconv(igeom,1:nconv(igeom))
+         vwavei(igeom,1:nwavei(igeom))=vconvi(igeom,1:nconvi(igeom))
+        enddo
+        do i=1,my
+         y(i)=0.0
+        enddo
+        j1=0
+        j2=0
+        do igeom=1,ngeom
+         do i=1,nwave(igeom)
+          tmpvarint=rdwindices(igeom,i)+j1
+          y(i+j2)=yfull(tmpvarint)
+         enddo
+         j1=j1+nwavefull(igeom)
+         j2=j2+nwave(igeom)
+        enddo
+
+C       Re-initialise s1e and se
+        do i=1,my
+         do j=1,my
+          sei(i,j)=0.0
+          se(i,j)=0.0
+         enddo
+        enddo
+
+        j1=0
+        j2=0
+        do igeom=1,ngeom
+         do i=1,nconv(igeom)
+          rdwi1=rdwindices(igeom,i)+j1
+          se(j2+i,j2+i)=se1(rdwi1)
+          sei(j2+i,j2+i)=1.0/dble(se1(rdwi1))
+         enddo
+         j1=j1+nwavefull(igeom)
+         j2=j2+nconv(igeom)
+        enddo
+        
+
+        iterred=iter+1
+
+        if((iscat.eq.1.or.iscat.ge.3).and.(ilbl.ne.1))then
+
+         kkold = kk
+         ynold = yn
+
+         print*,'Performing forward model on new wavelengths'
+         print*,'Calling forwardnogX - D'
+         CALL forwardnogXrdw(runname,ispace,iscat,fwhm,ngeom,nav,
+     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
+     3     jlogg,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck,
+     4     rdwindicesi,kkold,nconvi,vconvi,ynold)
+
+           if(ilbl.eq.0.or.ilbl.eq.2)then
+C          Find all the calculation and convolution wavelengths and rank
+C          in order
+
+            call rankwave(ngeom,nwave,vwave,nconv,vconv,nwaveT,vwaveT,
+     1       nconvT,vconvT)
+
+           endif
+           goto 199
+        else
+         print*,'Warning coreret.f: '
+         print*,'forwardnoglbl.f, forwardavfovX.f and intradfield.f'
+         print*,'not yet completely optimised for reduced wavelength'
+         print*,'scheme. Refer to forwardnogXrdw.f for reference.'
+
+         if(ilbl.eq.0.or.ilbl.eq.2)then
+C        Find all the calculation and convolution wavelengths and rank
+C        in order
+
+          call rankwave(ngeom,nwave,vwave,nconv,vconv,nwaveT,vwaveT,
+     1     nconvT,vconvT)
+
+         endif
+         goto 198
+        endif
+C      
+       else
+        
+        print*, 'Highest-ranked wavelength grid reached. Ending run.'
+        goto 202         
+
+       endif
+
+      endif
 
 202   if(ica.eq.1)close(37)
 
@@ -738,6 +1006,15 @@ C      print*,'chisq/ny is equal to : ',chisq/float(ny)
       CALL calc_serr(nx,ny,sa,se,aa,dd,st,sn,sm)
       print*,'Matrix calculated'
 
+C     Make sure errors stay as a priori for kiter < 0
+      if(kiter.lt.0)then
+       do i=1,nx
+        do j=1,nx
+         st(i,j)=sa(i,j)
+        enddo
+       enddo
+      endif
+      
       return
 
       end

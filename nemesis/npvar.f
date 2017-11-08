@@ -1,4 +1,4 @@
-      integer function npvar(imod,npro)
+      integer function npvar(imod,npro,vpar1)
 C     **************************************************************
 C     Simple function to define the number of elements in the measurement
 C     vector, xn, needed to describe an atmospheric profile, depending on
@@ -7,6 +7,7 @@ C
 C     Input variable
 C	imod	integer	Require parameterisation scheme ID.
 C  	npro	integer	Number of vertical levels in .ref file
+C	vpar1	real	varparam(ivar,1)
 C
 C     Output variable
 C	npvar	integer	Number of elements in xn required.
@@ -16,9 +17,10 @@ C
 C     **************************************************************
       implicit none
       integer imod,np,npro
+      real vpar1
 
       np=1
-      if(imod.le.21)then
+      if(imod.le.26)then
         if(imod.eq.0)np = npro
         if(imod.eq.1)np = 2
         if(imod.eq.4)np = 3
@@ -38,6 +40,11 @@ C     **************************************************************
         if(imod.eq.19)np = 4
         if(imod.eq.20)np = 2
         if(imod.eq.21)np = 2
+        if(imod.eq.22)np = 5
+        if(imod.eq.23)np = 4
+        if(imod.eq.24)np = 3
+        if(imod.eq.25)np = int(vpar1)
+        if(imod.eq.26)np = 4
       else
        print*,'npvar:  Model parameterisation not defined = ',imod
       endif

@@ -69,6 +69,7 @@ bin :   \
 	Makeciatable \
 	Makeisotable \
 	Makefptable \
+	Makefptable_allcia \
 	Testfracpara
 
 Makeciatable: makeciatable.f $(LIBRARY)
@@ -79,6 +80,10 @@ Makeisotable: makeisotable.f $(LIBRARY)
 
 Makefptable: makefptable.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Makefptable makefptable.f $(LIBRARY)
+
+Makefptable_allcia: makefptable_allcia.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Makefptable_allcia makefptable_allcia.f $(LIBRARY)
+
 
 Testfracpara: testfracpara.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Testfracpara testfracpara.f $(LIBRARY)

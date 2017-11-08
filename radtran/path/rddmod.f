@@ -63,12 +63,13 @@ C First skip header (if any)
       READ(BUFFER,*)NN,NDUST
       WRITE(*,*)' RDDMOD.f :: dust-model has ',ndust,' aerosol types'
       NCONT = NDUST
-      IF(CLOUDflag.ne.1)then
-       DO 105 J=1,NN
+      
+      DO 105 J=1,NN
          READ(ILUN,*)DUSTH(J),(DUST(I,J),I=1,NDUST)
 C        WRITE(*,*)DUSTH(J),(DUST(I,J),I=1,NDUST)
-105    CONTINUE
-      ELSE
+105   CONTINUE
+
+      IF(MCMCflag.eq.1)then
        DO 106 J=1,NN
         DUSTH(J)=MCMCheight(J)
 106    CONTINUE

@@ -65,7 +65,7 @@ C Reading in in vertical profiles produced by profile.f
       CALL locase(ipfile)
 
       CALL file(ipfile,ipfile,'prf')
-      print*,'len = ',len(ipfile)
+
       WRITE(*,*)' RDMOD.f :: reading model: ',ipfile
       OPEN(UNIT=ilun,FILE=ipfile,STATUS='OLD')
 C First skip the header (if any)
@@ -97,16 +97,19 @@ C        print*,id(i),iso(i)
 30    CONTINUE
       CLOSE(UNIT=82)
 
-      IF(VMRflag.eq.1)THEN
+
+      IF(MCMCflag.eq.1)THEN
        DO 120 I=1,NPRO
         DO 130 J=1, NVMR
-         VMR(I,J) = MCMCvmr(J)
+         VMR(I,J) = MCMCvmr(I,J)
 130     CONTINUE
         T(I) = MCMCtemp(i)
         H(I) = MCMCheight(i)
+        P(I) = MCMCpres(i)
 120    CONTINUE
 
       ENDIF
+       
 
       MODEL = .TRUE.
       LAYERS = .FALSE.

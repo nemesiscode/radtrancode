@@ -82,6 +82,29 @@ for ivar=0,nvar-1 do begin
   erra(istart)=tmp(1)
  endif 
 
+ if(itype eq 4 or itype eq 24) then begin
+  np = 3
+  tmp = fltarr(2,np)
+  readf,5,tmp
+  xa(istart:istart+2)=tmp(0,*)
+  erra(istart:istart+2)=tmp(1,*)
+ endif 
+
+ if(itype eq 25) then begin
+  apfile=''
+  readf,5,apfile
+  apfile = strcompress(apfile,/REMOVE_ALL)
+  openr,6,apfile
+   readf,6,np,clen
+   data = fltarr(3,np)
+   readf,6,data
+  close,6
+  varparam(ivar,0) = np 
+  xa(istart:istart+np-1)=data(1,*)
+  erra(istart:istart+np-1)=data(2,*)
+  varparam(ivar,1:np) = data(0,*)
+ endif 
+
  if(itype eq 8 or itype eq 9) then begin
   np = 3
   tmp = fltarr(2,np)
@@ -214,6 +237,17 @@ for ivar=0,nvar-1 do begin
 
  endif
 
+ if(itype eq 227)then begin
+  np = 7
+  tmp = fltarr(2,np)
+  readf,5,tmp
+  xa(istart:istart+np-1)=tmp(0,*)
+  erra(istart:istart+np-1)=tmp(1,*)
+  tmp = 1.0
+  readf,5,tmp
+  varparam(ivar, 1) = tmp
+ endif
+
  if(itype eq 444)then begin
   cloudfil=''
   readf,5,cloudfil
@@ -242,6 +276,39 @@ for ivar=0,nvar-1 do begin
    readf,10,tmp
    xa(istart+2:istart+2+nlam-1)=tmp(1,*)
    erra(istart+2:istart+2+nlam-1)=tmp(2,*)
+   walb=fltarr(nlam)
+   walb(*)=tmp(0,*)
+  close,10
+  np=np+nlam
+ endif
+
+ if(itype eq 445)then begin
+  cloudfil=''
+  readf,5,cloudfil
+  openr,10,cloudfil
+   np=3
+   tmp=fltarr(2,np)
+   print, 'tmp = ', tmp
+   readf,10,tmp
+   print,tmp
+   xa(istart:istart+2)=tmp(0,*)
+   erra(istart:istart+2)=tmp(1,*)
+   tmp=1
+   readf,10,tmp
+   tmp=fltarr(2)
+   readf,10,tmp
+   nlam=tmp(0)
+   print,'nlam = ',nlam
+   varparam(ivar,0:1) = tmp(*)
+   readf,10,tmp
+   varparam(ivar,2:3) = tmp(*)
+   xlam=1.
+   readf,10,xlam
+   varparam(ivar,4) = xlam
+   tmp=fltarr(3,nlam)
+   readf,10,tmp
+   xa(istart+3:istart+3+nlam-1)=tmp(1,*)
+   erra(istart+3:istart+3+nlam-1)=tmp(2,*)
    walb=fltarr(nlam)
    walb(*)=tmp(0,*)
   close,10

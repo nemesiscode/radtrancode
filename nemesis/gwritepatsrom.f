@@ -144,9 +144,9 @@ C     sol_ang is then the tangent altitude)
       nlaybot=4
       nlaytop=5
       if(iflagsrom.eq.226)then
-        nlayg=2
-        nlaybot=10
-        nlaytop=20
+        nlayg=20
+        nlaybot=5
+        nlaytop=4
       endif
       write(31,2)'nlayg ',nlayg
       write(31,2)'nlaybot ',nlaybot

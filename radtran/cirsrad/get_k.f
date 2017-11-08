@@ -338,6 +338,7 @@ C             print*,'weight',vwave,tmp,weight(1),weight(2)
            else
              weight(1)=frac
              weight(2)=1.0-frac
+
            endif
 C           print*,'vwave,Weight : ',vwave,weight(1),weight(2)
            NTAB = NP*ABS(NT)*NG
@@ -396,7 +397,8 @@ C           print*,igas,K_G(I)
            IF(NTEST)THEN
             KOUT(LAYER,IGAS,I)=1e-37
             PRINT*,'Warning, NAN returned by get_k.f for gas',igas
-            stop
+            PRINT*,'Setting to zero here, but should check files'
+            PRINT*,'VWAVE, IG = ',vwave,I
            ELSE
             KOUT(LAYER,IGAS,I)=K_G(I)
            ENDIF

@@ -123,12 +123,16 @@ C=======================================================================
 100       FORMAT(I2,I1,F12.6,A10,E10.3,F5.4,F5.4,F10.4,F4.2,8X,I3,I3,
      1    A9,A9,3I1,3I2)
           TDOUBV= 0.0
-        ELSE IF(DBRECL.EQ.112)THEN
+        ELSEIF(DBRECL.EQ.112)THEN
           READ(BUFFER,105)TNID,TNISO,TNWAVE,TNSTR,TNPROB,TNWIDA,TNWIDS,
      1    TNLSE,TNTDEP,TNUGQI,TNLGQI,TNULQ,TNLLQ,TNACC,TNREF,TDOUBV
 105       FORMAT(I2,I1,F12.6,A10,E10.3,F5.4,F5.4,F10.4,F4.2,8X,I3,I3,
      1    A9,A9,3I1,3I2,F12.7)
-        ELSE IF(DBRECL.EQ.160)THEN
+        ELSEIF(DBRECL.EQ.52)THEN
+           READ(BUFFER,207)TNID,TNISO,TNWAVE,TNSTR,
+     1     TNLSE,TNWIDA,TNTDEP,TNWIDS,TNTDEPS
+207        FORMAT(I2,I1,F12.6,A10,F10.4,F5.4,F3.2,F6.4,F3.2)
+        ELSEIF(DBRECL.EQ.160)THEN
           READ(BUFFER,107)TNID,TNISO,TNWAVE,TNSTR,TNEINA,TNWIDA,TNWIDS,
      1     TNLSE,TNTDEP,TNUGQ04,TNLGQ04,TNULQ04,TNLLQ04,TNACC04,
      2     TNREF04,TNFLAG,TNUWGHT,TNLWGHT
@@ -142,8 +146,7 @@ C=======================================================================
           WRITE(*,*)' DBFORM, DBRECL = ',DBFORM,DBRECL
           STOP
         ENDIF 
-        LNTDEPS= LNTDEP
-      ELSE IF(DBFORM.EQ.1)THEN
+      ELSEIF(DBFORM.EQ.1)THEN
 C=======================================================================
 C
 C	GEISA (either of 80-, 120- or 211-character formats)
@@ -168,7 +171,7 @@ C Also ignores quantum numbers in this format.
           TNREF(1)= 0
           TNREF(2)= 0
           TNREF(3)= 0
-        ELSE IF(DBRECL.EQ.80)THEN
+        ELSEIF(DBRECL.EQ.80)THEN
           READ(BUFFER,210)TNWAVE,TNSTR,TNWIDA,TNLSE,QGEISA80,
      1    TNTDEP,TNISO,TNID
 210       FORMAT(F10.3,A10,F5.3,F10.3,A35,A3,I4,I3)
@@ -187,7 +190,7 @@ C Also ignores quantum numbers in this format.
           TNREF(1)= 0
           TNREF(2)= 0
           TNREF(3)= 0
-        ELSE IF(DBRECL.EQ.120)THEN
+        ELSEIF(DBRECL.EQ.120)THEN
           READ(BUFFER,205)TNWAVE,TNSTR,TNWIDA,TNLSE,QGEISA120,
      1    TNTDEP,TNISO,TNID,TNPROB,TNWIDS,TNPSH,TNACC,TNREF
 205       FORMAT(F10.3,A10,F5.3,F10.3,A36,F4.2,I4,I3,6X,
@@ -196,7 +199,7 @@ C Also ignores quantum numbers in this format.
           TNLGQI= 0
           TNULQ= ' '
           TNLLQ= ' '
-        ELSE IF(DBRECL.EQ.211)THEN
+        ELSEIF(DBRECL.EQ.211)THEN
           READ(BUFFER,206)TNWAVE,TNSTR,TNWIDA,TNLSE,QGEISA120,
      1    TNTDEP,TNISO,TNID,TNPROB,TNWIDS,TNPSH,TNACC,TNREF
 206       FORMAT(F12.6,1X,A10,F6.4,F10.4,A36,F4.2,I3,I3,6X,
@@ -238,7 +241,7 @@ C=======================================================================
         IF(DBFORM.EQ.0)THEN
 C HITRAN format
           TNWIDS= TNWIDA
-        ELSE IF(DBFORM.EQ.1)THEN
+        ELSEIF(DBFORM.EQ.1)THEN
 C GEISA format; GEISA does not include self broadened widths
         ELSE
           WRITE(*,*)' EDLINE.f :: invalid line format.'
@@ -375,16 +378,16 @@ C=======================================================================
           ENDIF
           IF(TNLLQ(5:5).EQ.'R')THEN
             I= 2*I + 2
-          ELSE IF(TNLLQ(5:5).EQ.'P')THEN
+          ELSEIF(TNLLQ(5:5).EQ.'P')THEN
             I= 2*I
-          ELSE IF(TNLLQ(5:5).EQ.'Q')THEN
+          ELSEIF(TNLLQ(5:5).EQ.'Q')THEN
             I= 2*I + 1
           ENDIF
           TNWIDS= YACO2(I)*1.1/1.013246
           TNWIDA= YAN2(I)*1.1/1.013246
           TNTDEP= YNN2(I)
           TNPROB= YNCO2(I)
-        ELSE IF(TNID.EQ.1)THEN
+        ELSEIF(TNID.EQ.1)THEN
           TNTDEP= 0.5
           TNWIDA= TNWIDA/1.013246
           TNWIDS= TNWIDA*6.5
@@ -406,9 +409,9 @@ C=======================================================================
           ENDIF
           IF(TNLLQ(5:5).EQ.'R')THEN
             I= 2*I + 2
-          ELSE IF(TNLLQ(5:5).EQ.'P')THEN
+          ELSEIF(TNLLQ(5:5).EQ.'P')THEN
             I= 2*I
-          ELSE IF(TNLLQ(5:5).EQ.'Q')THEN
+          ELSEIF(TNLLQ(5:5).EQ.'Q')THEN
             I= 2*I + 1
           ENDIF
           IF(TNWIDS.EQ.0.0)TNWIDS= YACO2(I)/1.013246
@@ -716,6 +719,9 @@ C=======================================================================
      1    A9,A9,3I1,3I2)
 1061      FORMAT(I2,I1,F12.6,A10,E10.3,F5.4,F5.3,F10.4,F4.2,F8.5,I3,I3,
      1    A9,A9,3I1,3I2)
+        ELSE IF(DBRECL.EQ.52)THEN
+           WRITE(BUFFER,207)TNID,TNISO,TNWAVE,TNSTR,
+     1     TNLSE,TNWIDA,TNTDEP,TNWIDS,TNTDEPS
         ELSE IF(DBRECL.EQ.112)THEN
 	   IF (TNWIDS.LT.1.0) THEN
           WRITE(BUFFER,111)TNID,TNISO,TNWAVE,TNSTR,TNPROB,TNWIDA,TNWIDS,

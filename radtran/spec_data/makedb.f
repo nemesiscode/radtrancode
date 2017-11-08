@@ -150,6 +150,9 @@ C       direct under Unix
       ELSEIF(DBRECL.EQ.160)THEN
         ISOFIL='/home/oxpln98/plan/teanby/linedata/lib/isotopes_h2k.dat'
         DBFORM=0
+      ELSEIF(DBRECL.EQ.52)THEN
+        ISOFIL='/home/oxpln98/plan/teanby/linedata/lib/isotopes_h2k.dat'
+        DBFORM=0
       ELSE
         ISOFIL='/home/oxpln98/plan/teanby/linedata/lib/isotopes_g97.dat'
         DBFORM=1
@@ -194,13 +197,13 @@ C     creating the key file
       WRITE(*,23)INDFIL
       WRITE(*,24)GASFIL
       WRITE(*,25)ISOFIL
-20    FORMAT(1X,A)
-21    FORMAT(1X,A)
-22    FORMAT(1X,A)
-23    FORMAT(1X,A)
-24    FORMAT(1X,A)
-25    FORMAT(1X,A)
-26    FORMAT(1X,A)
+20    FORMAT(A)
+21    FORMAT(A)
+22    FORMAT(A)
+23    FORMAT(A)
+24    FORMAT(A)
+25    FORMAT(A)
+26    FORMAT(A)
 C
       IF(OLDFIL)THEN
 C       just need to find size of data base

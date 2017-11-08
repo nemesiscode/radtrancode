@@ -1,6 +1,6 @@
 pro readsvp,ngas,idsvp,svp
 
-openr,2,'/home/oxpln98/plan/irwin/baldrick/raddata/SVP.dat'
+openr,2,'$HOME/radtrancode/raddata/SVP.dat'
 comment = ''
 loop1 : readf,2,comment
         if (strmid(comment,0,1) eq '#') then goto,loop1 

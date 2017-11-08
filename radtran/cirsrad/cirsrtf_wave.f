@@ -51,13 +51,17 @@ C       Defines the maximum values for a series of variables (layers,
 C         bins, paths, etc.)
 	INCLUDE '../includes/arrdef.f'
 
-        CHARACTER*100	opfile,sfile
+        CHARACTER*100	opfile,sfile,FWHMFILE
         INTEGER         nwave, nconv, npath, itype, I, J, K
 	INTEGER		INormal,Iray,ispace,nem,ILBL,ishape
+        INTEGER		NFWHM,MFWHM
+        PARAMETER(MFWHM=1000)
 	REAL		Dist, FWHM
         REAL          vwave(nwave), vconv(nconv), convout(maxout3),
      1                  output(maxout3), y(maxout), yout(maxout),tsurf,
      2			vem(MAXSEC),emissivity(MAXSEC)
+        LOGICAL		FWHMEXIST
+        REAL            VFWHM(MFWHM),XFWHM(MFWHM)
         common/lbltable/ilbl
 
 
@@ -67,10 +71,23 @@ C         bins, paths, etc.)
          open(13,file=sfile,status='old')
          READ(13,*)ISHAPE
          close(13)
-
          print*,'ISHAPE = ',ISHAPE
         ENDIF
 
+
+C       See if file is present forcing FWHM to vary with wavelength/wavenumber
+        CALL FILE(OPFILE,FWHMFILE,'fwh')
+        INQUIRE(FILE=FWHMFILE,EXIST=FWHMEXIST)
+C       If such a file exists then read in the data
+        IF(FWHMEXIST)THEN
+         print*,'Reading FWHM infomration from : ',FWHMFILE
+         OPEN(13,FILE=FWHMFILE,status='old')
+          READ(13,*)NFWHM
+          DO I=1,NFWHM
+           READ(13,*)VFWHM(I),XFWHM(I)
+          ENDDO
+         CLOSE(13)
+        ENDIF
 C-----------------------------------------------------------------------
 C
 C       Call subroutine subCIRSrtf_wave:
@@ -110,10 +127,10 @@ C-----------------------------------------------------------------------
 
            if(ilbl.eq.0)then
             CALL cirsconv(opfile,fwhm, nwave, vwave, y, nconv, 
-     1      vconv,yout)
+     1      vconv,yout,FWHMEXIST,NFWHM,VFWHM,XFWHM)
            else
             CALL lblconv1(opfile,fwhm,ishape, nwave, vwave, y, nconv,
-     1      vconv,yout)
+     1      vconv,yout,FWHMEXIST,NFWHM,VFWHM,XFWHM)
            endif
 
            DO J= 1, nconv

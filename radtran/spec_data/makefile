@@ -64,6 +64,7 @@ bin :    \
 	Cp_lines \
 	Inv_scan \
 	Li_lines \
+	Extract_exo_diag \
 	Makeband \
 	Mergeband \
 	Modifyband \
@@ -107,6 +108,10 @@ Li_lines : li_lines.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Li_lines li_lines.f $(LIBRARY) \
 	$(LIB)/rtm_util.a
 
+Extract_exo_diag : extract_exo_diag.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Extract_exo_diag extract_exo_diag.f \
+	$(LIBRARY) $(LIB)/rtm_util.a
+
 Li_linestemp : li_linestemp.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Li_linestemp li_linestemp.f $(LIBRARY) \
 	$(LIB)/path.a $(LIB)/rtm_util.a
@@ -141,7 +146,7 @@ Modifyband : modifyband.f $(LIBRARY)
 
 Pl_lines : pl_lines.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Pl_lines pl_lines.f $(LIBRARY) \
-	$(LIB)/rtm_util.a
+	$(LIB)/rtm_util.a $(LIB)/path.a $(LIB)/radtran.a
 
 Pl_elines : pl_elines.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Pl_elines pl_elines.f $(LIBRARY) \

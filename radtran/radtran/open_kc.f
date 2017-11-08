@@ -1,4 +1,4 @@
-	SUBROUTINE OPEN_KC(LUN1, nx, WCEN, IDGAS,
+	SUBROUTINE OPEN_KC(LUN1, nx, WCEN, ISHAPE, WFWHM, IDGAS,
      1		ISOGAS, NG, np, nt, press1, temp1, temp2,
      2          del_g, g_ord, irec)
 
@@ -9,6 +9,8 @@ C     Input variables
 C	LUN1		INTEGER	logical unit number
 C       NX              INTEGER Number of bins
 C       WCEN(NX)	REAL    Bin centres
+C       ISHAPE		INTEGER Filter shape (0 = square)
+C	WFWHM		REAL	FWHM
 C	IDGAS		INTEGER Radtran gas identifier
 C	ISOGAS		INTEGER Radtran isotope identifier
 C	NG		INTEGER	Number of g-ordinates
@@ -24,14 +26,17 @@ C     Output variables
 C	IREC		INTEGER	Index of first writeable record
 C
 C     Pat Irwin		23/2/96
+C     Pat Irwin		20/6/17 Updated to output wavelength table or not
+C				and added ISHAPE
 C
 C     ****************************************************************
 
 	implicit none
 	integer		NP, NT, NG, IRECL, LUN1, IDGAS, ISOGAS,
-     1			IREC0, nx, J, ISYS, IREC, I
+     1			IREC0, nx, J, ISYS, IREC, I,IOUT,ISHAPE
       	real 		PRESS1(20),TEMP1(20),G_ORD(ng),DEL_G(ng),
      1			delx, fwhm, xmin, wcen(nx),TEMP2(20,20)
+	real 		WFWHM
 	character*100	KTAFIL, OPFILE 
 
       write (*,'(''Enter output filename: '',$)')
@@ -39,9 +44,6 @@ C     ****************************************************************
       CALL FILE(OPFILE,KTAFIL,'kta')
 1     FORMAT(A)
 
-
-      delx = -1
-      fwhm = 0.0
 
       IRECL=ISYS()	! New tables use  1 words/record
       OPEN(UNIT=LUN1,FILE=KTAFIL,STATUS='UNKNOWN',ACCESS='DIRECT',
@@ -51,8 +53,24 @@ C     ****************************************************************
       ELSE
         IREC0=11 + 2*NG + 2 + NP + NP*ABS(NT) + 2
       ENDIF
-      IREC0 = IREC0+nx
+      PRINT*,'Write out wavelength/wavenumber table so that code'
+      Print*,'snaps to nearest entry (0) or omit so that'
+      CALL PROMPT('code interpolates (1)?')
+      READ*,IOUT
+      IF(IOUT.EQ.0)THEN
+       delx = -1
+       fwhm = 0.0
+       IREC0 = IREC0+nx
+      ELSE
+       delx = wcen(2)-wcen(1)
+       if(ISHAPE.EQ.0)THEN
+        fwhm=WFWHM
+       else
+        fwhm=0.
+       endif             
+      ENDIF
       xmin = WCEN(1)
+
       WRITE(LUN1,REC=1)IREC0
       WRITE(LUN1,REC=2)nx
       WRITE(LUN1,REC=3)xmin

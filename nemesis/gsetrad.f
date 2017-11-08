@@ -13,7 +13,8 @@ C     Input variables
 C       runname         character*100    Root run name.
 C	iscat		integer		0=thermal emission	
 C					1=plane parallel scattering 
-C					2= limb/near-limb scattering 
+C					2= limb/near-limb scattering
+C					3= single-scattering calculations 
 C	nmu		integer		Number of zenith ordinates
 C	mu(maxmu)	double pr.	Cos(zenith angles)
 C	wtmu(maxmu)	double pr.	Quadrature weights
@@ -82,7 +83,7 @@ C     ************************************************************************
       real nreal(max_wave),r0,v0,clen,k2(mx)
       real srefind(max_wave,2),parm(3),rs(3),vm,nm
       real v1(max_wave),k1(max_wave),vm1,n1(max_wave)
-      integer nlayer,laytyp,iscat,nx,nxx,ncont,nx1
+      integer nlayer,laytyp,iscat,nx,nxx,ncont,nx1,iscatmie
       integer layint,iprfcheck,check_profile,nmode,inorm
       real layht,xod(maxcon),xscal(maxcon),cwid,pmeth
       real vconv(mconv),minlam,lambda0
@@ -100,17 +101,23 @@ C     ************************************************************************
 
       integer nvar,ivar,varident(mvar,3),i,j,nalb,nalb1
       real varparam(mvar,mparam),alb(maxsec),valb(maxsec)
-      integer nvarx,varidentx(mvar,3),ivarx,iflagsrom,iflagtest
+      integer nvarx,varidentx(mvar,3),ivarx,iflagsrom,iflagtest,iflagcb
       real varparamx(mvar,mparam),od1,xsc(maxsec,maxgas)
       real ssa(maxsec,maxgas)
-      logical gasgiant,iflagcloud
+      logical gasgiant,iflagcloud,cbflag
       integer NN,NDUST
       REAL DUSTH(MAXLAY),DUST(MAXCON,MAXLAY)
 
-      integer mcloud,ncloud
+      integer mcloud,ncloud,bcloud
       parameter (mcloud=10)
       real cpbot(mcloud),cptop(mcloud),codepth(mcloud),cfsh(mcloud)
       integer nlaycloud(mcloud)
+      real cbpbot(mcloud),cbptop(mcloud),cbodepth(mcloud),cbfsh(mcloud)
+      integer ncblaycloud(mcloud)
+
+      real csx,nrealfix(mx),nimagfix(mx)
+      integer fixtoggle
+      common /maltmieser/nrealfix,nimagfix
 
      
       print*,'gsetrad, lin = ',lin
@@ -266,7 +273,9 @@ C       ***************** Surface temperature correction ***********
       endif
 
       iflagcloud=.false.
+      cbflag=.false.
       iflagsrom=0
+      iflagcb=0
 
       do ivar=1,nvar
 
@@ -378,16 +387,38 @@ C      ***************** Tangent height correction ***********
 
        endif
 
+C      Make sure laytyp and nlayer consistent for varident(ivar,3)=25 model
+       if(varident(ivar,3).eq.25)then
+        if(laytyp.ne.4)then
+         print*,'Error gsetrad: laytyp =/= 4'
+         print*,'Need to set laytyp=4 in jupiter.set'
+         print*,'to use varident(ivar,3)=25 model'
+         stop
+        endif
+        if(nlayer.ne.varparam(ivar,2))then
+         print*,'Error gsetrad:'
+         print*,'nlayer in jupiter.set =/= nlayer in jupiter.apr'
+         stop
+        endif
+       endif
+
        iflagtest=varident(ivar,1)
        if(iflagtest.ge.222.and.iflagtest.le.226)then
         iflagcloud=.true.
         iflagsrom=iflagtest
+       else
+        if(iflagtest.eq.227)then!flag if creme brulee model
+         cbflag=.true.
+         iflagcb=iflagtest
+         print*,'iflagtest = ',iflagtest
+        endif
        endif
 
       enddo
 
 C     See if Sromovsky cloud layer model is specified.
       print*,'gsetrad - iflagcloud,iflagsrom = ',iflagcloud,iflagsrom
+      print*,'gsetrad - cbflag, iflagcb = ',cbflag,iflagcb
 
       if(iflagcloud)then
 
@@ -407,6 +438,17 @@ C     See if Sromovsky cloud layer model is specified.
      2  laytyp,layint,flagh2p,ncloud,cpbot,cptop,nlaycloud,
      3  codepth,cfsh,iflagsrom,cwid,pmeth)
 
+      elseif(cbflag)then!see if creme brulee model is specified
+        call extractcb(runname,iflagcb,nvar,varident,
+     1    varparam,xn,ncloud,cbpbot,cbptop,ncblaycloud,cbodepth,
+     2    cbfsh)
+          
+       print*,'Calling gwritepatcb'
+       call gwritepatcb(runname,gasgiant,iscat,sol_ang,
+     1  emiss_ang,nconv,vconv,fwhm,layht,nlayer,
+     2  laytyp,layint,flagh2p,ncloud,cbpbot,cbptop,ncblaycloud,
+     3  cbodepth,cbfsh,iflagcb)
+
       else
 
        call gwritepat(runname,gasgiant,iscat,sol_ang,
@@ -423,6 +465,7 @@ C     See if Sromovsky cloud layer model is specified.
       do ivar=1,nvar
        if(varident(ivar,3).eq.9.or.varident(ivar,3).eq.10)icheck=1
        if(varident(ivar,3).eq.14.or.varident(ivar,3).eq.15)icheck=1
+       if(varident(ivar,3).eq.8)icheck=1
       enddo
 
 
@@ -457,7 +500,8 @@ C     Compute the drv file to get the aerosol optical depths
          print*,'ivar = ',ivar
          if(varident(ivar,1).le.100)then
 
-          if(varident(ivar,3).eq.9.or.varident(ivar,3).eq.21)then
+          if(varident(ivar,3).eq.9.or.varident(ivar,3).eq.21.
+     1 or.varident(ivar,3).eq.8)then
               icont=abs(varident(ivar,1))
               od1=exp(xn(nx1+1))
               xscal(icont)=xod(icont)/od1
@@ -487,19 +531,21 @@ C     Compute the drv file to get the aerosol optical depths
               enddo
           endif
 
-          np = npvar(varident(ivar,3),NN)
-         
+          np = npvar(varident(ivar,3),NN,varparam(ivar,1))
+
          else
 
           np=1
           if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
           if(varident(ivar,1).eq.887)np = int(varparam(ivar,1))
           if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
+          if(varident(ivar,1).eq.445)np = 3+int(varparam(ivar,1))
           if(varident(ivar,1).eq.222)np = 8
           if(varident(ivar,1).eq.223)np = 9
           if(varident(ivar,1).eq.224)np = 9
           if(varident(ivar,1).eq.225)np = 11
           if(varident(ivar,1).eq.226)np = 8
+          if(varident(ivar,1).eq.227)np = 7
 
          endif
 
@@ -531,7 +577,7 @@ C       check that rescaling has happened correctly
 
        np=1
        if(varident(ivar,1).le.100)then
-           np=npvar(varident(ivar,3),npro)
+           np=npvar(varident(ivar,3),npro,varparam(ivar,1))
        endif
        if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
        if(varident(ivar,1).eq.887)np = int(varparam(ivar,1))
@@ -540,9 +586,10 @@ C       check that rescaling has happened correctly
        if(varident(ivar,1).eq.224)np = 9
        if(varident(ivar,1).eq.225)np = 11
        if(varident(ivar,1).eq.226)np = 8
+       if(varident(ivar,1).eq.227)np = 7
           
 
-       if(varident(ivar,1).eq.444)then
+       if(varident(ivar,1).eq.444.or.varident(ivar,1).eq.445)then
 
            iwave=ispace
            if(iwave.eq.0)iwave=2
@@ -551,11 +598,17 @@ C       check that rescaling has happened correctly
 
            r0 = exp(xn(nx1+1))
            v0 = exp(xn(nx1+2))
+           if(varident(ivar,1).eq.445)then
+            csx = exp(xn(nx1+3))
+           else
+            csx = -1.0
+           endif
            np1 = int(varparam(ivar,1))
            clen = varparam(ivar,2)           
            vm = varparam(ivar,3)
            nm = varparam(ivar,4)
            lambda0 = varparam(ivar,5)
+           fixtoggle = varparam(ivar,6)
 
            call get_xsecA(runname,nmode,nwave,wave,xsec)
 
@@ -565,7 +618,11 @@ C          np1 should now match nwave
              print*,'different from that in .xsc file.'
            endif
            do i=1,nwave
-            nimag(i)=exp(xn(nx1+2+i))
+            if(varident(ivar,1).eq.445)then
+             nimag(i)=exp(xn(nx1+3+i))
+            else
+             nimag(i)=exp(xn(nx1+2+i))
+            endif
            enddo
 
 C          Compute nreal from KK
@@ -603,7 +660,7 @@ C          If nimag is in wavelength space, need to convert to wavenumbers
            endif
 
            inorm=1
-           iscat=1
+           iscatmie=1
 C          Find minimum wavelength
            if(ispace.eq.0)then
             minlam=1e4/wave(nwave)
@@ -614,7 +671,12 @@ C          Find minimum wavelength
            do i=1,nwave
             srefind(i,1)=nreal(i)
             srefind(i,2)=nimag(i)
-            write(12,*)wave(i),nreal(i),nimag(i)
+	    if(varident(ivar,1).eq.445)then
+	     write(12,*)wave(i),nreal(i),nimag(i),
+     1                  nrealfix(i),nimagfix(i)
+	    else
+             write(12,*)wave(i),nreal(i),nimag(i)
+	    endif
            enddo
            close(12)
 
@@ -626,10 +688,15 @@ C          Find minimum wavelength
            rs(2)=0.
            rs(3)=rs(1)
 
-           call modmakephase(iwave,imode,inorm,iscat,
-     1   parm,rs,srefind,runname,lambda0)
+           call modmakephase(iwave,imode,inorm,iscatmie,
+     1   parm,rs,srefind,runname,lambda0,csx,
+     2   nrealfix,nimagfix,fixtoggle)
 
-           np=2+np1
+           if(varident(ivar,1).eq.445)then
+            np=3+np1
+           else
+            np=2+np1
+           endif
 
        endif
 

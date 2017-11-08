@@ -75,7 +75,7 @@ C     just set the calculation wavelengths to be the convolution wavelengths
           do 443 i=1,nconv
            dv = abs(vcentral-vconv(i))
 
-           if(dv.lt.0.0001)then
+           if(dv.lt.0.00001)then
             j1=((vfil(1)-vkstart)/vkstep)-1
             j2=((vfil(nsub)-vkstart)/vkstep)+1
             v1 = vkstart + (j1-1)*vkstep

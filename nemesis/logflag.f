@@ -32,8 +32,10 @@ C       Variable is not temperature  - may need to take exponent
         if(imod.eq.8.and.ip.eq.1)iflag=1 ! variable knee profile
         if(imod.eq.9.and.ip.eq.1)iflag=1 ! variable knee profile
         if(imod.eq.21.and.ip.eq.1)iflag=1 ! variable knee profile
+        if(imod.eq.24.and.ip.eq.1)iflag=1 ! deep profile
         if(imod.eq.16.and.ip.eq.1)iflag=1 ! lapse rate profile      
         if(imod.eq.19.and.ip.eq.1)iflag=1 ! lapse rate profile      
+        if(imod.eq.25)iflag=1  ! Shortened continuous model
       endif
 
       if(imod.eq.1.and.ip.eq.2)iflag=1 ! log fsh - fixed knee
@@ -63,10 +65,20 @@ C       Variable is not temperature  - may need to take exponent
           if(ip.eq.3)iflag=1 
           if(ip.eq.4)iflag=1 
       endif
+
+      if(imod.eq.24.and.ip.eq.2)iflag=1 ! profile between knee and condensation
+      if(imod.eq.24.and.ip.eq.3)iflag=1 ! knee pressure
       
       if(imod.eq.3)iflag=1	! Log scaling factor
       if(imod.eq.10)iflag=1	! Log scaling factor
       if(imod.eq.11)iflag=1	! Log scaling factor
+
+      if(imod.eq.22)then 
+       iflag=1			! Brown dwarf T-profile
+      endif
+      
+      if(imod.eq.23)iflag=1  ! 2 point vmr gradient
+      if(imod.eq.26)iflag=1  ! 2 point vmr gradient (zero vmr for deep atmos)
 
       if(ivar.eq.887)iflag=1	! X-section spectrum
       if(ivar.eq.888)iflag=1	! Surface albedo spectrum
@@ -75,11 +87,13 @@ C       Variable is not temperature  - may need to take exponent
       if(ivar.eq.555)iflag=0	! Planet radius
       if(ivar.eq.333)iflag=0	! Planet surface gravity
       if(ivar.eq.444)iflag=1	! Particle size and ref. index
+      if(ivar.eq.445)iflag=1	! Particle size and ref. index (coated sphere)
       if(ivar.eq.222)iflag=1	! Larry's cloud model
       if(ivar.eq.223)iflag=1	! Larry's revised cloud model
       if(ivar.eq.224)iflag=1	! Larry's revised cloud model with ext UTC
       if(ivar.eq.225)iflag=1	! Revised cloud model with ext UTC and trunk.
       if(ivar.eq.226)iflag=1	! Two cloud model
+      if(ivar.eq.227)iflag=1	! Creme Brulee
       logflag=iflag
 
       return

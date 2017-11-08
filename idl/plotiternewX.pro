@@ -13,7 +13,7 @@ prfname = strcompress(filename + '.prf',/REMOVE_ALL)
 itname = strcompress(filename + '.itr',/REMOVE_ALL)
 
 ; ******* Read in measured spectrum ********************
-readcirsspavX,spename,fwhm,xlat,xlon,ngeom,nav,nconv,wave,angles,spec,error
+readcirsspavX_new,spename,fwhm,xlat,xlon,ngeom,nav,nconv,wave,angles,spec,error
 
 ; ******* Read in .prf file to get pressure grid *******
 readprfhead4,prfname,npro,press
@@ -31,16 +31,27 @@ openr,1,itname
  nx=1
  ny=1
  niter=1
- readf,1,nx,ny,niter
- xn=fltarr(nx)
- xa=xn
- y=fltarr(ny)
- se = y
- yn=y
- yn1=y
- kk = fltarr(ny,nx) 
- tmp = fltarr(ny)
- for iter = 0,niter-1 do begin
+ buffer = ''
+ readf,1,buffer
+ iter = 0
+ while iter lt niter do begin
+  readf,1,buffer
+  if(buffer eq '###') then begin
+   buffer2 = ''
+   readf, 1, buffer2
+  endif
+  readf,1,nx,ny,niter
+  print, 'buffer = ', buffer
+  if(strmatch(buffer, '*#*') eq 1 or iter eq 0) then begin
+   xn=fltarr(nx)
+   xa=xn
+   y=fltarr(ny)
+   se = y
+   yn=y
+   yn1=y
+   kk = fltarr(ny,nx) 
+   tmp = fltarr(ny)
+  endif
   readf,1,chisq,phi
   readf,1,xn
   readf,1,xa
@@ -148,7 +159,10 @@ openr,1,itname
      11: np=2
      12: np=3
      13: np=3
+     24: np=3
+     25: np=long(varparam(ivar,0))
      444:np=2+long(varparam(ivar,0))
+     445:np=3+long(varparam(ivar,0))
      555:np=1
      666:np=1
      888:np=long(varparam(ivar,0))
@@ -159,6 +173,7 @@ openr,1,itname
      223:np=9
      224:np=9
      225:np=11
+     227:np=7
      777:np=1
     endcase
 
@@ -214,7 +229,8 @@ openr,1,itname
 
     endfor
    endif
- endfor
+  iter = iter + 1
+ endwhile
 
 close,1
 

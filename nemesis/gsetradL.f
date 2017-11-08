@@ -1,6 +1,6 @@
       subroutine gsetradL(runname,nconv,vconv,fwhm,ispace,iscat,
      1 gasgiant,layht,nlayer,laytyp,layint,xlat,lin,hcorrx,
-     2 nvar,varident,varparam,nx,xn,jpre,tsurf,xmap)
+     2 nvar,varident,varparam,nx,xn,jpre,tsurf,occult,xmap)
 C     $Id:
 C     ************************************************************************
 C     Subroutine to write out the .pat, .prf, .xsc and .sca and aerosol 
@@ -32,6 +32,7 @@ C	nx		integer		Number of elements in state vector
 C	xn(mx)		real		state vector
 C       jpre            integer         Position of tangent pressure
 C                                       in xn
+C	occult		integer		Solar occultation flag
 C	tsurf		real		Surface temperature
 C
 C    Output variables      
@@ -64,7 +65,7 @@ C     ************************************************************************
 
       integer nvar,varident(mvar,3),i,j,ivar,ivarx
       real varparam(mvar,mparam)
-      integer nvarx,varidentx(mvar,3)
+      integer nvarx,varidentx(mvar,3),occult
       real varparamx(mvar,mparam)
       logical gasgiant
 
@@ -121,7 +122,7 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
       endif
 
       call gwritepatL(runname,iscat,nconv,vconv,fwhm,layht,nlayer,
-     2 laytyp,layint,flagh2p)
+     2 laytyp,layint,occult,flagh2p)
 
       return
 

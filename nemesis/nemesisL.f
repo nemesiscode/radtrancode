@@ -46,7 +46,8 @@ C     TIME2: System time at the end of program execution.
       real stx(mx,mx),xlonx
       integer varident(mvar,3),varidentx(mvar,3),igeom,iform
       integer npro,nvmr,ispace,nav(mgeom),lraw,nprox,lpre
-      character*100 runname
+      character*100 runname,solfile,solname
+      logical solexist
       integer ngeom, nwave(mgeom), nconv(mgeom), nx, ny, jsurf
       integer ngas,ncont,nvar,nvarx,lin,nxx,jsurfx,nconv1,nwave1
       integer lx(mx)
@@ -58,7 +59,7 @@ C     TIME2: System time at the end of program execution.
       double precision aa(mx,mx),dd(mx,my)
       real vkstart,vkend,vkstep
       integer idump,kiter,jtan,jalb,jalbx,jpre,jtanx,jprex
-      integer jrad,jradx,jlogg,jloggx,jxsc,jxscx
+      integer jrad,jradx,jlogg,jloggx,jxsc,jxscx,occult
 C     ********** Scattering variables **********************
       real xwave(maxsec),xf(maxcon,maxsec),xg1(maxcon,maxsec)
       real xg2(maxcon,maxsec)
@@ -123,7 +124,7 @@ C     Read start, end and step of tables
 
 C     Read in whether to calculate with wavenumbers(0) or wavelength(1)
 C     Also read in whether scattering is required (iscat)
-      READ(32,*)ispace,iscat
+      READ(32,*)ispace,iscat,occult
 
 C     Read any wavenumber offset to add to measured spectra
       READ(32,*)woff   
@@ -157,6 +158,23 @@ C              propagation of retrieval errors).
       CLOSE(32)
 
       iform=0
+
+
+C     See if there is a solar or stellar reference spectrum and read in
+C     if present.
+      call file(runname,solfile,'sol')
+      inquire(file=solfile,exist=solexist)
+      if(solexist)then
+         call opensol(solfile,solname)
+         CALL init_solar_wave(ispace,solname)
+      else
+         if(occult.eq.1)then
+          print*,'Error in NemesisL. Flux-ratio calculation defined'
+          print*,'but no solar file exists'
+          stop
+         endif
+      endif
+
 
 C     Open spectra file
       lspec=37
@@ -281,8 +299,8 @@ C     set up a priori of x and its covariance
       call coreretL(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,
-     3  jpre,jrad,jlogg,wgeom,flat,nx,lx,xa,sa,ny,y,se,xn,sm,sn,st,yn,
-     4  kk,aa,dd)
+     3  jpre,jrad,jlogg,occult,wgeom,flat,nx,lx,xa,sa,ny,y,se,xn,sm,sn,
+     4  st,yn,kk,aa,dd)
 
 C     Calculate retrieval errors.
 C     Simple errors, set to sqrt of diagonal of ST

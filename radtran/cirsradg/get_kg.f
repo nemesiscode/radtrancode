@@ -451,7 +451,8 @@ C	    write(*,*)'After rankk:',(k_g(i),i=1,ng)
             NTEST=ISNAN(DKDT(I))
             IF(NTEST)THEN
              DKOUTDT(ILAYER,IGAS,I)=1e-37  
-             PRINT*,'Warning, Grad NAN returned by get_k.f for gas',igas
+             PRINT*,'Warning, Grad NAN returned by get_kg.f for gas',
+     1 igas
              print*,'         IWAVE,VWAVE = ',IWAVE,VWAVE
              print*,'         LAYER,PRESS,TEMP = ',ILAYER,
      1        PRESS(ILAYER),TEMP(ILAYER)

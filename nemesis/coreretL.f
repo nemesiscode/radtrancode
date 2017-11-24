@@ -1,8 +1,8 @@
       subroutine coreretL(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,
-     3  jpre,jrad,jlogg,wgeom,flat,nx,lx,xa,sa,ny,y,se1,xn,sm,sn,st,yn,
-     4  kk,aa,dd)
+     3  jpre,jrad,jlogg,occult,wgeom,flat,nx,lx,xa,sa,ny,y,se1,xn,sm,
+     4  sn,st,yn,kk,aa,dd)
 C     $Id:
 C     ******************************************************************
 C
@@ -53,6 +53,7 @@ C       jtan            integer Position of tangent height correction in
 C                               xa (if included)
 C       jpre            integer Position of tangent pressure in
 C                               xa (if included)
+C	occult		integer	Solar occultation flag
 C	wgeom(mgeom,mav) real	Integration weights 
 C	flat(mgeom,mav)	real	Integration point latitudes 
 C	nx		integer	Number of elements in measurement vector
@@ -83,7 +84,7 @@ C     Set measurement vector and source vector lengths here.
       integer jalb,jalbx,jtan,jpre,jtanx,jprex,iscat1,i1,k1
       integer jrad,jradx,jlogg,jloggx,lx(mx),jxsc,jxscx
       real phlimit,alambda,xtry,tphi
-      integer xflag,ierr,ncont,flagh2p,npro1,jpara
+      integer xflag,ierr,ncont,flagh2p,npro1,jpara,occult
       real xdnu,xmap(maxv,maxgas+2+maxcon,maxpro)
       CHARACTER*100 runname,itname,abort,aname,buffer
 
@@ -251,7 +252,7 @@ C       endif
         CALL forwardavfovL(runname,ispace,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2   nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
-     3   nxx,xnx,ny,ynx,kkx)
+     3   occult,nxx,xnx,ny,ynx,kkx)
 
        elseif (iscat.eq.2)then
 
@@ -267,7 +268,7 @@ C       endif
         CALL forwardnogL(runname,ispace,iscat1,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2   nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
-     3   nxx,xnx,ny,ynx,kkx)
+     3   occult,nxx,xnx,ny,ynx,kkx)
 
        else
         print*,'CoreretL: iscat not defined : ',iscat
@@ -339,8 +340,8 @@ C       enddo
 
        CALL forwardavfovL(runname,ispace,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,nx,xn,ny,
-     3   yn,kk)
+     2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,occult,
+     3   nx,xn,ny,yn,kk)
 
       elseif(iscat.eq.2)then
 
@@ -356,8 +357,8 @@ C       enddo
        iscat1=1
        CALL forwardnogL(runname,ispace,iscat1,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,nx,xn,ny,
-     3   yn,kk)
+     2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,occult,
+     3   nx,xn,ny,yn,kk)
 
       else
        print*,'CoreretL: iscat not covered : ',iscat
@@ -468,7 +469,7 @@ C       temporary kernel matrix kk1. Does it improve the fit?
         CALL forwardavfovL(runname,ispace,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
      2     lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
-     3     nx,xn1,ny,yn1,kk1)
+     3     occult,nx,xn1,ny,yn1,kk1)
 
         elseif(iscat.eq.2)then
 
@@ -484,7 +485,7 @@ C       temporary kernel matrix kk1. Does it improve the fit?
         CALL forwardnogL(runname,ispace,iscat1,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
      2     lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
-     3     nx,xn1,ny,yn1,kk1)
+     3     occult,nx,xn1,ny,yn1,kk1)
         endif
 
 C       Calculate the cost function for this trial solution.

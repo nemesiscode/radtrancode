@@ -1,5 +1,5 @@
       SUBROUTINE GWRITEPATL(RUNNAME,ISCAT,NCONV,VCONV,FWHM,LAYHT,NLAYER,
-     1 LAYTYP,LAYINT,FLAGH2P)
+     1 LAYTYP,LAYINT,OCCULT,FLAGH2P)
 C     $Id:
 C     *******************************************************************
 C     Subroutine to write out the .pat file needed for a CIRSradg run.
@@ -14,6 +14,7 @@ C					 (if nadir)
 C       NLAYER          integer         Number of layers
 C       LAYTYP          integer         Type of layering
 C       LAYINT          integer         Type of layer integration
+C	OCCULT		integer		Solar occultation flag
 C	FLAGH2P		integer		Equals 1 if para-H2 is variable
 C
 C     Pat Irwin	29/7/96		Original
@@ -27,6 +28,7 @@ C     *******************************************************************
       CHARACTER*100 RUNNAME
       REAL LAYHT,VCONV(MCONV),LAYANG,DELV,FWHM
       INTEGER LAYTYP,LAYINT,NLAYER,NCONV,LAYBOT,FLAGH2P,ISCAT,ILAYER
+      INTEGER OCCULT
       CHARACTER*80 TEXT
 
       CALL FILE(RUNNAME,RUNNAME,'pat')
@@ -112,6 +114,31 @@ C     *******************************************************************
        WRITE(31,1)' '
 
 101   CONTINUE
+
+      IF(OCCULT.EQ.1)THEN
+
+       DO 102 ILAYER=1,NLAYER
+
+        WRITE(31,1)'atm'
+        TEXT='limb'
+        WRITE(31,5)TEXT,ILAYER
+        IF(ISCAT.EQ.0)THEN
+         WRITE(31,1)'notherm'
+         WRITE(31,1)'noscatter'
+        ELSE
+         WRITE(31,1)'notherm'
+         WRITE(31,1)'scatter'
+        ENDIF
+        WRITE(31,1)'nowf'
+        WRITE(31,1)'nocg'
+        WRITE(31,1)'noabsorb'
+        WRITE(31,1)'binbb'
+        WRITE(31,1)'nobroad'
+        WRITE(31,1)' '
+
+102    CONTINUE
+
+      ENDIF
 
       WRITE(31,1)'clrlay'
       WRITE(31,1)'nocombine'

@@ -1,6 +1,7 @@
       subroutine forwardavfovL(runname,ispace,fwhm,ngeom,nav,
      1 wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,nvar,
-     2 varident,varparam,jsurf,jalb,jxsc,jtan,jpre,nx,xn,ny,yn,kk)
+     2 varident,varparam,jsurf,jalb,jxsc,jtan,jpre,occult,nx,xn,ny,
+     3 yn,kk)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate an FOV-averaged limb spectra and
@@ -66,12 +67,14 @@ C     **************************************************************
       real xlat,planck_wave,planckg_wave,Bg,height(100),htan
       real wgeom(mgeom,mav),flat(mgeom,mav),fh
       integer layint,inormal,iray,itype,nlayer,laytyp
-      integer iptf,imie,imie1
+      integer iptf,imie,imie1,occult
       integer nwave(mgeom),jsurf,nem,nav(mgeom),nwave1
       real vwave(mgeom,mwave),angles(mgeom,mav,3),vwave1(mwave)
       real calcout(maxout3),fwhm,calcoutL(maxout3)
       real calcout1(maxout3),gradients1(maxout3)
-      real gradients(maxout4),vv,gradientsL(maxout3)
+      real gradients(maxout4),vv,gradientsL(maxout3),pi,AU
+      parameter (pi=3.1415927, AU=1.49597870e8)
+      real solradius,solomeg,solar,xsol
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       real vconv(mgeom,mconv),vconv1(mconv)
       real layht,tsurf,esurf,gradtsurf(maxout3),pressR,delp
@@ -89,6 +92,11 @@ C     **************************************************************
       real vem(maxsec),emissivity(maxsec)
       real varparam(mvar,mparam)
       logical gasgiant
+
+      real stelrad,solwave(maxbin),solrad(maxbin)
+      integer solnpt,iform,iread
+
+      common /solardat/iread, iform, stelrad, solwave, solrad,  solnpt
 
 
 C      print*,'ForwardavfovL'
@@ -174,7 +182,7 @@ C     NemesisL
 C     Set up all files for a direct cirsrad run of limb spectra
       call gsetradL(runname,nconv1,vconv1,fwhm,ispace,iscat,
      1    gasgiant,layht,nlayer,laytyp,layint,xlat,lin,hcorrx,
-     3    nvar,varident,varparam,nx,xn,jpre,tsurf,xmap)
+     3    nvar,varident,varparam,nx,xn,jpre,tsurf,occult,xmap)
 
 
 C     If planet is not a gas giant then we need to read in the 
@@ -204,7 +212,7 @@ C     Set up parameters for non-scattering cirsrad run.
      1  vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf, 
      2  nx, xmap, vconv1, nconv1, npath, calcoutL, gradientsL)
 
-      print*,'hcorrx = ',hcorrx
+C      print*,'hcorrx, npath, nlayer = ',hcorrx,npath,nlayer
 
 C     Read in base heights from '.drv' file
       call readdrvh(runname,height)
@@ -270,6 +278,7 @@ C     Read in base heights from '.drv' file
             fh=1.0
            endif
          
+
            do ipath=jpath,jpath+1
             fh=1.0-fh
             do j=1,nconv1
@@ -287,6 +296,42 @@ C     Read in base heights from '.drv' file
              endif
             enddo
            enddo
+
+           if(occult.eq.1)then
+
+            solradius = stelrad/(dist*AU)
+            solomeg = pi*solradius**2
+
+            do ipath=jpath+nlayer,jpath+nlayer+1
+             fh=1.0-fh
+C             print*,ipath,jpath,nlayer
+             do j=1,nconv1
+C             Get Solar irradiance
+              CALL get_solar_wave(vconv1(j),dist,solar)
+              xsol =  solar/solomeg
+C              print*,vconv1(j),dist,solar,xsol
+  	      ioff1=nconv1*(ipath-1)+j
+C              print*, wgeom(igeom,iav),fh,calcoutL(ioff1)
+              yn(ioff+j)=yn(ioff+j)+
+     1  wgeom(igeom,iav)*fh*calcoutL(ioff1)*xsol
+             
+             enddo
+    
+             do i=1,nx
+              if(i.ne.jtan.and.i.ne.jpre)then
+               do j=1,nconv1 
+                CALL get_solar_wave(vconv1(j),dist,solar)
+                xsol = solar/solomeg
+                ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + j
+                kk(ioff+j,i)=kk(ioff+j,i)+
+     1	   wgeom(igeom,iav)*fh*gradientsL(ioff2)*xsol
+               enddo
+              endif
+             enddo
+            enddo
+
+           endif
+
          else
            print*,'Calculating new nadir-spectra'
            iscat = 0
@@ -335,7 +380,7 @@ C       Set up all files to recalculate limb spectra
         call gsetradL(runname,nconv1,vconv1,fwhm,ispace,iscat,
      1    gasgiant,layht,
      2    nlayer,laytyp,layint,xlat,lin,hcorrx,
-     3    nvar,varident,varparam,nx,xn,jpre,tsurf,xmap)
+     3    nvar,varident,varparam,nx,xn,jpre,tsurf,occult,xmap)
 
         call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
      1   vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf, 
@@ -380,6 +425,32 @@ C            tangent pressure taken as logs so need to adjust gradient
              print*,ipath,ioff+j,yn1(ioff+j),yn(ioff+j),delp,pressR
             enddo
            enddo
+
+           if(occult.eq.1)then
+
+            solradius = stelrad/(dist*AU)
+            solomeg = pi*solradius**2
+
+            do ipath=jpath+nlayer,jpath+nlayer+1
+             fh=1.0-fh
+             do j=1,nconv1
+C             Get Solar irradiance
+              CALL get_solar_wave(vconv1(j),dist,solar)
+              xsol = solar/solomeg
+
+  	      ioff1=nconv1*(ipath-1)+j
+              yn1(ioff+j)=yn1(ioff+j)+
+     1   wgeom(igeom,iav)*fh*calcout1(ioff1)*xsol
+C             tangent pressure taken as logs so need to adjust gradient
+              kk(ioff+j,jpre) = kk(ioff+j,jpre) +
+     1            (yn1(ioff+j)-yn(ioff+j))/(pressR*delp)
+              print*,ipath,ioff+j,yn1(ioff+j),yn(ioff+j),delp,pressR
+             enddo
+            enddo
+
+
+           endif
+
          endif
 
          xn(jpre)=pressR
@@ -426,6 +497,27 @@ C            tangent pressure taken as logs so need to adjust gradient
              kk(ioff+j,jtan) = kk(ioff+j,jtan) + yn1(ioff+j)-yn(ioff+j)
             enddo
            enddo
+
+           if(occult.eq.1)then
+
+           solradius = stelrad/(dist*AU)
+           solomeg = pi*solradius**2
+
+            do ipath=jpath+nlayer,jpath+nlayer+1
+             fh=1.0-fh
+             do j=1,nconv1
+C             Get Solar irradiance
+              CALL get_solar_wave(vconv1(j),dist,solar)
+              xsol = solar/solomeg
+  	      ioff1=nconv1*(ipath-1)+j
+              yn1(ioff+j)=yn1(ioff+j)+
+     1   wgeom(igeom,iav)*fh*calcoutL(ioff1)*xsol
+              kk(ioff+j,jtan) = kk(ioff+j,jtan) + yn1(ioff+j)-yn(ioff+j)
+             enddo
+            enddo
+
+           endif
+
          endif
 
 111     continue

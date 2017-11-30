@@ -332,6 +332,36 @@ C              print*, wgeom(igeom,iav),fh,calcoutL(ioff1)
 
            endif
 
+
+           if(occult.eq.2)then
+C           just calculate transmission of path. Assumes no thermal emission into beam and no other nadir paths.
+            do ipath=jpath+nlayer,jpath+nlayer+1
+             fh=1.0-fh
+             do j=1,nconv1
+              if(ipath.eq.jpath+nlayer)then
+               yn(ioff+j)=0.
+              endif
+  	      ioff1=nconv1*(ipath-1)+j
+              yn(ioff+j)=yn(ioff+j)+wgeom(igeom,iav)*fh*calcoutL(ioff1)             
+             enddo
+    
+             do i=1,nx
+              if(i.ne.jtan.and.i.ne.jpre)then
+               do j=1,nconv1 
+                if(ipath.eq.jpath+nlayer)then
+                 kk(ioff+j,i)=0.
+                endif
+                ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + j
+                kk(ioff+j,i)=kk(ioff+j,i)+
+     1	   wgeom(igeom,iav)*fh*gradientsL(ioff2)
+               enddo
+              endif
+             enddo
+            enddo
+
+           endif
+
+
          else
            print*,'Calculating new nadir-spectra'
            iscat = 0

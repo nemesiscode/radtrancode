@@ -115,7 +115,7 @@ C     *******************************************************************
 
 101   CONTINUE
 
-      IF(OCCULT.EQ.1)THEN
+      IF(OCCULT.GT.0)THEN
 
        DO 102 ILAYER=1,NLAYER
 

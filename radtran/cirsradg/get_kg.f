@@ -199,8 +199,8 @@ C          Set minimum closeness to tabulated wavenumbers to be 1/50 of
 C          the separation to be considered aligned.
            eps = 0.02*delv
          else
-C          For very small delv use 1/10 as close to limit of real precision
-           eps = 0.1*delv
+C          For very small delv use 1/4 as close to limit of real precision
+           eps = 0.25*delv
          endif
 
 c         use double precision for this calc in case numbers are very small
@@ -439,10 +439,11 @@ C	    write(*,*)'After rankk:',(k_g(i),i=1,ng)
             NTEST=ISNAN(K_G(I))
             IF(NTEST)THEN
              KOUT(ILAYER,IGAS,I)=1e-37  
-             PRINT*,'Warning, NAN returned by get_k.f for gas',igas
+             PRINT*,'Warning, NAN returned by get_kg.f for gas',igas
              print*,'         IWAVE,VWAVE = ',IWAVE,VWAVE
              print*,'         LAYER,PRESS,TEMP = ',ILAYER,
      1        PRESS(ILAYER),TEMP(ILAYER)
+             print*,'Setting to a very small number'
             ELSE
              KOUT(ILAYER,IGAS,I)=K_G(I)
             ENDIF
@@ -450,10 +451,12 @@ C	    write(*,*)'After rankk:',(k_g(i),i=1,ng)
             NTEST=ISNAN(DKDT(I))
             IF(NTEST)THEN
              DKOUTDT(ILAYER,IGAS,I)=1e-37  
-             PRINT*,'Warning, Grad NAN returned by get_k.f for gas',igas
+             PRINT*,'Warning, Grad NAN returned by get_kg.f for gas',
+     1 igas
              print*,'         IWAVE,VWAVE = ',IWAVE,VWAVE
              print*,'         LAYER,PRESS,TEMP = ',ILAYER,
      1        PRESS(ILAYER),TEMP(ILAYER)
+             print*,'Setting to a very small number'
             ELSE
              DKOUTDT(ILAYER,IGAS,I)=DKDT(I)
             ENDIF            

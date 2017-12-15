@@ -34,7 +34,7 @@ C stored in the same directory as the rest of the code
       REAL G_ORD(MAXG),K_G(MAXG),DEL_G(MAXG),TABLE(MAXK,MAXK,MAXG)
       REAL TEMP2(MAXK,MAXK),TN(MAXK),TX,X1,X2
       REAL KOUT
-      CHARACTER*100 KTAFIL,OPFILE1
+      CHARACTER*200 KTAFIL,OPFILE1
       CHARACTER*1 ANS
 
 C******************************** CODE *********************************

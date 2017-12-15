@@ -1,4 +1,4 @@
-      subroutine readapriori(opfile,lin,lpre,xlat,npro,nvar,varident,
+f      subroutine readapriori(opfile,lin,lpre,xlat,npro,nvar,varident,
      1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,nx,x0,sx,lx)
 C     $Id:
 C     ****************************************************************
@@ -1212,6 +1212,8 @@ C           Continuous profile but represented with fewer points than in .prf to
 C           implicit smoothing and faster retrieval times
 C            Read in number of points and any cross-correlation
 
+	     pref=0.
+
              read(27,1)ipfile
              print*,'reading variable ',ivar,' from ',ipfile
              open(28,file=ipfile,status='old')
@@ -1255,6 +1257,10 @@ C              **** vmr, cloud, para-H2 , fcloud, take logs ***
 
              enddo
              close(28)
+
+
+c             print*,'pref = ', pref
+c             stop
 
              do i = 1,np
               ix = nx + i         

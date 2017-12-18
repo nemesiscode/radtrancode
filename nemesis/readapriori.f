@@ -1,4 +1,4 @@
-f      subroutine readapriori(opfile,lin,lpre,xlat,npro,nvar,varident,
+      subroutine readapriori(opfile,lin,lpre,xlat,npro,nvar,varident,
      1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,nx,x0,sx,lx)
 C     $Id:
 C     ****************************************************************

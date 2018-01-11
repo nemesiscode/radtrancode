@@ -46,7 +46,8 @@ C     TIME2: System time at the end of program execution.
       real stx(mx,mx),xlonx
       integer varident(mvar,3),varidentx(mvar,3),igeom,iform
       integer npro,nvmr,ispace,nav(mgeom),lraw,nprox,lpre
-      character*100 runname,solfile,solname
+      integer ilbl,ilbl1,ishape
+      character*100 runname,solfile,solname,sfile
       logical solexist
       integer ngeom, nwave(mgeom), nconv(mgeom), nx, ny, jsurf
       integer ngas,ncont,nvar,nvarx,lin,nxx,jsurfx,nconv1,nwave1
@@ -68,6 +69,7 @@ C     ********** Scattering variables **********************
       logical gasgiant
       COMMON /hgphas/xwave,xf,xg1,xg2,tnco,twave,frac,tico
       COMMON /scatdump/ idump
+      COMMON /lbltable/ ilbl1
 
       INCLUDE '../radtran/includes/ciacom.f'
 
@@ -116,15 +118,28 @@ C     Make sure input files are OK
 
       print*,'Files OK'
 
-C     Read start, end and step of tables
-      CALL readkkhead(runname,vkstart,vkend,vkstep)
-
       CALL file(runname,runname,'inp')
       OPEN(32,file=runname,status='old')
 
 C     Read in whether to calculate with wavenumbers(0) or wavelength(1)
 C     Also read in whether scattering is required (iscat)
-      READ(32,*)ispace,iscat,occult
+C     Also read in whether solar occultation is required (occult)
+C     Also read in whether lbl calculation is required (ilbl)
+
+      READ(32,*)ispace,iscat,occult,ilbl
+
+      if(ilbl.eq.1) then
+       print*,'NemesisL - LBL calculation. Not yet implemented'
+      endif
+      if(ilbl.eq.0)then
+       print*,'Nemesis - corr-k calculation'
+       CALL readkkhead(runname,vkstart,vkend,vkstep)
+      endif
+      if(ilbl.eq.2)then
+       print*,'Nemesis - lbl-table calculation'
+       CALL readkklblhead(runname,vkstart,vkend,vkstep)
+      endif
+
 
 C     Read any wavenumber offset to add to measured spectra
       READ(32,*)woff   
@@ -242,23 +257,46 @@ C     Add forward errors to measurement covariances
        enddo
       ENDDO
 
-C     Calculate the tabulated wavelengths of c-k look up tables
-      do igeom=1,ngeom
-       nconv1 = nconv(igeom)
-       if(igeom.eq.1)print*,nconv1
-       do j=1,nconv1
-        vconv1(j)=vconv(igeom,j)
-        if(igeom.eq.1)print*,vconv1(j)
+      if(ilbl.eq.0)then
+C      Calculate the tabulated wavelengths of c-k look up tables
+       do igeom=1,ngeom
+        nconv1 = nconv(igeom)
+        if(igeom.eq.1)print*,nconv1
+        do j=1,nconv1
+         vconv1(j)=vconv(igeom,j)
+         if(igeom.eq.1)print*,vconv1(j)
+        enddo
+        CALL wavesetb(runname,vkstart,vkend,vkstep,nconv1,vconv1,fwhm,
+     1   nwave1,vwave1)
+        if(igeom.eq.1)print*,nwave1
+        do j=1,nwave1
+         vwave(igeom,j)=vwave1(j)
+         if(igeom.eq.1)print*,vwave1(j)
+        enddo
+        nwave(igeom)=nwave1
        enddo
-       CALL wavesetb(runname,vkstart,vkend,vkstep,nconv1,vconv1,fwhm,
-     1  nwave1,vwave1)
-       if(igeom.eq.1)print*,nwave1
-       do j=1,nwave1
-        vwave(igeom,j)=vwave1(j)
-        if(igeom.eq.1)print*,vwave1(j)
+      endif
+
+      if(ilbl.eq.2)then
+       call file(runname,sfile,'sha')
+        open(13,file=sfile,status='old')
+        READ(13,*)ISHAPE
+       close(13)
+
+C      Calculate the tabulated wavelengths of lbl look up tables
+       do igeom=1,ngeom
+        nconv1=nconv(igeom)
+        do j=1,nconv1
+         vconv1(j)=vconv(igeom,j)
+        enddo
+        CALL wavesetc(runname,vkstart,vkend,vkstep,nconv1,vconv1,
+     1  fwhm,ishape,nwave1,vwave1)
+        do j=1,nwave1
+         vwave(igeom,j)=vwave1(j)
+        enddo
+        nwave(igeom)=nwave1
        enddo
-       nwave(igeom)=nwave1
-      enddo
+      endif
 
 C     set up a priori of x and its covariance
       CALL readapriori(runname,lin,lpre,xlat,npro,nvar,varident,
@@ -295,8 +333,9 @@ C     set up a priori of x and its covariance
        IPARA2=IPARA
       ENDIF
 
+      ilbl1=ilbl
 
-      call coreretL(runname,ispace,iscat,ica,kiter,phlimit,
+      call coreretL(runname,ispace,iscat,ilbl,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,
      3  jpre,jrad,jlogg,occult,wgeom,flat,nx,lx,xa,sa,ny,y,se,xn,sm,sn,

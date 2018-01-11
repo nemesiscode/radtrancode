@@ -338,8 +338,8 @@ C         Check also to see if surface temperature has gone negative
      2     nem,vem,emissivity,tsurf, calcout)
 
 
-          print*,'Npath = ',npath
-
+C          print*,'Npath, ix = ',npath,ix
+C          print*,'Transferring calculation'
 C         Unless an SCR calculation, first path is assumed to be thermal emission
 
           if(icread.ne.1)then       

@@ -1,4 +1,4 @@
-      subroutine coreretL(runname,ispace,iscat,ica,kiter,phlimit,
+      subroutine coreretL(runname,ispace,iscat,ilbl,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,
      3  jpre,jrad,jlogg,occult,wgeom,flat,nx,lx,xa,sa,ny,y,se1,xn,sm,
@@ -12,6 +12,9 @@ C       ispace           integer Indicates if wavelengths in vconv and
 C                               vwave are in wavenumbers(0) or 
 C                               wavelengths (1)
 C	iscat	integer	Set to 1 to use scattering RTM, 0 for thermal emission
+C       ilbl    integer Set to 0 for correlated-k caculation
+C                       Set to 1 for lbl calculation
+C                       Set to 2 for lbl-table calculation
 C	ica	integer	1 if single retrieval, 0 otherwise.
 C	kiter	integer	Maximum number of iterations
 C	phlimit	real	Limiting % change in cost function to consider solution
@@ -84,7 +87,7 @@ C     Set measurement vector and source vector lengths here.
       integer jalb,jalbx,jtan,jpre,jtanx,jprex,iscat1,i1,k1
       integer jrad,jradx,jlogg,jloggx,lx(mx),jxsc,jxscx
       real phlimit,alambda,xtry,tphi
-      integer xflag,ierr,ncont,flagh2p,npro1,jpara,occult
+      integer xflag,ierr,ncont,flagh2p,npro1,jpara,occult,ilbl
       real xdnu,xmap(maxv,maxgas+2+maxcon,maxpro)
       CHARACTER*100 runname,itname,abort,aname,buffer
 
@@ -141,11 +144,14 @@ C     First skip header
 
 C     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-C     Find all the calculation and convolution wavelengths and rank
-C     in order
+      if(ilbl.eq.0.or.ilbl.eq.2)then 
 
-      call rankwave(ngeom,nwave,vwave,nconv,vconv,nwaveT,vwaveT,
-     1 nconvT,vconvT)
+C      Find all the calculation and convolution wavelengths and rank
+C      in order
+
+       call rankwave(ngeom,nwave,vwave,nconv,vconv,nwaveT,vwaveT,
+     1  nconvT,vconvT)
+      endif
 
 C     Initialise s1d
       do i=1,mx

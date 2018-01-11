@@ -19,6 +19,7 @@ C				    observations.
 C			Set to 3 for single-scattering calculations
 C	ilbl	integer	Set to 0 for correlated-k caculation
 C                       Set to 1 for lbl calculation
+C                       Set to 2 for lbl-table calculation
 C	ica	integer	1 if single retrieval, 0 otherwise.
 C	kiter	integer	Maximum number of iterations
 C	phlimit	real	Limiting % change in cost function to consider solution

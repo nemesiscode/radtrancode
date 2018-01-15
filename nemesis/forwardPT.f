@@ -1,6 +1,6 @@
       subroutine forwardPT(runname,ispace,fwhm,ngeom,nav,
      1 wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,nvar,
-     2 varident,varparam,jrad,jlogg,RADIUS,nx,xn,ny,yn,kk)
+     2 varident,varparam,jrad,jlogg,RADIUS,nx,xn,ny,yn,kk,qfla)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate a primary transit spectrum of an exoplanet.
@@ -97,7 +97,7 @@ C     **************************************************************
       double precision area,area0,area1,darea1,darea(mx)
       integer nvar,varident(mvar,3),ivar
       real varparam(mvar,mparam)
-      logical gasgiant
+      logical gasgiant, qfla
 
       real stelrad,solwave(maxbin),solrad(maxbin)
       integer solnpt,iform
@@ -215,7 +215,8 @@ C     mass to units of 1e24 kg.
         mass2 = 1e-20*10**(xn(jlogg))*(radius2**2)/Grav
       endif  
 
-      iscat=0
+      	
+	
 
       igeom=1
       iav=1
@@ -257,7 +258,7 @@ C     Set up parameters for non-scattering cirsrad run.
       call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
      1   vwave1,nwave1,itype, nem, vem, emissivity, tsurf, 
      2   gradtsurf, nx, xmap, vconv1, nconv1, npath,calcoutL, 
-     3   gradientsL)
+     3   gradientsL,qfla)
 
 
 

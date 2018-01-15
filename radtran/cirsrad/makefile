@@ -31,6 +31,7 @@ F_SOURCES = \
 	init_solar_wave.f \
 	get_solar_wave.f \
 	get_xsec.f \
+	get_xsec_red.f\
 	overlap.f \
 	rank.f \
 	read_khead.f \

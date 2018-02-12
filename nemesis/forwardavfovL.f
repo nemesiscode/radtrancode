@@ -284,6 +284,7 @@ C     Read in base heights from '.drv' file
             do j=1,nconv1
  	     ioff1=nconv1*(ipath-1)+j
              yn(ioff+j)=yn(ioff+j)+wgeom(igeom,iav)*fh*calcoutL(ioff1)
+C             print*,'X',ipath,j,ioff1,calcoutL(ioff1)
             enddo
     
             do i=1,nx
@@ -412,11 +413,19 @@ C          First path is assumed to be thermal emission
 
 110    continue
 
-       if(jpre.gt.0)then
+       ioff = ioff + nconv1
+
+100   continue
+
+      if(jpre.gt.0)then
 
         print*,'Calculating RoC with tangent pressure'
         pressR = xn(jpre)
         delp = pressR*0.01
+        print*,'delp = ',delp,'P0,P1 = ',exp(pressR),exp(pressR+delp)
+        print*,'Delta P = ',exp(pressR)-exp(pressR+delp)
+C        print*,pressR,pressR+delp
+C        print*,exp(pressR),exp(pressR+delp)
         xn(jpre)=pressR+delp
 
 C       Set up all files to recalculate limb spectra
@@ -430,7 +439,13 @@ C       Set up all files to recalculate limb spectra
      2   nx, xmap, vconv1, nconv1, npath, calcout1, gradients1)
 
 
-        do 112 iav = 1,nav(igeom)
+        ioff=0
+        do 200 igeom=1,ngeom
+         print*,'ForwardavfovL-press. Spectrum ',
+     1    igeom,' of ',ngeom
+         print*,'Nav = ',nav(igeom)
+
+         do 112 iav = 1,nav(igeom)
          sol_ang = angles(igeom,iav,1)
          emiss_ang = angles(igeom,iav,2)
          aphi = angles(igeom,iav,3)
@@ -463,11 +478,12 @@ C       Set up all files to recalculate limb spectra
  	     ioff1=nconv1*(ipath-1)+j
              yn1(ioff+j)=yn1(ioff+j)+
      1		wgeom(igeom,iav)*fh*calcout1(ioff1)
-C            tangent pressure taken as logs so need to adjust gradient
-             kk(ioff+j,jpre) = kk(ioff+j,jpre) +
-     1            (yn1(ioff+j)-yn(ioff+j))/(pressR*delp)
-             print*,ipath,ioff+j,yn1(ioff+j),yn(ioff+j),delp,pressR
             enddo
+           enddo
+           do j=1,nconv1
+C            tangent pressure taken as logs so need to adjust gradient
+C             kk(ioff+j,jpre) = -(yn1(ioff+j)-yn(ioff+j))/(pressR*delp)
+             kk(ioff+j,jpre) = (yn1(ioff+j)-yn(ioff+j))/delp
            enddo
 
            if(occult.eq.1.or.occult.eq.3)then
@@ -485,18 +501,22 @@ C             Get Solar irradiance
   	      ioff1=nconv1*(ipath-1)+j
               yn1(ioff+j)=yn1(ioff+j)+
      1   wgeom(igeom,iav)*fh*calcout1(ioff1)*xsol
-C             tangent pressure taken as logs so need to adjust gradient
-              kk(ioff+j,jpre) = kk(ioff+j,jpre) +
-     1            (yn1(ioff+j)-yn(ioff+j))/(pressR*delp)
-              print*,ipath,ioff+j,yn1(ioff+j),yn(ioff+j),delp,pressR
              enddo
             enddo
-
+            do j=1,nconv1
+C             tangent pressure taken as logs so need to adjust gradient
+C              kk(ioff+j,jpre) = -(yn1(ioff+j)-yn(ioff+j))/(pressR*delp)
+              kk(ioff+j,jpre) = (yn1(ioff+j)-yn(ioff+j))/delp
+            enddo
+ 
 
            endif
 
            if(occult.eq.2)then
-C           just calculate transmission of path. Assumes no thermal emission in$
+C           just calculate transmission of path. Assumes no thermal emission into line of sight.
+
+            print*,'occult = ',occult
+            print*,'jpath,fh,nconv1 = ',jpath,fh,nconv1
             do ipath=jpath+nlayer,jpath+nlayer+1
              fh=1.0-fh
              do j=1,nconv1
@@ -505,10 +525,13 @@ C           just calculate transmission of path. Assumes no thermal emission in$
               endif
               ioff1=nconv1*(ipath-1)+j
               yn1(ioff+j)=yn1(ioff+j)+
-     1		wgeom(igeom,iav)*fh*calcoutL(ioff1)
-              kk(ioff+j,jpre)=kk(ioff+j,jpre) +
-     1         (yn1(ioff+j)-yn(ioff+j))/(pressR*delp)
+     1		wgeom(igeom,iav)*fh*calcout1(ioff1)
+C              print*,ioff,j,yn(ioff+j),yn1(ioff+j)
              enddo
+            enddo
+            do j=1,nconv1
+C             kk(ioff+j,jpre)=-(yn1(ioff+j)-yn(ioff+j))/(pressR*delp)
+             kk(ioff+j,jpre)=(yn1(ioff+j)-yn(ioff+j))/delp
             enddo
            endif
 
@@ -524,15 +547,18 @@ C           just calculate transmission of path. Assumes no thermal emission in$
 
          xn(jpre)=pressR
 
-112     continue
+112      continue
 
+         ioff = ioff + nconv1
 
-
+200     continue
        endif
 
        if(jtan.gt.0)then
 
-        do 111 iav = 1,nav(igeom)
+        ioff=0
+        do 300 igeom=1,ngeom
+         do 111 iav = 1,nav(igeom)
          sol_ang = angles(igeom,iav,1)
          emiss_ang = angles(igeom,iav,2)
          aphi = angles(igeom,iav,3)
@@ -614,13 +640,12 @@ C           just calculate transmission of path. Assumes no thermal emission in$
 
          endif
 
-111     continue
+111      continue
 
+        ioff = ioff + nconv1
+
+300     continue
        endif
-
-       ioff = ioff + nconv1
-
-100   continue
 
       return
 

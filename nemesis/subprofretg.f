@@ -333,14 +333,18 @@ C **************** Modify profile via hydrostatic equation ********
         JHYDRO=1
         HTAN = VARPARAM(I,1)
         PTAN = EXP(XN(JPRE))
+        print*,'subprofretg : htan, ptan = ',htan,ptan
        ENDIF
       ENDDO
       IF(JHYDRO.EQ.0)THEN
        CALL XHYDROSTATH(AMFORM,IPLANET,LATITUDE,NPRO,NVMR,MOLWT,
      1  IDGAS,ISOGAS,H,P,T,VMR,SCALE)
       ELSE
+       print*,'Calling xhydrostatp'
+       print*,'P(1),H(1) = ',P(1),H(1)
        CALL XHYDROSTATP(AMFORM,IPLANET,LATITUDE,NPRO,NVMR,MOLWT,
      1  IDGAS,ISOGAS,H,P,T,VMR,HTAN,PTAN,SCALE)
+       print*,'Mod: P(1),H(1) = ',P(1),H(1)
       ENDIF
 
 C     Read in reference AEROSOL profile

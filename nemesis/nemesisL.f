@@ -349,6 +349,7 @@ C     Simple errors, set to sqrt of diagonal of ST
 
 C     write output
 
+      if(occult.eq.2)iform=5
       CALL writeout(iform,runname,ispace,lout,ispec,xlat,xlon,npro,
      1 nvar,varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err1,ngeom,
      2 nconv,vconv,gasgiant,jpre,jrad,jlogg,iscat,lin)

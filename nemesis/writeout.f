@@ -12,6 +12,8 @@ C						       1 = F_plan/F_star
 C						       2 = 100*A_plan/A_star
 C						       3 = planet spectral flux
 C							    i.e. F_plan
+C						       4 = Transmission*solar_flux
+C						       5 = Transmission (solar occultation)
 C	ispace		integer		0=cm-1,1=microns
 C	lout		integer		Output unit number
 C	ispec		integer		Spectrum ID
@@ -121,7 +123,7 @@ C      F_plan/F_star format
 
 C      Spectral power format
        elseif(iform.eq.3)then
-      write(lout,*)'Spectral Radiation of planet: W (cm-1)-1'
+        write(lout,*)'Spectral Radiation of planet: W (cm-1)-1'
          xfac=1e18
 
 C      NemesisPT format
@@ -132,6 +134,11 @@ C      NemesisPT format
 C      Transmission*solar_flux
        elseif(iform.eq.4) then
         write(lout,*)'Solar flux: W cm-2 (cm-1)-1'
+        xfac=1.
+
+C      Transmission (solar occultation)
+       elseif(iform.eq.5) then
+        write(lout,*)'Transmission'
         xfac=1.
 
 C      Default
@@ -167,6 +174,11 @@ C      NemesisPT format
 C      Transmission*solar_flux
        elseif(iform.eq.4) then
         write(lout,*)'Solar flux: W cm-2 um-1'
+        xfac=1.
+
+C      Transmission
+       elseif(iform.eq.5) then
+        write(lout,*)'Transmission'
         xfac=1.
 
 C      Default format

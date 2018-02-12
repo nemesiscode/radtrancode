@@ -1,6 +1,6 @@
       SUBROUTINE cirsrtfg_wave(runname,dist,inormal,iray,fwhm1,
      1 ispace,vwave,nwave,itype1, nem, vem, emissivity,tsurf,
-     2 gradtsurf,nv,xmap,vconv,nconv,npath1,calcout,gradients)
+     2 gradtsurf,nv,xmap,vconv,nconv,npath1,calcout,gradients,qfla)
 C***********************************************************************
 C_TITL:	CIRSRTFG_WAVE.f
 C
@@ -36,6 +36,9 @@ C				output type for each path
 C	gradients(maxout4) REAL	Calculate rate of change of output with 
 C				each of the NV variable elements, for
 C				each wavenumber and for each path.
+C	qfla	LOGICAL Flag for iscat=5 case. If true then calculate
+C                       reduced extinction cross section following Pinhas
+C                       et al. for forward scattering cases. 	
 C
 C_FILE:	unit=4		dump.out
 C
@@ -113,7 +116,7 @@ C     XCOMP: % complete printed in increments of 10.
       INTEGER iwave,ipath,k,igas,ioff1,ioff2,iv,nv
       REAL zheight(maxpro),radextra
       INTEGER nsw,isw(maxgas+2+maxcon),iswitch,rdamform
-      LOGICAL scatterf,dustf,solexist,fexist
+      LOGICAL scatterf,dustf,solexist,fexist,qfla
       INTEGER NFWHM,MFWHM
       PARAMETER (MFWHM=1000)
       LOGICAL FWHMEXIST
@@ -183,8 +186,10 @@ C Read the ktables or lbltables
 C Now read the scattering files if required.
       scatterf = .FALSE.
       DO I=1,npath
-        IF(imod(I).EQ.15.OR.imod(I).EQ.16)scatterf = .TRUE.
+        IF(imod(I).EQ.15.OR.imod(I).EQ.16)scatterf = .TRUE.      
       ENDDO
+
+      IF(qfla)scatterf = .TRUE.	
 
       IF(scatterf)THEN
         CALL file(runname, radfile, 'sca')
@@ -197,7 +202,11 @@ C ... and the xsc files likewise.
 
       IF(dustf)THEN
         CALL file(runname, xscfil, 'xsc')
-        CALL get_xsec(xscfil, ncont)
+        IF(qfla)THEN
+		CALL get_xsec_red(xscfil,ncont,vwave)
+	ELSE
+		CALL get_xsec(xscfil, ncont)
+	ENDIF
       ENDIF
 
       PRINT*,'NPATH = ',NPATH

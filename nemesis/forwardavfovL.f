@@ -210,7 +210,7 @@ C     Set up parameters for non-scattering cirsrad run.
 
       call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
      1  vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf, 
-     2  nx, xmap, vconv1, nconv1, npath, calcoutL, gradientsL)
+     2  nx, xmap, vconv1, nconv1, npath, calcoutL, gradientsL,iscat)
 
 C      print*,'hcorrx, npath, nlayer = ',hcorrx,npath,nlayer
 
@@ -389,7 +389,7 @@ C           divide thermal emission + solar occultation by solar radiance at top
            call CIRSrtfg_wave(runname,dist,inormal,iray,fwhm,ispace,
      1      vwave1,nwave1,itype, nem, vem, emissivity, tsurf, 
      2      gradtsurf, nx, xmap, vconv1, nconv1, npath, calcout, 
-     3 	    gradients)
+     3 	    gradients,iscat)
 
 C          First path is assumed to be thermal emission
            
@@ -436,7 +436,7 @@ C       Set up all files to recalculate limb spectra
 
         call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
      1   vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf, 
-     2   nx, xmap, vconv1, nconv1, npath, calcout1, gradients1)
+     2   nx, xmap, vconv1, nconv1, npath, calcout1, gradients1,iscat)
 
 
         ioff=0

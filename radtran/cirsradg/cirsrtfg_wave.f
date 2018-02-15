@@ -1,6 +1,6 @@
       SUBROUTINE cirsrtfg_wave(runname,dist,inormal,iray,fwhm1,
      1 ispace,vwave,nwave,itype1, nem, vem, emissivity,tsurf,
-     2 gradtsurf,nv,xmap,vconv,nconv,npath1,calcout,gradients,qfla)
+     2 gradtsurf,nv,xmap,vconv,nconv,npath1,calcout,gradients,iscat)
 C***********************************************************************
 C_TITL:	CIRSRTFG_WAVE.f
 C
@@ -113,7 +113,7 @@ C     XCOMP: % complete printed in increments of 10.
       REAL y(maxout),yout(maxout),vv,ygt(maxout),youtgt(maxout)
       CHARACTER*100 drvfil,radfile,xscfil,runname,sfile
       CHARACTER*100 klist, FWHMFILE
-      INTEGER iwave,ipath,k,igas,ioff1,ioff2,iv,nv
+      INTEGER iwave,ipath,k,igas,ioff1,ioff2,iv,nv,iscat
       REAL zheight(maxpro),radextra
       INTEGER nsw,isw(maxgas+2+maxcon),iswitch,rdamform
       LOGICAL scatterf,dustf,solexist,fexist,qfla
@@ -188,6 +188,10 @@ C Now read the scattering files if required.
       DO I=1,npath
         IF(imod(I).EQ.15.OR.imod(I).EQ.16)scatterf = .TRUE.      
       ENDDO
+
+      IF(ISCAT.EQ.5)THEN
+        QFLA = .TRUE.
+      ENDIF
 
       IF(qfla)scatterf = .TRUE.	
 

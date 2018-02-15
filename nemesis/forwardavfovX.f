@@ -250,7 +250,7 @@ C        Set up all files for a direct cirsrad run
 
          call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
      1    vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf, 
-     2    nx, xmap, vconv1, nconv1, npath, calcout, gradients)
+     2    nx, xmap, vconv1, nconv1, npath, calcout, gradients,iscat)
 
 C        Need to assume order of paths. First path is assumed to be
 C        thermal emission
@@ -496,7 +496,7 @@ C         Set up all files for a direct cirsrad run
 
           call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
      1     vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf, 
-     2     nx, xmap, vconv1, nconv1, npath, calcout, gradients) 
+     2     nx, xmap, vconv1, nconv1, npath, calcout, gradients,iscat) 
 
 
           if(icread.ne.1)then

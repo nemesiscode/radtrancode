@@ -258,7 +258,7 @@ C     Set up parameters for non-scattering cirsrad run.
       call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
      1   vwave1,nwave1,itype, nem, vem, emissivity, tsurf, 
      2   gradtsurf, nx, xmap, vconv1, nconv1, npath,calcoutL, 
-     3   gradientsL,qfla)
+     3   gradientsL,iscat)
 
 
 
@@ -374,7 +374,7 @@ C      Need to compute RoC of signal with surface gravity numerically
        call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
      1   vwave1,nwave1,itype, nem, vem, emissivity, tsurf, 
      2   gradtsurf, nx, xmap, vconv1, nconv1, npath,calcoutL, 
-     3   gradientsL)
+     3   gradientsL,iscat)
 
 
        do 208 iconv=1,nconv1

@@ -307,7 +307,7 @@ C     if present.
 
       CALL cirsrtfg_wave (runname, dist, inormal, iray, fwhm, ispace, 
      1 vwave,nwave,itype, nem, vem, emissivity, tsurf, gradtsurf, nv, 
-     1 xmap, vconv, nconv, npath, calcout, gradients)
+     1 xmap, vconv, nconv, npath, calcout, gradients,iscat)
 
       CALL FILE(runname,outfile,'out')
       OPEN(2,FILE=outfile,STATUS='unknown')

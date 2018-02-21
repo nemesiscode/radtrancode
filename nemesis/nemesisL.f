@@ -44,16 +44,16 @@ C     TIME2: System time at the end of program execution.
       real fwhm,xlat,xlon,st(mx,mx),varparam(mvar,mparam)
       real sn(mx,mx),sm(mx,mx),xlatx,varparamx(mvar,mparam)
       real stx(mx,mx),xlonx
-      integer varident(mvar,3),varidentx(mvar,3),igeom,iform
+      integer varident(mvar,3),varidentx(mvar,3),igeom,iform,iform1
       integer npro,nvmr,ispace,nav(mgeom),lraw,nprox,lpre
       integer ilbl,ilbl1,ishape
       character*100 runname,solfile,solname,sfile
-      logical solexist
+      logical solexist,percbool
       integer ngeom, nwave(mgeom), nconv(mgeom), nx, ny, jsurf
       integer ngas,ncont,nvar,nvarx,lin,nxx,jsurfx,nconv1,nwave1
       integer lx(mx)
       real vwave(mgeom,mwave),vconv(mgeom,mconv),angles(mgeom,mav,3)
-      real kk(my,mx),xa(mx),rerr(mgeom,mconv),sa(mx,mx)
+      real kk(my,mx),xa(mx),rerr(mgeom,mconv),sa(mx,mx),xerr
       real y(my),yn(my),xnx(mx)
       real wgeom(mgeom,mav),flat(mgeom,mav),flon(mgeom,mav)
       real vconv1(mconv),vwave1(mwave)
@@ -169,10 +169,17 @@ C              and used as a priori for all parameters that match, and
 C              used to fix all other parameters (including effect of
 C              propagation of retrieval errors).     
       READ(32,*)lin
-
+      iform1=0
+      percbool = .false.
+      READ(32,*,END=999)iform1
+      READ(32,*,END=999)percbool
+999   continue
       CLOSE(32)
 
-      iform=0
+      print*,'iform1 = ',iform1
+      print*,'percbool = ', percbool
+
+      iform=iform1
 
 
 C     See if there is a solar or stellar reference spectrum and read in
@@ -253,7 +260,9 @@ C     Add forward errors to measurement covariances
       DO i=1,ngeom
        do j=1,nconv(i)
         k = k+1
-        se(k)=se(k)+(rerr(i,j))**2
+        xerr=rerr(i,j)
+        if(percbool.eqv..true.)xerr=rerr(i,j)*(y(j)/100)
+        se(k)=se(k)+xerr**2
        enddo
       ENDDO
 

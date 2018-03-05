@@ -24,7 +24,7 @@ C*********************************************************************
 C ../includes/arrdef.f defines the maximum values for a series of variables
 C (layers, bins, paths, etc.)
 
-      INTEGER intmod,nconv,nwave,i,j,itype,imie,imie1
+      INTEGER intmod,nconv,nwave,i,j,itype,imie,imie1,iscat
       INTEGER iconv,ioff1,ioff2,iv,nv,iwave,ipath,ispace
       INTEGER npoints,planet,inormal,iray,iptf,npath,ichannel,nem
 

@@ -111,7 +111,7 @@ C     ***********************************************************************
       REAL VP(MAXGAS),VP1
       INTEGER SVPFLAG(MAXGAS),SVPFLAG1
       INTEGER NVP,ISWITCH(MAXGAS),IP1,IP2,JKNEE
-      REAL XLDEEP,XLHIGH,HVS
+      REAL XLDEEP,XLHIGH,HVS,dlogp
       COMMON /SROM223/PCUT
 
 C----------------------------------------------------------------------------
@@ -2451,6 +2451,53 @@ C         IF(X1(J).LT.1e-36)X1(J)=1e-36
           print*,'This could lead to infinity errors'
           stop
          ENDIF
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.27)THEN
+C        Model 27: Step profile. (Nick Teanby)
+C		XN1 = log(xdeep)		[= xdeep if Temperature]
+C		XN2 = log(xshallow)	[= xshallow if Temperature]
+C		XN3 = log(pknee)
+C 
+C        similar to model 24 except transition is steeper, more step like, and is not sensitive to pressure level.
+C        Implemented by taking difference of log(p) (instead of p in option 24)
+C        ***************************************************************
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+           XDEEP = XN(NXTEMP+1)
+           XSTEP = XN(NXTEMP+2)
+         ELSE
+           XDEEP = EXP(XN(NXTEMP+1))
+           XSTEP = EXP(XN(NXTEMP+2))
+         ENDIF
+         PKNEE = EXP(XN(NXTEMP+3))
+
+C        Technically, this profile would be parametrised by a Heaviside step function (X1(P)=(XDEEP-XSTEP)*H(P-PKNEE)+XSTEP).
+C        However, this would also have the effect of making XMAP(NXTEMP+3,IPAR,J) = 0 for all values of J.
+C        Hence, we use the approximation H(P) = 0.5(1+tanh(HVS*delta_LogP)) where we choose an arbitrary value of HVS = 10
+C        to roughly approximate the Heaviside step function.
+C	   If step is not steep enough then increase HVS
+
+         HVS = 10.0
+         DO J=1,NPRO
+          dlogp = log(P(J)) - log(PKNEE)
+          X1(J)=0.5*(XDEEP-XSTEP)*( 1+tanh(HVS*dlogp) )+XSTEP
+          IF(VARIDENT(IVAR,1).EQ.0)THEN
+           XMAP(NXTEMP+1,IPAR,J)=  0.5*(1+tanh(HVS*dlogp))
+           XMAP(NXTEMP+2,IPAR,J)=1-0.5*(1+tanh(HVS*dlogp))
+          ELSE
+           XMAP(NXTEMP+1,IPAR,J)=0.5*XDEEP*(1+tanh(HVS*dlogp))
+           XMAP(NXTEMP+2,IPAR,J)=XSTEP-0.5*XSTEP*(1+tanh(HVS*dlogp))
+          ENDIF
+          IF(HVS*dlogp.GT.20)THEN
+           XMAP(NXTEMP+3,IPAR,J)= 0.0
+          ELSE
+           XMAP(NXTEMP+3,IPAR,J)= -0.5*(XDEEP-XSTEP)*HVS*
+     >                                 (1.0-tanh(HVS*dlogp)**2)
+          ENDIF
+
+          IF(X1(J).LT.1e-36)X1(J)=1e-36
+
+         ENDDO
+
 
         ELSE
 

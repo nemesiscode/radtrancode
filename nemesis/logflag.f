@@ -33,6 +33,8 @@ C       Variable is not temperature  - may need to take exponent
         if(imod.eq.9.and.ip.eq.1)iflag=1 ! variable knee profile
         if(imod.eq.21.and.ip.eq.1)iflag=1 ! variable knee profile
         if(imod.eq.24.and.ip.eq.1)iflag=1 ! deep profile
+        if(imod.eq.27.and.ip.eq.1)iflag=1 ! step profile (deep value)
+        if(imod.eq.27.and.ip.eq.2)iflag=1 ! step profile (shallow value)
         if(imod.eq.16.and.ip.eq.1)iflag=1 ! lapse rate profile      
         if(imod.eq.19.and.ip.eq.1)iflag=1 ! lapse rate profile      
         if(imod.eq.25)iflag=1  ! Shortened continuous model
@@ -68,6 +70,8 @@ C       Variable is not temperature  - may need to take exponent
 
       if(imod.eq.24.and.ip.eq.2)iflag=1 ! profile between knee and condensation
       if(imod.eq.24.and.ip.eq.3)iflag=1 ! knee pressure
+      
+      if(imod.eq.27.and.ip.eq.3)iflag=1 ! knee pressure for step profile
       
       if(imod.eq.3)iflag=1	! Log scaling factor
       if(imod.eq.10)iflag=1	! Log scaling factor

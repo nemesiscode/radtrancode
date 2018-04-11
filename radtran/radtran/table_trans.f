@@ -163,14 +163,17 @@ C     Need number if names in list
       call prompt('Enter nfile : ')
       read(5,*)nfile
 
-      open(12,file=flist,status='old',readonly)
+c      open(12,file=flist,status='old',readonly)
+      open(12,file=flist,status='old',action='read')
+
       SUM=0.
       do ifile=1,nfile
        read(12,1)ipfile
        call file(ipfile,opfile1,'tct')
        print*,ipfile
 C       print*,opfile1
-       open(13,file=ipfile,status='old',readonly)
+c       open(13,file=ipfile,status='old',readonly)
+       open(13,file=ipfile,status='old',action='read')
        open(14,file=opfile1,status='unknown')
 
        read(13,*)xpath

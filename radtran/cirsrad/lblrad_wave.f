@@ -370,6 +370,28 @@ C	Precompute volume fractions.
 C
 C-----------------------------------------------------------------------
 
+        JH2 = -1
+        JNH3 = -1
+        JHE = -1
+        JCH4 = -1
+        DO IGAS=1,NGAS
+          IF(IDGAS(IGAS).EQ.39.AND.
+     1     (ISOGAS(IGAS).EQ.0.OR.ISOGAS(IGAS).EQ.1))THEN
+            JH2 = IGAS
+          ENDIF
+          IF(IDGAS(IGAS).EQ.40.AND.
+     1     (ISOGAS(IGAS).EQ.0.OR.ISOGAS(IGAS).EQ.1))THEN
+            JHE = IGAS
+          ENDIF
+          IF(IDGAS(IGAS).EQ.6.AND.
+     1     (ISOGAS(IGAS).EQ.0.OR.ISOGAS(IGAS).EQ.1))THEN
+            JCH4 = IGAS
+          ENDIF
+          IF(IDGAS(IGAS).EQ.11.AND.
+     1     (ISOGAS(IGAS).EQ.0.OR.ISOGAS(IGAS).EQ.1))THEN
+            JNH3 = IGAS
+          ENDIF
+        ENDDO
 
 
 	DO I= 1, nlayer

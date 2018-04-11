@@ -69,7 +69,7 @@ C VLIN, SLIN, ALIN, ELIN, SBLIN, TDW, TDWS and that lot).
 C     General variables ...
       REAL DV,LINECONTRIB,VV,X,FNH3,FH2
       INTEGER I,J,K,L,LINE,IBIN,CURBIN,IGAS,IB,IBS(2),IBX
-      INTEGER IFCONT,F1,L1,B1
+      INTEGER IFCONT,F1,L1,B1,JBIN
       REAL CONVAL,VTMP
        
 
@@ -82,23 +82,25 @@ C******************************** CODE *********************************
       CURBIN = 1+INT((VV-VBIN(1))/WING)
       IFCONT = 0
       XK=0.0
-
-
+      
+      
       DO 12 IBIN=CURBIN-1,CURBIN+1
-
+       JBIN=IBIN
+       IF(JBIN.LT.1)JBIN=1
        DO 200 IBX=1,2
 
         IB=IBS(IBX)
 
-        F1=FSTLIN(IB,IBIN)
-        L1=LSTLIN(IB,IBIN)
+        F1=FSTLIN(IB,JBIN)
+        L1=LSTLIN(IB,JBIN)
         B1=LASTBIN(IB)
         IF(IBIN.EQ.CURBIN-1.AND.IBX.EQ.1.AND.B1.LT.IBIN) THEN
 C        We have now run past the end of buffer 1 and need to read in a 
 C        new load of lines
 C        Pass back flag  
-C         print*,IBIN,IBX,IB,F1,L1,B1
-C         IFCONT = 1
+         print*,'Calc_fine: run out of lines - need to read in new set'
+         print*,'IBIN,IBX,IB,F1,L1,B1 = ',IBIN,IBX,IB,F1,L1,B1
+         IFCONT = 1
 C        Error arose while doing LBL simulations in visible range. Problem not yet fixed properly.
         ENDIF
 

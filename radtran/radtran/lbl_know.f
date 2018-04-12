@@ -42,7 +42,7 @@ C				wings.
 C	IPTF		INTEGER Partition function flag for CH4
 C
 C	../includes/*.f variables:
-C	VLIN(MAXLIN)	REAL	Line position [cm^-1].
+C	VLIN(MAXLIN)	REAL*8	Line position [cm^-1].
 C	SLIN(MAXLIN)	REAL*8	Line strength [cm^-1 molecule^-1 cm^-2] at
 C				STP.
 C	ALIN(MAXLIN)	REAL	Air-broadened halfwidth [cm^-1/atm] @ STP.
@@ -114,7 +114,7 @@ C ../includes/parcom.f stores the parameter values such as MAXLAY,
 
 C Continuum variables ...
       INTEGER ISUM,IPTF
-      REAL TAUTMP,PARTF,XX
+      REAL TAUTMP,PARTF
       REAL CONTINK(IORDP1,MAXK,MAXK,MAXBIN)
       REAL CONVAL(NWAV),CONWAV(NWAV)
       REAL MATRIX(IORDP1,IORDP1),UNIT(IORDP1,IORDP1)
@@ -152,8 +152,8 @@ C WING: Bin size [cm^-1] used store linedata.
 C Misc (and UNDOCUMENTED!!) variables defined in the code ...
       INTEGER LINE,LABEL
       REAL XMASS,GETMASS,VTMP
-      REAL V,ABSCO
-      DOUBLE PRECISION LNABSCO
+      REAL VR,ABSCO
+      DOUBLE PRECISION LNABSCO,V,XX
 c--------------------------------
 cc NT*** these  are now arrays **
 ccc      REAL ABSCO,AD,X,Y,DV
@@ -223,15 +223,16 @@ c     pretabulate some line calculation parameters
       enddo
 
       do i=1,npoint
-        XX = VMIN + FLOAT(I - 1)*DELV
+        XX = DBLE(VMIN) + DBLE(I - 1)*DBLE(DELV)
 C       Set current wavenumber        
         IF(IWAVE.EQ.0)THEN
          V=1E4/XX
         ELSE
          V=XX
         ENDIF
+        VR=SNGL(V)
 
-        CURBIN = INT((V - VBIN(1))/WING) + 1
+        CURBIN = INT((VR - VBIN(1))/WING) + 1
         IBIN1 = CURBIN - 1
         IBIN2 = CURBIN + 1
         IF(IBIN1.LT.1)IBIN1 = 1
@@ -241,8 +242,8 @@ C       Set current wavenumber
           DO LINE=FSTLIN(JBIN),LSTLIN(JBIN)
             if (line_done(line).eq.0) then
              line_done(line)=1
-             tstim_arr(line) = (1.0 - dpexp(-1.439*vlin(line)/temp))/
-     >          (1.0 - dpexp(-1.439*vlin(line)/296.0))
+       tstim_arr(line) = (1.0 - dpexp(-1.439*sngl(vlin(line))/temp))/
+     >          (1.0 - dpexp(-1.439*sngl(vlin(line))/296.0))
              LNABSCO=LOG(SLIN(LINE))+LOG(TCORS1)+TCORS2*ELIN(LINE)+
      >		LOG(TSTIM_ARR(LINE))
              ABSCO = SNGL(EXP(LNABSCO))
@@ -253,7 +254,7 @@ C     1		EXP(LNABSCO),ABSCO
 C             print*,sngl(slin(line)*tcors1*dpexp(tcors2*elin(line))*
 C     >        tstim_arr(line))
 
-             ad_arr(line) = tcordw*vlin(line)
+             ad_arr(line) = sngl(tcordw*vlin(line))
              y_arr(line) = (alin(line)*(1 - frac)*tratio**tdw(line) +
      >           (alin(line) - sblin(line))*frac*tratio**tdws(line))*
      >           press/ad_arr(line)
@@ -273,7 +274,7 @@ C       Set current wavenumber
         ELSE
          V=XX
         ENDIF
-
+        VR=SNGL(V)
         ASSIGN 2001 TO LABEL
         GOTO 2000
 
@@ -301,11 +302,11 @@ C=======================================================================
 
 C First calculate continuum contribution. CURBIN is the current BIN for
 C which calculations are being made.
-      CURBIN = INT((V - VBIN(1))/WING) + 1
+      CURBIN = INT((VR - VBIN(1))/WING) + 1
 C Calculate the continuum absorption via the IORDP1 polynomial
 C coefficients held in CONTINK.
       TAUTMP = CONTINK(1,IP,IT,CURBIN)
-      VTMP = V - VBIN(CURBIN)
+      VTMP = VR - VBIN(CURBIN)
       DO 51 ISUM=2,IORDP1
         TAUTMP = TAUTMP + CONTINK(ISUM,IP,IT,CURBIN)*VTMP
         VTMP = VTMP*VTMP
@@ -356,9 +357,9 @@ C=======================================================================
 C Compute absorption coefficient for normal incidence
         DO 52 LINE=FSTLIN(JBIN),LSTLIN(JBIN)
 C          print*,'jbin,line,vline',jbin,line,vlin(line)
-          DV=vlin(line)-v
+          DV=SNGL(vlin(line)-v)
           IF(ABS(DV).LE.MAXDV)THEN
-           X  = abs(vlin(line)-v)/ad_arr(line)
+           X  = abs(dv)/ad_arr(line)
            FNH3=-1.0
            FH2=-1.0
            TAUTMP=TAUTMP+SUBLINE(IDGAS,PRESS,TEMP,IPROC,V,

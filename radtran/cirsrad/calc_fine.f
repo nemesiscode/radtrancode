@@ -22,8 +22,8 @@ C	IPROC(NGAS)	INTEGER	Line wing processing parameter.
 C	IBS(2)		INTEGER Buffers 1 and 2
 C
 C	../includes/*.f variables:
-C	VLIN(2,MAXLIN)	REAL	Line position [cm^-1].
-C	SLIN(2,MAXLIN)	REAL	Line strength [cm^-1 molecule^-1 cm^-2] at
+C	VLIN(2,MAXLIN)	REAL*8	Line position [cm^-1].
+C	SLIN(2,MAXLIN)	REAL*8	Line strength [cm^-1 molecule^-1 cm^-2] at
 C				STP.
 C	ALIN(2,MAXLIN)	REAL	Air-broadened halfwidth [cm^-1/atm] @ STP.
 C	ELIN(2,MAXLIN)	REAL	Lower state energy line position [cm^-1].

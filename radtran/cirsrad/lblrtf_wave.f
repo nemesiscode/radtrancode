@@ -59,13 +59,13 @@ C         bins, paths, etc.)
         PARAMETER       (mconv=6000)
 	INTEGER		INormal,Iray, ispace,nem,IBS(2),IBD(2), IFLAG
 	REAL		Dist, FWHM1,X0,X1,WING1,VREL1,MAXDV
-        REAL		VBOT,DELV1,VV,X,RADIUS1,radextra
+        REAL		VBOT,DELV1,RADIUS1,radextra
         REAL            vconv(nconv), convout(maxout3),zheight(maxpro)
         REAL            output(maxpat), yp(maxpat,2)                  
         REAL            yout(maxpat,mconv),tsurf,ynor(maxpat,mconv)
         REAL		vem(maxsec),emissivity(maxsec) 
 	REAL		AAMOUNT(maxlay,maxgas),XX0
-
+        DOUBLE PRECISION VV,X,DX0,DX1
         INTEGER         lun, ulog, iphi,NLINR,ipzen1
         PARAMETER       (lun=2, ulog=17)
 
@@ -249,16 +249,20 @@ C
 
 C      Read in 2 arrays of lines
        IB=1
-       CALL FNDWAV(XX0)
+       CALL FNDWAV(DBLE(XX0))
        FSTREC = DBREC
 
        PRINT*,'FSTREC = ',FSTREC
 
        MAXLIN1=MAXLIN
        print*,'lblrtf_wave : maxlin = ',MAXLIN1
-       CALL LOADBUFFER(XX0,VMAX+VREL,FSTREC,MAXLIN1,MAXBIN,IB,
-     1 NGAS,IDGAS,ISOGAS,VBOT,WING,NLINR,VLIN,SLIN,ALIN,ELIN,IDLIN,
+       DX0 = DBLE(XX0)
+       DX1 = DBLE(VMAX+VREL)
+
+       CALL LOADBUFFER(DX0,DX1,FSTREC,MAXLIN1,MAXBIN,IB,
+     1   NGAS,IDGAS,ISOGAS,VBOT,WING,NLINR,VLIN,SLIN,ALIN,ELIN,IDLIN,
      2 SBLIN,PSHIFT,DOUBV,TDW,TDWS,LLQ,NXTREC,FSTLIN,LSTLIN,LASTBIN)
+
        print*,'FSTREC,NXTREC,LASTBIN',fstrec,nxtrec,lastbin(ib)
        do i=1,nbin
         if(fstlin(ib,i).gt.0)then
@@ -276,7 +280,7 @@ C      Read in 2 arrays of lines
        FSTREC=NXTREC
 
 
-       CALL LOADBUFFER(XX0,VMAX+VREL,FSTREC,MAXLIN,MAXBIN,IB,
+       CALL LOADBUFFER(DX0,DX1,FSTREC,MAXLIN,MAXBIN,IB,
      1 NGAS,IDGAS,ISOGAS,VBOT,WING,NLINR,VLIN,SLIN,ALIN,ELIN,IDLIN,
      2 SBLIN,PSHIFT,DOUBV,TDW,TDWS,LLQ,NXTREC,FSTLIN,LSTLIN,LASTBIN)
 
@@ -316,7 +320,7 @@ C          need the current height profile
         endif
 
 
-        VV = VMIN-DELV
+        VV = DBLE(VMIN-DELV)
         IFLAG=0
         DO J=1,NCONV
          DO I=1,NPATH
@@ -333,7 +337,7 @@ C          need the current height profile
         close(13)
 
         print*,'ISHAPE = ',ISHAPE
-134     VV=VV+DELV
+134     VV=VV+DBLE(DELV)
         X=VV
         IF(ispace.eq.1)X=1e4/VV
 
@@ -373,7 +377,7 @@ C            print*,(yout(1,j),J=1,nconv)
 1020    FORMAT(' lblrtf_wave.f :: % complete : ',F5.1)
 
 
-        IF(VV.LT.VMAX)GOTO 134
+        IF(VV.LT.DBLE(VMAX))GOTO 134
 
         DO I=1,NPATH
          DO J=1,NCONV

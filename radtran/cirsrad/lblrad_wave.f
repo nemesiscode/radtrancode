@@ -491,6 +491,9 @@ C-----------------------------------------------------------------------
 		p = press(J)
 		t = temp(J)
 
+
+c		print*,'LBLRAD_WAVE: jnh3,jch4,jh2,jhe: ',jnh3,jch4,jh2,jhe
+
                 IF(JNH3.GT.0.)FNH3 = FRAC(J,JNH3)
                 IF(JCH4.GT.0.)FCH4 = FRAC(J,JCH4)
                 IF(JH2.GT.0.)FH2 = FRAC(J,JH2)
@@ -686,9 +689,11 @@ C       This goes off to do the collision induced-absorption
 		AvgCONTMP=0.0
 	        IF(FLAGH2P.EQ.1)THEN
                    FPARA = HFP(J)
- 		   CALL NPARACON(vv,P,T,
-     1		     NGas,idgas,isogas,AAmount,PPP,
-     2		     FPARA,XLen,AvgCONTMP,IABSORB,DABSORB,id1)
+c 		   CALL NPARACON(vv,P,T,
+c     1		     NGas,idgas,isogas,AAmount,PPP,
+c     2		     FPARA,XLen,AvgCONTMP,IABSORB,DABSORB,id1)
+     		   CALL NPARACON_ALL(vv,p,t,ngas,idgas,isogas,aamount,
+     1   	     ppp,fpara,xlen,avgcontmp,iabsorb,dabsorb,id1)
              	ELSE
 		   CALL NCIACON(vv,P,T,INormal,
      1		     NGas,idgas,isogas,AAmount,PPP,

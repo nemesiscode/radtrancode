@@ -1,6 +1,6 @@
-      SUBROUTINE LBL_KCONT(VMIN,VMAX,WING,VREL,PRESS,TEMP,IDGAS,ISOGAS,
-     1 FRAC,IPROC,IP,IT,MAXDV,IPTF,IEXO)
-C     $Id: lbl_kcont.f,v 1.17 2011-09-06 15:35:54 irwin Exp $
+      SUBROUTINE LBL_KCONT(VMIN,VMAX,WING,VREL,PRESS,TEMP,IDGAS,
+     1 ISOGAS,FRAC,IPROC,IP,IT,MAXDV,IPTF,IEXO)
+C     $Id:
 C***********************************************************************
 C_TITL:	LBL_KCONT.f
 C
@@ -50,7 +50,7 @@ C				IEXO=1, different line data for different
 C				  temperatures.
 C
 C	../includes/*.f variables:
-C	VLIN(MAXLIN)	REAL	Line position [cm^-1].
+C	VLIN(MAXLIN)	REAL*8	Line position [cm^-1].
 C	SLIN(MAXLIN)	REAL*8	Line strength [cm^-1 molecule^-1 cm^-2] at
 C				STP.
 C	ALIN(MAXLIN)	REAL	Air-broadened halfwidth [cm^-1/atm] @ STP.
@@ -94,7 +94,7 @@ C Definition of input parameters ...
       INTEGER IP,IT,IDGAS,ISOGAS,IPROC,IREAD,IEXO
       REAL VMIN,VMAX,WING,VREL,MAXDV
       REAL FRAC,PRESS,TEMP
-
+      DOUBLE PRECISION VV
 
 C The include files ...
       INCLUDE '../includes/arrdef.f'
@@ -160,7 +160,7 @@ C Variables needed for the new lineshapes ...
       REAL PI
       PARAMETER (PI=3.1415927)
 
-      REAL VV,FNH3,FH2
+      REAL FNH3,FH2
 
 C******************************** CODE *********************************
 
@@ -313,8 +313,8 @@ C Compute absorption coefficient for normal incidence
             DO 20 LINE=FSTLIN(I),LSTLIN(I)
 
               DO 21 K=1,IORDP1
-                VV=VBIN(J)+CONWAV(K)
-                DV=VV-VLIN(LINE)
+                VV=DBLE(VBIN(J)+CONWAV(K))
+                DV=SNGL(VV-VLIN(LINE))
                 IF(ABS(DV).LE.MAXDV)THEN
                  FNH3=-1.0
                  FH2=-1.0

@@ -34,7 +34,8 @@ C ALIN, ELIN, SBLIN, TDW, TDWS and that lot).
       INTEGER I,J
       INTEGER NLIN,FIRST,LAST
       INTEGER NGAS,IDGAS(NGAS),ISOGAS(NGAS)
-      REAL VMIN,VMAX,DELV,WING
+      DOUBLE PRECISION VMIN,VMAX,DELV
+      REAL WING
 
       REAL TINW(MAXDGAS)
       DATA (TINW(J),J=1,42)/0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,
@@ -48,28 +49,28 @@ C******************************** CODE *********************************
 
       WARNTD= .TRUE.
 
-      VMIN= VBIN(1)
-      VMAX= VBIN(NBIN) + WING
+      VMIN= DBLE(VBIN(1))
+      VMAX= DBLE(VBIN(NBIN) + WING)
       DELV= VMAX - VMIN
 
       FIRST= 1
       LAST= 0
       NLIN= 0
 
-cc      WRITE(*,*)' LOADBINS.f :: nbin, wing = ',nbin,wing
-cc      WRITE(*,*)' LOADBINS.f :: vmin, vmax, delv = ',vmin,vmax,delv
-cc      WRITE(*,*)' LOADBINS.f :: maxlin = ',maxlin
-cc      WRITE(*,*)' LOADBINS.f :: ngas = ',ngas
-cc      DO i=1,ngas
-cc        WRITE(*,*)' LOADBINS.f :: idgas, isogas = ',idgas,isogas
-cc      ENDDO
+      WRITE(*,*)' LOADBINS.f :: nbin, wing = ',nbin,wing
+      WRITE(*,*)' LOADBINS.f :: vmin, vmax, delv = ',vmin,vmax,delv
+      WRITE(*,*)' LOADBINS.f :: maxlin = ',maxlin
+      WRITE(*,*)' LOADBINS.f :: ngas = ',ngas
+      DO i=1,ngas
+        WRITE(*,*)' LOADBINS.f :: idgas, isogas = ',idgas,isogas
+      ENDDO
 
       CALL LINESS(VMIN,DELV,MAXLIN,VLIN,SLIN,ALIN,ELIN,IDLIN,
      1 SBLIN,PSHIFT,DOUBV,TDW,TDWS,LLQ,NLIN,FIRST,LAST,NGAS,
      2 IDGAS,ISOGAS)
 
-cc      WRITE(*,*)' LOADBINS.f :: Number of lines = ',NLIN
-cc      WRITE(*,*)' LOADBINS.f :: First, last line= ',FIRST,LAST
+      WRITE(*,*)' LOADBINS.f :: Number of lines = ',NLIN
+      WRITE(*,*)' LOADBINS.f :: First, last line= ',FIRST,LAST
 
       DO 11 I=1,NBIN
         NLINES(I)= 0
@@ -106,11 +107,11 @@ cc      WRITE(*,*)' LOADBINS.f :: First, last line= ',FIRST,LAST
         IF(FSTLIN(I).EQ.0)FSTLIN(I)= 1
 25    CONTINUE
 
-C      PRINT*,'LOADBINS: NBIN = ',NBIN
-C      PRINT*,'I,NLINES(I),FSTLIN(I),LSTLIN(I)'
-C      DO 26 I=1,NBIN
-C        WRITE(*,*)I,VMIN+(I-1)*DELV,NLINES(I),FSTLIN(I),LSTLIN(I)
-C26    CONTINUE
+      PRINT*,'LOADBINS: NBIN = ',NBIN
+      PRINT*,'I,VV,NLINES(I),FSTLIN(I),LSTLIN(I)'
+      DO 26 I=1,NBIN
+        WRITE(*,*)I,VMIN+(I-1)*WING,NLINES(I),FSTLIN(I),LSTLIN(I)
+26    CONTINUE
 
       RETURN
 

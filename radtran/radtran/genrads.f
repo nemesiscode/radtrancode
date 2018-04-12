@@ -1046,7 +1046,7 @@ C            compute absorption coefficient for normal incidence
              DO 21 K=1,IORDP1
               VV=CONWAV(K)+VBIN(J)
               DV1=(VV-VLIN(LINE))
-
+              V=DBLE(VV)
 C             *********** CIRS Line processing Parameters ******************
 	      IF(ABS(DV1).LE.MAXDV)THEN
 C	        Ignore lines more than MAXDV widths away
@@ -1066,7 +1066,7 @@ C                 print*,'Ignoring water line: ',VLIN(LINE)
                   IF(JH2.GT.0.) FH2 = FRAC(LAYER,JH2)
 
                   CONVAL(K) = CONVAL(K)+ LINECONTRIB(IPROC(J1),
-     1       IDGAS(J1),VV,TCORDW(LAYER,J1),TCORS1(LAYER,J1),
+     1       IDGAS(J1),V,TCORDW(LAYER,J1),TCORS1(LAYER,J1),
      2       TCORS2(LAYER),PRESS(LAYER),TEMP(LAYER),FRAC(LAYER,J1),
      3       VLIN(LINE),SLIN(LINE),ELIN(LINE),ALIN(LINE),SBLIN(LINE),
      4       TDW(LINE),TDWS(LINE),LLQ(LINE),DOUBV(LINE),FNH3,FH2)
@@ -1640,7 +1640,7 @@ C          IH2O is turned on.
             IF(JH2.GT.0.) FH2 = FRAC(LAYER,JH2)
 
             TAUTMP(LAYER) = TAUTMP(LAYER)+ LINECONTRIB(IPROC(J1),
-     1       IDGAS(J1),VV,TCORDW(LAYER,J1),TCORS1(LAYER,J1),
+     1       IDGAS(J1),V,TCORDW(LAYER,J1),TCORS1(LAYER,J1),
      2       TCORS2(LAYER),PRESS(LAYER),TEMP(LAYER),FRAC(LAYER,J1),
      3       VLIN(LINE),SLIN(LINE),ELIN(LINE),ALIN(LINE),SBLIN(LINE),
      4       TDW(LINE),TDWS(LINE),LLQ(LINE),DOUBV(LINE),FNH3,FH2)

@@ -51,7 +51,7 @@ C				wings.
 C	IPTF		INTEGER Partition function flag for CH4
 C
 C	../includes/*.f variables:
-C	VLIN(MAXLIN)	REAL	Line position [cm^-1].
+C	VLIN(MAXLIN)	REAL*8	Line position [cm^-1].
 C	SLIN(MAXLIN)	REAL*8	Line strength [cm^-1 molecule^-1 cm^-2] at
 C				STP.
 C	ALIN(MAXLIN)	REAL	Air-broadened halfwidth [cm^-1/atm] @ STP.
@@ -167,9 +167,8 @@ C MXWID: Root mean square of XPW, XPD.
 
 C Misc (and UNDOCUMENTED!!) variables defined in the code ...
       INTEGER LINE,LABEL
-      REAL XMASS,GETMASS,VTMP
-      REAL V,ABSCO
-      DOUBLE PRECISION LNABSCO
+      REAL XMASS,GETMASS,VTMP,ABSCO,V
+      DOUBLE PRECISION LNABSCO,VV
 c--------------------------------
 cc NT*** these  are now arrays **
 ccc      REAL ABSCO,AD,X,Y,DV
@@ -327,7 +326,7 @@ c     pretabulate some line calculation parameters
           DO LINE=FSTLIN(JBIN),LSTLIN(JBIN)
             if (line_done(line).eq.0) then
              line_done(line)=1
-             tstim_arr(line) = (1.0 - dpexp(-1.439*vlin(line)/temp))/
+         tstim_arr(line) = (1.0 - dpexp(-1.439*sngl(vlin(line))/temp))/
      >          (1.0 - dpexp(-1.439*vlin(line)/296.0))
              LNABSCO=LOG(SLIN(LINE))+LOG(TCORS1)+TCORS2*ELIN(LINE)+
      >		LOG(TSTIM_ARR(LINE))
@@ -339,7 +338,7 @@ C     1		EXP(LNABSCO),ABSCO
 C             print*,sngl(slin(line)*tcors1*dpexp(tcors2*elin(line))*
 C     >        tstim_arr(line))
 
-             ad_arr(line) = tcordw*vlin(line)
+             ad_arr(line) = sngl(tcordw*vlin(line))
              y_arr(line) = (alin(line)*(1 - frac)*tratio**tdw(line) +
      >           (alin(line) - sblin(line))*frac*tratio**tdws(line))*
      >           press/ad_arr(line)
@@ -436,12 +435,13 @@ C=======================================================================
 
 C Compute absorption coefficient for normal incidence
         DO 52 LINE=FSTLIN(JBIN),LSTLIN(JBIN)
-          DV=vlin(line)-v
+          VV=DBLE(V)
+          DV=SNGL(vlin(line)-VV)
           IF(ABS(DV).LE.MAXDV)THEN
-           X  = abs(vlin(line)-v)/ad_arr(line)
+           X  = ABS(DV)/ad_arr(line)
            FNH3=-1.0
            FH2=-1.0
-           TAUTMP=TAUTMP+SUBLINE(IDGAS,PRESS,TEMP,IPROC,V,
+           TAUTMP=TAUTMP+SUBLINE(IDGAS,PRESS,TEMP,IPROC,VV,
      1  VLIN(LINE),ABSCO_arr(line),X,Y_arr(line),ad_arr(line),
      1  FNH3,FH2,LLQ(line),DOUBV(line))
           ENDIF

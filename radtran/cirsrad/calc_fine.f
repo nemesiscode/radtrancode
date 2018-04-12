@@ -7,7 +7,7 @@ C
 C_DESC:	Calculate the line contributions to the continuum bins
 C
 C_ARGS:	Input variables:
-C	VV		REAL 	Calculation wavenumber
+C	VV		REAL*8 	Calculation wavenumber
 C	WING		REAL	Bin width.
 C	MAXDV		REAL	Line wing cut-off
 C	LAYER		INTEGER	Layer number
@@ -67,11 +67,11 @@ C VLIN, SLIN, ALIN, ELIN, SBLIN, TDW, TDWS and that lot).
 
 
 C     General variables ...
-      REAL DV,LINECONTRIB,VV,X,FNH3,FH2
+      REAL DV,LINECONTRIB,X,FNH3,FH2
       INTEGER I,J,K,L,LINE,IBIN,CURBIN,IGAS,IB,IBS(2),IBX
       INTEGER IFCONT,F1,L1,B1,JBIN
       REAL CONVAL,VTMP
-       
+      DOUBLE PRECISION VV
 
 
 
@@ -79,7 +79,7 @@ C******************************** CODE *********************************
 
       NANTEST=.FALSE.
 
-      CURBIN = 1+INT((VV-VBIN(1))/WING)
+      CURBIN = 1+INT((SNGL(VV)-VBIN(1))/WING)
       IFCONT = 0
       XK=0.0
       
@@ -109,7 +109,7 @@ C        Error arose while doing LBL simulations in visible range. Problem not y
 
           IGAS=IDLIN(IB,LINE)
 
-          DV = (VV - VLIN(IB,LINE))
+          DV = (SNGL(VV) - VLIN(IB,LINE))
 
 C         Ignore lines more than MAXDV widths away
           IF(ABS(DV).LE.MAXDV)THEN
@@ -158,7 +158,7 @@ C         Ignore lines more than MAXDV widths away
 12    CONTINUE
 
 C     Now add on the line wing continuum contribution
-      DV = VV-VBIN(CURBIN)
+      DV = SNGL(VV)-VBIN(CURBIN)
       VTMP=1.0
 
       DO I=1,IORDP1

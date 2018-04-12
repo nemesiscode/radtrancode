@@ -78,7 +78,7 @@ C
 C_HIST:	
 C-----------------------------------------------------------------------
 
-      SUBROUTINE LBLrad_wave (X, WING, VMIN, VMAX, VREL, MAXDV, 
+      SUBROUTINE LBLrad_wave (XX, WING, VMIN, VMAX, VREL, MAXDV, 
      1    IBS, IBD, Dist, INormal, IRay, ispace, DelH, nlayer,
      2    npath, ngas, limlay, limcont, totam, press, temp, pp, 
      3    amount, nlayin, incdim, layinc, cont, scale, imod,
@@ -118,10 +118,10 @@ C		Passed variables
       REAL    vem(maxsec),emissivity(maxsec),interpem
       REAL	xmu,dtr,xt1,xfac
       INTEGER ifc(limcont,nlayer),nem,j0,IBS(2),IBD(2)
-      DOUBLE PRECISION VV,X,DX0,DX1
+      DOUBLE PRECISION VV,XX,DX0,DX1
 
 	REAL	XCOM,XNEXT,FPARA,XRAY,RAYLEIGHJ,RAYLEIGHA,RAYLEIGHV
-        REAL    WING,MAXDV,VMIN,VMAX
+        REAL    WING,MAXDV,VMIN,VMAX,X
         REAL    RAYLEIGHLS,fheh2,fch4h2,fh2,fhe,fch4,fnh3
         INTEGER jnh3,jch4,jh2,jhe,igas
         double precision get_albedo
@@ -432,13 +432,14 @@ C-----------------------------------------------------------------------
         XNEXT=0.0
         IRECL = 4
 
-        esurf = interpem(nem,vem,emissivity,x)
 
 C       Set vv to the current WAVENUMBER
-        vv = x
+        vv = Xx
         if(ispace.eq.1)then
-          vv=1e4/x 
+          vv=1e4/XX 
         endif
+        x=sngl(xx)
+        esurf = interpem(nem,vem,emissivity,x)
 
 C        print*,'lblrad_wave ispace,vv=',ispace,vv
 

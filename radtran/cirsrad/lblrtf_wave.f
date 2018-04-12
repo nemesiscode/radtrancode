@@ -65,7 +65,8 @@ C         bins, paths, etc.)
         REAL            yout(maxpat,mconv),tsurf,ynor(maxpat,mconv)
         REAL		vem(maxsec),emissivity(maxsec) 
 	REAL		AAMOUNT(maxlay,maxgas),XX0
-        DOUBLE PRECISION VV,X,DX0,DX1
+        DOUBLE PRECISION VV,XX,DX0,DX1
+        REAL		VVR
         INTEGER         lun, ulog, iphi,NLINR,ipzen1
         PARAMETER       (lun=2, ulog=17)
 
@@ -258,7 +259,7 @@ C      Read in 2 arrays of lines
        print*,'lblrtf_wave : maxlin = ',MAXLIN1
        DX0 = DBLE(XX0)
        DX1 = DBLE(VMAX+VREL)
-
+       print*,'lblrtf_wave : DX0,DX1 ',DX0,DX1
        CALL LOADBUFFER(DX0,DX1,FSTREC,MAXLIN1,MAXBIN,IB,
      1   NGAS,IDGAS,ISOGAS,VBOT,WING,NLINR,VLIN,SLIN,ALIN,ELIN,IDLIN,
      2 SBLIN,PSHIFT,DOUBV,TDW,TDWS,LLQ,NXTREC,FSTLIN,LSTLIN,LASTBIN)
@@ -338,11 +339,11 @@ C          need the current height profile
 
         print*,'ISHAPE = ',ISHAPE
 134     VV=VV+DBLE(DELV)
-        X=VV
-        IF(ispace.eq.1)X=1e4/VV
+        XX=VV
+        IF(ispace.eq.1)XX=1e4/VV
+        VVR=SNGL(VV)
 
-
-        CALL lblrad_wave (X, WING, VMIN, VMAX, VREL, MAXDV, IBS, 
+        CALL lblrad_wave (XX, WING, VMIN, VMAX, VREL, MAXDV, IBS, 
      1    IBD, Dist, INormal, Iray, ispace, DelH, nlayer, npath,
      1    ngas, maxlay, maxcon, totam, press, temp, pp, amount,
      2    nlayin, maxinc, layinc, cont, scale, imod, idgas,
@@ -361,14 +362,14 @@ C          need the current height profile
 
         IF(IFLAG.EQ.1)THEN
 
-           CALL lblconv(opfile,fwhm,ishape,npath,ispace,vv,delv,yp,
+           CALL lblconv(opfile,fwhm,ishape,npath,ispace,vvr,delv,yp,
      1      nconv,vconv,yout,ynor,FWHMEXIST,NFWHM,VFWHM,XFWHM)
 
         ENDIF
 
         IF(IFLAG.EQ.0)IFLAG=1
 
-        XCOM = 100.0*(VV-VMIN)/(VMAX-VMIN)
+        XCOM = 100.0*(VVR-VMIN)/(VMAX-VMIN)
         IF(XCOM.GE.XNEXT)THEN
             WRITE(*,1020)XCOM
 C            print*,(yout(1,j),J=1,nconv)

@@ -327,7 +327,7 @@ c     pretabulate some line calculation parameters
             if (line_done(line).eq.0) then
              line_done(line)=1
          tstim_arr(line) = (1.0 - dpexp(-1.439*sngl(vlin(line))/temp))/
-     >          (1.0 - dpexp(-1.439*vlin(line)/296.0))
+     >          (1.0 - dpexp(-1.439*sngl(vlin(line))/296.0))
              LNABSCO=LOG(SLIN(LINE))+LOG(TCORS1)+TCORS2*ELIN(LINE)+
      >		LOG(TSTIM_ARR(LINE))
              ABSCO = SNGL(EXP(LNABSCO))
@@ -351,7 +351,8 @@ c###################################################
 
 C Infinite resolution
       DO 103 I=1,NPOINT
-        V = VSTART + FLOAT(I - 1)*DELV
+        VV = DBLE(VSTART) + DBLE(I - 1)*DBLE(DELV)
+        V = SNGL(VV)
         ASSIGN 2001 TO LABEL
         GOTO 2000
 
@@ -435,7 +436,6 @@ C=======================================================================
 
 C Compute absorption coefficient for normal incidence
         DO 52 LINE=FSTLIN(JBIN),LSTLIN(JBIN)
-          VV=DBLE(V)
           DV=SNGL(vlin(line)-VV)
           IF(ABS(DV).LE.MAXDV)THEN
            X  = ABS(DV)/ad_arr(line)

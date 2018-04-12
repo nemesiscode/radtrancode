@@ -36,7 +36,7 @@ C--------------------------------------------------------------------------
       INCLUDE '../includes/dbcom.f' 
 C--------------------------------------------------------------
       INTEGER LINLIM
-      PARAMETER (LINLIM=20000)
+      PARAMETER (LINLIM=200000)
       REAL VLIN(LINLIM),ALIN(LINLIM),ELIN(LINLIM),
      1 SBLIN(LINLIM),TDW(LINLIM),TDWS(LINLIM),PSHIFT(LINLIM),
      2 DOUBV(LINLIM)
@@ -47,7 +47,7 @@ C--------------------------------------------------------------
       INTEGER NEXTRA
       CHARACTER*1 ANS
 
-      REAL VMIN,VMAX,DELV
+      DOUBLE PRECISION VMIN,VMAX,DELV
       CHARACTER*12 MANTIS
 C
       CALL PROMPT('data base key?')

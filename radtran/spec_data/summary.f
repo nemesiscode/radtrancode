@@ -31,7 +31,7 @@ C--------------------------------------------------------------
       INCLUDE '../includes/dbcom.f' 
 C--------------------------------------------------------------
       CHARACTER*256 BUFFER
-      REAL VMIN,VMAX,VBIN,BINSIZ
+      DOUBLE PRECISION VMIN,VMAX,VBIN,BINSIZ
       DOUBLE PRECISION SMAX(MAXISO,MAXDGAS),SMIN(MAXISO,MAXDGAS)
       INTEGER NLINES(MAXISO,MAXDGAS),IBIN,NBIN,I,J,IMIN,IMAX,TOTLIN,OVTOT
       CALL PROMPT('data base key?')

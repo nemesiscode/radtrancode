@@ -1,7 +1,7 @@
       SUBROUTINE FNDWAV(WAVE)
 C     $Id: fndwav.f,v 1.2 2011-06-17 15:53:01 irwin Exp $
 C--------------------------------------------------------------
-C_TITLE:  FNDWAV: searches data base file for wavelength
+C_TITLE:  FNDWAV: searches data base file for wavenumber
 C
 C_KEYS:   SUBR,LINEDATA
 C
@@ -15,7 +15,7 @@ C
 C_FILES :
 C         unit DBLUN - already open on entry
 C
-C_ARGS:   WAVE:REAL     wavenumber to search for
+C_ARGS:   WAVE:DOUBLE PRECISION     wavenumber to search for
 C         DBLUN:COMMON  units number of data base
 C         DBREC:COMMON  record pointer (OUTPUT)
 C
@@ -31,7 +31,7 @@ C--------------------------------------------------------------
       INCLUDE '../includes/dbcom.f' 
 C--------------------------------------------------------------
       CHARACTER*256 BUFFER
-      REAL WAVE
+      DOUBLE PRECISION WAVE
       REAL LOG2
       PARAMETER (LOG2=0.30103)
       INTEGER DELREC,N

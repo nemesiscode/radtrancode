@@ -62,7 +62,7 @@ C ../includes/dbcom.f stores the linedata base variables.
       INTEGER I,J,K,ID,ISO,IBIN,LINE,FSTLIN,LSTLIN,NBIN,IPTF
       INTEGER FIRST(2),LAST(2),NPAR,IERROR,READI,NLIN,NKEEP,NLOSE
 
-      REAL VMIN,VMAX,BINSIZ,VLOW,VHIGH
+      DOUBLE PRECISION VMIN,VMAX,BINSIZ,VLOW,VHIGH
       DOUBLE PRECISION LIMIT(MAXISO,MAXDGAS),TOTSTR,SUMSTR,PERCEN
 C VMIN: Wavenumber [cm-1] minimum.
 C VMAX: Wavenumber [cm-1] maximum.
@@ -243,15 +243,16 @@ C compilers (notably Prospero Fortran for MS-DOS)
       DO 207 I=1,MAXDGAS
          IF(DBNISO(I).LT.1)GOTO 207
          WRITE(BUFFER,208)GASNAM(I),(INCGAS(J,I),J=1,DBNISO(I))
- 208     FORMAT(' #',1A8,' INCGAS:',20(1X,L1))
+208      FORMAT(' #',1A8,' INCGAS:',20(1X,L1))
          WRITE(3,111)BUFFER(1:DBRECL)
          WRITE(BUFFER,209)GASNAM(I),(ALLISO(J,I),J=1,DBNISO(I))
- 209     FORMAT(' #',1A8,' ALLISO:',20(1X,L1))
+209      FORMAT(' #',1A8,' ALLISO:',20(1X,L1))
          WRITE(3,111)BUFFER(1:DBRECL)
- 207  CONTINUE
+207   CONTINUE
       
       
       TCORS2=1.439*(TEMP-296.)/(296.*TEMP)
+
 C     For each bin ...
       NBIN = INT((VMAX-VMIN)/BINSIZ) + 1
       
@@ -264,30 +265,30 @@ C     record after LSTLIN and then sets it to the last record in the bin.
          VLOW = VMIN + FLOAT(IBIN-1)*BINSIZ
          VHIGH = VMIN + FLOAT(IBIN)*BINSIZ
          WRITE(*,121)IBIN,VLOW,VHIGH
- 121     FORMAT(I5,F12.3,'-',F12.3)
-C     Find wavenumber region in data base
+121      FORMAT(I5,F12.3,'-',F12.3)
+C        Find wavenumber region in data base
          FSTLIN = LSTLIN + 1
          CALL FNDWAV(VHIGH)
          LSTLIN = DBREC - 1
 
          IF(PERCEN.GT.0.0)THEN
-C     Load NLINES array
-C     NLINES (strength decade, iso, ngas) is the number of lines in 
-C     each strength decade
+C           Load NLINES array
+C           NLINES (strength decade, iso, ngas) is the number of lines in 
+C           each strength decade
             DO 120 I=1,MAXDGAS
                DO 122 J=1,DBNISO(I)
                   DO 123 K=MINSTR,MAXSTR
                      NLINES(K,J,I) = 0
- 123              CONTINUE
- 122           CONTINUE
- 120        CONTINUE
+123               CONTINUE
+122            CONTINUE
+120         CONTINUE
 
             DO 110 LINE=FSTLIN,LSTLIN
                READ(DBLUN,111,REC=LINE)BUFFER(1:DBRECL)
- 111           FORMAT(A)
+111            FORMAT(A)
                CALL RDLINE(BUFFER)
-               TS1 = 1.0-EXP(-1.439*LNWAVE/TEMP)
-               TS2 = 1.0-EXP(-1.439*LNWAVE/296.0)
+               TS1 = 1.0-EXP(-1.439*SNGL(LNWAVE)/TEMP)
+               TS2 = 1.0-EXP(-1.439*SNGL(LNWAVE)/296.0)
                TSTIM=1.0
                IF(TS2.NE.0) TSTIM = TS1/TS2
                K = -1
@@ -303,7 +304,7 @@ C               print*,LOG(LNSTR),LOG(TCORS1),(TCORS2*LNLSE),LOG(TSTIM)
 C               print*,LNABSCO,LNSTR1
                IF(LNSTR1.LT.LIMSTR)THEN
                   WRITE(TEXT,115)LNWAVE,LNID,LNISO,LNSTR,LNSTR1,LIMSTR
- 115              FORMAT('WARNING - strength too low for storage',
+115               FORMAT('WARNING - strength too low for storage',
      1                 F12.6,2I3,3E12.5)
                   CALL WTEXT(TEXT)
                   GOTO 110
@@ -312,23 +313,23 @@ C               print*,LNABSCO,LNSTR1
                I = INT(DLOG10(LNSTR1))
                IF(I.GT.MAXSTR)THEN
                   WRITE(*,113)LNWAVE,LNSTR,LNSTR1,LNID,LNISO
- 113              FORMAT('WARNING - strength too high for storage',
+113               FORMAT('WARNING - strength too high for storage',
      1                 F12.6,E12.5,E12.5,2I3)
                   STOP
                ENDIF
                
-C     see if this line is the right isotope
+C              see if this line is the right isotope
                K = -1
                DO 112 J=1,DBNISO(LOCID(LNID))
                   IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K=J
- 112           CONTINUE
+112            CONTINUE
                
-C     if yes, then add 1 to count
+C              if yes, then add 1 to count
                IF(K.NE.-1)THEN
                   NLINES(I,K,LOCID(LNID))=NLINES(I,K,LOCID(LNID))+1
                ENDIF
                
- 110        CONTINUE
+110         CONTINUE
             
 C count the total lines for all isotopes for this strength decade, gas id
             DO 130 I=1,MAXDGAS
@@ -336,16 +337,16 @@ C count the total lines for all isotopes for this strength decade, gas id
                   TOTLIN(J,I) = 0
                   DO 131 K=1,DBNISO(I)
                      IF(INCGAS(K,I))TOTLIN(J,I) = 
-     C                    TOTLIN(J,I) + NLINES(J,K,I)
- 131              CONTINUE
- 132           CONTINUE
- 130        CONTINUE
+     1                    TOTLIN(J,I) + NLINES(J,K,I)
+131               CONTINUE
+132            CONTINUE
+130         CONTINUE
             
 C Compute limit for each isotope ...
-        DO 140 I=1,MAXDGAS
-          DO 146 J=1,DBNISO(I)
-            IF(INCGAS(J,I))THEN
-              IF(ALLISO(J,I))THEN
+            DO 140 I=1,MAXDGAS
+             DO 146 J=1,DBNISO(I)
+              IF(INCGAS(J,I))THEN
+               IF(ALLISO(J,I))THEN
                 TOTSTR = 0.
                 DO 144 K=MINSTR,MAXSTR
                   TOTSTR = TOTSTR + DBLE(TOTLIN(K,I))*CC**K
@@ -357,7 +358,7 @@ C Compute limit for each isotope ...
                   IF(SUMSTR.GT.PERCEN*TOTSTR)GOTO 143
                   LIMIT(J,I) = CC**K
 145             CONTINUE
-              ELSE
+               ELSE
                 TOTSTR = 0.
                 DO 141 K=MINSTR,MAXSTR
                   TOTSTR = TOTSTR + DBLE(NLINES(K,J,I))*CC**K
@@ -373,49 +374,43 @@ c     C                 percen*totstr, totstr, limit(j,i)
                   IF(SUMSTR.GT.PERCEN*TOTSTR)GOTO 143
                   LIMIT(J,I) = CC**K
 142             CONTINUE
+               ENDIF
+143            CONTINUE
+
               ENDIF
-
-143           CONTINUE
-
-            ENDIF
-146       CONTINUE
-140     CONTINUE
-
-C Print out computed limits for each gas ...
-C      WRITE(*,*)'Limiting strengths for each gas:'
-C      DO 134 J=1,MAXDGAS
-C        WRITE(*,*)J,DBNISO(J),(LIMIT(K,J),K=1,DBNISO(J))
-C134   CONTINUE
-
-      ENDIF
+146          CONTINUE
+140         CONTINUE
 
 
-C     See how many lines are deselected by this and sum up strengths:
-      NKEEP=0
-      NLOSE=0
-      STRLOSE=0.0
-      STRKEEP=0.0
-      DO 160 LINE=FSTLIN,LSTLIN
-        READ(DBLUN,111,REC=LINE)BUFFER(1:DBRECL)
-        CALL RDLINE(BUFFER)
+         ENDIF
 
-        TS1 = 1.0-EXP(-1.439*LNWAVE/TEMP)
-        TS2 = 1.0-EXP(-1.439*LNWAVE/296.0)
-        TSTIM=1.0
-        IF(TS2.NE.0) TSTIM = TS1/TS2
-        K = -1
-        DO J=1,DBNISO(LOCID(LNID))
-          IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K=J
-        ENDDO                
-        TCORS1=PARTF(LOCID(LNID),K,TEMP,IPTF)
-        LNABSCO = LOG(LNSTR)+LOG(TCORS1)+(TCORS2*LNLSE)+LOG(TSTIM)
-        LNSTR1=DEXP(DBLE(LNABSCO))
 
-        K = -1
-        DO 162 J=1,DBNISO(LOCID(LNID))
-          IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K = J
-162     CONTINUE
-        IF(K.NE.-1.) THEN
+C        See how many lines are deselected by this and sum up strengths:
+         NKEEP=0
+         NLOSE=0
+         STRLOSE=0.0
+         STRKEEP=0.0
+         DO 160 LINE=FSTLIN,LSTLIN
+          READ(DBLUN,111,REC=LINE)BUFFER(1:DBRECL)
+          CALL RDLINE(BUFFER)
+
+          TS1 = 1.0-EXP(-1.439*SNGL(LNWAVE)/TEMP)
+          TS2 = 1.0-EXP(-1.439*SNGL(LNWAVE)/296.0)
+          TSTIM=1.0
+          IF(TS2.NE.0) TSTIM = TS1/TS2
+          K = -1
+          DO J=1,DBNISO(LOCID(LNID))
+            IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K=J
+          ENDDO                
+          TCORS1=PARTF(LOCID(LNID),K,TEMP,IPTF)
+          LNABSCO = LOG(LNSTR)+LOG(TCORS1)+(TCORS2*LNLSE)+LOG(TSTIM)
+          LNSTR1=DEXP(DBLE(LNABSCO))
+
+          K = -1
+          DO 162 J=1,DBNISO(LOCID(LNID))
+           IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K = J
+162       CONTINUE
+          IF(K.NE.-1.) THEN
            IF(INCGAS(K,LOCID(LNID)))THEN
               IF(PERCEN.GT.0.0)THEN
                  IF (LNSTR1.GE.LIMIT(K,LOCID(LNID)))THEN
@@ -445,43 +440,43 @@ C     See how many lines are deselected by this and sum up strengths:
                  ENDIF
               ENDIF
            ENDIF
-        ENDIF
-160   CONTINUE
+          ENDIF
+160      CONTINUE
    
-      NLIN = LSTLIN-FSTLIN+1      
-      print*,'NLIN, NKEEP, NLOSE+NKEEP',NLIN,NKEEP,NLOSE+NKEEP
-      IF(NKEEP.GT.0)THEN
-       SCORR=STRLOSE/DBLE(NKEEP)
-      ELSE
-       SCORR=STRLOSE
-      ENDIF
-C      PRINT*,'NLOSE,STRLOSE,NKEEP,STRKEEP',NLOSE,STRLOSE,NKEEP,STRKEEP
-C      PRINT*,'SCORR',SCORR
+         NLIN = LSTLIN-FSTLIN+1      
+         print*,'NLIN, NKEEP, NLOSE+NKEEP',NLIN,NKEEP,NLOSE+NKEEP
+         IF(NKEEP.GT.0)THEN
+          SCORR=STRLOSE/DBLE(NKEEP)
+         ELSE
+          SCORR=STRLOSE
+         ENDIF
+C        PRINT*,'NLOSE,STRLOSE,NKEEP,STRKEEP',NLOSE,STRLOSE,NKEEP,STRKEEP
+C        PRINT*,'SCORR',SCORR
 
 
 C Copy required lines and correct for those stripped ...
-      DO 150 LINE=FSTLIN,LSTLIN
-        READ(DBLUN,111,REC=LINE)BUFFER(1:DBRECL)
-        CALL RDLINE(BUFFER)
+         DO 150 LINE=FSTLIN,LSTLIN
+          READ(DBLUN,111,REC=LINE)BUFFER(1:DBRECL)
+          CALL RDLINE(BUFFER)
 
-        TS1 = 1.0-EXP(-1.439*LNWAVE/TEMP)
-        TS2 = 1.0-EXP(-1.439*LNWAVE/296.0)
-        TSTIM=1.0
-        IF(TS2.NE.0) TSTIM = TS1/TS2
-        K = -1
-        DO J=1,DBNISO(LOCID(LNID))
-          IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K=J
-        ENDDO                
-        TCORS1=PARTF(LOCID(LNID),K,TEMP,IPTF)
-        LNABSCO = LOG(LNSTR)+LOG(TCORS1)+(TCORS2*LNLSE)+LOG(TSTIM)
-        LNSTR1=DEXP(LNABSCO)
+          TS1 = 1.0-EXP(-1.439*SNGL(LNWAVE)/TEMP)
+          TS2 = 1.0-EXP(-1.439*SNGL(LNWAVE)/296.0)
+          TSTIM=1.0
+          IF(TS2.NE.0) TSTIM = TS1/TS2
+          K = -1
+          DO J=1,DBNISO(LOCID(LNID))
+            IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K=J
+          ENDDO                
+          TCORS1=PARTF(LOCID(LNID),K,TEMP,IPTF)
+          LNABSCO = LOG(LNSTR)+LOG(TCORS1)+(TCORS2*LNLSE)+LOG(TSTIM)
+          LNSTR1=DEXP(LNABSCO)
 
 
-        K = -1
-        DO 152 J=1,DBNISO(LOCID(LNID))
-          IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K = J
-152     CONTINUE
-        IF(K.NE.-1.) THEN
+          K = -1
+          DO 152 J=1,DBNISO(LOCID(LNID))
+            IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K = J
+152       CONTINUE
+          IF(K.NE.-1.) THEN
            IF(INCGAS(K,LOCID(LNID)))THEN
               LNSTR2=LNSTR1+SCORR
               FCORR = LNSTR2/LNSTR1
@@ -498,12 +493,12 @@ C Copy required lines and correct for those stripped ...
                  WRITE(3,111)BUFFER(1:DBRECL)
               ENDIF
            ENDIF
-        ENDIF
-150   CONTINUE
+          ENDIF
+150      CONTINUE
 
 
 
-      IF(VHIGH.GE.VMAX)GOTO 101
+         IF(VHIGH.GE.VMAX)GOTO 101
 
 100   CONTINUE
 101   CONTINUE

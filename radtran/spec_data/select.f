@@ -65,7 +65,7 @@ C ../includes/dbcom.f stores the linedata base variables.
       INTEGER I,J,K,ID,ISO,IBIN,LINE,FSTLIN,LSTLIN,NBIN
       INTEGER FIRST(2),LAST(2),NPAR,IERROR,READI
 
-      REAL VMIN,VMAX,BINSIZ,VLOW,VHIGH
+      DOUBLE PRECISION VMIN,VMAX,BINSIZ,VLOW,VHIGH
       DOUBLE PRECISION LIMIT(MAXISO,MAXDGAS),PERCEN
 C VMIN: Wavenumber [cm-1] minimum.
 C VMAX: Wavenumber [cm-1] maximum.

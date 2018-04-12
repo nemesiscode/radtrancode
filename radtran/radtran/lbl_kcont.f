@@ -123,7 +123,7 @@ C RANGE: =VTOP-VBOT, the calculation range [cm^-1].
 
 C Continuum variables ...
       INTEGER MP,MT
-      PARAMETER (MP=30,MT=20)
+      PARAMETER (MP=20,MT=20)
       REAL CONTINK(IORDP1,MP,MT,MAXBIN)
       REAL CONVAL(NWAV),CONWAV(NWAV)
       REAL MATRIX(IORDP1,IORDP1),UNIT(IORDP1,IORDP1)
@@ -192,6 +192,8 @@ C NOTE: TCORS1 includes factor of 1.e-27 for scaling of stored lines
       RANGE = VTOP - VBOT
       NBIN = INT(RANGE/WING) + 1
       PRINT*,'LBL_KCONT: NBIN, RANGE, WING = ',NBIN, RANGE, WING
+      PRINT*,'LBL_KCONT: VMIN, VMAX, VBOT, VTOP = ',
+     1 VMIN,VMAX,VBOT,VTOP
       IF(NBIN.GT.MAXBIN)THEN
         WRITE(*,*)'LBL_KCONT.f :: *ERROR* NBIN > MAXBIN'
         WRITE(*,*)'Stopping program.'

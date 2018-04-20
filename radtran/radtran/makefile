@@ -20,6 +20,8 @@ F_SOURCES = \
 	hartmannch4A.f \
 	hartmannch4B.f \
 	calc_esum2.f \
+	init_lco.f \
+	calc_lco.f \
 	calc_esum5.f \
 	calc_fkdist_wavec.f \
 	calc_lor_width.f \

@@ -48,6 +48,7 @@ C	 IPTF		INTEGER	Partition function flag for CH4.
 C	 IEXO		INTEGER IEXO=0, same line data for all temperatures
 C				IEXO=1, different line data for different
 C				  temperatures.
+C	 IEXTRA		INTEGER	IEXTRA=1 
 C
 C	../includes/*.f variables:
 C	VLIN(MAXLIN)	REAL*8	Line position [cm^-1].
@@ -94,7 +95,8 @@ C Definition of input parameters ...
       INTEGER IP,IT,IDGAS,ISOGAS,IPROC,IREAD,IEXO
       REAL VMIN,VMAX,WING,VREL,MAXDV
       REAL FRAC,PRESS,TEMP
-      DOUBLE PRECISION VV
+      DOUBLE PRECISION VV,VJ,STR
+      REAL LSE,XWIDA,XWIDS,XTDEP
 
 C The include files ...
       INCLUDE '../includes/arrdef.f'
@@ -108,6 +110,7 @@ C RELABU).
 C ../includes/lincom.f stores the linedata variables (including MAXLIN,
 C VLIN, SLIN, ALIN, ELIN, SBLIN, TDW, TDWS and that lot).
       INCLUDE '../includes/parcom.f'
+      INCLUDE '../includes/lcocom.f'
 C ../includes/parcom.f stores the parameter values such as MAXLAY,
 
 
@@ -149,7 +152,7 @@ C precision.
 
 
 C Partition function variables ...
-      REAL TCORS1,TCORS2,TCORDW
+      REAL TCORS1,TCORS2,TCORDW,VOUT(MAXBIN),YOUT(MAXBIN)
 C TCORS1: the partition function temperature dependence times absorber
 C fraction.
 C TCORS2: the temperature dependence for the Boltzman distribution.
@@ -326,6 +329,7 @@ C Compute absorption coefficient for normal incidence
                 ENDIF
 21           CONTINUE
 20         CONTINUE
+
            DO 23 K=1,IORDP1
              DO 314 L=1,IORDP1
                CONTINK(K,IP,IT,J) = CONTINK(K,IP,IT,J) + 
@@ -334,6 +338,37 @@ C Compute absorption coefficient for normal incidence
 23         CONTINUE
 15      CONTINUE
 13    CONTINUE  
+
+C     Extra continuum for linedata files that are so large that they
+C     have been stripped of weaker lines.
+      IF(IJLCO.GT.0)THEN
+       IF(IDGAS.EQ.IDLCO.AND.ISOGAS.EQ.ISOLCO)THEN
+        print*,'Adding LCO for gas : ',IDLCO,ISOLCO
+        FNH3=-1.0
+        FH2=-1.0
+
+        CALL CALC_LCO(VBIN,NBIN,WING,MAXDV,IPROC,IDGAS,TCORDW,TCORS1,
+     2     TCORS2,PRESS,TEMP,FRAC,FNH3,FH2,VOUT,YOUT)
+
+        DO 301 I=1,NBIN
+
+         DO 302 K=1,IORDP1
+          VV=DBLE(VBIN(I)+CONWAV(K))
+          CALL VERINT(VOUT,YOUT,NBIN+1,CONVAL(K),SNGL(VV))
+302      CONTINUE
+
+         DO 203 K=1,IORDP1
+             DO 304 L=1,IORDP1
+               CONTINK(K,IP,IT,I) = CONTINK(K,IP,IT,I) + 
+     1         UNIT(L,K)*CONVAL(L)
+304          CONTINUE
+203      CONTINUE
+
+301     CONTINUE
+       ENDIF
+      ENDIF
+
+      
 
       RETURN
 

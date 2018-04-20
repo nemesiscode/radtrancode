@@ -49,6 +49,7 @@ C	calculating atmospheric paths. ! nptah. itype declared within
 	INCLUDE '../includes/arrdef.f'
 	INCLUDE '../includes/pathcom.f'
         INCLUDE '../includes/laycom.f'
+        INCLUDE '../includes/lcocom.f'
 
 C       Defines the maximum values for a series of variables (layers,
 C         bins, paths, etc.)
@@ -79,10 +80,10 @@ C         bins, paths, etc.)
 
         CHARACTER*100   klist, opfile1, solname, solfile, buffer
 
-        CHARACTER*100   logfil, drvfil, sfile, FWHMFILE
+        CHARACTER*100   logfil, drvfil, sfile, FWHMFILE,lcofil
         INTEGER         NFWHM,MFWHM
         PARAMETER(MFWHM=1000)
-        LOGICAL         FWHMEXIST
+        LOGICAL         FWHMEXIST,FEXIST
         REAL            VFWHM(MFWHM),XFWHM(MFWHM)
 
 
@@ -103,7 +104,7 @@ C       Begin Program.
 C
 C-----------------------------------------------------------------------
 
-
+        IJLCO=0
         opfile= opfile1         ! Renamed and assigned here because
         iphi= itype1            ! there was a conflict with similiar
                                 ! declarations in pathcom.f which is
@@ -155,6 +156,14 @@ C-----------------------------------------------------------------------
 
         OPEN(UNIT=DBLUN,FILE=DBFILE,STATUS='OLD',FORM='FORMATTED',
      1 ACCESS='DIRECT',RECL=DBRECL)
+
+        CALL FILE(opfile1,LCOFIL,'lco')
+        print*,'LCOFIL = ',LCOFIL
+        INQUIRE(FILE=LCOFIL,EXIST=FEXIST)
+        IF(FEXIST)THEN
+          print*,'Calling INIT_LCO'
+          CALL INIT_LCO(LCOFIL)
+        ENDIF
 
 C-----------------------------------------------------------------------
 C
@@ -338,6 +347,7 @@ C          need the current height profile
         close(13)
 
         print*,'ISHAPE = ',ISHAPE
+        open(37,file='raw.dat',status='unknown')
 134     VV=VV+DBLE(DELV)
         XX=VV
         IF(ispace.eq.1)XX=1e4/VV
@@ -358,7 +368,7 @@ C          need the current height profile
          yp(I,1)=yp(I,2)
          yp(I,2)= output(I)
         ENDDO
-
+        write(37,*),vv,output(1)
 
         IF(IFLAG.EQ.1)THEN
 
@@ -376,10 +386,10 @@ C            print*,(yout(1,j),J=1,nconv)
             XNEXT = XNEXT+10.0
         ENDIF
 1020    FORMAT(' lblrtf_wave.f :: % complete : ',F5.1)
-
+    
 
         IF(VV.LT.DBLE(VMAX))GOTO 134
-
+        close(37)
         DO I=1,NPATH
          DO J=1,NCONV
           YOUT(I,J)=YOUT(I,J)/YNOR(I,J)

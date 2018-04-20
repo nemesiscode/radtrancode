@@ -33,7 +33,7 @@ C       bins, paths, etc.)
 	CHARACTER*100	runname
 C-----------------------------------------------------------------------
 
-        print*,'LBLCONV1 --> FWHM = ',FWHM
+C        print*,'LBLCONV1 --> FWHM = ',FWHM
 
         IF(fwhm.gt.0.0)THEN
 

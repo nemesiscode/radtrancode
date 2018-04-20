@@ -26,15 +26,16 @@ C       bins, paths, etc.)
         LOGICAL		FWHMEXIST
 
         INTEGER		nconv, nc, I, J,nconv1,nsub,k
-	REAL		vwave, y(maxpat,2), vconv(nconv),vwave1,
+	REAL		y(maxpat,2),
      1			yout(maxpat,mconv), ynor(maxpat,mconv),
      2			y2(maxbin), x1, x2, delx, xi, yi, yold, dv
+        REAL*8		vwave,vconv(nconv),vwave1,vcentral,v1,v2,vcen
 	REAL		vfil(1000),fil(1000),yy,sumf,delv
-	REAL		vcentral,ytmp(maxout),vcen
-	REAL		v1,v2,f1,f2,vt,XOFF,HAMMING,NFW,HANNING
+	REAL		vcentral,ytmp(maxout)
+	REAL		f1,f2,vt,XOFF,HAMMING,NFW,HANNING
 	CHARACTER*100	runname
 
-        print*,'LBLCONV --> FWHM = ',FWHM
+C        print*,'LBLCONV --> FWHM = ',FWHM
 
 
 
@@ -53,7 +54,7 @@ C        vwave, delv are in wavenumbers
 
          delx=delv
          if(ispace.eq.1)then
-          delx=1e4*delv/(vwave*vwave)
+          delx=1e4*sngl(delv/(vwave*vwave))
          endif
 
 C         print*,vwave,vwave1,delv,delx
@@ -66,7 +67,7 @@ C        numbers of FWHMs for ISHAPE=3 and ISHAPE=4
 
           YFWHM=FWHM
           if(fwhmexist)then
-             call verint(vfwhm,xfwhm,nfwhm,yfwhm,vconv(j))
+             call verint(vfwhm,xfwhm,nfwhm,yfwhm,sngl(vconv(j)))
           endif
 C          print*,'J,VCONV(J),YFWHM',J,VCONV(J),YFWHM
 C         Find limits of instrument width in wavenumbers
@@ -104,9 +105,9 @@ C          Square Instrument Shape
 C          Triangular Instrument Shape
            IF(VWAVE.GE.V1.AND.VWAVE.LE.V2)THEN
             IF(ISPACE.EQ.0)THEN
-             F2=1.0 - ABS(VWAVE-VCEN)/YFWHM
+             F2=1.0 - ABS(SNGL(VWAVE-VCEN))/YFWHM
             ELSE
-             F2=1.0 - ABS(1E4/VWAVE-VCEN)/YFWHM          
+             F2=1.0 - ABS(SNGL(1E4/VWAVE-VCEN))/YFWHM          
             ENDIF
            ENDIF
 
@@ -130,16 +131,16 @@ C          Triangular Instrument Shape
 C          Gaussian Instrument Shape
            IF(VWAVE.GE.V1.AND.VWAVE.LE.V2)THEN
             IF(ISPACE.EQ.0)THEN
-             F2=EXP(-((VWAVE-VCEN)/SIG)**2)
+             F2=EXP(-(SNGL(VWAVE-VCEN)/SIG)**2)
             ELSE
-             F2=EXP(-((1E4/VWAVE-VCEN)/SIG)**2)
+             F2=EXP(-(SNGL(1E4/VWAVE-VCEN)/SIG)**2)
             ENDIF
            ENDIF
            IF(VWAVE1.GE.V1.AND.VWAVE1.LE.V2)THEN
             IF(ISPACE.EQ.0)THEN
-             F1=EXP(-((VWAVE1-VCEN)/SIG)**2)
+             F1=EXP(-(SNGL(VWAVE1-VCEN)/SIG)**2)
             ELSE
-             F1=EXP(-((1E4/VWAVE1-VCEN)/SIG)**2)
+             F1=EXP(-(SNGL(1E4/VWAVE1-VCEN)/SIG)**2)
             ENDIF
            ENDIF           
 
@@ -147,18 +148,18 @@ C          Gaussian Instrument Shape
 C          Hamming Instrument Shape
            IF(VWAVE.GE.V1.AND.VWAVE.LE.V2)THEN
             IF(ISPACE.EQ.0)THEN
-             XOFF = VWAVE-VCEN
+             XOFF = SNGL(VWAVE-VCEN)
             ELSE
-             XOFF = 1E4/VWAVE - VCEN
+             XOFF = SNGL(1E4/VWAVE - VCEN)
             ENDIF
             F2 = HAMMING(YFWHM,XOFF)
            ENDIF
 
            IF(VWAVE1.GE.V1.AND.VWAVE1.LE.V2)THEN
             IF(ISPACE.EQ.0)THEN
-             XOFF = VWAVE1-VCEN
+             XOFF = SNGL(VWAVE1-VCEN)
             ELSE
-             XOFF = 1E4/VWAVE1-VCEN
+             XOFF = SNGL(1E4/VWAVE1-VCEN)
             ENDIF
             F1 = HAMMING(YFWHM,XOFF)
            ENDIF           
@@ -167,18 +168,18 @@ C          Hamming Instrument Shape
 C          Hanning Instrument Shape
            IF(VWAVE.GE.V1.AND.VWAVE.LE.V2)THEN
             IF(ISPACE.EQ.0)THEN
-             XOFF = VWAVE-VCEN
+             XOFF = SNGL(VWAVE-VCEN)
             ELSE
-             XOFF = 1E4/VWAVE - VCEN
+             XOFF = SNGL(1E4/VWAVE - VCEN)
             ENDIF
             F2 = HANNING(YFWHM,XOFF)
            ENDIF
 
            IF(VWAVE1.GE.V1.AND.VWAVE1.LE.V2)THEN
             IF(ISPACE.EQ.0)THEN
-             XOFF = VWAVE1-VCEN
+             XOFF = SNGL(VWAVE1-VCEN)
             ELSE
-             XOFF = 1E4/VWAVE1-VCEN
+             XOFF = SNGL(1E4/VWAVE1-VCEN)
             ENDIF
             F1 = HANNING(YFWHM,XOFF)
            ENDIF           

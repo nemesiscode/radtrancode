@@ -434,7 +434,7 @@ C-----------------------------------------------------------------------
 
 
 C       Set vv to the current WAVENUMBER
-        vv = Xx
+        vv = XX
         if(ispace.eq.1)then
           vv=1e4/XX 
         endif
@@ -688,11 +688,11 @@ C       This goes off to do the collision induced-absorption
 		AvgCONTMP=0.0
 	        IF(FLAGH2P.EQ.1)THEN
                    FPARA = HFP(J)
-c                  CALL NPARACON(vv,P,T,
+c                  CALL NPARACON(sngl(vv),P,T,
 c     1              NGas,idgas,isogas,AAmount,PPP,
 c     2              FPARA,XLen,AvgCONTMP,IABSORB,DABSORB,id1)
-                   CALL NPARACON_ALL(vv,p,t,ngas,idgas,isogas,aamount,
-     1               ppp,fpara,xlen,avgcontmp,iabsorb,dabsorb,id1)
+                   CALL NPARACON_ALL(sngl(vv),p,t,ngas,idgas,isogas,
+     1        aamount,ppp,fpara,xlen,avgcontmp,iabsorb,dabsorb,id1)
              	ELSE
 		   CALL NCIACON(sngl(vv),P,T,INormal,
      1		     NGas,idgas,isogas,AAmount,PPP,
@@ -827,7 +827,7 @@ C       all continuum bins and all layers.
            IF(IBD(I).LT.0)THEN
             print*,'Precalculating continuum from array : ',IBS(I)
             CALL CALC_CONT(WING,MAXDV,NLAYER,NGAS,PRESS,TEMP,
-     1       FRAC,IDGAS,ISOGAS,IPROC,IBS(I))
+     1       FRAC,IDGAS,ISOGAS,IPROC,IBS(I),I)
             IBD(I)=1
            ENDIF
         ENDDO

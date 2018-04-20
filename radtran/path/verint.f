@@ -44,13 +44,14 @@ C
       YOUT=Y(I-1)+(Y(I)-Y(I-1))*(XIN-X(I-1))/(X(I)-X(I-1))
       if(X(I-1).eq.X(I))then YOUT=Y(I)
       if (isnan(YOUT)) then
-       print*,"XIN,XI,XI-1,YI-1,YI",XIN,X(I),X(I-1),Y(I-1),Y(I)
-       print*,'YOUT is not a number!'
-       print*,'I = ',I
-       do I=1,N
-        print*,I,X(I),Y(I)
-       enddo
-       stop
+       YOUT=Y(I)
+C       print*,"XIN,XI,XI-1,YI-1,YI",XIN,X(I),X(I-1),Y(I-1),Y(I)
+C       print*,'YOUT is not a number!'
+C       print*,'I = ',I
+C       do I=1,N
+C        print*,I,X(I),Y(I)
+C       enddo
+C       stop
       end if
 
       RETURN

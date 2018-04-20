@@ -45,10 +45,11 @@ c  ** if arcfile exists then get tname from that **
 
       else
 
-c      tname = '/Users/patirwin/radtrancode/trunk/raddata/'
-c      tname ='/data/nemesis/nemesis_git/radtrancode/raddata/'
-       tname ='/Users/glnat/CIRS/Radtran/radtrancode/raddata/'
+C      tname = '/Users/patirwin/radtrancode/trunk/raddata/'
 
+C      tname ='/home/l/lnf2/nemesis2017/radtrancode/raddata/'
+      tname='/network/aopp/oxpln98/plan/irwin/gitradtran/
+     1radtrancode/raddata/'
 
       endif
       

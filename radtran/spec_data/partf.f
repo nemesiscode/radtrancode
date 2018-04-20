@@ -10,7 +10,7 @@ C	  IPTF:INTEGER   Flag to indicate alternative processing
 C
 C_KEYS:   FUNCT,ATMOS,LBL
 C
-C_DESCR:  uses four term polynomial fits to compute ration of total partition
+C_DESCR:  uses four term polynomial fits to compute ratio of total partition
 C         functions for use by line by line programs.
 C         Representation is as described in Gimache et al 1990 and distributed
 C         with HITRAN 91

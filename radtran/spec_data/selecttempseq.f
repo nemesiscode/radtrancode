@@ -58,11 +58,13 @@ C ../includes/dbcom.f stores the linedata base variables.
 
       INTEGER NLINES(MINSTR:MAXSTR,MAXISO,MAXDGAS)
       INTEGER TOTLIN(MINSTR:MAXSTR,MAXDGAS)
-      DOUBLE PRECISION STRLOSE,STRKEEP
+      DOUBLE PRECISION STRLOSE,STRKEEP,STROUT,WEIGHT
+      REAL XWIDA,XWIDS,XLSE,XTDEP
       INTEGER I,J,K,ID,ISO,IBIN,LINE,FSTLIN,LSTLIN,NBIN,IPTF
       INTEGER FIRST(2),LAST(2),NPAR,IERROR,READI,NLIN,NKEEP,NLOSE
 
-      DOUBLE PRECISION VMIN,VMAX,BINSIZ,VLOW,VHIGH
+
+      DOUBLE PRECISION VMIN,VMAX,BINSIZ,VLOW,VHIGH,VMEAN
       DOUBLE PRECISION LIMIT(MAXISO,MAXDGAS),TOTSTR,SUMSTR,PERCEN
 C VMIN: Wavenumber [cm-1] minimum.
 C VMAX: Wavenumber [cm-1] maximum.
@@ -73,9 +75,8 @@ C BINSIZ: Size [cm-1] of bins for limit selection.
       REAL AN2(190),NN2(190),AO2(190),NO2(190)
       REAL YACO2(200),YNCO2(200),YAN2(200),YNN2(200),ECO2(200),EN2(200)
       REAL TEMP,TS1,TS2,PARTF
-      DOUBLE PRECISION SCORR,FCORR,LNSTR2
       CHARACTER*6 QIDENT(190)
-      CHARACTER*100 OPNAME
+      CHARACTER*100 OPNAME,OPSTR
       CHARACTER*100 TEXT
       CHARACTER*256 BUFFER
 
@@ -133,6 +134,9 @@ C Read in spectral parameters ...
 21    FORMAT(A)
 
       OPEN(UNIT=3,FILE=OPNAME,STATUS='UNKNOWN')
+      CALL FILE(OPNAME,OPSTR,'lco')
+      OPEN(UNIT=4,FILE=OPSTR,STATUS='UNKNOWN')
+
       WRITE(BUFFER,114)
 114   FORMAT(' # data records written by routine SELECTTEMPSEQ')
       WRITE(3,1)BUFFER(1:DBRECL)
@@ -143,10 +147,14 @@ C Read in spectral parameters ...
 202   FORMAT(' #  ',A)
       WRITE(3,1)BUFFER(1:DBRECL)
 
+      WRITE(4,*)'VMIN, VMAX = ',VMIN,VMAX
+      WRITE(4,*)'BINSIZ,PERCEN = ',BINSIZ,PERCEN
       CALL EDSET
 
       CALL PROMPT('Enter IPTF (Partition function flag) : ')
       READ*,IPTF
+
+      WRITE(4,*)'Calc. Temp, IPTF = ',TEMP,IPTF
 
 C Select the gases ...
 10    CONTINUE
@@ -185,6 +193,7 @@ C compilers (notably Prospero Fortran for MS-DOS)
       ID = READI(TEXT(FIRST(1):LAST(1)),IERROR)
       IF(IERROR.NE.0)GOTO 15
       ISO = READI(TEXT(FIRST(2):LAST(2)),IERROR)
+      WRITE(4,*)ID,ISO
       IF(IERROR.NE.0)GOTO 15
       WRITE(*,*)'ID ISO = ',ID,ISO
       IF(ISO.EQ.0)THEN
@@ -256,6 +265,9 @@ C compilers (notably Prospero Fortran for MS-DOS)
 C     For each bin ...
       NBIN = INT((VMAX-VMIN)/BINSIZ)
       
+
+      WRITE(4,*)'NBIN = ',NBIN
+
 C     Find point in database where wavenumber is equal to VMIN
       PRINT*,'Finding first line in database with v >= ',VMIN
 151   READ(DBLUN,1,END=999)BUFFER(1:DBRECL)
@@ -268,6 +280,7 @@ C     Find point in database where wavenumber is equal to VMIN
 
          VLOW = VMIN + FLOAT(IBIN-1)*BINSIZ
          VHIGH = VMIN + FLOAT(IBIN)*BINSIZ
+         VMEAN=0.5*(VLOW+VHIGH)
          WRITE(*,121)IBIN,VLOW,VHIGH
 121      FORMAT(I5,F12.3,'  -',F12.3)
 
@@ -296,7 +309,7 @@ C           each strength decade
 122          CONTINUE
 120         CONTINUE
 
-            OPEN(12,FILE='TEMP.DAT',STATUS='UNKNOWN')
+            OPEN(12,FILE='TEMP.DAT',STATUS='OLD')
             DO 110 LINE=1,NLIN
              READ(12,1)BUFFER(1:DBRECL)
              CALL RDLINE(BUFFER)
@@ -406,6 +419,11 @@ C        See how many lines are deselected by this and sum up strengths:
          NLOSE=0
          STRLOSE=0.0
          STRKEEP=0.0
+         STROUT=0.0
+         XWIDA=0.
+         XWIDS=0.
+         XLSE=0.
+         XTDEP=0.
          OPEN(12,FILE='TEMP.DAT',STATUS='OLD')
          DO 160 LINE=1,NLIN
           READ(12,1)BUFFER(1:DBRECL)
@@ -446,6 +464,13 @@ C        See how many lines are deselected by this and sum up strengths:
                     STRLOSE=STRLOSE*DBLE(NLOSE-1)/DBLE(NLOSE)+
      &                 LNSTR1/DBLE(NLOSE)
                    ENDIF
+                   WEIGHT=LNSTR1*1E-20
+                   STROUT=STROUT+WEIGHT
+                   XWIDA=XWIDA+LNWIDA*WEIGHT
+                   XWIDS=XWIDS+LNWIDS*WEIGHT
+                   XLSE=XLSE+LNLSE*WEIGHT
+                   XTDEP=XTDEP+LNTDEP*WEIGHT
+           
                  ENDIF
               ELSE
                  NKEEP=NKEEP+1
@@ -462,14 +487,14 @@ C        See how many lines are deselected by this and sum up strengths:
          CLOSE(12)
 
          print*,'NLIN, NKEEP, NLOSE+NKEEP',NLIN,NKEEP,NLOSE+NKEEP
-         IF(NKEEP.GT.0)THEN
-          SCORR=STRLOSE/DBLE(NKEEP)
-         ELSE
-          SCORR=STRLOSE
-         ENDIF
-C        PRINT*,'NLOSE,STRLOSE,NKEEP,STRKEEP',NLOSE,STRLOSE,NKEEP,STRKEEP
-C        PRINT*,'SCORR',SCORR
+         print*,'Mean line strength kept/lost = ',STRKEEP,STRLOSE
 
+         XWIDA=XWIDA/STROUT
+         XWIDS=XWIDS/STROUT
+         XLSE=XLSE/STROUT
+         XTDEP=XTDEP/STROUT
+         STROUT=STROUT*1E-27
+         WRITE(4,*)VMEAN,STROUT,XLSE,XWIDA,XWIDS,XTDEP
 
 C Copy required lines and correct for those stripped ...
          OPEN(12,FILE='TEMP.DAT',STATUS='OLD')
@@ -496,9 +521,6 @@ C Copy required lines and correct for those stripped ...
 152       CONTINUE
           IF(K.NE.-1.) THEN
            IF(INCGAS(K,LOCID(LNID)))THEN
-              LNSTR2=LNSTR1+SCORR
-              FCORR = LNSTR2/LNSTR1
-              LNSTR=LNSTR*FCORR
               CALL EDLINE(BUFFER,QIDENT,ACO2,NCO2,AH2O,NH2O,YACO2,
      1         YNCO2,YAN2,YNN2)
        
@@ -524,6 +546,7 @@ C Copy required lines and correct for those stripped ...
 
       CLOSE(DBLUN)
       CLOSE(3)
+      CLOSE(4)
 
       STOP
 

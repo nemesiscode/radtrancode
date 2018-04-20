@@ -25,7 +25,7 @@ C--------------------------------------------------------------
       INCLUDE '../includes/dbcom.f'
 C--------------------------------------------------------------
 C
-      DOUBLE PRECISION VMIN,VMAX
+      DOUBLE PRECISION VMIN,VMAX,STRMIN
       CHARACTER*256 BUFFER
       CHARACTER*100 OPNAME
 C
@@ -44,29 +44,40 @@ C     read in parameters
       READ(*,1)OPNAME
       OPEN(UNIT=3,FILE=OPNAME,STATUS='UNKNOWN')
 
+      CALL PROMPT('Enter minimum line strength : ')
+      READ*,STRMIN
+
+      STRMIN=STRMIN*1e20
+      STRMIN=STRMIN*1e27
+
       CALL PROMPT('Enter record length : ')
       READ*,DBRECL
 
-      IF(DBRECL.NE.160)THEN
-       PRINT*,'Code not set up for DBRECL = ',DBRECL
-       GOTO 998
-      ENDIF
-
+      PRINT*,'Finding first line in database with v >= ',VMIN
 100   READ(DBLUN,1,END=999)BUFFER
-      READ(BUFFER,101,ERR=998)LNID,LNISO,LNWAVE
-101   FORMAT(I2,I1,F12.6)
-      IF(LNWAVE.GE.VMIN.AND.LNWAVE.LE.VMAX)WRITE(3,1)BUFFER(1:DBRECL)
-      IF(LNWAVE.GT.VMAX)GOTO 999
-      GOTO 100
+      CALL RDLINE(BUFFER)
+      IF(LNWAVE.LT.VMIN)GOTO 100
+      
+      PRINT*,'Starting transfer'
+      print*,LNSTR,STRMIN
+      IF(LNSTR.GE.STRMIN)WRITE(3,1)BUFFER(1:DBRECL)
 
-998   PRINT*,'Error in reading. Aborting'
+110   READ(DBLUN,1,END=999)BUFFER
+      CALL RDLINE(BUFFER)
+      IF(LNWAVE.GT.VMAX)GOTO 998
+      
+      IF(LNSTR.GE.STRMIN)WRITE(3,1)BUFFER(1:DBRECL)
+
+      GOTO 110
+
+998   PRINT*,'Transfer complete'
       CLOSE(3)
       CLOSE(DBLUN)
-      STOP
+      STOP  
 
-999   PRINT*,'Transfer complete'
+999   PRINT*,'Reached end of database'
       CLOSE(3)
       CLOSE(DBLUN)
-
 
       END
+

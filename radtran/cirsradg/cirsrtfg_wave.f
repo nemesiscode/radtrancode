@@ -189,6 +189,7 @@ C Now read the scattering files if required.
         IF(imod(I).EQ.15.OR.imod(I).EQ.16)scatterf = .TRUE.      
       ENDDO
 
+      QFLA = .FALSE.
       IF(ISCAT.EQ.5)THEN
         QFLA = .TRUE.
       ENDIF

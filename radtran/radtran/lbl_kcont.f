@@ -127,7 +127,7 @@ C RANGE: =VTOP-VBOT, the calculation range [cm^-1].
 C Continuum variables ...
       INTEGER MP,MT
       PARAMETER (MP=20,MT=20)
-      REAL CONTINK(IORDP1,MP,MT,MAXBIN)
+      REAL CONTINK(IORDP1,MAXK,MAXK,MAXBIN)
       REAL CONVAL(NWAV),CONWAV(NWAV)
       REAL MATRIX(IORDP1,IORDP1),UNIT(IORDP1,IORDP1)
       DOUBLE PRECISION DMATRIX(IORDP1,IORDP1),DUNIT(IORDP1,IORDP1)
@@ -330,6 +330,7 @@ C Compute absorption coefficient for normal incidence
 21           CONTINUE
 20         CONTINUE
 
+
            DO 23 K=1,IORDP1
              DO 314 L=1,IORDP1
                CONTINK(K,IP,IT,J) = CONTINK(K,IP,IT,J) + 
@@ -356,7 +357,6 @@ C     have been stripped of weaker lines.
           VV=DBLE(VBIN(I)+CONWAV(K))
           CALL VERINT(VOUT,YOUT,NBIN+1,CONVAL(K),SNGL(VV))
 302      CONTINUE
-
          DO 203 K=1,IORDP1
              DO 304 L=1,IORDP1
                CONTINK(K,IP,IT,I) = CONTINK(K,IP,IT,I) + 
@@ -367,8 +367,6 @@ C     have been stripped of weaker lines.
 301     CONTINUE
        ENDIF
       ENDIF
-
-      
 
       RETURN
 

@@ -125,8 +125,6 @@ C RANGE: =VTOP-VBOT, the calculation range [cm^-1].
 
 
 C Continuum variables ...
-      INTEGER MP,MT
-      PARAMETER (MP=20,MT=20)
       REAL CONTINK(IORDP1,MAXK,MAXK,MAXBIN)
       REAL CONVAL(NWAV),CONWAV(NWAV)
       REAL MATRIX(IORDP1,IORDP1),UNIT(IORDP1,IORDP1)
@@ -206,19 +204,19 @@ C NOTE: TCORS1 includes factor of 1.e-27 for scaling of stored lines
 	STOP
       ENDIF
 	
-      IF(IP.GT.MP)THEN
-        WRITE(*,*)'LBL_KCONT.f :: *ERROR* IP > MP'
+      IF(IP.GT.MAXK)THEN
+        WRITE(*,*)'LBL_KCONT.f :: *ERROR* IP > MAXK'
         WRITE(*,*)'Stopping program.'
         WRITE(*,*)' '
-        WRITE(*,*)'IP, MP = ',IP,MP
+        WRITE(*,*)'IP, MAXK = ',IP,MAXK
 	STOP
       ENDIF
 
-      IF(IT.GT.MT)THEN
-        WRITE(*,*)'LBL_KCONT.f :: *ERROR* IT > MT'
+      IF(IT.GT.MAXK)THEN
+        WRITE(*,*)'LBL_KCONT.f :: *ERROR* IT > MAXK'
         WRITE(*,*)'Stopping program.'
         WRITE(*,*)' '
-        WRITE(*,*)'IT, MT = ',IT,MT
+        WRITE(*,*)'IT, MAXK = ',IT,MAXK
 	STOP
       ENDIF
 

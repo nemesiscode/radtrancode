@@ -78,12 +78,10 @@ C     GASCON switches
 C******************************** CODE *********************************
 
 
-      print*,'CALC_CONT. IX,IB,NLAYER = ',IX,IB, NLAYER      
       DO 13 LINE=1,NLINE(IB)
        CURBIN = 1 + INT((VLIN(IB,LINE)-VBIN(1))/WING)
        IGAS=IDLIN(IB,LINE)
        DO 15 J=1,NBIN
-	
 C       Computing continuum for all except adjacent bins
         IF(ABS(CURBIN-J).LE.1)GOTO 15
 
@@ -91,6 +89,7 @@ C       Computing continuum for all except adjacent bins
           VV = DBLE(CONWAV(K) + VBIN(J)) 
           DV = SNGL(VV - VLIN(IB,LINE))
 C         Don't calculate at wavenumbers more than MAXDV away
+C          print*,DV,MAXDV
           IF(ABS(DV).LE.MAXDV)THEN
 
            DO 101 LAYER=1,NLAYER
@@ -111,22 +110,10 @@ C              if H2O continuum is turned on
      3       SLIN(IB,LINE),ELIN(IB,LINE),ALIN(IB,LINE),SBLIN(IB,LINE),
      4       TDW(IB,LINE),TDWS(IB,LINE),LLQ(IB,LINE),DOUBV(IB,LINE),
      5       FNH3,FH2)
-C              IF(LINE.EQ.1)THEN
-C               PRINT*,IPROC(IGAS),IDGAS(IGAS),VV
-C               PRINT*,TCORDW(LAYER,IGAS),TCORS1(LAYER,IGAS),
-C     1  TCORS2(LAYER)
-C               PRINT*,PRESS(LAYER),TEMP(LAYER),FRAC(LAYER,IGAS),
-C     1  VLIN(IB,LINE)
-C               PRINT*,SLIN(IB,LINE),ELIN(IB,LINE),ALIN(IB,LINE),
-C     1  SBLIN(IB,LINE)
-C               PRINT*,TDW(IB,LINE),TDWS(IB,LINE),LLQ(IB,LINE),
-C     1  DOUBV(IB,LINE)
-C               PRINT*,FNH3,FH2
-C              ENDIF
              ENDIF
-
+             
             CONVALS(K,LAYER,J)=CONVALS(K,LAYER,J)+CONVAL
-
+            
 101        CONTINUE
 
           ENDIF
@@ -155,7 +142,6 @@ C     have been stripped of weaker lines.
            DO 302 K=1,IORDP1
             VV=VBIN(I)+CONWAV(K)
             CALL VERINT(VOUT,YOUT,NBIN+1,CONVAL,SNGL(VV))
-            print*,K,LAYER,I,CONVALS(K,LAYER,I),CONVAL
             CONVALS(K,LAYER,I)=CONVALS(K,LAYER,I)+CONVAL
 302        CONTINUE
 301       CONTINUE
@@ -176,8 +162,6 @@ C     Convert continuum values to polynomial coefficients
 205     CONTINUE
 202    CONTINUE
 200   CONTINUE
-
-
 
       RETURN
 

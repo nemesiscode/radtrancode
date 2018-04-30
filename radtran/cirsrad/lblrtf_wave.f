@@ -347,7 +347,7 @@ C          need the current height profile
         close(13)
 
         print*,'ISHAPE = ',ISHAPE
-        open(37,file='raw.dat',status='unknown')
+C        open(37,file='raw.dat',status='unknown')
 134     VV=VV+DBLE(DELV)
         XX=VV
         IF(ispace.eq.1)XX=1e4/VV
@@ -368,12 +368,12 @@ C          need the current height profile
          yp(I,1)=yp(I,2)
          yp(I,2)= output(I)
         ENDDO
-        write(37,*),vv,output(1)
+C        write(37,*),vv,output(1)
 
         IF(IFLAG.EQ.1)THEN
 
-           CALL lblconv(opfile,fwhm,ishape,npath,ispace,vvr,delv,yp,
-     1      nconv,vconv,yout,ynor,FWHMEXIST,NFWHM,VFWHM,XFWHM)
+           CALL lblconv(opfile,fwhm,ishape,npath,ispace,vv,delv,yp,
+     1      nconv,dble(vconv),yout,ynor,FWHMEXIST,NFWHM,VFWHM,XFWHM)
 
         ENDIF
 
@@ -382,14 +382,13 @@ C          need the current height profile
         XCOM = 100.0*(VVR-VMIN)/(VMAX-VMIN)
         IF(XCOM.GE.XNEXT)THEN
             WRITE(*,1020)XCOM
-C            print*,(yout(1,j),J=1,nconv)
             XNEXT = XNEXT+10.0
         ENDIF
 1020    FORMAT(' lblrtf_wave.f :: % complete : ',F5.1)
     
 
         IF(VV.LT.DBLE(VMAX))GOTO 134
-        close(37)
+C        close(37)
         DO I=1,NPATH
          DO J=1,NCONV
           YOUT(I,J)=YOUT(I,J)/YNOR(I,J)

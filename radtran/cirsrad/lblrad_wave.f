@@ -766,6 +766,8 @@ C	of earlier in the code).
 C
 C-----------------------------------------------------------------------
 
+
+
 C check bins in layer 1        
         J=1
         CALL CALC_FINE(VV,WING,MAXDV,J,NLAYER,NGAS,PRESS,TEMP,
@@ -844,7 +846,6 @@ C          print*,'Calculating fine structure. VV,Layer = ',VV,J
 
 	  tautmp(J) = taucon(J) + xk
 	  taugas(J) = taugasc(J) + xk
-C          print*,J,press(j),taucon(j),xk,tautmp(j)
 
       	ENDDO
    

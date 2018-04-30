@@ -31,7 +31,7 @@ C       bins, paths, etc.)
      2			y2(maxbin), x1, x2, delx, xi, yi, yold, dv
         REAL*8		vwave,vconv(nconv),vwave1,vcentral,v1,v2,vcen
 	REAL		vfil(1000),fil(1000),yy,sumf,delv
-	REAL		vcentral,ytmp(maxout)
+	REAL		ytmp(maxout)
 	REAL		f1,f2,vt,XOFF,HAMMING,NFW,HANNING
 	CHARACTER*100	runname
 

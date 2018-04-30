@@ -57,7 +57,7 @@ C     Continuum and temperature parameter variables ...
 
       INTEGER NGAS,IDGAS(NGAS),ISOGAS(NGAS),IPROC(NGAS)
       INTEGER LAYER,NLAYER
-      REAL VMIN,VMAX,WING,VREL,MAXDV,XK
+      REAL VMIN,VMAX,WING,VREL,MAXDV,XK,XK1
       REAL FRAC(MAXLAY,MAXGAS),PRESS(NLAYER),TEMP(NLAYER)
 
 
@@ -83,18 +83,17 @@ C******************************** CODE *********************************
       IFCONT = 0
       XK=0.0
       
-      
-      DO 12 IBIN=CURBIN-1,CURBIN+1
-       JBIN=IBIN
-       IF(JBIN.LT.1)JBIN=1
+      JBIN=CURBIN-1
+      IF(JBIN.LT.1)JBIN=1
+      DO 12 IBIN=JBIN,CURBIN+1
        DO 200 IBX=1,2
 
         IB=IBS(IBX)
 
-        F1=FSTLIN(IB,JBIN)
-        L1=LSTLIN(IB,JBIN)
+        F1=FSTLIN(IB,IBIN)
+        L1=LSTLIN(IB,IBIN)
         B1=LASTBIN(IB)
-        IF(IBIN.EQ.CURBIN-1.AND.IBX.EQ.1.AND.B1.LT.IBIN) THEN
+        IF(IBIN.EQ.JBIN.AND.IBX.EQ.1.AND.B1.LT.IBIN) THEN
 C        We have now run past the end of buffer 1 and need to read in a 
 C        new load of lines
 C        Pass back flag  
@@ -123,9 +122,9 @@ C         Ignore lines more than MAXDV widths away
      4       TDW(IB,LINE),TDWS(IB,LINE),LLQ(IB,LINE),DOUBV(IB,LINE),
      5       FNH3,FH2)
 
-             NANTEST=ISNAN(CONVAL)
+            NANTEST=ISNAN(CONVAL)
 
-             IF(NANTEST)THEN
+            IF(NANTEST)THEN
               print*,'Calc_fine.f: Code reports that calculated'
               print*,'absorption is Not A Number'
               print*,'CONVAL = ',CONVAL
@@ -143,8 +142,7 @@ C         Ignore lines more than MAXDV widths away
               print*,'FNH3, FH2 = ',FNH3,FH2
                
               STOP
-             ENDIF
-
+            ENDIF
             XK=XK+CONVAL
 
           ENDIF
@@ -161,10 +159,13 @@ C     Now add on the line wing continuum contribution
       DV = SNGL(VV)-VBIN(CURBIN)
       VTMP=1.0
 
+      XK1=0.
       DO I=1,IORDP1
-       XK=XK+CONTINK(I,LAYER,CURBIN)*VTMP
+       XK1=XK1+CONTINK(I,LAYER,CURBIN)*VTMP
        VTMP=VTMP*DV
-      ENDDO
+      ENDDO 
+
+      XK=XK+XK1
 
       NANTEST=ISNAN(XK)
       IF(NANTEST)THEN

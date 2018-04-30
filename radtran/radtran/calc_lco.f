@@ -5,9 +5,12 @@ C     Function to calculate the LCO contribution for multiple line
 C     broadening types.
 C
 C     Input variables:
+C	VBIN(NBIN) REAL Continuum bin centres.
+C       NBIN	INTEGER	Number of bins
+C	WING	REAL	Width of bins
+C	MAXDV	REAL	Line wing cutoff
 C	IPROC	INTEGER	Line processing parameter
 C	IDGAS	INTEGER	Gas ID
-C	VV	REAL*8	Calculation wavenumber
 C	TCORDW	REAL	Doppler line width coefficient
 C	TCORS1 	REAL	Temperature coefficient 1
 C	TCORS2 	REAL	Temperature coefficient 2
@@ -16,10 +19,16 @@ C	TEMP	REAL	Temperature
 C	FRAC	REAL	Fraction
 C	FNH3	REAL	Fraction of NH3 (needed of models 3 and 6)
 C	FH2	REAL	Fraction of H2 (needed of models 3 and 6)
+C     
+C     Output variables
+C	VOUT(NBIN+1) REAL Calculation wavelength/wavenumbers
+C	YOUT(NBIN+1) REAL Continuum contribution
+C
+C     Pat Irwin 24/4/18
 C	
 C     ****************************************************************
       IMPLICIT NONE
-      INTEGER IPROC,IDGAS,I,J,NBIN,J1,J2,I1,I2,NLCO,K
+      INTEGER IPROC,IDGAS,I,J,NBIN,J1,J2,I1,I2,NLCO,K,NJ
       INCLUDE '../includes/arrdef.f'
       INCLUDE '../includes/lcocom.f'      
 
@@ -49,7 +58,7 @@ C     Find range of wavelengths over which we need to calculate LCO contributiuo
       V1 = VOUT(1)-MAXDV
       V2 = VOUT(NBIN+1)+MAXDV
 
-C     Now find LCO table entries
+C     Now find LCO table entries covering this range
       J1 = 1 + INT((V1-VLCO(1))/LCOBINSIZE)
       J2 = 1 + INT((V2-VLCO(1))/LCOBINSIZE)
       IF(J1.LT.1)THEN
@@ -58,11 +67,12 @@ C     Now find LCO table entries
        J1=1
       ENDIF
       IF(J2.GT.NBINLCO)THEN
-       PRINT*,'CALC_LCO wavenumber greater than minimum'
+       PRINT*,'CALC_LCO wavenumber greater than maximum'
        PRINT*,V2,VLCO(NBINLCO)
        J2=NBINLCO
       ENDIF
 
+      NJ=1+J2-J1
 
 C     Calculate number of LCO steps we need to go either side of 
 C     each LCO wavenumber to calculate wings
@@ -136,11 +146,27 @@ C       Find line contribution at centre
 
       DO 300 I=1,NBIN+1
         J = 1 + INT((VOUT(I)-XX(1))/LCOBINSIZE)
-        F=(VOUT(I)-XX(J))/LCOBINSIZE
-        YOUT(I)=(1.0-F)*YY(J)+F*YY(J+1)
+        IF(J.GE.1.AND.J.LT.NJ)THEN
+         F=(VOUT(I)-XX(J))/LCOBINSIZE
+         YOUT(I)=(1.0-F)*YY(J)+F*YY(J+1)
+        ELSE
+         IF(J.LT.1)THEN
+          YOUT(I)=0.
+         ELSE
+          IF(VOUT(I).EQ.XX(NJ))THEN
+           J=NJ-1
+           F=1.0
+           YOUT(I)=(1.0-F)*YY(J)+F*YY(J+1)
+          ELSE
+           YOUT(I)=0.
+          ENDIF
+         ENDIF
+        ENDIF   
+
 C       DIVIDE STRENGTH BY BIN SIZE TO MAKE IT CONTINUUM
         YOUT(I)=YOUT(I)/LCOBINSIZE
 C        print*,'Y',I,VOUT(I),J,F,YOUT(I)
+
 300   CONTINUE
 
       RETURN

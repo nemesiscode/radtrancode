@@ -383,12 +383,23 @@ C which calculations are being made.
       CURBIN = INT((V - VBIN(1))/WING) + 1
 C Calculate the continuum absorption via the IORDP1 polynomial
 C coefficients held in CONTINK.
+
       TAUTMP = CONTINK(1,IP,IT,CURBIN)
       VTMP = V - VBIN(CURBIN)
       DO 51 ISUM=2,IORDP1
         TAUTMP = TAUTMP + CONTINK(ISUM,IP,IT,CURBIN)*VTMP
         VTMP = VTMP*VTMP
 51    CONTINUE
+C      print*,'fknew 83, IP,IT, CONTINK = ',IP,IT,
+C     1 (CONTINK(K,IP,IT,83),K=1,3)
+C      stop
+      VTMP=0.5*WING
+      X = CONTINK(1,IP,IT,CURBIN)
+      DO J=2,IORDP1
+       X=X+CONTINK(J,IP,IT,CURBIN)*VTMP
+       VTMP=VTMP*VTMP
+      ENDDO
+C      print*,'X = ',X
 
 C The text within the IF statement below should probably be kept
 C commented-out unless you are specifically debugging for errors. I make
@@ -468,12 +479,12 @@ C Now scaling for each path
 C Calculate cumulative k-distribution from LBL spectrum. NOTE: OUTPUT is
 C passed via the /SPECTRUM/ common block for speed.
 
-C      open(12,file='spectrum.out',status='unknown')
-C      write(12,*)npoint
-C      do i=1,npoint
-C       write(12,*)tx(i),output(i)
-C      enddo
-C      close(12)
+      open(12,file='spectrum.out',status='unknown')
+      write(12,*)npoint
+      do i=1,npoint
+       write(12,*)tx(i),output(i)
+      enddo
+      close(12)
 
 C      print*,'press a key to continue'
 C      read(5,1)ans

@@ -266,6 +266,14 @@ C      Convert wavelength range to wavenumber range if IWAVE=0
        CALL RDKEY(LUN)
        CALL RDGAS
        CALL RDISO
+
+       CALL FILE(OPFILE,LCOFIL,'lco')
+       INQUIRE(FILE=LCOFIL,EXIST=FEXIST)
+       IF(FEXIST)THEN
+              print*,'LCO file = ',LCOFIL
+              CALL INIT_LCO(LCOFIL)
+       ENDIF
+
       ELSE
 C      If IEXO<>0, then we need to read in temperature-dependent database
 C      (for exoplanet k-tables)
@@ -518,6 +526,7 @@ C            defined by lbl_kcont.f)
              CALL FILE(OPFILE,LCOFIL,'lco')
              INQUIRE(FILE=LCOFIL,EXIST=FEXIST)
              IF(FEXIST)THEN
+              print*,'LCO file = ',LCOFIL
               CALL INIT_LCO(LCOFIL)
              ENDIF
 

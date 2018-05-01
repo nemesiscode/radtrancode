@@ -30,7 +30,7 @@ C--------------------------------------------------------------
 C--------------------------------------------------------------
       CHARACTER*256 BUFFER
       CHARACTER*100 TEXT
-      REAL WAVE
+      DOUBLE PRECISION WAVE
       INTEGER IDIS
       LOGICAL ABO,ASKYN
       CALL PROMPT('data base key?')

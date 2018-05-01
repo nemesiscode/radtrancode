@@ -1,11 +1,11 @@
-      PROGRAM SELECTTEMP
+      PROGRAM SELECTTEMPSEQ
 C     $Id: selecttemp.f,v 1.2 2011-06-17 14:51:54 irwin Exp $
 ************************************************************************
 ************************************************************************
 C_TITL:	SELECTTEMP.f
 C
-C_DESC:	Copies a subset of a line data base to a new data base. Copies
-C	linedata bases (eg HITRAN or GEISA) from an existing data base
+C_DESC:	Copies a subset of a sequential line data base to a new data base. 
+C       Copies linedata bases (eg HITRAN or GEISA) from an existing data base
 C	into a sequential ascii file which can be turned into a new data
 C	base using makedb. All lines or only selected lines between given
 C	wavenumber limits are copies. Selection can be performed by gas 
@@ -58,11 +58,13 @@ C ../includes/dbcom.f stores the linedata base variables.
 
       INTEGER NLINES(MINSTR:MAXSTR,MAXISO,MAXDGAS)
       INTEGER TOTLIN(MINSTR:MAXSTR,MAXDGAS)
-      DOUBLE PRECISION STRLOSE,STRKEEP
+      DOUBLE PRECISION STRLOSE,STRKEEP,STROUT,WEIGHT
+      REAL XWIDA,XWIDS,XLSE,XTDEP
       INTEGER I,J,K,ID,ISO,IBIN,LINE,FSTLIN,LSTLIN,NBIN,IPTF
       INTEGER FIRST(2),LAST(2),NPAR,IERROR,READI,NLIN,NKEEP,NLOSE
 
-      DOUBLE PRECISION VMIN,VMAX,BINSIZ,VLOW,VHIGH
+
+      DOUBLE PRECISION VMIN,VMAX,BINSIZ,VLOW,VHIGH,VMEAN
       DOUBLE PRECISION LIMIT(MAXISO,MAXDGAS),TOTSTR,SUMSTR,PERCEN
 C VMIN: Wavenumber [cm-1] minimum.
 C VMAX: Wavenumber [cm-1] maximum.
@@ -73,9 +75,8 @@ C BINSIZ: Size [cm-1] of bins for limit selection.
       REAL AN2(190),NN2(190),AO2(190),NO2(190)
       REAL YACO2(200),YNCO2(200),YAN2(200),YNN2(200),ECO2(200),EN2(200)
       REAL TEMP,TS1,TS2,PARTF
-      DOUBLE PRECISION SCORR,FCORR,LNSTR2
       CHARACTER*6 QIDENT(190)
-      CHARACTER*100 OPNAME
+      CHARACTER*100 OPNAME,OPSTR
       CHARACTER*100 TEXT
       CHARACTER*256 BUFFER
 
@@ -87,13 +88,19 @@ C******************************** CODE *********************************
       LIMSTR=CC**MINSTR
 
 C Open database ...
-      CALL PROMPT('name of data base key')
-      READ(*,1)KEYFIL
-      CALL REMSP(KEYFIL)
+      CALL PROMPT('Enter name of sequential access line data: ')
+      READ(*,1)DBFILE
 1     FORMAT(A)
-      CALL RDKEY(2)
+      CALL PROMPT('Enter name of gas file : ')
+      READ(*,1)GASFIL
+      CALL PROMPT('Enter name of isotopes file : ')
+      READ(*,1)ISOFIL
+      CALL PROMPT('Enter DBRECL : ')
+      READ*,DBRECL
+
       CALL RDGAS
       CALL RDISO
+
       CALL READ_DEL(QIDENT,ENERGY,ACO2,NCO2,AH2O,NH2O,AN2,NN2,AO2,NO2)
       CALL READ_YAM(YACO2,YNCO2,YAN2,YNN2,ECO2,EN2)
 
@@ -127,22 +134,27 @@ C Read in spectral parameters ...
 21    FORMAT(A)
 
       OPEN(UNIT=3,FILE=OPNAME,STATUS='UNKNOWN')
+      CALL FILE(OPNAME,OPSTR,'lco')
+      OPEN(UNIT=4,FILE=OPSTR,STATUS='UNKNOWN')
+
       WRITE(BUFFER,114)
-114   FORMAT(' # data records written by routine SELECTTEMP')
-      WRITE(3,111)BUFFER(1:DBRECL)
+114   FORMAT(' # data records written by routine SELECTTEMPSEQ')
+      WRITE(3,1)BUFFER(1:DBRECL)
       WRITE(BUFFER,201)
-201   FORMAT(' # original data base files:')
-      WRITE(3,111)BUFFER(1:DBRECL)
+201   FORMAT(' # original data base file:')
+      WRITE(3,1)BUFFER(1:DBRECL)
       WRITE(BUFFER,202)DBFILE
 202   FORMAT(' #  ',A)
-      WRITE(3,111)BUFFER(1:DBRECL)
-      WRITE(BUFFER,202)KEYFIL
-      WRITE(3,111)BUFFER(1:DBRECL)
+      WRITE(3,1)BUFFER(1:DBRECL)
 
+      WRITE(4,*)'VMIN, VMAX = ',VMIN,VMAX
+      WRITE(4,*)'BINSIZ,PERCEN = ',BINSIZ,PERCEN
       CALL EDSET
 
       CALL PROMPT('Enter IPTF (Partition function flag) : ')
       READ*,IPTF
+
+      WRITE(4,*)'Calc. Temp, IPTF = ',TEMP,IPTF
 
 C Select the gases ...
 10    CONTINUE
@@ -181,6 +193,7 @@ C compilers (notably Prospero Fortran for MS-DOS)
       ID = READI(TEXT(FIRST(1):LAST(1)),IERROR)
       IF(IERROR.NE.0)GOTO 15
       ISO = READI(TEXT(FIRST(2):LAST(2)),IERROR)
+      WRITE(4,*)ID,ISO
       IF(IERROR.NE.0)GOTO 15
       WRITE(*,*)'ID ISO = ',ID,ISO
       IF(ISO.EQ.0)THEN
@@ -219,127 +232,143 @@ C compilers (notably Prospero Fortran for MS-DOS)
       GOTO 10
 20    CONTINUE
 
-      OPEN(DBLUN,FILE=DBFILE,STATUS='OLD',FORM='FORMATTED',
-     1 ACCESS='DIRECT',RECL=DBRECL)
+      OPEN(DBLUN,FILE=DBFILE,STATUS='OLD')
 
       WRITE(BUFFER,203)
 203   FORMAT(' # original data base header if any:')
-      WRITE(3,111)BUFFER(1:DBRECL)
-      LINE = 1
-204   READ(DBLUN,111,REC=LINE)BUFFER(1:DBRECL)
+      WRITE(3,1)BUFFER(1:DBRECL)
+204   READ(DBLUN,1,END=999)BUFFER(1:DBRECL)
       IF(BUFFER(2:2).EQ.'#'.OR.BUFFER(1:1).EQ.'#')THEN
-        WRITE(3,111)BUFFER(1:DBRECL)
-        LINE = LINE + 1
+        WRITE(3,1)BUFFER(1:DBRECL)
         GOTO 204
       ENDIF
       WRITE(BUFFER,205)
 205   FORMAT(' # selection criteria:')
-      WRITE(3,111)BUFFER(1:DBRECL)
+      WRITE(3,1)BUFFER(1:DBRECL)
       WRITE(BUFFER,206)VMIN,VMAX,BINSIZ
 206   FORMAT(' # wavenumber range =',F10.3,' -',F10.3,' with',F8.3,
      1 ' cm-1 bins')
-      WRITE(3,111)BUFFER(1:DBRECL)
+      WRITE(3,1)BUFFER(1:DBRECL)
 
       DO 207 I=1,MAXDGAS
          IF(DBNISO(I).LT.1)GOTO 207
          WRITE(BUFFER,208)GASNAM(I),(INCGAS(J,I),J=1,DBNISO(I))
 208      FORMAT(' #',1A8,' INCGAS:',20(1X,L1))
-         WRITE(3,111)BUFFER(1:DBRECL)
+         WRITE(3,1)BUFFER(1:DBRECL)
          WRITE(BUFFER,209)GASNAM(I),(ALLISO(J,I),J=1,DBNISO(I))
 209      FORMAT(' #',1A8,' ALLISO:',20(1X,L1))
-         WRITE(3,111)BUFFER(1:DBRECL)
+         WRITE(3,1)BUFFER(1:DBRECL)
 207   CONTINUE
       
       
       TCORS2=1.439*(TEMP-296.)/(296.*TEMP)
-
 C     For each bin ...
-      NBIN = INT((VMAX-VMIN)/BINSIZ) + 1
+      NBIN = INT((VMAX-VMIN)/BINSIZ)
       
-C     First setting LSTLIN to one record before the first in the first bin
-C     (FNDWAV returns first record in DBREC) each bin then starts off at one
-C     record after LSTLIN and then sets it to the last record in the bin.
-      CALL FNDWAV(VMIN)
-      LSTLIN = DBREC - 1
+
+      WRITE(4,*)'NBIN = ',NBIN
+
+C     Find point in database where wavenumber is equal to VMIN
+      PRINT*,'Finding first line in database with v >= ',VMIN
+151   READ(DBLUN,1,END=999)BUFFER(1:DBRECL)
+      CALL RDLINE(BUFFER)
+      IF(LNWAVE.LT.VMIN)GOTO 151
+
+      PRINT*,'NBIN = ',NBIN
+
       DO 100 IBIN=1,NBIN
+
          VLOW = VMIN + FLOAT(IBIN-1)*BINSIZ
          VHIGH = VMIN + FLOAT(IBIN)*BINSIZ
+         VMEAN=0.5*(VLOW+VHIGH)
          WRITE(*,121)IBIN,VLOW,VHIGH
-121      FORMAT(I5,F12.3,'-',F12.3)
-C        Find wavenumber region in data base
-         FSTLIN = LSTLIN + 1
-         CALL FNDWAV(VHIGH)
-         LSTLIN = DBREC - 1
+121      FORMAT(I5,F12.3,'  -',F12.3)
+
+C        First read in lines to for bin into temporary file
+         NLIN=0
+         OPEN(12,FILE='TEMP.DAT',STATUS='UNKNOWN')
+117       WRITE(12,1)BUFFER(1:DBRECL)
+          NLIN=NLIN+1  
+          READ(DBLUN,1,END=998)BUFFER(1:DBRECL)
+          CALL RDLINE(BUFFER)
+          IF(LNWAVE.LT.VHIGH)GOTO 117
+998       CONTINUE
+         CLOSE(12)
+
+         print*,'NLIN = ',NLIN
 
          IF(PERCEN.GT.0.0)THEN
 C           Load NLINES array
 C           NLINES (strength decade, iso, ngas) is the number of lines in 
 C           each strength decade
             DO 120 I=1,MAXDGAS
-               DO 122 J=1,DBNISO(I)
-                  DO 123 K=MINSTR,MAXSTR
-                     NLINES(K,J,I) = 0
-123               CONTINUE
-122            CONTINUE
+             DO 122 J=1,DBNISO(I)
+              DO 123 K=MINSTR,MAXSTR
+               NLINES(K,J,I) = 0
+123           CONTINUE
+122          CONTINUE
 120         CONTINUE
 
-            DO 110 LINE=FSTLIN,LSTLIN
-               READ(DBLUN,111,REC=LINE)BUFFER(1:DBRECL)
-111            FORMAT(A)
-               CALL RDLINE(BUFFER)
-               TS1 = 1.0-EXP(-1.439*SNGL(LNWAVE)/TEMP)
-               TS2 = 1.0-EXP(-1.439*SNGL(LNWAVE)/296.0)
-               TSTIM=1.0
-               IF(TS2.NE.0) TSTIM = TS1/TS2
-               K = -1
-               DO J=1,DBNISO(LOCID(LNID))
-                  IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K=J
-               ENDDO                
-C               print*,LNWAVE,LNSTR
-               TCORS1=PARTF(LOCID(LNID),K,TEMP,IPTF)
-               LNABSCO = LOG(LNSTR)+LOG(TCORS1)+
-     &         (TCORS2*LNLSE)+LOG(TSTIM)
-C               print*,LOG(LNSTR),LOG(TCORS1),(TCORS2*LNLSE),LOG(TSTIM)
-               LNSTR1=DEXP(LNABSCO)
-C               print*,LNABSCO,LNSTR1
-               IF(LNSTR1.LT.LIMSTR)THEN
-                  WRITE(TEXT,115)LNWAVE,LNID,LNISO,LNSTR,LNSTR1,LIMSTR
-115               FORMAT('WARNING - strength too low for storage',
-     1                 F12.6,2I3,3E12.5)
-                  CALL WTEXT(TEXT)
-                  GOTO 110
-               ENDIF
+            OPEN(12,FILE='TEMP.DAT',STATUS='OLD')
+            DO 110 LINE=1,NLIN
+             READ(12,1)BUFFER(1:DBRECL)
+             CALL RDLINE(BUFFER)
+             TS1 = 1.0-EXP(-1.439*SNGL(LNWAVE)/TEMP)
+             TS2 = 1.0-EXP(-1.439*SNGL(LNWAVE)/296.0)
+             TSTIM=1.0
+             IF(TS2.NE.0) TSTIM = TS1/TS2
+             K = -1
+C             print*,'LNID',LNID,LOCID(LNID),DBNISO(LOCID(LNID))
+C             print*,'LNISO',LNISO
+C             stop
+             DO J=1,DBNISO(LOCID(LNID))
+                   IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K=J
+             ENDDO                
+             TCORS1=PARTF(LOCID(LNID),K,TEMP,IPTF)
+             LNABSCO = LOG(LNSTR)+LOG(TCORS1)+
+     &        (TCORS2*LNLSE)+LOG(TSTIM)
+             LNSTR1=DEXP(LNABSCO)
+             IF(LNSTR1.LT.LIMSTR)THEN
+                WRITE(TEXT,115)LNWAVE,LNID,LNISO,LNSTR,LNSTR1,LIMSTR
+115             FORMAT('WARNING - strength too low for storage',
+     1            F12.6,2I3,3E12.5)
+                CALL WTEXT(TEXT)
+                GOTO 110
+             ENDIF
 
-               I = INT(DLOG10(LNSTR1))
-               IF(I.GT.MAXSTR)THEN
-                  WRITE(*,113)LNWAVE,LNSTR,LNSTR1,LNID,LNISO
-113               FORMAT('WARNING - strength too high for storage',
-     1                 F12.6,E12.5,E12.5,2I3)
-                  STOP
-               ENDIF
+             I = INT(DLOG10(LNSTR1))
+             IF(I.GT.MAXSTR)THEN
+               WRITE(*,113)LNWAVE,LNSTR,LNSTR1,LNID,LNISO
+113            FORMAT('WARNING - strength too high for storage',
+     1              F12.6,E12.5,E12.5,2I3)
+               CALL WTEXT(TEXT)
+               GOTO 110
+             ENDIF
                
-C              see if this line is the right isotope
-               K = -1
-               DO 112 J=1,DBNISO(LOCID(LNID))
-                  IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K=J
-112            CONTINUE
+C            see if this line is the right isotope
+             K = -1
+             DO 112 J=1,DBNISO(LOCID(LNID))
+               IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K=J
+112          CONTINUE
                
-C              if yes, then add 1 to count
-               IF(K.NE.-1)THEN
-                  NLINES(I,K,LOCID(LNID))=NLINES(I,K,LOCID(LNID))+1
-               ENDIF
-               
+C            if yes, then add 1 to count
+             IF(K.NE.-1)THEN
+               NLINES(I,K,LOCID(LNID))=NLINES(I,K,LOCID(LNID))+1
+             ENDIF
+
 110         CONTINUE
-            
+            CLOSE(12)
+
 C count the total lines for all isotopes for this strength decade, gas id
             DO 130 I=1,MAXDGAS
-               DO 132 J=MINSTR,MAXSTR
-                  TOTLIN(J,I) = 0
-                  DO 131 K=1,DBNISO(I)
-                     IF(INCGAS(K,I))TOTLIN(J,I) = 
-     1                    TOTLIN(J,I) + NLINES(J,K,I)
-131               CONTINUE
-132            CONTINUE
+              DO 132 J=MINSTR,MAXSTR
+                 TOTLIN(J,I) = 0
+                 DO 131 K=1,DBNISO(I)
+                    IF(INCGAS(K,I))TOTLIN(J,I) = 
+     C                    TOTLIN(J,I) + NLINES(J,K,I)
+131              CONTINUE
+C                 print*,J,I,TOTLIN(J,I)
+132           CONTINUE
 130         CONTINUE
             
 C Compute limit for each isotope ...
@@ -347,40 +376,40 @@ C Compute limit for each isotope ...
              DO 146 J=1,DBNISO(I)
               IF(INCGAS(J,I))THEN
                IF(ALLISO(J,I))THEN
-                TOTSTR = 0.
-                DO 144 K=MINSTR,MAXSTR
+                 TOTSTR = 0.
+                 DO 144 K=MINSTR,MAXSTR
                   TOTSTR = TOTSTR + DBLE(TOTLIN(K,I))*CC**K
-144             CONTINUE
-                LIMIT(J,I) = CC**MINSTR
-                SUMSTR = 0.
-                DO 145 K=MINSTR,MAXSTR
+144              CONTINUE
+                 LIMIT(J,I) = CC**MINSTR
+                 SUMSTR = 0.
+                 DO 145 K=MINSTR,MAXSTR
                   SUMSTR = SUMSTR + DBLE(TOTLIN(K,I))*CC**K
                   IF(SUMSTR.GT.PERCEN*TOTSTR)GOTO 143
                   LIMIT(J,I) = CC**K
-145             CONTINUE
+145              CONTINUE
                ELSE
-                TOTSTR = 0.
-                DO 141 K=MINSTR,MAXSTR
+                 TOTSTR = 0.
+                 DO 141 K=MINSTR,MAXSTR
                   TOTSTR = TOTSTR + DBLE(NLINES(K,J,I))*CC**K
 c                  print*, DBLE(NLINES(K,J,I))*CC**K, totstr
-141             CONTINUE
-                LIMIT(J,I) = CC**MINSTR
-                SUMSTR = 0.
-                DO 142 K=MINSTR,MAXSTR
+141              CONTINUE
+                 LIMIT(J,I) = CC**MINSTR
+                 SUMSTR = 0.
+                 DO 142 K=MINSTR,MAXSTR
                   SUMSTR = SUMSTR + DBLE(NLINES(K,J,I))*CC**K
 
 c                  print*, DBLE(NLINES(K,J,I))*CC**K, sumstr,
 c     C                 percen*totstr, totstr, limit(j,i)
                   IF(SUMSTR.GT.PERCEN*TOTSTR)GOTO 143
                   LIMIT(J,I) = CC**K
-142             CONTINUE
+142              CONTINUE
                ENDIF
 143            CONTINUE
 
               ENDIF
+C              print*,J,I,LIMIT(J,I)
 146          CONTINUE
 140         CONTINUE
-
 
          ENDIF
 
@@ -390,8 +419,14 @@ C        See how many lines are deselected by this and sum up strengths:
          NLOSE=0
          STRLOSE=0.0
          STRKEEP=0.0
-         DO 160 LINE=FSTLIN,LSTLIN
-          READ(DBLUN,111,REC=LINE)BUFFER(1:DBRECL)
+         STROUT=0.0
+         XWIDA=0.
+         XWIDS=0.
+         XLSE=0.
+         XTDEP=0.
+         OPEN(12,FILE='TEMP.DAT',STATUS='OLD')
+         DO 160 LINE=1,NLIN
+          READ(12,1)BUFFER(1:DBRECL)
           CALL RDLINE(BUFFER)
 
           TS1 = 1.0-EXP(-1.439*SNGL(LNWAVE)/TEMP)
@@ -400,7 +435,7 @@ C        See how many lines are deselected by this and sum up strengths:
           IF(TS2.NE.0) TSTIM = TS1/TS2
           K = -1
           DO J=1,DBNISO(LOCID(LNID))
-            IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K=J
+           IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K=J
           ENDDO                
           TCORS1=PARTF(LOCID(LNID),K,TEMP,IPTF)
           LNABSCO = LOG(LNSTR)+LOG(TCORS1)+(TCORS2*LNLSE)+LOG(TSTIM)
@@ -408,7 +443,7 @@ C        See how many lines are deselected by this and sum up strengths:
 
           K = -1
           DO 162 J=1,DBNISO(LOCID(LNID))
-           IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K = J
+            IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K = J
 162       CONTINUE
           IF(K.NE.-1.) THEN
            IF(INCGAS(K,LOCID(LNID)))THEN
@@ -429,6 +464,13 @@ C        See how many lines are deselected by this and sum up strengths:
                     STRLOSE=STRLOSE*DBLE(NLOSE-1)/DBLE(NLOSE)+
      &                 LNSTR1/DBLE(NLOSE)
                    ENDIF
+                   WEIGHT=LNSTR1*1E-20
+                   STROUT=STROUT+WEIGHT
+                   XWIDA=XWIDA+LNWIDA*WEIGHT
+                   XWIDS=XWIDS+LNWIDS*WEIGHT
+                   XLSE=XLSE+LNLSE*WEIGHT
+                   XTDEP=XTDEP+LNTDEP*WEIGHT
+           
                  ENDIF
               ELSE
                  NKEEP=NKEEP+1
@@ -442,21 +484,22 @@ C        See how many lines are deselected by this and sum up strengths:
            ENDIF
           ENDIF
 160      CONTINUE
-   
-         NLIN = LSTLIN-FSTLIN+1      
-         print*,'NLIN, NKEEP, NLOSE+NKEEP',NLIN,NKEEP,NLOSE+NKEEP
-         IF(NKEEP.GT.0)THEN
-          SCORR=STRLOSE/DBLE(NKEEP)
-         ELSE
-          SCORR=STRLOSE
-         ENDIF
-C        PRINT*,'NLOSE,STRLOSE,NKEEP,STRKEEP',NLOSE,STRLOSE,NKEEP,STRKEEP
-C        PRINT*,'SCORR',SCORR
+         CLOSE(12)
 
+         print*,'NLIN, NKEEP, NLOSE+NKEEP',NLIN,NKEEP,NLOSE+NKEEP
+         print*,'Mean line strength kept/lost = ',STRKEEP,STRLOSE
+
+         XWIDA=XWIDA/STROUT
+         XWIDS=XWIDS/STROUT
+         XLSE=XLSE/STROUT
+         XTDEP=XTDEP/STROUT
+         STROUT=STROUT*1E-27
+         WRITE(4,*)VMEAN,STROUT,XLSE,XWIDA,XWIDS,XTDEP
 
 C Copy required lines and correct for those stripped ...
-         DO 150 LINE=FSTLIN,LSTLIN
-          READ(DBLUN,111,REC=LINE)BUFFER(1:DBRECL)
+         OPEN(12,FILE='TEMP.DAT',STATUS='OLD')
+         DO 150 LINE=1,NLIN
+          READ(12,1)BUFFER(1:DBRECL)
           CALL RDLINE(BUFFER)
 
           TS1 = 1.0-EXP(-1.439*SNGL(LNWAVE)/TEMP)
@@ -465,7 +508,7 @@ C Copy required lines and correct for those stripped ...
           IF(TS2.NE.0) TSTIM = TS1/TS2
           K = -1
           DO J=1,DBNISO(LOCID(LNID))
-            IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K=J
+           IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K=J
           ENDDO                
           TCORS1=PARTF(LOCID(LNID),K,TEMP,IPTF)
           LNABSCO = LOG(LNSTR)+LOG(TCORS1)+(TCORS2*LNLSE)+LOG(TSTIM)
@@ -478,30 +521,32 @@ C Copy required lines and correct for those stripped ...
 152       CONTINUE
           IF(K.NE.-1.) THEN
            IF(INCGAS(K,LOCID(LNID)))THEN
-              LNSTR2=LNSTR1+SCORR
-              FCORR = LNSTR2/LNSTR1
-              LNSTR=LNSTR*FCORR
+              CALL EDLINE(BUFFER,QIDENT,ACO2,NCO2,AH2O,NH2O,YACO2,
+     1         YNCO2,YAN2,YNN2)
+       
               IF(PERCEN.GT.0.0)THEN
                  IF (LNSTR1.GE.LIMIT(K,LOCID(LNID)))THEN
-                    CALL EDLINE(BUFFER,QIDENT,ACO2,NCO2,AH2O,NH2O,YACO2,
-     1                   YNCO2,YAN2,YNN2)
-                    WRITE(3,111)BUFFER(1:DBRECL)
+                    WRITE(3,1)BUFFER(1:DBRECL)
                  ENDIF
               ELSE
-                 CALL EDLINE(BUFFER,QIDENT,ACO2,NCO2,AH2O,NH2O,YACO2,
-     1                YNCO2,YAN2,YNN2)
-                 WRITE(3,111)BUFFER(1:DBRECL)
+                 WRITE(3,1)BUFFER(1:DBRECL)
               ENDIF
+
            ENDIF
           ENDIF
 150      CONTINUE
-
+         CLOSE(12)
 
 
          IF(VHIGH.GE.VMAX)GOTO 101
 
 100   CONTINUE
 101   CONTINUE
+999   CONTINUE
+
+      CLOSE(DBLUN)
+      CLOSE(3)
+      CLOSE(4)
 
       STOP
 

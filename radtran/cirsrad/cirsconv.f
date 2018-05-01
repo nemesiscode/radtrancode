@@ -41,7 +41,7 @@ C-----------------------------------------------------------------------
 C       set the FWHM to be the same as the spacing of k-distribs
 C       in look-up table
 
-	WRITE(*,*)'CIRSCONV: FWHM of boxcar = ',FWHM
+C	WRITE(*,*)'CIRSCONV: FWHM of boxcar = ',FWHM
 
 	IF (nwave.eq.1.and.fwhm.ne.0.0) THEN
 		WRITE(*,*)'CIRSCONV: Too few input points: nwave= ',nwave

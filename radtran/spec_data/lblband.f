@@ -58,6 +58,7 @@ C------------------------------------------------------------------------------
       REAL WR,SR,SSFB,SEL,ABSCO,AL,SFB,EL
       REAL DELTA,KNU0,Y0,DELAD,PI
       PARAMETER (PI=3.1415927)
+      DOUBLE PRECISION DX0,DX1
       INTEGER FSTLIN,LSTLIN,NLIN
       CHARACTER*1 ANS
       DIMENSION AD0(MAXGAS)
@@ -125,7 +126,9 @@ C     Status line to help user keep track of progress
 C     End of status line      
 
       FSTLIN=1
-      CALL LINESS(V0,DELWAV,MAXLIN,VLIN,SLIN,ALIN,ELIN,IDLIN,SBLIN,
+      DX0=DBLE(V0)
+      DX1=DBLE(DELWAV)
+      CALL LINESS(DX0,DX1,MAXLIN,VLIN,SLIN,ALIN,ELIN,IDLIN,SBLIN,
      & PSHIFT,DOUBV,TDW,TDWS,LLQ,NLIN,FSTLIN,LSTLIN,NGAS,IDGAS,ISOGAS)
 
       print*,'Total lines read in bin = ',I,FSTLIN,LSTLIN,NLIN

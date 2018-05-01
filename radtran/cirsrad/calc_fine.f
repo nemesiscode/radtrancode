@@ -7,7 +7,7 @@ C
 C_DESC:	Calculate the line contributions to the continuum bins
 C
 C_ARGS:	Input variables:
-C	VV		REAL 	Calculation wavenumber
+C	VV		REAL*8 	Calculation wavenumber
 C	WING		REAL	Bin width.
 C	MAXDV		REAL	Line wing cut-off
 C	LAYER		INTEGER	Layer number
@@ -22,8 +22,8 @@ C	IPROC(NGAS)	INTEGER	Line wing processing parameter.
 C	IBS(2)		INTEGER Buffers 1 and 2
 C
 C	../includes/*.f variables:
-C	VLIN(2,MAXLIN)	REAL	Line position [cm^-1].
-C	SLIN(2,MAXLIN)	REAL	Line strength [cm^-1 molecule^-1 cm^-2] at
+C	VLIN(2,MAXLIN)	REAL*8	Line position [cm^-1].
+C	SLIN(2,MAXLIN)	REAL*8	Line strength [cm^-1 molecule^-1 cm^-2] at
 C				STP.
 C	ALIN(2,MAXLIN)	REAL	Air-broadened halfwidth [cm^-1/atm] @ STP.
 C	ELIN(2,MAXLIN)	REAL	Lower state energy line position [cm^-1].
@@ -57,7 +57,7 @@ C     Continuum and temperature parameter variables ...
 
       INTEGER NGAS,IDGAS(NGAS),ISOGAS(NGAS),IPROC(NGAS)
       INTEGER LAYER,NLAYER
-      REAL VMIN,VMAX,WING,VREL,MAXDV,XK
+      REAL VMIN,VMAX,WING,VREL,MAXDV,XK,XK1
       REAL FRAC(MAXLAY,MAXGAS),PRESS(NLAYER),TEMP(NLAYER)
 
 
@@ -67,11 +67,11 @@ C VLIN, SLIN, ALIN, ELIN, SBLIN, TDW, TDWS and that lot).
 
 
 C     General variables ...
-      REAL DV,LINECONTRIB,VV,X,FNH3,FH2
+      REAL DV,LINECONTRIB,X,FNH3,FH2
       INTEGER I,J,K,L,LINE,IBIN,CURBIN,IGAS,IB,IBS(2),IBX
       INTEGER IFCONT,F1,L1,B1,JBIN
       REAL CONVAL,VTMP
-       
+      DOUBLE PRECISION VV
 
 
 
@@ -79,22 +79,21 @@ C******************************** CODE *********************************
 
       NANTEST=.FALSE.
 
-      CURBIN = 1+INT((VV-VBIN(1))/WING)
+      CURBIN = 1+INT((SNGL(VV)-VBIN(1))/WING)
       IFCONT = 0
       XK=0.0
       
-      
-      DO 12 IBIN=CURBIN-1,CURBIN+1
-       JBIN=IBIN
-       IF(JBIN.LT.1)JBIN=1
+      JBIN=CURBIN-1
+      IF(JBIN.LT.1)JBIN=1
+      DO 12 IBIN=JBIN,CURBIN+1
        DO 200 IBX=1,2
 
         IB=IBS(IBX)
 
-        F1=FSTLIN(IB,JBIN)
-        L1=LSTLIN(IB,JBIN)
+        F1=FSTLIN(IB,IBIN)
+        L1=LSTLIN(IB,IBIN)
         B1=LASTBIN(IB)
-        IF(IBIN.EQ.CURBIN-1.AND.IBX.EQ.1.AND.B1.LT.IBIN) THEN
+        IF(IBIN.EQ.JBIN.AND.IBX.EQ.1.AND.B1.LT.IBIN) THEN
 C        We have now run past the end of buffer 1 and need to read in a 
 C        new load of lines
 C        Pass back flag  
@@ -109,7 +108,7 @@ C        Error arose while doing LBL simulations in visible range. Problem not y
 
           IGAS=IDLIN(IB,LINE)
 
-          DV = (VV - VLIN(IB,LINE))
+          DV = (SNGL(VV) - VLIN(IB,LINE))
 
 C         Ignore lines more than MAXDV widths away
           IF(ABS(DV).LE.MAXDV)THEN
@@ -123,9 +122,9 @@ C         Ignore lines more than MAXDV widths away
      4       TDW(IB,LINE),TDWS(IB,LINE),LLQ(IB,LINE),DOUBV(IB,LINE),
      5       FNH3,FH2)
 
-             NANTEST=ISNAN(CONVAL)
+            NANTEST=ISNAN(CONVAL)
 
-             IF(NANTEST)THEN
+            IF(NANTEST)THEN
               print*,'Calc_fine.f: Code reports that calculated'
               print*,'absorption is Not A Number'
               print*,'CONVAL = ',CONVAL
@@ -143,8 +142,7 @@ C         Ignore lines more than MAXDV widths away
               print*,'FNH3, FH2 = ',FNH3,FH2
                
               STOP
-             ENDIF
-
+            ENDIF
             XK=XK+CONVAL
 
           ENDIF
@@ -158,13 +156,16 @@ C         Ignore lines more than MAXDV widths away
 12    CONTINUE
 
 C     Now add on the line wing continuum contribution
-      DV = VV-VBIN(CURBIN)
+      DV = SNGL(VV)-VBIN(CURBIN)
       VTMP=1.0
 
+      XK1=0.
       DO I=1,IORDP1
-       XK=XK+CONTINK(I,LAYER,CURBIN)*VTMP
+       XK1=XK1+CONTINK(I,LAYER,CURBIN)*VTMP
        VTMP=VTMP*DV
-      ENDDO
+      ENDDO 
+
+      XK=XK+XK1
 
       NANTEST=ISNAN(XK)
       IF(NANTEST)THEN

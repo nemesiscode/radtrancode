@@ -8,14 +8,14 @@ C
 C     Input variables:
 C	IPROC	INTEGER	Line processing parameter
 C	IDGAS	INTEGER	Gas ID
-C	VV	REAL	Calculation wavenumber
+C	VV	REAL*8	Calculation wavenumber
 C	TCORDW	REAL	Doppler line width coefficient
 C	TCORS1 	REAL	Temperature coefficient 1
 C	TCORS2 	REAL	Temperature coefficient 2
 C	PRESS	REAL	Pressure
 C	TEMP	REAL	Temperature
 C	FRAC	REAL	Fraction
-C	VLIN	REAL	Line wavenumber
+C	VLIN	REAL*8	Line wavenumber
 C	SLIN	REAL*8	Line strength at STP
 C	ELIN	REAL 	Lower state energy
 C	ALIN	REAL	Air-broadened width
@@ -30,9 +30,9 @@ C     ****************************************************************
       IMPLICIT NONE
       INTEGER IPROC,IDGAS
       
-      REAL SUBLINE,VV,VLIN,ABSCO,X,Y,AD,TRATIO,DOUBV
+      REAL SUBLINE,ABSCO,X,Y,AD,TRATIO,DOUBV
       REAL ALIN,SBLIN,ELIN,TDW,TDWS,TCORDW,TCORS1,TCORS2
-      DOUBLE PRECISION SLIN,LNABSCO
+      DOUBLE PRECISION SLIN,LNABSCO,VLIN,VV
       REAL DV,TSTIM,TS1,TS2
       REAL PRESS,TEMP,FRAC,FNH3,FH2,WY,DPEXP
       CHARACTER*15 LLQ
@@ -42,11 +42,11 @@ C     Y is the Lorentz/collision-broadened line width divided by
 C      the Doppler-broadened line width.
 
 C     Doppler line width
-      AD=TCORDW*VLIN
+      AD=TCORDW*SNGL(VLIN)
 
 C     Stimulated emission coefficient.
-      TS1 = (1.0 - DPEXP(-1.439*VLIN/TEMP))
-      TS2 = (1.0 - DPEXP(-1.439*VLIN/296.0))
+      TS1 = (1.0 - DPEXP(-1.439*SNGL(VLIN)/TEMP))
+      TS2 = (1.0 - DPEXP(-1.439*SNGL(VLIN)/296.0))
       TSTIM=1.0
       IF(TS2.NE.0.)TSTIM=TS1/TS2
 
@@ -67,7 +67,7 @@ C     1 TRATIO**TDWS
       Y = (ALIN*(1.-FRAC)*TRATIO**TDW+(ALIN-SBLIN)*FRAC*
      1 TRATIO**TDWS)*PRESS/AD
 
-      DV = VV-VLIN
+      DV = SNGL(VV-VLIN)
       X = DV/AD
 
 C      print*,IDGAS,PRESS,TEMP,IPROC,VV,VLIN,ABSCO,X,Y,

@@ -541,7 +541,7 @@ C      enddo
       ENDIF
 
       ISOL=1
-C      print*,'SOLAR,ZMU0',SOLAR,ZMU0
+      print*,'SOLAR,ZMU0',SOLAR,ZMU0
       DO J=1,NMU-1
 C       print*,J,MU(J),ZMU0
        IF(ZMU0.LE.MU(J).AND.ZMU0.GT.MU(J+1))ISOL = J
@@ -566,8 +566,10 @@ C      print*,'ISOL,FSOL=',ISOL,FSOL
 
       DO IMU0=ISOL,ISOL+1
        U0PL(IMU0,1) = SOLAR1/(2.0D0*PI*WTMU(IMU0))
-       
-
+       IF(IMU0.EQ.ISOL+1)THEN
+        print*,'IMU0,SOLAR1,WTMU(IMU0),U0PL',IMU0,SOLAR1,
+     1 WTMU(IMU0),U0PL(IMU0,1)
+       ENDIF
 C ****************************************************
 C      CALCULATING INTERIOR INTENSITIES FOR CLOUD.
 C         UPL(J,1,L) GOES DOWN OUT OF LAYER L.

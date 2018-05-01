@@ -62,6 +62,7 @@ $(LIBRARY)(%.o): %.f $(INCLUDES)
 
 bin :    \
 	Cp_lines \
+	Cp_lines_seq \
 	Inv_scan \
 	Li_lines \
 	Extract_exo_diag \
@@ -69,6 +70,7 @@ bin :    \
 	Mergeband \
 	Modifyband \
 	Makedb \
+	Appenddb \
 	Makedbloop \
 	Merge \
 	Merge_multi_ascending \
@@ -79,6 +81,8 @@ bin :    \
 	Select \
 	Convertlines \
 	Selecttemp \
+	Selecttempseq \
+	Selecttempseqtop \
 	Selecttemploop \
 	Summary \
 	Write_xsec\
@@ -104,6 +108,10 @@ Cp_lines : cp_lines.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Cp_lines cp_lines.f $(LIBRARY) \
 	$(LIB)/rtm_util.a
 
+Cp_lines_seq : cp_lines_seq.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Cp_lines_seq cp_lines_seq.f $(LIBRARY) \
+	$(LIB)/rtm_util.a
+
 Li_lines : li_lines.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Li_lines li_lines.f $(LIBRARY) \
 	$(LIB)/rtm_util.a
@@ -126,6 +134,10 @@ Makeband : makeband.f $(LIBRARY)
 
 Makedb : makedb.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Makedb makedb.f $(LIBRARY) \
+	$(LIB)/rtm_util.a
+
+Appenddb : appenddb.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Appenddb appenddb.f $(LIBRARY) \
 	$(LIB)/rtm_util.a
 
 Makedbloop : makedbloop.f $(LIBRARY)
@@ -162,6 +174,14 @@ Convertlines : convertlines.f $(LIBRARY)
 
 Selecttemp : selecttemp.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Selecttemp selecttemp.f $(LIBRARY) \
+	$(LIB)/path.a $(LIB)/rtm_util.a
+
+Selecttempseq : selecttempseq.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Selecttempseq selecttempseq.f $(LIBRARY) \
+	$(LIB)/path.a $(LIB)/rtm_util.a
+
+Selecttempseqtop : selecttempseqtop.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Selecttempseqtop selecttempseqtop.f $(LIBRARY) \
 	$(LIB)/path.a $(LIB)/rtm_util.a
 
 Selecttemploop : selecttemploop.f $(LIBRARY)

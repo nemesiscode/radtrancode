@@ -39,18 +39,18 @@ C     ***************************************************************
       INTEGER NFILBIN
       REAL WFIL(MBIN), TFIL(MBIN), WAVE, VFIL(MBIN), XFRAC
 
-      print*,NPOINT,KWAVE
+C      print*,NPOINT,KWAVE
 C      do i=1,npoint
 C       print*,WAVEIN(i),FWHMIN(i)
 C      enddo
-      print*,DELV,WCENTRAL,WFWHM,ISHAPE,NFILBIN
-      do i=1,nfilbin
-       print*,WFIL(i),TFIL(i)
-      enddo
-      print*,IWAVE,NAV
-      do i=1,nfilbin
-       print*,IAV(i),FBIN(i)
-      enddo
+C      print*,DELV,WCENTRAL,WFWHM,ISHAPE,NFILBIN
+C      do i=1,nfilbin
+C       print*,WFIL(i),TFIL(i)
+C      enddo
+C      print*,IWAVE,NAV
+C      do i=1,nfilbin
+C       print*,IAV(i),FBIN(i)
+C      enddo
 
       IF(ISHAPE.EQ.0)THEN
        W1 = WCENTRAL-0.5*WFWHM
@@ -69,16 +69,16 @@ C      enddo
        ENDDO
       ENDIF
       
-      print*,'AA',ISHAPE,W1,W2,IWAVE,KWAVE
+C      print*,'AA',ISHAPE,W1,W2,IWAVE,KWAVE
       CALL TRANSLATE(IWAVE,W1,W2,KWAVE,X1,X2)
-      print*,'W1,W2',W1,W2
-      print*,'X1,X2,DELX',X1,X2,X2-X1  
+C      print*,'W1,W2',W1,W2
+C      print*,'X1,X2,DELX',X1,X2,X2-X1  
       CALL FINDLOC(WAVEIN,NPOINT,X1,X2,IS1,IS2)
-      print*,'Intermediate IS1, IS2 = ',IS1,IS2
+C      print*,'Intermediate IS1, IS2 = ',IS1,IS2
       IS1 = MAX(1,IS1-2)
       IS2 = MIN(NPOINT,IS2+2)
 
-      print*,'IS1,IS2',IS1,IS2       
+C      print*,'IS1,IS2',IS1,IS2       
       print*,'table wavenumber range : ',WAVEIN(IS1),WAVEIN(IS2)
       print*,'table wavelength range : ',1e4/WAVEIN(IS2),
      1  1e4/WAVEIN(IS1)
@@ -125,7 +125,7 @@ C     1    ISHAPE,WCENTRAL,WAVEIN(I),1e4/WAVEIN(I),DV
         IF(FRAC(I).GT.1)FRAC(I)=1
         IF(FRAC(I).LT.0)FRAC(I)=0
 
-        print*,'I,DV,FRAC',I,DV,FRAC(I)
+C        print*,'I,DV,FRAC',I,DV,FRAC(I)
 
 
 C       Now tidy up the ends if the bins of the band table are of a similar
@@ -140,7 +140,7 @@ C       size to the size of the averaging window.
          FRAC(I)=FRAC(I)*(X2-V1)/FWHMIN(I)
          IF(FRAC(I).LT.0.0)FRAC(I)=0.0
         ENDIF
-        print*,'Mod',I,FRAC(I)
+C        print*,'Mod',I,FRAC(I)
 
 
 15    CONTINUE
@@ -261,7 +261,7 @@ C       NYQUIST SAMPLED BAND DATA
        ENDIF
       ENDIF
 
-      PRINT*,'NAV = ',NAV
+C      PRINT*,'NAV = ',NAV
       
       SUM=0.0
       DO I=1,NAV
@@ -269,7 +269,7 @@ C       NYQUIST SAMPLED BAND DATA
         SUM=SUM+FBIN(I)
       ENDDO
 
-      PRINT*,'SUM = ',SUM
+C      PRINT*,'SUM = ',SUM
 
 
       RETURN

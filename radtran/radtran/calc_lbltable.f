@@ -51,6 +51,7 @@ C--------------------------------------------------------------
       INCLUDE '../includes/lincom.f'
       INCLUDE '../includes/pathcom.f'
       INCLUDE '../includes/bincom.f'
+      INCLUDE '../includes/lcocom.f'
 C-----------------------------------------------------------------------------
       INTEGER LUN,LOOP,LUN0,MDATA,MFIL,NGMAX,N1
       PARAMETER (LUN=2,LUN0=30,MFIL=1000)
@@ -62,8 +63,9 @@ C-----------------------------------------------------------------------------
       real tot_time
       real rate
       integer c1,c2,cr,time1,time2,cm
-      CHARACTER*100 KTAFIL,OPFILE1
+      CHARACTER*100 KTAFIL,OPFILE1,LCOFIL
       CHARACTER*1 ANS
+      LOGICAL FEXIST
       REAL KNU0,DELAD,Y0,EL
       REAL QROT,FRAC1,MAXDV
 
@@ -80,6 +82,8 @@ C     **** all these are now defined by zgauleg.f ***
       CALL system_clock(count_max=cm)
       rate = REAL(cr)
       call system_clock(time1)
+
+      IJLCO=0
 
       PRINT*,'Enter IEXO, IPTF'
       PRINT*,'(IEXO=1 uses temperature dependent line databases'
@@ -186,6 +190,13 @@ C     **** all these are now defined by zgauleg.f ***
        CALL RDKEY(LUN)
        CALL RDGAS
        CALL RDISO
+
+       CALL FILE(OPFILE,LCOFIL,'lco')
+       INQUIRE(FILE=LCOFIL,EXIST=FEXIST)
+       IF(FEXIST)THEN
+           CALL INIT_LCO(LCOFIL)
+       ENDIF
+
       ELSE
 C      If IEXO<>0, then we need to read in temperature-dependent database
 C      (for exoplanet k-tables)

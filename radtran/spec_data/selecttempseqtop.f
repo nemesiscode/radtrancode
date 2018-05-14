@@ -81,7 +81,7 @@ C BINSIZ: Size [cm-1] of bins for limit selection.
       CHARACTER*6 QIDENT(190)
       CHARACTER*100 OPNAME,OPSTR
       CHARACTER*100 TEXT
-      CHARACTER*256 BUFFER
+      CHARACTER*256 BUFFER,BUFFERSAV
 
       LOGICAL ASKYN,INCGAS(MAXISO,MAXDGAS),ALLISO(MAXISO,MAXDGAS),INC
 C INCGAS: Flag to show if a gas is included.
@@ -204,6 +204,7 @@ C     Find point in database where wavenumber is equal to VMIN
 
       DO 100 IBIN=1,NBIN
 
+         print*,'ibin = ',ibin
          VLOW = VMIN + FLOAT(IBIN-1)*BINSIZ
          VHIGH = VMIN + FLOAT(IBIN)*BINSIZ
          VMEAN=0.5*(VLOW+VHIGH)
@@ -223,6 +224,7 @@ C        First read in lines into temporary file
           READ(DBLUN,1,END=998)BUFFER(1:DBRECL)
           CALL RDLINE(BUFFER)
           IF(LNWAVE.LT.VHIGH)GOTO 117
+          BUFFERSAV=BUFFER
 998       CONTINUE
          CLOSE(12)
 
@@ -231,6 +233,7 @@ C        First read in lines into temporary file
          DO I=1,NLIN
              READ(12,1)BUFFER(1:DBRECL)
              CALL RDLINE(BUFFER)
+C             print*,I,LNWAVE,LNSTR
              TS1 = 1.0-EXP(-1.439*SNGL(LNWAVE)/TEMP)
              TS2 = 1.0-EXP(-1.439*SNGL(LNWAVE)/296.0)
              TSTIM=1.0
@@ -250,30 +253,31 @@ C        First read in lines into temporary file
 
 C        Now sort the lines into order of strength
 C         print*,'SORT'
+         IF(NLIN.GT.NSAV)THEN
 
-101      CONTINUE
-         ISWAP=0
-         DO I=1,NLIN-1
-          IF(SSL(I).LT.SSL(I+1))THEN
-           XS=SSL(I)
-           SSL(I)=SSL(I+1)
-           SSL(I+1)=XS
-           J=IDX(I)
-           IDX(I)=IDX(I+1)
-           IDX(I+1)=J
-           ISWAP=1
-          ENDIF
-         ENDDO
-         IF(ISWAP.GT.0)GOTO 101
+101       CONTINUE
+          ISWAP=0
+          DO I=1,NLIN-1
+           IF(SSL(I).LT.SSL(I+1))THEN
+            XS=SSL(I)
+            SSL(I)=SSL(I+1)
+            SSL(I+1)=XS
+            J=IDX(I)
+            IDX(I)=IDX(I+1)
+            IDX(I+1)=J
+            ISWAP=1
+           ENDIF
+          ENDDO
+          IF(ISWAP.GT.0)GOTO 101
 
-C        Mark lines to extract
-         DO I=1,NSAV
-          IFLAG(IDX(I))=1
-C          print*,I,SSL(I),IDX(I)
-         ENDDO
+C         Mark lines to extract
+          DO I=1,NSAV
+           IFLAG(IDX(I))=1
+C           print*,I,SSL(I),IDX(I)
+          ENDDO
+         ENDIF
 
-
-C        See how many lines are deselected by this and sum up strengths:
+C        Initialise line continuum
          STROUT=0.0
          XWIDA=0.
          XWIDS=0.
@@ -286,7 +290,7 @@ C         print*,'NLIN = ',NLIN
           READ(12,1)BUFFER(1:DBRECL)
           CALL RDLINE(BUFFER)
 
-          IF(IFLAG(LINE).EQ.0)THEN
+          IF(NLIN.GT.NSAV.AND.IFLAG(LINE).EQ.0)THEN
 
            TS1 = 1.0-EXP(-1.439*SNGL(LNWAVE)/TEMP)
            TS2 = 1.0-EXP(-1.439*SNGL(LNWAVE)/296.0)
@@ -306,30 +310,43 @@ C         print*,'NLIN = ',NLIN
            XWIDS=XWIDS+LNWIDS*WEIGHT
            XLSE=XLSE+LNLSE*WEIGHT
            XTDEP=XTDEP+LNTDEP*WEIGHT
+C           print*,weight,strout
           ENDIF 
 160      CONTINUE
          CLOSE(12)
 
 C         print*,'Hello'
+         IF(STROUT.GT.0)THEN
+          XWIDA=XWIDA/STROUT
+          XWIDS=XWIDS/STROUT
+          XLSE=XLSE/STROUT
+          XTDEP=XTDEP/STROUT
+          STROUT=STROUT*1E-27
+         ELSE
+          XWIDA=0.1
+          XWIDS=0.1
+          XLSE=888.0
+          XTDEP=0.5
+         ENDIF
 
-         XWIDA=XWIDA/STROUT
-         XWIDS=XWIDS/STROUT
-         XLSE=XLSE/STROUT
-         XTDEP=XTDEP/STROUT
-         STROUT=STROUT*1E-27
          WRITE(4,*)VMEAN,STROUT,XLSE,XWIDA,XWIDS,XTDEP
 
 C Copy required lines 
          OPEN(12,FILE='TEMP.DAT',STATUS='OLD')
          DO 150 LINE=1,NLIN
           READ(12,1)BUFFER(1:DBRECL)
-          IF(IFLAG(LINE).EQ.1)WRITE(3,1)BUFFER(1:DBRECL)
-
+          IF(NLIN.LE.NSAV)THEN
+	   WRITE(3,1)BUFFER(1:DBRECL)
+          ELSE
+           IF(IFLAG(LINE).EQ.1)WRITE(3,1)BUFFER(1:DBRECL)
+          ENDIF
 150      CONTINUE
          CLOSE(12)
 
 
          IF(VHIGH.GE.VMAX)GOTO 102
+
+         BUFFER=BUFFERSAV
 
 100   CONTINUE
 102   CONTINUE

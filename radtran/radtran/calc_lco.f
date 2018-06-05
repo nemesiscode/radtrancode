@@ -12,8 +12,8 @@ C	MAXDV	REAL	Line wing cutoff
 C	IPROC	INTEGER	Line processing parameter
 C	IDGAS	INTEGER	Gas ID
 C	TCORDW	REAL	Doppler line width coefficient
-C	TCORS1 	REAL	Temperature coefficient 1
-C	TCORS2 	REAL	Temperature coefficient 2
+C	TCORS1 REAL	Temperature coefficient 1
+C	TCORS2 REAL	Temperature coefficient 2
 C	PRESS	REAL	Pressure
 C	TEMP	REAL	Temperature
 C	FRAC	REAL	Fraction
@@ -35,6 +35,7 @@ C     ****************************************************************
       REAL VOUT(MAXBIN),YOUT(MAXBIN),XX(MLCO),YY(MLCO)
       REAL SUBLINE,ABSCO,X,Y,AD,TRATIO,DOUBV,WING,MAXDV
       REAL ALIN,SBLIN,ELIN,TDW,TDWS,TCORDW,TCORS1,TCORS2
+      REAL TCORS1X,TCORS2X,PARTF
       DOUBLE PRECISION SLIN,LNABSCO,VLIN,VV
       REAL DV,TSTIM,TS1,TS2,L1,L2,VBIN(MAXBIN)
       REAL V1,V2,F,WEIGHT(0:300),SUM
@@ -45,7 +46,6 @@ C     ****************************************************************
       LLQ='               '
 
       TRATIO = 296./TEMP
-
 
       DO I=1,NBIN
        VOUT(I)=VBIN(I)
@@ -97,13 +97,16 @@ C     Initialise LCO absorption
 
 C      Stimulated emission coefficient.
        TS1 = (1.0 - DPEXP(-1.439*SNGL(VLIN)/TEMP))
-       TS2 = (1.0 - DPEXP(-1.439*SNGL(VLIN)/296.0))
+       TS2 = (1.0 - DPEXP(-1.439*SNGL(VLIN)/TCALCLCO))
        TSTIM=1.0
        IF(TS2.NE.0.)TSTIM=TS1/TS2
 
        SLIN=SLIN*1E27
        LNABSCO=LOG(SLIN)+LOG(TCORS1)+TCORS2*ELIN+LOG(TSTIM)
        ABSCO=SNGL(EXP(LNABSCO))
+
+C      LCO tables are calculated atare particular temperature and the
+C      listed 
 
 C      AD is the Doppler-broadened line width
 C      Y is the Lorentz/collision-broadened line width divided by

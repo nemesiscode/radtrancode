@@ -69,16 +69,18 @@ C      enddo
        ENDDO
       ENDIF
       
-C      print*,'AA',ISHAPE,W1,W2,IWAVE,KWAVE
+      print*,'AA',ISHAPE,W1,W2,IWAVE,KWAVE
       CALL TRANSLATE(IWAVE,W1,W2,KWAVE,X1,X2)
-C      print*,'W1,W2',W1,W2
-C      print*,'X1,X2,DELX',X1,X2,X2-X1  
+      print*,'W1,W2',W1,W2
+      print*,'X1,X2,DELX',X1,X2,X2-X1  
+      print*,'NPOINT',NPOINT
+      print*,'WAVEIN',(WAVEIN(I),I=1,NPOINT)
       CALL FINDLOC(WAVEIN,NPOINT,X1,X2,IS1,IS2)
-C      print*,'Intermediate IS1, IS2 = ',IS1,IS2
+      print*,'Intermediate IS1, IS2 = ',IS1,IS2
       IS1 = MAX(1,IS1-2)
       IS2 = MIN(NPOINT,IS2+2)
 
-C      print*,'IS1,IS2',IS1,IS2       
+      print*,'IS1,IS2',IS1,IS2       
       print*,'table wavenumber range : ',WAVEIN(IS1),WAVEIN(IS2)
       print*,'table wavelength range : ',1e4/WAVEIN(IS2),
      1  1e4/WAVEIN(IS1)

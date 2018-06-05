@@ -151,6 +151,7 @@ C precision.
 
 C Partition function variables ...
       REAL TCORS1,TCORS2,TCORDW,VOUT(MAXBIN),YOUT(MAXBIN)
+      REAL TCORS1LCO,TCORS2LCO
 C TCORS1: the partition function temperature dependence times absorber
 C fraction.
 C TCORS2: the temperature dependence for the Boltzman distribution.
@@ -186,6 +187,18 @@ C NOTE: TCORS1 includes factor of 1.e-27 for scaling of stored lines
       TCORS1 = PARTF(IDGAS,ISOGAS,TEMP,IPTF)*1.E-27
       TCORDW = 4.301E-7*SQRT(TEMP/XMASS)
       TCORS2 = 1.439*(TEMP - 296.)/(296.*TEMP)
+
+      IF(IJLCO.GT.0)THEN
+       IF(ABS(TCALCLCO-296.0).GT.0.5)THEN
+        TCORS1LCO = PARTF(IDLCO,ISOLCO,TEMP,IPTFLCO)/
+     1       PARTF(IDLCO,ISOLCO,TCALCLCO,IPTFLCO)
+        TCORS2LCO = 1.439*(TEMP - TCALCLCO)/(TCALCLCO*TEMP)
+C        print*,TEMP,TCALCLCO,TCORS1LCO
+       ELSE
+        TCORS1LCO = TCORS1
+        TCORS2LCO = TCORS2
+       ENDIF
+      ENDIF
 
       VBOT = VMIN - VREL
       VTOP = VMAX + VREL
@@ -346,8 +359,8 @@ C     have been stripped of weaker lines.
         FNH3=-1.0
         FH2=-1.0
 
-        CALL CALC_LCO(VBIN,NBIN,WING,MAXDV,IPROC,IDGAS,TCORDW,TCORS1,
-     2     TCORS2,PRESS,TEMP,FRAC,FNH3,FH2,VOUT,YOUT)
+        CALL CALC_LCO(VBIN,NBIN,WING,MAXDV,IPROC,IDGAS,TCORDW,
+     1   TCORS1LCO,TCORS2LCO,PRESS,TEMP,FRAC,FNH3,FH2,VOUT,YOUT)
 
         DO 301 I=1,NBIN
 

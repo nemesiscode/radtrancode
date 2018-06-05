@@ -382,6 +382,14 @@ C          Read in temperature specific linedata file.
            CALL RDKEY(LUN)
            CALL RDGAS
            CALL RDISO
+
+           CALL FILE(OPFILE,LCOFIL,'lco')
+           INQUIRE(FILE=LCOFIL,EXIST=FEXIST)
+           IF(FEXIST)THEN
+            print*,'LCO file = ',LCOFIL
+            CALL INIT_LCO(LCOFIL)
+           ENDIF
+
          ENDIF
 
          DO 105 J=1,NP

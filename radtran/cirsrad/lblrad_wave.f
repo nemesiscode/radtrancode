@@ -786,7 +786,7 @@ C           to relabel <buffer 2> as <buffer 1> and read in a new <buffer 2>.
            MAXLIN1 = MAXLIN
            print*,'lblrad_wave: MAXLIN = ',MAXLIN1
            print*,'IBS before read : ',IBS(1),IBS(2)
-           print*,'IBD before rewad: ',IBD(1),IBD(2)
+           print*,'IBD before read: ',IBD(1),IBD(2)
            print*,VMIN,VMAX,VREL
            DX0 = DBLE(VMIN-VREL)
            DX1 = DBLE(VMAX+VREL)

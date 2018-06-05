@@ -21,7 +21,7 @@ C***********************************************************************
       IMPLICIT NONE
 
       INTEGER i,j,L
-      CHARACTER*100 tname,arcfile
+      CHARACTER*128 tname,arcfile
       CHARACTER aname*(*)
       LOGICAL skip,fexist
 
@@ -48,12 +48,15 @@ c  ** if arcfile exists then get tname from that **
 C      tname = '/Users/patirwin/radtrancode/trunk/raddata/'
 
 C      tname ='/home/l/lnf2/nemesis2017/radtrancode/raddata/'
-      tname='/network/aopp/oxpln98/plan/irwin/gitradtran/
-     1radtrancode/raddata/'
+c      tname='/network/aopp/oxpln98/plan/irwin/gitradtran/
+c     1radtrancode/raddata/'
+       tname ='/Users/glnat/CIRS/Radtran/radtrancode/raddata/'
 
       endif
       
+c      print*,'aname=',aname
 c      print*,'tname=',tname
+c      print*,'LEN  =',L
 
       j = 1
       DO 10 i=1,L

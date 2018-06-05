@@ -66,10 +66,10 @@ C     ****************************************************************
        open(14,file=opseqfil,status='unknown')
        open(15,file=oplcofil,status='unknown')
 
-       print*,opseqfil
-       print*,oplcofil
+       print*,'opseqfil',opseqfil
+       print*,'oplcofil',oplcofil
 
-       do 100 irange=1,nrange
+       do 100 irange=0,nrange-1
          print*,'range = ',irange
          j1 = int(irange/10)
          j2 = irange-10*j1 
@@ -98,12 +98,12 @@ C     ****************************************************************
          call file(seqfile,seqfile,'par')
          call file(seqfile,lcofile,'lco')
 
-         print*,seqfile
-         print*,lcofile
+         print*,'tmpseq:',seqfile
+         print*,'tmplco:',lcofile
 
          open(13,file=lcofile,status='old',readonly)
 
-         if(irange.eq.1)then
+         if(irange.eq.0)then
           read(13,1)buffer
           write(15,*)'VMIN, VMAX = ',vmin,vmax
           do i=1,2
@@ -133,8 +133,12 @@ C     ****************************************************************
 
          open(12,file=seqfile,status='old',readonly)
 102      read(12,1)buffer
-         if(buffer(1:1).eq.'#')then
-          if(itemp.eq.1)write(14,1)buffer(1:160)
+         if(buffer(2:2).eq.'#')then
+          if(irange.eq.0)then
+           print*,itemp,irange
+           write(14,1)buffer(1:160)
+           write(6,1)buffer(1:160) 
+          endif
           goto 102
          endif
 

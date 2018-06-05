@@ -253,6 +253,9 @@ C NOTE: SBLIN is the correction to air broadening so that zero is valid
         stop
        ENDIF
       ENDIF
+
+      print*,'loadbuffer end'
+
       RETURN
 
       END

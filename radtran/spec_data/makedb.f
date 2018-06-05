@@ -111,7 +111,7 @@ C       direct under Unix
 	  CALL PROMPT('Enter desired directory of database : ')
 	  READ(*,10)DIRNAM
 	  IL=-1
-	  DO J=1,80
+	  DO J=1,100
 		IF(DIRNAM(J:J).NE.' ')IL=J
   	  END DO
 	  IN = LEN(DBNAME)

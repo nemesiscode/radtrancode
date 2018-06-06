@@ -11,8 +11,8 @@ C	within wavenumber interval vmin to vmax, ignoring lines for gases
 C       other than the NGAS gases with identifiers listed in IDGAS.
 C
 C_ARGS:	Input variables:
-C	VMIN		REAL	Lowest wavenumber of region of interest
-C	VMAX		REAL	Highest wavenumber of region of interest
+C	VMIN		REAL*8	Lowest wavenumber of region of interest
+C	VMAX		REAL*8	Highest wavenumber of region of interest
 C	FSTREC		INT     First record in line database to query 
 C	MAXLIN		INT	Max number of lines to read in
 C	MAXBIN		INT 	Max number of continuum bins
@@ -25,7 +25,7 @@ C	WING		REAL	Width of continuum bins.
 C
 C_ARGS: Output variables:
 C	NLINR		INT	Number of lines actually read in
-C	VLIN(2,MAXLIN)	REAL	Line position [cm-1].
+C	VLIN(2,MAXLIN)	REAL*8	Line position [cm-1].
 C	SLIN(2,MAXLIN)	REAL	Line strength [cm-1/molecule/cm2 at 296K]
 C	ALIN(2,MAXLIN)	REAL	Lorentz width [cm-1].
 C	ELIN(2,MAXLIN)	REAL	Lower state energy [cm-1].
@@ -65,8 +65,8 @@ C ../includes/dbcom.f stores the line database variables (e.g. RELABU).
       INTEGER IDLIN(2,MAXLIN),NGAS,IDGAS(NGAS),ISOGAS(NGAS)
       INTEGER FSTLIN(2,MAXBIN),LSTLIN(2,MAXBIN),NBINX
       INTEGER LASTBIN(2),FIRSTBIN(2),NBINY
-      REAL VMIN,VMAX
-      REAL VLIN(2,MAXLIN)
+      DOUBLE PRECISION VMIN,VMAX
+      DOUBLE PRECISION VLIN(2,MAXLIN)
       DOUBLE PRECISION SLIN(2,MAXLIN)
       REAL ALIN(2,MAXLIN),ELIN(2,MAXLIN)
       REAL SBLIN(2,MAXLIN),TDW(2,MAXLIN)
@@ -253,6 +253,9 @@ C NOTE: SBLIN is the correction to air broadening so that zero is valid
         stop
        ENDIF
       ENDIF
+
+      print*,'loadbuffer end'
+
       RETURN
 
       END

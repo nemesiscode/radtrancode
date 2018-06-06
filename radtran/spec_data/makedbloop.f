@@ -56,7 +56,7 @@ C
       INTEGER IPREC,IPRECL,NTRAN,I,J,K,POINT(MAXDGAS),REC,BUFSIZ,OPUNIT
       INTEGER IL
       LOGICAL ASKYN
-      CHARACTER*100 TMPFIL,DIRNAM,DBNAME1
+      CHARACTER*128 TMPFIL,DIRNAM,DBNAME1
       CHARACTER*1 ANS
 
 
@@ -64,17 +64,23 @@ C
      1'Enter absolute rootname of input line data files')
       CALL PROMPT('? : ')
       READ(*,10)IPFILE
-      DIRNAM=IPFILE
+ 10   FORMAT(A)
+
+      CALL WTEXT(
+     1'Enter directory name of output files')
+      CALL PROMPT('? : ')
+      READ(*,10)DIRNAM
       DO IL=LEN(DIRNAM),1,-1
          IF (DIRNAM(IL:IL) .EQ. '/') GO TO 11
          DIRNAM(IL:IL) = ' '
       END DO
  11   CONTINUE
- 10   FORMAT(A)
 
       DO I=1,LEN(IPFILE)
        IF(IPFILE(I:I).NE.' ')JIP=I
       ENDDO
+      write(6,10)DIRNAM
+      write(6,10)IPFILE
 
       CALL PROMPT('Enter name of new data base : ')
       READ(*,10)DBNAME1
@@ -156,10 +162,15 @@ C
 
       IPFILE(JIP+1:JIP+1)=CHAR(I1+48)
       IPFILE(JIP+2:JIP+2)=CHAR(I2+48)
+      IPFILE(JIP+3:JIP+6)='.par'
+      write(6,10)DBNAME
+      write(6,10)DBNAME1
+      write(6,10)IPFILE
 
       OPEN(UNIT=3,FILE=IPFILE,STATUS='OLD',ERR=900,
      1  ACCESS='SEQUENTIAL')
 
+      print*,'File opened'
 
       CALL FILE(DBFILE,DBFILE,'asc')
       CALL FILE(DBFILE,KEYFIL,'key')      
@@ -180,26 +191,26 @@ C
 C
 C     creating the key file
       OPEN(UNIT=2,FILE=KEYFIL,STATUS='UNKNOWN')
-      WRITE(2,26)DBNAME
-      WRITE(2,20)KEYFIL
-      WRITE(2,21)IPFILE
-      WRITE(2,22)DBFILE
-      WRITE(2,23)INDFIL
-      WRITE(2,24)GASFIL
-      WRITE(2,25)ISOFIL
-      WRITE(*,20)KEYFIL
-      WRITE(*,21)IPFILE
-      WRITE(*,22)DBFILE
-      WRITE(*,23)INDFIL
-      WRITE(*,24)GASFIL
-      WRITE(*,25)ISOFIL
-20    FORMAT(1X,1A56,'  original key name ')
-21    FORMAT(1X,1A56,'  original database ')
-22    FORMAT(1X,1A56,'  main database file')
-23    FORMAT(1X,1A56,'  index file        ')
-24    FORMAT(1X,1A56,'  gas file          ')
-25    FORMAT(1X,1A56,'  isotope file      ')
-26    FORMAT(1X,1A16,40X,'  data base name    ')
+      WRITE(2,10)DBNAME
+      WRITE(2,10)KEYFIL
+      WRITE(2,10)IPFILE
+      WRITE(2,10)DBFILE
+      WRITE(2,10)INDFIL
+      WRITE(2,10)GASFIL
+      WRITE(2,10)ISOFIL
+      WRITE(*,10)KEYFIL
+      WRITE(*,10)IPFILE
+      WRITE(*,10)DBFILE
+      WRITE(*,10)INDFIL
+      WRITE(*,10)GASFIL
+      WRITE(*,10)ISOFIL
+C20    FORMAT(1X,1A56,'  original key name ')
+C21    FORMAT(1X,1A56,'  original database ')
+C22    FORMAT(1X,1A56,'  main database file')
+C23    FORMAT(1X,1A56,'  index file        ')
+C24    FORMAT(1X,1A56,'  gas file          ')
+C25    FORMAT(1X,1A56,'  isotope file      ')
+C26    FORMAT(1X,1A16,40X,'  data base name    ')
 
 C     creating the data base
       WRITE(*,202)

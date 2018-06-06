@@ -51,7 +51,7 @@ C				wings.
 C	IPTF		INTEGER Partition function flag for CH4
 C
 C	../includes/*.f variables:
-C	VLIN(MAXLIN)	REAL	Line position [cm^-1].
+C	VLIN(MAXLIN)	REAL*8	Line position [cm^-1].
 C	SLIN(MAXLIN)	REAL*8	Line strength [cm^-1 molecule^-1 cm^-2] at
 C				STP.
 C	ALIN(MAXLIN)	REAL	Air-broadened halfwidth [cm^-1/atm] @ STP.
@@ -167,9 +167,8 @@ C MXWID: Root mean square of XPW, XPD.
 
 C Misc (and UNDOCUMENTED!!) variables defined in the code ...
       INTEGER LINE,LABEL
-      REAL XMASS,GETMASS,VTMP
-      REAL V,ABSCO
-      DOUBLE PRECISION LNABSCO
+      REAL XMASS,GETMASS,VTMP,ABSCO,V
+      DOUBLE PRECISION LNABSCO,VV
 c--------------------------------
 cc NT*** these  are now arrays **
 ccc      REAL ABSCO,AD,X,Y,DV
@@ -327,8 +326,8 @@ c     pretabulate some line calculation parameters
           DO LINE=FSTLIN(JBIN),LSTLIN(JBIN)
             if (line_done(line).eq.0) then
              line_done(line)=1
-             tstim_arr(line) = (1.0 - dpexp(-1.439*vlin(line)/temp))/
-     >          (1.0 - dpexp(-1.439*vlin(line)/296.0))
+         tstim_arr(line) = (1.0 - dpexp(-1.439*sngl(vlin(line))/temp))/
+     >          (1.0 - dpexp(-1.439*sngl(vlin(line))/296.0))
              LNABSCO=LOG(SLIN(LINE))+LOG(TCORS1)+TCORS2*ELIN(LINE)+
      >		LOG(TSTIM_ARR(LINE))
              ABSCO = SNGL(EXP(LNABSCO))
@@ -339,7 +338,7 @@ C     1		EXP(LNABSCO),ABSCO
 C             print*,sngl(slin(line)*tcors1*dpexp(tcors2*elin(line))*
 C     >        tstim_arr(line))
 
-             ad_arr(line) = tcordw*vlin(line)
+             ad_arr(line) = sngl(tcordw*vlin(line))
              y_arr(line) = (alin(line)*(1 - frac)*tratio**tdw(line) +
      >           (alin(line) - sblin(line))*frac*tratio**tdws(line))*
      >           press/ad_arr(line)
@@ -352,7 +351,8 @@ c###################################################
 
 C Infinite resolution
       DO 103 I=1,NPOINT
-        V = VSTART + FLOAT(I - 1)*DELV
+        VV = DBLE(VSTART) + DBLE(I - 1)*DBLE(DELV)
+        V = SNGL(VV)
         ASSIGN 2001 TO LABEL
         GOTO 2000
 
@@ -383,12 +383,23 @@ C which calculations are being made.
       CURBIN = INT((V - VBIN(1))/WING) + 1
 C Calculate the continuum absorption via the IORDP1 polynomial
 C coefficients held in CONTINK.
+
       TAUTMP = CONTINK(1,IP,IT,CURBIN)
       VTMP = V - VBIN(CURBIN)
       DO 51 ISUM=2,IORDP1
         TAUTMP = TAUTMP + CONTINK(ISUM,IP,IT,CURBIN)*VTMP
         VTMP = VTMP*VTMP
 51    CONTINUE
+C      print*,'fknew 83, IP,IT, CONTINK = ',IP,IT,
+C     1 (CONTINK(K,IP,IT,83),K=1,3)
+C      stop
+      VTMP=0.5*WING
+      X = CONTINK(1,IP,IT,CURBIN)
+      DO J=2,IORDP1
+       X=X+CONTINK(J,IP,IT,CURBIN)*VTMP
+       VTMP=VTMP*VTMP
+      ENDDO
+C      print*,'X = ',X
 
 C The text within the IF statement below should probably be kept
 C commented-out unless you are specifically debugging for errors. I make
@@ -425,6 +436,9 @@ C=======================================================================
         WRITE(*,*)'Resetting according to ...'
         WRITE(*,*)'  IF (IBIN1.LT.1) IBIN1 = 1'
         WRITE(*,*)'  IF (IBIN2.GT.NBIN) IBIN2 = NBIN',NBIN
+        WRITE(*,*),'VSTART,I,DELV,V',VSTART,I,DELV,V
+        WRITE(*,*),'VBIN(1),WING,CURBIN',VBIN(1),WING,CURBIN
+        stop
       ENDIF
       IF(IBIN1.LT.1)IBIN1 = 1
       IF(IBIN2.GT.NBIN)IBIN2 = NBIN
@@ -433,12 +447,12 @@ C=======================================================================
 
 C Compute absorption coefficient for normal incidence
         DO 52 LINE=FSTLIN(JBIN),LSTLIN(JBIN)
-          DV=vlin(line)-v
+          DV=SNGL(vlin(line)-VV)
           IF(ABS(DV).LE.MAXDV)THEN
-           X  = abs(vlin(line)-v)/ad_arr(line)
+           X  = ABS(DV)/ad_arr(line)
            FNH3=-1.0
            FH2=-1.0
-           TAUTMP=TAUTMP+SUBLINE(IDGAS,PRESS,TEMP,IPROC,V,
+           TAUTMP=TAUTMP+SUBLINE(IDGAS,PRESS,TEMP,IPROC,VV,
      1  VLIN(LINE),ABSCO_arr(line),X,Y_arr(line),ad_arr(line),
      1  FNH3,FH2,LLQ(line),DOUBV(line))
           ENDIF

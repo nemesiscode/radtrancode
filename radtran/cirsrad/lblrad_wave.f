@@ -78,7 +78,7 @@ C
 C_HIST:	
 C-----------------------------------------------------------------------
 
-      SUBROUTINE LBLrad_wave (X, WING, VMIN, VMAX, VREL, MAXDV, 
+      SUBROUTINE LBLrad_wave (XX, WING, VMIN, VMAX, VREL, MAXDV, 
      1    IBS, IBD, Dist, INormal, IRay, ispace, DelH, nlayer,
      2    npath, ngas, limlay, limcont, totam, press, temp, pp, 
      3    amount, nlayin, incdim, layinc, cont, scale, imod,
@@ -118,9 +118,10 @@ C		Passed variables
       REAL    vem(maxsec),emissivity(maxsec),interpem
       REAL	xmu,dtr,xt1,xfac
       INTEGER ifc(limcont,nlayer),nem,j0,IBS(2),IBD(2)
+      DOUBLE PRECISION VV,XX,DX0,DX1
 
-	REAL	XCOM,XNEXT,FPARA,vv,XRAY,RAYLEIGHJ,RAYLEIGHA,RAYLEIGHV
-        REAL    WING,MAXDV,VMIN,VMAX
+	REAL	XCOM,XNEXT,FPARA,XRAY,RAYLEIGHJ,RAYLEIGHA,RAYLEIGHV
+        REAL    WING,MAXDV,VMIN,VMAX,X
         REAL    RAYLEIGHLS,fheh2,fch4h2,fh2,fhe,fch4,fnh3
         INTEGER jnh3,jch4,jh2,jhe,igas
         double precision get_albedo
@@ -160,7 +161,7 @@ C		Internal variables
 	INTEGER	I, J, K, L, Ipath, Ig, nlays
 	REAL	qh(maxlay), qhe(maxlay),
      1		frac(maxlay,maxgas), qh_he(maxlay), dist1,
-     2		x, taucon(maxlay)
+     2		taucon(maxlay)
         REAL    taugas(maxlay), tauscat(maxlay), p, t
         REAL    taugasc(maxlay),xp,VREL
         REAL    tau, tau2, asec(maxsec), bsec(maxsec),
@@ -370,6 +371,28 @@ C	Precompute volume fractions.
 C
 C-----------------------------------------------------------------------
 
+        JH2 = -1
+        JNH3 = -1
+        JHE = -1
+        JCH4 = -1
+        DO IGAS=1,NGAS
+          IF(IDGAS(IGAS).EQ.39.AND.
+     1     (ISOGAS(IGAS).EQ.0.OR.ISOGAS(IGAS).EQ.1))THEN
+            JH2 = IGAS
+          ENDIF
+          IF(IDGAS(IGAS).EQ.40.AND.
+     1     (ISOGAS(IGAS).EQ.0.OR.ISOGAS(IGAS).EQ.1))THEN
+            JHE = IGAS
+          ENDIF
+          IF(IDGAS(IGAS).EQ.6.AND.
+     1     (ISOGAS(IGAS).EQ.0.OR.ISOGAS(IGAS).EQ.1))THEN
+            JCH4 = IGAS
+          ENDIF
+          IF(IDGAS(IGAS).EQ.11.AND.
+     1     (ISOGAS(IGAS).EQ.0.OR.ISOGAS(IGAS).EQ.1))THEN
+            JNH3 = IGAS
+          ENDIF
+        ENDDO
 
 
 	DO I= 1, nlayer
@@ -409,13 +432,14 @@ C-----------------------------------------------------------------------
         XNEXT=0.0
         IRECL = 4
 
-        esurf = interpem(nem,vem,emissivity,x)
 
 C       Set vv to the current WAVENUMBER
-        vv = x
+        vv = XX
         if(ispace.eq.1)then
-          vv=1e4/x 
+          vv=1e4/XX 
         endif
+        x=sngl(xx)
+        esurf = interpem(nem,vem,emissivity,x)
 
 C        print*,'lblrad_wave ispace,vv=',ispace,vv
 
@@ -622,7 +646,7 @@ C	Computes a polynomial approximation to any known continuum spectra
 C       for a particular gas over a defined wavenumber region.
 
 		AvgCONTMP=0.0
-		 CALL ngascon(vv,idgas(K),isogas(K),
+		 CALL ngascon(sngl(vv),idgas(K),isogas(K),
      1		  amount(J,K),pp(J,K),p,t,AvgCONTMP)
 
                  if(AvgCONTMP.ge.0)then
@@ -664,11 +688,13 @@ C       This goes off to do the collision induced-absorption
 		AvgCONTMP=0.0
 	        IF(FLAGH2P.EQ.1)THEN
                    FPARA = HFP(J)
- 		   CALL NPARACON(vv,P,T,
-     1		     NGas,idgas,isogas,AAmount,PPP,
-     2		     FPARA,XLen,AvgCONTMP,IABSORB,DABSORB,id1)
+c                  CALL NPARACON(sngl(vv),P,T,
+c     1              NGas,idgas,isogas,AAmount,PPP,
+c     2              FPARA,XLen,AvgCONTMP,IABSORB,DABSORB,id1)
+                   CALL NPARACON_ALL(sngl(vv),p,t,ngas,idgas,isogas,
+     1        aamount,ppp,fpara,xlen,avgcontmp,iabsorb,dabsorb,id1)
              	ELSE
-		   CALL NCIACON(vv,P,T,INormal,
+		   CALL NCIACON(sngl(vv),P,T,INormal,
      1		     NGas,idgas,isogas,AAmount,PPP,
      2		     XLen,AvgCONTMP,IABSORB,DABSORB,id1)
              	ENDIF
@@ -683,11 +709,11 @@ C	The code below is if Rayleigh scattering is considered.
 
 		IF(IRAY.GT.0.AND.ITYPE.NE.0)THEN
                   if(IRAY.EQ.1)THEN
-                   xray = RAYLEIGHJ(vv,p,t)
+                   xray = RAYLEIGHJ(sngl(vv),p,t)
  		  elseif(IRAY.EQ.2)then
-                   xray = RAYLEIGHV(vv,p,t)
+                   xray = RAYLEIGHV(sngl(vv),p,t)
 		  elseif(IRAY.EQ.3)then
-                   xray = RAYLEIGHA(vv,p,t)
+                   xray = RAYLEIGHA(sngl(vv),p,t)
                   else
                   if(FH2.GT.0.0)THEN
                    fheh2=FHE/FH2
@@ -696,7 +722,7 @@ C	The code below is if Rayleigh scattering is considered.
                    fheh2=0.
                    fch4h2=0.
                   endif
-                  xray = RAYLEIGHLS(vv,fheh2,fch4h2,fnh3)
+                  xray = RAYLEIGHLS(sngl(vv),fheh2,fch4h2,fnh3)
 		  endif
                   avgcontmp = totam(J)*xray
                   tauray(J)=avgcontmp
@@ -740,6 +766,8 @@ C	of earlier in the code).
 C
 C-----------------------------------------------------------------------
 
+
+
 C check bins in layer 1        
         J=1
         CALL CALC_FINE(VV,WING,MAXDV,J,NLAYER,NGAS,PRESS,TEMP,
@@ -758,10 +786,11 @@ C           to relabel <buffer 2> as <buffer 1> and read in a new <buffer 2>.
            MAXLIN1 = MAXLIN
            print*,'lblrad_wave: MAXLIN = ',MAXLIN1
            print*,'IBS before read : ',IBS(1),IBS(2)
-           print*,'IBD before rewad: ',IBD(1),IBD(2)
+           print*,'IBD before read: ',IBD(1),IBD(2)
            print*,VMIN,VMAX,VREL
-           
-           CALL LOADBUFFER(VMIN-VREL,VMAX+VREL,FSTREC,MAXLIN1,MAXBIN,
+           DX0 = DBLE(VMIN-VREL)
+           DX1 = DBLE(VMAX+VREL)
+           CALL LOADBUFFER(DX0,DX1,FSTREC,MAXLIN1,MAXBIN,
      1          IB,NGAS,IDGAS,ISOGAS,VBOT,WING,NLINR,VLIN,SLIN,ALIN,
      3          ELIN,IDLIN,SBLIN,PSHIFT,DOUBV,TDW,TDWS,LLQ,NXTREC,
      3          FSTLIN,LSTLIN,LASTBIN)
@@ -800,7 +829,7 @@ C       all continuum bins and all layers.
            IF(IBD(I).LT.0)THEN
             print*,'Precalculating continuum from array : ',IBS(I)
             CALL CALC_CONT(WING,MAXDV,NLAYER,NGAS,PRESS,TEMP,
-     1       FRAC,IDGAS,ISOGAS,IPROC,IBS(I))
+     1       FRAC,IDGAS,ISOGAS,IPROC,IBS(I),I)
             IBD(I)=1
            ENDIF
         ENDDO
@@ -817,7 +846,6 @@ C          print*,'Calculating fine structure. VV,Layer = ',VV,J
 
 	  tautmp(J) = taucon(J) + xk
 	  taugas(J) = taugasc(J) + xk
-C          print*,J,press(j),taucon(j),xk,tautmp(j)
 
       	ENDDO
    
@@ -1121,8 +1149,8 @@ C                        print*,(wt1(i),i=1,nmu)
 		  	call scloud11wave(rad1, sol_ang, emiss_ang,
      1                          aphi, radg, solar, lowbc, galb1, iray,
      2				mu1, wt1, nmu,   
-     3				nf, Ig, x, vv, eps, omegas,bnu, taus, 
-     4				taur,nlays, ncont,lfrac)
+     3				nf, Ig, sngl(x), sngl(vv), eps, omegas,
+     4                          bnu, taus, taur,nlays, ncont,lfrac)
 
  		  	output(Ipath) = xfac*rad1
 
@@ -1141,12 +1169,13 @@ C                        print*,'lowbc,galb1',lowbc,galb1
                          stop
                         endif
 
-		  	call scloud12wave(rad1, sol_ang, emiss_ang, aphi, 
+		  	call scloud12wave(rad1, sol_ang, emiss_ang, 
+     1                          aphi, 
      1				radg, solar, lowbc, galb1, iray,
      2				mu1, wt1, nmu,   
-     3				nf, Ig, x, vv, bnu, taucl, taucs,
-     4                          icloud, fcover, taug, taur, nlays, 
-     5                          ncont)
+     3				nf, Ig, sngl(x), sngl(vv), bnu, taucl, 
+     4                          taucs, icloud, fcover, taug, taur,
+     5                          nlays, ncont)
 
  		  	output(Ipath) = xfac*rad1
 
@@ -1157,9 +1186,9 @@ C                    print*,'Error in LBLrad_wave, nf <> 0',nf
 C                   endif
 
    	  	   call scloud11flux(radg, solar, sol_ang, 
-     1               lowbc, galb1, iray, mu1, wt1, nmu, nf, Ig, x,
-     2               vv, eps, omegas, bnu, taus, taur, 
-     3               nlays, ncont, lfrac, umif, uplf)
+     1               lowbc, galb1, iray, mu1, wt1, nmu, nf, Ig, 
+     2               sngl(x),sngl(vv), eps, omegas, bnu, taus, 
+     3               taur, nlays, ncont, lfrac, umif, uplf)
                     
                      open(48,file='test.dat',status='unknown',
      1                 form='unformatted')
@@ -1368,8 +1397,9 @@ C               upwelling radiation field to local temperature.
 
 C                WRITE (*,*) '     CALLING scloud11flux, nf = ',nf
 		call scloud11flux(radg, solar, sol_ang, 
-     1             lowbc, galb1, iray, mu1, wt1, nmu, nf, Ig, x,
-     2             vv, eps,omegas, bnu, taus, taur, 
+     1             lowbc, galb1, iray, mu1, wt1, nmu, nf, Ig, 
+     3             sngl(x),sngl(vv),
+     2             eps,omegas, bnu, taus, taur, 
      3             nlayer, ncont, lfrac, umif, uplf)
 
 C                do k=1,nlays

@@ -24,7 +24,7 @@ C*********************************************************************
 C ../includes/arrdef.f defines the maximum values for a series of variables
 C (layers, bins, paths, etc.)
 
-      INTEGER intmod,nconv,nwave,i,j,itype,imie,imie1
+      INTEGER intmod,nconv,nwave,i,j,itype,imie,imie1,iscat
       INTEGER iconv,ioff1,ioff2,iv,nv,iwave,ipath,ispace
       INTEGER npoints,planet,inormal,iray,iptf,npath,ichannel,nem
 
@@ -307,7 +307,7 @@ C     if present.
 
       CALL cirsrtfg_wave (runname, dist, inormal, iray, fwhm, ispace, 
      1 vwave,nwave,itype, nem, vem, emissivity, tsurf, gradtsurf, nv, 
-     1 xmap, vconv, nconv, npath, calcout, gradients)
+     1 xmap, vconv, nconv, npath, calcout, gradients,iscat)
 
       CALL FILE(runname,outfile,'out')
       OPEN(2,FILE=outfile,STATUS='unknown')

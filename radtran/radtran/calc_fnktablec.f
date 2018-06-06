@@ -50,6 +50,8 @@ C--------------------------------------------------------------
       INCLUDE '../includes/lincom.f'
       INCLUDE '../includes/pathcom.f'
       INCLUDE '../includes/bincom.f'
+      INCLUDE '../includes/lcocom.f'
+
 C-----------------------------------------------------------------------------
       INTEGER LUN,LOOP,LUN0,LUN1,MDATA,MFIL,NGMAX,N1
       PARAMETER (LUN=2,LUN0=30,LUN1=31,MFIL=1000)
@@ -62,7 +64,8 @@ C-----------------------------------------------------------------------------
       real rate
       integer c1,c2,cr,time1,time2,cm
       REAL TFIL(MFIL),VFIL(MFIL),V1(MFIL),V2(MFIL),T1(MFIL)
-      CHARACTER*100 KTAFIL,FILFILE,OPFILE1
+      CHARACTER*100 KTAFIL,FILFILE,OPFILE1,LCOFIL
+      LOGICAL FEXIST
       CHARACTER*1 ANS
       REAL KNU0,DELAD,Y0,EL
       REAL QROT,FRAC1,MAXDV
@@ -75,6 +78,8 @@ C     G_ORD: Gauss-Legendre ordinates for calculating the k-distribution.
 C     K_G: Calculated k-distribution.
 C     DEL_G: Gauss-Legendre weights for integration.
 C     **** all these are now defined by zgauleg.f ***
+
+      IJLCO=0
 
       CALL system_clock(count_rate=cr)
       CALL system_clock(count_max=cm)
@@ -261,6 +266,14 @@ C      Convert wavelength range to wavenumber range if IWAVE=0
        CALL RDKEY(LUN)
        CALL RDGAS
        CALL RDISO
+
+       CALL FILE(OPFILE,LCOFIL,'lco')
+       INQUIRE(FILE=LCOFIL,EXIST=FEXIST)
+       IF(FEXIST)THEN
+              print*,'LCO file = ',LCOFIL
+              CALL INIT_LCO(LCOFIL)
+       ENDIF
+
       ELSE
 C      If IEXO<>0, then we need to read in temperature-dependent database
 C      (for exoplanet k-tables)
@@ -369,6 +382,14 @@ C          Read in temperature specific linedata file.
            CALL RDKEY(LUN)
            CALL RDGAS
            CALL RDISO
+
+           CALL FILE(OPFILE,LCOFIL,'lco')
+           INQUIRE(FILE=LCOFIL,EXIST=FEXIST)
+           IF(FEXIST)THEN
+            print*,'LCO file = ',LCOFIL
+            CALL INIT_LCO(LCOFIL)
+           ENDIF
+
          ENDIF
 
          DO 105 J=1,NP
@@ -509,6 +530,14 @@ C            Read in the lines into the bins (bins have already been
 C            defined by lbl_kcont.f) 
              CALL LOADBINS(WING,NGAS,IDGAS,ISOGAS)
              PRINT*,'Reading in lines for temperature : ',TEMP1(K)
+
+             CALL FILE(OPFILE,LCOFIL,'lco')
+             INQUIRE(FILE=LCOFIL,EXIST=FEXIST)
+             IF(FEXIST)THEN
+              print*,'LCO file = ',LCOFIL
+              CALL INIT_LCO(LCOFIL)
+             ENDIF
+
           ENDIF
 
           DO 20 J=1,NP

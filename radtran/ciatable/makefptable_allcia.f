@@ -140,13 +140,17 @@ C all entries = 0
 
 	  print*,'temp = ',temps(itemp)
 
+C Fletcher 04/2018:  In below N2-H2, N2-CH4, etc, had to multiply by DNU to get 
+C Correct coefficients from the subroutines.
+
+
 C =========================== N2 - H2 ===========================
 C Used n2h2_sub (Teanby) rather than n2h2_s which had some memory issues
  355	  igas = 1
 	  temp=temps(itemp)
 	  do istep = 1,3
-	   fnumin=0.0 + (istep-1)*500.0
-	   fnumax = fnumin + 499.0
+	   fnumin=0.0 + (istep-1)*500.0*dnu
+	   fnumax = fnumin + 499.0*dnu
 	   nf = 0
 	   call n2h2_sub(temp,fnumin,fnumax,dnu,nf,f,alf,slit)
 	   do i=1,nf
@@ -161,8 +165,8 @@ C =========================== N2 - CH4 ===========================
  356	  igas = 2
 	  temp=temps(itemp)
 	  do istep = 1,2
-	   fnumin=0.0 + (istep-1)*500.0
-	   fnumax = fnumin+499.0
+	   fnumin=0.0 + (istep-1)*500.0*dnu
+	   fnumax = fnumin+499.0*dnu
 	   nf = 0
 	   call n2ch4_s(temp,fnumin,fnumax,dnu,nf,f,alf)
 	   do i=1,nf
@@ -176,8 +180,8 @@ C =========================== N2 - N2 ===========================
  357	  igas = 3
 	  temp=temps(itemp)
 	  do istep = 1,2
-	   fnumin=0 + (istep-1)*500.0
-	   fnumax = fnumin + 499.0
+	   fnumin=0 + (istep-1)*500.0*dnu
+	   fnumax = fnumin + 499.0*dnu
 	   nf = 0
 	   call n2n2_s(temp,fnumin,fnumax,dnu,nf,f,alf,slit)
 	   do i=1,nf
@@ -191,8 +195,8 @@ C =========================== CH4 - CH4 ===========================
  358	  igas = 4
 	  temp=temps(itemp)
 	  do istep = 1,3
-	   fnumin=0 + (istep-1)*500.0
-	   fnumax = fnumin + 499.0
+	   fnumin=0 + (istep-1)*500.0*dnu
+	   fnumax = fnumin + 499.0*dnu
 	   nf = 0
 	   call ch4ch4_s(temp,fnumin,fnumax,dnu,nf,f,alf)
 	   do i=1,nf
@@ -215,8 +219,8 @@ c with Borysows original and ouput doesn't contain spikes. NT 23/6/04
 
           temp=temps(itemp)
           do istep = 1,3
-           fnumin=0 + (istep-1)*500.0
-           fnumax = fnumin + 499.0
+           fnumin=0 + (istep-1)*500.0*dnu
+           fnumax = fnumin + 499.0*dnu
            nf = 0
            call h2ch4_sub(temp,fnumin,fnumax,dnu,nf,f,alf,slit)
            do i=1,nf

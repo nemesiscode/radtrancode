@@ -16,14 +16,14 @@ C	Line data variables.
 C
 C-----------------------------------------------------------------------
       INTEGER MAXLIN
-      PARAMETER (MAXLIN=2000000)
+      PARAMETER (MAXLIN=20000000)
 C MAXLIN: maximum number of lines which can be stored.
 
       INTEGER IDLIN(MAXLIN),LINMAX,NXTLIN
 C IDLIN: Air Force Geospace Lab. identifier.
 
-      DOUBLE PRECISION SLIN(MAXLIN)
-      REAL VLIN(MAXLIN),ALIN(MAXLIN),PSHIFT(MAXLIN)
+      DOUBLE PRECISION SLIN(MAXLIN),VLIN(MAXLIN)
+      REAL ALIN(MAXLIN),PSHIFT(MAXLIN)
 C VLIN: Line position [cm^-1].
 C SLIN: Line strength [cm^-1 molecule^-1 cm^-2] at STP.
 C ALIN: Lorentz half width [cm^-1] at STP.

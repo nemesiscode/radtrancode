@@ -60,7 +60,7 @@ C     ../includes/dbcom.f stores the linedata base variables.
       INTEGER TOTLIN(MINSTR:MAXSTR,MAXDGAS),IPTF
       INTEGER I,J,K,ID,ISO,IBIN,LINE,FSTLIN,LSTLIN,NBIN
       INTEGER FIRST(2),LAST(2),NPAR,IERROR,READI,NLIN,NKEEP,NLOSE
-      REAL VMIN,VMAX,BINSIZ,VLOW,VHIGH
+      DOUBLE PRECISION VMIN,VMAX,BINSIZ,VLOW,VHIGH
       DOUBLE PRECISION LIMIT(MAXISO,MAXDGAS),PERCEN
 C     VMIN: Wavenumber [cm-1] minimum.
 C     VMAX: Wavenumber [cm-1] maximum.
@@ -330,8 +330,8 @@ C        each strength decade
                READ(DBLUN,111,REC=LINE)BUFFER(1:DBRECL)
 111            FORMAT(A)
                CALL RDLINE(BUFFER)
-               TS1 = 1.0-EXP(-1.439*LNWAVE/TEMP)
-               TS2 = 1.0-EXP(-1.439*LNWAVE/296.0)
+               TS1 = 1.0-EXP(-1.439*SNGL(LNWAVE)/TEMP)
+               TS2 = 1.0-EXP(-1.439*SNGL(LNWAVE)/296.0)
                TSTIM=1.0
                IF(TS2.NE.0) TSTIM = TS1/TS2
 
@@ -443,8 +443,8 @@ C     See how many lines are deselected by this and sum up strengths:
         READ(DBLUN,111,REC=LINE)BUFFER(1:DBRECL)
         CALL RDLINE(BUFFER)
 
-        TS1 = 1.0-EXP(-1.439*LNWAVE/TEMP)
-        TS2 = 1.0-EXP(-1.439*LNWAVE/296.0)
+        TS1 = 1.0-EXP(-1.439*SNGL(LNWAVE)/TEMP)
+        TS2 = 1.0-EXP(-1.439*SNGL(LNWAVE)/296.0)
         TSTIM=1.0
         IF(TS2.NE.0) TSTIM = TS1/TS2         
         TCORS1=PARTF(LOCID(LNID),ISO,TEMP,IPTF)
@@ -496,8 +496,8 @@ C     Copy required lines and correct for those stripped ...
         READ(DBLUN,111,REC=LINE)BUFFER(1:DBRECL)
         CALL RDLINE(BUFFER)
 
-        TS1 = 1.0-EXP(-1.439*LNWAVE/TEMP)
-        TS2 = 1.0-EXP(-1.439*LNWAVE/296.0)
+        TS1 = 1.0-EXP(-1.439*SNGL(LNWAVE)/TEMP)
+        TS2 = 1.0-EXP(-1.439*SNGL(LNWAVE)/296.0)
         TSTIM=1.0
         IF(TS2.NE.0) TSTIM = TS1/TS2    
         TCORS1=PARTF(LOCID(LNID),ISO,TEMP,IPTF)

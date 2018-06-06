@@ -99,6 +99,12 @@ c     First skip header
 179     CONTINUE
         BANDTYP(I)=4 
        ELSE
+        IF(HEAD(1:2).EQ.'GL')THEN
+         BANDTYP(I)=5
+        ELSE
+         BANDTYP(I)=0
+        ENDIF
+        print*,'NPOINT = ',NPOINT
         DO 110 J=1,NPOINT
 C         READ(12,932)TWAVEN(J,1),TWAVEN(J,2),TPOUT(J,I,1),TPOUT(J,I,2),
 C     1 TPOUT(J,I,3),TPOUT(J,I,4),TPOUT(J,I,5)
@@ -254,6 +260,7 @@ C      READ*,ALAMBDA
       NBIN = 1 + INT((WMAX-WMIN)/STEP)
 
 
+      IMOD=0
       IF(BANDTYP(JGAS).LT.4)THEN
        CALL PROMPT('Enter trans. model. -1=EKS,0=others : ')
        READ*,IMOD
@@ -370,13 +377,17 @@ C        print*,i,iav(i),fbin(i)
             ENDDO
             ERR = 0.0
           ELSE 
-
+            
+C            print*,NAV,(IAV(I),I=1,NAV),(FBIN(I),I=1,NAV)
             CALL TRANSET(BANDTYP,TPOUT,JGAS,NAV,IAV,FBIN,QROT,TPART,
      1       PRESS,TEMP,Q,U,TRAN,SIG,NTRAN)
+C            print*,'AX1'
 
             CALL ROUGHK(NTRAN,U,TRAN,NG,DEL_G,K_G)
+C            print*,'AX2'
 
             CALL FINEFITK(NTRAN,U,TRAN,SIG,NG,DEL_G,K_G,ICALC)
+C            print*,'AX3'
 
 
 C           Add in nasty check for weird things happening for K_G(NG)

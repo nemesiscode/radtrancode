@@ -1,6 +1,6 @@
-      SUBROUTINE LBL_KCONT(VMIN,VMAX,WING,VREL,PRESS,TEMP,IDGAS,ISOGAS,
-     1 FRAC,IPROC,IP,IT,MAXDV,IPTF,IEXO)
-C     $Id: lbl_kcont.f,v 1.17 2011-09-06 15:35:54 irwin Exp $
+      SUBROUTINE LBL_KCONT(VMIN,VMAX,WING,VREL,PRESS,TEMP,IDGAS,
+     1 ISOGAS,FRAC,IPROC,IP,IT,MAXDV,IPTF,IEXO)
+C     $Id:
 C***********************************************************************
 C_TITL:	LBL_KCONT.f
 C
@@ -48,9 +48,10 @@ C	 IPTF		INTEGER	Partition function flag for CH4.
 C	 IEXO		INTEGER IEXO=0, same line data for all temperatures
 C				IEXO=1, different line data for different
 C				  temperatures.
+C	 IEXTRA		INTEGER	IEXTRA=1 
 C
 C	../includes/*.f variables:
-C	VLIN(MAXLIN)	REAL	Line position [cm^-1].
+C	VLIN(MAXLIN)	REAL*8	Line position [cm^-1].
 C	SLIN(MAXLIN)	REAL*8	Line strength [cm^-1 molecule^-1 cm^-2] at
 C				STP.
 C	ALIN(MAXLIN)	REAL	Air-broadened halfwidth [cm^-1/atm] @ STP.
@@ -94,7 +95,8 @@ C Definition of input parameters ...
       INTEGER IP,IT,IDGAS,ISOGAS,IPROC,IREAD,IEXO
       REAL VMIN,VMAX,WING,VREL,MAXDV
       REAL FRAC,PRESS,TEMP
-
+      DOUBLE PRECISION VV,VJ,STR
+      REAL LSE,XWIDA,XWIDS,XTDEP
 
 C The include files ...
       INCLUDE '../includes/arrdef.f'
@@ -108,6 +110,7 @@ C RELABU).
 C ../includes/lincom.f stores the linedata variables (including MAXLIN,
 C VLIN, SLIN, ALIN, ELIN, SBLIN, TDW, TDWS and that lot).
       INCLUDE '../includes/parcom.f'
+      INCLUDE '../includes/lcocom.f'
 C ../includes/parcom.f stores the parameter values such as MAXLAY,
 
 
@@ -122,9 +125,7 @@ C RANGE: =VTOP-VBOT, the calculation range [cm^-1].
 
 
 C Continuum variables ...
-      INTEGER MP,MT
-      PARAMETER (MP=20,MT=20)
-      REAL CONTINK(IORDP1,MP,MT,MAXBIN)
+      REAL CONTINK(IORDP1,MAXK,MAXK,MAXBIN)
       REAL CONVAL(NWAV),CONWAV(NWAV)
       REAL MATRIX(IORDP1,IORDP1),UNIT(IORDP1,IORDP1)
       DOUBLE PRECISION DMATRIX(IORDP1,IORDP1),DUNIT(IORDP1,IORDP1)
@@ -149,7 +150,8 @@ C precision.
 
 
 C Partition function variables ...
-      REAL TCORS1,TCORS2,TCORDW
+      REAL TCORS1,TCORS2,TCORDW,VOUT(MAXBIN),YOUT(MAXBIN)
+      REAL TCORS1LCO,TCORS2LCO
 C TCORS1: the partition function temperature dependence times absorber
 C fraction.
 C TCORS2: the temperature dependence for the Boltzman distribution.
@@ -160,7 +162,7 @@ C Variables needed for the new lineshapes ...
       REAL PI
       PARAMETER (PI=3.1415927)
 
-      REAL VV,FNH3,FH2
+      REAL FNH3,FH2
 
 C******************************** CODE *********************************
 
@@ -186,12 +188,26 @@ C NOTE: TCORS1 includes factor of 1.e-27 for scaling of stored lines
       TCORDW = 4.301E-7*SQRT(TEMP/XMASS)
       TCORS2 = 1.439*(TEMP - 296.)/(296.*TEMP)
 
+      IF(IJLCO.GT.0)THEN
+       IF(ABS(TCALCLCO-296.0).GT.0.5)THEN
+        TCORS1LCO = PARTF(IDLCO,ISOLCO,TEMP,IPTFLCO)/
+     1       PARTF(IDLCO,ISOLCO,TCALCLCO,IPTFLCO)
+        TCORS2LCO = 1.439*(TEMP - TCALCLCO)/(TCALCLCO*TEMP)
+C        print*,TEMP,TCALCLCO,TCORS1LCO
+       ELSE
+        TCORS1LCO = TCORS1
+        TCORS2LCO = TCORS2
+       ENDIF
+      ENDIF
+
       VBOT = VMIN - VREL
       VTOP = VMAX + VREL
       IF(VBOT.LT.0.0)VBOT = 0.0
       RANGE = VTOP - VBOT
       NBIN = INT(RANGE/WING) + 1
       PRINT*,'LBL_KCONT: NBIN, RANGE, WING = ',NBIN, RANGE, WING
+      PRINT*,'LBL_KCONT: VMIN, VMAX, VBOT, VTOP = ',
+     1 VMIN,VMAX,VBOT,VTOP
       IF(NBIN.GT.MAXBIN)THEN
         WRITE(*,*)'LBL_KCONT.f :: *ERROR* NBIN > MAXBIN'
         WRITE(*,*)'Stopping program.'
@@ -201,19 +217,19 @@ C NOTE: TCORS1 includes factor of 1.e-27 for scaling of stored lines
 	STOP
       ENDIF
 	
-      IF(IP.GT.MP)THEN
-        WRITE(*,*)'LBL_KCONT.f :: *ERROR* IP > MP'
+      IF(IP.GT.MAXK)THEN
+        WRITE(*,*)'LBL_KCONT.f :: *ERROR* IP > MAXK'
         WRITE(*,*)'Stopping program.'
         WRITE(*,*)' '
-        WRITE(*,*)'IP, MP = ',IP,MP
+        WRITE(*,*)'IP, MAXK = ',IP,MAXK
 	STOP
       ENDIF
 
-      IF(IT.GT.MT)THEN
-        WRITE(*,*)'LBL_KCONT.f :: *ERROR* IT > MT'
+      IF(IT.GT.MAXK)THEN
+        WRITE(*,*)'LBL_KCONT.f :: *ERROR* IT > MAXK'
         WRITE(*,*)'Stopping program.'
         WRITE(*,*)' '
-        WRITE(*,*)'IT, MT = ',IT,MT
+        WRITE(*,*)'IT, MAXK = ',IT,MAXK
 	STOP
       ENDIF
 
@@ -311,8 +327,8 @@ C Compute absorption coefficient for normal incidence
             DO 20 LINE=FSTLIN(I),LSTLIN(I)
 
               DO 21 K=1,IORDP1
-                VV=VBIN(J)+CONWAV(K)
-                DV=VV-VLIN(LINE)
+                VV=DBLE(VBIN(J)+CONWAV(K))
+                DV=SNGL(VV-VLIN(LINE))
                 IF(ABS(DV).LE.MAXDV)THEN
                  FNH3=-1.0
                  FH2=-1.0
@@ -324,6 +340,8 @@ C Compute absorption coefficient for normal incidence
                 ENDIF
 21           CONTINUE
 20         CONTINUE
+
+
            DO 23 K=1,IORDP1
              DO 314 L=1,IORDP1
                CONTINK(K,IP,IT,J) = CONTINK(K,IP,IT,J) + 
@@ -332,6 +350,34 @@ C Compute absorption coefficient for normal incidence
 23         CONTINUE
 15      CONTINUE
 13    CONTINUE  
+
+C     Extra continuum for linedata files that are so large that they
+C     have been stripped of weaker lines.
+      IF(IJLCO.GT.0)THEN
+       IF(IDGAS.EQ.IDLCO.AND.ISOGAS.EQ.ISOLCO)THEN
+        print*,'Adding LCO for gas : ',IDLCO,ISOLCO
+        FNH3=-1.0
+        FH2=-1.0
+
+        CALL CALC_LCO(VBIN,NBIN,WING,MAXDV,IPROC,IDGAS,TCORDW,
+     1   TCORS1LCO,TCORS2LCO,PRESS,TEMP,FRAC,FNH3,FH2,VOUT,YOUT)
+
+        DO 301 I=1,NBIN
+
+         DO 302 K=1,IORDP1
+          VV=DBLE(VBIN(I)+CONWAV(K))
+          CALL VERINT(VOUT,YOUT,NBIN+1,CONVAL(K),SNGL(VV))
+302      CONTINUE
+         DO 203 K=1,IORDP1
+             DO 304 L=1,IORDP1
+               CONTINK(K,IP,IT,I) = CONTINK(K,IP,IT,I) + 
+     1         UNIT(L,K)*CONVAL(L)
+304          CONTINUE
+203      CONTINUE
+
+301     CONTINUE
+       ENDIF
+      ENDIF
 
       RETURN
 

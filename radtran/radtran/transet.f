@@ -35,10 +35,10 @@ C
 C     ********************************************************************
 
       implicit none
-      integer mbin,mgas,jgas,i1,k
-      parameter(mbin=8000,mgas=20)
-      real qrot,P,T,q,x(20),y(20)
-      real sig(20),dpexp,w(mbin),tpart(4)
+      integer mbin,mgas,jgas,i1,k,mdata
+      parameter(mbin=8000,mgas=20,mdata=20)
+      real qrot,P,T,q,x(mdata),y(mdata)
+      real sig(mdata),dpexp,w(mbin),tpart(4)
       real tpout(mbin,mgas,7),C1,C2
       integer bandtyp(mgas),j
       real U,T1,U1,U2,DU,E_TRAN,yv
@@ -54,14 +54,11 @@ C      print*,'TRANSET called'
 C      print*,jgas,nav
 C      print*,'bandtype : ',bandtyp(jgas)
 C      do i=1,nav
-C       print*,i,iav(i),w(iav(i))
+C       print*,i,iav(i),w(i)
 C      enddo
 C      print*,qrot,P,T,q
 C      print*,'tpart : ',(tpart(i),i=1,4)
 C      print*,ndata
-C      do i=1,ndata
-C       print*,i,x(i),y(i),sig(i)
-C      enddo
 
 C     *********** first find where Transmission approximately 0.5
       U=1.
@@ -69,7 +66,7 @@ C     *********** first find where Transmission approximately 0.5
 122   call calc_tau(bandtyp,tpout,jgas,nav,iav,w,U,P,T,q,qrot,
      1  tpart,T1)
 
-C      PRINT*,'U,T1',U,T1
+      PRINT*,'U,T1',U,T1
       IF(T1.LT.0.5)THEN
         U=U/2.
         GOTO 122
@@ -78,7 +75,7 @@ C      PRINT*,'U,T1',U,T1
 123   call calc_tau(bandtyp,tpout,jgas,nav,iav,w,U,P,T,q,qrot,
      1  tpart,T1)
 
-C      print*,'U,T1',U,T1
+      print*,'U,T1',U,T1
       IF(T1.GT.0.5)THEN
         IF(U.LE.1.0E38)THEN
          U=U*2.
@@ -88,7 +85,7 @@ C      print*,'U,T1',U,T1
 
 C     ************ find upper limit of curve
       U2=U
-C      print*,'U for T=0.5 = ',U
+      print*,'U for T=0.5 = ',U
 222   call calc_tau(bandtyp,tpout,jgas,nav,iav,w,U2,P,T,q,qrot,
      1  tpart,T1)
 
@@ -99,7 +96,7 @@ C      print*,'U for T=0.5 = ',U
         ENDIF
       END IF
 
-C      print*,'U2,T1',U2,T1
+      print*,'U2,T1',U2,T1
 
 C     *********** find lower limit of curve
       U1=U
@@ -110,7 +107,7 @@ C     *********** find lower limit of curve
        	 GOTO 322
       END IF
 
-C      PRINT*,'U1,T1',U1,T1
+      PRINT*,'U1,T1',U1,T1
 
 C     *********** Evaluate curve
       U1=LOG(U1)
@@ -126,7 +123,7 @@ C     *********** Evaluate curve
 	 Y(I) = T1
        	 X(I)=U
        	 SIG(I)=E_TRAN
-C         print*,I,X(I),Y(I),SIG(I)
+         print*,I,X(I),Y(I),SIG(I)
 101   CONTINUE
 
       RETURN
@@ -179,7 +176,7 @@ C     ****************************************************************
       real T1,xcorr,U,tautmp,dpexp,w(mbin),C1,C2,SUMT
       integer NT,iav(mbin),nav,bandtyp(mgas),j
       real TGV3,TAU_EKS,TKARK,YV,TAU_MG_LOR
-      real tpout(mbin,mgas,7),ALCORR
+      real tpout(mbin,mgas,7),ALCORR,TX1,TX2,WX1,WX2
       real p0,t0,kap100,kap198,kap296,dline
       parameter (p0=1.,t0=296.)
       logical MG
@@ -226,6 +223,7 @@ C          print*,KNU0,DELAD,Y0,E1,SFB
            ELSE
              tautmp = XCORR + TGV3(IMOD,QROT,TPART,KNU0,DELAD,Y0,A,
      1          E1,E2,SFB,P,T,U,Q)
+C             print*,XCORR,tautmp
            ENDIF
           ENDIF
 
@@ -265,7 +263,7 @@ C     1     qrot,tautmp
 
         T1 = T1+w(i1)*DPEXP(-tautmp)
         SUMT=SUMT+w(i1)
-C        print*,i1,w(i),tautmp,T1,SUMT
+C        print*,'sum',i1,w(i1),tautmp,T1,SUMT
 
 101     continue
 
@@ -276,11 +274,18 @@ C        print*,i1,w(i),tautmp,T1,SUMT
          print*,'Transmission = ',T1
          print*,'bandtyp = ',bandtyp
          print*,'jgas,nav = ',jgas,nav
+         print*,'XCORR etc. ',XCORR,IMOD,QROT,TPART,KNU0,DELAD,Y0,A,
+     1          E1,E2,SFB,P,T,U,Q
+         print*,tautmp,TGV3(IMOD,QROT,TPART,KNU0,DELAD,Y0,A,
+     1          E1,E2,SFB,P,T,U,Q)
          do i=1,nav
           print*,iav(i),w(i)
          enddo
+         print*,'tautmp,dpexp(-tautmp),knu0',tautmp,dpexp(-tautmp),knu0
          print*,'U,P,T,q,qrot,tpart',U,P,T,q,qrot,tpart
          print*,'Normalisation = ',SUMT
+         if(T1.gt.1.0) T1=1.0
+         if(T1.lt.0.0) T1=0.0
          stop
         ENDIF
 

@@ -188,7 +188,7 @@ C     Set up parameters for multi-limb cirsrad run.
 
       call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
      1    vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf, 
-     2    nx, xmap, vconv1, nconv1, npath, calcoutL, gradientsL)
+     2    nx, xmap, vconv1, nconv1, npath, calcoutL, gradientsL,iscat)
 
 C     Read in base heights from '.drv' file
       call readdrvh(runname,height)
@@ -261,7 +261,8 @@ C     Read in base heights from '.drv' file
             enddo
            enddo
 
-           if(occult.eq.1)then
+           if(occult.eq.1.or.occult.eq.3)then
+C           Add solar occultation radiance to thermal emission
 
              solradius = stelrad/(dist*AU)
              solomeg = pi*solradius**2
@@ -293,6 +294,49 @@ C              Get Solar irradiance
 
            endif
 
+
+           if(occult.eq.2)then
+C            Just calculating limb transmission. Assumes thermal emission is negligible and no nadir paths in retrieval
+             do ipath=jpath+nlayer,jpath+nlayer+1
+              fh=1.0-fh
+              do j=1,nconv1
+               if(ipath.eq.jpath+nlayer)then
+                 yn(ioff+j)=0.
+               endif
+  	       ioff1=nconv1*(ipath-1)+j
+               yn(ioff+j)=yn(ioff+j)+
+     1		wgeom(igeom,iav)*fh*calcoutL(ioff1)
+              enddo
+    
+              do i=1,nx
+               if(i.ne.jtan.and.i.ne.jpre)then
+                do j=1,nconv1 
+                 if(ipath.eq.jpath+nlayer)then
+                  kk(ioff+j,i)=0.
+                 endif
+                 ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + j
+                 kk(ioff+j,i)=kk(ioff+j,i)+
+     1            wgeom(igeom,iav)*fh*gradientsL(ioff2)
+                enddo
+               endif
+              enddo
+             enddo
+
+           endif
+
+           if(occult.eq.3)then
+C           divide thermal emission + solar occultation by solar radiance at top of atmosphere
+            do j=1,nconv1
+              CALL get_solar_wave(vconv1(j),dist,solar)
+              xsol = solar/solomeg
+              yn(ioff+j)=yn(ioff+j)/xsol
+              do i=1,nx
+               kk(ioff+j,i)=kk(ioff+j,i)/xsol
+              enddo
+            enddo
+           endif
+
+
          else
            print*,'Calculating new nadir-spectra'
            iscat = 0
@@ -306,7 +350,7 @@ C              Get Solar irradiance
            call CIRSrtfg_wave(runname, dist,inormal,iray,fwhm,ispace,
      1      vwave1,nwave1,itype, nem, vem, emissivity, tsurf, 
      2      gradtsurf, nx, xmap, vconv1, nconv1, npath, calcout, 
-     3      gradients)
+     3      gradients,iscat)
 
 C          First path is assumed here to be thermal emission
      
@@ -347,7 +391,7 @@ C       Set up all files to recalculate limb spectra
         call CIRSrtfg_wave(runname, dist, inormal, iray,fwhm, ispace, 
      1    vwave1,nwave1,itype, nem, vem, emissivity, tsurf, 
      2    gradtsurf,nx, xmap, vconv1, nconv1, npath, calcout1, 
-     3    gradients1)
+     3    gradients1,iscat)
 
 
         do 112 iav = 1,nav(igeom)
@@ -381,7 +425,8 @@ C       Set up all files to recalculate limb spectra
             fh=1.0-fh
             do j=1,nconv1
  	     ioff1=nconv1*(ipath-1)+j
-             yn1(ioff+j)=yn1(ioff+j)+wgeom(igeom,iav)*fh*calcout1(ioff1)
+             yn1(ioff+j)=yn1(ioff+j)+
+     1        wgeom(igeom,iav)*fh*calcout1(ioff1)
 C            tangent pressure taken as logs so need to adjust gradient
              kk(ioff+j,jpre) = kk(ioff+j,jpre) +
      1            (yn1(ioff+j)-yn(ioff+j))/(pressR*delp)
@@ -389,7 +434,7 @@ C            tangent pressure taken as logs so need to adjust gradient
             enddo
            enddo
 
-           if(occult.eq.1)then
+           if(occult.eq.1.or.occult.eq.3)then
 
             solradius = stelrad/(dist*AU)
             solomeg = pi*solradius**2
@@ -409,6 +454,32 @@ C             tangent pressure taken as logs so need to adjust gradient
              enddo
             enddo
 
+           endif
+
+           if(occult.eq.2)then
+C           just calculate transmission of path. Assumes no thermal emission in$
+            do ipath=jpath+nlayer,jpath+nlayer+1
+             fh=1.0-fh
+             do j=1,nconv1
+              if(ipath.eq.jpath+nlayer)then
+               yn1(ioff+j)=0.
+              endif
+              ioff1=nconv1*(ipath-1)+j
+              yn1(ioff+j)=yn1(ioff+j)+
+     1         wgeom(igeom,iav)*fh*calcoutL(ioff1)
+              kk(ioff+j,jpre)=kk(ioff+j,jpre) + 
+     1         (yn1(ioff+j)-yn(ioff+j))/(pressR*delp)
+             enddo
+            enddo
+           endif
+
+           if(occult.eq.3)then
+            do j=1,nconv1
+              CALL get_solar_wave(vconv1(j),dist,solar)
+              xsol = solar/solomeg
+              yn1(ioff+j)=yn1(ioff+j)/xsol
+              kk(ioff+j,jpre)=kk(ioff+j,jpre)/xsol
+            enddo
            endif
 
          endif
@@ -458,7 +529,7 @@ C             tangent pressure taken as logs so need to adjust gradient
             enddo
            enddo
 
-           if(occult.eq.1)then
+           if(occult.eq.1.or.occult.eq.3)then
 
             solradius = stelrad/(dist*AU)
             solomeg = pi*solradius**2
@@ -476,6 +547,30 @@ C             Get Solar irradiance
              enddo
             enddo
 
+           endif
+
+           if(occult.eq.2)then
+C           just calculate transmission of path. Assumes no thermal emission in$
+            do ipath=jpath+nlayer,jpath+nlayer+1
+             fh=1.0-fh
+             do j=1,nconv1
+              if(ipath.eq.jpath+nlayer)then
+               yn1(ioff+j)=0.
+              endif
+              ioff1=nconv1*(ipath-1)+j
+              yn1(ioff+j)=yn1(ioff+j)+
+     1		wgeom(igeom,iav)*fh*calcoutL(ioff1)
+              kk(ioff+j,jtan)=kk(ioff+j,jtan)+(yn1(ioff+j)-yn(ioff+j))
+             enddo
+            enddo
+           endif
+
+           if(occult.eq.3)then
+            do j=1,nconv1
+              CALL get_solar_wave(vconv1(j),dist,solar)
+              xsol = solar/solomeg
+              kk(ioff+j,jtan)=kk(ioff+j,jtan)/xsol
+            enddo
            endif
 
          endif

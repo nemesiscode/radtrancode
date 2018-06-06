@@ -91,9 +91,9 @@ C ../includes/dbcom.f stores the line database variables .
       REAL YACO2(200),YNCO2(200),YAN2(200),YNN2(200)
       REAL WIDC,WIDC1,EXPC,EXPC1,EXPH,EXPH1,LNCONS
       REAL WIDH,WIDH1,WIDCT0,WIDCT1,WIDHT0,WIDHT1
-      REAL TNWAVE,TNPROB,TNWIDA,TNWIDS,TNLSE,TNTDEP,TNSHIF,TNEINA
+      REAL TNPROB,TNWIDA,TNWIDS,TNLSE,TNTDEP,TNSHIF,TNEINA
       REAL GAMMA_H2,GAMMA_HE,TNUWGHT,TNLWGHT
-
+      DOUBLE PRECISION TNWAVE
       CHARACTER*(*) BUFFER
       CHARACTER*6 QIDENT(190)
       CHARACTER*9 TNULQ,TNLLQ
@@ -111,6 +111,7 @@ C ../includes/dbcom.f stores the line database variables .
 
 C******************************** CODE *********************************
 
+1     FORMAT(A)
       IF(DBFORM.EQ.0)THEN
 C=======================================================================
 C
@@ -134,10 +135,10 @@ C=======================================================================
 207        FORMAT(I2,I1,F12.6,A10,F10.4,F5.4,F3.2,F6.4,F3.2)
         ELSEIF(DBRECL.EQ.160)THEN
           READ(BUFFER,107)TNID,TNISO,TNWAVE,TNSTR,TNEINA,TNWIDA,TNWIDS,
-     1     TNLSE,TNTDEP,TNUGQ04,TNLGQ04,TNULQ04,TNLLQ04,TNACC04,
+     1     TNLSE,TNTDEP,TNSHIF,TNUGQ04,TNLGQ04,TNULQ04,TNLLQ04,TNACC04,
      2     TNREF04,TNFLAG,TNUWGHT,TNLWGHT
-107       FORMAT(I2,I1,F12.6,A10,E10.3,F5.4,F5.4,F10.4,F4.2,8X,A15,
-     1    A15,A15,A15,6I1,6I2,A1,F7.1,F7.1)        
+107       FORMAT(I2,I1,F12.6,A10,E10.3,F5.4,F5.4,F10.4,F4.2,F8.6,
+     1     A15,A15,A15,A15,6I1,6I2,A1,F7.1,F7.1)        
         ELSE
           WRITE(*,*)' EDLINE.f :: HITRAN format not recognised.'
           WRITE(*,*)' Stopping program.'
@@ -694,7 +695,6 @@ C PH3 coefficient of HWHM temperature dependance ...
         ENDIF
       ENDIF
 
-      
 C=======================================================================
 C
 C	Write modified data back to new database
@@ -737,15 +737,15 @@ C=======================================================================
 1111      FORMAT(I2,I1,F12.6,A10,E10.3,F5.4,F5.3,F10.4,F4.2,F8.5,I3,I3,
      1    A9,A9,3I1,3I2,F12.7)
         ELSE
-	   IF (TNWIDS.LT.1.0) THEN
+	  IF (TNWIDS.LT.1.0) THEN
           WRITE(BUFFER,108)TNID,TNISO,TNWAVE,TNSTR,TNEINA,TNWIDA,TNWIDS,
-     1    TNLSE,TNTDEP,TNSHIF,TNUGQI04,TNLGQI04,TNULQ04,TNLLQ04,
+     1    TNLSE,TNTDEP,TNSHIF,TNUGQ04,TNLGQ04,TNULQ04,TNLLQ04,
      2    TNACC04,TNREF04,TNFLAG,TNUWGHT,TNLWGHT
-         ELSE
+          ELSE
          WRITE(BUFFER,1081)TNID,TNISO,TNWAVE,TNSTR,TNEINA,TNWIDA,TNWIDS,
      1    TNLSE,TNTDEP,TNSHIF,TNUGQI04,TNLGQI04,TNULQ04,TNLLQ04,
      2    TNACC04,TNREF04,TNFLAG,TNUWGHT,TNLWGHT
-         ENDIF
+          ENDIF
 108       FORMAT(I2,I1,F12.6,A10,E10.3,F5.4,F5.4,F10.4,F4.2,F8.6,A15,   
      1    A15,A15,A15,6I1,6I2,A1,F7.1,F7.1)
 1081      FORMAT(I2,I1,F12.6,A10,E10.3,F5.4,F5.3,F10.4,F4.2,F8.6,A15,   

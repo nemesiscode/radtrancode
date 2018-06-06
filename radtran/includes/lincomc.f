@@ -16,13 +16,12 @@ C	Line data variables.
 C
 C-----------------------------------------------------------------------
       INTEGER MAXLIN
-      PARAMETER (MAXLIN=10000)
+      PARAMETER (MAXLIN=1000000)
 C MAXLIN: maximum number of lines which can be stored.
 
       INTEGER IDLIN(2,MAXLIN),NLINE(2),NXTREC
-      REAL VLIN(2,MAXLIN),ALIN(2,MAXLIN)
-      REAL PSHIFT(2,MAXLIN)
-      DOUBLE PRECISION SLIN(2,MAXLIN)
+      REAL ALIN(2,MAXLIN),PSHIFT(2,MAXLIN)
+      DOUBLE PRECISION SLIN(2,MAXLIN),VLIN(2,MAXLIN)
 C VLIN: Line position [cm^-1].
 C SLIN: Line strength [cm^-1 molecule^-1 cm^-2] at STP.
 C ALIN: Lorentz half width [cm^-1] at STP.

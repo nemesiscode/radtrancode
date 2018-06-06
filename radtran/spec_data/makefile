@@ -28,7 +28,9 @@ F_SOURCES = \
 	read_bands.f \
 	read_del.f \
 	read_yam.f \
-	write_band.f
+	write_band.f \
+	add_line_buff.f \
+	read_line_buff.f
 
 INCDIR = ../includes
 #INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/bincoms.f $(INCDIR)/dbcom.f \
@@ -62,6 +64,7 @@ $(LIBRARY)(%.o): %.f $(INCLUDES)
 
 bin :    \
 	Cp_lines \
+	Cp_lines_seq_modwid \
 	Inv_scan \
 	Li_lines \
 	Extract_exo_diag \
@@ -69,6 +72,7 @@ bin :    \
 	Mergeband \
 	Modifyband \
 	Makedb \
+	Appenddb \
 	Makedbloop \
 	Merge \
 	Merge_multi_ascending \
@@ -79,9 +83,15 @@ bin :    \
 	Select \
 	Convertlines \
 	Selecttemp \
+	Selecttempseq \
+	Selecttempseqtop \
+	Selecttempseqtoploop \
 	Selecttemploop \
+	Selecttempseqtopbuff \
+	Selecttempseqtopbuffloop \
 	Summary \
 	Write_xsec\
+	Stitchseqtable
 #	Li_linestemp
 
 Merge : merge.f $(LIBRARY)
@@ -102,6 +112,14 @@ Addband : addband.f $(LIBRARY)
 
 Cp_lines : cp_lines.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Cp_lines cp_lines.f $(LIBRARY) \
+	$(LIB)/rtm_util.a
+
+Cp_lines_seq : cp_lines_seq.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Cp_lines_seq cp_lines_seq.f $(LIBRARY) \
+	$(LIB)/rtm_util.a
+
+Cp_lines_seq_modwid : cp_lines_seq_modwid.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Cp_lines_seq_modwid cp_lines_seq_modwid.f $(LIBRARY) \
 	$(LIB)/rtm_util.a
 
 Li_lines : li_lines.f $(LIBRARY)
@@ -126,6 +144,10 @@ Makeband : makeband.f $(LIBRARY)
 
 Makedb : makedb.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Makedb makedb.f $(LIBRARY) \
+	$(LIB)/rtm_util.a
+
+Appenddb : appenddb.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Appenddb appenddb.f $(LIBRARY) \
 	$(LIB)/rtm_util.a
 
 Makedbloop : makedbloop.f $(LIBRARY)
@@ -164,6 +186,26 @@ Selecttemp : selecttemp.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Selecttemp selecttemp.f $(LIBRARY) \
 	$(LIB)/path.a $(LIB)/rtm_util.a
 
+Selecttempseq : selecttempseq.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Selecttempseq selecttempseq.f $(LIBRARY) \
+	$(LIB)/path.a $(LIB)/rtm_util.a
+
+Selecttempseqtop : selecttempseqtop.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Selecttempseqtop selecttempseqtop.f $(LIBRARY) \
+	$(LIB)/path.a $(LIB)/rtm_util.a
+
+Selecttempseqtopbuff : selecttempseqtopbuff.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Selecttempseqtopbuff selecttempseqtopbuff.f $(LIBRARY) \
+	$(LIB)/path.a $(LIB)/rtm_util.a
+
+Selecttempseqtopbuffloop : selecttempseqtopbuffloop.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Selecttempseqtopbuffloop selecttempseqtopbuffloop.f $(LIBRARY) \
+	$(LIB)/path.a $(LIB)/rtm_util.a
+
+Selecttempseqtoploop : selecttempseqtoploop.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Selecttempseqtoploop selecttempseqtoploop.f $(LIBRARY) \
+	$(LIB)/path.a $(LIB)/rtm_util.a
+
 Selecttemploop : selecttemploop.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Selecttemploop selecttemploop.f $(LIBRARY) \
 	$(LIB)/path.a $(LIB)/rtm_util.a
@@ -174,4 +216,8 @@ Summary : summary.f $(LIBRARY)
 
 Write_xsec : write_xsec.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Write_xsec write_xsec.f $(LIBRARY) \
+	$(LIB)/rtm_util.a
+
+Stitchseqtable : stitchseqtable.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Stitchseqtable stitchseqtable.f $(LIBRARY) \
 	$(LIB)/rtm_util.a

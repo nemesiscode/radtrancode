@@ -32,7 +32,7 @@ C--------------------------------------------------------------
 C--------------------------------------------------------------
 C
       INTEGER FSTLIN,LSTLIN,LINE
-      REAL VMIN,VMAX
+      DOUBLE PRECISION VMIN,VMAX
       CHARACTER*256 BUFFER
       CHARACTER*100 OPNAME
 C

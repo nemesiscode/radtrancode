@@ -1229,6 +1229,7 @@ C           Continuous profile but represented with fewer points than in .prf to
 C           implicit smoothing and faster retrieval times
 C            Read in number of points and any cross-correlation
 
+
              do i=1,np
 C             References to pref can probably be removed entirely from this section,
 C             but this is a temporary fix just to get rid of compiler issues
@@ -1277,6 +1278,10 @@ C              **** vmr, cloud, para-H2 , fcloud, take logs ***
 
              enddo
              close(28)
+
+
+c             print*,'pref = ', pref
+c             stop
 
              do i = 1,np
               ix = nx + i         
@@ -1342,6 +1347,62 @@ C               Interpolate homogeneous levels from pressure grid
                endif
               close(901)
              endif
+
+           elseif (varident(ivar,3).eq.27) then
+C            step profile
+             read(27,*)pknee,eknee
+             read(27,*)xdeep,edeep
+             read(27,*)xstep,estep
+
+c		 xn1=log(deep)		[=unlogged deep value if temperature]
+c		 xn2=log(shallow)		[=unlogged shallow value if temperature]
+c		 xn3=log(knee pressure)             
+
+c		 ** Deep value **
+             ix = nx+1
+             if(varident(ivar,1).eq.0)then
+C             *** temperature, leave alone ********
+              x0(ix)= xdeep
+              err   = edeep
+             else
+C             *** vmr take logs *********
+              if(xdeep.gt.0.0)then
+                x0(ix) = alog(xdeep)
+                lx(ix) = 1
+              else
+                print*,'Error in readapriori. xdeep must be > 0.0'
+                stop
+              endif
+              err = edeep/xdeep
+             endif
+             sx(ix,ix)=err**2
+             
+c		 ** Shallow value **
+             ix = nx+2
+             if(varident(ivar,1).eq.0)then
+C             *** temperature, leave alone ********
+              x0(ix) = xstep
+              err    = estep
+             else
+C             *** vmr take logs *********
+              if(xstep.gt.0.0)then
+                x0(ix) = alog(xstep)
+                lx(ix) = 1
+              else
+                print*,'Error in readapriori. xstep must be > 0.0'
+                stop
+              endif
+              err = estep/xstep
+             endif
+             sx(ix,ix)=err**2
+             
+C		 ** Knee **
+             ix = nx+3
+             x0(ix) = alog(pknee)
+             lx(ix) = 1
+             sx(ix,ix) = (eknee/pknee)**2
+
+             nx = nx+3
 
            else         
             print*,'vartype profile parametrisation not recognised'

@@ -214,7 +214,7 @@ C        we need to read in the surface emissivity spectrum
 
          call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
      1    vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf,
-     2    nx, xmap, vconv1, nconv1, npath, calcout, gradients)
+     2    nx, xmap, vconv1, nconv1, npath, calcout, gradients,iscat)
 
 
          ipath = 1
@@ -361,7 +361,7 @@ C        we need to read in the surface emissivity spectrum
 
          call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
      1    vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf,
-     2    nx, xmap, vconv1, nconv1, npath, calcout, gradients)
+     2    nx, xmap, vconv1, nconv1, npath, calcout, gradients,iscat)
 
 
          ipath = 1

@@ -49,6 +49,7 @@ C	calculating atmospheric paths. ! nptah. itype declared within
 	INCLUDE '../includes/arrdef.f'
 	INCLUDE '../includes/pathcom.f'
         INCLUDE '../includes/laycom.f'
+        INCLUDE '../includes/lcocom.f'
 
 C       Defines the maximum values for a series of variables (layers,
 C         bins, paths, etc.)
@@ -59,13 +60,14 @@ C         bins, paths, etc.)
         PARAMETER       (mconv=6000)
 	INTEGER		INormal,Iray, ispace,nem,IBS(2),IBD(2), IFLAG
 	REAL		Dist, FWHM1,X0,X1,WING1,VREL1,MAXDV
-        REAL		VBOT,DELV1,VV,X,RADIUS1,radextra
+        REAL		VBOT,DELV1,RADIUS1,radextra
         REAL            vconv(nconv), convout(maxout3),zheight(maxpro)
         REAL            output(maxpat), yp(maxpat,2)                  
         REAL            yout(maxpat,mconv),tsurf,ynor(maxpat,mconv)
         REAL		vem(maxsec),emissivity(maxsec) 
 	REAL		AAMOUNT(maxlay,maxgas),XX0
-
+        DOUBLE PRECISION VV,XX,DX0,DX1
+        REAL		VVR
         INTEGER         lun, ulog, iphi,NLINR,ipzen1
         PARAMETER       (lun=2, ulog=17)
 
@@ -78,10 +80,10 @@ C         bins, paths, etc.)
 
         CHARACTER*100   klist, opfile1, solname, solfile, buffer
 
-        CHARACTER*100   logfil, drvfil, sfile, FWHMFILE
+        CHARACTER*100   logfil, drvfil, sfile, FWHMFILE,lcofil
         INTEGER         NFWHM,MFWHM
         PARAMETER(MFWHM=1000)
-        LOGICAL         FWHMEXIST
+        LOGICAL         FWHMEXIST,FEXIST
         REAL            VFWHM(MFWHM),XFWHM(MFWHM)
 
 
@@ -102,7 +104,7 @@ C       Begin Program.
 C
 C-----------------------------------------------------------------------
 
-
+        IJLCO=0
         opfile= opfile1         ! Renamed and assigned here because
         iphi= itype1            ! there was a conflict with similiar
                                 ! declarations in pathcom.f which is
@@ -154,6 +156,14 @@ C-----------------------------------------------------------------------
 
         OPEN(UNIT=DBLUN,FILE=DBFILE,STATUS='OLD',FORM='FORMATTED',
      1 ACCESS='DIRECT',RECL=DBRECL)
+
+        CALL FILE(opfile1,LCOFIL,'lco')
+        print*,'LCOFIL = ',LCOFIL
+        INQUIRE(FILE=LCOFIL,EXIST=FEXIST)
+        IF(FEXIST)THEN
+          print*,'Calling INIT_LCO'
+          CALL INIT_LCO(LCOFIL)
+        ENDIF
 
 C-----------------------------------------------------------------------
 C
@@ -249,16 +259,20 @@ C
 
 C      Read in 2 arrays of lines
        IB=1
-       CALL FNDWAV(XX0)
+       CALL FNDWAV(DBLE(XX0))
        FSTREC = DBREC
 
        PRINT*,'FSTREC = ',FSTREC
 
        MAXLIN1=MAXLIN
        print*,'lblrtf_wave : maxlin = ',MAXLIN1
-       CALL LOADBUFFER(XX0,VMAX+VREL,FSTREC,MAXLIN1,MAXBIN,IB,
-     1 NGAS,IDGAS,ISOGAS,VBOT,WING,NLINR,VLIN,SLIN,ALIN,ELIN,IDLIN,
+       DX0 = DBLE(XX0)
+       DX1 = DBLE(VMAX+VREL)
+       print*,'lblrtf_wave : DX0,DX1 ',DX0,DX1
+       CALL LOADBUFFER(DX0,DX1,FSTREC,MAXLIN1,MAXBIN,IB,
+     1   NGAS,IDGAS,ISOGAS,VBOT,WING,NLINR,VLIN,SLIN,ALIN,ELIN,IDLIN,
      2 SBLIN,PSHIFT,DOUBV,TDW,TDWS,LLQ,NXTREC,FSTLIN,LSTLIN,LASTBIN)
+
        print*,'FSTREC,NXTREC,LASTBIN',fstrec,nxtrec,lastbin(ib)
        do i=1,nbin
         if(fstlin(ib,i).gt.0)then
@@ -276,7 +290,7 @@ C      Read in 2 arrays of lines
        FSTREC=NXTREC
 
 
-       CALL LOADBUFFER(XX0,VMAX+VREL,FSTREC,MAXLIN,MAXBIN,IB,
+       CALL LOADBUFFER(DX0,DX1,FSTREC,MAXLIN,MAXBIN,IB,
      1 NGAS,IDGAS,ISOGAS,VBOT,WING,NLINR,VLIN,SLIN,ALIN,ELIN,IDLIN,
      2 SBLIN,PSHIFT,DOUBV,TDW,TDWS,LLQ,NXTREC,FSTLIN,LSTLIN,LASTBIN)
 
@@ -316,7 +330,7 @@ C          need the current height profile
         endif
 
 
-        VV = VMIN-DELV
+        VV = DBLE(VMIN-DELV)
         IFLAG=0
         DO J=1,NCONV
          DO I=1,NPATH
@@ -333,12 +347,13 @@ C          need the current height profile
         close(13)
 
         print*,'ISHAPE = ',ISHAPE
-134     VV=VV+DELV
-        X=VV
-        IF(ispace.eq.1)X=1e4/VV
+C        open(37,file='raw.dat',status='unknown')
+134     VV=VV+DBLE(DELV)
+        XX=VV
+        IF(ispace.eq.1)XX=1e4/VV
+        VVR=SNGL(VV)
 
-
-        CALL lblrad_wave (X, WING, VMIN, VMAX, VREL, MAXDV, IBS, 
+        CALL lblrad_wave (XX, WING, VMIN, VMAX, VREL, MAXDV, IBS, 
      1    IBD, Dist, INormal, Iray, ispace, DelH, nlayer, npath,
      1    ngas, maxlay, maxcon, totam, press, temp, pp, amount,
      2    nlayin, maxinc, layinc, cont, scale, imod, idgas,
@@ -353,28 +368,27 @@ C          need the current height profile
          yp(I,1)=yp(I,2)
          yp(I,2)= output(I)
         ENDDO
-
+C        write(37,*),vv,output(1)
 
         IF(IFLAG.EQ.1)THEN
 
            CALL lblconv(opfile,fwhm,ishape,npath,ispace,vv,delv,yp,
-     1      nconv,vconv,yout,ynor,FWHMEXIST,NFWHM,VFWHM,XFWHM)
+     1      nconv,dble(vconv),yout,ynor,FWHMEXIST,NFWHM,VFWHM,XFWHM)
 
         ENDIF
 
         IF(IFLAG.EQ.0)IFLAG=1
 
-        XCOM = 100.0*(VV-VMIN)/(VMAX-VMIN)
+        XCOM = 100.0*(VVR-VMIN)/(VMAX-VMIN)
         IF(XCOM.GE.XNEXT)THEN
             WRITE(*,1020)XCOM
-C            print*,(yout(1,j),J=1,nconv)
             XNEXT = XNEXT+10.0
         ENDIF
 1020    FORMAT(' lblrtf_wave.f :: % complete : ',F5.1)
+    
 
-
-        IF(VV.LT.VMAX)GOTO 134
-
+        IF(VV.LT.DBLE(VMAX))GOTO 134
+C        close(37)
         DO I=1,NPATH
          DO J=1,NCONV
           YOUT(I,J)=YOUT(I,J)/YNOR(I,J)

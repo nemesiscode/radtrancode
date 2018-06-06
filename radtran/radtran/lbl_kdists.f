@@ -81,6 +81,7 @@ C------------------------------------------------------------------------------
 
       INTEGER NGAS,IDGAS(NGAS),LAYER1,IWAVE
       INTEGER ISOGAS(NGAS),IPROC(NGAS),NPOINT,NG,JBIN
+      DOUBLE PRECISION VV
       REAL FNH3,FH2
       INTEGER IGAS,JH2,JNH3,J1
       REAL PI,LINECONTRIB
@@ -283,7 +284,7 @@ C     first continuum contribution
       VTMP=VTMP*VTMP
 51    CONTINUE
 
-
+      VV=DBLE(V)
       DO 507 JBIN=CURBIN-1,CURBIN+1 
 
       DO 52 LINE=FSTLIN(JBIN),LSTLIN(JBIN)
@@ -293,7 +294,7 @@ C     compute absorption coefficient for normal incidence
         FNH3=-1.0
         FH2=-1.0
         TAUTMP=TAUTMP+LINECONTRIB(IPROC(J1),
-     1       IDGAS(J1),V,TCORDW(J1),TCORS1(J1),
+     1       IDGAS(J1),VV,TCORDW(J1),TCORS1(J1),
      2       TCORS2,PRESS,TEMP,FRAC(J1),
      3       VLIN(LINE),SLIN(LINE),ELIN(LINE),ALIN(LINE),SBLIN(LINE),
      4       TDW(LINE),TDWS(LINE),LLQ(LINE),DOUBV(LINE),FNH3,FH2)

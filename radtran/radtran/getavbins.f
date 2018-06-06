@@ -33,6 +33,8 @@ C     ***************************************************************
       REAL DELV,V1,V2,FBIN(MBIN)
 
 
+      print*,'fwhmX',FWHMIN(1),DELV,W1,W2,IWAVE
+
       CALL TRANSLATE(IWAVE,W1,W2,KWAVE,X1,X2)
 
       print*,'X1,X2',X1,X2  
@@ -150,6 +152,10 @@ C        PRINT*,I,IAV(I),FBIN(I)
         SUM=SUM+FBIN(I)
       ENDDO
       PRINT*,'SUM = ',SUM
+
+      print*,NAV
+      print*,(IAV(I),I=1,NAV)
+      print*,(FBIN(I),I=1,NAV)
 
       IF(SUM.EQ.0.0)THEN
        PRINT*,'Wavelength not covered'

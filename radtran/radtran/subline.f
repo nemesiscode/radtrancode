@@ -9,8 +9,8 @@ C	IDGAS	INTEGER	Gas ID
 C	PRESS	REAL	Pressure
 C	TEMP	REAL	Temperature
 C	IPROC	INTEGER	Line processing parameter
-C	VV	REAL	Calculation wavenumber
-C	VLIN	REAL	Line wavenumber
+C	VV	REAL*8	Calculation wavenumber
+C	VLIN	REAL*8	Line wavenumber
 C	ABSCO	REAL	Computed line strength 
 C	X	REAL	DV/AD
 C	Y	REAL	AL/AD
@@ -29,10 +29,11 @@ C     ****************************************************************
       
       REAL HUMLIC,GVOICO2,CHICO2,BURCHCO2,BURCHCO2_NORM
       REAL BAILLYNH3,HARTMANNCH4,HARTMANNCH4A,HARTMANNCH4B
-      REAL VV,VLIN,ABSCO,X,Y,AD,TRATIO,DOUBV,GAMMA,VVWEISS
+      REAL ABSCO,X,Y,AD,TRATIO,DOUBV,GAMMA,VVWEISS
       REAL ALIN,SBLIN,ELIN,TDW,TDWS,TCORDW,TCORS1,TCORS2
       REAL NH2,NHE,YPH3_H2,YPH3_HE,YPH3,PI,DV,TSTIM,TS1,TS2
       REAL PRESS,TEMP,GETNH3,FNH3,FH2,WY,DPEXP,LNABSCO
+      DOUBLE PRECISION VV,VLIN
       CHARACTER*15 LLQ
 
 C     AD is the Doppler-broadened line width

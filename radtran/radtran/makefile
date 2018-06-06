@@ -20,6 +20,8 @@ F_SOURCES = \
 	hartmannch4A.f \
 	hartmannch4B.f \
 	calc_esum2.f \
+	init_lco.f \
+	calc_lco.f \
 	calc_esum5.f \
 	calc_fkdist_wavec.f \
 	calc_lor_width.f \
@@ -169,6 +171,7 @@ bin :   \
 	Mod_table1 \
 	Mod_table1a \
 	Mod_table1b \
+	Mod_table1c \
 	Mod_table2 \
 	Table_trans
 	
@@ -293,6 +296,11 @@ Mod_table1a : mod_table1a.f $(LIBRARY) $(LIB)/spec_data.a
 
 Mod_table1b : mod_table1b.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Mod_table1b mod_table1b.f $(LIBRARY) \
+	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
+	$(LIB)/scatter.a $(LIB)/path.a
+
+Mod_table1c : mod_table1c.f $(LIBRARY) $(LIB)/spec_data.a
+	$(FC) $(FCFLAGS) -o $(BIN)/Mod_table1c mod_table1c.f $(LIBRARY) \
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
 	$(LIB)/scatter.a $(LIB)/path.a
 

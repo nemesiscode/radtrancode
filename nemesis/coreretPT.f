@@ -111,7 +111,7 @@ C     Set measurement vector and source vector lengths here.
       real wgeom(mgeom,mav),flat(mgeom,mav)
       real vconvT(mconv),vwaveT(mwave)
       integer nwaveT,nconvT,ineg
-      logical gasgiant,abexist
+      logical gasgiant,abexist,qfla
 
       double precision s1d(mx,mx),sai(mx,mx)
       double precision s1e(my,my),sei(my,my)
@@ -134,6 +134,11 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
       if(jpara.ne.0)then
        flagh2p=1
       endif
+
+C     Set up qfla, flag to read in reduced q-ext if iscat=5
+
+      qfla = .FALSE.
+      if (iscat.EQ.5) qfla = .TRUE.
 
 C     Read in number of aerosol types from the aerosol.ref file
       OPEN(UNIT=1,FILE='aerosol.ref',STATUS='OLD')
@@ -249,18 +254,21 @@ C       readapriori.f. Hence just read in from temporary .str file
        endif
 
        lin0 = 0
-       if(iscat.gt.0)then
-        print*,'Error in coreretPT: Scattering calculations not'
-        print*,'appropriate!'
-        stop
+       if(iscat.GT.0)then
+	if(iscat.NE.5)then
+	        print*,'Error in coreretPT: Scattering calculations not'
+        	print*,'appropriate!'
+       	 stop
+	endif
        endif
-
+       
+   
        if(inumeric.eq.0)then
 	print*, 'ForwardPT 1 =', jradx, jrad
         CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2   nvarx,varidentx,varparamx,jradx,jloggx,radius,nxx,xnx,ny,
-     3   ynx,kkx)
+     3   ynx,kkx,qfla)
        else
 	print*, 'ForwardnogPT 1 =', jradx, jrad
         CALL forwardnogPT(runname,ispace,fwhm,ngeom,nav,
@@ -328,7 +336,7 @@ C      Calculate inverse of se
        print*,'ForwardPT 2'
        CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
      1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jrad,jlogg,radius,nx,xn,ny,yn,kk)
+     2   nvar,varident,varparam,jrad,jlogg,radius,nx,xn,ny,yn,kk,qfla)
 	print*, 'jrad,Radius:', jrad,radius
       else
        print*,'ForwardnogPT 2'
@@ -450,7 +458,7 @@ C        Temperature gone negative. Increase brakes and try again
          CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
      1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
      2     lin,nvar,varident,varparam,jrad,jlogg,radius,nx,xn1,ny,
-     3     yn1,kk1)
+     3     yn1,kk1,qfla)
          print*,ny,(yn1(i),i=1,ny)
         else
          print*,'ForwardnogPT 3'

@@ -106,7 +106,8 @@ C		Passed variables
 	INTEGER	Inormal,ik,iray,flagh2p,flagc,ispace,jf
 	INTEGER	nlayer, npath, ngas, limlay, limcont, nwave, 
      1		nlayin(npath), incdim, layinc(incdim, npath), 
-     2          idgas(ngas), isogas(ngas), imod(npath),igas
+     2          idgas(ngas), isogas(ngas), imod(npath),igas,
+     3 		infr,ish,irayx
 
 	REAL	press(nlayer), temp(nlayer), pp(limlay,ngas), 
      1		amount(limlay,ngas), vwave(nwave), cont(limcont,nlayer), 
@@ -144,22 +145,32 @@ C		K table variables
         REAL    scaleS(maxlay),Jsource(maxlay),delhs(maxlay)
 C		Scattering variables
 
-	INTEGER	liscat(maxcon), isol, nmu, lowbc, npointk,
-     1          lncons(maxcon), ibaseH(maxlay),
-     2		kf,nf, lnorm(maxcon), itype
+	INTEGER	liscat(maxcon), isol, nmu, imu, lowbc, npointk,
+     1          lncons(maxcon), ibaseH(maxlay), ic, ilays,
+     2		kf,nf, nfX, lnorm(maxcon), itype
 	REAL	lfrac(maxcon,maxlay), solar, pi, theta0, dist, 
      1		bnu(maxscatlay), aphi, radg(maxmu), solar1, 
      2		lcons(maxcon,maxscatpar), rad1, omega(maxscatlay),
      3		tsun, v, frcscat(maxcon,maxlay), sol_ang, emiss_ang
+        REAL 	solara
         REAL    bnuS(maxlay),fcover(maxscatlay),xsolar
         REAL    umif(maxmu,maxscatlay,maxf),sum
         REAL    uplf(maxmu,maxscatlay,maxf)	
+        REAL    gmif(maxmu,maxscatlay,maxf)
+        REAL    gplf(maxmu,maxscatlay,maxf)	
+        REAL    gmifa(maxmu,maxscatlay)
+        REAL    gplfa(maxmu,maxscatlay)	
+        REAL    gmifc(maxmu,maxscatlay)
+        REAL    gplfc(maxmu,maxscatlay)	
+        REAL    gmifb(maxmu,maxscatlay,maxf)
+        REAL    gplfb(maxmu,maxscatlay,maxf)	
         REAL    umift(maxmu,maxmu,maxscatlay,maxf)
         REAL    uplft(maxmu,maxmu,maxscatlay,maxf)	
         DOUBLE PRECISION mu1(maxmu), wt1(maxmu), galb, galb1, 
      1		pplsto(0:40,maxmu,maxmu,maxscatlay),
      2		pmisto(0:40,maxmu,maxmu,maxscatlay),
-     3          eps(maxscatlay),epsS(maxlay),omegas(maxscatlay)
+     3          eps(maxscatlay),epsS(maxlay),omegas(maxscatlay),
+     4		epsb(maxscatlay),omegasb(maxscatlay)
 	LOGICAL	scatter, single, sphsingle
 
 C		Internal variables
@@ -231,7 +242,7 @@ C       Solar reference spectrum common block
         common/interp_phase_initial/first
 
 	PARAMETER	(tsun=5900.,theta0=4.65241e-3, pi=3.141593,
-     1			error=5.e-5,LUNIS=61) 
+     1			error=5.e-5,LUNIS=61,infr=62) 
 
 C-----------------------------------------------------------------------
 C
@@ -478,6 +489,27 @@ C-----------------------------------------------------------------------
 
         print*,'IFLUX = ',IFLUX
         IOFF = 0
+
+C       Look to see if there is a scattering net-flux calculation. If so
+C       open output file for internal radiation field output. 
+        ish=0
+        do ipath=1,npath
+         if(imod(ipath).eq.24)ish=1
+        enddo
+        print*,'ish = ',ish
+        if(ish.eq.1)then
+         print*,'opening ish.dat'
+         open(infr,file='ish.dat',status='unknown')
+         write(infr,*)nlayer
+         write(infr,*)nmu
+         write(infr,*)nwave
+         write(infr,*)nf
+         write(infr,*)sol_ang
+         write(infr,*)(vwave(i),i=1,nwave)
+         write(infr,*)(basep(i),i=1,nlayer)
+         write(infr,*)(baseh(i),i=1,nlayer)
+        endif
+  
 
         IF(IFLUX.EQ.1)THEN
 
@@ -849,7 +881,6 @@ C               Calculate single-scattering contribution
                	tauray(J)=0.0
 	ENDIF
 
-       
 
 C       ### renormalise f(J) to be tau-averaged phase function
         if(tauray(J)+tauscat(J).gt.0)then
@@ -949,6 +980,7 @@ C	of earlier in the code).
 C
 C-----------------------------------------------------------------------
 
+C                print*,'NG = ',NG
 		DO Ig = 1, ng
 			DO J = 1, nlayer
 				tautmp(J) = taucon(J) + kl_g(Ig,J) 
@@ -1019,6 +1051,8 @@ C               Subtract Rayleigh scattering
 			lfrac(K,J) = frcscat(K,layinc(J,ipath)) 
 		ENDDO
 				ENDDO
+
+C        print*,'!! imod,ipath = ',imod,ipath
 	
 	IF (imod(ipath).EQ.0) THEN
 
@@ -1235,6 +1269,12 @@ C                        print*,sol_ang,solar
 C                        print*,emiss_ang,aphi
 C                        print*,radg
 C                        print*,lowbc,galb1
+C                        print*,nmu
+C                        print*,(mu1(j),j=1,nmu)
+C                        print*,(wt1(j),j=1,nmu)
+C                        if(taur(0).gt.10000.0)print*,'taurA',
+C     1  (taur(j),j=1,nlays)
+
 C                        do j=1,nlays
 C                         print*,j,eps(j),bnu(j),taus(j),taur(j),
 C     1                           taus(j)-taur(j)
@@ -1248,6 +1288,9 @@ C     1  emiss_ang
      2				mu1, wt1, nmu,   
      3				nf, Ig, x, vv, eps, omegas,bnu, taus, 
      4				taur,nlays, ncont,lfrac)
+                        if(taur(0).gt.10000.0)print*,'taurB',
+     1 (taur(j),j=1,nlays)
+
 
 
  		  	corkout(Ipath,Ig) = xfac*rad1
@@ -1318,10 +1361,10 @@ C                        print*,'lowbc,galb1',lowbc,galb1
 
 	ELSEIF (imod(ipath).EQ.16) THEN
 
-		WRITE(*,*) 'CIRSRAD_WAVE: Imod= 16 =Single Scat Approx,',
-     1                  ' creating output'
+C		WRITE(*,*) 'CIRSRAD_WAVE: Imod= 16 =Single Scat Approx,',
+C     1                  ' creating output'
 
-C		IF (Ig.EQ.1) WRITE(*,*)' SINGLE SCATTERING IN USE '
+		IF (Ig.EQ.1) WRITE(*,*)' SINGLE SCATTERING IN USE '
 
                 galb1 = galb
                         
@@ -1655,7 +1698,8 @@ cc     1        ' multiple scattering'. Creating output'
   				EPS(J)=1.0
 				omegas(J)=0.
          		END IF
-
+                        EPSB(J)=1.0
+                        omegasb(J)=0.
 
 			fcover(J) = HFC(layinc(J,Ipath))
                         do k=1,ncont
@@ -1674,6 +1718,7 @@ C                 upwelling radiation field to local temperature.
                   else
                     radground = esurf*planck_wave(ispace,x,tsurf)
                   endif
+                  print*,'tsurf,radgound',tsurf,radground
 
                   galb1=galb
 
@@ -1685,13 +1730,110 @@ C                 upwelling radiation field to local temperature.
                     radg(J)=radground
                   enddo
 
+C		  Calculate radiation field for thermal emission only, 
+C                  but scattering clouds
+	          solarA=0.
+                  nfx=0
+
+   	    	  call scloud11flux(radg, solarA, sol_ang, 
+     1               lowbc, galb1, iray, mu1, wt1, nmu, nfx, Ig, x,
+     2               vv, eps, omegas, bnu, taus, taur, 
+     3               nlays, ncont, lfrac, umif, uplf)
+
+                  do imu=1,nmu
+                   do ilays=1,nlays
+                     if(ig.eq.1)then
+                      gplfa(imu,ilays)=delg(ig)*uplf(imu,ilays,1)
+                      gmifa(imu,ilays)=delg(ig)*umif(imu,ilays,1)
+                     else
+                      gplfa(imu,ilays)=gplfa(imu,ilays)+
+     1                  delg(ig)*uplf(imu,ilays,1)
+                      gmifa(imu,ilays)=gmifa(imu,ilays)+
+     1                  delg(ig)*umif(imu,ilays,1)
+                     endif
+                   enddo
+                  enddo
+
+C		  Calculate radiation field for thermal emission only, 
+C                  but non-scattering clouds
+	          solarA=0.
+                  nfx=0
+                  irayx=0
+
+   	    	  call scloud11flux(radg, solarA, sol_ang, 
+     1               lowbc, galb1, irayx, mu1, wt1, nmu, nfx, Ig, x,
+     2               vv, epsb, omegasb, bnu, taus, taur, 
+     3               nlays, ncont, lfrac, umif, uplf)
+
+                  do imu=1,nmu
+                   do ilays=1,nlays
+                     if(ig.eq.1)then
+                      gplfc(imu,ilays)=delg(ig)*uplf(imu,ilays,1)
+                      gmifc(imu,ilays)=delg(ig)*umif(imu,ilays,1)
+                     else
+                      gplfc(imu,ilays)=gplfc(imu,ilays)+
+     1                  delg(ig)*uplf(imu,ilays,1)
+                      gmifc(imu,ilays)=gmifc(imu,ilays)+
+     1                  delg(ig)*umif(imu,ilays,1)
+                     endif
+                   enddo
+                  enddo
+
+
+C		  Calculate radiation field with sunlight on but for
+C                 for non-scattering conditions to get direct solar component.
+
+   	    	  call scloud11flux(radg, solar, sol_ang, 
+     1               lowbc, galb1, irayx, mu1, wt1, nmu, nf, Ig, x,
+     2               vv, epsb, omegasb, bnu, taus, taur, 
+     3               nlays, ncont, lfrac, umif, uplf)
+
+                  do imu=1,nmu
+                   do ilays=1,nlays
+                    do ic=1,nf+1
+                     if(ig.eq.1)then
+                      gplfb(imu,ilays,ic)=delg(ig)*uplf(imu,ilays,ic)
+                      gmifb(imu,ilays,ic)=delg(ig)*umif(imu,ilays,ic)
+                     else
+                      gplfb(imu,ilays,ic)=gplfb(imu,ilays,ic)+
+     1                  delg(ig)*uplf(imu,ilays,ic)
+                      gmifb(imu,ilays,ic)=gmifb(imu,ilays,ic)+
+     1                  delg(ig)*umif(imu,ilays,ic)
+                     endif
+                    enddo
+                   enddo
+                  enddo
+
+
+C	          Finally, calculate radiation field for nominal 
+C		   scattering case
+
+
    	    	  call scloud11flux(radg, solar, sol_ang, 
      1               lowbc, galb1, iray, mu1, wt1, nmu, nf, Ig, x,
      2               vv, eps, omegas, bnu, taus, taur, 
      3               nlays, ncont, lfrac, umif, uplf)
 
+                  do imu=1,nmu
+                   do ilays=1,nlays
+                    do ic=1,nf+1
+                     if(ig.eq.1)then
+                      gplf(imu,ilays,ic)=delg(ig)*uplf(imu,ilays,ic)
+                      gmif(imu,ilays,ic)=delg(ig)*umif(imu,ilays,ic)
+                     else
+                      gplf(imu,ilays,ic)=gplf(imu,ilays,ic)+
+     1                  delg(ig)*uplf(imu,ilays,ic)
+                      gmif(imu,ilays,ic)=gmif(imu,ilays,ic)+
+     1                  delg(ig)*umif(imu,ilays,ic)
+                     endif
+                    enddo
+                   enddo
+                  enddo
+
+
                   call streamflux(nlays,nmu,mu1,wt1,radg,galb1,
      1                ig,umif,uplf,fup,fdown,ftop)                    
+
 
 
                   do Jpath=1,Ipath
@@ -2147,6 +2289,32 @@ C		 	print*,'Ipath, I, output',Ipath,I,
 C     1				output(Ipath,I)
 		ENDDO
 
+                if(ish.eq.1)then
+                 write(infr,*)solar
+                 write(infr,*)radground
+                 write(infr,*)galb1
+                 do imu=1,nmu
+                  do ilays=1,nlays
+                   do ic=1,nf+1
+                     write(infr,*)gplf(imu,ilays,ic)
+                   enddo
+                   do ic=1,nf+1
+                     write(infr,*)gmif(imu,ilays,ic)
+                   enddo
+                   do ic=1,nf+1
+                     write(infr,*)gplfb(imu,ilays,ic)
+                   enddo
+                   do ic=1,nf+1
+                     write(infr,*)gmifb(imu,ilays,ic)
+                   enddo
+                   write(infr,*)gplfa(imu,ilays)
+                   write(infr,*)gmifa(imu,ilays)
+                   write(infr,*)gplfc(imu,ilays)
+                   write(infr,*)gmifc(imu,ilays)
+                  enddo
+                 enddo
+                endif
+
 		XCOM = 100.0*FLOAT(I)/FLOAT(NWAVE)
 		IF(XCOM.GE.XNEXT)THEN
 C			WRITE(*,1000)
@@ -2172,6 +2340,10 @@ C-----------------------------------------------------------------------
         IF(IFLUX.GT.0)THEN
          CLOSE(LUNIS)
         ENDIF
+
+        if(ish.eq.1)then
+         close(infr)
+        endif
 
 	RETURN
 

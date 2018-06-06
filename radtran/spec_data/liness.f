@@ -13,11 +13,11 @@ C	non-lte calculations. Routine prompts for line data key if non
 C	already set.
 C
 C_ARGS:	Input variables:
-C	VMIN		REAL	Lowest wavenumber of bin.
-C	DELV		REAL	Size of bin in wavenumbers.
+C	VMIN		REAL*8	Lowest wavenumber of bin.
+C	DELV		REAL*8	Size of bin in wavenumbers.
 C	MAXLIN		INT	Maximum number of lines which can be held.
-C	VLIN(MAXLIN)	REAL	Line position [cm-1].
-C	SLIN(MAXLIN)	REAL	Line strength [cm-1/molecule/cm2 at 296K]
+C	VLIN(MAXLIN)	REAL*8	Line position [cm-1].
+C	SLIN(MAXLIN)	REAL*8	Line strength [cm-1/molecule/cm2 at 296K]
 C	ALIN(MAXLIN)	REAL	Lorentz width [cm-1].
 C	ELIN(MAXLIN)	REAL	Lower state energy [cm-1].
 C	IDLIN(MAXLIN)	INT	Gas identifier POSITION IN IDGAS ARRAY!!
@@ -66,8 +66,8 @@ C ../includes/dbcom.f stores the line database variables (e.g. RELABU).
       INTEGER MAXLIN,FSTLIN,LSTLIN,NLIN
       INTEGER IDLIN(MAXLIN),NGAS,IDGAS(NGAS),ISOGAS(NGAS)
 
-      REAL VMIN,DELV,VLIM
-      REAL VLIN(MAXLIN),ALIN(MAXLIN),ELIN(MAXLIN)
+      DOUBLE PRECISION VMIN,DELV,VLIM,VLIN(MAXLIN)
+      REAL ALIN(MAXLIN),ELIN(MAXLIN)
       REAL SBLIN(MAXLIN),TDW(MAXLIN),TDWS(MAXLIN),PSHIFT(MAXLIN)
       REAL DOUBV(MAXLIN)
       DOUBLE PRECISION SLIN(MAXLIN)

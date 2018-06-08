@@ -42,6 +42,7 @@ F_SOURCES = \
 	forwardnogX.f \
 	forwardnogXrdw.f \
 	forwardnoglbl.f \
+	forwardnoglblL.f \
 	forwardPT.f \
 	forwardnogPT.f \
 	forwarddisc.f \
@@ -56,6 +57,7 @@ F_SOURCES = \
 	extracttwocloud.f \
 	calc_serr.f \
 	writeout.f \
+	writeoutp.f \
 	calcfwderr.f \
 	readsurfem.f \
 	readraw.f \

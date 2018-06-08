@@ -115,13 +115,13 @@ C-----------------------------------------------------------------------
           xmink = xmin(i)
           delvk = delx(i)
           irec0 = irec(i)
-          if(npointk.gt.mpoint)then
-           print*,'Error in READ_KLBLLIST: npoint > mpoint'
-           print*,npointk,mpoint
-           print*,'Use smaller k-tables or modify MPOINT in arrdef.f'
-           print*,'and recompile everything'
-           stop
-          endif
+C          if(npointk.gt.mpoint)then
+C           print*,'Error in READ_KLBLLIST: npoint > mpoint'
+C           print*,npointk,mpoint
+C           print*,'Use smaller k-tables or modify MPOINT in arrdef.f'
+C           print*,'and recompile everything'
+C           stop
+C          endif
           npk = np(i)
           ntk = nt(i)
           delvk = delx(i)

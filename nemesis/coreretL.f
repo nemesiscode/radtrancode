@@ -1,5 +1,5 @@
       subroutine coreretL(runname,ispace,iscat,ilbl,ica,kiter,phlimit,
-     1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
+     1  inum,fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,npro,
      2  gasgiant,lin,lpre,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,
      3  jpre,jrad,jlogg,occult,wgeom,flat,nx,lx,xa,sa,ny,y,se1,xn,sm,
      4  sn,st,yn,kk,aa,dd)
@@ -85,11 +85,12 @@ C     Set measurement vector and source vector lengths here.
       INCLUDE 'arraylen.f'
       integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,jsurf
       integer jalb,jalbx,jtan,jpre,jtanx,jprex,iscat1,i1,k1
-      integer jrad,jradx,jlogg,jloggx,lx(mx),jxsc,jxscx
+      integer jrad,jradx,jlogg,jloggx,lx(mx),jxsc,jxscx,npro
       real phlimit,alambda,xtry,tphi
-      integer xflag,ierr,ncont,flagh2p,npro1,jpara,occult,ilbl
+      integer xflag,ierr,ncont,flagh2p,npro1,jpara,occult,ilbl,inum
       real xdnu,xmap(maxv,maxgas+2+maxcon,maxpro)
-      CHARACTER*100 runname,itname,abort,aname,buffer
+      CHARACTER*100 runname,abort,aname,buffer
+      CHARACTER*100 itname,itname2,itname3,itname4
 
       real xn(mx),se1(my),se(my,my),calc_phiret,sf(my,my)
       real fwhm,xlat,xdiff,xn1(mx),x_out(mx)
@@ -97,6 +98,7 @@ C     Set measurement vector and source vector lengths here.
       integer nprox,nvarx,varidentx(mvar,3),jsurfx,nxx
       real st(mx,mx),varparamx(mvar,mparam)
       real sn(mx,mx),sm(mx,mx),xnx(mx),stx(mx,mx),ynx(my)
+      integer ifix(mx),ifixx(mx)
 
       integer nvar,varident(mvar,3),lin,lin0,lpre,ispace,nav(mgeom)
       real varparam(mvar,mparam)
@@ -253,45 +255,77 @@ C        stop
 C       endif
 
        print*,'CoreretL : iscat= ',iscat
-       if(iscat.eq.0)then
-        print*,'Yo'
-        CALL forwardavfovL(runname,ispace,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
-     2   nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
-     3   occult,nxx,xnx,ny,ynx,kkx)
 
-       elseif (iscat.eq.2)then
+C      Calc. gradient of all elements of xnx matrix.
+       do i=1,nxx
+        ifixx(i)=1
+       enddo
 
-        print*,'option iscat=2 is not yet completed in NemesisL'
-        print*,'aborting'
-        stop 
+c      if calculating directly the LBL-tables in the run
+       if(ilbl.eq.1)then
 
-        CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
-     1   vconvT,gasgiant,lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,
-     2   jxscx,jtanx,jprex,jradx,jloggx,RADIUS,nxx,xnx)
-        
-        iscat1=1
-        CALL forwardnogL(runname,ispace,iscat1,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
-     2   nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
-     3   occult,nxx,xnx,ny,ynx,kkx)
+        call setifix(xa,sa,nvar,varident,varparam,npro,ifix)
+ 
+        print*,'Calling forwardnoglblL - A'
+         CALL forwardnoglblL(runname,ispace,iscat,fwhm,ngeom,nav,
+     1    wgeom,flat,nconv,vconv,angles,gasgiant,occult,lin0,
+     2    nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
+     3    jradx,jloggx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx)
 
+c      if reading absorption coefficient from look-up tables
        else
-        print*,'CoreretL: iscat not defined : ',iscat
 
-       endif
+        if(iscat.eq.0)then
+ 
+         if(inum.eq.0)then
+          CALL forwardavfovL(runname,ispace,fwhm,ngeom,nav,
+     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
+     2     nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
+     3     occult,nxx,xnx,ny,ynx,kkx)
+         endif
 
-       if(lin.eq.3)then
-C        strip out variables from kkx that will be retrieved in this
-C        run.
-         call scankkx(nvarx,varidentx,varparamx,nprox,nvar,varident,
-     1  kkx,stx,nxx)
+         if(inum.eq.1)then
+          CALL forwardnogL(runname,ispace,fwhm,ngeom,nav,
+     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
+     2     nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
+     3     occult,nxx,xnx,ny,ynx,kkx)
+         endif
+
+        elseif (iscat.eq.2)then
+
+         print*,'option iscat=2 is not yet completed in NemesisL'
+         print*,'aborting'
+         stop 
+
+         CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
+     1    vconvT,gasgiant,lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,
+     2    jxscx,jtanx,jprex,jradx,jloggx,RADIUS,nxx,xnx)
+        
+         iscat1=1
+         CALL forwardnogL(runname,ispace,iscat1,fwhm,ngeom,nav,
+     1    wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
+     2    nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
+     3    occult,nxx,xnx,ny,ynx,kkx)
+
+        else
+         print*,'CoreretL: iscat not defined : ',iscat
+
+        endif
+
+        if(lin.eq.3)then
+C         strip out variables from kkx that will be retrieved in this
+C         run.
+          call scankkx(nvarx,varidentx,varparamx,nprox,nvar,varident,
+     1   kkx,stx,nxx)
+        endif
        endif
 
        call calcfwderr(nxx,ny,kkx,stx,sf)
 
 C      Add effect of previous retrieval errors to measurement covariance
 C      matrix
+
+       
 
        call file(runname,runname,'sef')
        open(35,file=runname,status='unknown')
@@ -329,46 +363,67 @@ C      Calculate inverse of se
 
       endif
 
+
 C      if(iscat.eq.1)then
 C       print*,'Error in coreretL: Scattering calculations not'
 C       print*,'appropriate!'
 C       stop
 C      endif
 
-      if(iscat.eq.0)then
-C       print*,'A'
-C       do i1=1,ngeom
-C        print*,nav(i1)
-C        do j1=1,nav(i1)
-C         print*,wgeom(i1,j1),flat(i1,j1),(angles(i1,j1,k1),k1=1,3)
-C        enddo
-C       enddo
-
-       CALL forwardavfovL(runname,ispace,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,occult,
-     3   nx,xn,ny,yn,kk)
-
-      elseif(iscat.eq.2)then
-
-       print*,'option iscat=2 is not yet completed in NemesisL'
-       print*,'aborting'
-       stop
-
-       CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
-     1   vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
-     2   jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
-
-       print*,'Now calling forwardnogL'
-       iscat1=1
-       CALL forwardnogL(runname,ispace,iscat1,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,occult,
-     3   nx,xn,ny,yn,kk)
-
+198   if(ilbl.eq.1)then
+ 
+         print*,'Calling forwardnoglbl - B'
+         CALL forwardnoglblL(runname,ispace,iscat,fwhm,ngeom,nav,
+     1    wgeom,flat,nconv,vconv,angles,gasgiant,occult,lin,
+     2    nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
+     3    jrad,jlogg,RADIUS,nx,xn,ifix,ny,yn,kk)
+         print*,'call OK'
       else
-       print*,'CoreretL: iscat not covered : ',iscat
-       stop
+
+       if(iscat.eq.0)then
+C        print*,'A'
+C        do i1=1,ngeom
+C         print*,nav(i1)
+C         do j1=1,nav(i1)
+C          print*,wgeom(i1,j1),flat(i1,j1),(angles(i1,j1,k1),k1=1,3)
+C         enddo
+C        enddo
+
+        if(inum.eq.0)then
+         CALL forwardavfovL(runname,ispace,fwhm,ngeom,nav,
+     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,occult,
+     3     nx,xn,ny,yn,kk)
+        endif
+
+        if(inum.eq.1)then
+         CALL forwardnogL(runname,ispace,fwhm,ngeom,nav,
+     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,occult,
+     3     nx,xn,ny,yn,kk)
+        endif
+
+       elseif(iscat.eq.2)then
+
+        print*,'option iscat=2 is not yet completed in NemesisL'
+        print*,'aborting'
+        stop
+
+        CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
+     1    vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
+     2    jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
+
+        print*,'Now calling forwardnogL'
+        iscat1=1
+        CALL forwardnogL(runname,ispace,iscat1,fwhm,ngeom,nav,
+     1    wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     2    nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,occult,
+     3    nx,xn,ny,yn,kk)
+
+       else
+        print*,'CoreretL: iscat not covered : ',iscat
+        stop
+       endif
       endif
 
       open(12,file='coreretL.dat',status='unknown')
@@ -395,6 +450,27 @@ C     Assess whether retrieval is likely to be OK
        call file(runname,itname,'itr')
        open(37,file=itname,status='unknown')
        write(37,*)nx,ny,kiter
+
+       call file(runname,itname2,'mit')  !Store information as .itr but different format
+       open(42,file=itname2,status='unknown')
+       write(42,*)nx
+       write(42,*)ny
+       write(42,*)npro
+       write(42,*)ngeom
+       write(42,*)nvar
+       do i=1,nvar
+         do j=1,3
+           write(42,*)varident(i,j)
+         enddo
+       enddo
+       write(42,*)kiter
+
+       call file(runname,itname3,'kit')  !Store last iteration that has been run
+       open(43,file=itname3,status='unknown')
+
+       call file(runname,itname4,'ait')
+       open(44,file=itname4,status='unknown') !Store .prf and aerosol.prf file for each iteration
+       
       endif
 
 C     alambda is a Marquardt-Levenberg-type 'braking parameter'
@@ -422,7 +498,37 @@ C     vectors xn, yn
          write(37,*)(yn(i),i=1,ny)
          do i=1,nx
           write(37,*)(kk(j,i),j=1,ny)
+         enddo 
+
+         write(43,*)iter
+ 
+         write(42,*)chisq
+         write(42,*)phi
+         do i=1,nx
+           write(42,*)xn1(i)
          enddo
+         do i=1,nx
+           write(42,*)xa(i)
+         enddo
+         do i=1,ny
+           write(42,*)y(i)
+         enddo
+         do i=1,ny
+           write(42,*)se1(i)
+         enddo
+         do i=1,ny
+           write(42,*)yn1(i)
+         enddo
+         do i=1,ny
+           write(42,*)yn(i)
+         enddo
+         do i=1,nx
+          do j=1,ny
+           write(42,*)kk(j,i)
+          enddo
+         enddo
+
+
         endif
 
         print*,'Calling calcnextxn'
@@ -470,28 +576,47 @@ C       Calculate test spectrum using trial state vector xn1.
 C       Put output spectrum into temporary spectrum yn1 with
 C       temporary kernel matrix kk1. Does it improve the fit? 
 
-        if(iscat.eq.0)then
-
-        CALL forwardavfovL(runname,ispace,fwhm,ngeom,nav,
-     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
+        if(ilbl.eq.1)then
+  
+          CALL forwardnoglblL(runname,ispace,iscat,fwhm,ngeom,nav,
+     1     wgeom,flat,nconv,vconv,angles,gasgiant,occult,
      2     lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
-     3     occult,nx,xn1,ny,yn1,kk1)
+     3     jrad,jlogg,RADIUS,nx,xn1,ifix,ny,yn1,kk1)
+          print*,'call OK'
+        else
 
-        elseif(iscat.eq.2)then
+         if(iscat.eq.0)then
 
-        print*,'option iscat=2 is not yet completed in NemesisL'
-        print*,'aborting'
-        stop
+         if(inum.eq.0)then 
+          CALL forwardavfovL(runname,ispace,fwhm,ngeom,nav,
+     1      wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
+     2      lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
+     3      occult,nx,xn1,ny,yn1,kk1)
+         endif
 
-        CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
-     1     vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
-     2     jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn1)
+         if(inum.eq.1)then
+          CALL forwardnogL(runname,ispace,fwhm,ngeom,nav,
+     1      wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
+     2      lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
+     3      occult,nx,xn1,ny,yn1,kk1)
+         endif
 
-        iscat1=1
-        CALL forwardnogL(runname,ispace,iscat1,fwhm,ngeom,nav,
-     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
-     2     lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
-     3     occult,nx,xn1,ny,yn1,kk1)
+         elseif(iscat.eq.2)then
+
+          print*,'option iscat=2 is not yet completed in NemesisL'
+          print*,'aborting'
+          stop
+
+          CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
+     1       vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
+     2       jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn1)
+
+          iscat1=1
+          CALL forwardnogL(runname,ispace,iscat1,fwhm,ngeom,nav,
+     1       wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
+     2       lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
+     3       occult,nx,xn1,ny,yn1,kk1)
+         endif
         endif
 
 C       Calculate the cost function for this trial solution.
@@ -553,7 +678,12 @@ C	  Leave xn and kk alone and try again with more braking
 
 401   continue       
 
-202   if(ica.eq.1)close(37)
+202   if(ica.eq.1)then
+       close(37)
+       close(42)
+       close(43)
+       close(44)
+      endif
 
       if(ica.eq.1)then
 C      Write out k-matrix for reference
@@ -563,7 +693,9 @@ C      Write out k-matrix for reference
        CLOSE(52)
 
        close(37)
-
+       close(42)
+       close(43)
+       close(44)
       endif
 
       print*,'chisq/ny is equal to : ',chisq/float(ny)

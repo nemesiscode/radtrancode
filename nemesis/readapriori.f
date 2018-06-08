@@ -225,6 +225,63 @@ C               xfac = exp(-arg*arg)
 
              nx = nx + nlevel
 
+           elseif (varident(ivar,3).eq.-1)then
+C          * continuous cloud, but cloud retrieved as particles/cm3 rather than 
+C          * particles per gram to decouple it from pressure.
+C          ********* continuous particles/cm3 profile ************************
+             if(varident(ivar,1).ge.0)then
+               print*,'readapriori.f error.'
+               print*,'This model type is only for use with clouds'
+               stop
+             endif
+
+             read(27,1)ipfile
+             print*,'reading variable ',ivar,' from ',ipfile
+             open(28,file=ipfile,status='old')
+             read(28,*)nlevel,clen
+             if(nlevel.ne.npro)then
+              print*,'profiles must be listed on same grid as .prf'
+              stop
+             endif
+             do 47 i=1,nlevel
+              read(28,*)pref(i),ref(1,i),eref(1,i)
+              ix = i+nx
+C              **** cloud,take logs ***
+               if(ref(1,i).gt.0.0) then
+                 x0(ix) = alog(ref(1,i)) 
+                 lx(ix)=1
+               else 
+                 print*,'Error in readapriori.f. Cant take log of zero'
+                 print*,i,ref(i,i)
+                 stop
+               endif
+               err = eref(1,i)/ref(1,i)
+               sx(ix,ix)=err**2
+47           continue
+             close(28)
+             do i = 1,nlevel
+              ix = nx + i         
+              do j = i+1,nlevel
+               jx = nx + j
+               if(pref(i).lt.0.0) then
+                 print*,'Error in readapriori.f. A priori file '
+                 print*,'must be on pressure grid '
+                 stop
+               endif            
+               delp = log(pref(j))-log(pref(i))
+               
+               arg = abs(delp/clen)
+               xfac = exp(-arg)
+               if(xfac.ge.SXMINFAC)then  
+                sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
+                sx(jx,ix) = sx(ix,jx)
+               endif
+              enddo
+             enddo
+
+             nx = nx + nlevel
+
+
            elseif (varident(ivar,3).eq.1)then
 C            ******** profile held as deep amount, fsh and knee pressure ** 
 C            Read in xdeep,fsh,pknee

@@ -188,12 +188,9 @@ C Now read the scattering files if required.
       DO I=1,npath
         IF(imod(I).EQ.15.OR.imod(I).EQ.16)scatterf = .TRUE.      
       ENDDO
-<<<<<<< HEAD
 
       QFLA = .FALSE.
-=======
-	QFLA= .FALSE.
->>>>>>> 286b6e74b51b4b750348aab064d596b6d3cd59d1
+
       IF(ISCAT.EQ.5)THEN
         QFLA = .TRUE.
       ENDIF

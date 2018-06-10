@@ -139,6 +139,7 @@ bin :   \
 	NemesisPT \
 	Nemesisdisc \
 	Generatespx \
+	GeneratespxL \
 	GenerateMCSspx \
 	Convertitertomre \
 	Testack \
@@ -198,6 +199,14 @@ Generatespx: generatespx.f $(LIBRARY)
 	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/radtran.a \
 	$(LIB)/matrices.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
 	$(FRECIPES)
+
+GeneratespxL: generatespxL.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/GeneratespxL generatespxL.f $(LIBRARY) \
+        $(LIB)/cirsradg.a $(LIB)/cirsrad.a \
+        $(LIB)/scatter.a $(LIB)/path.a $(LIB)/radtran.a \
+        $(LIB)/matrices.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
+        $(FRECIPES)
+
 
 GenerateMCSspx: generateMCSspx.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/GenerateMCSspx generateMCSspx.f \

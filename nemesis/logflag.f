@@ -73,6 +73,8 @@ C       Variable is not temperature  - may need to take exponent
       
       if(imod.eq.27.and.ip.eq.3)iflag=1 ! knee pressure for step profile
       
+      if(imod.eq.-1)iflag=1 ! Dust continuous profile in particles/cm3
+
       if(imod.eq.3)iflag=1	! Log scaling factor
       if(imod.eq.10)iflag=1	! Log scaling factor
       if(imod.eq.11)iflag=1	! Log scaling factor

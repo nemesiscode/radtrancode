@@ -37,12 +37,12 @@ C-----------------------------------------------------------------------
 
       READ(LUN0,REC=1)IREC0
       READ(LUN0,REC=2)NPOINT
-      IF(NPOINT.GT.MAXBIN)THEN
-       PRINT*,'Problem in read_khead.f. Number of points in k-table'
-       PRINT*,'is greater than the dimension, MAXBIN,of the VCEN array'
-       PRINT*,NPOINT,MAXBIN
-       STOP
-      ENDIF
+C      IF(NPOINT.GT.MAXBIN)THEN
+C       PRINT*,'Problem in read_khead.f. Number of points in k-table'
+C       PRINT*,'is greater than the dimension, MAXBIN,of the VCEN array'
+C       PRINT*,NPOINT,MAXBIN
+C       STOP
+C      ENDIF
       print*,'IREC0,NPOINT =',IREC0,NPOINT
       READ(LUN0,REC=3)VMIN
       READ(LUN0,REC=4)DELV

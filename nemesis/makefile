@@ -42,6 +42,7 @@ F_SOURCES = \
 	forwardnogX.f \
 	forwardnogXrdw.f \
 	forwardnoglbl.f \
+	forwardnoglblL.f \
 	forwardPT.f \
 	forwardnogPT.f \
 	forwarddisc.f \
@@ -56,6 +57,7 @@ F_SOURCES = \
 	extracttwocloud.f \
 	calc_serr.f \
 	writeout.f \
+	writeoutp.f \
 	calcfwderr.f \
 	readsurfem.f \
 	readraw.f \
@@ -137,6 +139,7 @@ bin :   \
 	NemesisPT \
 	Nemesisdisc \
 	Generatespx \
+	GeneratespxL \
 	GenerateMCSspx \
 	Convertitertomre \
 	Testack \
@@ -196,6 +199,14 @@ Generatespx: generatespx.f $(LIBRARY)
 	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/radtran.a \
 	$(LIB)/matrices.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
 	$(FRECIPES)
+
+GeneratespxL: generatespxL.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/GeneratespxL generatespxL.f $(LIBRARY) \
+        $(LIB)/cirsradg.a $(LIB)/cirsrad.a \
+        $(LIB)/scatter.a $(LIB)/path.a $(LIB)/radtran.a \
+        $(LIB)/matrices.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
+        $(FRECIPES)
+
 
 GenerateMCSspx: generateMCSspx.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/GenerateMCSspx generateMCSspx.f \

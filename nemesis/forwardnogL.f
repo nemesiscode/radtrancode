@@ -1,21 +1,17 @@
-      subroutine forwardnogL(runname,ispace,iscat,fwhm,ngeom,nav,
+      subroutine forwardnogL(runname,ispace,fwhm,ngeom,nav,
      1 wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,nvar,
      2 varident,varparam,jsurf,jalb,jxsc,jtan,jpre,occult,nx,xn,ny,
      3 yn,kk)
 C     $Id:
 C     **************************************************************
-C     Subroutine to calculate an FOV-averaged limb spectra and
-C     KK-matrix using numerical differencing. Uses numerical integration
-C     for cases where the limb component is also important. Can also 
-C     deal with limb scattering.
+C     Subroutine to calculate an FOV-averaged limb spectra using CIRSRADG,
+C     but the gradients KK are calculated using numerical integration.
 C     
 C     Input variables:
 C       runname(60)   character Name of run.
 C       ispace           integer Indicates if wavelengths in vconv and
 C                               vwave are in wavenumbers(0) or
 C                               wavelengths (1)
-C	iscat		integer scattering flag. 0 for thermal emission
-C				2 for limb scattering
 C       fwhm            real    Desired FWHM of final spectrum
 C       ngeom           integer Number of observation geometries to average
 C       nav(mgeom)      integer         Number of synthetic spectra required
@@ -61,7 +57,7 @@ C
 C     **************************************************************
 
       implicit none
-      integer i,j,lin,ispace,iav,jpath
+      integer i,j,k,lin,ispace,iav,jpath,ix
       integer ngeom,ioff,igeom
       real interpem,dv
       include '../radtran/includes/arrdef.f'
@@ -70,36 +66,60 @@ C     **************************************************************
       real xlat,planck_wave,planckg_wave,Bg,height(100),htan
       real wgeom(mgeom,mav),flat(mgeom,mav),fh
       integer layint,inormal,iray,itype,nlayer,laytyp
+      integer iptf,imie,imie1,occult,iconv,idummy
       integer nwave(mgeom),jsurf,nem,nav(mgeom),nwave1
-      integer iptf,imie,imie1,occult
       real vwave(mgeom,mwave),angles(mgeom,mav,3),vwave1(mwave)
       real calcout(maxout3),fwhm,calcoutL(maxout3)
       real calcout1(maxout3),gradients1(maxout3)
-      real gradients(maxout4),vv,gradientsL(maxout3)
+      real gradients(maxout4),vv,gradientsL(maxout3),pi,AU
+      parameter (pi=3.1415927, AU=1.49597870e8)
+      real solradius,solomeg,solar,xsol
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       real vconv(mgeom,mconv),vconv1(mconv)
-      real layht,tsurf,esurf,pressR,delp,gradtsurf(maxout3)
-      real xn(mx),yn(my),kk(my,mx),yn1(my),solradius,xsol,solar
-      real solomeg
-      integer ny,iscat,jalb,jtan,jpre
-      integer nphi,ipath,jxsc
+      real layht,tsurf,esurf,gradtsurf(maxout3),pressR,delp
+      real xn(mx),yn(my),kk(my,mx),yn1(my),xref,dx
+      integer ny,iscat,jalb,jxsc,jtan,jpre
+      integer nphi,ipath
       integer nmu,isol,lowbc,nf
-      real dist,galb,sol_ang,emiss_ang,aphi,pi,AU
-      parameter (pi=3.1415927,AU=1.49597870e8)
+      real dist,galb,sol_ang,emiss_ang,aphi
       double precision mu(maxmu),wtmu(maxmu)
       character*100 runname
       real xmap(maxv,maxgas+2+maxcon,maxpro)
       real hcorr,hcorrx
-      common /imiescat/imie1
+      common /imiescat/ imie1
       integer nvar,varident(mvar,3),ivar
+      real vem(maxsec),emissivity(maxsec)
       real varparam(mvar,mparam)
       logical gasgiant
-      real vem(maxsec),emissivity(maxsec)
 
       real stelrad,solwave(maxbin),solrad(maxbin)
       integer solnpt,iform,iread
 
       common /solardat/iread, iform, stelrad, solwave, solrad,  solnpt
+
+
+C      print*,'ForwardavfovL'
+C      print*,runname
+C      print*,ispace,fwhm,ngeom
+C      do i=1,ngeom
+C       print*,nav(i)
+C       do j=1,nav(i)
+C        print*,wgeom(i,j),flat(i,j),(angles(i,j,k),k=1,3)
+C       enddo
+C       print*,nwave(i)
+C       print*,(vwave(i,j),j=1,nwave(i))
+C       print*,nconv(i)
+C       print*,(vconv(i,j),j=1,nconv(i))
+C       print*,gasgiant,lin,nvar
+C      enddo
+C      do i=1,nvar
+C       print*,(varident(i,j),j=1,3)     
+C       print*,(varparam(i,j),j=1,5)     
+C      enddo
+C      print*,jsurf,jalb,jtan,jpre,nx
+C      print*,(xn(i),i=1,nx)
+C      print*,ny
+
 
 C     Initialise arrays
       do i=1,my
@@ -157,16 +177,15 @@ C     NemesisL
        tsurf = xn(jsurf)
       endif
 
-      print*,'forwardnogL. iscat = ',iscat
-
+      iscat=0
 C     Set up all files for a direct cirsrad run of limb spectra
       call gsetradL(runname,nconv1,vconv1,fwhm,ispace,iscat,
-     1    gasgiant,layht,
-     2    nlayer,laytyp,layint,xlat,lin,hcorrx,
+     1    gasgiant,layht,nlayer,laytyp,layint,xlat,lin,hcorrx,
      3    nvar,varident,varparam,nx,xn,jpre,tsurf,occult,xmap)
 
-C     If planet is not a gas giant then we need to read in the surface 
-C      emissivity spectrum
+
+C     If planet is not a gas giant then we need to read in the 
+C      surface emissivity spectrum
       if(.not.gasgiant)then
           call readsurfem(runname,nem,vem,emissivity)
       else
@@ -178,7 +197,7 @@ C      emissivity spectrum
       endif
 
 
-C     Set up parameters for multi-limb cirsrad run.
+C     Set up parameters for non-scattering cirsrad run.
 
       CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
      1 IPTF,IMIE)
@@ -186,19 +205,26 @@ C     Set up parameters for multi-limb cirsrad run.
 
       itype=12			! scloud12. not used here
 
+      print*,'hcorrx = ',hcorrx
+ 
       call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
-     1    vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf, 
-     2    nx, xmap, vconv1, nconv1, npath, calcoutL, gradientsL,iscat)
+     1  vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf, 
+     2  nx, xmap, vconv1, nconv1, npath, calcoutL, gradientsL,iscat)
 
 C     Read in base heights from '.drv' file
       call readdrvh(runname,height)
 
-      print*,'Calculated limb spectra. Now going to interpolate where'
-      print*,'Necessary'
+      print*,'hcorrx = ',hcorrx
+
+      ioff = 0
+
+
+c     MAIN LOOP - CALCULATING SPECTRUM GIVEN AT EACH GEOMETRY
+
       ioff = 0
 
       do 100 igeom=1,ngeom
-       print*,'ForwardnogL. Spectrum ',igeom,' of ',ngeom
+       print*,'ForwardavfovL. Spectrum ',igeom,' of ',ngeom
        print*,'Nav = ',nav(igeom)
 
        nconv1 = nconv(igeom)
@@ -229,113 +255,90 @@ C     Read in base heights from '.drv' file
          if(emiss_ang.lt.0)then
            print*,'Interpolating limb-calculated spectra'
            htan = sol_ang+hcorr+hcorrx
-           print*,'forwardnogL: sol_ang, hcorr,hcorrx',
+           print*,'forwardavfovL: sol_ang, hcorr,hcorrx',
      1       sol_ang, hcorr,hcorrx
            print*,'htan = ',htan
            jpath=-1
            do i=1,nlayer-1
             if(height(i).le.htan.and.height(i+1).gt.htan)jpath=i
            enddo
+
            if(jpath.lt.1)then
-            print*,'Error in forwardnogL: tangent height is'
+            print*,'Error in forwardavfovL: tangent height is'
             print*,'out of range'
             print*,nlayer,height(1),height(nlayer),htan
+           else
+            fh = (htan-height(jpath))/(height(jpath+1)-height(jpath))
            endif
-           fh = (htan-height(jpath))/(height(jpath+1)-height(jpath))
-         
-           do ipath=jpath,jpath+1
-            fh=1.0-fh
-            do j=1,nconv1
- 	     ioff1=nconv1*(ipath-1)+j
-             yn(ioff+j)=yn(ioff+j)+wgeom(igeom,iav)*fh*calcoutL(ioff1)
-            enddo
-    
-            do i=1,nx
-             if(i.ne.jtan.and.i.ne.jpre)then
-              do j=1,nconv1 
-              ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + j
-              kk(ioff+j,i)=kk(ioff+j,i)+
-     1	  	wgeom(igeom,iav)*fh*gradientsL(ioff2)
-              enddo
-             endif
-            enddo
-           enddo
 
-           if(occult.eq.1.or.occult.eq.3)then
-C           Add solar occultation radiance to thermal emission
+           if(htan.lt.height(1))then
+            jpath=1
+            fh=0.0
+           endif
+           if(htan.ge.height(nlayer))then
+            jpath=nlayer-1
+            fh=1.0
+           endif
+         
+
+           if(occult.eq.2)then
+C           just calculate transmission of path. Assumes no thermal emission into beam and no other nadir paths.
+            do ipath=jpath,jpath+1
+             fh=1.0-fh
+             do j=1,nconv1
+              if(ipath.eq.jpath+nlayer)then
+               yn(ioff+j)=0.
+              endif
+              ioff1=nconv1*(ipath-1)+j
+              yn(ioff+j)=yn(ioff+j)+wgeom(igeom,iav)*fh*calcoutL(ioff1)
+             enddo 
+             
+            enddo
+
+           else
+
+            do ipath=jpath,jpath+1
+             fh=1.0-fh
+             do j=1,nconv1
+ 	      ioff1=nconv1*(ipath-1)+j
+              yn(ioff+j)=yn(ioff+j)+wgeom(igeom,iav)*fh*calcoutL(ioff1)
+C              print*,'X',ipath,j,ioff1,calcoutL(ioff1)
+             enddo
+            enddo
+
+            if(occult.eq.1.or.occult.eq.3)then
+C            Add solar occultation radiance to thermal emission
 
              solradius = stelrad/(dist*AU)
              solomeg = pi*solradius**2
 
              do ipath=jpath+nlayer,jpath+nlayer+1
               fh=1.0-fh
+C              print*,ipath,jpath,nlayer
               do j=1,nconv1
 C              Get Solar irradiance
                CALL get_solar_wave(vconv1(j),dist,solar)
+               xsol =  solar/solomeg
+C               print*,vconv1(j),dist,solar,xsol
+  	       ioff1=nconv1*(ipath-1)+j
+C               print*, wgeom(igeom,iav),fh,calcoutL(ioff1)
+               yn(ioff+j)=yn(ioff+j)+
+     1          wgeom(igeom,iav)*fh*calcoutL(ioff1)*xsol
+             
+              enddo
+             enddo
+
+            endif
+
+            if(occult.eq.3)then
+C            divide thermal emission + solar occultation by solar radiance at top of atmosphere
+             do j=1,nconv1
+               CALL get_solar_wave(vconv1(j),dist,solar)
                xsol = solar/solomeg
-              
-  	       ioff1=nconv1*(ipath-1)+j
-               yn(ioff+j)=yn(ioff+j)+
-     1		wgeom(igeom,iav)*fh*calcoutL(ioff1)*xsol
-              enddo
-    
-              do i=1,nx
-               if(i.ne.jtan.and.i.ne.jpre)then
-                do j=1,nconv1 
-                 CALL get_solar_wave(vconv1(j),dist,solar)
-                 xsol = solar/solomeg
-                 ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + j
-                 kk(ioff+j,i)=kk(ioff+j,i)+
-     1	    wgeom(igeom,iav)*fh*gradientsL(ioff2)*xsol
-                enddo
-               endif
-              enddo
+               yn(ioff+j)=yn(ioff+j)/xsol
              enddo
-
-           endif
-
-
-           if(occult.eq.2)then
-C            Just calculating limb transmission. Assumes thermal emission is negligible and no nadir paths in retrieval
-             do ipath=jpath+nlayer,jpath+nlayer+1
-              fh=1.0-fh
-              do j=1,nconv1
-               if(ipath.eq.jpath+nlayer)then
-                 yn(ioff+j)=0.
-               endif
-  	       ioff1=nconv1*(ipath-1)+j
-               yn(ioff+j)=yn(ioff+j)+
-     1		wgeom(igeom,iav)*fh*calcoutL(ioff1)
-              enddo
-    
-              do i=1,nx
-               if(i.ne.jtan.and.i.ne.jpre)then
-                do j=1,nconv1 
-                 if(ipath.eq.jpath+nlayer)then
-                  kk(ioff+j,i)=0.
-                 endif
-                 ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + j
-                 kk(ioff+j,i)=kk(ioff+j,i)+
-     1            wgeom(igeom,iav)*fh*gradientsL(ioff2)
-                enddo
-               endif
-              enddo
-             enddo
-
-           endif
-
-           if(occult.eq.3)then
-C           divide thermal emission + solar occultation by solar radiance at top of atmosphere
-            do j=1,nconv1
-              CALL get_solar_wave(vconv1(j),dist,solar)
-              xsol = solar/solomeg
-              yn(ioff+j)=yn(ioff+j)/xsol
-              do i=1,nx
-               kk(ioff+j,i)=kk(ioff+j,i)/xsol
-              enddo
-            enddo
-           endif
-
+            endif
+           endif 
 
          else
            print*,'Calculating new nadir-spectra'
@@ -347,14 +350,13 @@ C           divide thermal emission + solar occultation by solar radiance at top
      4      xmap)
       
 
-           call CIRSrtfg_wave(runname, dist,inormal,iray,fwhm,ispace,
+           call CIRSrtfg_wave(runname,dist,inormal,iray,fwhm,ispace,
      1      vwave1,nwave1,itype, nem, vem, emissivity, tsurf, 
      2      gradtsurf, nx, xmap, vconv1, nconv1, npath, calcout, 
-     3      gradients,iscat)
+     3 	    gradients,iscat)
 
-C          First path is assumed here to be thermal emission
-     
-      
+C          First path is assumed to be thermal emission
+           
            ipath = 1
            do j=1,nconv1
             ioff1=nconv1*(ipath-1)+j
@@ -370,41 +372,79 @@ C          First path is assumed here to be thermal emission
              enddo
             endif   
            enddo
-          
          endif
 
 110    continue
 
-       if(jpre.gt.0)then
+       ioff = ioff + nconv1
 
-        print*,'Calculating RoC with tangent pressure'
-        pressR = xn(jpre)
-        delp = pressR*0.01
-        xn(jpre)=pressR+delp
+100   continue
 
-C       Set up all files to recalculate limb spectra
+
+
+
+
+c     MAIN LOOP - CALCULATING NEW SPECTRUM AFTER PERTURBATION IN STATE VECTOR
+
+      do 115 ix=1,nx
+
+c       for not adding up the y vector all the time
+        do i=1,my
+         yn1(i)=0.0
+        enddo
+
+        print*,'ForwardnogL :: Calculating gradients numerically'
+        print*,'xn(ix) = ',xn(ix)
+
+        xref = xn(ix)
+        dx = 0.05*xref
+        if(dx.eq.0)dx = 0.1
+
+        if(ix.eq.jpre)then
+          if(emiss_ang.lt.0)then
+            dx=0.01*xref
+          else
+            goto 115
+          endif
+        endif
+
+        if(ix.eq.jtan)then
+          if(emiss_ang.lt.0)then
+            dx=1.0
+          else
+            goto 115
+          endif
+        endif
+
+        xn(ix)=xn(ix)+dx
+
+C       Set up all files to recalculate limb spectra after perturbation
         call gsetradL(runname,nconv1,vconv1,fwhm,ispace,iscat,
      1    gasgiant,layht,
      2    nlayer,laytyp,layint,xlat,lin,hcorrx,
      3    nvar,varident,varparam,nx,xn,jpre,tsurf,occult,xmap)
 
-        call CIRSrtfg_wave(runname, dist, inormal, iray,fwhm, ispace, 
-     1    vwave1,nwave1,itype, nem, vem, emissivity, tsurf, 
-     2    gradtsurf,nx, xmap, vconv1, nconv1, npath, calcout1, 
-     3    gradients1,iscat)
+        call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace,
+     1   vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf,
+     2   nx, xmap, vconv1, nconv1, npath, calcout1, gradients1,iscat) 
 
+        ioff=0
+        do 200 igeom=1,ngeom
+         print*,'ForwardavfovL-press. Spectrum ',
+     1    igeom,' of ',ngeom
+         print*,'Nav = ',nav(igeom)
 
-        do 112 iav = 1,nav(igeom)
-         sol_ang = angles(igeom,iav,1)
-         emiss_ang = angles(igeom,iav,2)
-         aphi = angles(igeom,iav,3)
-         
-         print*,'Iav = ',iav
-         print*,'Angles : ',sol_ang,emiss_ang,aphi
+         do 113 iav = 1,nav(igeom)
+          sol_ang = angles(igeom,iav,1)
+          emiss_ang = angles(igeom,iav,2)
+          aphi = angles(igeom,iav,3)
 
-         xlat = flat(igeom,iav)   
+          print*,'Iav = ',iav
+          print*,'Angles : ',sol_ang,emiss_ang,aphi
 
-         if(emiss_ang.lt.0)then
+          xlat = flat(igeom,iav)
+
+          if(emiss_ang.lt.0)then
            print*,'Interpolating limb-calculated spectra'
            htan = sol_ang + hcorr
            print*,'forwardfovL1: sol_ang,hcorr,htan',sol_ang,
@@ -419,170 +459,97 @@ C       Set up all files to recalculate limb spectra
             print*,nlayer,height(1),height(nlayer),htan
            endif
            fh = (htan-height(jpath))/(height(jpath+1)-height(jpath))
-         
-           print*,jpath,fh
-           do ipath=jpath,jpath+1
-            fh=1.0-fh
-            do j=1,nconv1
- 	     ioff1=nconv1*(ipath-1)+j
-             yn1(ioff+j)=yn1(ioff+j)+
-     1        wgeom(igeom,iav)*fh*calcout1(ioff1)
-C            tangent pressure taken as logs so need to adjust gradient
-             kk(ioff+j,jpre) = kk(ioff+j,jpre) +
-     1            (yn1(ioff+j)-yn(ioff+j))/(pressR*delp)
-             print*,ipath,ioff+j,yn1(ioff+j),yn(ioff+j),delp,pressR
-            enddo
-           enddo
+        
+c          Now we calculate the actual spectra at the given tangent height
+           if(occult.eq.2)then
+C           just calculate transmission of path. Assumes no thermal emission into line of sight.
+C           If occult=4 then calculate absorption = 1 - tranmission
 
-           if(occult.eq.1.or.occult.eq.3)then
-
-            solradius = stelrad/(dist*AU)
-            solomeg = pi*solradius**2
-
-            do ipath=jpath+nlayer,jpath+nlayer+1
+            print*,'occult = ',occult
+            print*,'jpath,fh,nconv1 = ',jpath,fh,nconv1
+c            do ipath=jpath+nlayer,jpath+nlayer+1
+            do ipath=jpath,jpath+1
              fh=1.0-fh
              do j=1,nconv1
-C             Get Solar irradiance
-              CALL get_solar_wave(vconv1(j),dist,solar)
-              xsol = solar/solomeg
- 	      ioff1=nconv1*(ipath-1)+j
+              if(ipath.eq.jpath+nlayer)then
+               yn1(ioff+j)=0.
+               yn(ioff+j)=0.
+              endif
+              ioff1=nconv1*(ipath-1)+j
               yn1(ioff+j)=yn1(ioff+j)+
-     1  wgeom(igeom,iav)*fh*calcout1(ioff1)*xsol
+     1          wgeom(igeom,iav)*fh*calcout1(ioff1)
+C              print*,ioff,j,yn(ioff+j),yn1(ioff+j)
+             enddo
+            enddo
+
+            do j=1,nconv1
+C             kk(ioff+j,jpre)=-(yn1(ioff+j)-yn(ioff+j))/(pressR*delp)
+             kk(ioff+j,ix)=(yn1(ioff+j)-yn(ioff+j))/dx
+            enddo
+
+           else
+
+            print*,jpath,fh
+            do ipath=jpath,jpath+1
+             fh=1.0-fh
+             do j=1,nconv1
+              ioff1=nconv1*(ipath-1)+j
+              yn1(ioff+j)=yn1(ioff+j)+
+     1          wgeom(igeom,iav)*fh*calcout1(ioff1)
+             enddo
+            enddo
+            do j=1,nconv1
 C             tangent pressure taken as logs so need to adjust gradient
-              kk(ioff+j,jpre) = kk(ioff+j,jpre) +
-     1            (yn1(ioff+j)-yn(ioff+j))/(pressR*delp)
-             enddo
+C              kk(ioff+j,jpre) = -(yn1(ioff+j)-yn(ioff+j))/(pressR*delp)
+              kk(ioff+j,ix) = (yn1(ioff+j)-yn(ioff+j))/dx
             enddo
 
-           endif
+            if(occult.eq.1.or.occult.eq.3)then
 
-           if(occult.eq.2)then
-C           just calculate transmission of path. Assumes no thermal emission in$
-            do ipath=jpath+nlayer,jpath+nlayer+1
-             fh=1.0-fh
+             solradius = stelrad/(dist*AU)
+             solomeg = pi*solradius**2
+
+             do ipath=jpath+nlayer,jpath+nlayer+1
+              fh=1.0-fh
+              do j=1,nconv1
+C              Get Solar irradiance
+               CALL get_solar_wave(vconv1(j),dist,solar)
+               xsol = solar/solomeg
+
+               ioff1=nconv1*(ipath-1)+j
+               yn1(ioff+j)=yn1(ioff+j)+
+     1          wgeom(igeom,iav)*fh*calcout1(ioff1)*xsol
+              enddo
+             enddo
              do j=1,nconv1
-              if(ipath.eq.jpath+nlayer)then
-               yn1(ioff+j)=0.
-              endif
-              ioff1=nconv1*(ipath-1)+j
-              yn1(ioff+j)=yn1(ioff+j)+
-     1         wgeom(igeom,iav)*fh*calcoutL(ioff1)
-              kk(ioff+j,jpre)=kk(ioff+j,jpre) + 
-     1         (yn1(ioff+j)-yn(ioff+j))/(pressR*delp)
+C              tangent pressure taken as logs so need to adjust gradient
+C               kk(ioff+j,jpre) = -(yn1(ioff+j)-yn(ioff+j))/(pressR*delp)
+               kk(ioff+j,ix) = (yn1(ioff+j)-yn(ioff+j))/dx
              enddo
-            enddo
-           endif
 
-           if(occult.eq.3)then
-            do j=1,nconv1
-              CALL get_solar_wave(vconv1(j),dist,solar)
-              xsol = solar/solomeg
-              yn1(ioff+j)=yn1(ioff+j)/xsol
-              kk(ioff+j,jpre)=kk(ioff+j,jpre)/xsol
-            enddo
-           endif
+            endif
 
-         endif
-
-         xn(jpre)=pressR
-
-112     continue
-
-
-
-       endif
-
-       if(jtan.gt.0)then
-
-        do 111 iav = 1,nav(igeom)
-         sol_ang = angles(igeom,iav,1)
-         emiss_ang = angles(igeom,iav,2)
-         aphi = angles(igeom,iav,3)
-         
-         print*,'Iav = ',iav
-         print*,'Angles : ',sol_ang,emiss_ang,aphi
-
-         xlat = flat(igeom,iav)   
-
-         if(emiss_ang.lt.0)then
-           print*,'Interpolating limb-calculated spectra'
-           htan = sol_ang + hcorr + 1.0
-           print*,'forwardfovL1: sol_ang,hcorr,htan',sol_ang,
-     1      hcorr,htan
-           jpath=-1
-           do i=1,nlayer-1
-            if(height(i).le.htan.and.height(i+1).gt.htan)jpath=i
-           enddo
-           if(jpath.lt.1)then
-            print*,'Error in forwardnogL: tangent height is'
-            print*,'out of range'
-            print*,nlayer,height(1),height(nlayer),htan
-           endif
-           fh = (htan-height(jpath))/(height(jpath+1)-height(jpath))
-         
-           do ipath=jpath,jpath+1
-            fh=1.0-fh
-            do j=1,nconv1
- 	     ioff1=nconv1*(ipath-1)+j
-             yn1(ioff+j)=yn1(ioff+j)+wgeom(igeom,iav)*fh*calcoutL(ioff1)
-             kk(ioff+j,jtan) = kk(ioff+j,jtan) + yn1(ioff+j)-yn(ioff+j)
-            enddo
-           enddo
-
-           if(occult.eq.1.or.occult.eq.3)then
-
-            solradius = stelrad/(dist*AU)
-            solomeg = pi*solradius**2
-
-            do ipath=jpath+nlayer,jpath+nlayer+1
-             fh=1.0-fh
+            if(occult.eq.3)then
              do j=1,nconv1
-C             Get Solar irradiance
-              CALL get_solar_wave(vconv1(j),dist,solar)
-              xsol = solar/solomeg
-  	      ioff1=nconv1*(ipath-1)+j
-              yn1(ioff+j)=yn1(ioff+j)+
-     1   wgeom(igeom,iav)*fh*calcoutL(ioff1)*xsol
-              kk(ioff+j,jtan) = kk(ioff+j,jtan) + yn1(ioff+j)-yn(ioff+j)
+               CALL get_solar_wave(vconv1(j),dist,solar)
+               xsol = solar/solomeg
+               kk(ioff+j,ix)=kk(ioff+j,jtan)/xsol
              enddo
-            enddo
-
+            endif
            endif
+          endif
 
-           if(occult.eq.2)then
-C           just calculate transmission of path. Assumes no thermal emission in$
-            do ipath=jpath+nlayer,jpath+nlayer+1
-             fh=1.0-fh
-             do j=1,nconv1
-              if(ipath.eq.jpath+nlayer)then
-               yn1(ioff+j)=0.
-              endif
-              ioff1=nconv1*(ipath-1)+j
-              yn1(ioff+j)=yn1(ioff+j)+
-     1		wgeom(igeom,iav)*fh*calcoutL(ioff1)
-              kk(ioff+j,jtan)=kk(ioff+j,jtan)+(yn1(ioff+j)-yn(ioff+j))
-             enddo
-            enddo
-           endif
+           xn(ix) = xref
 
-           if(occult.eq.3)then
-            do j=1,nconv1
-              CALL get_solar_wave(vconv1(j),dist,solar)
-              xsol = solar/solomeg
-              kk(ioff+j,jtan)=kk(ioff+j,jtan)/xsol
-            enddo
-           endif
+113      continue     !loop in nav
 
-         endif
+         ioff = ioff + nconv1
 
-111     continue
+200     continue !loop in ngeom
 
-       endif
-
-       ioff = ioff + nconv1
-
-100   continue
+115   continue   !loop in state vector ix
 
       return
 
       end
+

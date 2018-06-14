@@ -72,15 +72,15 @@ C      print*,J,TEMP,DQ
 
 C      print*,'sodd,sev,s,f',SODD,SEV,S,F
       IF(NORMAL.EQ.0)THEN
-       CALCFRACPARA=PH2(JROT,TEMP)/S
+       CALCFRACPARA=SNGL(PH2(JROT,TEMP)/S)
       ELSE
        I=INT(0.5*JROT)
        IF(2*I.EQ.JROT)THEN
 C        print*,'even'
-        CALCFRACPARA=F*PH2(JROT,TEMP)/SEV
+        CALCFRACPARA=SNGL(F*PH2(JROT,TEMP)/SEV)
        ELSE
 C        print*,'odd'
-        CALCFRACPARA=(1.0-F)*PH2(JROT,TEMP)/SODD
+        CALCFRACPARA=SNGL((1.0-F)*PH2(JROT,TEMP)/SODD)
        ENDIF
       ENDIF
 

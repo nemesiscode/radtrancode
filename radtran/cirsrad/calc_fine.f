@@ -109,7 +109,7 @@ C        Error arose while doing LBL simulations in visible range. Problem not y
 
           IGAS=IDLIN(IB,LINE)
 
-          DV = (SNGL(VV) - VLIN(IB,LINE))
+          DV = SNGL(VV - VLIN(IB,LINE))
 
 C         Ignore lines more than MAXDV widths away
           IF(ABS(DV).LE.MAXDV)THEN

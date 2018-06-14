@@ -29,10 +29,11 @@ C       bins, paths, etc.)
 	REAL		y(maxpat,2),
      1			yout(maxpat,mconv), ynor(maxpat,mconv),
      2			y2(maxbin), x1, x2, delx, xi, yi, yold, dv
-        REAL*8		vwave,vconv(nconv),vwave1,vcentral,v1,v2,vcen
+        REAL*8		vwave,vconv(nconv),vwave1,vcentral,v1,v2,vcen,
+     1			  vt
 	REAL		vfil(1000),fil(1000),yy,sumf,delv
 	REAL		ytmp(maxout)
-	REAL		f1,f2,vt,XOFF,HAMMING,NFW,HANNING
+	REAL		f1,f2,XOFF,HAMMING,NFW,HANNING
 	CHARACTER*100	runname
 
 C        print*,'LBLCONV --> FWHM = ',FWHM
@@ -113,9 +114,9 @@ C          Triangular Instrument Shape
 
            IF(VWAVE1.GE.V1.AND.VWAVE1.LE.V2)THEN
             IF(ISPACE.EQ.0)THEN
-             F1=1.0 - ABS(VWAVE1-VCEN)/YFWHM
+             F1=1.0 - ABS(SNGL(VWAVE1-VCEN))/YFWHM
             ELSE
-             F1=1.0 - ABS(1E4/VWAVE1-VCEN)/YFWHM
+             F1=1.0 - ABS(1E4/SNGL(VWAVE1-VCEN))/YFWHM
             ENDIF
            ENDIF           
            IF(F2.LT.0.0)THEN
@@ -222,7 +223,7 @@ C         Channel Integrator Mode: Slightly more advanced than previous
            do 205 j=1,nconv
 C           Make sure you're using the right filter function for the
 C           channel requested.
-            dv = 100*abs(vcentral-vconv(j))/vconv(j)
+            dv = 100*sngl(abs(vcentral-vconv(j))/vconv(j))
             if(dv.lt.1.0)then
 
 

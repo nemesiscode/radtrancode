@@ -211,7 +211,7 @@ C		Use coated sphere scattering model if Maltmieser explicitly specified
 			RE2DOB = RE2
 			TMAG2DOB = TMAG2
 			XX = 2.0*PI/XLAM
-			R2 = RR*(1.0-csratio)**(1.0/3.0)!find core rad
+			R2 = SNGL(RR*(1.0-csratio)**(1.0/3.0))!find core rad
 			if(fixtoggle.eq.1)then!fix core ref index and retrieve shell ref index
 C			print*, 'MM fixed core: Calling DMIESS'
 			CALL DMIESS(RR, RFR, RFI, THETD, NTHETA, QEXT, 

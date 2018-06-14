@@ -55,7 +55,7 @@ C-----------------------------------------------------------------------
       EQUIVALENCE (WFN1,TAA(1)),(WFN2,TAB(1)),(FNA,TB(1)),(FNB,TC(1)),
      1(FNAP,TD(1)),(FNBP,TE(1))
 
-      RF=CMPLX(RFR,-RFI)
+      RF=CMPLX(KIND(RFR),-KIND(RFI))
       RRF=1.0/RF
       RX=1.0/X
       RRFX=RRF*RX
@@ -105,8 +105,8 @@ C-----------------------------------------------------------------------
    35 ENDDO
       T(1)=COS(X)
       T(2)=SIN(X)
-      WM1= CMPLX(T(1),-T(2))
-      WFN1=CMPLX(T(2),T(1))
+      WM1= CMPLX(KIND(T(1)),-KIND(T(2)))
+      WFN1=CMPLX(KIND(T(2)),KIND(T(1)))
       WFN2=RX*WFN1-WM1
       TC1=ACAP(1)*RRF+RX
       TC2=ACAP(1)*RF+RX

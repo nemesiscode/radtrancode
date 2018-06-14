@@ -70,8 +70,8 @@ C     **************************************************************
       integer nwave(mgeom),jsurf,nem,nav(mgeom),nwave1
       real vwave(mgeom,mwave),angles(mgeom,mav,3),vwave1(mwave)
       real calcout(maxout3),fwhm,calcoutL(maxout3)
-      real calcout1(maxout3),gradients1(maxout3)
-      real gradients(maxout4),vv,gradientsL(maxout3),pi,AU
+      real calcout1(maxout3),gradients1(maxout4)
+      real gradients(maxout4),vv,gradientsL(maxout4),pi,AU
       parameter (pi=3.1415927, AU=1.49597870e8)
       real solradius,solomeg,solar,xsol
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1

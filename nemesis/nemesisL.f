@@ -386,32 +386,22 @@ C     write output
       CALL writeraw(lraw,ispec,xlat,xlon,npro,nvar,varident,
      1 varparam,nx,xn,st)
 
-      print*,'HOLA JUAN - NEMESISL1'
-
       if(ica.eq.1)then
 C       Write out all the error matrices if only one case retrieved
         call write_covariance(runname,npro,nvar,varident,varparam,
      1    nx,ny,sa,sm,sn,st,se,aa,dd,kk)
       endif
 
-      print*,'HOLA JUAN - NEMESISL2'
-
 2999  continue
-
-      print*,'HOLA JUAN - NEMESISL3'
 
       close(lspec)
       close(lout)
       close(lraw)
       close(lpre)
 
-      print*,'HOLA JUAN - NEMESISL4'
-
 C     New compiler time
       call system_clock(time2)
       tot_time=(time2-time1)/rate
-
-      print*,'HOLA JUAN - NEMESISL5'      
 
       write(6,*)'Model run OK'
       WRITE(6,244)tot_time

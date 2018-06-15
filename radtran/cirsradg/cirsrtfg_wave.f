@@ -128,6 +128,24 @@ C     Need simple way of passing planetary radius to nemesis
 
 C     ************************* CODE ***********************
 
+C      PRINT*,'CIRSRTFG_WAVE - DEBUG'
+C      PRINT*,'runname : ',runname
+C      print*,'dist,inormal,iray,fwhm1,ispace',dist,inormal,iray,
+C     1 fwhm1,ispace
+C      print*,'nwave = ',nwave
+C      do i=1,nwave
+C       print*,i,vwave(i)
+C      enddo
+C      print*,'itype1,nem = ',itype1,nem
+C      do i=1,nem
+C       print*,i,vem(i),emissivity(i)
+C      enddo
+C      print*,'tsurf,nv,npath1,nconv = ',tsurf,nv,npath1,nconv
+C      do i=1,nconv
+C       print*,vconv(i)
+C      enddo    
+
+
       PRINT*,'CIRSRTFG_WAVE - ILBL = ',ILBL
       IF(ILBL.EQ.2)THEN
          call file(runname,sfile,'sha')

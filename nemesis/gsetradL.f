@@ -70,6 +70,25 @@ C     ************************************************************************
       logical gasgiant
 
 
+C      print*,'gsetradL debug'
+C      print*,'nconv = ',nconv
+C      do i=1,nconv
+C       print*,i,vconv(i)
+C      enddo
+C      print*,'fwhm,ispace,iscat,gasgiant',fwhm,ispace,
+C     1 iscat,gasgiant
+C      print*,'layht,nlayer,laytyp,layint',layht,nlayer,
+C     1 laytyp,layint
+C      print*,'xlat,lin,hcorrx,nvar',xlat,lin,hcorrx,
+C     1 nvar
+C      print*,'varident',varident
+C      print*,'varparam',varparam
+C      print*,'nx',nx
+C      do i=1,nx
+C       print*,i,xn(i)
+C      enddo
+C      print*,'jpre,tsurf,occult',jpre,tsurf,occult
+
       print*,'gsetradL, lin = ',lin
 1     format(a)
 C     Look to see if the CIA file refined has variable para-H2 or not.

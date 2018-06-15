@@ -104,12 +104,12 @@ C
          WRITE( 6,7 )                                                   
          WRITE( 6,6 )                                                   
          STOP 30                                                        
-   20 RF =  CMPLX( KIND(RFR),  KIND(-RFI) )
-      RC =  CMPLX( KIND(RE2),-KIND(TMAG2) )                                         
+   20 RF =  CMPLX( RFR,  -RFI )                                         
+      RC =  CMPLX( RE2,-TMAG2 )                                         
       X  =  RO * WVNO                                                   
       K1 =  RC * WVNO                                                   
       K2 =  RF * WVNO                                                   
-      K3 =  CMPLX( KIND(WVNO), 0.0 )                                          
+      K3 =  CMPLX( WVNO, 0.0 )                                          
       Z(1) =  K2 * RO                                                   
       Z(2) =  K3 * RO                                                   
       Z(3) =  K1 * R                                                    
@@ -123,13 +123,13 @@ C
       RRFX =  RRF * RX                                                  
       T(1) =  ( X**2 ) * ( RFR**2 + RFI**2 )                            
       T(1) =  SQRT( T(1) )                                              
-      NMX1 =  INT(1.30*T(1))                                                
+      NMX1 =  1.30* T(1)                                                
 C                                                                       
       IF ( NMX1 .LE. LL-1 )   GO TO 21                                  
          WRITE(6,8)                                                     
          QEXT=-1
          RETURN                                                        
-   21 NMX2 = INT(T(1)*1.2)                                                 
+   21 NMX2 = T(1) * 1.2                                                 
       IF ( NMX1 .GT.  150 )   GO TO 22                                  
          NMX1 = 150                                                     
          NMX2 = 135                                                     
@@ -179,8 +179,8 @@ C INITIALIZATION OF HOMOGENEOUS SPHERE
 C                                                                       
       T(1)   =  COS(X)                                                  
       T(2)   =  SIN(X)                                                  
-      WM1    =  CMPLX(KIND(T(1)),-KIND(T(2)))
-      WFN(1) =  CMPLX(KIND(T(2)), KIND(T(1)))
+      WM1    =  CMPLX( T(1),-T(2) )                                     
+      WFN(1) =  CMPLX( T(2), T(1) )                                     
       TA(1)  =  T(2)                                                    
       TA(2)  =  T(1)                                                    
       WFN(2) =  RX * WFN(1) - WM1                                       
@@ -209,16 +209,16 @@ C
       DENOM   =  1.0  +  E2Y1 * ( 4.0 * SINX1 * SINX1 - 2.0 + E2Y1 )    
       REALP   =  ( AA * CC  +  BB * DD ) / DENOM                        
       AMAGP   =  ( BB * CC  -  AA * DD ) / DENOM                        
-      DUMMY   =  CMPLX(KIND(REALP),KIND(AMAGP))
+      DUMMY   =  CMPLX( REALP, AMAGP )                                  
       AA  =  SINX4 * SINX4 - 0.5                                        
       BB  =  COSX4 * SINX4                                              
-      P24H24  =  0.5 + CMPLX(KIND(AA),KIND(BB))*EY4*EY4
+      P24H24  =  0.5 + CMPLX( AA,BB ) * EY4 * EY4                       
       AA  =  SINX1 * SINX4  -  COSX1 * COSX4                            
       BB  =  SINX1 * COSX4  +  COSX1 * SINX4                            
       CC  =  SINX1 * SINX4  +  COSX1 * COSX4                            
       DD  = -SINX1 * COSX4  +  COSX1 * SINX4                            
-      P24H21  =  0.5 * CMPLX(KIND(AA),KIND(BB)) * EY1 * EY4  +
-     2           0.5 * CMPLX(KIND(CC),KIND(DD)) * EY1MY4
+      P24H21  =  0.5 * CMPLX( AA,BB ) * EY1 * EY4  +                    
+     2           0.5 * CMPLX( CC,DD ) * EY1MY4                          
       DH4  =  Z(4) / ( 1.0 + ( 0.0,1.0 ) * Z(4) )  -  1.0 / Z(4)        
       DH1  =  Z(1) / ( 1.0 + ( 0.0,1.0 ) * Z(1) )  -  1.0 / Z(1)        
       DH2  =  Z(2) / ( 1.0 + ( 0.0,1.0 ) * Z(2) )  -  1.0 / Z(2)        
@@ -365,7 +365,7 @@ C
       TC2  =  ACAP(N) * RF   +  N * RX                                  
       FN1  =  ( TC1 * TA(3)  -  TA(1) ) /  ( TC1 * WFN(2) - WFN(1) )    
       FN2  =  ( TC2 * TA(3)  -  TA(1) ) /  ( TC2 * WFN(2) - WFN(1) )    
-      M    =  INT(WVNO*R)                                                  
+      M    =  WVNO * R                                                  
       IF ( N .LT. M )   GO TO 1002                                      
       IF ( IFLAG .EQ. 2 )   GO TO 1001                                  
       IF ( CDABS(  ( FN1-FNA ) / FN1  )  .LT.  1.0E-09   .AND.           

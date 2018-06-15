@@ -436,8 +436,8 @@ C=======================================================================
         WRITE(*,*)'Resetting according to ...'
         WRITE(*,*)'  IF (IBIN1.LT.1) IBIN1 = 1'
         WRITE(*,*)'  IF (IBIN2.GT.NBIN) IBIN2 = NBIN',NBIN
-        WRITE(*,*),'VSTART,I,DELV,V',VSTART,I,DELV,V
-        WRITE(*,*),'VBIN(1),WING,CURBIN',VBIN(1),WING,CURBIN
+        WRITE(*,*)'VSTART,I,DELV,V',VSTART,I,DELV,V
+        WRITE(*,*)'VBIN(1),WING,CURBIN',VBIN(1),WING,CURBIN
         stop
       ENDIF
       IF(IBIN1.LT.1)IBIN1 = 1

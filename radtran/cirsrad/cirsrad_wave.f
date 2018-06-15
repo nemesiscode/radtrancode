@@ -1272,7 +1272,7 @@ C                        print*,lowbc,galb1
 C                        print*,nmu
 C                        print*,(mu1(j),j=1,nmu)
 C                        print*,(wt1(j),j=1,nmu)
-C                        if(taur(0).gt.10000.0)print*,'taurA',
+C                        if(taur(1).gt.10000.0)print*,'taurA',
 C     1  (taur(j),j=1,nlays)
 
 C                        do j=1,nlays
@@ -1288,8 +1288,8 @@ C     1  emiss_ang
      2				mu1, wt1, nmu,   
      3				nf, Ig, x, vv, eps, omegas,bnu, taus, 
      4				taur,nlays, ncont,lfrac)
-                        if(taur(0).gt.10000.0)print*,'taurB',
-     1 (taur(j),j=1,nlays)
+C                        if(taur(1).gt.10000.0)print*,'taurB',
+C     1 (taur(j),j=1,nlays)
 
 
 

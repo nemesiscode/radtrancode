@@ -105,9 +105,6 @@ C      Stimulated emission coefficient.
        LNABSCO=LOG(SLIN)+LOG(TCORS1)+TCORS2*ELIN+LOG(TSTIM)
        ABSCO=SNGL(EXP(LNABSCO))
 
-C      LCO tables are calculated atare particular temperature and the
-C      listed 
-
 C      AD is the Doppler-broadened line width
 C      Y is the Lorentz/collision-broadened line width divided by
 C      the Doppler-broadened line width.

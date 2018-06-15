@@ -79,9 +79,9 @@ C TMAX: K-table temperature maximum [Kelvin].
 C P: K-table pressures [atm].
 C T: K-table temperatures [Kelvin].
 
-      INTEGER IOFF(MAXLAY,4),CT1,CT2,DUDT2
+      INTEGER IOFF(MAXLAY,4),CT1,CT2
       REAL UT(MAXLAY),VT(MAXLAY),TDUDT(MAXLAY),FWHMK,DELVK
-      REAL UT2(MAXLAY),TDUDT2(MAXLAY)
+      REAL UT2(MAXLAY),TDUDT2(MAXLAY),DUDT2
 
       LOGICAL KLOG,NTEST,ISNAN
 

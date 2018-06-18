@@ -17,8 +17,11 @@ C
 C     Pat Irwin  	18/9/00 
 C     ****************************************************************
       implicit none
-      real pi,gamma,nu,nu0,dnu1,dnu2,sum
+      DOUBLE PRECISION nu,nu0
+      real pi,gamma,dnu1,dnu2,sum
       parameter (pi=3.1415927)
+
+c      print*,'VVWEISS: ',gamma,nu,nu0
 
       dnu1 = (nu-nu0)**2
       dnu2 = (nu+nu0)**2
@@ -26,6 +29,10 @@ C     ****************************************************************
       sum = gamma/(dnu1 + gamma**2) + gamma/(dnu2 + gamma**2)
 
       vvweiss = sum*(nu/nu0)/pi
+c     Experimental based on Deverag et al. (2014)
+c      vvweiss = sum*(nu/nu0)*(nu/nu0)/pi
+      
+c      print*,'VVWEISS: ',dnu1,dnu2,sum
 
       return
 

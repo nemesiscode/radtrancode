@@ -171,6 +171,8 @@ C     NemesisL
        endif
       enddo
 
+      xlat=flat(1,1)
+ 
       call setup(runname,gasgiant,nmu,mu,wtmu,isol,dist,lowbc,
      1 galb,nf,nphi,layht,tsurf,nlayer,laytyp,layint)
 
@@ -248,8 +250,6 @@ C     Read in base heights from '.drv' file
          print*,'Iav = ',iav
          print*,'Angles : ',sol_ang,emiss_ang,aphi
 
-         xlat = flat(igeom,iav)   
-
          if(emiss_ang.lt.0)then
            print*,'Interpolating limb-calculated spectra'
            htan = sol_ang+hcorr+hcorrx
@@ -282,32 +282,28 @@ C     Read in base heights from '.drv' file
            if(occult.eq.2)then
 C           just calculate transmission of path. Assumes no thermal emission in$
              do ipath=jpath,jpath+1
-             fh=1.0-fh
-             do j=1,nconv1
-              if(ipath.eq.jpath+nlayer)then
-               yn(ioff+j)=0.
-              endif
-              ioff1=nconv1*(ipath-1)+j
-              print*,'ioff1',ioff1
-              print*,'calcoutL(ioff1)',calcoutL(ioff1)
-              yn(ioff+j)=yn(ioff+j)+wgeom(igeom,iav)*fh*calcoutL(ioff1)
-              print*,'ioff+j',ioff+j
-              print*,'yn(ioff+j)',yn(ioff+j)
-             enddo
+              fh=1.0-fh
+              do j=1,nconv1
+               if(ipath.eq.jpath+nlayer)then
+                yn(ioff+j)=0.
+               endif
+               ioff1=nconv1*(ipath-1)+j
+               yn(ioff+j)=yn(ioff+j)+wgeom(igeom,iav)*fh*calcoutL(ioff1)
+              enddo
 
-             do i=1,nx
-              if(i.ne.jtan.and.i.ne.jpre)then
-               do j=1,nconv1
-                if(ipath.eq.jpath+nlayer)then
-                 kk(ioff+j,i)=0.
-                endif
-                ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + j
-                kk(ioff+j,i)=kk(ioff+j,i)+
-     1           wgeom(igeom,iav)*fh*gradientsL(ioff2)
-               enddo
-              endif
+              do i=1,nx
+               if(i.ne.jtan.and.i.ne.jpre)then
+                do j=1,nconv1
+                 if(ipath.eq.jpath+nlayer)then
+                  kk(ioff+j,i)=0.
+                 endif
+                 ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + j
+                 kk(ioff+j,i)=kk(ioff+j,i)+
+     1            wgeom(igeom,iav)*fh*gradientsL(ioff2)
+                enddo
+               endif
+              enddo
              enddo
-            enddo
 
            else
 
@@ -457,8 +453,6 @@ C       Set up all files to recalculate limb spectra
          print*,'Iav = ',iav
          print*,'Angles : ',sol_ang,emiss_ang,aphi
 
-         xlat = flat(igeom,iav)   
-
          if(emiss_ang.lt.0)then
            print*,'Interpolating limb-calculated spectra'
            htan = sol_ang + hcorr
@@ -573,8 +567,6 @@ C               kk(ioff+j,jpre) = -(yn1(ioff+j)-yn(ioff+j))/(pressR*delp)
          
          print*,'Iav = ',iav
          print*,'Angles : ',sol_ang,emiss_ang,aphi
-
-         xlat = flat(igeom,iav)   
 
          if(emiss_ang.lt.0)then
            print*,'Interpolating limb-calculated spectra'

@@ -101,7 +101,7 @@ C     ****************************************************************
          print*,'tmpseq:',seqfile
          print*,'tmplco:',lcofile
 
-         open(13,file=lcofile,status='old',readonly)
+         open(13,file=lcofile,status='old',action='read')
 
          if(irange.eq.0)then
           read(13,1)buffer
@@ -131,7 +131,7 @@ C     ****************************************************************
 998      continue
          close(13)
 
-         open(12,file=seqfile,status='old',readonly)
+         open(12,file=seqfile,status='old',action='read')
 102      read(12,1)buffer
          if(buffer(2:2).eq.'#')then
           if(irange.eq.0)then

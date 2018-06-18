@@ -41,11 +41,11 @@ C     have been calculated with a built-in instrument function then
 C     just set the calculation wavelengths to be the convolution wavelengths
 
 
-      print*,'vconv'
-      print*,nconv
-      do i=1,nconv
-       print*,i,vconv(i)
-      enddo
+C      print*,'vconv'
+C      print*,nconv
+C      do i=1,nconv
+C       print*,i,vconv(i)
+C      enddo
 
       ico = 0
       if(fwhm.lt.0.0)then
@@ -178,10 +178,10 @@ C         print*,'ico,vwave',ico,vwave(ico)
       nwave=ico
       endif
 
-      print*,'nwave = ',nwave
-      do i=1,nwave
-       print*,i,vwave(i)
-      enddo
+C      print*,'nwave = ',nwave
+C      do i=1,nwave
+C       print*,i,vwave(i)
+C      enddo
 
       print*,'wavesetc: nwave = ',nwave
       return

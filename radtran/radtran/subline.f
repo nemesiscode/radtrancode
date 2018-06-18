@@ -55,6 +55,29 @@ C     used to renomalise the linestrengths
       TRATIO=296.0/TEMP
       DV=VV-VLIN
 
+      IF(IPROC.EQ.15)THEN
+C      IPROC=15::alkali profile from Burrows & Volobuyev 2003
+c      description in Baudino et al. (2015), eq. 1
+       IF(IDGAS.EQ.56) THEN
+          Y=PRESS*(0.27*(TEMP/296)**(-0.7))/AD
+          DeltaSigma=-30*(TEMP/500)**0.6
+          VDeltaSigma=ABSCO*HUMLIC(ABS(DeltaSigma/AD),Y)/AD
+          SigmaF=5000.
+       ELSE IF (IDGAS.EQ.57)THEN
+          Y=PRESS*(0.53*(TEMP/296)**(-0.7))/AD
+          DeltaSigma=-20*(TEMP/500)**0.6
+          VDeltaSigma=ABSCO*HUMLIC(ABS(DeltaSigma/AD),Y)/AD
+          SigmaF=1600.
+       ELSE
+        WRITE(*,*)' SUBLINE.f :: Can_t use the'
+        WRITE(*,*)' Burrows & Volobuyev profile'
+        WRITE(*,*)' for gases other than Na and K.'
+        WRITE(*,*)' IDGAS = ',IDGAS
+        WRITE(*,*)' '
+        WRITE(*,*)' Stopping program.'
+        STOP
+       ENDIF
+
 
       IF(IPROC.EQ.14)THEN
 C      IPROC=14 :: van Vleck-Weisskopf-Ben-Reuven NH3 lineshape

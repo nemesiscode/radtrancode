@@ -1908,7 +1908,7 @@ C           Stratospheric haze opacity
             lx(ix)=1
 
 C           read in haze p1,p2,p3,n1,n2
-            read(27,*),(varparam(ivar,j),j=1,5)
+            read(27,*)(varparam(ivar,j),j=1,5)
 
             nx = nx+8
 
@@ -1979,7 +1979,7 @@ C           Stratospheric haze opacity
             lx(ix)=1
 
 C           read in haze p1,p2,p3,n1,n2
-            read(27,*),(varparam(ivar,j),j=1,5)
+            read(27,*)(varparam(ivar,j),j=1,5)
 
             nx = nx+8
 
@@ -2050,7 +2050,7 @@ C           Stratospheric haze opacity
             lx(ix)=1
 
 C           read in haze p1,p2,p3,n1,n2
-            read(27,*),(varparam(ivar,j),j=1,5)
+            read(27,*)(varparam(ivar,j),j=1,5)
 
             nx = nx+9
 
@@ -2136,7 +2136,7 @@ C           Methane depletion factor
             lx(ix)=1
 
 C           read in haze p1,p2,p3,n1,n2
-            read(27,*),(varparam(ivar,j),j=1,5)
+            read(27,*)(varparam(ivar,j),j=1,5)
 
             nx = nx+11
 

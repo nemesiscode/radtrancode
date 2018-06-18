@@ -20,10 +20,12 @@ C***********************************************************************
 
       IMPLICIT NONE
 
+      INCLUDE '../includes/arrdef.f'
+
       INTEGER i,j,k,npro,nvmr,n,amform,iplanet
 C IPLANET: Planet identification code (3= Earth, 5= Jupiter, etc.).
 
-      INTEGER gasid(15),gasiso(15)
+      INTEGER gasid(maxgas),gasiso(maxgas)
 C GASID: Radtran gas identification code.
 C GASISO: Radtran gas-isotope identification code.
 
@@ -31,7 +33,7 @@ C GASISO: Radtran gas-isotope identification code.
 C MOLWT: Molecular weight [kmol/kg].
 C RADIUS: Planetary radius [km] at given latitude.
 
-      REAL h(1000),p(1000),t(1000),vmr(1000,15)
+      REAL h(1000),p(1000),t(1000),vmr(1000,maxgas)
 C H: Height above reference surface [km].
 C P: Pressure profile [atm].
 C T: Temperature [K].

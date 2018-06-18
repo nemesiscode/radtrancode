@@ -6,7 +6,7 @@ C_DESC:	Subroutine to insert the location of the Radtran data archive
 C	into a filename.
 C
 C_ARGS:	Input variables:
-C	aname		CHARACTER*100	Filename of files within the
+C	aname		CHARACTER*128	Filename of files within the
 C					raddata directory.
 C
 C_FILE:	No files opened.
@@ -45,18 +45,14 @@ c  ** if arcfile exists then get tname from that **
 
       else
 
-C      tname = '/Users/patirwin/radtrancode/trunk/raddata/'
-
-C      tname ='/home/l/lnf2/nemesis2017/radtrancode/raddata/'
-c      tname='/network/aopp/oxpln98/plan/irwin/gitradtran/
-c     1radtrancode/raddata/'
-       tname ='/Users/glnat/CIRS/Radtran/radtrancode/raddata/'
+c      tname = '/Users/patirwin/radtrancode/trunk/raddata/'
+      tname ='/data/nemesis/radtrancode/raddata/'
+c      tname ='/Users/glnat/CIRS/Radtran/radtrancode/raddata/'
+c       tname ='/Users/irwin/gitradtran/radtrancode/raddata/'
 
       endif
       
-c      print*,'aname=',aname
 c      print*,'tname=',tname
-c      print*,'LEN  =',L
 
       j = 1
       DO 10 i=1,L

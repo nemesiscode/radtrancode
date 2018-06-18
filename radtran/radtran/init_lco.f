@@ -10,25 +10,30 @@
       read(12,1)buffer
       write(6,1)buffer
       read(buffer(14:),*)vminlco,vmaxlco
+
       read(12,1)buffer
       write(6,1)buffer
       read(buffer(17:),*)lcobinsize,percen
+
       read(12,1)buffer
       write(6,1)buffer
-      read(12,*)idlco,isolco
-      print*,idlco,isolco
+      read(buffer(21:),*)tcalclco,iptflco
+
+      read(12,1)buffer
+      write(6,1)buffer
+      read(buffer(11:),*)idlco,isolco
+
       read(12,1)buffer
       write(6,1)buffer
       read(buffer(8:),*)nbinlco
-C      print*,vminlco,vmaxlco
-C      print*,lcobinsize,percen
-C      print*,idlco,isolco
-C      print*,nbinlco
+
+      print*,nbinlco
+
       do 10 i=1,nbinlco
        read(12,*)vlco(i),slco(i),lclse(i),lcwida(i),lcwids(i),
      &   lctdep(i)
-C       print*,vlco(i),slco(i),lclse(i),lcwida(i),lcwids(i),
-C     &   lctdep(i)
+       print*,vlco(i),slco(i),lclse(i),lcwida(i),lcwids(i),
+     &   lctdep(i)
 10    continue
       close(12)
 

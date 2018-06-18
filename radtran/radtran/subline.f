@@ -56,11 +56,35 @@ C     used to renomalise the linestrengths
       DV=VV-VLIN
 
 
-C      print*,'SUBLINE',IDGAS,PRESS,TEMP,IPROC,VV,VLIN,ABSCO,X,Y,
-C     1 FNH3,FH2,LLQ,DOUBV
-
+      IF(IPROC.EQ.14)THEN
+C      IPROC=14 :: van Vleck-Weisskopf-Ben-Reuven NH3 lineshape
+       IF(IDGAS.NE.11)THEN
+        WRITE(*,*)' SUBLINE.f :: Can_t use the'
+        WRITE(*,*)' van Vleck-Weisskopf-Ben-Reuven broadening'
+        WRITE(*,*)' for gases other than NH3.'
+        WRITE(*,*)' IDGAS = ',IDGAS
+        WRITE(*,*)' '
+        WRITE(*,*)' Stopping program.'
+        STOP
+       ENDIF
+       IF(FNH3.LT.0.OR.FH2.LT.0)THEN
+C       Hard-wiring FNH3 and FH2 to typical Saturn conditions 
+        FNH3=1e-4		
+        FH2 = 0.881
+       ENDIF
+       WY = GETNH3(PRESS,TEMP,FNH3,FH2,LLQ,DOUBV)
+       IF(WY.EQ.0)THEN
+C       Default to Vleck-Weisskopf lineshape
+        GAMMA=Y*AD
+        SUBLINE = ABSCO*VVWEISS(GAMMA,VV,VLIN)
+       ELSE 
+        SUBLINE = (Y*AD + WY*DV)/((VV-VLIN)**2 + (Y*AD)**2)
+        SUBLINE = SUBLINE + (Y*AD + WY*DV)/((VV+VLIN)**2 + (Y*AD)**2)
+        SUBLINE = SUBLINE*ABSCO*(VV/VLIN)/PI
+       ENDIF
       
-      IF(IPROC.EQ.13)THEN
+
+      ELSE IF(IPROC.EQ.13)THEN
 C      IPROC=13::Sub-lorentzian lineshape from Bailly et al. (2004)
        IF(IDGAS.NE.11)THEN
         WRITE(*,*)' SUBLINE.f :: Can_t use the'
@@ -217,7 +241,7 @@ C      (0.863, 0.134) respectively
       ELSE IF(IPROC.EQ.4)THEN
 C      IPROC=4 :: Lorentz broadening only
        SUBLINE = ABSCO*Y*AD/(PI*(DV**2 + (Y*AD)**2))
-
+C       print*,'L'
       ELSE IF(IPROC.EQ.3)THEN
 C      IPROC=3 :: Rosenkrantz-Ben-Reuven NH3 lineshape
        IF(IDGAS.NE.11)THEN
@@ -259,7 +283,8 @@ C      IPROC=1 :: Sub-Lorentzian Lineshape
 
       ELSE IF(IPROC.EQ.0)THEN  
 C      IPROC=0 :: Default to Voigt lineshape
-       SUBLINE = ABSCO*HUMLIC(ABS(X),Y)/AD
+C       SUBLINE = ABSCO*HUMLIC(ABS(X),Y)/AD
+       SUBLINE = ABSCO*HUMLIC(X,Y)/AD
 
       ELSE
        PRINT*,'Line processing code not recognised in subline.f'

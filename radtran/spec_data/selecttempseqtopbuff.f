@@ -1,4 +1,4 @@
-      PROGRAM SELECTTEMPSEQTOP
+      PROGRAM SELECTTEMPSEQTOPBUFF
 C     $Id: selecttemp.f,v 1.2 2011-06-17 14:51:54 irwin Exp $
 ************************************************************************
 ************************************************************************
@@ -211,49 +211,40 @@ C     Find point in database where wavenumber is equal to VMIN
          WRITE(*,121)IBIN,VLOW,VHIGH
 121      FORMAT(I5,F12.3,'  -',F12.3)
 
-         DO I=1,MAXLIN
-          IDX(I)=I
-          IFLAG(I)=0
-         ENDDO
-
-C        First read in lines into temporary file
-         NLIN=0
-         OPEN(12,FILE='TEMP.DAT',STATUS='UNKNOWN')
-117       WRITE(12,1)BUFFER(1:DBRECL)
-          NLIN=NLIN+1  
-          READ(DBLUN,1,END=998)BUFFER(1:DBRECL)
-          CALL RDLINE(BUFFER)
-          IF(LNWAVE.LT.VHIGH)GOTO 117
-          BUFFERSAV=BUFFER
-998       CONTINUE
-         CLOSE(12)
-
-         print*,'Read in TEMP. NLIN = ',NLIN
-         OPEN(12,FILE='TEMP.DAT',STATUS='OLD')
-         DO I=1,NLIN
-             READ(12,1)BUFFER(1:DBRECL)
-             CALL RDLINE(BUFFER)
-C             print*,I,LNWAVE,LNSTR
-             TS1 = 1.0-EXP(-1.439*SNGL(LNWAVE)/TEMP)
-             TS2 = 1.0-EXP(-1.439*SNGL(LNWAVE)/296.0)
-             TSTIM=1.0
-             IF(TS2.NE.0) TSTIM = TS1/TS2
-             K = -1
-             DO J=1,DBNISO(LOCID(LNID))
+         NLIN=1
+C        Write line into memory
+117      CONTINUE
+C         print*,nlin,lnwave,lnstr
+         CALL ADD_LINE_BUFF(BUFFER,NLIN)
+         TS1 = 1.0-EXP(-1.439*SNGL(LNWAVE)/TEMP)
+         TS2 = 1.0-EXP(-1.439*SNGL(LNWAVE)/296.0)
+         TSTIM=1.0
+         IF(TS2.NE.0) TSTIM = TS1/TS2
+         K = -1
+         DO J=1,DBNISO(LOCID(LNID))
                 IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K=J
-             ENDDO                
-             TCORS1=PARTF(LOCID(LNID),K,TEMP,IPTF)
-             LNABSCO = LOG(LNSTR)+LOG(TCORS1)+
+         ENDDO                
+         TCORS1=PARTF(LOCID(LNID),K,TEMP,IPTF)
+         LNABSCO = LOG(LNSTR)+LOG(TCORS1)+
      &         (TCORS2*LNLSE)+LOG(TSTIM)
-             LNSTR1=DEXP(LNABSCO)
-             SSL(I)=LNSTR1
-             IDX(I)=I
-         ENDDO
-         CLOSE(12)
+         LNSTR1=DEXP(LNABSCO)
+         SSL(NLIN)=LNSTR1
+         IDX(NLIN)=NLIN
+         IFLAG(NLIN)=0
+C         print*,nlin,ssl(nlin),idx(nlin),iflag(nlin)
+         READ(DBLUN,1,END=999)BUFFER(1:DBRECL)
+         CALL RDLINE(BUFFER)
+         IF(LNWAVE.LT.VHIGH)THEN
+          NLIN=NLIN+1
+          GOTO 117
+         ENDIF
+         BUFFERSAV=BUFFER
 
-C        Now sort the lines into order of strength
-C         print*,'SORT'
+         PRINT*,'NLIN,NSAV = ',NLIN,NSAV
+
          IF(NLIN.GT.NSAV)THEN
+C         Now sort the lines into order of strength
+C          print*,'SORT, NLIN = ',NLIN
 
 101       CONTINUE
           ISWAP=0
@@ -277,20 +268,19 @@ C           print*,I,SSL(I),IDX(I)
           ENDDO
          ENDIF
 
-C        Initialise line continuum
+C        Initialise continuum
          STROUT=0.0
          XWIDA=0.
          XWIDS=0.
          XLSE=0.
          XTDEP=0.
 
-         OPEN(12,FILE='TEMP.DAT',STATUS='OLD')
-C         print*,'NLIN = ',NLIN
          DO 160 LINE=1,NLIN
-          READ(12,1)BUFFER(1:DBRECL)
-          CALL RDLINE(BUFFER)
-
+          CALL READ_LINE_BUFF(BUFFER,LINE)
+      
           IF(NLIN.GT.NSAV.AND.IFLAG(LINE).EQ.0)THEN
+
+           CALL RDLINE(BUFFER)
 
            TS1 = 1.0-EXP(-1.439*SNGL(LNWAVE)/TEMP)
            TS2 = 1.0-EXP(-1.439*SNGL(LNWAVE)/296.0)
@@ -306,16 +296,16 @@ C         print*,'NLIN = ',NLIN
 
            WEIGHT=LNSTR1*1E-20
            STROUT=STROUT+WEIGHT
+C           print*,weight,strout
            XWIDA=XWIDA+LNWIDA*WEIGHT
            XWIDS=XWIDS+LNWIDS*WEIGHT
            XLSE=XLSE+LNLSE*WEIGHT
            XTDEP=XTDEP+LNTDEP*WEIGHT
-C           print*,weight,strout
+          ELSE
+           WRITE(3,1)BUFFER(1:DBRECL)
           ENDIF 
 160      CONTINUE
-         CLOSE(12)
 
-C         print*,'Hello'
          IF(STROUT.GT.0)THEN
           XWIDA=XWIDA/STROUT
           XWIDS=XWIDS/STROUT
@@ -328,25 +318,12 @@ C         print*,'Hello'
           XLSE=888.0
           XTDEP=0.5
          ENDIF
-
          WRITE(4,*)VMEAN,STROUT,XLSE,XWIDA,XWIDS,XTDEP
-
-C Copy required lines 
-         OPEN(12,FILE='TEMP.DAT',STATUS='OLD')
-         DO 150 LINE=1,NLIN
-          READ(12,1)BUFFER(1:DBRECL)
-          IF(NLIN.LE.NSAV)THEN
-	   WRITE(3,1)BUFFER(1:DBRECL)
-          ELSE
-           IF(IFLAG(LINE).EQ.1)WRITE(3,1)BUFFER(1:DBRECL)
-          ENDIF
-150      CONTINUE
-         CLOSE(12)
-
 
          IF(VHIGH.GE.VMAX)GOTO 102
 
          BUFFER=BUFFERSAV
+         CALL RDLINE(BUFFER)
 
 100   CONTINUE
 102   CONTINUE

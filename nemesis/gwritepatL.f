@@ -93,27 +93,32 @@ C     *******************************************************************
       WRITE(31,2)'laytyp ',laytyp
       WRITE(31,1)' '
 
-      DO 101 ILAYER=1,NLAYER
+      IF(OCCULT.NE.2)THEN
+C      OCCULT=2 means calculate just atmospheric transmission. Hence,
+C      we do not need to set up any thermal emission paths
 
-       WRITE(31,1)'atm'
-       TEXT='limb'
-       WRITE(31,5)TEXT,ILAYER
-5      FORMAT(A6,I4)
-       IF(ISCAT.EQ.0)THEN
-        WRITE(31,1)'therm'
-        WRITE(31,1)'noscatter'
-       ELSE
-        WRITE(31,1)'notherm'
-        WRITE(31,1)'scatter'
-       ENDIF
-       WRITE(31,1)'nowf'
-       WRITE(31,1)'nocg'
-       WRITE(31,1)'noabsorb'
-       WRITE(31,1)'binbb'
-       WRITE(31,1)'nobroad'
-       WRITE(31,1)' '
+       DO 101 ILAYER=1,NLAYER
 
-101   CONTINUE
+        WRITE(31,1)'atm'
+        TEXT='limb'
+        WRITE(31,5)TEXT,ILAYER
+5       FORMAT(A6,I4)
+        IF(ISCAT.EQ.0)THEN
+         WRITE(31,1)'therm'
+         WRITE(31,1)'noscatter'
+        ELSE
+         WRITE(31,1)'notherm'
+         WRITE(31,1)'scatter'
+        ENDIF
+        WRITE(31,1)'nowf'
+        WRITE(31,1)'nocg'
+        WRITE(31,1)'noabsorb'
+        WRITE(31,1)'binbb'
+        WRITE(31,1)'nobroad'
+        WRITE(31,1)' '
+
+101    CONTINUE
+      ENDIF
 
       IF(OCCULT.GT.0)THEN
 

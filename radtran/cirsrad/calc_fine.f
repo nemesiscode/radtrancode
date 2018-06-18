@@ -93,7 +93,8 @@ C******************************** CODE *********************************
         F1=FSTLIN(IB,IBIN)
         L1=LSTLIN(IB,IBIN)
         B1=LASTBIN(IB)
-        IF(IBIN.EQ.JBIN.AND.IBX.EQ.1.AND.B1.LT.IBIN) THEN
+        IF(IBIN.EQ.JBIN.AND.IBX.EQ.1.AND.B1.LT.IBIN.
+     1     AND.NLINE(IB).EQ.MAXLIN) THEN
 C        We have now run past the end of buffer 1 and need to read in a 
 C        new load of lines
 C        Pass back flag  
@@ -108,7 +109,7 @@ C        Error arose while doing LBL simulations in visible range. Problem not y
 
           IGAS=IDLIN(IB,LINE)
 
-          DV = (SNGL(VV) - VLIN(IB,LINE))
+          DV = SNGL(VV - VLIN(IB,LINE))
 
 C         Ignore lines more than MAXDV widths away
           IF(ABS(DV).LE.MAXDV)THEN

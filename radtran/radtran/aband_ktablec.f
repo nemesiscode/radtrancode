@@ -63,7 +63,8 @@ c     First skip header
       READ(12,400)FWHM
       READ(12,403)NPOINT
       READ(12,404)NGAS
-      PRINT*,'NGAS = ',NGAS
+      PRINT*,'VMIN,DELV,FWHM = ',VMIN,DELV,FWHM
+      PRINT*,'NGAS,NPOINT = ',NGAS,NPOINT
       DO I=1,NGAS
        READ(12,405)IDGAS(I),ISOGAS(I)
        PRINT*,I,IDGAS(I),ISOGAS(I)

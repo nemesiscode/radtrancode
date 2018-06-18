@@ -58,6 +58,7 @@ C     General variables ...
 
 C Continuum variables ...
       INCLUDE '../includes/contdef.f'
+      INCLUDE '../includes/lcocom.f'
 
       REAL AAMOUNT(MAXLAY,MAXGAS)
 
@@ -77,11 +78,33 @@ C       overflow)
      &    *AAMOUNT(J,I)*1e-20
         TCORS1(J,I)=1.E-27*TCORS1(J,I)
         TCORDW(J,I)=4.301E-7*SQRT(TEMP(J)/XMASS)
+        TCORS1LC(J,I)=TCORS1(J,I)
 16    CONTINUE
-
       DO 17 J=1,NLAYER
         TCORS2(J)=1.439*(TEMP(J)-296.)/(296.*TEMP(J))
+        IF(ABS(TCALCLCO-TEMP(J)).GT.0.5)THEN
+         TCORS2LC(J)=1.439*(TEMP(J)-TCALCLCO)/(TCALCLCO*TEMP(J))
+        ELSE
+         TCORS2LC(J)=TCORS2(J)
+        ENDIF
 17    CONTINUE
+
+      IF(IJLCO.GT.0)THEN
+       DO I=1,NGAS
+        DO J=1,NLAYER
+         IF(IDGAS(I).EQ.IDLCO.AND.ISOGAS(I).EQ.ISOLCO)THEN
+          IF(ABS(TCALCLCO-TEMP(J)).GT.0.5)THEN
+           TCORS1LC(J,I)=PARTF(IDLCO,ISOLCO,TEMP(J),IPTFLCO)/
+     1       PARTF(IDLCO,ISOLCO,TCALCLCO,IPTFLCO) 
+           TCORS1LC(J,I)=TCORS1LC(J,I)*AAMOUNT(J,I)*1e-20
+           TCORS1LC(J,I)=TCORS1LC(J,I)*1e-27
+           print*,'calctempparam',J,tcors1(j,i),tcors1lc(j,i)
+           print*,'calctempparam',I,temp(j),tcalclco
+          ENDIF
+         ENDIF
+        ENDDO
+       ENDDO
+      ENDIF
 
 C      print*,'CALCTEMPPARAM'
 C      DO 18 J=1,NLAYER

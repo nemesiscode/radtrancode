@@ -1,0 +1,10 @@
+      SUBROUTINE READ_LINE_BUFF(BUFFER,LINE)
+      INTEGER LINE
+      CHARACTER*256 BUFFER
+      INCLUDE '../includes/lincomseq.f'
+
+      BUFFER=SEQBUF(LINE)
+
+      RETURN
+
+      END

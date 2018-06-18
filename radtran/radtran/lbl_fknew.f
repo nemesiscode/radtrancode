@@ -436,8 +436,8 @@ C=======================================================================
         WRITE(*,*)'Resetting according to ...'
         WRITE(*,*)'  IF (IBIN1.LT.1) IBIN1 = 1'
         WRITE(*,*)'  IF (IBIN2.GT.NBIN) IBIN2 = NBIN',NBIN
-        WRITE(*,*),'VSTART,I,DELV,V',VSTART,I,DELV,V
-        WRITE(*,*),'VBIN(1),WING,CURBIN',VBIN(1),WING,CURBIN
+        WRITE(*,*)'VSTART,I,DELV,V',VSTART,I,DELV,V
+        WRITE(*,*)'VBIN(1),WING,CURBIN',VBIN(1),WING,CURBIN
         stop
       ENDIF
       IF(IBIN1.LT.1)IBIN1 = 1
@@ -479,12 +479,12 @@ C Now scaling for each path
 C Calculate cumulative k-distribution from LBL spectrum. NOTE: OUTPUT is
 C passed via the /SPECTRUM/ common block for speed.
 
-      open(12,file='spectrum.out',status='unknown')
-      write(12,*)npoint
-      do i=1,npoint
-       write(12,*)tx(i),output(i)
-      enddo
-      close(12)
+C      open(12,file='spectrum.out',status='unknown')
+C      write(12,*)npoint
+C      do i=1,npoint
+C       write(12,*)tx(i),output(i)
+C      enddo
+C      close(12)
 
 C      print*,'press a key to continue'
 C      read(5,1)ans

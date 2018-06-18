@@ -39,15 +39,15 @@ C     TIME1: System time at the beginning of program execution.
 C     TIME2: System time at the end of program execution.
 
       character*100 buffer,ename
-      integer i,j,iscat,ica,k,lspec,lout,ispec,nspec,nspecx,ioff
+      integer i,j,iscat,ica,k,lspec,lout,loutp,ispec,nspec,nspecx,ioff
       real xn(mx),se(my),err1(mx),woff,xdiff
       real fwhm,xlat,xlon,st(mx,mx),varparam(mvar,mparam)
       real sn(mx,mx),sm(mx,mx),xlatx,varparamx(mvar,mparam)
       real stx(mx,mx),xlonx
       integer varident(mvar,3),varidentx(mvar,3),igeom,iform,iform1
       integer npro,nvmr,ispace,nav(mgeom),lraw,nprox,lpre
-      integer ilbl,ilbl1,ishape
-      character*100 runname,solfile,solname,sfile
+      integer ilbl,ilbl1,ishape,inum
+      character*100 runname,solfile,solname,sfile,plotname
       logical solexist,percbool
       integer ngeom, nwave(mgeom), nconv(mgeom), nx, ny, jsurf
       integer ngas,ncont,nvar,nvarx,lin,nxx,jsurfx,nconv1,nwave1
@@ -125,8 +125,9 @@ C     Read in whether to calculate with wavenumbers(0) or wavelength(1)
 C     Also read in whether scattering is required (iscat)
 C     Also read in whether solar occultation is required (occult)
 C     Also read in whether lbl calculation is required (ilbl)
+C     Also read in whether gradients are calculated analytically or numerically (inum)
 
-      READ(32,*)ispace,iscat,occult,ilbl
+      READ(32,*)ispace,iscat,occult,ilbl,inum
 
       if(ilbl.eq.1) then
        print*,'NemesisL - LBL calculation. Not yet implemented'
@@ -140,7 +141,6 @@ C     Also read in whether lbl calculation is required (ilbl)
        CALL readkklblhead(runname,vkstart,vkend,vkstep)
       endif
 
-
 C     Read any wavenumber offset to add to measured spectra
       READ(32,*)woff   
 
@@ -149,6 +149,17 @@ C     Read in name of forward modelling error file
 
 C     Read in number of iterations
       READ(32,*)kiter 
+
+      if(kiter.lt.0)then
+        inum = 0   !If just using forward model, use fast analytical derivatives
+      endif
+
+      if(inum.eq.1)then
+       print*,'NemesisL - gradients from numerical differentiation'
+      endif
+      if(inum.eq.0)then
+       print*,'NemesisL - gradients calculated analytically'
+      endif
       
 C     Read limiting % change in phi
       READ(32,*)phlimit
@@ -205,11 +216,14 @@ C     Open spectra file
      
 C     Open output file
       lout=38
+      loutp=88
       lraw=36
       CALL file(runname,runname,'mre')
       open(lout,file=runname,status='unknown')
       CALL file(runname,runname,'raw')
       open(lraw,file=runname,status='unknown')
+      CALL file(runname,plotname,'vre')
+      open(loutp,file=plotname,status='unknown')
       write(lout,*)nspec,' ! Total number of retrievals'
       write(lraw,*)nspec,' ! Total number of retrievals'
 
@@ -345,7 +359,7 @@ C     set up a priori of x and its covariance
       ilbl1=ilbl
 
       call coreretL(runname,ispace,iscat,ilbl,ica,kiter,phlimit,
-     1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
+     1  inum,fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,npro,
      2  gasgiant,lin,lpre,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,
      3  jpre,jrad,jlogg,occult,wgeom,flat,nx,lx,xa,sa,ny,y,se,xn,sm,sn,
      4  st,yn,kk,aa,dd)
@@ -359,7 +373,13 @@ C     Simple errors, set to sqrt of diagonal of ST
 C     write output
 
       if(occult.eq.2)iform=5
+      if(occult.eq.3)iform=5
+      if(occult.eq.4)iform=6
       CALL writeout(iform,runname,ispace,lout,ispec,xlat,xlon,npro,
+     1 nvar,varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err1,ngeom,
+     2 nconv,vconv,gasgiant,jpre,jrad,jlogg,iscat,lin)
+
+      CALL writeoutp(iform,runname,ispace,loutp,ispec,xlat,xlon,npro,
      1 nvar,varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err1,ngeom,
      2 nconv,vconv,gasgiant,jpre,jrad,jlogg,iscat,lin)
 

@@ -2,7 +2,7 @@
 C     $Id: selecttemp.f,v 1.2 2011-06-17 14:51:54 irwin Exp $
 ************************************************************************
 ************************************************************************
-C_TITL:	SELECTTEMP.f
+C_TITL:	SELECTTEMPSEQTOP.f
 C
 C_DESC:	Copies a subset of a sequential line data base to a new data base. 
 C       Copies linedata bases (eg HITRAN or GEISA) from an existing data base
@@ -57,10 +57,10 @@ C ../includes/dbcom.f stores the linedata base variables.
       PARAMETER (MINSTR=-323,MAXSTR=308,CC=10.)
 
       INTEGER NLINES(MINSTR:MAXSTR,MAXISO,MAXDGAS)
-      INTEGER TOTLIN(MINSTR:MAXSTR,MAXDGAS)
+      INTEGER TOTLIN(MINSTR:MAXSTR,MAXDGAS),NTEMP,ITEMP
       DOUBLE PRECISION STRLOSE,STRKEEP,STROUT,WEIGHT
-      REAL XWIDA,XWIDS,XLSE,XTDEP
-      INTEGER NSAV,MAXLIN
+      REAL XWIDA,XWIDS,XLSE,XTDEP,TEMP1(20),TMIN,TMAX
+      INTEGER NSAV,MAXLIN,I1,I2,JE,LE
       PARAMETER(MAXLIN = 2000000)
       INTEGER IDX(MAXLIN),IFLAG(MAXLIN)
       INTEGER I,J,K,ID,ISO,IBIN,LINE,FSTLIN,LSTLIN,NBIN,IPTF
@@ -81,7 +81,7 @@ C BINSIZ: Size [cm-1] of bins for limit selection.
       CHARACTER*6 QIDENT(190)
       CHARACTER*100 OPNAME,OPSTR
       CHARACTER*100 TEXT
-      CHARACTER*256 BUFFER,BUFFERSAV
+      CHARACTER*256 BUFFER
 
       LOGICAL ASKYN,INCGAS(MAXISO,MAXDGAS),ALLISO(MAXISO,MAXDGAS),INC
 C INCGAS: Flag to show if a gas is included.
@@ -128,55 +128,88 @@ C Read in spectral parameters ...
         GOTO 22
       ENDIF
 
-      CALL PROMPT('Enter calculation temperature : ')
-      READ(*,*)TEMP
+      CALL PROMPT('Enter number of temperatures : ')
+      READ(*,*)NTEMP
 
-      CALL PROMPT('Enter new file  name')
-      READ(*,21)OPNAME
-21    FORMAT(A)
+      CALL PROMPT('Enter Tmin, TMAX : ')
+      READ(*,*)TMIN,TMAX
 
-      OPEN(UNIT=3,FILE=OPNAME,STATUS='UNKNOWN')
-      CALL FILE(OPNAME,OPSTR,'lco')
-      OPEN(UNIT=4,FILE=OPSTR,STATUS='UNKNOWN')
-
-      WRITE(BUFFER,114)
-114   FORMAT(' # data records written by routine SELECTTEMPSEQ')
-      WRITE(3,1)BUFFER(1:DBRECL)
-      WRITE(BUFFER,201)
-201   FORMAT(' # original data base file:')
-      WRITE(3,1)BUFFER(1:DBRECL)
-      WRITE(BUFFER,202)DBFILE
-202   FORMAT(' #  ',A)
-      WRITE(3,1)BUFFER(1:DBRECL)
-
-      WRITE(4,*)'VMIN, VMAX = ',VMIN,VMAX
-      WRITE(4,*)'BINSIZ,NSAV = ',BINSIZ,NSAV
-C      CALL EDSET
+      DO I=1,NTEMP
+       TEMP1(I)=TMIN+(I-1)*(TMAX-TMIN)/FLOAT(NTEMP-1)
+      ENDDO
 
       CALL PROMPT('Enter IPTF (Partition function flag) : ')
       READ*,IPTF
 
-      WRITE(4,*)'Calc. Temp, IPTF = ',TEMP,IPTF
 
-      OPEN(DBLUN,FILE=DBFILE,STATUS='OLD')
+      CALL PROMPT('Enter new file root name')
+      READ(*,21)OPNAME
+21    FORMAT(A)
 
-      WRITE(BUFFER,203)
-203   FORMAT(' # original data base header if any:')
-      WRITE(3,1)BUFFER(1:DBRECL)
-204   READ(DBLUN,1,END=999)BUFFER(1:DBRECL)
-      IF(BUFFER(2:2).EQ.'#'.OR.BUFFER(1:1).EQ.'#')THEN
-        WRITE(3,1)BUFFER(1:DBRECL)
-        GOTO 204
-      ENDIF
-      WRITE(BUFFER,205)
-205   FORMAT(' # selection criteria:')
-      WRITE(3,1)BUFFER(1:DBRECL)
-      WRITE(BUFFER,206)VMIN,VMAX,BINSIZ
-206   FORMAT(' # wavenumber range =',F10.3,' -',F10.3,' with',F8.3,
+
+      DO I=1,LEN(OPNAME)
+       IF(OPNAME(I:I).NE.' ')J=I
+      ENDDO
+
+      OPNAME(J+1:J+2)='00'
+
+
+      LE=J+2
+
+      print*,LE,LE
+
+      DO 1000 ITEMP=1,NTEMP
+
+       TEMP=TEMP1(ITEMP)
+       I1=INT(ITEMP/10)
+       I2=ITEMP-10*I1
+
+       print*,'Temperature is ',ITEMP,TEMP
+
+       PRINT*,I1,I2
+       JE=LE-1
+       OPNAME(JE:JE)=CHAR(I1+48)
+       OPNAME(LE:LE)=CHAR(I2+48)
+
+       CALL FILE(OPNAME,OPSTR,'par')
+       OPEN(UNIT=3,FILE=OPSTR,STATUS='UNKNOWN')
+       CALL FILE(OPNAME,OPSTR,'lco')
+       OPEN(UNIT=4,FILE=OPSTR,STATUS='UNKNOWN')
+
+       WRITE(BUFFER,114)
+114    FORMAT(' # data records written by routine SELECTTEMPSEQ')
+       WRITE(3,1)BUFFER(1:DBRECL)
+       WRITE(BUFFER,201)
+201    FORMAT(' # original data base file:')
+       WRITE(3,1)BUFFER(1:DBRECL)
+       WRITE(BUFFER,202)DBFILE
+202    FORMAT(' #  ',A)
+       WRITE(3,1)BUFFER(1:DBRECL)
+
+       WRITE(4,*)'VMIN, VMAX = ',VMIN,VMAX
+       WRITE(4,*)'BINSIZ,NSAV = ',BINSIZ,NSAV
+
+       WRITE(4,*)'Calc. Temp, IPTF = ',TEMP,IPTF
+
+       OPEN(DBLUN,FILE=DBFILE,STATUS='OLD')
+
+       WRITE(BUFFER,203)
+203    FORMAT(' # original data base header if any:')
+       WRITE(3,1)BUFFER(1:DBRECL)
+204    READ(DBLUN,1,END=999)BUFFER(1:DBRECL)
+       IF(BUFFER(2:2).EQ.'#'.OR.BUFFER(1:1).EQ.'#')THEN
+         WRITE(3,1)BUFFER(1:DBRECL)
+         GOTO 204
+       ENDIF
+       WRITE(BUFFER,205)
+205    FORMAT(' # selection criteria:')
+       WRITE(3,1)BUFFER(1:DBRECL)
+       WRITE(BUFFER,206)VMIN,VMAX,BINSIZ
+206    FORMAT(' # wavenumber range =',F10.3,' -',F10.3,' with',F8.3,
      1 ' cm-1 bins')
-      WRITE(3,1)BUFFER(1:DBRECL)
+       WRITE(3,1)BUFFER(1:DBRECL)
 
-      DO 207 I=1,MAXDGAS
+       DO 207 I=1,MAXDGAS
          IF(DBNISO(I).LT.1)GOTO 207
          WRITE(BUFFER,208)GASNAM(I),(INCGAS(J,I),J=1,DBNISO(I))
 208      FORMAT(' #',1A8,' INCGAS:',20(1X,L1))
@@ -184,27 +217,26 @@ C      CALL EDSET
          WRITE(BUFFER,209)GASNAM(I),(ALLISO(J,I),J=1,DBNISO(I))
 209      FORMAT(' #',1A8,' ALLISO:',20(1X,L1))
          WRITE(3,1)BUFFER(1:DBRECL)
-207   CONTINUE
+207    CONTINUE
       
       
-      TCORS2=1.439*(TEMP-296.)/(296.*TEMP)
-C     For each bin ...
-      NBIN = INT((VMAX-VMIN)/BINSIZ)
+       TCORS2=1.439*(TEMP-296.)/(296.*TEMP)
+C      For each bin ...
+       NBIN = INT((VMAX-VMIN)/BINSIZ)
       
 
-      WRITE(4,*)'NBIN = ',NBIN
+       WRITE(4,*)'NBIN = ',NBIN
 
-C     Find point in database where wavenumber is equal to VMIN
-      PRINT*,'Finding first line in database with v >= ',VMIN
-151   READ(DBLUN,1,END=999)BUFFER(1:DBRECL)
-      CALL RDLINE(BUFFER)
-      IF(LNWAVE.LT.VMIN)GOTO 151
+C      Find point in database where wavenumber is equal to VMIN
+       PRINT*,'Finding first line in database with v >= ',VMIN
+151    READ(DBLUN,1,END=999)BUFFER(1:DBRECL)
+       CALL RDLINE(BUFFER)
+       IF(LNWAVE.LT.VMIN)GOTO 151
 
-      PRINT*,'NBIN = ',NBIN
+       PRINT*,'NBIN = ',NBIN
 
-      DO 100 IBIN=1,NBIN
+       DO 100 IBIN=1,NBIN
 
-         print*,'ibin = ',ibin
          VLOW = VMIN + FLOAT(IBIN-1)*BINSIZ
          VHIGH = VMIN + FLOAT(IBIN)*BINSIZ
          VMEAN=0.5*(VLOW+VHIGH)
@@ -224,7 +256,6 @@ C        First read in lines into temporary file
           READ(DBLUN,1,END=998)BUFFER(1:DBRECL)
           CALL RDLINE(BUFFER)
           IF(LNWAVE.LT.VHIGH)GOTO 117
-          BUFFERSAV=BUFFER
 998       CONTINUE
          CLOSE(12)
 
@@ -233,7 +264,6 @@ C        First read in lines into temporary file
          DO I=1,NLIN
              READ(12,1)BUFFER(1:DBRECL)
              CALL RDLINE(BUFFER)
-C             print*,I,LNWAVE,LNSTR
              TS1 = 1.0-EXP(-1.439*SNGL(LNWAVE)/TEMP)
              TS2 = 1.0-EXP(-1.439*SNGL(LNWAVE)/296.0)
              TSTIM=1.0
@@ -253,31 +283,30 @@ C             print*,I,LNWAVE,LNSTR
 
 C        Now sort the lines into order of strength
 C         print*,'SORT'
-         IF(NLIN.GT.NSAV)THEN
 
-101       CONTINUE
-          ISWAP=0
-          DO I=1,NLIN-1
-           IF(SSL(I).LT.SSL(I+1))THEN
-            XS=SSL(I)
-            SSL(I)=SSL(I+1)
-            SSL(I+1)=XS
-            J=IDX(I)
-            IDX(I)=IDX(I+1)
-            IDX(I+1)=J
-            ISWAP=1
-           ENDIF
-          ENDDO
-          IF(ISWAP.GT.0)GOTO 101
+101      CONTINUE
+         ISWAP=0
+         DO I=1,NLIN-1
+          IF(SSL(I).LT.SSL(I+1))THEN
+           XS=SSL(I)
+           SSL(I)=SSL(I+1)
+           SSL(I+1)=XS
+           J=IDX(I)
+           IDX(I)=IDX(I+1)
+           IDX(I+1)=J
+           ISWAP=1
+          ENDIF
+         ENDDO
+         IF(ISWAP.GT.0)GOTO 101
 
-C         Mark lines to extract
-          DO I=1,NSAV
-           IFLAG(IDX(I))=1
-C           print*,I,SSL(I),IDX(I)
-          ENDDO
-         ENDIF
+C        Mark lines to extract
+         DO I=1,NSAV
+          IFLAG(IDX(I))=1
+C          print*,I,SSL(I),IDX(I)
+         ENDDO
 
-C        Initialise line continuum
+
+C        See how many lines are deselected by this and sum up strengths:
          STROUT=0.0
          XWIDA=0.
          XWIDS=0.
@@ -290,7 +319,7 @@ C         print*,'NLIN = ',NLIN
           READ(12,1)BUFFER(1:DBRECL)
           CALL RDLINE(BUFFER)
 
-          IF(NLIN.GT.NSAV.AND.IFLAG(LINE).EQ.0)THEN
+          IF(IFLAG(LINE).EQ.0)THEN
 
            TS1 = 1.0-EXP(-1.439*SNGL(LNWAVE)/TEMP)
            TS2 = 1.0-EXP(-1.439*SNGL(LNWAVE)/296.0)
@@ -310,53 +339,41 @@ C         print*,'NLIN = ',NLIN
            XWIDS=XWIDS+LNWIDS*WEIGHT
            XLSE=XLSE+LNLSE*WEIGHT
            XTDEP=XTDEP+LNTDEP*WEIGHT
-C           print*,weight,strout
           ENDIF 
 160      CONTINUE
          CLOSE(12)
 
 C         print*,'Hello'
-         IF(STROUT.GT.0)THEN
-          XWIDA=XWIDA/STROUT
-          XWIDS=XWIDS/STROUT
-          XLSE=XLSE/STROUT
-          XTDEP=XTDEP/STROUT
-          STROUT=STROUT*1E-27
-         ELSE
-          XWIDA=0.1
-          XWIDS=0.1
-          XLSE=888.0
-          XTDEP=0.5
-         ENDIF
 
+         XWIDA=XWIDA/STROUT
+         XWIDS=XWIDS/STROUT
+         XLSE=XLSE/STROUT
+         XTDEP=XTDEP/STROUT
+         STROUT=STROUT*1E-27
          WRITE(4,*)VMEAN,STROUT,XLSE,XWIDA,XWIDS,XTDEP
 
 C Copy required lines 
          OPEN(12,FILE='TEMP.DAT',STATUS='OLD')
          DO 150 LINE=1,NLIN
           READ(12,1)BUFFER(1:DBRECL)
-          IF(NLIN.LE.NSAV)THEN
-	   WRITE(3,1)BUFFER(1:DBRECL)
-          ELSE
-           IF(IFLAG(LINE).EQ.1)WRITE(3,1)BUFFER(1:DBRECL)
-          ENDIF
+          IF(IFLAG(LINE).EQ.1)WRITE(3,1)BUFFER(1:DBRECL)
+
 150      CONTINUE
          CLOSE(12)
 
 
          IF(VHIGH.GE.VMAX)GOTO 102
 
-         BUFFER=BUFFERSAV
+100    CONTINUE
+102    CONTINUE
+999    CONTINUE
 
-100   CONTINUE
-102   CONTINUE
-999   CONTINUE
+       CLOSE(DBLUN)
+       CLOSE(3)
+       CLOSE(4)
 
-      CLOSE(DBLUN)
-      CLOSE(3)
-      CLOSE(4)
+1000  CONTINUE
 
-      STOP
 
       END
 ************************************************************************

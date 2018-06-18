@@ -94,7 +94,7 @@ C     ***********************************************************************
       INTEGER IDAT,NCONT,FLAGH2P,JFSH,JPRE,JHYDRO,ISCAT,ICOND
       REAL HTAN,PTAN,R,REFRADIUS
       REAL GASDATA(20,5),XVMR(MAXGAS),XMOLWT,XXMOLWT(MAXPRO)
-      REAL CALCMOLWT
+      REAL CALCMOLWT,XRHO(MAXPRO)
       INTEGER JSWITCH,ITEST,ICL
       CHARACTER*100 IPFILE,BUFFER
       CHARACTER*100 ANAME
@@ -366,6 +366,18 @@ C     First skip header
 31     CONTINUE
       CLOSE(1)
 
+C     Calculate atmospheric density
+      DO 307 I = 1,NPRO
+C      Calculate density of atmosphere (g/cm3)
+       IF(AMFORM.EQ.0)THEN
+          XMOLWT=MOLWT
+       ELSE
+          XMOLWT=XXMOLWT(I)
+       ENDIF
+       XRHO(I) = P(I)*0.1013*XMOLWT/(R*T(I))
+307   CONTINUE
+
+
 C     See if we need to deal with a variable para-H2 fraction
       IF(FLAGH2P.EQ.1)THEN
 
@@ -542,6 +554,23 @@ C        ***************************************************************
              ENDIF
              XMAP(NXTEMP+I,IPAR,I)=X1(I)
            ENDIF
+         ENDDO
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.-1)THEN
+C        Model -1. Continuous particles/cm3 profile
+C        ***************************************************************
+         DO I=1,NPRO
+             IF(XN(NXTEMP+I).GT.-82.8931)THEN
+               X1(I) = EXP(XN(NXTEMP+I))
+             ELSE
+               X1(I) = 1.0E-36
+             ENDIF
+             IF(XN(NXTEMP+I).LT.80.0)THEN
+               X1(I) = EXP(XN(NXTEMP+I))
+             ELSE
+               X1(I) = EXP(80.0)
+             ENDIF
+             XMAP(NXTEMP+I,IPAR,I)=X1(I)/XRHO(I)
          ENDDO
 
         ELSEIF(VARIDENT(IVAR,3).EQ.1)THEN
@@ -2795,9 +2824,15 @@ C        **********************************************************
          ENDDO
         ELSE
          IF(JCONT.LE.NCONT)THEN
-          DO I=1,NPRO
-           CONT(JCONT,I)=X1(I)
-          ENDDO
+          IF(VARIDENT(IVAR,3).GE.0)THEN
+           DO I=1,NPRO
+            CONT(JCONT,I)=X1(I)
+           ENDDO
+          ELSE
+           DO I=1,NPRO
+            CONT(JCONT,I)=X1(I)/XRHO(I)
+           ENDDO
+          ENDIF
          ELSEIF(JCONT.EQ.NCONT+2)THEN
           DO I=1,NPRO
            FCLOUD(I)=X1(I)

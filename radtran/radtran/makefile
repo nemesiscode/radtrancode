@@ -112,7 +112,8 @@ F_SOURCES = \
 	readbass1.f \
 	interpbass1.f \
 	read_ozone_serdyuchenko.f \
-	interp_ozone_serdyuchenko.f
+	interp_ozone_serdyuchenko.f \
+	benreuven.f
   	
 
 INCDIR = ../includes
@@ -161,7 +162,6 @@ bin :   \
 	Li_spec \
 	Pl_spec \
 	Zerotable \
-	Radtrans \
 	Read_table \
 	Read_lbltable \
 	Concat_table \
@@ -171,9 +171,10 @@ bin :   \
 	Mod_table1 \
 	Mod_table1a \
 	Mod_table1b \
-	Mod_table1c \
 	Mod_table2 \
 	Table_trans
+#	Radtrans \
+#	Mod_table1c \
 	
 Aground : aground.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Aground aground.f $(LIBRARY) \

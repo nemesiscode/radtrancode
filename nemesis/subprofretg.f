@@ -2692,7 +2692,11 @@ C          post-processing in gsetrad.f
 
 
          ENDIF
-         NP = 2+INT(VARPARAM(IVAR,1))
+         IF(VARIDENT(IVAR,1).EQ.445)THEN
+          NP = 3+(2*INT(VARPARAM(IVAR,1)))
+         ELSE
+          NP = 2+INT(VARPARAM(IVAR,1))
+         ENDIF
         ELSEIF(VARIDENT(IVAR,1).EQ.333)THEN
 C         print*,'Surface gravity (log10(g))'
          IPAR = -1

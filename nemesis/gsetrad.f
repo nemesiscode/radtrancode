@@ -80,9 +80,9 @@ C     ************************************************************************
       integer nconv,lin,ispace,ncont1,xflag,nwave,np,np1
       real xlat,fwhm,xlatx,tsurf,wave(max_wave)
       real xsec(max_mode,max_wave,2),nimag(max_wave)
-      real nreal(max_wave),r0,v0,clen,k2(mx)
+      real nreal(max_wave),r0,v0,clen,k2(max_wave)
       real srefind(max_wave,2),parm(3),rs(3),vm,nm
-      real v1(max_wave),k1(max_wave),vm1,n1(max_wave)
+      real v1(max_wave),k1(max_wave),vm1,n1(max_wave),n2(max_wave)
       integer nlayer,laytyp,iscat,nx,nxx,ncont,nx1,iscatmie
       integer layint,iprfcheck,check_profile,nmode,inorm
       real layht,xod(maxcon),xscal(maxcon),cwid,pmeth
@@ -115,9 +115,7 @@ C     ************************************************************************
       real cbpbot(mcloud),cbptop(mcloud),cbodepth(mcloud),cbfsh(mcloud)
       integer ncblaycloud(mcloud)
 
-      real csx,nrealfix(mx),nimagfix(mx)
-      integer fixtoggle
-      common /maltmieser/nrealfix,nimagfix
+      real csx,nrealshell(max_wave),nimagshell(max_wave),nmshell
 
      
       print*,'gsetrad, lin = ',lin
@@ -539,7 +537,7 @@ C     Compute the drv file to get the aerosol optical depths
           if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
           if(varident(ivar,1).eq.887)np = int(varparam(ivar,1))
           if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
-          if(varident(ivar,1).eq.445)np = 3+int(varparam(ivar,1))
+          if(varident(ivar,1).eq.445)np = 3+2*int(varparam(ivar,1))
           if(varident(ivar,1).eq.222)np = 8
           if(varident(ivar,1).eq.223)np = 9
           if(varident(ivar,1).eq.224)np = 9
@@ -600,15 +598,16 @@ C       check that rescaling has happened correctly
            v0 = exp(xn(nx1+2))
            if(varident(ivar,1).eq.445)then
             csx = exp(xn(nx1+3))
+            nmshell = varparam(ivar,6)
            else
             csx = -1.0
+            nmshell = 0.0
            endif
            np1 = int(varparam(ivar,1))
            clen = varparam(ivar,2)           
            vm = varparam(ivar,3)
            nm = varparam(ivar,4)
            lambda0 = varparam(ivar,5)
-           fixtoggle = varparam(ivar,6)
 
            call get_xsecA(runname,nmode,nwave,wave,xsec)
 
@@ -618,10 +617,12 @@ C          np1 should now match nwave
              print*,'different from that in .xsc file.'
            endif
            do i=1,nwave
-            if(varident(ivar,1).eq.445)then
-             nimag(i)=exp(xn(nx1+3+i))
-            else
+            if(varident(ivar,1).eq.444)then
              nimag(i)=exp(xn(nx1+2+i))
+             nimagshell(i) = 0.0
+            else
+             nimag(i)=exp(xn(nx1+3+i))
+             nimagshell(i) = exp(xn(nx1+3+i+np1))
             endif
            enddo
 
@@ -631,6 +632,7 @@ C           nimag in wavenumber space, can transfer directly
             do i=1,nwave
              v1(i)=wave(i)
              k1(i)=nimag(i)
+             k2(i)=nimagshell(i)
              vm1=vm
             enddo
            else
@@ -638,11 +640,13 @@ C          If nimag is in wavelength space, need to convert to wavenumbers
             do i=1,nwave
              v1(i)=1e4/wave(nwave+1-i)
              k1(i)=nimag(nwave+1-i)
+             k2(i)=nimagshell(nwave+1-i)
              vm1=1e4/vm
             enddo
            endif
 
            call kk_new_sub(nwave,v1,k1,vm1,nm,n1)
+           call kk_new_sub(nwave,v1,k2,vm1,nmshell,n2)
 
            
            buffer='refindexN.dat' 
@@ -652,10 +656,16 @@ C          If nimag is in wavelength space, need to convert to wavenumbers
            if(ispace.eq.0)then
             do i=1,nwave
              nreal(i)=n1(i)
+	     if(varident(ivar,1).eq.445)then
+              nrealshell(i)=n2(i)
+	     endif
             enddo
            else
             do i=1,nwave
              nreal(i)=n1(nwave+1-i)
+	     if(varident(ivar,1).eq.445)then
+              nrealshell(i)=n2(nwave+1-i)
+	     endif
             enddo
            endif
 
@@ -673,7 +683,7 @@ C          Find minimum wavelength
             srefind(i,2)=nimag(i)
 	    if(varident(ivar,1).eq.445)then
 	     write(12,*)wave(i),nreal(i),nimag(i),
-     1                  nrealfix(i),nimagfix(i)
+     1                  nrealshell(i),nimagshell(i)
 	    else
              write(12,*)wave(i),nreal(i),nimag(i)
 	    endif
@@ -690,10 +700,10 @@ C          Find minimum wavelength
 
            call modmakephase(iwave,imode,inorm,iscatmie,
      1   parm,rs,srefind,runname,lambda0,csx,
-     2   nrealfix,nimagfix,fixtoggle)
+     2   nrealshell,nimagshell)
 
            if(varident(ivar,1).eq.445)then
-            np=3+np1
+            np=3+(2*np1)
            else
             np=2+np1
            endif

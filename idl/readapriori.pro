@@ -88,6 +88,14 @@ for ivar=0,nvar-1 do begin
   readf,5,tmp
   xa(istart:istart+2)=tmp(0,*)
   erra(istart:istart+2)=tmp(1,*)
+ endif
+
+ if(itype eq 23) then begin
+  np = 4
+  tmp = fltarr(2,np)
+  readf,5,tmp
+  xa(istart:istart+3)=tmp(0,*)
+  erra(istart:istart+3)=tmp(1,*)
  endif 
 
  if(itype eq 25) then begin
@@ -102,7 +110,7 @@ for ivar=0,nvar-1 do begin
   varparam(ivar,0) = np 
   xa(istart:istart+np-1)=data(1,*)
   erra(istart:istart+np-1)=data(2,*)
-  varparam(ivar,1:np) = data(0,*)
+  varparam(ivar,2:np+1) = data(0,*)
  endif 
 
  if(itype eq 8 or itype eq 9) then begin
@@ -288,13 +296,48 @@ for ivar=0,nvar-1 do begin
   openr,10,cloudfil
    np=3
    tmp=fltarr(2,np)
-   print, 'tmp = ', tmp
    readf,10,tmp
    print,tmp
    xa(istart:istart+2)=tmp(0,*)
    erra(istart:istart+2)=tmp(1,*)
-   tmp=1
+   tmp=fltarr(2)
    readf,10,tmp
+   nlam=tmp(0)
+   print,'nlam = ',nlam
+   varparam(ivar,0:1) = tmp(*)
+   tmp=fltarr(3)
+   readf,10,tmp
+   varparam(ivar,2:3) = tmp(0:1)
+   varparam(ivar,5) = tmp(2)
+   xlam=1.
+   readf,10,xlam
+   varparam(ivar,4) = xlam
+   tmp=fltarr(5,nlam)
+   readf,10,tmp
+   xa(istart+3:istart+3+nlam-1)=tmp(1,*)
+   erra(istart+3:istart+3+nlam-1)=tmp(2,*)
+   xa(istart+3+nlam:istart+3+(2*nlam)-1)=tmp(3,*)
+   erra(istart+3+nlam:istart+3+(2*nlam)-1)=tmp(4,*)
+   walb=fltarr(nlam)
+   walb(*)=tmp(0,*)
+  close,10
+  np=np+(2*nlam)
+ endif
+
+ if(itype eq 446)then begin
+  cloudfil=''
+  readf,5,cloudfil
+  openr,10,cloudfil
+   np=3
+   xx=fltarr(2)
+   tmp=fltarr(2,np)
+   for k=0,2 do begin
+    readf,10,xx
+    tmp(*,k)=xx(*)
+   endfor
+   print,tmp
+   xa(istart:istart+2)=tmp(0,*)
+   erra(istart:istart+2)=tmp(1,*)
    tmp=fltarr(2)
    readf,10,tmp
    nlam=tmp(0)

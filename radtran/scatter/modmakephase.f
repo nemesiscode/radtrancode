@@ -1,6 +1,6 @@
       subroutine modmakephase(iwave,imode,inorm,iscat,
-     1   parm,rs,srefind,runname,lambda0,csratio,nrealfix,
-     2   nimagfix,fixtoggle)
+     1   parm,rs,srefind,runname,lambda0,csratio,nrealshell,
+     2   nimagshell)
 C     ****************************************************************
 C     Subroutine to allow Makephase functionality from within other programs
 C
@@ -47,8 +47,7 @@ C
 	character*100 	runname,outfile,hgfile
 	character*512 	buffer
 
-	real csratio,nrealfix(mx),nimagfix(mx)
-	integer fixtoggle
+	real csratio,nrealshell(mx),nimagshell(mx)
       
 
         integer         ilist, nspec, idspec
@@ -183,8 +182,8 @@ C-----------------------------------------------------------------------
 			call miescat(lambda, iscat,parm, 1, rs,
      1				refind, theta, 
      2				ntheta, scat, ext, phase, 
-     3			        nphase,csratio,nrealfix(J),
-     4				nimagfix(J),fixtoggle)
+     3			        nphase,csratio,nrealshell(J),
+     4				nimagshell(J))
 			omega = scat/ext
 
 		end if

@@ -207,11 +207,11 @@ C		Use homogeneous sphere scattering model unless otherwise specified
 
 C		Use coated sphere scattering model if Maltmieser explicitly specified
 		else
+			R2 = SNGL(RR*(1.0-csratio)**(1.0/3.0))!find core rad
 			R2DOB = R2		!convert to double precision
 			RE2DOB = RE2
 			TMAG2DOB = TMAG2
 			XX = 2.0*PI/XLAM
-			R2 = SNGL(RR*(1.0-csratio)**(1.0/3.0))!find core rad
 			if(fixtoggle.eq.1)then!fix core ref index and retrieve shell ref index
 C			print*, 'MM fixed core: Calling DMIESS'
 			CALL DMIESS(RR, RFR, RFI, THETD, NTHETA, QEXT, 

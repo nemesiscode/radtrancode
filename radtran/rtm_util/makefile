@@ -35,9 +35,7 @@ F_SOURCES = \
         csplint.f \
         isys.f
 
-C_SOURCES = gettime.c
-
-OBJ = $(F_SOURCES:.f=.o) $(C_SOURCES:.c=.o)
+OBJ = $(F_SOURCES:.f=.o)
 LIBRARY = $(LIB)/rtm_util.a
 LIBCODE = $(LIBRARY)($(OBJ))
 
@@ -62,12 +60,6 @@ lib $(LIBRARY): $(LIBCODE)
 
 $(LIBRARY)(%.o): %.f $(INCLUDES)
 	$(FC) $(FCFLAGS) -c $<
-	ar rv $(LIBRARY) $*.o
-	ranlib $(LIBRARY)
-	-rm $*.o
-
-$(LIBRARY)(%.o): %.c
-	$(CC) $(CCFLAGS) -c $<
 	ar rv $(LIBRARY) $*.o
 	ranlib $(LIBRARY)
 	-rm $*.o

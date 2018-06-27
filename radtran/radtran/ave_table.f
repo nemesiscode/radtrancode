@@ -12,8 +12,7 @@ C
 C_FILE:	unit=30		(=LUN0), Input <>.kta file.
 C	unit=31		(=LUN1), Output <>.kta file.
 C
-C_CALL:	gettime		Obtains the system time for use in determining the
-C			total time used by the program since execution.
+C_CALL:	
 C	prompt		Prompts the user for input.
 C	file		Force a file extension.
 C

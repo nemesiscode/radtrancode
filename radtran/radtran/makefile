@@ -112,7 +112,8 @@ F_SOURCES = \
 	readbass1.f \
 	interpbass1.f \
 	read_ozone_serdyuchenko.f \
-	interp_ozone_serdyuchenko.f
+	interp_ozone_serdyuchenko.f \
+	benreuven.f
   	
 
 INCDIR = ../includes
@@ -173,8 +174,13 @@ bin :   \
 	Mod_table1b \
 	Mod_table1c \
 	Mod_table2 \
-	Table_trans
+	Table_trans \
+	Testsubline
 	
+Testsubline : testsubline.f $(LIBRARY) $(LIB)/spec_data.a
+	$(FC) $(FCFLAGS) -o $(BIN)/Testsubline testsubline.f $(LIBRARY) \
+	$(LIB)/spec_data.a $(LIB)/rtm_util.a
+
 Aground : aground.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Aground aground.f $(LIBRARY) \
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a

@@ -68,7 +68,7 @@ C     ********** Scattering variables **********************
       real xg2(maxcon,maxsec)
       real tnco,twave,frac,tico
       real phlimit,kkcor(mx,mx)
-      logical gasgiant,solexist
+      logical gasgiant,solexist,percbool
       COMMON /hgphas/xwave,xf,xg1,xg2,tnco,twave,frac,tico
       COMMON /scatdump/ idump
 
@@ -131,7 +131,6 @@ C     Also read in whether scattering is required (iscat)
 C     Read in total number of spectra to simulate
       READ(32,*)nspec
 
- 
 C     Read in random -ve seed number
       READ(32,*)idum
 C     Read in name of forward modelling error file
@@ -139,6 +138,8 @@ C     Read in name of forward modelling error file
 
 C     Read in lin identifier in case want to use retrieved T
       READ(32,*)lin
+
+      READ(32,*)percbool
 
       CLOSE(32)
 
@@ -233,6 +234,7 @@ C     Add forward errors to measurement covariances
        do j=1,nconv(i)
         k = k+1
         xerr=rerr(i,j)
+        if(percbool.eqv..true.)xerr=rerr(i,j)*(y(j)/100) 
         if(iform.eq.3)xerr=xerr*1e-18
         se(k)=se(k)+xerr**2
        enddo
@@ -259,6 +261,12 @@ C     Add forward errors to measurement covariances
       call setifix(xa,sa,nvar,varident,varparam,npro,ifix)
 
       do 2999 ispec=1,nspec
+
+C      Pseudo-random number generator seems to repeat cycle every 20 iterations, 
+C      therefore need to reseed it to continue to get pseudo-random numbers
+       if((mod(ispec-1,20).eq.0).and.(ispec.gt.1))then
+        idum = idum*2
+       endif
 
        call rmodapriori(idum,npro,nvar,varident,varparam,
      1  nx,xa,sa,xn)
@@ -364,7 +372,4 @@ C     New compiler time
 
 
       END
-
-
-
 

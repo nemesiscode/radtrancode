@@ -6,9 +6,8 @@ C_DESC:	Driver program for new gradient-version of cirsrad.
 C
 C_ARGS:	
 C
-C_CALL: gettime		Obtains the system time for use in determining the
-C                       total time used by the program since execution.
-C	file		Forces file extension.
+C_CALL: 
+	file		Forces file extension.
 C	remsp		Remove space from passed string.
 C	upcase		Make upper-case the passed string.
 C	cirsrtfg

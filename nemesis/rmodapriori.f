@@ -56,11 +56,16 @@ C     ****************************************************************
       do 10 ivar=1,nvar
           print*,(varident(ivar,i),i=1,3)
           print*,(varparam(ivar,i),i=1,5)
-          if(varident(ivar,3).eq.0)then
+          if((varident(ivar,3).eq.0).or.(varident(ivar,3).eq.25))then
 C         ********* continuous profile ************************
-            np = npro
-            xfac = sx(ix+1,ix+2)/sqrt(sx(ix+1,ix+1)*sx(ix+2,ix+2))
-            clen = 1.0/sqrt(-alog(xfac))
+            if(varident(ivar,3).eq.25)then
+             np = varparam(ivar,1)
+             clen = 1.5
+            else
+             np = npro
+             xfac = sx(ix+1,ix+2)/sqrt(sx(ix+1,ix+1)*sx(ix+2,ix+2))
+             clen = 1.0/sqrt(-alog(xfac))
+            endif
             print*,'Assumed correlation = ',clen
             xl = clen*(0.5 + 19.5*ran11(idum))
             xphi = 2*pi*ran11(idum)
@@ -82,7 +87,7 @@ C             dx=xamp*err(ix+i)
             if(varident(ivar,1).eq.888)np=int(varparam(ivar,1))
             if(varident(ivar,1).eq.887)np=int(varparam(ivar,1))
             if(varident(ivar,1).eq.444)np=2+int(varparam(ivar,1))
-            if(varident(ivar,1).eq.445)np=3+int(varparam(ivar,1))
+            if(varident(ivar,1).eq.445)np=3+(2*int(varparam(ivar,1)))
             if(varident(ivar,1).eq.222)np = 8
             if(varident(ivar,1).eq.223)np = 9
             if(varident(ivar,1).eq.224)np = 9
@@ -105,3 +110,4 @@ C             dx=xamp*err(ix+i)
       return
 
       end
+

@@ -27,9 +27,7 @@ C_FILE:	UNIT=17		The log file <opfile>.log .
 C	UNIT=1		The driver file <opfile>.drv .
 C	UNIT=2		The output file <opfile>.
 C
-C_CALL:	gettime		Obtains the system time for use in determining
-C			the total time used by the program since
-C			execution.
+C_CALL:	
 C	prompt		Prompts the user for input.
 C	file		Forces a file extension.
 C	rdlbld		Read the LBL driver file.

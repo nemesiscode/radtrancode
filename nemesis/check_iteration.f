@@ -22,7 +22,7 @@ C     **********************************************************
        if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
        if(varident(ivar,1).eq.887)np = int(varparam(ivar,1))
        if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
-       if(varident(ivar,1).eq.445)np = 3+int(varparam(ivar,1))
+       if(varident(ivar,1).eq.445)np = 3+(2*int(varparam(ivar,1)))
        if(varident(ivar,1).eq.222)np = 8
        if(varident(ivar,1).eq.223)np = 9
        if(varident(ivar,1).eq.224)np = 9
@@ -43,7 +43,7 @@ C      then send error flag.
          enddo
        endif
 
-       if(varident(ivar,1).eq.444.or.varident(ivar,1).eq.445)then
+       if(varident(ivar,1).ge.444.and.varident(ivar,1).le.446)then
 C       Check to see if the width of the size distribution has gone too
 C       small, which will muck up Mie Scattering
 

@@ -65,7 +65,7 @@ C-----------------------------------------------------------------------
 
       SUBROUTINE MIESCAT (XLAM, ISCAT, DSIZE, NMODE, RS, REFINDX, THETA, 
      1		NTHETA, XSCAT, XEXT, PHAS, NPHAS,csratio,
-     2  	RE2,TMAG2,fixtoggle)
+     2  	RE2,TMAG2)
 
       IMPLICIT NONE
       INTEGER		MAXTH, MAXMODE
@@ -76,7 +76,6 @@ C-----------------------------------------------------------------------
       REAL 	XLAM, DSIZE(3,NMODE), RS(3), REFINDX(2), PHAS(NPHAS), 
      1 		THETA(NTHETA), XSCAT, XEXT
 	REAL	R2, RE2,TMAG2, csratio
-	INTEGER	fixtoggle
       DOUBLE PRECISION NQMAX(MAXMODE), RMAX(MAXMODE)
       DOUBLE PRECISION RFR, RFI, RR, ANR, DELR, R1, XX, AA, BB, 
      1          ALPHA, GAMMA, CC,
@@ -207,27 +206,14 @@ C		Use homogeneous sphere scattering model unless otherwise specified
 
 C		Use coated sphere scattering model if Maltmieser explicitly specified
 		else
+			R2 = SNGL(RR*(1.0-csratio)**(1.0/3.0))!find core rad
 			R2DOB = R2		!convert to double precision
 			RE2DOB = RE2
 			TMAG2DOB = TMAG2
 			XX = 2.0*PI/XLAM
-			R2 = SNGL(RR*(1.0-csratio)**(1.0/3.0))!find core rad
-			if(fixtoggle.eq.1)then!fix core ref index and retrieve shell ref index
-C			print*, 'MM fixed core: Calling DMIESS'
-			CALL DMIESS(RR, RFR, RFI, THETD, NTHETA, QEXT, 
-     1				 QSCAT, CQ, ELTRMX, 
-     2				R2DOB, RE2DOB, TMAG2DOB, XX)	
-			elseif(fixtoggle.eq.0)then!fix shell ref index and retrieve core ref index
-C			print*, 'MM fixed shell: Calling DMIESS'
 			CALL DMIESS(RR, RE2DOB, TMAG2DOB,
      1				 THETD, NTHETA, QEXT, QSCAT,
      2				 CQ, ELTRMX, R2DOB, RFR, RFI, XX)
-			else
-				print*,'Error miescat:'
-				print*,'fixtoggle must equal 0 or 1'
-				print*,csratio,fixtoggle
-				stop
-			endif 
 		endif
 
 		DO J = 1, NTHETA		! THETA <,= 90

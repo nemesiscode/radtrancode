@@ -126,7 +126,7 @@ C     Set measurement vector and source vector lengths here.
       integer nconvfull(mgeom),nwavefull(mgeom),igeom,igeom2,irank
       integer nrdw(mgeom),rdwindices(mgeom,mconv),rdwi1,rdwi2,maxirank
       real vwavefull(mgeom,mwave),vconvfull(mgeom,mconv),yfull(my)
-      real vconvi(mgeom,mconv),vwavei(mgeom,mwave),seold(my,my)
+      real vconvi(mgeom,mconv),vwavei(mgeom,mwave),seold(my,my),phfac
       integer nconvi(mgeom),nwavei(mgeom),rdwindicesi(mgeom,mconv)
       integer rank(mgeom,mconv),nconvold(mgeom),rankdiff
 
@@ -486,7 +486,7 @@ C        print*,'forwardnogX OK, jpre = ',jpre
        endif
       endif
 
-      open(12,file='kk.dat',status='unknown')
+199   open(12,file='kk.dat',status='unknown')
       write(12,*)nx,ny
       do i=1,ny
        write(12,*)(kk(i,j),j=1,nx)
@@ -495,7 +495,7 @@ C        print*,'forwardnogX OK, jpre = ',jpre
 
 
 C     Now calculate the gain matrix and averaging kernels
-199   call calc_gain_matrix(nx,ny,kk,sa,sai,se,sei,dd,aa)
+      call calc_gain_matrix(nx,ny,kk,sa,sai,se,sei,dd,aa)
 
 C     Calculate initial value of cost function phi.
       phi = calc_phiret(ny,y,yn,sei,nx,xn,xa,sai,chisq)
@@ -594,7 +594,7 @@ C       Test to see if any vmrs have gone negative.
          if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
          if(varident(ivar,1).eq.887)np = int(varparam(ivar,1))
          if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
-         if(varident(ivar,1).eq.445)np = 3+int(varparam(ivar,1))
+         if(varident(ivar,1).eq.445)np = 3+(2*int(varparam(ivar,1)))
          if(varident(ivar,1).eq.222)np = 8
          if(varident(ivar,1).eq.223)np = 9
          if(varident(ivar,1).eq.224)np = 9
@@ -631,6 +631,19 @@ C       Test to see if any vmrs have gone negative.
              alambda = alambda*10.0		! increase Marquardt brake
              if(alambda.gt.1e10)alambda=1e10
              goto 401
+           endif
+          endif
+
+          if(varident(ivar,1).eq.444)then
+           if(j.ge.ix+2.and.j.le.ix+np-1)then
+            if(exp(xn1(j)).gt.1)then
+             print*,'Imaginary refractive index too large',
+     1		exp(xn1(j))
+             print*,'Increase alambda',alambda
+             alambda = alambda*10.0		! increase Marquardt brake
+             if(alambda.gt.1e10)alambda=1e10
+             goto 401
+            endif
            endif
           endif
 
@@ -768,6 +781,12 @@ C       What's %phi between last and this iteration?
         abstphi = abs(tphi)
         print*,'%phi, abs(%phi) : ',tphi,abstphi
 
+        if(redwavbool.eqv..true.)then!reduce phlimit in first few iterations of reduced wavelength scheme using a fudge factor to waste less time
+         phfac=float(nconv(1))/float(nconvfull(1))
+        else
+         phfac=1.0
+        endif
+
 C       Does trial solution fit the data better?
         if(phi.le.ophi)then
             print*,'Successful iteration. Updating xn,yn and kk'
@@ -789,8 +808,9 @@ C           Now calculate the gain matrix and averaging kernels
           
 C           Has solution converged?
           
-            if(tphi.ge.0.0.and.tphi.le.phlimit.and.alambda.lt.1.0)then
-              print*,'%phi, phlimit : ',tphi,phlimit
+            if(tphi.ge.0.0.and.tphi.le.phlimit/phfac.and.
+     1       alambda.lt.1.0)then
+              print*,'%phi, phlimit : ',tphi,phlimit/phfac
               print*,'Phi has converged'
               print*,'Terminating retrieval'
               oxchi=xchi
@@ -805,7 +825,7 @@ C           Has solution converged?
               alambda = alambda*0.3		! reduce Marquardt brake
             endif
           
-        elseif (iter.ge.5.and.abstphi.le.phlimit)then
+        elseif (iter.ge.5.and.abstphi.le.phlimit/phfac)then
 C       If phi > ophi, accept new xn and kk only if current solution 
 C       would converge under one of the alternate criterions:
 
@@ -994,6 +1014,22 @@ C      Write out k-matrix for reference
 
        close(37)
 
+      endif
+
+      if(redwavbool.eqv..true.)then
+C	Make sure input and output spectral errors are consistent when ending run
+        j2=0
+        do igeom=1,ngeom
+         do i=1,nconv(igeom)
+          se1(j2+i) = se(j2+i,j2+i)
+         enddo
+         j2=j2+nconv(igeom)
+        enddo
+
+	do i=1,nconv(1)
+	 print*, 'Se=', vconv(1,i), se(i,i)
+	 print*, 'Se1=', vconv(1,i), se1(i)
+	enddo
       endif
 
 C      print*,'chisq/ny is equal to : ',chisq/float(ny)

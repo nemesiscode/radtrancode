@@ -512,7 +512,7 @@ C       Test to see if any vmrs have gone negative.
          if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
          if(varident(ivar,1).eq.887)np = int(varparam(ivar,1))
          if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
-         if(varident(ivar,1).eq.445)np = 3+int(varparam(ivar,1))
+         if(varident(ivar,1).eq.445)np = 3+(2*int(varparam(ivar,1)))
 
          do j=ix,ix+np-1
           if(varident(ivar,1).eq.0)then

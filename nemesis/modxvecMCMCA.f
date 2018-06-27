@@ -205,7 +205,7 @@ C         **** Particle refractive index spectrum *******
             enddo
           elseif(varident(ivar,3).eq.445)then
 C         **** Particle refractive index spectrum *******
-            np = 3+int(varparam(ivar,1))
+            np = 3+(2*int(varparam(ivar,1)))
             do i=1,np
              xn(ix+i)=x0(ix+i)+err(ix+i)*gasdev1(idum)
             enddo

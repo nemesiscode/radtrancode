@@ -1,5 +1,5 @@
       REAL FUNCTION SUBLINE(IDGAS,PRESS,TEMP,IPROC,VV,VLIN,ABSCO,X,Y,
-     1 AD,FNH3,FH2,LLQ,DOUBV,FRAC)
+     1 AD,FNH3,FH2,LLQ,DOUBV)
 C     ****************************************************************
 C     Function to calculate the line contribution from multiple line
 C     broadening types.
@@ -29,7 +29,7 @@ C     ****************************************************************
       
       REAL HUMLIC,GVOICO2,CHICO2,BURCHCO2,BURCHCO2_NORM
       REAL BAILLYNH3,HARTMANNCH4,HARTMANNCH4A,HARTMANNCH4B
-      REAL ABSCO,X,Y,AD,TRATIO,DOUBV,GAMMA,VVWEISS,BENREUVEN,FRAC
+      REAL ABSCO,X,Y,AD,TRATIO,DOUBV,GAMMA,VVWEISS
       REAL ALIN,SBLIN,ELIN,TDW,TDWS,TCORDW,TCORS1,TCORS2
       REAL NH2,NHE,YPH3_H2,YPH3_HE,YPH3,PI,DV,TSTIM,TS1,TS2
       REAL PRESS,TEMP,GETNH3,FNH3,FH2,WY,DPEXP,LNABSCO
@@ -55,7 +55,27 @@ C     used to renomalise the linestrengths
       TRATIO=296.0/TEMP
       DV=VV-VLIN
 
-      IF(IPROC.EQ.15)THEN
+      IF(IPROC.EQ.16)THEN  
+C     Allard et al. 2012,16 on alkali
+       SUBLINE = ABSCO*HUMLIC(X,Y)/AD
+       IF((IDGAS.NE.56).OR.(IDGAS.NE.57))THEN
+        WRITE(*,*)' SUBLINE.f :: Can_t use the'
+        WRITE(*,*)' N. Allard profiles'
+        WRITE(*,*)' for gases other than Na or K.'
+        WRITE(*,*)' IDGAS = ',IDGAS
+        WRITE(*,*)' '
+        WRITE(*,*)' Stopping program.'
+        STOP
+       ENDIF
+c     read modif/voigt file
+
+c     extrapolation for same X
+
+c     factor application
+
+      ENDIF
+
+      ELSE IF(IPROC.EQ.15)THEN
 C      IPROC=15::alkali profile from Burrows & Volobuyev 2003
 c      description in Baudino et al. (2015), eq. 1
        IF(IDGAS.EQ.56) THEN
@@ -78,20 +98,14 @@ c      description in Baudino et al. (2015), eq. 1
         STOP
        ENDIF
 
-
-      IF(IPROC.EQ.15)THEN
-C      IPROC=15 :: Ben-Reuven lineshape from Deveraj et al. (2014)
-       IF(IDGAS.NE.11)THEN
-        WRITE(*,*)' SUBLINE.f :: Can_t use the'
-        WRITE(*,*)'  Deveraj et al. Ben-Reuven broadening'
-        WRITE(*,*)' for gases other than NH3.'
-        WRITE(*,*)' IDGAS = ',IDGAS
-        WRITE(*,*)' '
-        WRITE(*,*)' Stopping program.'
-        STOP
+       IF (DV.GT.DeltaSigma)THEN
+          SUBLINE = ABSCO*HUMLIC(ABS(X),Y)/AD
+       ELSE
+        SUBLINE = VDeltaSigma*(ABS(DeltaSigma/DV)**(3./2.))*
+     *            EXP(-(hc*ABS(DV)/(k*TEMP))*ABS(DV)/SigmaF)
        ENDIF
-       GAMMA = Y*AD
-       SUBLINE = ABSCO*BENREUVEN(PRESS,TEMP,VV,VLIN,LLQ,FRAC)
+
+
 
       ELSE IF(IPROC.EQ.14)THEN
 C      IPROC=14 :: van Vleck-Weisskopf-Ben-Reuven NH3 lineshape
@@ -110,21 +124,14 @@ C       Hard-wiring FNH3 and FH2 to typical Saturn conditions
         FH2 = 0.881
        ENDIF
        WY = GETNH3(PRESS,TEMP,FNH3,FH2,LLQ,DOUBV)
-c       print*,'SUBLINE 14 WY: ',wy,doubv
        IF(WY.EQ.0)THEN
 C       Default to Vleck-Weisskopf lineshape
         GAMMA=Y*AD
-c	print*,'SUBLINE 14 gamma,vv,vlin= ',gamma,vv,vlin
         SUBLINE = ABSCO*VVWEISS(GAMMA,VV,VLIN)
-c	print*,'SUBLINE 14 subline= ',subline
        ELSE 
         SUBLINE = (Y*AD + WY*DV)/((VV-VLIN)**2 + (Y*AD)**2)
-c	print*,'SUBLINE 14:',subline,wy
         SUBLINE = SUBLINE + (Y*AD + WY*DV)/((VV+VLIN)**2 + (Y*AD)**2)
-c	print*,'SUBLINE 14:',subline
         SUBLINE = SUBLINE*ABSCO*(VV/VLIN)/PI
-c	print*,'SUBLINE 14:',subline
-
        ENDIF
       
 

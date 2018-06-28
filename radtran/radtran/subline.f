@@ -78,12 +78,12 @@ c     factor application
       ELSE IF(IPROC.EQ.15)THEN
 C      IPROC=15::alkali profile from Burrows & Volobuyev 2003
 c      description in Baudino et al. (2015), eq. 1
-       IF(IDGAS.EQ.56) THEN
+       IF(IDGAS.EQ.60) THEN
           Y=PRESS*(0.27*(TEMP/296)**(-0.7))/AD
           DeltaSigma=-30*(TEMP/500)**0.6
           VDeltaSigma=ABSCO*HUMLIC(ABS(DeltaSigma/AD),Y)/AD
           SigmaF=5000.
-       ELSE IF (IDGAS.EQ.57)THEN
+       ELSE IF (IDGAS.EQ.61)THEN
           Y=PRESS*(0.53*(TEMP/296)**(-0.7))/AD
           DeltaSigma=-20*(TEMP/500)**0.6
           VDeltaSigma=ABSCO*HUMLIC(ABS(DeltaSigma/AD),Y)/AD

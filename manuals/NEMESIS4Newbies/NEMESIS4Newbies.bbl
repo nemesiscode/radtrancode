@@ -1,0 +1,455 @@
+\begin{thebibliography}{36}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\href}[2]{#2}
+\providecommand{\path}[1]{#1}
+\providecommand{\DOIprefix}{doi:}
+\providecommand{\ArXivprefix}{arXiv:}
+\providecommand{\URLprefix}{URL: }
+\providecommand{\Pubmedprefix}{pmid:}
+\providecommand{\doi}[1]{\href{http://dx.doi.org/#1}{\path{#1}}}
+\providecommand{\Pubmed}[1]{\href{pmid:#1}{\path{#1}}}
+\providecommand{\bibinfo}[2]{#2}
+\ifx\xfnm\relax \def\xfnm[#1]{\unskip,\space#1}\fi
+%Type = Book
+\bibitem[{Andrews(2000)}]{00andrews}
+\bibinfo{author}{Andrews, D.G.}, \bibinfo{year}{2000}.
+\newblock \bibinfo{title}{An Introduction to Atmospheric Physics}.
+\newblock \bibinfo{publisher}{CUP}, \bibinfo{address}{Cambridge UK}.
+%Type = Article
+\bibitem[{{Barstow} et~al.(2014){Barstow}, {Aigrain}, {Irwin}, {Hackler},
+  {Fletcher}, {Lee} and {Gibson}}]{14barstow}
+\bibinfo{author}{{Barstow}, J.K.}, \bibinfo{author}{{Aigrain}, S.},
+  \bibinfo{author}{{Irwin}, P.G.J.}, \bibinfo{author}{{Hackler}, T.},
+  \bibinfo{author}{{Fletcher}, L.N.}, \bibinfo{author}{{Lee}, J.M.},
+  \bibinfo{author}{{Gibson}, N.P.}, \bibinfo{year}{2014}.
+\newblock \bibinfo{title}{{Clouds on the Hot Jupiter HD189733b: Constraints
+  from the Reflection Spectrum}}.
+\newblock \bibinfo{journal}{ApJ} \bibinfo{volume}{786}, \bibinfo{pages}{154}.
+\newblock \DOIprefix\doi{10.1088/0004-637X/786/2/154},
+  \href{http://arxiv.org/abs/1403.6664}{{\tt arXiv:1403.6664}}.
+%Type = Article
+\bibitem[{Borysow(1991)}]{91borysow}
+\bibinfo{author}{Borysow, A.}, \bibinfo{year}{1991}.
+\newblock \bibinfo{title}{Modelling of collision-induced infrared-absorption
+  spectra of {H}$_2$-{H}$_2$ pairs in the fundamental band at temperatures from
+  20{K} to 300{K}}.
+\newblock \bibinfo{journal}{Icarus} \bibinfo{volume}{92},
+  \bibinfo{pages}{273--279}.
+%Type = Article
+\bibitem[{{Borysow}(1993)}]{93borysow}
+\bibinfo{author}{{Borysow}, A.}, \bibinfo{year}{1993}.
+\newblock \bibinfo{title}{{Erratum: ''Modeling of collision-induced infrared
+  absorption spectra of H$_{2}$-H$_{2}$ pairs in the fundamental band at
+  temperatures from 20 to 300K'' [Icarus, Vol. 92, No. 2, p. 273 - 279 (Aug
+  1991)].}}
+\newblock \bibinfo{journal}{Icarus} \bibinfo{volume}{106},
+  \bibinfo{pages}{614}.
+%Type = Article
+\bibitem[{Borysow and Frommhold(1986)}]{86borysow}
+\bibinfo{author}{Borysow, A.}, \bibinfo{author}{Frommhold, L.},
+  \bibinfo{year}{1986}.
+\newblock \bibinfo{title}{Theoretical collision-induced rototranslational
+  absorption spectra for the outer planets: {H}$_2$-{CH}$_4$ pairs}.
+\newblock \bibinfo{journal}{Astrophys. J.} \bibinfo{volume}{304},
+  \bibinfo{pages}{849--865}.
+%Type = Article
+\bibitem[{Borysow and Frommhold(1987)}]{87borysow}
+\bibinfo{author}{Borysow, A.}, \bibinfo{author}{Frommhold, L.},
+  \bibinfo{year}{1987}.
+\newblock \bibinfo{title}{Collision-induced rototranslational absorption
+  spectra of {CH}$_4$-{CH}$_4$ pairs at temperatures from 50 to 300{K}}.
+\newblock \bibinfo{journal}{Astrophys. J.} \bibinfo{volume}{318},
+  \bibinfo{pages}{940--943}.
+%Type = Article
+\bibitem[{{Borysow} et~al.(1988){Borysow}, {Frommhold} and
+  {Birnbaum}}]{88borysow}
+\bibinfo{author}{{Borysow}, J.}, \bibinfo{author}{{Frommhold}, L.},
+  \bibinfo{author}{{Birnbaum}, G.}, \bibinfo{year}{1988}.
+\newblock \bibinfo{title}{{Collison-induced rototranslational absorption
+  spectra of H$_2$-He pairs at temperatures from 40 to 3000 K}}.
+\newblock \bibinfo{journal}{Astrophys. J.} \bibinfo{volume}{326},
+  \bibinfo{pages}{509--515}.
+\newblock \DOIprefix\doi{10.1086/166112}.
+%Type = Article
+\bibitem[{{Conrath} et~al.(1998){Conrath}, {Gierasch} and
+  {Ustinov}}]{98conrath}
+\bibinfo{author}{{Conrath}, B.J.}, \bibinfo{author}{{Gierasch}, P.J.},
+  \bibinfo{author}{{Ustinov}, E.A.}, \bibinfo{year}{1998}.
+\newblock \bibinfo{title}{{Thermal Structure and Para Hydrogen Fraction on the
+  Outer Planets from Voyager IRIS Measurements}}.
+\newblock \bibinfo{journal}{Icarus} \bibinfo{volume}{135},
+  \bibinfo{pages}{501--517}.
+\newblock \DOIprefix\doi{10.1006/icar.1998.6000}.
+%Type = Article
+\bibitem[{{de Kok} et~al.(2007){de Kok}, {Irwin}, {Teanby}, {Lellouch},
+  {B{\'e}zard}, {Vinatier}, {Nixon}, {Fletcher}, {Howett}, {Calcutt}, {Bowles},
+  {Flasar} and {Taylor}}]{07dekok}
+\bibinfo{author}{{de Kok}, R.}, \bibinfo{author}{{Irwin}, P.G.J.},
+  \bibinfo{author}{{Teanby}, N.A.}, \bibinfo{author}{{Lellouch}, E.},
+  \bibinfo{author}{{B{\'e}zard}, B.}, \bibinfo{author}{{Vinatier}, S.},
+  \bibinfo{author}{{Nixon}, C.A.}, \bibinfo{author}{{Fletcher}, L.N.},
+  \bibinfo{author}{{Howett}, C.}, \bibinfo{author}{{Calcutt}, S.B.},
+  \bibinfo{author}{{Bowles}, N.E.}, \bibinfo{author}{{Flasar}, F.M.},
+  \bibinfo{author}{{Taylor}, F.W.}, \bibinfo{year}{2007}.
+\newblock \bibinfo{title}{{Oxygen compounds in Titan's stratosphere as observed
+  by Cassini CIRS}}.
+\newblock \bibinfo{journal}{Icarus} \bibinfo{volume}{186},
+  \bibinfo{pages}{354--363}.
+\newblock \DOIprefix\doi{10.1016/j.icarus.2006.09.016}.
+%Type = Phdthesis
+\bibitem[{{Fletcher}(2007)}]{07fletcher_phd}
+\bibinfo{author}{{Fletcher}, L.N.}, \bibinfo{year}{2007}.
+\newblock \bibinfo{title}{Saturn's Atmosphere: Structure and Composition from
+  Cassini/CIRS}.
+\newblock Ph.D. thesis. University of Oxford.
+%Type = Article
+\bibitem[{{Fletcher} et~al.(2011a){Fletcher}, {Baines}, {Momary}, {Showman},
+  {Irwin}, {Orton}, {Roos-Serote} and {Merlet}}]{11fletcher_vims}
+\bibinfo{author}{{Fletcher}, L.N.}, \bibinfo{author}{{Baines}, K.H.},
+  \bibinfo{author}{{Momary}, T.W.}, \bibinfo{author}{{Showman}, A.P.},
+  \bibinfo{author}{{Irwin}, P.G.J.}, \bibinfo{author}{{Orton}, G.S.},
+  \bibinfo{author}{{Roos-Serote}, M.}, \bibinfo{author}{{Merlet}, C.},
+  \bibinfo{year}{2011}a.
+\newblock \bibinfo{title}{{Saturn's tropospheric composition and clouds from
+  Cassini/VIMS 4.6-5.1 {$\mu$}m nightside spectroscopy}}.
+\newblock \bibinfo{journal}{Icarus} \bibinfo{volume}{214},
+  \bibinfo{pages}{510--533}.
+\newblock \DOIprefix\doi{10.1016/j.icarus.2011.06.006}.
+%Type = Article
+\bibitem[{{Fletcher} et~al.(2014){Fletcher}, {de Pater}, {Orton}, {Hammel},
+  {Sitko} and {Irwin}}]{14fletcher_nep}
+\bibinfo{author}{{Fletcher}, L.N.}, \bibinfo{author}{{de Pater}, I.},
+  \bibinfo{author}{{Orton}, G.S.}, \bibinfo{author}{{Hammel}, H.B.},
+  \bibinfo{author}{{Sitko}, M.L.}, \bibinfo{author}{{Irwin}, P.G.J.},
+  \bibinfo{year}{2014}.
+\newblock \bibinfo{title}{{Neptune at summer solstice: Zonal mean temperatures
+  from ground-based observations, 2003-2007}}.
+\newblock \bibinfo{journal}{Icarus} \bibinfo{volume}{231},
+  \bibinfo{pages}{146--167}.
+\newblock \DOIprefix\doi{10.1016/j.icarus.2013.11.035},
+  \href{http://arxiv.org/abs/1311.7570}{{\tt arXiv:1311.7570}}.
+%Type = Article
+\bibitem[{{Fletcher} et~al.(2015){Fletcher}, {Greathouse}, {Moses}, {Guerlet}
+  and {West}}]{15fletcher}
+\bibinfo{author}{{Fletcher}, L.N.}, \bibinfo{author}{{Greathouse}, T.K.},
+  \bibinfo{author}{{Moses}, J.I.}, \bibinfo{author}{{Guerlet}, S.},
+  \bibinfo{author}{{West}, R.A.}, \bibinfo{year}{2015}.
+\newblock \bibinfo{title}{{Saturn's Seasonally Changing Atmosphere: Thermal
+  Structure, Composition and Aerosols}}.
+\newblock \bibinfo{journal}{ArXiv e-prints}
+  \href{http://arxiv.org/abs/1510.05690}{{\tt arXiv:1510.05690}}.
+%Type = Article
+\bibitem[{{Fletcher} et~al.(2011b){Fletcher}, {Hesman}, {Irwin}, {Baines},
+  {Momary}, {S{\'a}nchez-Lavega}, {Flasar}, {Read}, {Orton}, {Simon-Miller},
+  {Hueso}, {Bjoraker}, {Mamoutkine}, {del Rio-Gaztelurrutia}, {Gomez},
+  {Buratti}, {Clark}, {Nicholson} and {Sotin}}]{11fletcher_storm}
+\bibinfo{author}{{Fletcher}, L.N.}, \bibinfo{author}{{Hesman}, B.E.},
+  \bibinfo{author}{{Irwin}, P.G.J.}, \bibinfo{author}{{Baines}, K.H.},
+  \bibinfo{author}{{Momary}, T.W.}, \bibinfo{author}{{S{\'a}nchez-Lavega}, A.},
+  \bibinfo{author}{{Flasar}, F.M.}, \bibinfo{author}{{Read}, P.L.},
+  \bibinfo{author}{{Orton}, G.S.}, \bibinfo{author}{{Simon-Miller}, A.},
+  \bibinfo{author}{{Hueso}, R.}, \bibinfo{author}{{Bjoraker}, G.L.},
+  \bibinfo{author}{{Mamoutkine}, A.}, \bibinfo{author}{{del Rio-Gaztelurrutia},
+  T.}, \bibinfo{author}{{Gomez}, J.M.}, \bibinfo{author}{{Buratti}, B.},
+  \bibinfo{author}{{Clark}, R.N.}, \bibinfo{author}{{Nicholson}, P.D.},
+  \bibinfo{author}{{Sotin}, C.}, \bibinfo{year}{2011}b.
+\newblock \bibinfo{title}{{Thermal Structure and Dynamics of Saturn's Northern
+  Springtime Disturbance}}.
+\newblock \bibinfo{journal}{Science} \bibinfo{volume}{332},
+  \bibinfo{pages}{1413--1417}.
+\newblock \DOIprefix\doi{10.1126/science.1204774}.
+%Type = Article
+\bibitem[{{Fletcher} et~al.(2008){Fletcher}, {Irwin}, {Orton}, {Teanby},
+  {Achterberg}, {Bjoraker}, {Read}, {Simon-Miller}, {Howett}, {de Kok},
+  {Bowles}, {Calcutt}, {Hesman} and {Flasar}}]{08fletcher_poles}
+\bibinfo{author}{{Fletcher}, L.N.}, \bibinfo{author}{{Irwin}, P.G.J.},
+  \bibinfo{author}{{Orton}, G.S.}, \bibinfo{author}{{Teanby}, N.A.},
+  \bibinfo{author}{{Achterberg}, R.K.}, \bibinfo{author}{{Bjoraker}, G.L.},
+  \bibinfo{author}{{Read}, P.L.}, \bibinfo{author}{{Simon-Miller}, A.A.},
+  \bibinfo{author}{{Howett}, C.}, \bibinfo{author}{{de Kok}, R.},
+  \bibinfo{author}{{Bowles}, N.}, \bibinfo{author}{{Calcutt}, S.B.},
+  \bibinfo{author}{{Hesman}, B.}, \bibinfo{author}{{Flasar}, F.M.},
+  \bibinfo{year}{2008}.
+\newblock \bibinfo{title}{{Temperature and Composition of Saturn's Polar Hot
+  Spots and Hexagon}}.
+\newblock \bibinfo{journal}{Science} \bibinfo{volume}{319},
+  \bibinfo{pages}{79--82}.
+\newblock \DOIprefix\doi{10.1126/science.1149514}.
+%Type = Article
+\bibitem[{{Fletcher} et~al.(2007){Fletcher}, {Irwin}, {Teanby}, {Orton},
+  {Parrish}, {Calcutt}, {de Kok}, {Howett}, {Bowles} and
+  {Taylor}}]{07fletcher_temp}
+\bibinfo{author}{{Fletcher}, L.N.}, \bibinfo{author}{{Irwin}, P.G.J.},
+  \bibinfo{author}{{Teanby}, N.A.}, \bibinfo{author}{{Orton}, G.S.},
+  \bibinfo{author}{{Parrish}, P.D.}, \bibinfo{author}{{Calcutt}, S.B.},
+  \bibinfo{author}{{de Kok}, R.}, \bibinfo{author}{{Howett}, C.},
+  \bibinfo{author}{{Bowles}, N.}, \bibinfo{author}{{Taylor}, F.W.},
+  \bibinfo{year}{2007}.
+\newblock \bibinfo{title}{{Characterising Saturn's Vertical Temperature
+  Structure from Cassini/CIRS}}.
+\newblock \bibinfo{journal}{Icarus} \bibinfo{volume}{189},
+  \bibinfo{pages}{457--478}.
+%Type = Article
+\bibitem[{{Fletcher} et~al.(2009a){Fletcher}, {Orton}, {Teanby} and
+  {Irwin}}]{09fletcher_ph3}
+\bibinfo{author}{{Fletcher}, L.N.}, \bibinfo{author}{{Orton}, G.S.},
+  \bibinfo{author}{{Teanby}, N.A.}, \bibinfo{author}{{Irwin}, P.G.J.},
+  \bibinfo{year}{2009}a.
+\newblock \bibinfo{title}{{Phosphine on Jupiter and Saturn from Cassini/CIRS}}.
+\newblock \bibinfo{journal}{Icarus} \bibinfo{volume}{202},
+  \bibinfo{pages}{543--564}.
+\newblock \DOIprefix\doi{10.1016/j.icarus.2009.03.023}.
+%Type = Article
+\bibitem[{{Fletcher} et~al.(2009b){Fletcher}, {Orton}, {Teanby}, {Irwin} and
+  {Bjoraker}}]{09fletcher_ch4}
+\bibinfo{author}{{Fletcher}, L.N.}, \bibinfo{author}{{Orton}, G.S.},
+  \bibinfo{author}{{Teanby}, N.A.}, \bibinfo{author}{{Irwin}, P.G.J.},
+  \bibinfo{author}{{Bjoraker}, G.L.}, \bibinfo{year}{2009}b.
+\newblock \bibinfo{title}{{Methane and its isotopologues on Saturn from
+  Cassini/CIRS observations}}.
+\newblock \bibinfo{journal}{Icarus} \bibinfo{volume}{199},
+  \bibinfo{pages}{351--367}.
+\newblock \DOIprefix\doi{10.1016/j.icarus.2008.09.019}.
+%Type = Article
+\bibitem[{{Giles} et~al.(2015){Giles}, {Fletcher} and {Irwin}}]{15giles}
+\bibinfo{author}{{Giles}, R.S.}, \bibinfo{author}{{Fletcher}, L.N.},
+  \bibinfo{author}{{Irwin}, P.G.J.}, \bibinfo{year}{2015}.
+\newblock \bibinfo{title}{{Cloud structure and composition of Jupiter's
+  troposphere from 5- {$\mu$} m Cassini VIMS spectroscopy}}.
+\newblock \bibinfo{journal}{Icarus} \bibinfo{volume}{257},
+  \bibinfo{pages}{457--470}.
+\newblock \DOIprefix\doi{10.1016/j.icarus.2015.05.030},
+  \href{http://arxiv.org/abs/1506.01608}{{\tt arXiv:1506.01608}}.
+%Type = Book
+\bibitem[{{Goody} and {Yung}(1989)}]{89goody}
+\bibinfo{author}{{Goody}, R.M.}, \bibinfo{author}{{Yung}, Y.L.},
+  \bibinfo{year}{1989}.
+\newblock \bibinfo{title}{{Atmospheric radiation : theoretical basis}}.
+\newblock \bibinfo{publisher}{Atmospheric radiation : theoretical basis, 2nd
+  ed., by Richard M.~Goody and Y.L.~Yung.~ New York, NY: Oxford University
+  Press, 1989}.
+%Type = Book
+\bibitem[{{Hanel} et~al.(2003){Hanel}, {Conrath}, {Jennings} and
+  {Samuelson}}]{03hanel}
+\bibinfo{author}{{Hanel}, R.A.}, \bibinfo{author}{{Conrath}, B.J.},
+  \bibinfo{author}{{Jennings}, D.E.}, \bibinfo{author}{{Samuelson}, R.E.},
+  \bibinfo{year}{2003}.
+\newblock \bibinfo{title}{{Exploration of the Solar System by Infrared Remote
+  Sensing: Second Edition}}.
+\newblock \bibinfo{publisher}{Exploration of the Solar System by Infrared
+  Remote Sensing, by R.~A.~Hanel and B.~J.~Conrath and D.~E.~Jennings and
+  R.~E.~Samuelson, ISBN 0521818974.~Cambridge, UK: Cambridge University Press,
+  April 2003.}
+%Type = Book
+\bibitem[{Houghton et~al.(1984)Houghton, Taylor and Rodgers}]{84houghton}
+\bibinfo{author}{Houghton, J.T.}, \bibinfo{author}{Taylor, F.W.},
+  \bibinfo{author}{Rodgers, C.D.}, \bibinfo{year}{1984}.
+\newblock \bibinfo{title}{Remote sounding of atmospheres}.
+\newblock \bibinfo{publisher}{CUP}, \bibinfo{address}{Cambridge UK}.
+%Type = Article
+\bibitem[{Irwin et~al.(2008)Irwin, Teanby, de~Kok, Fletcher, Howett, Tsang,
+  Wilson, Calcutt, Nixon and Parrish}]{08irwin}
+\bibinfo{author}{Irwin, P.}, \bibinfo{author}{Teanby, N.},
+  \bibinfo{author}{de~Kok, R.}, \bibinfo{author}{Fletcher, L.},
+  \bibinfo{author}{Howett, C.}, \bibinfo{author}{Tsang, C.},
+  \bibinfo{author}{Wilson, C.}, \bibinfo{author}{Calcutt, S.},
+  \bibinfo{author}{Nixon, C.}, \bibinfo{author}{Parrish, P.},
+  \bibinfo{year}{2008}.
+\newblock \bibinfo{title}{{The NEMESIS planetary atmosphere radiative transfer
+  and retrieval tool}}.
+\newblock \bibinfo{journal}{Journal of Quantitative Spectroscopy and Radiative
+  Transfer} \bibinfo{volume}{109}, \bibinfo{pages}{1136--1150}.
+%Type = Book
+\bibitem[{Irwin(2003)}]{03irwbook}
+\bibinfo{author}{Irwin, P.G.J.}, \bibinfo{year}{2003}.
+\newblock \bibinfo{title}{Giant planets of our solar system: atmospheres,
+  composition, and structure}.
+\newblock \bibinfo{publisher}{Praxis}, \bibinfo{address}{Chichester UK}.
+%Type = Article
+\bibitem[{{Irwin} et~al.(2004){Irwin}, {Parrish}, {Fouchet}, {Calcutt},
+  {Taylor}, {Simon-Miller} and {Nixon}}]{04irwin}
+\bibinfo{author}{{Irwin}, P.G.J.}, \bibinfo{author}{{Parrish}, P.},
+  \bibinfo{author}{{Fouchet}, T.}, \bibinfo{author}{{Calcutt}, S.B.},
+  \bibinfo{author}{{Taylor}, F.W.}, \bibinfo{author}{{Simon-Miller}, A.A.},
+  \bibinfo{author}{{Nixon}, C.A.}, \bibinfo{year}{2004}.
+\newblock \bibinfo{title}{{Retrievals of jovian tropospheric phosphine from
+  Cassini/CIRS}}.
+\newblock \bibinfo{journal}{Icarus} \bibinfo{volume}{172},
+  \bibinfo{pages}{37--49}.
+\newblock \DOIprefix\doi{10.1016/j.icarus.2003.09.027}.
+%Type = Article
+\bibitem[{{Irwin} et~al.(2017){Irwin}, {Wong}, {Simon}, {Orton} and
+  {Toledo}}]{17irwin}
+\bibinfo{author}{{Irwin}, P.G.J.}, \bibinfo{author}{{Wong}, M.H.},
+  \bibinfo{author}{{Simon}, A.A.}, \bibinfo{author}{{Orton}, G.S.},
+  \bibinfo{author}{{Toledo}, D.}, \bibinfo{year}{2017}.
+\newblock \bibinfo{title}{{HST/WFC3 observations of Uranus' 2014 storm clouds
+  and comparison with VLT/SINFONI and IRTF/Spex observations}}.
+\newblock \bibinfo{journal}{Icarus} \bibinfo{volume}{288},
+  \bibinfo{pages}{99--119}.
+\newblock \DOIprefix\doi{10.1016/j.icarus.2017.01.031},
+  \href{http://arxiv.org/abs/1611.03257}{{\tt arXiv:1611.03257}}.
+%Type = Article
+\bibitem[{{Jacquinet-Husson} et~al.(2005){Jacquinet-Husson}, {Scott}, {Chedin},
+  {Garceran}, {Armante}, {Chursin}, {Barbe}, {Birk}, {Brown}, {Camy-Peyret},
+  {Claveau}, {Clerbaux}, {Coheur}, {Dana}, {Daumont}, {Debacker-Barilly},
+  {Flaud}, {Goldman}, {Hamdouni}, {Hess}, {Jacquemart}, {Kopke}, {Mandin},
+  {Massie}, {Mikhailenko}, {Nemtchinov}, {Nikitin}, {Newnham}, {Perrin},
+  {Perevalov}, {Regalia-Jarlot}, {Rublev}, {Schreier}, {Schult}, {Smith},
+  {Tashkun}, {Teffo}, {Toth}, {Tyuterev}, {Vander Auwera}, {Varanasi} and
+  {Wagner}}]{05geisa}
+\bibinfo{author}{{Jacquinet-Husson}, N.}, \bibinfo{author}{{Scott}, N.A.},
+  \bibinfo{author}{{Chedin}, A.}, \bibinfo{author}{{Garceran}, K.},
+  \bibinfo{author}{{Armante}, R.}, \bibinfo{author}{{Chursin}, A.A.},
+  \bibinfo{author}{{Barbe}, A.}, \bibinfo{author}{{Birk}, M.},
+  \bibinfo{author}{{Brown}, L.R.}, \bibinfo{author}{{Camy-Peyret}, C.},
+  \bibinfo{author}{{Claveau}, C.}, \bibinfo{author}{{Clerbaux}, C.},
+  \bibinfo{author}{{Coheur}, P.F.}, \bibinfo{author}{{Dana}, V.},
+  \bibinfo{author}{{Daumont}, L.}, \bibinfo{author}{{Debacker-Barilly}, M.R.},
+  \bibinfo{author}{{Flaud}, J.M.}, \bibinfo{author}{{Goldman}, A.},
+  \bibinfo{author}{{Hamdouni}, A.}, \bibinfo{author}{{Hess}, M.},
+  \bibinfo{author}{{Jacquemart}, D.}, \bibinfo{author}{{Kopke}, P.},
+  \bibinfo{author}{{Mandin}, J.Y.}, \bibinfo{author}{{Massie}, S.},
+  \bibinfo{author}{{Mikhailenko}, S.}, \bibinfo{author}{{Nemtchinov}, V.},
+  \bibinfo{author}{{Nikitin}, A.}, \bibinfo{author}{{Newnham}, D.},
+  \bibinfo{author}{{Perrin}, A.}, \bibinfo{author}{{Perevalov}, V.I.},
+  \bibinfo{author}{{Regalia-Jarlot}, L.}, \bibinfo{author}{{Rublev}, A.},
+  \bibinfo{author}{{Schreier}, F.}, \bibinfo{author}{{Schult}, I.},
+  \bibinfo{author}{{Smith}, K.M.}, \bibinfo{author}{{Tashkun}, S.A.},
+  \bibinfo{author}{{Teffo}, J.L.}, \bibinfo{author}{{Toth}, R.A.},
+  \bibinfo{author}{{Tyuterev}, V.G.}, \bibinfo{author}{{Vander Auwera}, J.},
+  \bibinfo{author}{{Varanasi}, P.}, \bibinfo{author}{{Wagner}, G.},
+  \bibinfo{year}{2005}.
+\newblock \bibinfo{title}{{The 2003 edition of the GEISA/IASI spectroscopic
+  database}}.
+\newblock \bibinfo{journal}{Journal of Quantitative Spectroscopy and Radiative
+  Transfer} \bibinfo{volume}{95}, \bibinfo{pages}{429--467}.
+%Type = Article
+\bibitem[{{Lacis} and {Oinas}(1991)}]{91lacis}
+\bibinfo{author}{{Lacis}, A.A.}, \bibinfo{author}{{Oinas}, V.},
+  \bibinfo{year}{1991}.
+\newblock \bibinfo{title}{{A description of the correlated-k distribution
+  method for modelling nongray gaseous absorption, thermal emission, and
+  multiple scattering in vertically inhomogeneous atmospheres}}.
+\newblock \bibinfo{journal}{J. Geophys. Res.} \bibinfo{volume}{96},
+  \bibinfo{pages}{9027--9064}.
+%Type = Article
+\bibitem[{{Lee} et~al.(2012){Lee}, {Fletcher} and {Irwin}}]{12lee}
+\bibinfo{author}{{Lee}, J.M.}, \bibinfo{author}{{Fletcher}, L.N.},
+  \bibinfo{author}{{Irwin}, P.G.J.}, \bibinfo{year}{2012}.
+\newblock \bibinfo{title}{{Optimal estimation retrievals of the atmospheric
+  structure and composition of HD 189733b from secondary eclipse
+  spectroscopy}}.
+\newblock \bibinfo{journal}{Monthly Notices of the Royal Astronomical Society}
+  \bibinfo{volume}{420}, \bibinfo{pages}{170--182}.
+\newblock \DOIprefix\doi{10.1111/j.1365-2966.2011.20013.x},
+  \href{http://arxiv.org/abs/1110.2934}{{\tt arXiv:1110.2934}}.
+%Type = Phdthesis
+\bibitem[{Nixon(1998)}]{98nixon}
+\bibinfo{author}{Nixon, C.A.}, \bibinfo{year}{1998}.
+\newblock \bibinfo{title}{Remote sounding of the atmosphere of {T}itan}.
+\newblock Ph.D. thesis. University of Oxford.
+%Type = Article
+\bibitem[{{Orton} et~al.(2007){Orton}, {Gustafsson}, {Burgdorf} and
+  {Meadows}}]{07orton}
+\bibinfo{author}{{Orton}, G.S.}, \bibinfo{author}{{Gustafsson}, M.},
+  \bibinfo{author}{{Burgdorf}, M.}, \bibinfo{author}{{Meadows}, V.},
+  \bibinfo{year}{2007}.
+\newblock \bibinfo{title}{{Revised Ab Initio Models for H$_2$-H$_2$ Collision
+  Induced Absorption at Low Temperatures}}.
+\newblock \bibinfo{journal}{Icarus} \bibinfo{volume}{189},
+  \bibinfo{pages}{544--549}.
+%Type = Book
+\bibitem[{{Rodgers}(2000)}]{00rodgers}
+\bibinfo{author}{{Rodgers}, C.D.}, \bibinfo{year}{2000}.
+\newblock \bibinfo{title}{{Inverse Methods for Atmospheric Remote Sounding:
+  Theory and Practice}}.
+\newblock \bibinfo{publisher}{World Scientific}.
+%Type = Article
+\bibitem[{{Rothman} et~al.(2013){Rothman}, {Gordon}, {Babikov}, {Barbe}, {Chris
+  Benner}, {Bernath}, {Birk}, {Bizzocchi}, {Boudon}, {Brown}, {Campargue},
+  {Chance}, {Cohen}, {Coudert}, {Devi}, {Drouin}, {Fayt}, {Flaud}, {Gamache},
+  {Harrison}, {Hartmann}, {Hill}, {Hodges}, {Jacquemart}, {Jolly}, {Lamouroux},
+  {Le Roy}, {Li}, {Long}, {Lyulin}, {Mackie}, {Massie}, {Mikhailenko},
+  {M{\"u}ller}, {Naumenko}, {Nikitin}, {Orphal}, {Perevalov}, {Perrin},
+  {Polovtseva}, {Richard}, {Smith}, {Starikova}, {Sung}, {Tashkun}, {Tennyson},
+  {Toon}, {Tyuterev} and {Wagner}}]{13rothman}
+\bibinfo{author}{{Rothman}, L.S.}, \bibinfo{author}{{Gordon}, I.E.},
+  \bibinfo{author}{{Babikov}, Y.}, \bibinfo{author}{{Barbe}, A.},
+  \bibinfo{author}{{Chris Benner}, D.}, \bibinfo{author}{{Bernath}, P.F.},
+  \bibinfo{author}{{Birk}, M.}, \bibinfo{author}{{Bizzocchi}, L.},
+  \bibinfo{author}{{Boudon}, V.}, \bibinfo{author}{{Brown}, L.R.},
+  \bibinfo{author}{{Campargue}, A.}, \bibinfo{author}{{Chance}, K.},
+  \bibinfo{author}{{Cohen}, E.A.}, \bibinfo{author}{{Coudert}, L.H.},
+  \bibinfo{author}{{Devi}, V.M.}, \bibinfo{author}{{Drouin}, B.J.},
+  \bibinfo{author}{{Fayt}, A.}, \bibinfo{author}{{Flaud}, J.M.},
+  \bibinfo{author}{{Gamache}, R.R.}, \bibinfo{author}{{Harrison}, J.J.},
+  \bibinfo{author}{{Hartmann}, J.M.}, \bibinfo{author}{{Hill}, C.},
+  \bibinfo{author}{{Hodges}, J.T.}, \bibinfo{author}{{Jacquemart}, D.},
+  \bibinfo{author}{{Jolly}, A.}, \bibinfo{author}{{Lamouroux}, J.},
+  \bibinfo{author}{{Le Roy}, R.J.}, \bibinfo{author}{{Li}, G.},
+  \bibinfo{author}{{Long}, D.A.}, \bibinfo{author}{{Lyulin}, O.M.},
+  \bibinfo{author}{{Mackie}, C.J.}, \bibinfo{author}{{Massie}, S.T.},
+  \bibinfo{author}{{Mikhailenko}, S.}, \bibinfo{author}{{M{\"u}ller}, H.S.P.},
+  \bibinfo{author}{{Naumenko}, O.V.}, \bibinfo{author}{{Nikitin}, A.V.},
+  \bibinfo{author}{{Orphal}, J.}, \bibinfo{author}{{Perevalov}, V.},
+  \bibinfo{author}{{Perrin}, A.}, \bibinfo{author}{{Polovtseva}, E.R.},
+  \bibinfo{author}{{Richard}, C.}, \bibinfo{author}{{Smith}, M.A.H.},
+  \bibinfo{author}{{Starikova}, E.}, \bibinfo{author}{{Sung}, K.},
+  \bibinfo{author}{{Tashkun}, S.}, \bibinfo{author}{{Tennyson}, J.},
+  \bibinfo{author}{{Toon}, G.C.}, \bibinfo{author}{{Tyuterev}, V.G.},
+  \bibinfo{author}{{Wagner}, G.}, \bibinfo{year}{2013}.
+\newblock \bibinfo{title}{{The HITRAN2012 molecular spectroscopic database}}.
+\newblock \bibinfo{journal}{J. Quant. Spectro. Rad. Trans.}
+  \bibinfo{volume}{130}, \bibinfo{pages}{4--50}.
+\newblock \DOIprefix\doi{10.1016/j.jqsrt.2013.07.002}.
+%Type = Article
+\bibitem[{{Rothman} et~al.(2005){Rothman}, {Jacquemart}, {Barbe}, {Benner},
+  {Birk}, {Brown}, {Carleer}, {Chackerian}, {Chance}, {Coudert}, {Dana},
+  {Devi}, {Flaud}, {Gamache}, {Goldman}, {Hartmann}, {Jucks}, {Maki}, {Mandin},
+  {Massie}, {Orphal}, {Perrin}, {Rinsland}, {Smith}, {Tennyson}, {Tolchenov},
+  {Toth}, {Vander Auwera}, {Varanasi} and {Wagner}}]{05rothman}
+\bibinfo{author}{{Rothman}, L.S.}, \bibinfo{author}{{Jacquemart}, D.},
+  \bibinfo{author}{{Barbe}, A.}, \bibinfo{author}{{Benner}, D.C.},
+  \bibinfo{author}{{Birk}, M.}, \bibinfo{author}{{Brown}, L.R.},
+  \bibinfo{author}{{Carleer}, M.R.}, \bibinfo{author}{{Chackerian}, C.},
+  \bibinfo{author}{{Chance}, K.}, \bibinfo{author}{{Coudert}, L.H.},
+  \bibinfo{author}{{Dana}, V.}, \bibinfo{author}{{Devi}, V.M.},
+  \bibinfo{author}{{Flaud}, J.M.}, \bibinfo{author}{{Gamache}, R.R.},
+  \bibinfo{author}{{Goldman}, A.}, \bibinfo{author}{{Hartmann}, J.M.},
+  \bibinfo{author}{{Jucks}, K.W.}, \bibinfo{author}{{Maki}, A.G.},
+  \bibinfo{author}{{Mandin}, J.Y.}, \bibinfo{author}{{Massie}, S.T.},
+  \bibinfo{author}{{Orphal}, J.}, \bibinfo{author}{{Perrin}, A.},
+  \bibinfo{author}{{Rinsland}, C.P.}, \bibinfo{author}{{Smith}, M.A.H.},
+  \bibinfo{author}{{Tennyson}, J.}, \bibinfo{author}{{Tolchenov}, R.N.},
+  \bibinfo{author}{{Toth}, R.A.}, \bibinfo{author}{{Vander Auwera}, J.},
+  \bibinfo{author}{{Varanasi}, P.}, \bibinfo{author}{{Wagner}, G.},
+  \bibinfo{year}{2005}.
+\newblock \bibinfo{title}{{The HITRAN 2004 molecular spectroscopic database}}.
+\newblock \bibinfo{journal}{Journal of Quantitative Spectroscopy and Radiative
+  Transfer} \bibinfo{volume}{96}, \bibinfo{pages}{139--204}.
+%Type = Article
+\bibitem[{{Teanby} et~al.(2006){Teanby}, {Irwin}, {de Kok}, {Nixon},
+  {Coustenis}, {B{\'e}zard}, {Calcutt}, {Bowles}, {Flasar}, {Fletcher},
+  {Howett} and {Taylor}}]{05teanby}
+\bibinfo{author}{{Teanby}, N.A.}, \bibinfo{author}{{Irwin}, P.G.J.},
+  \bibinfo{author}{{de Kok}, R.}, \bibinfo{author}{{Nixon}, C.A.},
+  \bibinfo{author}{{Coustenis}, A.}, \bibinfo{author}{{B{\'e}zard}, B.},
+  \bibinfo{author}{{Calcutt}, S.B.}, \bibinfo{author}{{Bowles}, N.E.},
+  \bibinfo{author}{{Flasar}, F.M.}, \bibinfo{author}{{Fletcher}, L.N.},
+  \bibinfo{author}{{Howett}, C.}, \bibinfo{author}{{Taylor}, F.W.},
+  \bibinfo{year}{2006}.
+\newblock \bibinfo{title}{{Latitudinal variations of HCN, HC$_{3}$N, and
+  C$_{2}$N$_{2}$ in Titan's stratosphere derived from Cassini CIRS data}}.
+\newblock \bibinfo{journal}{Icarus} \bibinfo{volume}{181},
+  \bibinfo{pages}{243--255}.
+\newblock \DOIprefix\doi{10.1016/j.icarus.2005.11.008}.
+%Type = Phdthesis
+\bibitem[{Tsang(2007)}]{07tsang_phd}
+\bibinfo{author}{Tsang, C.}, \bibinfo{year}{2007}.
+\newblock \bibinfo{title}{The Composition and Circulation of the Atmosphere of
+  Venus using Venus Express/VIRTIS Data}.
+\newblock Ph.D. thesis. University of Oxford.
+
+\end{thebibliography}

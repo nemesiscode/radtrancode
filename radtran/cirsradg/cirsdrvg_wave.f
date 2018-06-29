@@ -7,7 +7,7 @@ C
 C_ARGS:	
 C
 C_CALL: 
-	file		Forces file extension.
+C	file		Forces file extension.
 C	remsp		Remove space from passed string.
 C	upcase		Make upper-case the passed string.
 C	cirsrtfg

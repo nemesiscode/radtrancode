@@ -1,1 +1,1 @@
-Presentations show in at NEMESIS meeting in Oxford in June 2018.
+Presentations shown at the Oxford NEMESIS meeting in June 2018.

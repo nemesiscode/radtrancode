@@ -67,7 +67,7 @@ C ../includes/dbcom.f stores the line database variables (e.g. RELABU).
       INTEGER IDLIN(MAXLIN),NGAS,IDGAS(NGAS),ISOGAS(NGAS)
 
       DOUBLE PRECISION VMIN,DELV,VLIM,VLIN(MAXLIN)
-      REAL ALIN(MAXLIN),ELIN(MAXLIN)
+      REAL ALIN(MAXLIN),ELIN(MAXLIN),FH2
       REAL SBLIN(MAXLIN),TDW(MAXLIN),TDWS(MAXLIN),PSHIFT(MAXLIN)
       REAL DOUBV(MAXLIN)
       DOUBLE PRECISION SLIN(MAXLIN)
@@ -94,6 +94,11 @@ C First open database .key file
       ENDIF
       OPEN(UNIT=DBLUN,FILE=DBFILE,STATUS='OLD',FORM='FORMATTED',
      1 ACCESS='DIRECT',RECL=DBRECL)
+
+      IF(DBRECL.EQ.128)THEN
+       CALL PROMPT('Oxford-ExoMOL format - enter fH2 : ')
+       READ*,FH2
+      ENDIF
 
       CALL FNDWAV(VMIN)
       MINREC= DBREC
@@ -135,17 +140,25 @@ C Set the air-broadened halfwidth equal to the Lorentz halfwidth
             DOUBV(LINE)= LDOUBV
             TDW(LINE)= LNTDEP
             TDWS(LINE)= LNTDEPS
-            IF(DBRECL.EQ.160)THEN
-             LLQ(LINE)=LNLLQ04
-            ELSE
-             LLQ(LINE)(1:9)= LNLLQ
-             LLQ(LINE)(10:15)='      '
-            ENDIF
+
             IF(LNWIDS.GT.1.E-20)THEN
 C NOTE: SBLIN is the correction to air broadening so that zero is valid
               SBLIN(LINE)= LNWIDA - LNWIDS
             ELSE
               SBLIN(LINE)= 0.0
+            ENDIF
+
+            IF(LNWIDA1.GT.1E-20)THEN
+             ALIN(LINE)=FH2*LNWIDA + (1.0-FH2)*LNWIDA1
+             SBLIN(LINE) = ALIN(LINE) - LNWIDS
+             TDW(LINE) = FH2*LNTDEP + (1-FH2)*LNTDEP1
+            ENDIF
+
+            IF(DBRECL.EQ.160)THEN
+             LLQ(LINE)=LNLLQ04
+            ELSE
+             LLQ(LINE)(1:9)= LNLLQ
+             LLQ(LINE)(10:15)='      '
             ENDIF
             ELIN(LINE)= LNLSE
             LINE= LINE + 1

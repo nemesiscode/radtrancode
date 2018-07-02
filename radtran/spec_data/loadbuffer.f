@@ -68,13 +68,14 @@ C ../includes/dbcom.f stores the line database variables (e.g. RELABU).
       DOUBLE PRECISION VMIN,VMAX
       DOUBLE PRECISION VLIN(2,MAXLIN)
       DOUBLE PRECISION SLIN(2,MAXLIN)
-      REAL ALIN(2,MAXLIN),ELIN(2,MAXLIN)
+      REAL ALIN(2,MAXLIN),ELIN(2,MAXLIN),FH2
       REAL SBLIN(2,MAXLIN),TDW(2,MAXLIN)
       REAL TDWS(2,MAXLIN),PSHIFT(2,MAXLIN)
       REAL DOUBV(2,MAXLIN),VBOT,WING
       CHARACTER*15 LLQ(2,MAXLIN)
       CHARACTER*256 BUFFER
       LOGICAL WARNTD
+      PARAMETER (FH2=0.865)
 
       REAL TINW(MAXDGAS)
       DATA (TINW(J),J=1,42)/0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,
@@ -160,6 +161,10 @@ C              WRITE(*,*)' relabu = ',RELABU(ISOGAS(I),IDGAS(I))
             IDLIN(IB,LINE)= I
 
             VLIN(IB,LINE)= LNWAVE
+            ELIN(IB,LINE)= LNLSE
+            PSHIFT(IB,LINE)= LNPSH
+            DOUBV(IB,LINE)= LDOUBV
+
 
 
             CURBIN = 1+INT((LNWAVE-VBOT)/WING)
@@ -184,10 +189,6 @@ C NOTE: SBLIN is the correction to air broadening so that zero is valid
               SBLIN(IB,LINE)= 0.0
             ENDIF
 
-            ELIN(IB,LINE)= LNLSE
-            PSHIFT(IB,LINE)= LNPSH
-            DOUBV(IB,LINE)= LDOUBV
-
             TDW(IB,LINE)= LNTDEP
             IF(LNTDEP.LT.1.E-30)THEN
              TDW(IB,LINE)= TINW(LOCID(LNID))
@@ -206,6 +207,14 @@ C NOTE: SBLIN is the correction to air broadening so that zero is valid
               WRITE(*,*)' widths.'
               WARNTD= .FALSE.
              ENDIF
+            ENDIF
+
+
+            IF(LNWIDA1.GT.1.E-20)THEN
+C            Composite 'Oxford'-ExoMOL format, which lists H2, He and Self-broadening.
+             ALIN(IB,LINE) = FH2*LNWIDA + (1.0-FH2)*LNWIDA1
+             SBLIN(IB,LINE) = ALIN(IB,LINE) - LNWIDS            
+             TDW(IB,LINE) = FH2*LNTDEP + (1-FH2)*LNTDEP1
             ENDIF
 
             IF(DBRECL.EQ.160)THEN

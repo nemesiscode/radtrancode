@@ -103,7 +103,7 @@ C          HITRAN160
         ELSE IF(DBRECL.EQ.128)THEN
 C        'Oxford' ExoMOL format
           READ(BUFFER,108,END=99)LNID,LNISO,LNWAVE,LNSTR,EXP,
-     1     LNWIDA,LNTDEP,LNWIDA1,LNTDEP1,LNWIDS,LNTDEPS,
+     1     LNWIDA,LNTDEP,LNWIDA1,LNTDEP1,LNWIDS,LNTDEPS,LNLSE,
      2     LNUVQ,LNUVS,LNLVQ,LNLVS,LNUJ,LNUK,LNLJ,LNLK,LNACC04
 108       FORMAT(I2,I1,F12.6,F6.3,1X,I3,F5.4,F4.2,F5.4,F4.2,
      &     F5.4,F4.2,F10.4,A18,I3,A18,I3,I5,I4,I4,I4,1X,6I1)
@@ -111,7 +111,7 @@ C        'Oxford' ExoMOL format
           WRITE(*,*)' RDLINE.f :: HITRAN format not recognised.'
           WRITE(*,*)' Stopping program.'
           WRITE(*,*)' '
-          WRITE(*,*)' Accepted DBRECL for DBFORM = 0, either 100,112.'
+          WRITE(*,*)' Accepted DBRECL for DBFORM = 0, 100,112,128,160.'
           WRITE(*,*)' DBFORM, DBRECL = ',DBFORM,DBRECL
           STOP
         ENDIF

@@ -1,0 +1,47 @@
+This is BibTeX, Version 0.99d (TeX Live 2017)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: NEMESIS4Newbies.aux
+The style file: elsarticle-harv.bst
+Database file #1: references.bib
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+You've used 36 entries,
+            2990 wiz_defined-function locations,
+            904 strings with 15886 characters,
+and the built_in function-call counts, 33895 in all, are:
+= -- 2121
+> -- 2352
+< -- 12
++ -- 897
+- -- 855
+* -- 4379
+:= -- 5060
+add.period$ -- 124
+call.type$ -- 36
+change.case$ -- 456
+chr.to.int$ -- 34
+cite$ -- 36
+duplicate$ -- 2127
+empty$ -- 1933
+format.name$ -- 955
+if$ -- 5993
+int.to.chr$ -- 3
+int.to.str$ -- 1
+missing$ -- 526
+newline$ -- 211
+num.names$ -- 144
+pop$ -- 813
+preamble$ -- 1
+purify$ -- 429
+quote$ -- 0
+skip$ -- 495
+stack$ -- 0
+substring$ -- 932
+swap$ -- 1977
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 306
+warning$ -- 0
+while$ -- 138
+width$ -- 0
+write$ -- 549

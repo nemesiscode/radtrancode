@@ -1,0 +1,1 @@
+Example direct imaging observation.

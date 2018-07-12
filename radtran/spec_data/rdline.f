@@ -39,6 +39,7 @@ cc      WRITE(*,*)' RDLINE.f :: DBFORM, DBRECL = ',DBFORM,DBRECL
 C=======================================================================
 C
 C     HITRAN (either of 100-, 112-character or 160-character formats)
+C     Also new 'Oxford formt' 128-
 C
 C=======================================================================
         IF(DBRECL.EQ.100)THEN
@@ -99,11 +100,18 @@ C          HITRAN160
           ENDIF
 106       FORMAT(I2,I1,F12.6,F6.3,1X,I3,F10.4,F5.4,F3.2,F6.4,F3.2)
 107       FORMAT(I2,I1,F12.6,F5.3,1X,I4,F10.4,F5.4,F3.2,F6.4,F3.2)
+        ELSE IF(DBRECL.EQ.128)THEN
+C        'Oxford' ExoMOL format
+          READ(BUFFER,108,END=99)LNID,LNISO,LNWAVE,LNSTR,EXP,
+     1     LNWIDA,LNTDEP,LNWIDA1,LNTDEP1,LNWIDS,LNTDEPS,LNLSE,
+     2     LNUVQ,LNUVS,LNLVQ,LNLVS,LNUJ,LNUK,LNLJ,LNLK,LNACC04
+108       FORMAT(I2,I1,F12.6,F6.3,1X,I3,F5.4,F4.2,F5.4,F4.2,
+     &     F5.4,F4.2,F10.4,A18,I3,A18,I3,I5,I4,I4,I4,1X,6I1)
         ELSE
           WRITE(*,*)' RDLINE.f :: HITRAN format not recognised.'
           WRITE(*,*)' Stopping program.'
           WRITE(*,*)' '
-          WRITE(*,*)' Accepted DBRECL for DBFORM = 0, either 100,112.'
+          WRITE(*,*)' Accepted DBRECL for DBFORM = 0, 100,112,128,160.'
           WRITE(*,*)' DBFORM, DBRECL = ',DBFORM,DBRECL
           STOP
         ENDIF

@@ -1,0 +1,44 @@
+******** any header info you like. One line only ********
+4                ! no of profiles for fitting
+333 0 0         ! g
+4.0 0.5
+555 0 0         ! rayon
+0. 70000.
+1 0 3           ! H2O scaled
+1.0 1.0
+-1 0 3		! Dust scaled
+1.0 1.0
+-1 0 8           ! cloud variable 1
+5.0 5.0
+0.3 0.3
+0.5 0.5
+6 0 3           ! CH4 scaled
+1.0 1.0
+28 0 3           ! PH3 scaled
+1.0 1.0
+2 0 3            ! CO2 scaled
+1.0 1.0
+59 0 3           ! Na scaled
+1.0 1.0
+60 0 3           ! K scaled
+1.0 1.0
+0 0 0           ! temp, cont
+PDS70_temp.dat
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

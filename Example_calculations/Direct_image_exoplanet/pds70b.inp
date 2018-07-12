@@ -1,0 +1,8 @@
+1 0 0           ! ISPACE, ISCAT, ILBL
+0.0             ! Wavenumber offset
+noise.dat
+100               ! Number of iterations
+0.00100         ! Minimum change in cost function
+4,1             ! Number of spectra to retrieve and starting ID
+0               ! Use previous retrieval results (set to 1 if yes)
+3               ! IFORM value for nemesisdisc

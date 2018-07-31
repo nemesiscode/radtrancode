@@ -1,0 +1,22 @@
+ Reading scattering information from jupiter.sca                                                                                         
+Output from NEMESIS mod_scatte
+ nmu =   5
+  0.165278957666387       0.327539761183898     
+  0.477924949810444       0.292042683679684     
+  0.738773865105505       0.224889342063117     
+  0.919533908166459       0.133305990851069     
+   1.00000000000000       2.222222222222220E-002
+ isol =            1
+ dist =    5.415000    
+ lowbc =            1
+ galb =   0.000000000000000E+000
+ sol_ang, emiss_ang =    11.38450       6.011050    
+ aphi =    149.6630    
+ nf =            2
+ ncont =            2
+ liscat(i) =            5
+ lnorm(i) =            1
+ scatfile = hgphase1.dat                  
+ liscat(i) =            5
+ lnorm(i) =            1
+ scatfile = hgphase2.dat                  

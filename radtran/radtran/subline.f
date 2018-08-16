@@ -51,6 +51,7 @@ C      due to H2 and He collision-broadening.
       PARAMETER (BURCHCO2_NORM = 1.006956255,PI=3.1415927)
 C     BURCHCO2_NORM = ratio of area under voigt / area under burch lineshape
 C     used to renomalise the linestrengths
+	REAL DeltaSigma,hc,k,SigmaF,vdeltasigma
 
       TRATIO=296.0/TEMP
       DV=VV-VLIN
@@ -72,8 +73,6 @@ c     read modif/voigt file
 c     extrapolation for same X
 
 c     factor application
-
-      ENDIF
 
       ELSE IF(IPROC.EQ.15)THEN
 C      IPROC=15::alkali profile from Burrows & Volobuyev 2003

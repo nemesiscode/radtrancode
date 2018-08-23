@@ -1,0 +1,21 @@
+Output from NEMESIS mod_scatte
+           5                  ! Number of zenith ordinates
+  0.165278957666387       0.327539761183898     
+  0.477924949810444       0.292042683679684     
+  0.738773865105505       0.224889342063117     
+  0.919533908166459       0.133305990851069     
+   1.00000000000000       2.222222222222220E-002
+           1                            ! Sunlight switch
+   5.415000                            ! Solar distance (AU)
+           1                  ! Lower boundary condition
+  0.0000000E+00                              ! Ground albedo
+   55.10450       61.59920         ! Solar/emiss zenith angles
+   177.2920                                  ! Azimuth angle
+          18                 ! Number of fourier components
+           2                  ! Number of particle types
+           5                              ! Scat ID
+           1                               ! Norm ID
+ hgphase1.dat                  
+           5                              ! Scat ID
+           1                               ! Norm ID
+ hgphase2.dat                  

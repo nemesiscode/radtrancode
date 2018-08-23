@@ -1,0 +1,16 @@
+******** any header info you like. One line only ********
+5                       !number of variable profiles (vmr,T, or cont)
+-1 0 25                 !aerosol density profile (cloud variable 1) to be treated as continuous over the pressure range of jupiter.ref
+dusttest.dat
+-2 0 12                 !aerosol density profile (cloud variable 2) to be treated as continuous over the pressure range of jupiter.ref
+1e-3 5e-4
+1.0 0.5
+1.0 1e-7
+11 0 7
+0.6
+1e-4 5e-5
+1.0 0.5
+444 1 444		!retrieval of the imaginary part of a cloud’s complex refractive index spectrum, 
+cloud1.dat
+444 2 444		!retrieval of the imaginary part of a cloud’s complex refractive index spectrum, 
+cloud2.dat

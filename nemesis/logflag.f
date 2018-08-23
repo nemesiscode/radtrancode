@@ -38,6 +38,7 @@ C       Variable is not temperature  - may need to take exponent
         if(imod.eq.16.and.ip.eq.1)iflag=1 ! lapse rate profile      
         if(imod.eq.19.and.ip.eq.1)iflag=1 ! lapse rate profile      
         if(imod.eq.25)iflag=1  ! Shortened continuous model
+        if(imod.eq.28)iflag=1 !Modify just one element of a profile
       endif
 
       if(imod.eq.1.and.ip.eq.2)iflag=1 ! log fsh - fixed knee

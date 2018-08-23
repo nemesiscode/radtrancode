@@ -30,9 +30,7 @@ F_SOURCES = \
 	read_yam.f \
 	write_band.f \
 	add_line_buff.f \
-	read_line_buff.f \
-	jwid.f \
-	jwids.f
+	read_line_buff.f
 
 INCDIR = ../includes
 #INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/bincoms.f $(INCDIR)/dbcom.f \

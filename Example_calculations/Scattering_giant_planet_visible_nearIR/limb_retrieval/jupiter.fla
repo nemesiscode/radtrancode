@@ -1,0 +1,8 @@
+1	! Inormal (0=eqm, 1=normal)
+4	! Iray (0=off, 1=on)
+0	! IH2O (1 = turn extra continuum on)
+0	! ICH4 (1 = turn extra continuum on) 
+0	! IO3 (1 = turn extra continuum on) 
+0	! INH3 (1 = turn extra continuum on) 
+0	! Iptf (0=default, 1=CH4 High-T)
+0	! IMie

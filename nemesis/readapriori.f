@@ -81,7 +81,7 @@ C     ****************************************************************
       real eref(maxlat,maxpro),reflat(maxlat),htan
       real delp,xfac,pknee,eknee,edeep,xdeep,xlat,xlatx,xlonx,pshld
       real xstep,estep,efsh,xfsh,varparam(mvar,mparam),flat,hknee,pre
-      real ref(maxlat,maxpro),clen,SXMINFAC,arg,valb,alb
+      real ref(maxlat,maxpro),clen,SXMINFAC,arg,valb,alb,refp,errp
       real xknee,xrh,erh,xcdeep,ecdeep,radius,Grav,plim
       real xcwid,ecwid,ptrop,refradius,xsc
       parameter (Grav=6.672E-11)
@@ -92,18 +92,21 @@ C     a priori covariance matrix
       integer varident(mvar,3),ivar,nvar,nlevel,lin,jsurfx
       integer jalbx,jtanx,jprex,jradx,jlat,ilat,nlat,lx(mx)
       integer nprox,nvarx,varidentx(mvar,3),lpre,ioffx,ivarx
-      integer npx,ioff,icond,npvar,jloggx,iplanet,jxscx
+      integer npx,ioff,icond,npvar,jloggx,iplanet,jxscx,jlev
       character*100 opfile,buffer,ipfile,runname,rifile,xscfil
       integer nxx,nsec,ncont1,nlay,tmp
       real xwid,ewid,y,y0,lambda0,vi(mx),vtmp(mx),xt(mx)
-      real r0,er0,dr,edr,vm,nm,nmshell,nimag,delv,xy
+      real r0,er0,dr,edr,vm,nm,nimag,delv,xy
       real xldeep,eldeep,xlhigh,elhigh
       real v1,v1err,v2,v2err,p1,p1err,p2,p2err
       real tau0,ntemp,teff,alpha,T0
       real etau0,entemp,eteff,ealpha,eT0
-      real csx,cserr,nimagshell,errshell
+      real csx,cserr,nrealfix(mx),nimagfix(mx)
+      integer fixtoggle
       logical filexist
       real tmpgrid(mparam),findgen(mparam),yout
+
+      common /maltmieser/nrealfix,nimagfix
 
 C     Initialise a priori parameters
       do i=1,mx
@@ -795,7 +798,11 @@ C            Read in xdeep, pknee, xwid
 
 
            elseif (varident(ivar,3).eq.14)then
+<<<<<<< HEAD
 C            ** profile held as peak amount, height and FWHM (km) (Gaussian) **
+=======
+C            ** profile held as peak OD, altitude and FWHM (km) (Gaussian) **
+>>>>>>> 51cb2ca49da67c0592835fb50bb052c6250c456f
 C            Read in xdeep, pknee, xwid
 
              read(27,*)xdeep,edeep
@@ -1283,8 +1290,8 @@ C           Continuous profile but represented with fewer points than in .prf to
 C           implicit smoothing and faster retrieval times
 C            Read in number of points and any cross-correlation
 
-             do i=1,np
 
+             do i=1,np
 C             References to pref can probably be removed entirely from this section,
 C             but this is a temporary fix just to get rid of compiler issues
               pref(i)=0
@@ -1457,6 +1464,34 @@ C		 ** Knee **
              sx(ix,ix) = (eknee/pknee)**2
 
              nx = nx+3
+
+           elseif(varident(ivar,3).eq.28) then
+C          Modify one element of a profile
+
+            ix = nx+1
+            read(27,*)jlev
+            varparam(ivar,1) = jlev
+            read(27,*)refp,errp
+
+            if(varident(ivar,1).eq.0)then
+c             *** temperature, leave alone ***
+              x0(ix) = refp
+              err = errp 
+            else
+c             *** vmr, cloud, para-H2 , fcloud, take logs ***
+              if(refp.gt.0.0)then
+                x0(ix) = alog(refp)
+                lx(ix)=1
+              else
+                 print*,'Error in readapriori.f. Cant take log of zero'
+                 print*,refp
+                 stop
+              endif
+              err = errp/refp
+            endif
+    
+            sx(ix,ix) = err**2
+            nx = nx+1
 
            else         
             print*,'vartype profile parametrisation not recognised'
@@ -1728,6 +1763,8 @@ C               xfac = exp(-arg*arg)
 
            elseif (varident(ivar,1).eq.445)then
 C            ** Variable cloud particle size distribution and composition using Maltmieser coated sphere model **
+C            ** where the complex ref index of the 'core' is fixed to a set of reference values **
+C            ** and the complex ref index of the 'shell' is to be retrieved (or vice versa) **
              read(27,1)rifile
 
              open(28,file=rifile,status='old')	!open cloud.dat
@@ -1764,6 +1801,16 @@ C              Read ratio of shell volume wrt total volume of particle, with err
                sx(ix,ix)=(cserr/csx)**2
                lx(ix)=1
 
+C              Read whether to fix the shell- or the core complex refractive index spectrum:
+C              fixtoggle = 1: Retrieve shell index, fix core index
+C              fixtoggle = 0: Retrieve core index, fix shell index
+               read(28,*)fixtoggle
+               if((fixtoggle.ne.1).and.(fixtoggle.ne.0))then
+                print*,'Error readapriori:'
+                print*,'Fixtoggle must equal 0 or 1'
+                stop
+               endif
+               varparam(ivar,6)=fixtoggle
 C              Read number of wavelengths and correlation length (wavelength/
 C				wavenumbers)
                read(28,*)np,clen
@@ -1783,23 +1830,20 @@ C		Read .xsc file and get extinction cross-sec and sing-scat albedo for each aer
                varparam(ivar,2)=clen
 
 C              read reference wavelength and nr at that wavelength (shell)
-               read(28,*)vm,nm,nmshell
+               read(28,*)vm,nm
                varparam(ivar,3)=vm
                varparam(ivar,4)=nm
-               varparam(ivar,6)=nmshell
 
 C              read x-section normalising wavelength (-1 to not normalise)
                read(28,*)lambda0
                varparam(ivar,5)=lambda0
                do i=1,np             
-                read(28,*)vi(i),nimag,err,nimagshell,errshell	!wavelength, core imag RI, shell imag RI
+                read(28,*)vi(i),nimag,err	!read in imaginary ref index to retrieve (wavelength, imag ri, error)
+		 call readmmr(runname,vi(i),nrealfix(i),nimagfix(i))!read in imaginary ref index to fix (wavelength, imag ri, error)
                 ix=nx+3+i
-                x0(ix)=alog(nimag)		!set next position in a priori vector to core imag RI
+                x0(ix)=alog(nimag)		!set next position in a priori vector to imag ref index
                 sx(ix,ix)=(err/nimag)**2	!set a priori covariance matrix
                 lx(ix)=1
-                x0(ix+np)=alog(nimagshell)	!ditto with shell imag RI
-                sx(ix+np,ix+np)=(errshell/nimagshell)**2
-                lx(ix+np)=1
                enddo
              close(28)
 
@@ -1813,14 +1857,11 @@ C               xfac = exp(-arg*arg)
                 sx(nx+3+i,nx+3+j)=
      & sqrt(sx(nx+3+i,nx+3+i)*sx(nx+3+j,nx+3+j))*xfac
                 sx(nx+3+j,nx+3+i)=sx(nx+3+i,nx+3+j)
-                sx(nx+3+i+np,nx+3+j+np)=
-     & sqrt(sx(nx+3+i+np,nx+3+i+np)*sx(nx+3+j+np,nx+3+j+np))*xfac
-                sx(nx+3+j+np,nx+3+i+np)=sx(nx+3+i+np,nx+3+j+np)
                endif
               enddo
              enddo
 
-             nx = nx+3+(np*2)
+             nx = nx+3+np
 
  
 C **************** add mass variable  ***************

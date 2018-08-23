@@ -96,17 +96,14 @@ C     a priori covariance matrix
       character*100 opfile,buffer,ipfile,runname,rifile,xscfil
       integer nxx,nsec,ncont1,nlay,tmp
       real xwid,ewid,y,y0,lambda0,vi(mx),vtmp(mx),xt(mx)
-      real r0,er0,dr,edr,vm,nm,nimag,delv,xy
+      real r0,er0,dr,edr,vm,nm,nmshell,nimag,delv,xy
       real xldeep,eldeep,xlhigh,elhigh
       real v1,v1err,v2,v2err,p1,p1err,p2,p2err
       real tau0,ntemp,teff,alpha,T0
       real etau0,entemp,eteff,ealpha,eT0
-      real csx,cserr,nrealfix(mx),nimagfix(mx)
-      integer fixtoggle
+      real csx,cserr,nimagshell,errshell
       logical filexist
       real tmpgrid(mparam),findgen(mparam),yout
-
-      common /maltmieser/nrealfix,nimagfix
 
 C     Initialise a priori parameters
       do i=1,mx
@@ -1763,8 +1760,6 @@ C               xfac = exp(-arg*arg)
 
            elseif (varident(ivar,1).eq.445)then
 C            ** Variable cloud particle size distribution and composition using Maltmieser coated sphere model **
-C            ** where the complex ref index of the 'core' is fixed to a set of reference values **
-C            ** and the complex ref index of the 'shell' is to be retrieved (or vice versa) **
              read(27,1)rifile
 
              open(28,file=rifile,status='old')	!open cloud.dat
@@ -1801,16 +1796,6 @@ C              Read ratio of shell volume wrt total volume of particle, with err
                sx(ix,ix)=(cserr/csx)**2
                lx(ix)=1
 
-C              Read whether to fix the shell- or the core complex refractive index spectrum:
-C              fixtoggle = 1: Retrieve shell index, fix core index
-C              fixtoggle = 0: Retrieve core index, fix shell index
-               read(28,*)fixtoggle
-               if((fixtoggle.ne.1).and.(fixtoggle.ne.0))then
-                print*,'Error readapriori:'
-                print*,'Fixtoggle must equal 0 or 1'
-                stop
-               endif
-               varparam(ivar,6)=fixtoggle
 C              Read number of wavelengths and correlation length (wavelength/
 C				wavenumbers)
                read(28,*)np,clen
@@ -1829,21 +1814,24 @@ C		Read .xsc file and get extinction cross-sec and sing-scat albedo for each aer
 
                varparam(ivar,2)=clen
 
-C              read reference wavelength and nr at that wavelength (shell)
-               read(28,*)vm,nm
+C              read reference wavelength and nr at that wavelength (core,then shell)
+               read(28,*)vm,nm,nmshell
                varparam(ivar,3)=vm
                varparam(ivar,4)=nm
+               varparam(ivar,6)=nmshell
 
 C              read x-section normalising wavelength (-1 to not normalise)
                read(28,*)lambda0
                varparam(ivar,5)=lambda0
                do i=1,np             
-                read(28,*)vi(i),nimag,err	!read in imaginary ref index to retrieve (wavelength, imag ri, error)
-		 call readmmr(runname,vi(i),nrealfix(i),nimagfix(i))!read in imaginary ref index to fix (wavelength, imag ri, error)
+                read(28,*)vi(i),nimag,err,nimagshell,errshell	!wavelength, core imag RI, shell imag RI
                 ix=nx+3+i
-                x0(ix)=alog(nimag)		!set next position in a priori vector to imag ref index
+                x0(ix)=alog(nimag)		!set next position in a priori vector to core imag RI
                 sx(ix,ix)=(err/nimag)**2	!set a priori covariance matrix
                 lx(ix)=1
+                x0(ix+np)=alog(nimagshell)  !ditto with shell imag RI
+                sx(ix+np,ix+np)=(errshell/nimagshell)**2
+                lx(ix+np)=1
                enddo
              close(28)
 
@@ -1857,11 +1845,14 @@ C               xfac = exp(-arg*arg)
                 sx(nx+3+i,nx+3+j)=
      & sqrt(sx(nx+3+i,nx+3+i)*sx(nx+3+j,nx+3+j))*xfac
                 sx(nx+3+j,nx+3+i)=sx(nx+3+i,nx+3+j)
+                sx(nx+3+i+np,nx+3+j+np)=
+     & sqrt(sx(nx+3+i+np,nx+3+i+np)*sx(nx+3+j+np,nx+3+j+np))*xfac
+                sx(nx+3+j+np,nx+3+i+np)=sx(nx+3+i+np,nx+3+j+np)
                endif
               enddo
              enddo
 
-             nx = nx+3+np
+             nx = nx+3+(np*2)
 
  
 C **************** add mass variable  ***************

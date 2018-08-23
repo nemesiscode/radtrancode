@@ -80,7 +80,7 @@ C     ***********************************************************************
       REAL LPMIN,LPMAX,DLP,XPS(MAXPRO),XP2S(MAXPRO)
       DOUBLE PRECISION Q(MAXPRO),OD(MAXPRO),ND(MAXPRO),XOD
       INTEGER ISCALE(MAXGAS),XFLAG,NPVAR,MAXLAT,IERR
-      INTEGER NLATREF,ILATREF,JLAT,KLAT,ICUT,JX
+      INTEGER NLATREF,ILATREF,JLAT,KLAT,ICUT,JX,JLEV
       PARAMETER (MAXLAT=20)
       REAL HREF(MAXLAT,MAXPRO),TREF(MAXLAT,MAXPRO),FLAT
       REAL PREF(MAXLAT,MAXPRO),VMRREF(MAXLAT,MAXPRO,MAXGAS)
@@ -2527,7 +2527,38 @@ C	   If step is not steep enough then increase HVS
 
          ENDDO
 
+        ELSEIF(VARIDENT(IVAR,3).EQ.28)THEN
+C        Model 28: Modify just one element of a continuous profile
+C        ***************************************************************
 
+c         Level in profile to be changed
+          JLEV = VARPARAM(IVAR,1)
+
+          DO I=1,NPRO
+
+           IF(I.EQ.JLEV)THEN
+            IF(VARIDENT(IVAR,1).EQ.0)THEN
+             X1(I) = XN(NXTEMP+1)
+             XMAP(NXTEMP+1,IPAR,I)=1.0
+            ELSE
+              IF(XN(NXTEMP+I).GT.-82.8931)THEN
+                X1(I) = EXP(XN(NXTEMP+1))
+              ELSE
+                X1(I) = 1.0E-36
+              ENDIF
+              IF(XN(NXTEMP+I).LT.80.0)THEN
+                X1(I) = EXP(XN(NXTEMP+1))
+              ELSE
+                X1(I) = EXP(80.0)
+              ENDIF
+              XMAP(NXTEMP+1,IPAR,I)=X1(I)
+            ENDIF
+           ELSE
+            X1(I) = XREF(I) 
+            XMAP(NXTEMP+1,IPAR,I)=0.0 
+           ENDIF
+          ENDDO
+ 
         ELSE
 
          PRINT*,'Subprofretg: Model parametrisation code is not defined'
@@ -2692,11 +2723,7 @@ C          post-processing in gsetrad.f
 
 
          ENDIF
-         IF(VARIDENT(IVAR,1).EQ.445)THEN
-          NP = 3+(2*INT(VARPARAM(IVAR,1)))
-         ELSE
-          NP = 2+INT(VARPARAM(IVAR,1))
-         ENDIF
+         NP = 2+INT(VARPARAM(IVAR,1))
         ELSEIF(VARIDENT(IVAR,1).EQ.333)THEN
 C         print*,'Surface gravity (log10(g))'
          IPAR = -1

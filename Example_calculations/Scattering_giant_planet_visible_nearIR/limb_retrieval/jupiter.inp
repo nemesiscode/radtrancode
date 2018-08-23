@@ -1,0 +1,11 @@
+1 1 0		! ISPACE, ISCAT, ILBL
+0.0    		! Wavenumber offset
+noise3.dat
+15  		! Number of iterations
+0.100000  	! Minimum change in cost function
+1 1  		! Number of spectra to retrieve and starting ID
+0   		! Don't substitute previous retrievals
+0
+.true.
+0
+

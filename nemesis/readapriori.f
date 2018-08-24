@@ -795,11 +795,7 @@ C            Read in xdeep, pknee, xwid
 
 
            elseif (varident(ivar,3).eq.14)then
-<<<<<<< HEAD
-C            ** profile held as peak amount, height and FWHM (km) (Gaussian) **
-=======
 C            ** profile held as peak OD, altitude and FWHM (km) (Gaussian) **
->>>>>>> 51cb2ca49da67c0592835fb50bb052c6250c456f
 C            Read in xdeep, pknee, xwid
 
              read(27,*)xdeep,edeep

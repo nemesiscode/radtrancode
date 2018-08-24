@@ -1,5 +1,5 @@
       subroutine stripvar(nvarx,varidentx,varparamx,nprox,nvar,varident,
-     1  nxx,xnx)
+     1  varparam,nxx,xnx)
 C     *****************************************************************
 C     Subroutine to strip current retrieval parameters from previous 
 C     retrieved parameters. Part of LIN=3 option where previously
@@ -36,7 +36,7 @@ C     Set measurement vector and source vector lengths here.
       include '../radtran/includes/arrdef.f'
       INCLUDE 'arraylen.f'
       integer nprox,nvarx,varidentx(mvar,3),nxx,ivar,ivarx
-      real varparamx(mvar,mparam),xnx(mx)
+      real varparamx(mvar,mparam),xnx(mx),varparam(mvar,mparam)
       integer nvar,varident(mvar,3),ikeep,np,icopy,i,j,ioff
 
 C     **************************** CODE ********************************
@@ -76,24 +76,33 @@ C     **************************** CODE ********************************
         endif
         icopy = 1
         do i = 1,nvar
+
           if(varidentx(ivarx,1).eq.varident(i,1))then
            if(varidentx(ivarx,2).eq.varident(i,2))then
             icopy=0
+             if(varidentx(ivarx,3).eq.28)then
+              if(varparamx(ivarx,1).ne.varparam(i,1))then
+               icopy=1
+              endif
+             endif
            endif
           endif
         enddo
 
+        print*,'ivarx',ivarx
+        print*,'icopy',icopy
+
         if(icopy.gt.0)then
           ivar = ivar+1
          
-          do i=1,3
-           varidentx(ivar,i)=varidentx(ivarx,i)
+          do j=1,3
+           varidentx(ivar,j)=varidentx(ivarx,j)
           enddo
-          do i=1,mparam
-           varparamx(ivar,i)=varparamx(ivarx,i)
+          do j=1,mparam
+           varparamx(ivar,j)=varparamx(ivarx,j)
           enddo
-          do i=1,np
-           xnx(ikeep+i)=xnx(ioff+i)
+          do j=1,np
+           xnx(ikeep+j)=xnx(ioff+j)
           enddo
 
           ikeep=ikeep+np

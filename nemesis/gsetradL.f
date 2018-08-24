@@ -112,13 +112,13 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
 
       hcorrx=0.0
 
-      if(lin.eq.1.or.lin.eq.3)then
+      if(lin.eq.1.or.lin.eq.3.or.lin.eq.4)then
 
        call readxtmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
      1 nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
 
        call stripvar(nvarx,varidentx,varparamx,nprox,nvar,varident,
-     1  nxx,xnx)
+     1  varparam,nxx,xnx)
 
        print*,'gsetradL - variables to be updated from .pre'
        print*,'xlatx = ',xlatx

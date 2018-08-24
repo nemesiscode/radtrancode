@@ -62,6 +62,7 @@ F_SOURCES = \
 	readsurfem.f \
 	readraw.f \
 	writeraw.f \
+        writerawx.f \
 	coreretL.f \
 	coreretMCS.f \
 	forwardavfovL.f \

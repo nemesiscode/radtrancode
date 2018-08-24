@@ -204,7 +204,7 @@ C     Load state vector with a priori
        xn(i)=xa(i)
       enddo
 
-      if(lin.eq.1.or.lin.eq.3)then
+      if(lin.eq.1.or.lin.eq.3.or.lin.eq.4)then
 
        if(lin.eq.1)then
         call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,varparamx,
@@ -312,11 +312,11 @@ c      if reading absorption coefficient from look-up tables
 
         endif
 
-        if(lin.eq.3)then
+        if(lin.eq.3.or.lin.eq.4)then
 C         strip out variables from kkx that will be retrieved in this
 C         run.
           call scankkx(nvarx,varidentx,varparamx,nprox,nvar,varident,
-     1   kkx,stx,nxx)
+     1   varparam,kkx,stx,nxx)
         endif
        endif
 

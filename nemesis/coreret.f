@@ -386,7 +386,7 @@ C      Calc. gradient of all elements of xnx matrix.
 C        strip out variables from kkx and stx that will be retrieved in 
 C        this run.
          call scankkx(nvarx,varidentx,varparamx,nprox,nvar,varident,
-     1  kkx,stx,nxx)
+     1  varparam,kkx,stx,nxx)
        endif
 
        print*,'Calc forward model error'

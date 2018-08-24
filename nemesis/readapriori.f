@@ -2309,7 +2309,7 @@ C     the mass using the a priori log(g) AND radius
       close(27)
 
 
-      if(lin.eq.2.or.lin.eq.3)then
+      if(lin.eq.2.or.lin.eq.3.or.lin.eq.4)then
        print*,'Readapriori: previous retrieval being used to
      1 update apriori'
 
@@ -2356,15 +2356,32 @@ C     the mass using the a priori log(g) AND radius
           if(varidentx(ivarx,2).eq.varident(ivar,2))then
            if(varidentx(ivarx,3).eq.varident(ivar,3))then
 
-            print*,'Updating variable : ',ivar,' :  ',
-     1		(varident(ivar,j),j=1,3)
-            do 33 i=1,np
-             x0(ioff+i)=xnx(ioffx+i)
-             do 34 j=1,np
-              sx(ioff+i,ioff+j)=sxx(ioffx+i,ioffx+j)
-34           continue
-33          continue
+            if(varidentx(ivarx,3).eq.28)then
+             if(varparamx(ivarx,1).eq.varparam(ivar,1))then
+ 
+              print*,'Updating variable : ',ivar,' :  ',
+     1           (varident(ivar,j),j=1,3)
+              do i=1,np
+               x0(ioff+i)=xnx(ioffx+i)
+               do j=1,np
+                sx(ioff+i,ioff+j)=sxx(ioffx+i,ioffx+j)
+               enddo
+              enddo
+
+             endif             
+            else
+
+             print*,'Updating variable : ',ivar,' :  ',
+     1 		(varident(ivar,j),j=1,3)
+             do 33 i=1,np
+              x0(ioff+i)=xnx(ioffx+i)
+              do 34 j=1,np
+               sx(ioff+i,ioff+j)=sxx(ioffx+i,ioffx+j)
+34            continue
+33           continue
             
+            endif
+
            endif
           endif
          endif
@@ -2380,7 +2397,7 @@ C     the mass using the a priori log(g) AND radius
       endif
 
 C     Write out x-data to temporary .str file for later routines.
-      if(lin.eq.3)then
+      if(lin.eq.3.or.lin.eq.4)then
        call writextmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
      1  nxx,xnx,sxx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
       endif

@@ -1,5 +1,5 @@
       subroutine scankkx(nvarx,varidentx,varparamx,nprox,nvar,varident,
-     1  kkx,stx,nxx)
+     1  varparam,kkx,stx,nxx)
 C     *****************************************************************
 C     Subroutine to strip elements for current retrieval 
 C     parameters from Jacobian calculated for previously retrieved 
@@ -41,7 +41,6 @@ C     Set measurement vector and source vector lengths here.
 
 C     **************************** CODE ********************************
 
-      
       ioff = 0
       ikeep = 0
 
@@ -81,8 +80,13 @@ C     **************************** CODE ********************************
         do ivar = 1,nvar
 
           if(varidentx(ivarx,1).eq.varident(ivar,1))then
-           if(varidentx(ivarx,2).eq.varident(ivar,2))then
+           if(varidentx(ivarx,2).eq.varident(ivar,2))then            
             icopy=0
+             if(varidentx(ivarx,3).eq.28)then
+              if(varparamx(ivarx,1).ne.varparam(ivar,1))then
+               icopy=1
+              endif
+             endif
            endif
           endif
         enddo

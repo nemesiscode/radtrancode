@@ -94,7 +94,7 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
      1 nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
 
        call stripvar(nvarx,varidentx,varparamx,nprox,nvar,varident,
-     1  nxx,xnx)
+     1  varparam,nxx,xnx)
 
        print*,'gsetradPT - variables to be updated from .pre'
        print*,'xlatx = ',xlatx

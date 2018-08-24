@@ -45,7 +45,7 @@ C     TIME2: System time at the end of program execution.
       real sn(mx,mx),sm(mx,mx),xlatx,varparamx(mvar,mparam)
       real stx(mx,mx),xlonx
       integer varident(mvar,3),varidentx(mvar,3),igeom,iform,iform1
-      integer npro,nvmr,ispace,nav(mgeom),lraw,nprox,lpre
+      integer npro,nvmr,ispace,nav(mgeom),lraw,nprox,lpre,lprx
       integer ilbl,ilbl1,ishape,inum
       character*100 runname,solfile,solname,sfile,plotname
       logical solexist,percbool
@@ -61,6 +61,9 @@ C     TIME2: System time at the end of program execution.
       real vkstart,vkend,vkstep
       integer idump,kiter,jtan,jalb,jalbx,jpre,jtanx,jprex
       integer jrad,jradx,jlogg,jloggx,jxsc,jxscx,occult
+      integer jloggx1,jxscx1,jtanx1,jprex1,jradx1,jalbx1,jsurfx1
+      integer nprox1,nvarx1,varidentx1(mvar,3),nxx1
+      real xlatx1,xlonx1,varparamx1(mvar,mparam),xnx1(mx),stx1(mx,mx)
 C     ********** Scattering variables **********************
       real xwave(maxsec),xf(maxcon,maxsec),xg1(maxcon,maxsec)
       real xg2(maxcon,maxsec)
@@ -239,6 +242,19 @@ C      open previous raw retrieval file (copied to .pre)
         print*,'retrievals'
         stop
        endif
+
+       if(lin.eq.4)then
+        lprx=40
+        CALL file(runname,runname,'prx')
+        open(lprx,file=runname,status='old')
+        read(lprx,*)nspecx
+        if(nspec+ioff-1.gt.nspecx)then
+         print*,'.prx file does not contain enough'
+         print*,'retrievals'
+         stop
+        endif
+       endif
+
       endif
 
 
@@ -261,6 +277,13 @@ C      and if so, skipped
       enddo
 
       do 2999 ispec=ioff,ioff-1+nspec
+
+C      Reading if there are previous retrieved variables
+       if(lin.eq.4)then
+        call readraw(lprx,xlatx1,xlonx1,nprox1,nvarx1,varidentx1,
+     1    varparamx1,jsurfx1,jalbx1,jxscx1,jtanx1,jprex1,jradx1,jloggx1,
+     2    nxx1,xnx1,stx1)
+       endif
 
 C     Read in measurement vector, obs. geometry and covariances
       call readnextspavX(lspec,iform,woff,xlat,xlon,ngeom,nav,ny,y,se,
@@ -383,8 +406,14 @@ C     write output
      1 nvar,varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err1,ngeom,
      2 nconv,vconv,gasgiant,jpre,jrad,jlogg,iscat,lin)
 
-      CALL writeraw(lraw,ispec,xlat,xlon,npro,nvar,varident,
-     1 varparam,nx,xn,st)
+
+      if(lin.eq.4)then
+       CALL writerawx(lraw,ispec,xlat,xlon,npro,nvar,varident,
+     1   varparam,nx,xn,st,nvarx1,varidentx1,varparamx1,nxx1,xnx1,stx1)
+      else
+       CALL writeraw(lraw,ispec,xlat,xlon,npro,nvar,varident,
+     1   varparam,nx,xn,st)
+      endif
 
       if(ica.eq.1)then
 C       Write out all the error matrices if only one case retrieved
@@ -398,6 +427,9 @@ C       Write out all the error matrices if only one case retrieved
       close(lout)
       close(lraw)
       close(lpre)
+      if(lin.eq.4)then
+       close(lprx)
+      endif
 
 C     New compiler time
       call system_clock(time2)

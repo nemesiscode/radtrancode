@@ -1,7 +1,7 @@
       subroutine forwardnogL(runname,ispace,fwhm,ngeom,nav,
      1 wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,nvar,
-     2 varident,varparam,jsurf,jalb,jxsc,jtan,jpre,occult,nx,xn,ny,
-     3 yn,kk)
+     2 varident,varparam,jsurf,jalb,jxsc,jtan,jpre,occult,ionpeel,
+     3 nx,xn,ny,yn,kk)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate an FOV-averaged limb spectra using CIRSRADG,
@@ -41,6 +41,8 @@ C       jtan            integer Position of tangent height correction in
 C                               xn (if included)
 C       jpre            integer Position of tangent pressure in
 C                               xn (if included)
+C       occult          integer Solar occultation flag
+C       ionpeel         integer Onion-peeling method flag (just one tangent height)
 C       nx              integer Number of elements in state vector
 C       xn(mx)          real	State vector
 C       ny      	integer Number of elements in measured spectra array
@@ -58,15 +60,15 @@ C     **************************************************************
 
       implicit none
       integer i,j,k,lin,ispace,iav,jpath,ix
-      integer ngeom,ioff,igeom
+      integer ngeom,ioff,igeom,nlay1
       real interpem,dv
       include '../radtran/includes/arrdef.f'
       include '../radtran/includes/gascom.f'
       include 'arraylen.f'
-      real xlat,planck_wave,planckg_wave,Bg,height(100),htan
-      real wgeom(mgeom,mav),flat(mgeom,mav),fh
+      real xlat,planck_wave,planckg_wave,Bg,height(maxlay),htan
+      real wgeom(mgeom,mav),flat(mgeom,mav),fh,baseh1(maxlay)
       integer layint,inormal,iray,itype,nlayer,laytyp
-      integer iptf,imie,imie1,occult,iconv,idummy
+      integer iptf,imie,imie1,occult,iconv,idummy,ionpeel,jlev
       integer nwave(mgeom),jsurf,nem,nav(mgeom),nwave1
       real vwave(mgeom,mwave),angles(mgeom,mav,3),vwave1(mwave)
       real calcout(maxout3),fwhm,calcoutL(maxout3)
@@ -79,18 +81,18 @@ C     **************************************************************
       real layht,tsurf,esurf,gradtsurf(maxout3),pressR,delp
       real xn(mx),yn(my),kk(my,mx),yn1(my),xref,dx
       integer ny,iscat,jalb,jxsc,jtan,jpre
-      integer nphi,ipath
+      integer nphi,ipath,lhay
       integer nmu,isol,lowbc,nf
       real dist,galb,sol_ang,emiss_ang,aphi
       double precision mu(maxmu),wtmu(maxmu)
-      character*100 runname
+      character*100 runname,header
       real xmap(maxv,maxgas+2+maxcon,maxpro)
       real hcorr,hcorrx
       common /imiescat/ imie1
       integer nvar,varident(mvar,3),ivar
       real vem(maxsec),emissivity(maxsec)
       real varparam(mvar,mparam)
-      logical gasgiant
+      logical gasgiant,layexist
 
       real stelrad,solwave(maxbin),solrad(maxbin)
       integer solnpt,iform,iread
@@ -175,6 +177,51 @@ C     NemesisL
       call setup(runname,gasgiant,nmu,mu,wtmu,isol,dist,lowbc,
      1 galb,nf,nphi,layht,tsurf,nlayer,laytyp,layint)
 
+
+
+C     Calculating the atmospheric path to calculate for the onion-peeling 
+      jlev=1
+      if(ionpeel.eq.1)then
+C     It is assumed that the base level of the atmospheric layers computed
+C     by RADTRAN is read from the height.lay file
+
+       if(laytyp.ne.5)then
+         print*,'error in forwardavfovL - when using the onion-peeling'
+         print*,'scheme it is assumed that the base level of each layer'
+         print*,'is read from the height.lay file (laytyp = 5)'
+       endif
+
+       inquire(file='height.lay',exist=layexist)
+       if(layexist)then
+         lhay=12
+1        FORMAT(A)
+         open(lhay,file='height.lay',status='old')
+C        Read in one line of header
+         read(lhay,1)HEADER
+         read(lhay,*)nlay1
+         DO 107 i=1,nlay1
+          READ(12,*)baseh1(i)
+107      CONTINUE
+         close(lhay)
+       else
+         print*,'error in forwardavfovL - when using the onion-peeling'
+         print*,'scheme it is assumed that the base level of each layer'
+         print*,'is read from the height.lay file, but it doesnt exist'
+       endif
+
+       do i=1,nlay1
+        print*,baseh1(i)
+       enddo
+
+       htan = angles(1,1,1)  !Assumed there is only one tangent height
+
+       do i=1,nlay1
+        if(baseh1(i).le.htan.and.baseh1(i+1).gt.htan)jlev=i
+       enddo
+      endif
+
+
+
       if(jsurf.gt.0)then
        tsurf = xn(jsurf)
       endif
@@ -183,7 +230,8 @@ C     NemesisL
 C     Set up all files for a direct cirsrad run of limb spectra
       call gsetradL(runname,nconv1,vconv1,fwhm,ispace,iscat,
      1    gasgiant,layht,nlayer,laytyp,layint,xlat,lin,hcorrx,
-     3    nvar,varident,varparam,nx,xn,jpre,tsurf,occult,xmap)
+     2    nvar,varident,varparam,nx,xn,jpre,tsurf,occult,ionpeel,
+     3    jlev,xmap)
 
 
 C     If planet is not a gas giant then we need to read in the 
@@ -280,6 +328,10 @@ c     MAIN LOOP - CALCULATING SPECTRUM GIVEN AT EACH GEOMETRY
             fh=1.0
            endif
          
+
+C          Correcting for reading the correct indices in case we have just one htan
+           jpath = jpath - (jlev - 1)
+
 
            if(occult.eq.2)then
 C           just calculate transmission of path. Assumes no thermal emission 
@@ -425,7 +477,8 @@ c       Initialise yn1 array
 C       Set up all files to recalculate limb spectra after perturbation
         call gsetradL(runname,nconv1,vconv1,fwhm,ispace,iscat,
      1    gasgiant,layht,nlayer,laytyp,layint,xlat,lin,hcorrx,
-     3    nvar,varident,varparam,nx,xn,jpre,tsurf,occult,xmap)
+     2    nvar,varident,varparam,nx,xn,jpre,tsurf,occult,ionpeel,
+     3    jlev,xmap)
 
         call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace,
      1   vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf,
@@ -460,7 +513,12 @@ C       Set up all files to recalculate limb spectra after perturbation
             print*,nlayer,height(1),height(nlayer),htan
            endif
            fh = (htan-height(jpath))/(height(jpath+1)-height(jpath))
-        
+       
+
+C          Correcting for reading the correct indices in case we have just one htan
+           jpath = jpath - (jlev - 1)
+
+ 
 c          Now we calculate the actual spectra at the given tangent height
 
            if(occult.eq.2)then

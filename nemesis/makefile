@@ -76,6 +76,7 @@ F_SOURCES = \
 	computeFOVB.f \
 	gsetradMCS.f \
 	gwritepatL.f \
+        gwritepatSO.f \
 	gwritepatMCS.f \
 	gwritepatPT.f \
 	gwritepatdisc.f \

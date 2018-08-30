@@ -1,6 +1,6 @@
       subroutine gsetradL(runname,nconv,vconv,fwhm,ispace,iscat,
      1 gasgiant,layht,nlayer,laytyp,layint,xlat,lin,hcorrx,
-     2 nvar,varident,varparam,nx,xn,jpre,tsurf,occult,xmap)
+     2 nvar,varident,varparam,nx,xn,jpre,tsurf,occult,ionpeel,jlev,xmap)
 C     $Id:
 C     ************************************************************************
 C     Subroutine to write out the .pat, .prf, .xsc and .sca and aerosol 
@@ -33,6 +33,7 @@ C	xn(mx)		real		state vector
 C       jpre            integer         Position of tangent pressure
 C                                       in xn
 C	occult		integer		Solar occultation flag
+C       ionpeel         integer         Onion-peeling method flag
 C	tsurf		real		Surface temperature
 C
 C    Output variables      
@@ -50,7 +51,7 @@ C     ************************************************************************
       include '../radtran/includes/arrdef.f'
       include 'arraylen.f'
 
-      integer nconv,lin,ispace,iscat,xflag
+      integer nconv,lin,ispace,iscat,xflag,jlev,ionpeel
       real xlat,fwhm,xlatx,hcorrx,tsurf
       integer nlayer,laytyp,nx,nxx,ncont,jpre
       integer layint,jsurfx,jalbx,jxscx,jtanx,jprex,nprox
@@ -140,8 +141,13 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
 
       endif
 
-      call gwritepatL(runname,iscat,nconv,vconv,fwhm,layht,nlayer,
-     2 laytyp,layint,occult,flagh2p)
+      if(ionpeel.eq.1)then
+       call gwritepatSO(runname,iscat,nconv,vconv,fwhm,layht,nlayer,
+     2  laytyp,layint,occult,flagh2p,jlev)
+      else
+       call gwritepatL(runname,iscat,nconv,vconv,fwhm,layht,nlayer,
+     2  laytyp,layint,occult,flagh2p)
+      endif
 
       return
 

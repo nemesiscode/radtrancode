@@ -1,5 +1,5 @@
       subroutine forwardnoglblL(runname,ispace,iscat,fwhm,ngeom,nav,
-     1 wgeom,flat,nconv,vconv,angles,gasgiant,occult,
+     1 wgeom,flat,nconv,vconv,angles,gasgiant,occult,ionpeel,
      2 lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
      3 jlogg,RADIUS,nx,xn,ifix,ny,yn,kk)
 C     $Id:
@@ -89,7 +89,7 @@ C     **************************************************************
       real vconv1(mconv),RADIUS
       integer ny,jsurf,jalb,jxsc,jtan,jpre,nem,nav(mgeom)
       integer nphi,ipath,iconv,k,imie,imie1,jrad,jlogg
-      integer nmu,isol,lowbc,nf,nf1,nx2,occult
+      integer nmu,isol,lowbc,nf,nf1,nx2,occult,ionpeel
       real dist,galb,sol_ang,emiss_ang,z_ang,aphi,vv,Grav
       parameter (Grav=6.672E-11)
       double precision mu(maxmu),wtmu(maxmu)

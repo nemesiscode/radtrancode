@@ -46,7 +46,7 @@ C     TIME2: System time at the end of program execution.
       real stx(mx,mx),xlonx
       integer varident(mvar,3),varidentx(mvar,3),igeom,iform,iform1
       integer npro,nvmr,ispace,nav(mgeom),lraw,nprox,lpre,lprx
-      integer ilbl,ilbl1,ishape,inum
+      integer ilbl,ilbl1,ishape,inum,ionpeel
       character*100 runname,solfile,solname,sfile,plotname
       logical solexist,percbool
       integer ngeom, nwave(mgeom), nconv(mgeom), nx, ny, jsurf
@@ -129,8 +129,9 @@ C     Also read in whether scattering is required (iscat)
 C     Also read in whether solar occultation is required (occult)
 C     Also read in whether lbl calculation is required (ilbl)
 C     Also read in whether gradients are calculated analytically or numerically (inum)
+C     Also read in whether onion peeling method is to be used ionpeel
 
-      READ(32,*)ispace,iscat,occult,ilbl,inum
+      READ(32,*)ispace,iscat,occult,ilbl,inum,ionpeel
 
       if(ilbl.eq.1) then
        print*,'NemesisL - LBL calculation. Not yet implemented'
@@ -164,6 +165,11 @@ C     Read in number of iterations
        print*,'NemesisL - gradients calculated analytically'
       endif
       
+      if(ionpeel.eq.1)then
+      print*,'NemesisL - Onion-peeling method (just one tangent height)'
+      endif
+ 
+
 C     Read limiting % change in phi
       READ(32,*)phlimit
 
@@ -182,6 +188,11 @@ C     lin = 3  indicates that previous retrieval should be considered
 C              and used as a priori for all parameters that match, and
 C              used to fix all other parameters (including effect of
 C              propagation of retrieval errors).     
+C     lin = 4  indicates the same as lin = 3. However, in this case it
+C              also indicates that current retrieved variables and the
+C              previous ones must be saved in the output .raw file.
+C              Useful for sequential retrieval, such as onion-peeling method
+
       READ(32,*)lin
       iform1=0
       percbool = .false.
@@ -289,6 +300,12 @@ C     Read in measurement vector, obs. geometry and covariances
       call readnextspavX(lspec,iform,woff,xlat,xlon,ngeom,nav,ny,y,se,
      1  fwhm,nconv,vconv,angles,wgeom,flat,flon)
 
+      if(ionpeel.eq.1.and.ngeom.gt.1)then
+         print*,'Error in NemesisL - Onion-peeling method flag is set'
+         print*,'but there is more than one geometry in .spx file'
+      endif
+
+
 C     Read in forward modelling errors
       call forwarderr(ename,ngeom,nconv,vconv,woff,rerr)
 
@@ -384,8 +401,8 @@ C     set up a priori of x and its covariance
       call coreretL(runname,ispace,iscat,ilbl,ica,kiter,phlimit,
      1  inum,fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,npro,
      2  gasgiant,lin,lpre,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,
-     3  jpre,jrad,jlogg,occult,wgeom,flat,nx,lx,xa,sa,ny,y,se,xn,sm,sn,
-     4  st,yn,kk,aa,dd)
+     3  jpre,jrad,jlogg,occult,ionpeel,wgeom,flat,nx,lx,xa,sa,
+     4  ny,y,se,xn,sm,sn,st,yn,kk,aa,dd)
 
 C     Calculate retrieval errors.
 C     Simple errors, set to sqrt of diagonal of ST

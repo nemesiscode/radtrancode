@@ -58,6 +58,12 @@ C
 	INTEGER ID,ISO,I
 	REAL V0,DV,AMOUNT,PPRESS,PRESS,TEMP,ABSORB
         REAL CH4CONT,INTERP_OZONE_SERDYUCHENKO
+        REAL INTERP_C2H2_XSECTIONS, INTERP_NH3_XSECTIONS
+        REAL INTERP_C2H6_XSECTIONS, INTERP_H2O_XSECTIONS
+        REAL INTERP_PH3_XSECTIONS, INTERP_C4H2_XSECTIONS
+        REAL INTERP_CH4_XSECTIONS, INTERP_CO_XSECTIONS
+        REAL INTERP_GEH4_XSECTIONS
+
 C        REAL INTERPBASS1
         REAL NH3CONT
 C
@@ -211,10 +217,10 @@ C           Karkoschka CH4 coefficients
 
        ELSEIF ((ID.EQ.11) .AND. ((ISO.EQ.1).OR.(ISO.EQ.0))
      &  .AND. INH3.NE.0)THEN
+     
 C           Lutz+Owen NH3 coefficients
-
             ABSORB= AMOUNT*1E-20*NH3CONT(FF)
-
+            
        ELSEIF ((ID.EQ.3) .AND. ((ISO.EQ.1).OR.(ISO.EQ.0))
      &   .AND. IO3.NE.0)THEN
 C           Bass Ozone coefficients
@@ -222,12 +228,66 @@ C            ABSORB = AMOUNT*INTERPBASS1(FF,TEMP)
 
 C           Serdyuchenko ozone coefficients
             ABSORB = AMOUNT*INTERP_OZONE_SERDYUCHENKO(FF,TEMP)
+
+
+C       ELSEIF ((ID.EQ.11) .AND. ((ISO.EQ.1).OR.(ISO.EQ.0)) )THEN
        ELSE
 
 	    ABSORB=0.
 
        ENDIF
+
+
 C
+C       UV Absorptions 
+C       iuvscat is a bitmask for the different gases
+C
+        if (iuvscat.gt.0) then 
+
+C           NH3 - Radtran id 11, bit = 1
+            if ((id.eq.11).and.(IAND(1, iuvscat).eq.1)) then 
+             ABSORB = ABSORB + AMOUNT*INTERP_NH3_XSECTIONS(FF,TEMP)
+                    
+C           PH3 - Radtran id 11, bit = 2
+            elseif ((id.eq.28).and.(IAND(2, iuvscat).eq.2)) then 
+             ABSORB = ABSORB + AMOUNT*INTERP_PH3_XSECTIONS(FF,TEMP)
+
+C           C2H2 - Radtran id 26, bit = 4
+            elseif ((id.eq.26).and.(IAND(4, iuvscat).eq.4)) then 
+             ABSORB = ABSORB + AMOUNT*INTERP_C2H2_XSECTIONS(FF,TEMP)
+
+C           C2H6 - Radtran id 27, bit = 8
+            elseif ((id.eq.27).and.(IAND(8, iuvscat).eq.8)) then 
+             ABSORB = ABSORB + AMOUNT*INTERP_C2H6_XSECTIONS(FF,TEMP)
+
+C           C4H2 - Radtran id 30, bit = 16
+            elseif ((id.eq.30).and.(IAND(16, iuvscat).eq.16)) then 
+             ABSORB = ABSORB + AMOUNT*INTERP_C4H2_XSECTIONS(FF,TEMP)
+
+C           CH4 - Radtran id 6, bit = 32
+            elseif ((id.eq.6).and.(IAND(32, iuvscat).eq.32)) then 
+             ABSORB = ABSORB + AMOUNT*INTERP_CH4_XSECTIONS(FF,TEMP)
+
+C           CO - Radtran id 5, bit = 64
+            elseif ((id.eq.5).and.(IAND(64, iuvscat).eq.64)) then 
+             ABSORB = ABSORB + AMOUNT*INTERP_CO_XSECTIONS(FF,TEMP)
+
+C           GEH4 - Radtran id 33, bit = 128
+            elseif ((id.eq.33).and.(IAND(128, iuvscat).eq.128)) then 
+             ABSORB = ABSORB + AMOUNT*INTERP_GEH4_XSECTIONS(FF,TEMP)
+
+C           H2O - Radtran id 1, bit = 256
+            elseif ((id.eq.1).and.(IAND(256, iuvscat).eq.256)) then 
+             ABSORB = ABSORB + AMOUNT*INTERP_H2O_XSECTIONS(FF,TEMP)
+             
+            endif 
+
+        endif 
+
+
+
+
+
        RETURN
        END
 

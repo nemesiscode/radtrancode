@@ -187,7 +187,7 @@ C     mass to units of 1e24 kg.
 
 C        Set up parameters for non-scattering cirsrad run.
          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
-     1    IPTF,IMIE)
+     1    IPTF,IMIE, iuvscat)
          IMIE1=IMIE
 
          itype=11			! scloud11. not used here
@@ -334,7 +334,7 @@ C       Need to calculate RoC of radiance with surface gravity numerically
 
 C        Set up parameters for non-scattering cirsrad run.
          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
-     1    IPTF,IMIE)
+     1    IPTF,IMIE, iuvscat)
          IMIE1=IMIE
 
          itype=11			! scloud11. not used here

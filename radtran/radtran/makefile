@@ -113,6 +113,15 @@ F_SOURCES = \
 	interpbass1.f \
 	read_ozone_serdyuchenko.f \
 	interp_ozone_serdyuchenko.f \
+    	interp_c2h2_xsections.f \
+	interp_c2h6_xsections.f \
+	interp_c4h2_xsections.f \
+	interp_ch4_xsections.f \
+	interp_co_xsections.f \
+	interp_geh4_xsections.f \
+	interp_h2o_xsections.f \
+	interp_nh3_xsections.f \
+	interp_ph3_xsections.f \
 	benreuven.f
   	
 

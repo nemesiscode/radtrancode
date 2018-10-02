@@ -124,6 +124,9 @@ C
       ELSEIF(DBRECL.EQ.112)THEN
         ISOFIL='/home/oxpln99/plan/jaemin/isoexo.dat'
         DBFORM=0
+      ELSEIF(DBRECL.EQ.128)THEN
+        ISOFIL='/home/oxpln99/plan/jaemin/isoexo.dat'
+        DBFORM=0
       ELSEIF(DBRECL.EQ.160)THEN
         ISOFIL='/home/oxpln99/plan/jaemin/isoexo.dat'
         DBFORM=0

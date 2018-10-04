@@ -60,6 +60,7 @@ C
       CHARACTER*1 ANS
 
 
+
       CALL WTEXT(
      1'Enter absolute rootname of input line data files')
       CALL PROMPT('? : ')

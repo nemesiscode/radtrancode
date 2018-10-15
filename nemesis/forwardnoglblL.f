@@ -251,7 +251,7 @@ C         mass to units of 1e24 kg.
          
 C         Set up parameters for scattering cirsrad run.
           CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
-     1     IPTF,IMIE)
+     1     IPTF,IMIE, iuvscat)
           IMIE1=IMIE
 
           itype=11			! scloud11wave

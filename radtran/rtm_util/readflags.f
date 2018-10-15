@@ -1,5 +1,5 @@
       subroutine readflags(runname,inormal,iray,ih2o,ich4,io3,
-     &  inh3,iptf,imie)
+     &  inh3,iptf,imie, iuvscat)
 C     ********************************************************************
 C     Subroutine to read in the runname.fla file, which contains a number
 C     of spectral processing flags.
@@ -22,7 +22,7 @@ C     Pat Irwin	21/2/12
 C
 C     ********************************************************************
       character*(*) runname
-      integer inormal,iray,ih2o,ich4,io3,iptf,imie,inh3
+      integer inormal,iray,ih2o,ich4,io3,iptf,imie,inh3,iuvscat
 
       call file(runname,runname,'fla')
 
@@ -35,6 +35,7 @@ C     ********************************************************************
       read(12,*)inh3
       read(12,*)iptf
       read(12,*)imie
+      read(12,*)iuvscat
       close(12)
 
       return

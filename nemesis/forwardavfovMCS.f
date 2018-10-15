@@ -255,7 +255,7 @@ C      emissivity spectrum
 C     Set up parameters for non-scattering cirsrad run.
 
       CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
-     1 IPTF,IMIE)
+     1 IPTF,IMIE, iuvscat)
       IMIE1=IMIE
 
       itype=12                  ! scloud12. not used here

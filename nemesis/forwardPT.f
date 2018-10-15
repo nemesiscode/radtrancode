@@ -249,7 +249,7 @@ C     abort and return
 
 
       CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
-     1  IPTF,IMIE)
+     1  IPTF,IMIE, iuvscat)
       IMIE1=IMIE
 
 C     Set up parameters for non-scattering cirsrad run.

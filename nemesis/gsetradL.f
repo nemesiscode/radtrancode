@@ -1,6 +1,7 @@
       subroutine gsetradL(runname,nconv,vconv,fwhm,ispace,iscat,
      1 gasgiant,layht,nlayer,laytyp,layint,xlat,lin,hcorrx,
-     2 nvar,varident,varparam,nx,xn,jpre,tsurf,occult,ionpeel,jlev,xmap)
+     2 nvar,varident,varparam,nx,xn,jpre,tsurf,occult,ionpeel,jlevlo,
+     3 jlevhi,xmap)
 C     $Id:
 C     ************************************************************************
 C     Subroutine to write out the .pat, .prf, .xsc and .sca and aerosol 
@@ -34,6 +35,12 @@ C       jpre            integer         Position of tangent pressure
 C                                       in xn
 C	occult		integer		Solar occultation flag
 C       ionpeel         integer         Onion-peeling method flag
+C       jlevlo          integer         Indicates the lowest atmospheric
+C                                       level at which the paths will be
+C                                       computed
+C       jlevhi          integer         Indicates the highest
+C                                       atmospheric level at which the
+C                                       paths will be computed
 C	tsurf		real		Surface temperature
 C
 C    Output variables      
@@ -51,7 +58,7 @@ C     ************************************************************************
       include '../radtran/includes/arrdef.f'
       include 'arraylen.f'
 
-      integer nconv,lin,ispace,iscat,xflag,jlev,ionpeel
+      integer nconv,lin,ispace,iscat,xflag,jlevlo,jlevhi,ionpeel
       real xlat,fwhm,xlatx,hcorrx,tsurf
       integer nlayer,laytyp,nx,nxx,ncont,jpre
       integer layint,jsurfx,jalbx,jxscx,jtanx,jprex,nprox
@@ -143,7 +150,7 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
 
       if(ionpeel.eq.1)then
        call gwritepatSO(runname,iscat,nconv,vconv,fwhm,layht,nlayer,
-     2  laytyp,layint,occult,flagh2p,jlev)
+     2  laytyp,layint,occult,flagh2p,jlevlo,jlevhi)
       else
        call gwritepatL(runname,iscat,nconv,vconv,fwhm,layht,nlayer,
      2  laytyp,layint,occult,flagh2p)

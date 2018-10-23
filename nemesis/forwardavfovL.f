@@ -69,10 +69,10 @@ C     **************************************************************
       real xlat,planck_wave,planckg_wave,Bg,height(maxlay),htan
       real wgeom(mgeom,mav),flat(mgeom,mav),fh,baseh1(maxlay)
       integer layint,inormal,iray,itype,nlayer,laytyp,nlay1,lhay
-      integer iptf,imie,imie1,occult,ionpeel,jlev
+      integer iptf,imie,imie1,occult,ionpeel,jlevlo,jlevhi
       integer nwave(mgeom),jsurf,nem,nav(mgeom),nwave1
       real vwave(mgeom,mwave),angles(mgeom,mav,3),vwave1(mwave)
-      real calcout(maxout3),fwhm,calcoutL(maxout3)
+      real calcout(maxout3),fwhm,calcoutL(maxout3),htanlo,htanhi
       real calcout1(maxout3),gradients1(maxout4)
       real gradients(maxout4),vv,gradientsL(maxout4),pi,AU
       parameter (pi=3.1415927, AU=1.49597870e8)
@@ -181,7 +181,8 @@ C     NemesisL
 
 
 C     Calculating the atmospheric path to calculate for the onion-peeling 
-      jlev=1
+      jlevlo=1
+      jlevhi=1
       if(ionpeel.eq.1)then
 C     It is assumed that the base level of the atmospheric layers computed
 C     by RADTRAN is read from the height.lay file
@@ -210,17 +211,14 @@ C        Read in one line of header
          print*,'is read from the height.lay file, but it doesnt exist'
        endif 
 
-       do i=1,nlay1
-        print*,baseh1(i)
-       enddo
-
-       htan = angles(1,1,1)  !Assumed there is only one tangent height
+       htanlo = angles(1,1,1)
+       htanhi = angles(ngeom,1,1)
 
        do i=1,nlay1
-        if(baseh1(i).le.htan.and.baseh1(i+1).gt.htan)jlev=i
+        if(baseh1(i).le.htanlo.and.baseh1(i+1).gt.htanlo)jlevlo=i
+        if(baseh1(i).le.htanhi.and.baseh1(i+1).gt.htanlo)jlevhi=i
        enddo
       endif
-
 
       if(jsurf.gt.0)then
        tsurf = xn(jsurf)
@@ -231,7 +229,7 @@ C     Set up all files for a direct cirsrad run of limb spectra
       call gsetradL(runname,nconv1,vconv1,fwhm,ispace,iscat,
      1    gasgiant,layht,nlayer,laytyp,layint,xlat,lin,hcorrx,
      2    nvar,varident,varparam,nx,xn,jpre,tsurf,occult,ionpeel,
-     3    jlev,xmap)
+     3    jlevlo,jlevhi,xmap)
 
 
 C     If planet is not a gas giant then we need to read in the 
@@ -325,9 +323,11 @@ C     Read in base heights from '.drv' file
             fh=1.0
            endif
          
-
-C          Correcting for reading the correct indices in case we have just one htan
-           jpath = jpath - (jlev - 1)
+C          In the onion peeling method it is assumed that the tangent
+C          heights coincide with the base altitude of each layer
+           if(ionpeel.eq.1)then
+            jpath=igeom
+           endif
 
            if(occult.eq.2)then
 C           just calculate transmission of path. Assumes no thermal emission in$
@@ -483,7 +483,7 @@ C       Set up all files to recalculate limb spectra
      1    gasgiant,layht,
      2    nlayer,laytyp,layint,xlat,lin,hcorrx,
      3    nvar,varident,varparam,nx,xn,jpre,tsurf,occult,
-     4    ionpeel,jlev,xmap)
+     4    ionpeel,jlevlo,jlevhi,xmap)
 
         call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
      1   vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf, 
@@ -519,7 +519,13 @@ C       Set up all files to recalculate limb spectra
             print*,nlayer,height(1),height(nlayer),htan
            endif
            fh = (htan-height(jpath))/(height(jpath+1)-height(jpath))
-         
+
+C          In the onion peeling method it is assumed that the tangent
+C          heights coincide with the base altitude of each layer
+           if(ionpeel.eq.1)then
+            jpath=igeom
+           endif
+
            if(occult.eq.2)then
 C           just calculate transmission of path. Assumes no thermal emission in$
 C           If occult=4 then calculate absorption = 1 - tranmission
@@ -546,7 +552,6 @@ C             kk(ioff+j,jpre)=-(yn1(ioff+j)-yn(ioff+j))/(pressR*delp)
 
            else
 
-            print*,jpath,fh
             do ipath=jpath,jpath+1
              fh=1.0-fh
              do j=1,nconv1
@@ -634,7 +639,13 @@ C               kk(ioff+j,jpre) = -(yn1(ioff+j)-yn(ioff+j))/(pressR*delp)
             print*,nlayer,height(1),height(nlayer),htan
            endif
            fh = (htan-height(jpath))/(height(jpath+1)-height(jpath))
-         
+
+C          In the onion peeling method it is assumed that the tangent
+C          heights coincide with the base altitude of each layer
+           if(ionpeel.eq.1)then
+            jpath=igeom
+           endif
+
            do ipath=jpath,jpath+1
             fh=1.0-fh
             do j=1,nconv1

@@ -53,7 +53,7 @@ C     ID and ISO hold the local identifier and isotope identifier for
 C     each gas. Note that this program does not check that you only include
 C     each gas once or that the identifiers are valid.
 C----------------------------------------------------------------------------
-      REAL GCONST,R,PCONV,VMRCONV,FRAC,XFMIN
+      REAL GCONST,R,PCONV,VMRCONV,FRAC,XFMIN,KB
       PARAMETER (GCONST=6.668E-11, R=8.3143, KB=1.3806485E-23)
       PARAMETER (XFMIN=0.001)
       INTEGER NSIMP, NCONV, AMFORM
@@ -303,8 +303,8 @@ C----------------------------------------------------------------------------
 
       DO I=1,NPRO
 
-       DENSRET(I) = PRET(I) * 101325.0 / (KB * TRET(I))
-       DENSRETERR(I) = DENSRET(I) * SQRT( ( PRETERR(I) / PRET(I) )**2.0 +
+       NUMDENS(I) = PRET(I) * 101325.0 / (KB * TRET(I))
+       NUMDENSERR(I) = NUMDENS(I) * SQRT( ( PRETERR(I) / PRET(I) )**2.0+
      1    ( TRETERR(I) / TRET(I) )**2. )
 
       ENDDO
@@ -327,7 +327,7 @@ C----------------------------------------------------------------------------
      2  ' Dens(m-3) ',' Dens_ERR(m-3) '
       DO I=1,NPRO
         write(3,1000)H(I),TRET(I),TRETERR(I),PRET(I),PRETERR(I),
-     1             RHORET(I),RHORETERR(I),DENSRET(I),DENSRETERR(I)
+     1             RHORET(I),RHORETERR(I),NUMDENS(I),NUMDENSERR(I)
  1000   FORMAT(1X,F13.6,1X,F13.6,1X,F13.6,1X,E13.6,1X,E13.6,1X,
      1         E13.6,1X,E13.6,1X,E13.6,1X,E13.6)
 

@@ -209,6 +209,11 @@ GeneratespxL: generatespxL.f $(LIBRARY)
         $(LIB)/matrices.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
         $(FRECIPES)
 
+PTresults: ptresults.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/PTresults ptresults.f $(LIBRARY) \
+        $(LIB)/scatter.a $(LIB)/path.a $(LIB)/radtran.a \
+        $(LIB)/matrices.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
+        $(FRECIPES)
 
 GenerateMCSspx: generateMCSspx.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/GenerateMCSspx generateMCSspx.f \

@@ -142,6 +142,7 @@ bin :   \
 	Nemesisdisc \
 	Generatespx \
 	GeneratespxL \
+	PTresults \
 	GenerateMCSspx \
 	Convertitertomre \
 	Testack \

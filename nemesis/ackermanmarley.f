@@ -47,10 +47,10 @@ C     First skip header
       READ(BUFFER,*)AMFORM
 1     FORMAT(A)
 
-      IF(AMFORM.EQ.1)THEN
-        READ(1,*)IPLANET,LATITUDE,NPRO,NVMR
-      ELSE
+      IF(AMFORM.EQ.0)THEN
         READ(1,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+      ELSE
+        READ(1,*)IPLANET,LATITUDE,NPRO,NVMR
       ENDIF
       print*,IPLANET,LATITUDE,NPRO,NVMR,MOLWT
 
@@ -82,6 +82,14 @@ C     Make sure that vmrs add up to 1 if AMFORM=1
          ENDDO
          XXMOLWT(I)=CALCMOLWT(NVMR,XVMR,IDGAS,ISOGAS)
 301     CONTINUE
+C     Calculate molecular weight but not add vmrs to 1 if AMFORM=2
+      ELSEIF(AMFORM.EQ.2)THEN
+        DO I=1,NPRO
+         DO K=1,NVMR
+          XVMR(K)=VMR(I,K)
+         ENDDO
+         XXMOLWT(I)=CALCMOLWT(NVMR,XVMR,IDGAS,ISOGAS)
+        ENDDO
       ENDIF
 
 C     Make sure profile is hydrostatically balanced and compute
@@ -234,6 +242,14 @@ C          gases
              ENDDO
              XXMOLWT(I)=CALCMOLWT(NVMR,XVMR,IDGAS,ISOGAS)
 302         CONTINUE
+C          Calculate molecular weight but not add vmrs to 1 if AMFORM=2
+           ELSEIF(AMFORM.EQ.2)THEN
+            DO I=1,NPRO
+             DO K=1,NVMR
+              XVMR(K)=VMR(I,K)
+             ENDDO
+             XXMOLWT(I)=CALCMOLWT(NVMR,XVMR,IDGAS,ISOGAS)
+            ENDDO
            ENDIF
 
            NCONT=NCONT+1
@@ -255,10 +271,10 @@ C     ************* Write out modified profiles *********
       CALL FILE(OPFILE,OPFILE,'prf')
       OPEN(UNIT=2,FILE=OPFILE,STATUS='UNKNOWN',ERR=52)
       WRITE(2,*)AMFORM
-      IF(AMFORM.EQ.1)THEN
-       WRITE(2,501)IPLANET,LATITUDE,NPRO,NVMR
-      ELSE
+      IF(AMFORM.EQ.0)THEN
        WRITE(2,501)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+      ELSE
+       WRITE(2,501)IPLANET,LATITUDE,NPRO,NVMR
       ENDIF
 501   FORMAT(1X,I3,F7.2,1X,I3,I3,F8.3)
       DO 503 I=1,NVMR

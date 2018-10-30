@@ -33,10 +33,10 @@ C     First skip header
        IF(BUFFER(1:1).EQ.'#') GOTO 54
        READ(BUFFER,*)AMFORM
 1      FORMAT(A)
-       IF(AMFORM.EQ.1)THEN
-        READ(1,*)IPLANET,LATITUDE,NPRO,NVMR
-       ELSE
+       IF(AMFORM.EQ.0)THEN
         READ(1,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+       ELSE
+        READ(1,*)IPLANET,LATITUDE,NPRO,NVMR
        ENDIF
        DO 20 I=1,NVMR
          READ(1,*)ID(I),ISO(I)

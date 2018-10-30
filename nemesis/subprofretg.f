@@ -162,11 +162,10 @@ C     First skip header
          ENDIF
 
          DO 601 ILATREF=1,NLATREF
-          IF(AMFORM.EQ.1)THEN
-           READ(1,*)IPLANET,LATREF(ILATREF),NPRO,NVMR
+          IF(AMFORM.EQ.0)THEN
+           READ(1,*)IPLANET,LATREF(ILATREF),NPRO,NVMR,MOLWTREF(ILATREF)
           ELSE
-           READ(1,*)IPLANET,LATREF(ILATREF),NPRO,NVMR,
-     1      MOLWTREF(ILATREF)
+           READ(1,*)IPLANET,LATREF(ILATREF),NPRO,NVMR
           ENDIF
 
           IF(NPRO.GT.MAXPRO)THEN
@@ -246,10 +245,10 @@ C        Now interpolate to correct latitude
 
        ELSE
 
-         IF(AMFORM.EQ.1)THEN
-          READ(1,*)IPLANET,LATITUDE,NPRO,NVMR
-         ELSE
+         IF(AMFORM.EQ.0)THEN
           READ(1,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+         ELSE
+          READ(1,*)IPLANET,LATITUDE,NPRO,NVMR
          ENDIF
          print*,IPLANET,LATITUDE,NPRO,NVMR,MOLWT
          IF(NPRO.GT.MAXPRO)THEN
@@ -296,6 +295,15 @@ c          print*,I,K,XVMR(K)
          ENDDO
          XXMOLWT(I)=CALCMOLWT(NVMR,XVMR,IDGAS,ISOGAS)
 301     CONTINUE
+c      Calculate MOLWT but dont add VMRs to 1 if AMFORM=2
+       ELSEIF(AMFORM.EQ.2)THEN
+        DO I=1,NPRO
+         DO K=1,NVMR
+          XVMR(K)=VMR(I,K)
+c          print*,I,K,XVMR(K)
+         ENDDO
+         XXMOLWT(I)=CALCMOLWT(NVMR,XVMR,IDGAS,ISOGAS)
+        ENDDO
        ENDIF
 
 
@@ -3035,10 +3043,10 @@ C     ************* Write out modified profiles *********
       CALL FILE(IPFILE,IPFILE,'prf')
       OPEN(UNIT=2,FILE=IPFILE,STATUS='UNKNOWN',ERR=52)
       WRITE(2,*)AMFORM
-      IF(AMFORM.EQ.1)THEN
-       WRITE(2,501)IPLANET,LATITUDE,NPRO,NVMR
-      ELSE
+      IF(AMFORM.EQ.0)THEN
        WRITE(2,501)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+      ELSE
+       WRITE(2,501)IPLANET,LATITUDE,NPRO,NVMR
       ENDIF
 501   FORMAT(1X,I3,F7.2,1X,I3,I3,F8.3)
       DO 503 I=1,NVMR

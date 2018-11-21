@@ -1,8 +1,8 @@
       subroutine coreretPT(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jxsc,
-     3  jtan,jpre,jrad,jlogg,radius,wgeom,flat,nx,lx,xa,sa,ny,y,se1,
-     4  inumeric,xn,sm,sn,st,yn,kk,aa,dd)
+     3  jtan,jpre,jrad,jlogg,radius,wgeom,flat,flon,nx,lx,xa,sa,ny,y,
+     4  se1,inumeric,xn,sm,sn,st,yn,kk,aa,dd)
 C     $Id:
 C     ******************************************************************
 C
@@ -56,6 +56,7 @@ C                               xa (if included)
 C       radius      real    Radius of planet at 0km tangent altitude
 C	wgeom(mgeom,mav) real	Integration weights 
 C	flat(mgeom,mav)	real	Integration point latitudes 
+C	flon(mgeom,mav)	real	Integration point longitudes 
 C	nx		integer	Number of elements in measurement vector
 C       lx(mx)          integer 1 if log, 0 otherwise
 C	xa(mx)		real	a priori state vector
@@ -108,7 +109,7 @@ C     Set measurement vector and source vector lengths here.
       real vwave(mgeom,mwave),vconv(mgeom,mconv),angles(mgeom,mav,3)
       real kk(my,mx),xa(mx),kk1(my,mx),sa(mx,mx),y(my),yn(my)
       real kkx(my,mx),yn1(my),s1(mx,mx),altbore,altborex
-      real wgeom(mgeom,mav),flat(mgeom,mav)
+      real wgeom(mgeom,mav),flat(mgeom,mav),flon(mgeom,mav)
       real vconvT(mconv),vwaveT(mwave)
       integer nwaveT,nconvT,ineg
       logical gasgiant,abexist,qfla
@@ -266,13 +267,13 @@ C       readapriori.f. Hence just read in from temporary .str file
        if(inumeric.eq.0)then
 	print*, 'ForwardPT 1 =', jradx, jrad
         CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2   nvarx,varidentx,varparamx,jradx,jloggx,radius,nxx,xnx,ny,
      3   ynx,kkx,qfla)
        else
 	print*, 'ForwardnogPT 1 =', jradx, jrad
         CALL forwardnogPT(runname,ispace,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2   nvarx,varidentx,varparamx,jradx,jloggx,radius,nxx,xnx,ny,
      3   ynx,kkx,kiter)
        endif
@@ -335,13 +336,13 @@ C      Calculate inverse of se
       if(inumeric.eq.0)then
        print*,'ForwardPT 2'
        CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jrad,jlogg,radius,nx,xn,ny,yn,kk,qfla)
 	print*, 'jrad,Radius:', jrad,radius
       else
        print*,'ForwardnogPT 2'
        CALL forwardnogPT(runname,ispace,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jrad,jlogg,radius,nx,xn,ny,yn,kk,kiter)
 	print*, 'jrad,Radius:', jrad,radius
       endif
@@ -456,14 +457,14 @@ C        Temperature gone negative. Increase brakes and try again
         if(inumeric.eq.0)then
          print*,'ForwardPT 3'
          CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
-     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
+     1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2     lin,nvar,varident,varparam,jrad,jlogg,radius,nx,xn1,ny,
      3     yn1,kk1,qfla)
          print*,ny,(yn1(i),i=1,ny)
         else
          print*,'ForwardnogPT 3'
          CALL forwardnogPT(runname,ispace,fwhm,ngeom,nav,
-     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
+     1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2     lin,nvar,varident,varparam,jrad,jlogg,radius,nx,xn1,ny,
      3     yn1,kk1,kiter)
         endif

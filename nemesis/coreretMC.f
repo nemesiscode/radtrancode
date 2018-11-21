@@ -1,8 +1,8 @@
       subroutine coreretMC(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jxsc,
-     3  jtan,jpre,jrad,jlogg,wgeom,flat,nx,lx,xa,sa,ny,y,se1,xn,sm,sn,
-     4  st,yn,kk,aa,dd)
+     3  jtan,jpre,jrad,jlogg,wgeom,flat,flon,nx,lx,xa,sa,ny,y,se1,xn,
+     4  sm,sn,st,yn,kk,aa,dd)
 C     $Id:
 C     ******************************************************************
 C
@@ -57,6 +57,7 @@ C	jpre		integer	Position of tangent pressure in
 C				xa (if included)
 C	wgeom(mgeom,mav) real	Integration weights 
 C	flat(mgeom,mav)	real	Integration point latitudes 
+C	flon(mgeom,mav)	real	Integration point longitudes 
 C	nx		integer	Number of elements in measurement vector
 C       lx(mx)          integer 1 if log, 0 otherwise
 C	xa(mx)		real	a priori state vector
@@ -105,7 +106,7 @@ C     Set measurement vector and source vector lengths here.
       real vwave(mgeom,mwave),vconv(mgeom,mconv),angles(mgeom,mav,3)
       real xa(mx),kk1(my,mx),sa(mx,mx),y(my),yn(my),kkx(my,mx)
       real yn1(my),s1(mx,mx),kk(my,mx)
-      real wgeom(mgeom,mav),flat(mgeom,mav)
+      real wgeom(mgeom,mav),flat(mgeom,mav),flon(mgeom,mav)
       real vwaveT(mwave),vconvT(mconv)
       integer nwaveT,nconvT
       logical gasgiant,abexist
@@ -260,13 +261,13 @@ C      Calc. gradient of all elements of xnx matrix.
        if(iscat.eq.0)then
         print*,'Calling forwardavfovX'
         CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,
-     1   nav,wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
+     1   nav,wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2   lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,
      3   jprex,jradx,jloggx,RADIUS,nxx,xnx,ny,ynx,kkx)
        elseif(iscat.eq.1)then
         print*,'Calling forwardnogMC'
         CALL forwardnogMC(runname,ispace,iscat,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2   nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
      3   nxx,xnx,ny,ynx,kkx,kiter)
        elseif(iscat.eq.2)then
@@ -278,7 +279,7 @@ C      Calc. gradient of all elements of xnx matrix.
 
         iscat1=1
         CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2   nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
      3   jradx,
      4   jloggx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,iprfcheck)
@@ -360,7 +361,7 @@ C        print*,nx,(xn(i),i=1,nx)
 C        print*,ny
 
         CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
      3   RADIUS,nx,xn,ny,yn,kk)
 
@@ -369,7 +370,7 @@ C        print*,'forwardavfovX OK, jpre = ',jpre
       elseif(iscat.eq.1)then
  
        CALL forwardnogMC(runname,ispace,iscat,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,nx,xn,ny,
      3   yn,kk,kiter)
 
@@ -387,14 +388,14 @@ C        print*,'forwardnogMC OK, jpre = ',jpre
        iscat1=1
 C       print*,'Calling forwardnogX'
        CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
      3   jlogg,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
 
       else
        iscat1=1
        CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
      3   jlogg,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
 
@@ -542,12 +543,12 @@ C       temporary kernel matrix kk1. Does it improve the fit?
 
         if(iscat.eq.0)then
           CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,nav,
-     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
+     1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2     lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
      3     jrad,jlogg,RADIUS,nx,xn1,ny,yn1,kk1)
         elseif(iscat.eq.1)then
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
-     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
      3     jlogg,RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter,iprfcheck)
         elseif(iscat.eq.2)then
@@ -556,13 +557,13 @@ C       temporary kernel matrix kk1. Does it improve the fit?
      2     jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn1)
           iscat1=1
           CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
-     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
      3     jlogg,RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter,iprfcheck)
         else
           iscat1=1
           CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
-     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
      3     jlogg,RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter,iprfcheck)
         endif

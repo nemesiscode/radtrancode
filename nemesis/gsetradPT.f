@@ -1,5 +1,5 @@
       subroutine gsetradPT(runname,nconv,vconv,fwhm,ispace,iscat,
-     1 gasgiant,layht,nlayer,laytyp,layint,xlat,lin,
+     1 gasgiant,layht,nlayer,laytyp,layint,xlat,xlon,lin,
      2 nvar,varident,varparam,nx,xn,xmap)
 C     $Id:
 C     ************************************************************************
@@ -21,6 +21,7 @@ C	nlayer		integer		Number of layers
 C	laytyp		integer		How layers are separated
 C	layint		integer		How layer amounts are integrated
 C	xlat		real		latitude of observation
+C	xlon		real		longitude of observation
 C	lin		integer		Unit number of previous retrieval (if any)
 C       nvar    	integer 	Number of variable profiles 
 C					  (e.g. gas,T,aerosol)
@@ -45,7 +46,7 @@ C     ************************************************************************
       include 'arraylen.f'
 
       integer nconv,lin,ispace,iscat,xflag
-      real xlat,fwhm,xlatx,hcorrx,tsurf,radius
+      real xlat,fwhm,xlatx,hcorrx,tsurf,radius,xlon,xlonx
       integer nlayer,laytyp,nx,nxx,ncont,jpara
       integer layint,jsurfx,jalbx,jtanx,jprex,jradx,nprox
       integer jloggx,ierr,ierrx,jxscx
@@ -83,15 +84,15 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
       endif
 
       xflag=0
-      call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
+      call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,xlon,
      1  nvar,varident,varparam,nx,xn,jpre,ncont,flagh2p,xmap,ierr)
 
       hcorrx=0.0
 
       if(lin.eq.1.or.lin.eq.3)then
 
-       call readxtmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1 nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
+       call readxtmp(runname,xlatx,xlatx,nvarx,varidentx,varparamx,
+     1 nprox,nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
 
        call stripvar(nvarx,varidentx,varparamx,nprox,nvar,varident,
      1  varparam,nxx,xnx)
@@ -105,7 +106,7 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
        enddo
 
        xflag=1
-       call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
+       call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,xlon,
      1  nvarx,varidentx,varparamx,nxx,xnx,jprex,ncont,flagh2p,xmapx,
      2  ierrx)
 

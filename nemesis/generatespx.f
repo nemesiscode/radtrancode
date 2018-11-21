@@ -323,13 +323,13 @@ C      therefore need to reseed it to continue to get pseudo-random numbers
 	
        if(iscat.eq.0)then
         CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
      3   RADIUS,nx,xn,ny,yn,kk)
       elseif(iscat.eq.1)then 
        print*,'Calling forwardnogX'
        CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
      3   RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
       elseif(iscat.eq.2)then
@@ -338,13 +338,13 @@ C      therefore need to reseed it to continue to get pseudo-random numbers
      2   jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
        iscat1=1
        CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
      3   RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
       else
        iscat1=1
        CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
      3   RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
       endif

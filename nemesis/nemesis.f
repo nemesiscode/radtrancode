@@ -385,8 +385,8 @@ C     set up a priori of x and its covariance
       call coreret(runname,ispace,iscat,ilbl,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jxsc,
-     3  jtan,jpre,jrad,jlogg,wgeom,flat,nx,lx,xa,sa,ny,y,se,xn,sm,sn,
-     4  st,yn,kk,aa,dd)
+     3  jtan,jpre,jrad,jlogg,wgeom,flat,flon,nx,lx,xa,sa,ny,y,se,xn,sm,
+     4  sn,st,yn,kk,aa,dd)
 
 C     Calculate retrieval errors.
 C     Simple errors, set to sqrt of diagonal of ST
@@ -411,7 +411,7 @@ C       Write out all the error matrices if only one case retrieved
       CALL readrefiplan(runname,iplanet,xlat,RADIUS)
 
 C     write out setup files for last successful iteration
-      call calc_input_files(runname,ispace,iscat,fwhm,flat,nconv,
+      call calc_input_files(runname,ispace,iscat,fwhm,flat,flon,nconv,
      1 vconv,angles,gasgiant,lin,nvar,varident,varparam,jsurf,
      2 jalb,jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
 

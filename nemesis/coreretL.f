@@ -1,7 +1,7 @@
       subroutine coreretL(runname,ispace,iscat,ilbl,ica,kiter,phlimit,
      1  inum,fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,npro,
      2  gasgiant,lin,lpre,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,
-     3  jpre,jrad,jlogg,occult,ionpeel,wgeom,flat,nx,lx,xa,sa,ny,
+     3  jpre,jrad,jlogg,occult,ionpeel,wgeom,flat,flon,nx,lx,xa,sa,ny,
      4  y,se1,xn,sm,sn,st,yn,kk,aa,dd)
 C     $Id:
 C     ******************************************************************
@@ -60,6 +60,7 @@ C	occult		integer	Solar occultation flag
 C       ionpeel         intefer Onion-peeling method flag
 C	wgeom(mgeom,mav) real	Integration weights 
 C	flat(mgeom,mav)	real	Integration point latitudes 
+C	flon(mgeom,mav)	real	Integration point longitudes 
 C	nx		integer	Number of elements in measurement vector
 C       lx(mx)          integer 1 if log, 0 otherwise
 C	xa(mx)		real	a priori state vector
@@ -108,7 +109,7 @@ C     Set measurement vector and source vector lengths here.
       real vwave(mgeom,mwave),vconv(mgeom,mconv),angles(mgeom,mav,3)
       real kk(my,mx),xa(mx),kk1(my,mx),sa(mx,mx),y(my),yn(my)
       real kkx(my,mx),yn1(my),s1(mx,mx)
-      real wgeom(mgeom,mav),flat(mgeom,mav)
+      real wgeom(mgeom,mav),flat(mgeom,mav),flon(mgeom,mav)
       real vconvT(mconv),vwaveT(mwave),RADIUS
       integer nwaveT,nconvT,iplanet
       logical gasgiant,abexist
@@ -269,9 +270,9 @@ c      if calculating directly the LBL-tables in the run
  
         print*,'Calling forwardnoglblL - A'
          CALL forwardnoglblL(runname,ispace,iscat,fwhm,ngeom,nav,
-     1    wgeom,flat,nconv,vconv,angles,gasgiant,occult,ionpeel,lin0,
-     2    nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
-     3    jradx,jloggx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx)
+     1    wgeom,flat,flon,nconv,vconv,angles,gasgiant,occult,ionpeel,
+     2    lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,
+     3    jprex,jradx,jloggx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx)
 
 c      if reading absorption coefficient from look-up tables
        else
@@ -280,16 +281,16 @@ c      if reading absorption coefficient from look-up tables
  
          if(inum.eq.0)then
           CALL forwardavfovL(runname,ispace,fwhm,ngeom,nav,
-     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
-     2     nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
-     3     occult,ionpeel,nxx,xnx,ny,ynx,kkx)
+     1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
+     2     lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,
+     3     jprex,occult,ionpeel,nxx,xnx,ny,ynx,kkx)
          endif
 
          if(inum.eq.1)then
           CALL forwardnogL(runname,ispace,fwhm,ngeom,nav,
-     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
-     2     nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
-     3     occult,ionpeel,nxx,xnx,ny,ynx,kkx)
+     1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
+     2     lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,
+     3     jprex,occult,ionpeel,nxx,xnx,ny,ynx,kkx)
          endif
 
         elseif (iscat.eq.2)then
@@ -304,9 +305,9 @@ c      if reading absorption coefficient from look-up tables
         
          iscat1=1
          CALL forwardnogL(runname,ispace,iscat1,fwhm,ngeom,nav,
-     1    wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
-     2    nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
-     3    occult,ionpeel,nxx,xnx,ny,ynx,kkx)
+     1    wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
+     2    lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,
+     3    jprex,occult,ionpeel,nxx,xnx,ny,ynx,kkx)
 
         else
          print*,'CoreretL: iscat not defined : ',iscat
@@ -375,8 +376,8 @@ C      endif
  
          print*,'Calling forwardnoglbl - B'
          CALL forwardnoglblL(runname,ispace,iscat,fwhm,ngeom,nav,
-     1    wgeom,flat,nconv,vconv,angles,gasgiant,occult,ionpeel,lin,
-     2    nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
+     1    wgeom,flat,flon,nconv,vconv,angles,gasgiant,occult,ionpeel,
+     2    lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
      3    jrad,jlogg,RADIUS,nx,xn,ifix,ny,yn,kk)
          print*,'call OK'
       else
@@ -392,14 +393,14 @@ C        enddo
 
         if(inum.eq.0)then
          CALL forwardavfovL(runname,ispace,fwhm,ngeom,nav,
-     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,occult,
+     1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
+     2     lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,occult,
      3     ionpeel,nx,xn,ny,yn,kk)
         endif
 
         if(inum.eq.1)then
          CALL forwardnogL(runname,ispace,fwhm,ngeom,nav,
-     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,occult,
      3     ionpeel,nx,xn,ny,yn,kk)
         endif
@@ -417,7 +418,7 @@ C        enddo
         print*,'Now calling forwardnogL'
         iscat1=1
         CALL forwardnogL(runname,ispace,iscat1,fwhm,ngeom,nav,
-     1    wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1    wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2    nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,occult,
      3    ionpeel,nx,xn,ny,yn,kk)
 
@@ -580,7 +581,7 @@ C       temporary kernel matrix kk1. Does it improve the fit?
         if(ilbl.eq.1)then
   
           CALL forwardnoglblL(runname,ispace,iscat,fwhm,ngeom,nav,
-     1     wgeom,flat,nconv,vconv,angles,gasgiant,occult,ionpeel,
+     1     wgeom,flat,flon,nconv,vconv,angles,gasgiant,occult,ionpeel,
      2     lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
      3     jrad,jlogg,RADIUS,nx,xn1,ifix,ny,yn1,kk1)
           print*,'call OK'
@@ -590,14 +591,14 @@ C       temporary kernel matrix kk1. Does it improve the fit?
 
          if(inum.eq.0)then 
           CALL forwardavfovL(runname,ispace,fwhm,ngeom,nav,
-     1      wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
+     1      wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2      lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
      3      occult,ionpeel,nx,xn1,ny,yn1,kk1)
          endif
 
          if(inum.eq.1)then
           CALL forwardnogL(runname,ispace,fwhm,ngeom,nav,
-     1      wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
+     1      wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2      lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
      3      occult,ionpeel,nx,xn1,ny,yn1,kk1)
          endif
@@ -614,7 +615,7 @@ C       temporary kernel matrix kk1. Does it improve the fit?
 
           iscat1=1
           CALL forwardnogL(runname,ispace,iscat1,fwhm,ngeom,nav,
-     1       wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
+     1       wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2       lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
      3       occult,ionpeel,nx,xn1,ny,yn1,kk1)
          endif

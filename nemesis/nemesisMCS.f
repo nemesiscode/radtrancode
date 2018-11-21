@@ -296,8 +296,8 @@ C     set up a priori of x and its covariance
       call coreretMCS(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,
-     3  jpre,jrad,jlogg,marsradius,satrad,thetrot,altbore,wgeom,flat,nx,lx,
-     4  xa,sa,ny,y,se,xn,sm,sn,st,yn,kk,aa,dd)
+     3  jpre,jrad,jlogg,marsradius,satrad,thetrot,altbore,wgeom,flat,
+     4  flon,nx,lx,xa,sa,ny,y,se,xn,sm,sn,st,yn,kk,aa,dd)
 
 C     Calculate retrieval errors.
 C     Simple errors, set to sqrt of diagonal of ST

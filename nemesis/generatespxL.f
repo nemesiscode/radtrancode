@@ -345,7 +345,7 @@ C     Add forward errors to measurement covariances
 	
       if(iscat.eq.0)then
          CALL forwardavfovL(runname,ispace,fwhm,ngeom,nav,
-     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,occult,
      3     nx,xn,ny,yn,kk)      
 

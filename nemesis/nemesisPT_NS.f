@@ -447,8 +447,8 @@ C      jsurf=-1
       call coreretPT(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jxsc,
-     3  jtan,jpre,jrad,jlogg,radius,wgeom,flat,nx,lx,xa,sa,ny,y,se,
-     4  inumeric,xn,sm,sn,st,yn,kk,aa,dd)
+     3  jtan,jpre,jrad,jlogg,radius,wgeom,flat,flon,nx,lx,xa,sa,ny,y,
+     4  se,inumeric,xn,sm,sn,st,yn,kk,aa,dd)
 
 C     Calculate retrieval errors.
 C     Simple errors, set to sqrt of diagonal of ST

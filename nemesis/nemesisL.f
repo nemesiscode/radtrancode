@@ -401,7 +401,7 @@ C     set up a priori of x and its covariance
       call coreretL(runname,ispace,iscat,ilbl,ica,kiter,phlimit,
      1  inum,fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,npro,
      2  gasgiant,lin,lpre,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,
-     3  jpre,jrad,jlogg,occult,ionpeel,wgeom,flat,nx,lx,xa,sa,
+     3  jpre,jrad,jlogg,occult,ionpeel,wgeom,flat,flon,nx,lx,xa,sa,
      4  ny,y,se,xn,sm,sn,st,yn,kk,aa,dd)
 
 C     Calculate retrieval errors.

@@ -384,8 +384,8 @@ C     set up a priori of x and its covariance
       call coreretdisc(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jxsc,
-     3  jtan,jpre,jrad,jlogg,wgeom,flat,nx,lx,xa,sa,ny,y,se,xn,sm,sn,
-     4  st,yn,kk,aa,dd)
+     3  jtan,jpre,jrad,jlogg,wgeom,flat,flon,nx,lx,xa,sa,ny,y,se,xn,sm,
+     4  sn,st,yn,kk,aa,dd)
 
 C     Calculate retrieval errors.
 C     Simple errors, set to sqrt of diagonal of ST

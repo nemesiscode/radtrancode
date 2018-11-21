@@ -1,7 +1,7 @@
       subroutine coreretMCMC(runname,ispace,iscat,ilbl,ica,miter,
      1  niter,fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,
      2  angles,gasgiant,nvar,varident,varparam,npro,jsurf,jalb,jxsc,
-     3  jtan,jpre,jrad,jlogg,wgeom,flat,nx,lx,xa,sa,ny,y,se1,idum)
+     3  jtan,jpre,jrad,jlogg,wgeom,flat,flon,nx,lx,xa,sa,ny,y,se1,idum)
 C     $Id:
 C     ******************************************************************
 C
@@ -56,6 +56,7 @@ C	jpre		integer	Position of tangent pressure in
 C				xa (if included)
 C	wgeom(mgeom,mav) real	Integration weights 
 C	flat(mgeom,mav)	real	Integration point latitudes 
+C	flon(mgeom,mav)	real	Integration point longitudes 
 C	nx		integer	Number of elements in measurement vector
 C       lx(mx)          integer 1 if log, 0 otherwise
 C	xa(mx)		real	a priori state vector
@@ -93,7 +94,7 @@ C     Set measurement vector and source vector lengths here.
       real vwave(mgeom,mwave),vconv(mgeom,mconv),angles(mgeom,mav,3)
       real xa(mx),sa(mx,mx),y(my),yn(my)
       real yn1(my),sx(mx,mx)
-      real wgeom(mgeom,mav),flat(mgeom,mav)
+      real wgeom(mgeom,mav),flat(mgeom,mav),flon(mgeom,mav)
       real vwaveT(mwave),vconvT(mconv)
       integer nwaveT,nconvT,npvar,iprfcheck
       logical gasgiant
@@ -182,7 +183,7 @@ C     Set lin=0 to prevent code looking for previous retrievals
       if(ilbl.eq.1)then
          print*,'Calling forwardnoglbl - B'
          CALL forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,
-     1    wgeom,flat,nconv,vconv,angles,gasgiant,lin,
+     1    wgeom,flat,flon,nconv,vconv,angles,gasgiant,lin,
      2    nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
      3    jlogg,RADIUS,nx,xn,ifix,ny,yn,kk,kiter)
       else
@@ -190,7 +191,7 @@ C     Set lin=0 to prevent code looking for previous retrievals
        if(iscat.ne.2)then
  
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
      3   RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
        else
@@ -200,7 +201,7 @@ C     Set lin=0 to prevent code looking for previous retrievals
      2   jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
 
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
      3   RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
 
@@ -270,13 +271,13 @@ C       Put output spectrum into temporary spectrum yn1.
 
         if(ilbl.eq.1)then
          CALL forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,     
-     1    wgeom,flat,nconv,vconv,angles,gasgiant,lin,
+     1    wgeom,flat,flon,nconv,vconv,angles,gasgiant,lin,
      2    nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
      3    RADIUS,nx,xn1,ifix,ny,yn1,kk,kiter)
         else
          if(iscat.ne.2)then
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
-     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
      3     jlogg,RADIUS,nx,xn1,ifix,ny,yn1,kk,kiter,iprfcheck)
          else
@@ -284,7 +285,7 @@ C       Put output spectrum into temporary spectrum yn1.
      1     vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
      2     jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn1)
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
-     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
      3     jlogg,RADIUS,nx,xn1,ifix,ny,yn1,kk,kiter,iprfcheck)
          endif

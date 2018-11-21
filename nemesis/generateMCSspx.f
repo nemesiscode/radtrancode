@@ -310,12 +310,12 @@ C     Read in forward modelling errors
 	
        if(iscat.eq.0)then
         CALL forwardavfovMCS(runname,ispace,fwhm,xlat,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,marsradius,
      3   satrad,thetrot,altbore,nx,xn,ny,yn,kk)
       elseif(iscat.eq.1)then 
        CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
      3   RADIUS,nx,xn,ny,yn,kk,kiter)
       elseif(iscat.eq.2)then
@@ -324,13 +324,13 @@ C     Read in forward modelling errors
      2   jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
        iscat1=1
        CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
      3   RADIUS,nx,xn,ny,yn,kk,kiter)
       else
        iscat1=1
        CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
      3   RADIUS,nx,xn,ny,yn,kk,kiter)
       endif

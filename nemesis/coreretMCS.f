@@ -2,7 +2,7 @@
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,jsurf,jalb,jxsc,
      3  jtan,jpre,jrad,jlogg,marsradius,satrad,thetrot,altbore,wgeom,
-     4  flat,nx,lx,xa,sa,ny,y,se1,xn,sm,sn,st,yn,kk,aa,dd)
+     4  flat,flon,nx,lx,xa,sa,ny,y,se1,xn,sm,sn,st,yn,kk,aa,dd)
 C     $Id:
 C     ******************************************************************
 C
@@ -61,6 +61,7 @@ C                               vertical
 C	altbore		real	Altitude of boresight
 C	wgeom(mgeom,mav) real	Integration weights 
 C	flat(mgeom,mav)	real	Integration point latitudes 
+C	flon(mgeom,mav)	real	Integration point longitudes 
 C	nx		integer	Number of elements in measurement vector
 C       lx(mx)          integer 1 if log, 0 otherwise
 C	xa(mx)		real	a priori state vector
@@ -109,7 +110,7 @@ C     Set measurement vector and source vector lengths here.
       real vwave(mgeom,mwave),vconv(mgeom,mconv),angles(mgeom,mav,3)
       real kk(my,mx),xa(mx),kk1(my,mx),sa(mx,mx),y(my),yn(my)
       real kkx(my,mx),yn1(my),s1(mx,mx),altbore,altborex
-      real wgeom(mgeom,mav),flat(mgeom,mav)
+      real wgeom(mgeom,mav),flat(mgeom,mav),flon(mgeom,mav)
       real vconvT(mconv),vwaveT(mwave)
       integer nwaveT,nconvT
       logical gasgiant,abexist
@@ -261,14 +262,14 @@ C      Place holder, setting viewing parameters to default.
        print*,'CoreretMCS : iscat= ',iscat
        if(iscat.eq.0)then
         CALL forwardavfovMCS(runname,ispace,fwhm,xlat,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2   nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
      3   marsradiusx,satradx,thetrotx,altborex,nxx,xnx,ny,ynx,kkx)
 
        elseif(iscat.eq.2)then
 
         CALL forwardnogMCS(runname,ispace,iscat1,fwhm,xlat,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2   nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
      3   marsradiusx,satradx,thetrotx,altborex,nxx,xnx,ny,ynx,kkx,
      4   kiter)
@@ -344,14 +345,14 @@ C        enddo
 C       enddo
 
        CALL forwardavfovMCS(runname,ispace,fwhm,xlat,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
      3   marsradius,satrad,thetrot,altbore,nx,xn,ny,yn,kk)
 
       elseif(iscat.eq.2)then
 
        CALL forwardnogMCS(runname,ispace,iscat1,fwhm,xlat,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,marsradius,
      3   satrad,thetrot,altbore,nx,xn,ny,yn,kk,kiter)
 
@@ -453,13 +454,13 @@ C       temporary kernel matrix kk1. Does it improve the fit?
         if(iscat.eq.0)then
 
         CALL forwardavfovMCS(runname,ispace,fwhm,xlat,ngeom,nav,
-     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
+     1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2     lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
      3     marsradius,satrad,thetrot,altbore,nx,xn1,ny,yn1,kk1)
 
         elseif(iscat.eq.2)then
           CALL forwardnogMCS(runname,ispace,iscat1,fwhm,xlat,ngeom,nav,
-     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
      3     marsradius,satrad,thetrot,altbore,nx,xn1,ny,yn1,kk1,
      4     kiter)

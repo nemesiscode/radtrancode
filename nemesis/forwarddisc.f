@@ -1,5 +1,5 @@
       subroutine forwarddisc(runname,ispace,iscat,fwhm,ngeom,
-     1 nav,wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
+     1 nav,wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2 lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
      3 jlogg,RADIUS,nx,xn,ny,yn,kk)
 C     $Id:
@@ -21,6 +21,7 @@ C                                       to simulate each FOV-averaged
 C                                       measurement spectrum.
 C	wgeom(mgeom,mav)real	Integration weights to use
 C	flat(mgeom,mav)	real	Integration point latitudes
+C	flon(mgeom,mav)	real	Integration point longitudes
 C       nwave(mgeom) 	integer Number of calculation wavelengths
 C       vwave(mgeom,mwave) real Calculation wavelengths
 C       nconv(mgeom)    integer Number of convolution wavelengths
@@ -80,7 +81,7 @@ C     **************************************************************
       integer nwave(mgeom),jsurf,nem,nav(mgeom),nwave1
       integer jalb,jxsc,jtan,jpre,k,iptf,imie,imie1
       real vwave(mgeom,mwave),angles(mgeom,mav,3),vwave1(mwave)
-      real pi
+      real pi,flon(mgeom,mav),xlon
       parameter(pi=3.1415927)
       real calcout(maxout3),fwhm,loggR,dellg
       real gradients(maxout4),vv
@@ -184,6 +185,7 @@ C     mass to units of 1e24 kg.
          aphi = angles(igeom,iav,3)
 
          xlat = flat(igeom,iav)   
+         xlon = flon(igeom,iav)   
 
 C        Set up parameters for non-scattering cirsrad run.
          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
@@ -196,8 +198,9 @@ C        Set up parameters for non-scattering cirsrad run.
 C        Set up all files for a direct cirsrad run
          call gsetraddisc(runname,iscat,nmu,mu,wtmu,isol,dist,
      1    lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
-     2    layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
-     3    nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
+     2    layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,xlon,
+     3    lin,nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,
+     4    xmap)
 
 C        If planet is not a gas giant and observation is not at limb then
 C        we need to read in the surface emissivity spectrum
@@ -331,6 +334,7 @@ C       Need to calculate RoC of radiance with surface gravity numerically
          aphi = angles(igeom,iav,3)
 
          xlat = flat(igeom,iav)   
+         xlon = flon(igeom,iav)   
 
 C        Set up parameters for non-scattering cirsrad run.
          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
@@ -343,8 +347,9 @@ C        Set up parameters for non-scattering cirsrad run.
 C        Set up all files for a direct cirsrad run
          call gsetraddisc(runname,iscat,nmu,mu,wtmu,isol,dist,
      1    lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
-     2    layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
-     3    nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
+     2    layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,xlon,
+     3    lin,nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,
+     4    xmap)
 
 C        If planet is not a gas giant and observation is not at limb then
 C        we need to read in the surface emissivity spectrum

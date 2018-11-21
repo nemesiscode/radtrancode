@@ -1,8 +1,8 @@
       subroutine coreretdisc(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jxsc,
-     3  jtan,jpre,jrad,jlogg,wgeom,flat,nx,lx,xa,sa,ny,y,se1,xn,sm,sn,
-     4  st,yn,kk,aa,dd)
+     3  jtan,jpre,jrad,jlogg,wgeom,flat,flon,nx,lx,xa,sa,ny,y,se1,xn,
+     4  sm,sn,st,yn,kk,aa,dd)
 C     $Id:
 C     ******************************************************************
 C
@@ -60,6 +60,7 @@ C	jpre		integer	Position of tangent pressure in
 C				xa (if included)
 C	wgeom(mgeom,mav) real	Integration weights 
 C	flat(mgeom,mav)	real	Integration point latitudes 
+C	flon(mgeom,mav)	real	Integration point longitudes 
 C	nx		integer	Number of elements in measurement vector
 C       lx(mx)          integer 1 if log, 0 otherwise
 C	xa(mx)		real	a priori state vector
@@ -107,7 +108,7 @@ C     Set measurement vector and source vector lengths here.
       real vwave(mgeom,mwave),vconv(mgeom,mconv),angles(mgeom,mav,3)
       real xa(mx),kk1(my,mx),sa(mx,mx),y(my),yn(my),kkx(my,mx)
       real yn1(my),s1(mx,mx),kk(my,mx)
-      real wgeom(mgeom,mav),flat(mgeom,mav)
+      real wgeom(mgeom,mav),flat(mgeom,mav),flon(mgeom,mav)
       real vwaveT(mwave),vconvT(mconv)
       integer nwaveT,nconvT,npvar
       logical gasgiant,abexist
@@ -251,7 +252,7 @@ C       readapriori.f. Hence just read in from temporary .str file
        if(iscat.eq.0)then
         print*,'Calling forwarddisc - A'
         CALL forwarddisc(runname,ispace,iscat,fwhm,ngeom,
-     1   nav,wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
+     1   nav,wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2   lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,
      3   jprex,jradx,jloggx,RADIUS,nxx,xnx,ny,ynx,kkx)
        else
@@ -308,7 +309,7 @@ C      Calculate inverse of se
       if(iscat.eq.0)then
         print*,'Calling forwarddisc - B'
         CALL forwarddisc(runname,ispace,iscat,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
      3   jlogg,RADIUS,nx,xn,ny,yn,kk)
 
@@ -447,7 +448,7 @@ C       temporary kernel matrix kk1. Does it improve the fit?
         if(iscat.eq.0)then
           print*,'Calling forwarddisc - C'
           CALL forwarddisc(runname,ispace,iscat,fwhm,ngeom,nav,
-     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
+     1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2     lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
      3     jrad,jlogg,RADIUS,nx,xn1,ny,yn1,kk1)
         else

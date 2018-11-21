@@ -1,7 +1,7 @@
       subroutine forwardnogL(runname,ispace,fwhm,ngeom,nav,
-     1 wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,nvar,
-     2 varident,varparam,jsurf,jalb,jxsc,jtan,jpre,occult,ionpeel,
-     3 nx,xn,ny,yn,kk)
+     1 wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     2 nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,occult,
+     3 ionpeel,nx,xn,ny,yn,kk)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate an FOV-averaged limb spectra using CIRSRADG,
@@ -19,6 +19,7 @@ C                                       to simulate each FOV-averaged
 C                                       measurement spectrum.
 C	wgeom(mgeom,mav)real	Integration weights to use
 C	flat(mgeom,mav)	real	Integration point latitudes
+C	flon(mgeom,mav)	real	Integration point longitudes
 C       nwave(mgeom) 	integer Number of calculation wavelengths
 C       vwave(mgeom,mwave) real Calculation wavelengths
 C       nconv(mgeom)    integer Number of convolution wavelengths
@@ -65,6 +66,7 @@ C     **************************************************************
       include '../radtran/includes/arrdef.f'
       include '../radtran/includes/gascom.f'
       include 'arraylen.f'
+      real flon(mgeom,mav),xlon
       real xlat,planck_wave,planckg_wave,Bg,height(maxlay),htan
       real wgeom(mgeom,mav),flat(mgeom,mav),fh,baseh1(maxlay)
       integer layint,inormal,iray,itype,nlayer,laytyp
@@ -173,6 +175,7 @@ C     NemesisL
       enddo
 
       xlat = flat(1,1)   
+      xlon = flon(1,1)   
 
       call setup(runname,gasgiant,nmu,mu,wtmu,isol,dist,lowbc,
      1 galb,nf,nphi,layht,tsurf,nlayer,laytyp,layint)
@@ -232,7 +235,7 @@ C        Read in one line of header
       iscat=0
 C     Set up all files for a direct cirsrad run of limb spectra
       call gsetradL(runname,nconv1,vconv1,fwhm,ispace,iscat,
-     1    gasgiant,layht,nlayer,laytyp,layint,xlat,lin,hcorrx,
+     1    gasgiant,layht,nlayer,laytyp,layint,xlat,xlon,lin,hcorrx,
      2    nvar,varident,varparam,nx,xn,jpre,tsurf,occult,ionpeel,
      3    jlevlo,jlevhi,xmap)
 
@@ -402,7 +405,7 @@ C             divide thermal emission + solar occultation by solar radiance at t
            iscat = 0
            call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,lowbc,
      1      galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,layht,
-     2      nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
+     2      nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,xlon,lin,
      3      nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,
      4      xmap)
       
@@ -482,7 +485,7 @@ c       Initialise yn1 array
 
 C       Set up all files to recalculate limb spectra after perturbation
         call gsetradL(runname,nconv1,vconv1,fwhm,ispace,iscat,
-     1    gasgiant,layht,nlayer,laytyp,layint,xlat,lin,hcorrx,
+     1    gasgiant,layht,nlayer,laytyp,layint,xlat,xlon,lin,hcorrx,
      2    nvar,varident,varparam,nx,xn,jpre,tsurf,occult,ionpeel,
      3    jlevlo,jlevhi,xmap)
 

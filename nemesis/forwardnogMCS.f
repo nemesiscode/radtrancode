@@ -1,5 +1,5 @@
       subroutine forwardnogMCS(runname,ispace,iscat,fwhm,xlat,ngeom,nav,
-     1 wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
+     1 wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2 lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,RADIUS,
      3 SATRAD,thetrot,altbore,nx,xn,ny,yn,kk,kiter)
 C     $Id:
@@ -24,6 +24,7 @@ C                                       to simulate each FOV-averaged
 C                                       measurement spectrum.
 C       wgeom(mgeom,mav)real     Integration weights to use
 C       flat(mgeom,mav)  real    Integration point latitudes
+C       flon(mgeom,mav)  real    Integration point longitudes
 C       nwave(mgeom) integer Number of calculation wavelengths
 C       vwave(mgeom,mwave) real    Calculation wavelengths
 C       nconv(mgeom)    integer Number of convolution wavelengths
@@ -85,8 +86,8 @@ C     **************************************************************
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       integer ipixA,ipixB,ichan
       real vconv(mgeom,mconv),wgeom(mgeom,mav),flat(mgeom,mav)
-      real layht,tsurf,esurf,angles(mgeom,mav,3)
-      real xn(mx),yn(my),kk(my,mx),ytmp(my),yn1(my)
+      real layht,tsurf,esurf,angles(mgeom,mav,3),flon(mgeom,mav)
+      real xn(mx),yn(my),kk(my,mx),ytmp(my),yn1(my),xlon
       real vconv1(mconv),vwave1(mwave)
       integer ny,jsurf,jalb,jtan,jpre,nem,nav(mgeom)
       integer nphi,ipath,jxsc
@@ -293,8 +294,8 @@ C      Set up parameters for scattering cirsrad run.
 C      Set up all files for a direct cirsrad run of limb spectra and
 C      near-limb observations
        call gsetradMCS(runname,nconv1,vconv1,fwhm,ispace,iscat,
-     1     gasgiant,layht,topht,nlayer,laytyp,layint,xlat,lin,hcorrx,
-     3     nvar,varident,varparam,nx,xn,jpre,tsurf,xmap)
+     1     gasgiant,layht,topht,nlayer,laytyp,layint,xlat,xlon,lin,
+     2     hcorrx,nvar,varident,varparam,nx,xn,jpre,tsurf,xmap)
 
        print*,'Calculating grid of radiances'
 C      Compute suite of limb/near-limb radiances 
@@ -350,6 +351,7 @@ C       Compute A pixel numbers
         print*,'Angles : ',sol_ang,emiss_ang,aphi
 
         xlat = flat(igeom,iav)
+        xlon = flon(igeom,iav)
         dtr = 3.1415927/180.0
  
 
@@ -439,8 +441,8 @@ C         Set up all files for a direct cirsrad run
           call gsetrad(intname,iscat1,nmu,mu,wtmu,isol,dist,   
      1     lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
      2     layht,nlayer1,laytyp,layint,sol_ang,emiss_ang,aphi,
-     3     xlat,lin,nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,
-     4     jpre,tsurf,xmap)
+     3     xlat,xlon,lin,nvar,varident,varparam,nx,xn,jalb,jxsc,
+     4     jtan,jpre,tsurf,xmap)
 
 C          print*,'Calling scattering calc : sol_ang, emiss_ang',
 C     1     sol_ang,emiss_ang

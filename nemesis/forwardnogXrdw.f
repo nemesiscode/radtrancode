@@ -1,5 +1,5 @@
       subroutine forwardnogXrdw(runname,ispace,iscat,fwhm,ngeom,nav,
-     1 wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
+     1 wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2 lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
      3 jlogg,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,icheck,rdwindicesi,
      4 kkold,nconvi,vconvi,ynold)
@@ -28,6 +28,7 @@ C                                       to simulate each FOV-averaged
 C                                       measurement spectrum.
 C       wgeom(mgeom,mav)real     Integration weights to use
 C       flat(mgeom,mav)  real    Integration point latitudes
+C       flon(mgeom,mav)  real    Integration point longitudes
 C       nwave(mgeom) integer Number of calculation wavelengths
 C       vwave(mgeom,mwave) real    Calculation wavelengths
 C       nconv(mgeom)    integer Number of convolution wavelengths
@@ -93,9 +94,9 @@ C     **************************************************************
       integer check_profile,icheck,imie,imie1,jlogg,ifix(mx)
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       real vconv(mgeom,mconv),wgeom(mgeom,mav),flat(mgeom,mav)
-      real layht,tsurf,esurf,angles(mgeom,mav,3)
+      real layht,tsurf,esurf,angles(mgeom,mav,3),flon(mgeom,mav)
       real xn(mx),yn(my),kk(my,mx),ytmp(my),ystore(my),ynold(my)
-      real vconv1(mconv),vwave1(mwave)
+      real vconv1(mconv),vwave1(mwave),xlon
       integer ny,jsurf,jalb,jtan,jpre,nem,nav(mgeom)
       integer nphi,ipath,iconv,k,jxsc
       integer nmu,isol,lowbc,nf,nf1,nx2,kiter
@@ -256,6 +257,7 @@ C            nf=20
          print*,'Angles : ',sol_ang,emiss_ang,aphi
          print*,'nf = ',nf
          xlat = flat(igeom,iav)
+         xlon = flon(igeom,iav)
 
          if(kiter.ge.0)then
            nx2 = nx+1
@@ -329,8 +331,9 @@ C         Set up all files for a direct cirsrad run
           print*,'calling gsetrad'
           call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,
      1     lowbc,galb,nf,nconvi1,vconvi1,fwhm,ispace,gasgiant,
-     2     layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
-     3     nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
+     2     layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,xlon,
+     3     lin,nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,
+     4     xmap)
           print*,'gsetrad called OK'
 
 C         If planet is not a gas giant and observation is not at limb then

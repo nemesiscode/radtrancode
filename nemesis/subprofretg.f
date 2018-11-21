@@ -1,5 +1,5 @@
       SUBROUTINE SUBPROFRETG(XFLAG,IPFILE,ISPACE,ISCAT,GASGIANT,XLAT,
-     1 NVAR,VARIDENT,VARPARAM,NX,XN,JPRE,NCONT,FLAGH2P,XMAP,IERR)
+     1 XLON,NVAR,VARIDENT,VARPARAM,NX,XN,JPRE,NCONT,FLAGH2P,XMAP,IERR)
 C     $Id:
 C     ***********************************************************************
 C     Subroutine to modify an existing ipfile.ref T/P/vmr profile and 
@@ -33,6 +33,7 @@ C	ISPACE	INTEGER		0=cm-1, 1=microns
 C	ISCAT	INTEGER		Scattering indicator
 C	GASGIANT LOGICAL	Indicates if planet is a Gas Giant
 C	XLAT	REAL		Latitude of spectrum to be simulated
+C	XLON	REAL		Longitude of spectrum to be simulated
 C	NVAR	INTEGER		Number of variable profiles
 C	VARIDENT(MVAR,3) INTEGER Identity of profiles and parameterisation
 C					scheme
@@ -74,7 +75,7 @@ C     ***********************************************************************
       REAL CONT(MAXCON,MAXPRO),XLAT,X,XREF(MAXPRO),X1(MAXPRO)
       REAL PKNEE,HKNEE,XDEEP,XFSH,PARAH2(MAXPRO),XH,XKEEP,X2(MAXPRO)
       REAL RHO,F,DQDX(MAXPRO),DX,PLIM,XFACP,CWID,PTROP, NEWF
-      REAL DNDH(MAXPRO),DQDH(MAXPRO),FCLOUD(MAXPRO)
+      REAL DNDH(MAXPRO),DQDH(MAXPRO),FCLOUD(MAXPRO),XLON
       REAL dtempdx(MAXPRO,5),T0,Teff,alpha,ntemp,tau0
       REAL XP1(MAXPRO),LP1(MAXPRO),XP2(MAXPRO)
       REAL LPMIN,LPMAX,DLP,XPS(MAXPRO),XP2S(MAXPRO)

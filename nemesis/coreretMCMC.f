@@ -1,5 +1,5 @@
       subroutine coreretMCMC(runname,ispace,iscat,ilbl,ica,miter,
-     1  niter,fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,
+     1  niter,fwhm,xlat,xlon,ngeom,nav,nwave,vwave,nconv,vconv,
      2  angles,gasgiant,nvar,varident,varparam,npro,jsurf,jalb,jxsc,
      3  jtan,jpre,jrad,jlogg,jfrac,wgeom,flat,flon,nx,lx,xa,sa,ny,y,
      4  se1,idum)
@@ -24,6 +24,7 @@ C	miter	integer	Total number of report steps
 C	niter	integer Number of iterations between reporting steps
 C	fwhm	real	Required FWHM of final convoluted spectrum
 C	xlat	real	Latitude of observed site.
+C	xlon	real	Longitude of observed site.
 C	ngeom	integer	Number of observation angles at which site is observed
 C	nav(ngeom) integer  Number of synthetic spectra required
 C                       to simulate each FOV-averaged measurement spectrum.
@@ -84,7 +85,7 @@ C     Set measurement vector and source vector lengths here.
       CHARACTER*100 runname,itname,abort,aname,buffer
 
       real xn(mx),se1(my),calc_chi,kk(my,mx),calc_phiprior
-      real fwhm,xlat,xn1(mx),ran11,test,RADIUS,err,ferr
+      real fwhm,xlat,xlon,xn1(mx),ran11,test,RADIUS,err,ferr
       integer ix,np,npro,lout,iplanet,lx(mx)
       real alpha,alpha_chi,alpha_phi
       logical accept
@@ -262,10 +263,12 @@ C       Now calculate next iterated xn
 C       Test to see if any vmrs have gone negative.
         xflag=0
         call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
-     1    nvar,varident,varparam,nx,xn1,jpre,ncont,flagh2p,xmap,ierr)
+     1   xlon,nvar,varident,varparam,nx,xn1,jpre,ncont,flagh2p,
+     2   xmap,ierr)
         if (ierr.eq.1)then
           goto 403
         endif
+
 
 
 C       Calculate test spectrum using trial state vector xn1. 

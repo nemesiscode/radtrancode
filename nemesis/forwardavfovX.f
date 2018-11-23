@@ -232,19 +232,21 @@ C     mass to units of 1e24 kg.
          xlon = flon(igeom,iav)   
          xgeom = wgeom(igeom,iav)
 
+         print*,'t1',jfrac,xgeom
          if(jfrac.gt.0)then
+C          print*,'test1'
           if(nav(igeom).ne.2)then
            print*,'Error in forwardavfovX'
            print*,'Model 102 only suitable for NAV=2'
            stop
           endif
-
           if(iav.eq.1)then
            xgeom=xn(jfrac)
           else
            xgeom=1.0 - xn(jfrac)
           endif
-
+          print*,'t2',iav,xgeom
+       
          endif
 
 C        If planet is not a gas giant and observation is not at limb then
@@ -300,6 +302,7 @@ C         Not an SCR calculation. Assume 1st path is the thermal emission
            yn(ioff+j)=yn(ioff+j)+xgeom*calcout(ioff1)
           enddo
     
+C          print*,'A'
 C         Calculate gradients
           do i=1,nx
 
@@ -358,6 +361,7 @@ C          Model 102 - weighted average of two profiles.
 
           enddo
 
+C          print*,'B'
   
           if (gasgiant.and.reflecting_atmos) then
            print*,'ADDING IN REFLECTING ATMOSPHERE CONTRIBUTION'
@@ -487,6 +491,7 @@ C          Now the gradients
 
 110    continue
 
+C       print*,'C'
        if(jtan.gt.0.or.jpre.gt.0.or.jlogg.gt.0)then
 
         do 113 iextra=1,3
@@ -632,6 +637,8 @@ C           Assume change in tangent height pressure of 1km.
        endif
 
 100   continue
+
+C      print*,'Done'
 
       return
 

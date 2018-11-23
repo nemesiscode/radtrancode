@@ -472,7 +472,7 @@ C     See if Sromovsky cloud layer model is specified.
 C     Check to see if anything bad has happened in the .prf file before 
 C     running subpath
       iprfcheck=check_profile(runname)
-     
+
 C     Compute the drv file to get the aerosol optical depths
       if(icheck.eq.1.and.iprfcheck.eq.0) then
 

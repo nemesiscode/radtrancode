@@ -1,5 +1,5 @@
       subroutine coreretMC(runname,ispace,iscat,ica,kiter,phlimit,
-     1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
+     1  fwhm,xlat,xlon,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jxsc,
      3  jtan,jpre,jrad,jlogg,jfrac,wgeom,flat,flon,nx,lx,xa,sa,ny,y,
      4  se1,xn,sm,sn,st,yn,kk,aa,dd)
@@ -20,6 +20,7 @@ C	phlimit	real	Limiting % change in cost function to consider solution
 C			converged.
 C	fwhm	real	Required FWHM of final convoluted spectrum
 C	xlat	real	Latitude of observed site.
+C	xlon	real	Longitude of observed site.
 C	ngeom	integer	Number of observation angles at which site is observed
 C	nav(ngeom) integer  Number of synthetic spectra required
 C                       to simulate each FOV-averaged measurement spectrum.
@@ -93,7 +94,7 @@ C     Set measurement vector and source vector lengths here.
 
       real xn(mx),se1(my),se(my,my),calc_phiret,sf(my,my)
       real fwhm,xlat,xlatx,xdiff,xn1(mx),x_out(mx)
-      real xlonx
+      real xlonx,xlon
       integer nprox,nvarx,varidentx(mvar,3),jsurfx,nxx,ix,np,npro
       real st(mx,mx),varparamx(mvar,mparam)
       real sn(mx,mx),sm(mx,mx),xnx(mx),stx(mx,mx),ynx(my)
@@ -238,8 +239,8 @@ C        Just substituting parameters from .pre file
         enddo
 
 C       Write out x-data to temporary .str file for later routines.
-        call writextmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+        call writextmp(runname,xlatx,xlonx,nvarx,varidentx,varparamx,
+     1   nprox,nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
      2   jfracx)
 
        else
@@ -247,8 +248,8 @@ C       substituting and retrieving parameters from .pre file.
 C       Current record frrom .pre file already read in by
 C       readapriori.f. Hence just read in from temporary .str file
  
-        call readxtmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+        call readxtmp(runname,xlatx,xlonx,nvarx,varidentx,varparamx,
+     1   nprox,nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
      2   jfracx)
 
        endif
@@ -479,6 +480,16 @@ C          print*,'has gone negative.'
 C          print*,i,xa(i),xn1(i),x_out(i)
 C         endif
 
+C        Add additional brake for model 102 to stop silly fractions.
+         if(jfrac.gt.0)then
+          if(xn1(jfrac).lt.0.01.or.xn1(jfrac).gt.0.99)then
+           alambda=alambda*10
+           if(alambda.gt.1e10)alambda=1e10
+           goto 145
+          endif
+         endif
+
+
 C        Check to see if log numbers have gone out of range
          if(lx(i).eq.1)then
           if(xn1(i).gt.85.or.xn1(i).lt.-85)then
@@ -498,7 +509,8 @@ C        Check to see if log numbers have gone out of range
 C       Test to see if any vmrs have gone negative.
         xflag=0
         call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
-     1    nvar,varident,varparam,nx,xn1,jpre,ncont,flagh2p,xmap,ierr)
+     1    xlon,nvar,varident,varparam,nx,xn1,jpre,ncont,flagh2p,
+     2    xmap,ierr)
         if (ierr.eq.1)then
           alambda = alambda*10.0             ! increase Marquardt brake
           if(alambda.gt.1e10)alambda=1e10

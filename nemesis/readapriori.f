@@ -1571,6 +1571,8 @@ C                xfac = exp(-arg*arg)
 
 202          continue
 
+C             nx=nx+nlevel
+
            else         
             print*,'vartype profile parametrisation not recognised'
             stop
@@ -2374,6 +2376,7 @@ C           If set to 0, default Creme Brulee model is used where CB top pressur
             read(27,*)x0(ix),err
             sx(ix,ix) = err**2
             jfrac = ix
+            nx=nx+1
            else
             print*,'vartype not recognised'
             stop

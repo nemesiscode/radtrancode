@@ -303,9 +303,11 @@ C1000  format(1x,i4,1x,f10.4,1x,e15.8,1x,e15.8,1x,f7.2,1x,e15.8,1x,f9.5)
         write(lout,*)(varparam(ivar,j),j=1,5)
        endif
        np=1
-       if(varident(ivar,1).le.100)then
+       if(varident(ivar,3).le.100)then
          np = npvar(varident(ivar,3),npro,varparam(ivar,1))
        endif
+       print*,'D',varident(ivar,3),npro,varparam(ivar,1)
+       print*,'E',np
        if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
        if(varident(ivar,1).eq.887)np = int(varparam(ivar,1))
        if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
@@ -329,7 +331,7 @@ C1000  format(1x,i4,1x,f10.4,1x,e15.8,1x,e15.8,1x,f7.2,1x,e15.8,1x,f9.5)
 
         iflag = logflag(varident(ivar,1),varident(ivar,3),
      &   varparam(ivar,1),i)
-        print*,xa1,ea1,xn1,en1,iflag
+C        print*,xa1,ea1,xn1,en1,iflag
         if(iflag.eq.1)then
           xa1 = exp(xa1)
           ea1 = xa1*ea1

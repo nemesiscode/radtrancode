@@ -401,10 +401,10 @@ C     set up a priori of x and its covariance
       ilbl1=ilbl
 
       call coreretL(runname,ispace,iscat,ilbl,ica,kiter,phlimit,
-     1  inum,fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,npro,
-     2  gasgiant,lin,lpre,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,
-     3  jpre,jrad,jlogg,jfrac,occult,ionpeel,wgeom,flat,flon,nx,lx,xa,
-     4  sa,ny,y,se,xn,sm,sn,st,yn,kk,aa,dd)
+     1  inum,fwhm,xlat,xlon,ngeom,nav,nwave,vwave,nconv,vconv,angles,
+     2  npro,gasgiant,lin,lpre,nvar,varident,varparam,jsurf,jalb,jxsc,
+     3  jtan,jpre,jrad,jlogg,jfrac,occult,ionpeel,wgeom,flat,flon,nx,
+     4  lx,xa,sa,ny,y,se,xn,sm,sn,st,yn,kk,aa,dd)
 
 C     Calculate retrieval errors.
 C     Simple errors, set to sqrt of diagonal of ST

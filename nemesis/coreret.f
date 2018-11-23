@@ -1,5 +1,5 @@
       subroutine coreret(runname,ispace,iscat,ilbl,ica,kiter,phlimit,
-     1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
+     1  fwhm,xlat,xlon,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jxsc,
      3  jtan,jpre,jrad,jlogg,jfrac,wgeom,flat,flon,nx,lx,xa,sa,ny,y,se1,
      4  xn,sm,sn,st,yn,kk,aa,dd)
@@ -26,6 +26,7 @@ C	phlimit	real	Limiting % change in cost function to consider solution
 C			converged.
 C	fwhm	real	Required FWHM of final convoluted spectrum
 C	xlat	real	Latitude of observed site.
+C	xlon	real	Longitude of observed site.
 C	ngeom	integer	Number of observation angles at which site is observed
 C	nav(ngeom) integer  Number of synthetic spectra required
 C                       to simulate each FOV-averaged measurement spectrum.
@@ -102,7 +103,7 @@ C     Set measurement vector and source vector lengths here.
       
       real xn(mx),se1(my),se(my,my),calc_phiret,sf(my,my)
       real fwhm,xlat,xlatx,xdiff,xn1(mx),x_out(mx)
-      real xlonx,RADIUS
+      real xlonx,RADIUS,xlon
       integer nprox,nvarx,varidentx(mvar,3),jsurfx,nxx,ix,np,npro
       integer n_alambda
       real st(mx,mx),varparamx(mvar,mparam)
@@ -315,17 +316,17 @@ C        Just substituting parameters from .pre file
         enddo
 
 C       Write out x-data to temporary .str file for later routines.
-        call writextmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+        call writextmp(runname,xlatx,xlonx,nvarx,varidentx,varparamx,
+     1   nprox,nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
      2   jfracx)
 
        else
 C       substituting and retrieving parameters from .pre file. 
 C       Current record from .pre file already read in by
 C       readapriori.f. Hence just read in from temporary .str file
-        call readxtmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
-     2   jfracx)
+        call readxtmp(runname,xlatx,xlonx,nvarx,varidentx,varparamx,
+     1   nprox,nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,
+     2   jloggx,jfracx)
 
        endif
  
@@ -350,7 +351,7 @@ C      Calc. gradient of all elements of xnx matrix.
           CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,
      1     nav,wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2     lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,
-     3     jprex,jradx,jloggx,jfracx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx)
+     3     jprex,jradx,jloggx,jfracx,RADIUS,nxx,xnx,ny,ynx,kkx)
          else
           print*,'Calling forwardnogX - A'
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
@@ -452,7 +453,7 @@ C      Calculate inverse of se
          CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2    nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3    jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk)
+     3    jlogg,jfrac,RADIUS,nx,xn,ny,yn,kk)
         else
          print*,'Calling forwardnogX - B' 
          CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
@@ -556,6 +557,16 @@ C       Now calculate next iterated xn1
 
         do i=1,nx
          xn1(i) = xn(i) + (x_out(i)-xn(i))/(1.0+alambda)
+
+C        Add additional brake for model 102 to stop silly fractions.
+         if(jfrac.gt.0)then
+          if(xn1(jfrac).lt.0.01.or.xn1(jfrac).gt.0.99)then
+           alambda=alambda*10
+           if(alambda.gt.1e10)alambda=1e10
+           goto 401
+          endif
+         endif
+
          print*,'i, x_old, x_next',i,xn(i),xn1(i)
          ntest=isnan(xn1(i))
          if(ntest)then
@@ -581,7 +592,8 @@ C        Check to see if log numbers have gone out of range
 C       Test to see if any vmrs have gone negative.
         xflag=0
         call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
-     1    nvar,varident,varparam,nx,xn1,jpre,ncont,flagh2p,xmap,ierr)
+     1    xlon,nvar,varident,varparam,nx,xn1,jpre,ncont,flagh2p,
+     2    xmap,ierr)
         if (ierr.eq.1)then
           alambda = alambda*10.0             ! increase Marquardt brake
           if(alambda.gt.1e10)alambda=1e10
@@ -735,7 +747,7 @@ C       temporary kernel matrix kk1. Does it improve the fit?
            CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,nav,
      1      wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2      lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
-     3      jrad,jlogg,jfrac,RADIUS,nx,xn1,ifix,ny,yn1,kk1)
+     3      jrad,jlogg,jfrac,RADIUS,nx,xn1,ny,yn1,kk1)
           else
            print*,'Calling forwardnogX - C'
            CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,

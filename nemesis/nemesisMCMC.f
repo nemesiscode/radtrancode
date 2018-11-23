@@ -241,7 +241,7 @@ C     set up a priori of x and its covariance
 
 	
       call coreretMCMC(runname,ispace,iscat,ilbl,ica,miter,niter,
-     1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
+     1  fwhm,xlat,xlon,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,nvar,varident,varparam,npro,jsurf,jalb,jxsc,jtan,
      3  jpre,jrad,jlogg,jfrac,wgeom,flat,flon,nx,lx,xa,sa,ny,y,se,
      4  idum)

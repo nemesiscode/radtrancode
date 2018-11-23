@@ -542,7 +542,7 @@ C        print*,'VARIDENT : ',VARIDENT(IVAR,1),VARIDENT(IVAR,2),
 C     1    VARIDENT(IVAR,3)
 
 C       Look up number of parameters needed to define this type of profile
-        NP = NPVAR(VARIDENT(IVAR,3),NPRO)
+        NP = NPVAR(VARIDENT(IVAR,3),NPRO,VARPARAM(IVAR,1))
 C        print*,'IVAR,VARIDENT,NP',IVAR,(VARIDENT(IVAR,I),I=1,3),NP
         print*,'IPAR = ',IPAR
         IF(VARIDENT(IVAR,3).EQ.0)THEN
@@ -2576,30 +2576,35 @@ C        ***************************************************************
 
 C        Need to find nearest entry to requested lat/long
          CALL XPROJ(LATITUDE,LONGITUDE,V0)
+C         print*,'sub1',LATITUDE,LONGITUDE,(V0(K),K=1,3)
 
          NLOCATE=INT(VARPARAM(IVAR,1))
+C         print*,'sub2',nlocate
          J=2
          XX = -1000.
          DO I=1,NLOCATE
           LAT1=VARPARAM(IVAR,J)
           LON1=VARPARAM(IVAR,J+1)
           CALL XPROJ(LAT1,LON1,V1)
+C          print*,'sub3',I,LAT1,LON1,(V1(K),K=1,3)
           XP=0.
           DO K=1,3
            XP=XP+V0(K)*V1(K)
+C           print*,'sub3x',K,V0(K),V1(K)
           ENDDO
           IF(XP.GT.XX)THEN
            XX=XP
            I1=I
           ENDIF
-          J=J+2
+          J=J+2 
          ENDDO
-
-         DO I=1,NPRO
+C         print*,'sub4',i1
+         DO I=1, NPRO
            J1 = NXTEMP+(I1-1)*NPRO+I
            IF(VARIDENT(IVAR,1).EQ.0)THEN
             X1(I) = XN(J1)
             XMAP(J1,IPAR,I)=1.0
+C            print*,'sub5',J1,XN(J1),I,X1(I)
            ELSE
              IF(XN(J1).GT.-82.8931)THEN
                X1(I) = EXP(XN(J1))
@@ -2654,6 +2659,10 @@ C         print*,'Tangent pressure'
          NP = 1
         ELSEIF(VARIDENT(IVAR,1).EQ.555)THEN
 C         print*,'Radius of Planet'
+         IPAR = -1
+         NP = 1
+        ELSEIF(VARIDENT(IVAR,1).EQ.102)THEN
+C         print*,'Variable profile fraction'
          IPAR = -1
          NP = 1
         ELSEIF(VARIDENT(IVAR,1).EQ.444.OR.VARIDENT(IVAR,1).EQ.445)THEN
@@ -2896,6 +2905,8 @@ C         print*,'Creme Brulee layering'
  
        ENDIF
        
+C       print*,'sub6',IPAR
+
        IF(IPAR.GT.0)THEN
         IF(IPAR.LE.NVMR)THEN
          DO I=1,NPRO
@@ -3108,6 +3119,7 @@ C     ************* Write out modified profiles *********
       DO 505 I=1,NPRO
 	  WRITE(2,506)H(I),P(I),T(I),(VMR(I,J),J=1,NVMR)
 506       FORMAT(1X,F13.3,E13.5,F13.4,40(E13.5))
+C          print*,'sub7',I,P(I),T(I)
 505   CONTINUE
 C
 52    CONTINUE

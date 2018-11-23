@@ -1,6 +1,7 @@
       subroutine forwardnogPT(runname,ispace,fwhm,ngeom,nav,
      1 wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2 nvar,varident,varparam,jrad,jlogg,RADIUS,nx,xn,ny,yn,kk,kiter)
+     2 nvar,varident,varparam,jrad,jlogg,jfrac,RADIUS,nx,xn,ny,yn,kk,
+     3 kiter)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate a primary transit spectrum of an exoplanet.
@@ -71,7 +72,7 @@ C     **************************************************************
       real vv,xref,dx,Grav,flon(mgeom,mav),xlon
       parameter (Grav=6.672E-11)
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
-      integer ipixA,ipixB,ichan,ix,imie,imie1
+      integer ipixA,ipixB,ichan,ix,imie,imie1,jfrac
       real vconv(mgeom,mconv),vconv1(mconv)
       real layht,tsurf,esurf,pressR,delp,altbore,thbore,gtsurf
       real xn(mx),yn(my),kk(my,mx),yn1(my),caltbore

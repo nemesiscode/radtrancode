@@ -1,8 +1,8 @@
       subroutine coreret(runname,ispace,iscat,ilbl,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jxsc,
-     3  jtan,jpre,jrad,jlogg,wgeom,flat,flon,nx,lx,xa,sa,ny,y,se1,xn,sm,
-     4  sn,st,yn,kk,aa,dd)
+     3  jtan,jpre,jrad,jlogg,jfrac,wgeom,flat,flon,nx,lx,xa,sa,ny,y,se1,
+     4  xn,sm,sn,st,yn,kk,aa,dd)
 C     $Id:
 C     ******************************************************************
 C
@@ -93,6 +93,7 @@ C     Set measurement vector and source vector lengths here.
       integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,j3,j4,jsurf
       integer jalb,jalbx,jtan,jtanx,jpre,jprex,ilbl,jrad,jradx
       integer iprfcheck,iplanet,lx(mx),jlogg,jloggx,jxsc,jxscx
+      integer jfrac,jfracx
       real phlimit,alambda,xtry,tphi,abstphi
       integer xflag,ierr,ncont,flagh2p,npro1,jpara
       real xdnu,xmap(maxv,maxgas+2+maxcon,maxpro)
@@ -288,7 +289,7 @@ C     Load state vector with a priori
        if(lin.eq.1) then
 C        Just substituting parameters from .pre file
          call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,varparamx,
-     1  jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,nxx,xnx,stx)
+     1  jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,jfracx,nxx,xnx,stx)
        
         xdiff = abs(xlat-xlatx)
         if(xdiff.gt.lat_tolerance)then
@@ -315,14 +316,16 @@ C        Just substituting parameters from .pre file
 
 C       Write out x-data to temporary .str file for later routines.
         call writextmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
+     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+     2   jfracx)
 
        else
 C       substituting and retrieving parameters from .pre file. 
 C       Current record from .pre file already read in by
 C       readapriori.f. Hence just read in from temporary .str file
         call readxtmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
+     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+     2   jfracx)
 
        endif
  
@@ -338,7 +341,7 @@ C      Calc. gradient of all elements of xnx matrix.
          CALL forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,flon,nconv,vconv,angles,gasgiant,lin0,
      2    nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
-     3    jradx,jloggx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter)
+     3    jradx,jloggx,jfracx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter)
        else
  
        if(iscat.eq.0)then
@@ -347,13 +350,13 @@ C      Calc. gradient of all elements of xnx matrix.
           CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,
      1     nav,wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2     lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,
-     3     jprex,jradx,jloggx,RADIUS,nxx,xnx,ny,ynx,kkx)
+     3     jprex,jradx,jloggx,jfracx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx)
          else
           print*,'Calling forwardnogX - A'
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2     nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
-     3     jradx,jloggx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,
+     3     jradx,jloggx,jfracx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,
      4	   iprfcheck)
          endif
        elseif(iscat.eq.1.or.iscat.eq.3.or.iscat.eq.4)then
@@ -361,7 +364,7 @@ C      Calc. gradient of all elements of xnx matrix.
          CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2    nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
-     3    jradx,jloggx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,
+     3    jradx,jloggx,jfracx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,
      4	  iprfcheck)
          print*,'forwardnogX - A1 - called OK'
        elseif(iscat.eq.2)then
@@ -369,12 +372,12 @@ C      Calc. gradient of all elements of xnx matrix.
          CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1    vconvT,gasgiant,lin0,nvarx,varidentx,
      2    varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
-     3    RADIUS,nxx,xnx)
+     3    jfracx,RADIUS,nxx,xnx)
          print*,'intradfield called OK'
          CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2    nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
-     3    jradx,jloggx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,
+     3    jradx,jloggx,jfracx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,
      4	  iprfcheck)
        else
          print*,'Coreret: iscat invalid',iscat
@@ -439,7 +442,7 @@ C      Calculate inverse of se
          CALL forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,flon,nconv,vconv,angles,gasgiant,lin,
      2    nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
-     3    jrad,jlogg,RADIUS,nx,xn,ifix,ny,yn,kk,kiter)
+     3    jrad,jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter)
          print*,'call OK'
       else
 
@@ -449,13 +452,13 @@ C      Calculate inverse of se
          CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2    nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3    jlogg,RADIUS,nx,xn,ny,yn,kk)
+     3    jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk)
         else
          print*,'Calling forwardnogX - B' 
          CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2    nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3    jlogg,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
+     3    jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
         endif
 
 C        print*,'forwardavfovX OK, jpre = ',jpre
@@ -467,7 +470,7 @@ C        print*,'forwardavfovX OK, jpre = ',jpre
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3   jlogg,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
+     3   jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
 
 C        print*,'forwardnogX OK, jpre = ',jpre
 
@@ -477,12 +480,12 @@ C        print*,'forwardnogX OK, jpre = ',jpre
         print*,'Calling intradfield - B',gasgiant
         CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1   vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
-     2   jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
+     2   jxsc,jtan,jpre,jrad,jlogg,jfrac,RADIUS,nx,xn)
         print*,'intradfield - B called OK'
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3   jlogg,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
+     3   jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
         print*,'B - OK'
        endif
       endif
@@ -724,7 +727,7 @@ C       temporary kernel matrix kk1. Does it improve the fit?
          CALL forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,     
      1    wgeom,flat,flon,nconv,vconv,angles,gasgiant,lin,
      2    nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3    jlogg,RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter)
+     3    jlogg,jfrac,RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter)
         else
          if(iscat.eq.0)then
           if(jalb.lt.0.and.jxsc.lt.0)then
@@ -732,13 +735,13 @@ C       temporary kernel matrix kk1. Does it improve the fit?
            CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,nav,
      1      wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2      lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
-     3      jrad,jlogg,RADIUS,nx,xn1,ny,yn1,kk1)
+     3      jrad,jlogg,jfrac,RADIUS,nx,xn1,ifix,ny,yn1,kk1)
           else
            print*,'Calling forwardnogX - C'
            CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1      wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2      lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3      jlogg,RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter,iprfcheck)
+     3      jlogg,jfrac,RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter,iprfcheck)
           endif
 
          elseif(iscat.eq.1.or.iscat.eq.3.or.iscat.eq.4)then
@@ -747,16 +750,16 @@ C       temporary kernel matrix kk1. Does it improve the fit?
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3     jlogg,RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter,iprfcheck)
+     3     jlogg,jfrac,RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter,iprfcheck)
          elseif(iscat.eq.2)then
          print*,'Calling intradfield - C'
           CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1     vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
-     2     jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn1)
+     2     jxsc,jtan,jpre,jrad,jlogg,jfrac,RADIUS,nx,xn1)
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3     jlogg,RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter,iprfcheck)
+     3     jlogg,jfrac,RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter,iprfcheck)
          endif
         endif
 
@@ -966,7 +969,7 @@ C       Re-initialise s1e and se
          CALL forwardnogXrdw(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3     jlogg,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck,
+     3     jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck,
      4     rdwindicesi,kkold,nconvi,vconvi,ynold)
 
            if(ilbl.eq.0.or.ilbl.eq.2)then

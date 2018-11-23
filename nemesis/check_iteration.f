@@ -38,7 +38,7 @@ C      See if this is a temperature model. If temperatures gone negative
 C      then send error flag.
        if(itype.eq.0) then 
          do i=1,np
-          ilog=logflag(itype,imod,i)
+          ilog=logflag(itype,imod,varparam(ivar,1),i)
           if(ilog.eq.0.and.tmp(i).lt.0.)icheck=1
          enddo
        endif

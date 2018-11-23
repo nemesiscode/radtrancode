@@ -57,7 +57,8 @@ C     Set minimum fractional error to fix variable.
         xa1 = xa(ix)
         ea1 = sqrt(abs(sa(ix,ix)))
 
-        iflag = logflag(varident(ivar,1),varident(ivar,3),i)
+        iflag = logflag(varident(ivar,1),varident(ivar,3),
+     &	 varparam(ivar,1),i)
 
         if(iflag.eq.1)then
           xa1 = exp(xa1)

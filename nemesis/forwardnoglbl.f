@@ -1,7 +1,7 @@
       subroutine forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,
      1 wgeom,flat,flon,nconv,vconv,angles,gasgiant,
      2 lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3 jlogg,RADIUS,nx,xn,ifix,ny,yn,kk,kiter)
+     3 jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate a synthetic spectrum and KK-matrix using
@@ -50,6 +50,8 @@ C       jrad            integer position radius element in
 C                               xn (if included)
 C       jlogg           integer position surface gravity (log(g)) element in
 C                               xn (if included)
+C       jfrac           integer position of profile fraction element in
+C                               xn (if included)
 C       nx              integer Number of elements in state vector
 C       xn(mx)          real	State vector
 C	ifix(mx)	integer	Vector indicating which elements of xn we
@@ -88,7 +90,7 @@ C     **************************************************************
       real x0,x1,wing,vrel,maxdv,delv
       real vconv1(mconv),RADIUS
       integer ny,jsurf,jalb,jxsc,jtan,jpre,nem,nav(mgeom)
-      integer nphi,ipath,iconv,k,imie,imie1,jrad,jlogg
+      integer nphi,ipath,iconv,k,imie,imie1,jrad,jlogg,jfrac
       integer nmu,isol,lowbc,nf,nf1,nx2,kiter
       real dist,galb,sol_ang,emiss_ang,z_ang,aphi,vv,Grav
       parameter (Grav=6.672E-11)

@@ -1,6 +1,6 @@
       subroutine calc_input_files(runname,ispace,iscat,fwhm,flat,
      1 flon,nconv,vconv,angles,gasgiant,lin,nvar,varident,varparam,
-     2 jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
+     2 jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,jfrac,RADIUS,nx,xn)
 C     $Id:
 C     **************************************************************
 C     Subroutine to write out input files for last successful iteration of
@@ -37,6 +37,8 @@ C       jrad		integer position radius element in
 C                               xn (if included)
 C       jlogg		integer position surface gravity (log(g)) element in
 C                               xn (if included)
+C       jfrac		integer position of profile fraction element in
+C                               xn (if included)
 C       RADIUS		real    Planetary radius at 0km altitude
 C       nx              integer Number of elements in state vector
 C       xn(mx)          real	State vector
@@ -60,7 +62,7 @@ C     **************************************************************
       integer layint,inormal,iray,itype,nlayer,laytyp,iscat
       integer iptf,jrad,j1,iav,ispace
       real RADIUS
-      integer imie,imie1,jlogg
+      integer imie,imie1,jlogg,jfrac
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       real vconv(mgeom,mconv),flat(mgeom,mav)
       real layht,tsurf,esurf,angles(mgeom,mav,3)

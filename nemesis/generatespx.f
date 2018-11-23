@@ -63,6 +63,7 @@ C     TIME2: System time at the end of program execution.
       real vkstart,vkend,vkstep
       integer idump,kiter,jtan,jtanx,jalbx,jpre,jprex,idum,lvec
       integer ivar,npvar,jrad,jlogg,iform,jradx,jloggx,jxscx
+      integer jfrac,jfracx
 C     ********** Scattering variables **********************
       real xwave(maxsec),xf(maxcon,maxsec),xg1(maxcon,maxsec)
       real xg2(maxcon,maxsec)
@@ -209,7 +210,8 @@ C     Calculate the tabulated wavelengths of c-k look up tables
 C     set up a priori of x and its covariance
       lin1=0
       CALL readapriori(runname,lin1,lpre,xlat,npro,nvar,varident,
-     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,nx,xa,sa,lx)
+     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,jfrac,nx,xa,
+     2  sa,lx)
 	
       write(lvec,*)nvar,'   ! nvar'     ! Number of variable profiles
 
@@ -273,8 +275,8 @@ C      therefore need to reseed it to continue to get pseudo-random numbers
 
        if(lin.gt.0) then
         call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,
-     1   varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,nxx,
-     2   xnx,stx)
+     1   varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+     2   jfracx,nxx,xnx,stx)
 
         ioff=0
         do ivar=1,nvar
@@ -325,28 +327,28 @@ C      therefore need to reseed it to continue to get pseudo-random numbers
         CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
-     3   RADIUS,nx,xn,ny,yn,kk)
+     3   jfrac,RADIUS,nx,xn,ny,yn,kk)
       elseif(iscat.eq.1)then 
        print*,'Calling forwardnogX'
        CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
-     3   RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
+     3   jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
       elseif(iscat.eq.2)then
        CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1   vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
-     2   jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
+     2   jxsc,jtan,jpre,jrad,jlogg,jfrac,RADIUS,nx,xn)
        iscat1=1
        CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
-     3   RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
+     3   jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
       else
        iscat1=1
        CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
      1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
-     3   RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
+     3   jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
       endif
 
       call writenextspavX(lout,iform,idum,woff,xlat,xlon,ngeom,nav,

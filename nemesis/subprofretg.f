@@ -101,11 +101,12 @@ C     ***********************************************************************
       CHARACTER*100 ANAME
       INTEGER I,J,K,N,AMFORM,IPLANET,NGAS,IGAS,NX,NXTEMP,IX,ISPACE
       REAL TEMP
-      REAL A,B,C,D,SVP,PP,LATITUDE
+      REAL A,B,C,D,SVP,PP,LATITUDE,LONGITUDE,LAT1,LON1
+      REAL V1(3),V0(3),XP
       REAL MOLWT,SCALE(MAXPRO),XMAP1,SCALEH
       REAL XMAP(MAXV,MAXGAS+2+MAXCON,MAXPRO)
 
-      INTEGER NVAR,VARIDENT(MVAR,3)
+      INTEGER NVAR,VARIDENT(MVAR,3),NLOCATE,J1
       REAL VARPARAM(MVAR,MPARAM)
       REAL XWID,Y,Y0,XX,L1
       LOGICAL GASGIANT,FEXIST,VPEXIST,NTEST,ISNAN
@@ -243,6 +244,7 @@ C        Now interpolate to correct latitude
          ENDDO
  
          LATITUDE=XLAT
+         LONGITUDE=XLON
 
        ELSE
 
@@ -2568,6 +2570,52 @@ c         Level in profile to be changed
            ENDIF
           ENDDO
  
+        ELSEIF(VARIDENT(IVAR,3).EQ.29)THEN
+C        Model 29. Continuous profile at multiple locations
+C        ***************************************************************
+
+C        Need to find nearest entry to requested lat/long
+         CALL XPROJ(LATITUDE,LONGITUDE,V0)
+
+         NLOCATE=INT(VARPARAM(IVAR,1))
+         J=2
+         XX = -1000.
+         DO I=1,NLOCATE
+          LAT1=VARPARAM(IVAR,J)
+          LON1=VARPARAM(IVAR,J+1)
+          CALL XPROJ(LAT1,LON1,V1)
+          XP=0.
+          DO K=1,3
+           XP=XP+V0(K)*V1(K)
+          ENDDO
+          IF(XP.GT.XX)THEN
+           XX=XP
+           I1=I
+          ENDIF
+          J=J+2
+         ENDDO
+
+         DO I=1,NPRO
+           J1 = NXTEMP+(I1-1)*NPRO+I
+           IF(VARIDENT(IVAR,1).EQ.0)THEN
+            X1(I) = XN(J1)
+            XMAP(J1,IPAR,I)=1.0
+           ELSE
+             IF(XN(J1).GT.-82.8931)THEN
+               X1(I) = EXP(XN(J1))
+             ELSE
+               X1(I) = 1.0E-36
+             ENDIF
+             IF(XN(J1).LT.80.0)THEN
+               X1(I) = EXP(XN(J1))
+             ELSE
+               X1(I) = EXP(80.0)
+             ENDIF
+             XMAP(J1,IPAR,I)=X1(I)
+           ENDIF
+         ENDDO
+
+
         ELSE
 
          PRINT*,'Subprofretg: Model parametrisation code is not defined'
@@ -3102,3 +3150,20 @@ c        print*, 'AERO:', H(I), CONT(1,I)
 
       END
 
+
+      SUBROUTINE XPROJ(XLAT,XLON,V)
+      IMPLICIT NONE
+      REAL V(3),XLAT,XLON,THETA,PHI,DTR
+
+      DTR=3.1415927/180.0
+
+      PHI = XLON*DTR
+      THETA = (90.0-XLAT)*DTR
+
+      V(1)=SIN(THETA)*COS(PHI)
+      V(2)=SIN(THETA)*SIN(PHI)
+      V(3)=COS(THETA)
+
+      RETURN
+
+      END

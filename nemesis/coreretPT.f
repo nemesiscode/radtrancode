@@ -1,8 +1,8 @@
       subroutine coreretPT(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jxsc,
-     3  jtan,jpre,jrad,jlogg,radius,wgeom,flat,flon,nx,lx,xa,sa,ny,y,
-     4  se1,inumeric,xn,sm,sn,st,yn,kk,aa,dd)
+     3  jtan,jpre,jrad,jlogg,jfrac,radius,wgeom,flat,flon,nx,lx,xa,sa,
+     4  ny,y,se1,inumeric,xn,sm,sn,st,yn,kk,aa,dd)
 C     $Id:
 C     ******************************************************************
 C
@@ -88,6 +88,7 @@ C     Set measurement vector and source vector lengths here.
       integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,jsurf
       integer jalb,jalbx,jtan,jpre,jtanx,jprex,jrad,jradx,iscat1,i1,k1
       integer inumeric,lx(mx),jlogg,jloggx,jxsc,jxscx
+      integer jfrac,jfracx
       real phlimit,alambda,xtry,tphi,abstphi
       integer xflag,ierr,ncont,flagh2p,npro1,jpara
       real xdnu,xmap(maxv,maxgas+2+maxcon,maxpro)
@@ -215,7 +216,8 @@ C     Load state vector with a priori
 
        if(lin.eq.1)then
         call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,varparamx,
-     1   jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,nxx,xnx,stx)
+     1   jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,jfracx,nxx,xnx,
+     2   stx)
 
         xdiff = abs(xlat-xlatx)
         if(xdiff.gt.lat_tolerance)then
@@ -242,7 +244,8 @@ C     Load state vector with a priori
 
 C       Write out x-data to temporary .str file for later routines.
         call writextmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
+     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+     2   jfracx)
 
        else
 C       substituting and retrieving parameters from .pre file.
@@ -250,7 +253,8 @@ C       Current record frrom .pre file already read in by
 C       readapriori.f. Hence just read in from temporary .str file
 
         call readxtmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
+     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+     2   jfracx)
        
        endif
 
@@ -268,14 +272,14 @@ C       readapriori.f. Hence just read in from temporary .str file
 	print*, 'ForwardPT 1 =', jradx, jrad
         CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
      1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
-     2   nvarx,varidentx,varparamx,jradx,jloggx,radius,nxx,xnx,ny,
-     3   ynx,kkx,qfla)
+     2   nvarx,varidentx,varparamx,jradx,jloggx,jfracx,radius,nxx,xnx,
+     3   ny,ynx,kkx,qfla)
        else
 	print*, 'ForwardnogPT 1 =', jradx, jrad
         CALL forwardnogPT(runname,ispace,fwhm,ngeom,nav,
      1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
-     2   nvarx,varidentx,varparamx,jradx,jloggx,radius,nxx,xnx,ny,
-     3   ynx,kkx,kiter)
+     2   nvarx,varidentx,varparamx,jradx,jloggx,jfracx,radius,nxx,xnx,
+     3   ny,ynx,kkx,kiter)
        endif
        if(lin.eq.3)then
 C        strip out variables from kkx that will be retrieved in this
@@ -337,13 +341,15 @@ C      Calculate inverse of se
        print*,'ForwardPT 2'
        CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
      1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jrad,jlogg,radius,nx,xn,ny,yn,kk,qfla)
+     2   nvar,varident,varparam,jrad,jlogg,jfrac,radius,nx,xn,ny,yn,
+     3   kk,qfla)
 	print*, 'jrad,Radius:', jrad,radius
       else
        print*,'ForwardnogPT 2'
        CALL forwardnogPT(runname,ispace,fwhm,ngeom,nav,
      1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
-     2   nvar,varident,varparam,jrad,jlogg,radius,nx,xn,ny,yn,kk,kiter)
+     2   nvar,varident,varparam,jrad,jlogg,jfrac,radius,nx,xn,ny,yn,
+     2   kk,kiter)
 	print*, 'jrad,Radius:', jrad,radius
       endif
 
@@ -458,15 +464,15 @@ C        Temperature gone negative. Increase brakes and try again
          print*,'ForwardPT 3'
          CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
      1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
-     2     lin,nvar,varident,varparam,jrad,jlogg,radius,nx,xn1,ny,
-     3     yn1,kk1,qfla)
+     2     lin,nvar,varident,varparam,jrad,jlogg,jfrac,radius,nx,xn1,
+     3     ny,yn1,kk1,qfla)
          print*,ny,(yn1(i),i=1,ny)
         else
          print*,'ForwardnogPT 3'
          CALL forwardnogPT(runname,ispace,fwhm,ngeom,nav,
      1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
-     2     lin,nvar,varident,varparam,jrad,jlogg,radius,nx,xn1,ny,
-     3     yn1,kk1,kiter)
+     2     lin,nvar,varident,varparam,jrad,jlogg,jfrac,radius,nx,xn1,
+     3     ny,yn1,kk1,kiter)
         endif
 
 C       Calculate the cost function for this trial solution.

@@ -1,7 +1,7 @@
       subroutine forwardnogXrdw(runname,ispace,iscat,fwhm,ngeom,nav,
      1 wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2 lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3 jlogg,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,icheck,rdwindicesi,
+     3 jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,icheck,rdwindicesi,
      4 kkold,nconvi,vconvi,ynold)
 C     $Id:
 C     **************************************************************
@@ -54,6 +54,8 @@ C       jrad		integer position radius element in
 C                               xn (if included)
 C       jlogg		integer position surface gravity (log(g)) element in
 C                               xn (if included)
+C       jfrac		integer position of profile fraction element in
+C                               xn (if included)
 C       RADIUS		real    Planetary radius at 0km altitude
 C       nx              integer Number of elements in state vector
 C       xn(mx)          real	State vector
@@ -92,7 +94,7 @@ C     **************************************************************
       real gradients(maxout4),pi
       parameter (pi=3.1415927)
       integer check_profile,icheck,imie,imie1,jlogg,ifix(mx)
-      integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
+      integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1,jfrac
       real vconv(mgeom,mconv),wgeom(mgeom,mav),flat(mgeom,mav)
       real layht,tsurf,esurf,angles(mgeom,mav,3),flon(mgeom,mav)
       real xn(mx),yn(my),kk(my,mx),ytmp(my),ystore(my),ynold(my)

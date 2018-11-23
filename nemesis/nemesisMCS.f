@@ -59,7 +59,7 @@ C     TIME2: System time at the end of program execution.
       double precision aa(mx,mx),dd(mx,my)
       real vkstart,vkend,vkstep
       integer idump,kiter,jtan,jalb,jalbx,jpre,jtanx,jprex
-      integer jrad,jradx,jlogg,jloggx,jxsc,jxscx
+      integer jrad,jradx,jlogg,jloggx,jxsc,jxscx,jfrac,jfracx
 C     ********** Scattering variables **********************
       real xwave(maxsec),xf(maxcon,maxsec),xg1(maxcon,maxsec)
       real xg2(maxcon,maxsec)
@@ -214,8 +214,8 @@ C      and if so, skipped
        if(lin.gt.0)then
       
         call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,
-     1    varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,nxx,
-     2    xnx,stx)
+     1    varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+     2    jfracx,nxx,xnx,stx)
       
        endif
 
@@ -259,7 +259,8 @@ C     Calculate the tabulated wavelengths of c-k look up tables
 
 C     set up a priori of x and its covariance
       CALL readapriori(runname,lin,lpre,xlat,npro,nvar,varident,
-     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,nx,xa,sa,lx)
+     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,jfrac,nx,xa,
+     2  sa,lx)
 
       DO i = 1, nx
         xn(i)=xa(i)
@@ -296,8 +297,8 @@ C     set up a priori of x and its covariance
       call coreretMCS(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,
-     3  jpre,jrad,jlogg,marsradius,satrad,thetrot,altbore,wgeom,flat,
-     4  flon,nx,lx,xa,sa,ny,y,se,xn,sm,sn,st,yn,kk,aa,dd)
+     3  jpre,jrad,jlogg,jfrac,marsradius,satrad,thetrot,altbore,wgeom,
+     4  flat,flon,nx,lx,xa,sa,ny,y,se,xn,sm,sn,st,yn,kk,aa,dd)
 
 C     Calculate retrieval errors.
 C     Simple errors, set to sqrt of diagonal of ST
@@ -308,7 +309,7 @@ C     Simple errors, set to sqrt of diagonal of ST
 C     write output
       CALL writeout(iform,runname,ispace,lout,ispec,xlat,xlon,npro,
      1 nvar,varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err1,ngeom,
-     2 nconv,vconv,gasgiant,jpre,jrad,jlogg,iscat,lin)
+     2 nconv,vconv,gasgiant,jpre,jrad,jlogg,jfrac,iscat,lin)
 
       CALL writeraw(lraw,ispec,xlat,xlon,npro,nvar,varident,
      1 varparam,nx,xn,st)

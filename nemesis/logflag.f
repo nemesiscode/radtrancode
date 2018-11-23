@@ -1,4 +1,4 @@
-      integer function logflag(ivar,imod,ip)
+      integer function logflag(ivar,imod,vpar1,ip)
 C     **************************************************************
 C     Simple function to define whether a particular variable is held as
 C     a log variable within Nemesis.
@@ -6,6 +6,7 @@ C
 C     Input variable
 C	ivar	integer	Profile ID (varident(1)).
 C	imod	integer	Required parameterisation scheme ID.
+C       vpar1	real	First element of varparam
 C	ip	integer	Element of parameterisation vector
 C
 C     Output variable
@@ -16,7 +17,7 @@ C
 C     **************************************************************
       implicit none
       integer ivar,imod,iflag,ip
-
+      real vpar1
       iflag=0
 
       if(ivar.ne.0)then
@@ -39,6 +40,7 @@ C       Variable is not temperature  - may need to take exponent
         if(imod.eq.19.and.ip.eq.1)iflag=1 ! lapse rate profile      
         if(imod.eq.25)iflag=1  ! Shortened continuous model
         if(imod.eq.28)iflag=1 !Modify just one element of a profile
+        if(imod.eq.29)iflag=1 ! continuous profile
       endif
 
       if(imod.eq.1.and.ip.eq.2)iflag=1 ! log fsh - fixed knee

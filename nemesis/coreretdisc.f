@@ -1,8 +1,8 @@
       subroutine coreretdisc(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jxsc,
-     3  jtan,jpre,jrad,jlogg,wgeom,flat,flon,nx,lx,xa,sa,ny,y,se1,xn,
-     4  sm,sn,st,yn,kk,aa,dd)
+     3  jtan,jpre,jrad,jlogg,jfrac,wgeom,flat,flon,nx,lx,xa,sa,ny,y,se1,
+     4  xn,sm,sn,st,yn,kk,aa,dd)
 C     $Id:
 C     ******************************************************************
 C
@@ -87,7 +87,7 @@ C     Set measurement vector and source vector lengths here.
       INCLUDE 'arraylen.f'
       integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,jsurf
       integer jalb,jalbx,jtan,jtanx,jpre,jprex,jrad,jradx
-      integer lx(mx),jlogg,jloggx,jxsc,jxscx
+      integer lx(mx),jlogg,jloggx,jxsc,jxscx,jfrac,jfracx
       real phlimit,alambda,xtry,tphi
       integer xflag,ierr,ncont,flagh2p,npro1,jpara
       real xdnu,xmap(maxv,maxgas+2+maxcon,maxpro)
@@ -208,7 +208,7 @@ C     Load state vector with a priori
        if(lin.eq.1) then
 C        Just substituting parameters from .pre file
          call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,varparamx,
-     1  jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,nxx,xnx,stx)
+     1  jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,jfracx,nxx,xnx,stx)
        
         xdiff = abs(xlat-xlatx)
         if(xdiff.gt.lat_tolerance)then
@@ -235,7 +235,8 @@ C        Just substituting parameters from .pre file
 
 C       Write out x-data to temporary .str file for later routines.
         call writextmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
+     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+     2   jfracx)
 
        else
 C       substituting and retrieving parameters from .pre file. 
@@ -243,7 +244,8 @@ C       Current record frrom .pre file already read in by
 C       readapriori.f. Hence just read in from temporary .str file
  
         call readxtmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
+     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+     2   jfracx)
 
        endif
  
@@ -254,7 +256,7 @@ C       readapriori.f. Hence just read in from temporary .str file
         CALL forwarddisc(runname,ispace,iscat,fwhm,ngeom,
      1   nav,wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2   lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,
-     3   jprex,jradx,jloggx,RADIUS,nxx,xnx,ny,ynx,kkx)
+     3   jprex,jradx,jloggx,jfracx,RADIUS,nxx,xnx,ny,ynx,kkx)
        else
         print*,'Option not supported for disc-averaging'
        endif
@@ -311,7 +313,7 @@ C      Calculate inverse of se
         CALL forwarddisc(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3   jlogg,RADIUS,nx,xn,ny,yn,kk)
+     3   jlogg,jfrac,RADIUS,nx,xn,ny,yn,kk)
 
       else
 
@@ -450,7 +452,7 @@ C       temporary kernel matrix kk1. Does it improve the fit?
           CALL forwarddisc(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2     lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
-     3     jrad,jlogg,RADIUS,nx,xn1,ny,yn1,kk1)
+     3     jrad,jlogg,jfrac,RADIUS,nx,xn1,ny,yn1,kk1)
         else
           print*,'Option not supported'
         endif

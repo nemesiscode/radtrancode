@@ -1,7 +1,7 @@
       subroutine forwarddisc(runname,ispace,iscat,fwhm,ngeom,
      1 nav,wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2 lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3 jlogg,RADIUS,nx,xn,ny,yn,kk)
+     3 jlogg,jfrac,RADIUS,nx,xn,ny,yn,kk)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate an FOV-averaged spectrum and
@@ -48,6 +48,8 @@ C     	jrad		integer Position of radius in
 C                               xn (if included)
 C     	jlogg		integer Position of surface log(g) in
 C                               xn (if included)
+C     	jfrac		integer Position of profile fraction in
+C                               xn (if included)
 C	RADIUS		real	Radius of planet (km) 
 C       nx              integer Number of elements in state vector
 C       xn(mx)          real	State vector
@@ -69,7 +71,7 @@ C     **************************************************************
 
       implicit none
       integer i,j,lin,ispace,iav,ispace1
-      integer ngeom,ioff,igeom,jrad,jlogg
+      integer ngeom,ioff,igeom,jrad,jlogg,jfrac
       real interpem,RADIUS
       include '../radtran/includes/arrdef.f'
       include '../radtran/includes/gascom.f'

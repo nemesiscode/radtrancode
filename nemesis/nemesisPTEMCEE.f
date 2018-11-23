@@ -59,6 +59,7 @@ C     New compiler time
       real vkstart,vkend,vkstep
       integer idump,kiter,jtan,jtanx,jalbx,jpre,jprex,iplanet
       integer jrad,jradx,lx(mx),jlogg,jloggx,inumeric
+      integer jfrac,jfracx
 C     ********** Scattering variables **********************
       real xwave(maxsec),xf(maxcon,maxsec),xg1(maxcon,maxsec)
       real xg2(maxcon,maxsec)
@@ -276,8 +277,8 @@ C      and if so, skipped
        if(lin.gt.0)then
       
         call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,
-     1    varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,nxx,
-     2    xnx,stx)
+     1    varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+     2    jfracx,nxx,xnx,stx)
       
        endif
 
@@ -330,7 +331,8 @@ C     Calculate the tabulated wavelengths of c-k look up tables
 
 C     set up a priori of x and its covariance
       CALL readaprioriMCMC(runname,lin,lpre,xlat,npro,nvar,varident,
-     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,nx,xa,sa,lx)
+     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,jfrac,nx,xa,
+     2  sa,lx)
 
       DO i = 1, nx
         xn(i)=xa(i)
@@ -371,8 +373,8 @@ C      jsurf=-1
       call coreretPT(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jxsc,
-     3  jtan,jpre,jrad,jlogg,radius,wgeom,flat,flon,nx,lx,xa,sa,ny,y,
-     4  se,inumeric,xn,sm,sn,st,yn,kk,aa,dd)
+     3  jtan,jpre,jrad,jlogg,jfrac,radius,wgeom,flat,flon,nx,lx,xa,sa,
+     4  ny,y,se,inumeric,xn,sm,sn,st,yn,kk,aa,dd)
 
 C     Calculate retrieval errors.
 C     Simple errors, set to sqrt of diagonal of ST
@@ -384,7 +386,7 @@ C     write output
       print*,'Calling writeout'
       CALL writeout(iform,runname,ispace,lout,ispec,xlat,xlon,npro,
      1 nvar,varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err1,ngeom,
-     2 nconv,vconv,gasgiant,jpre,jrad,jlogg,iscat,lin)
+     2 nconv,vconv,gasgiant,jpre,jrad,jlogg,jfrac,iscat,lin)
       print*,'writeout OK'
 
       CALL writeraw(lraw,ispec,xlat,xlon,npro,nvar,varident,

@@ -1,5 +1,5 @@
       subroutine writextmp(runname,xlat,xlon,nvar,varident,varparam,
-     1 npro,nx,xn,sx,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg)
+     1 npro,nx,xn,sx,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,jfrac)
 C     $Id:
 C     ************************************************************************
 C     Subroutine to write out the .str file which is stripped retrieved
@@ -27,7 +27,7 @@ C     ************************************************************************
       include 'arraylen.f'
 
       real xlat,xlon
-      integer nx,npro,jlogg
+      integer nx,npro,jlogg,jfrac
       real xn(mx),sx(mx,mx)
       integer nvar,varident(mvar,3),i,j,jsurf,jalb,jtan,jpre,jrad
       integer jxsc
@@ -47,7 +47,7 @@ C     ************************************************************************
         do i=1,nx
          write(12,*)(sx(j,i),j=1,nx)
         enddo
-        write(12,*)jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg
+        write(12,*)jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,jfrac
       close(12)
 
       return

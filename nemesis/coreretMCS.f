@@ -1,8 +1,8 @@
       subroutine coreretMCS(runname,ispace,iscat,ica,kiter,phlimit,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,jsurf,jalb,jxsc,
-     3  jtan,jpre,jrad,jlogg,marsradius,satrad,thetrot,altbore,wgeom,
-     4  flat,flon,nx,lx,xa,sa,ny,y,se1,xn,sm,sn,st,yn,kk,aa,dd)
+     3  jtan,jpre,jrad,jlogg,jfrac,marsradius,satrad,thetrot,altbore,
+     4  wgeom,flat,flon,nx,lx,xa,sa,ny,y,se1,xn,sm,sn,st,yn,kk,aa,dd)
 C     $Id:
 C     ******************************************************************
 C
@@ -89,6 +89,7 @@ C     Set measurement vector and source vector lengths here.
       integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,jsurf
       integer jalb,jalbx,jtan,jpre,jtanx,jprex,iscat1,i1,k1
       integer jrad,jradx,lx(mx),jlogg,jloggx,jxsc,jxscx
+      integer jfrac,jfracx
       real phlimit,alambda,xtry,tphi
       integer xflag,ierr,ncont,flagh2p,npro1,jpara
       real xdnu,xmap(maxv,maxgas+2+maxcon,maxpro)
@@ -207,7 +208,8 @@ C     Load state vector with a priori
 
        if(lin.eq.1)then
         call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,varparamx,
-     1   jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,nxx,xnx,stx)
+     1   jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,jfracx,nxx,xnx,
+     2   stx)
 
         xdiff = abs(xlat-xlatx)
         if(xdiff.gt.lat_tolerance)then
@@ -234,7 +236,8 @@ C     Load state vector with a priori
 
 C       Write out x-data to temporary .str file for later routines.
         call writextmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
+     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+     2   jfracx)
 
        else
 C       substituting and retrieving parameters from .pre file.
@@ -242,7 +245,8 @@ C       Current record frrom .pre file already read in by
 C       readapriori.f. Hence just read in from temporary .str file
 
         call readxtmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
+     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+     2   jfracx)
        
        endif
 

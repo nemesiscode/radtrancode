@@ -50,7 +50,7 @@ C     TIME2: System time at the end of program execution.
       double precision aa(mx,mx),dd(mx,my)
       real vkstart,vkend,vkstep
       integer idump,kiter,jtan,jtanx,jalbx,jpre,jprex
-      integer jrad,jradx,lx(mx),jlogg,jloggx
+      integer jrad,jradx,lx(mx),jlogg,jloggx,jfrac,jfracx
       integer miter,niter,idum
 C     ********** Scattering variables **********************
       real xwave(maxsec),xf(maxcon,maxsec),xg1(maxcon,maxsec)
@@ -201,7 +201,8 @@ C     Calculate the tabulated wavelengths of c-k look up tables
 
 C     set up a priori of x and its covariance
       CALL readapriori(runname,lin,lpre,xlat,npro,nvar,varident,
-     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,nx,xa,sa,lx)
+     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,jfrac,nx,xa,
+     2  sa,lx)
 	
 
       write(lout,*)nx,' ! nx'
@@ -242,7 +243,8 @@ C     set up a priori of x and its covariance
       call coreretMCMC(runname,ispace,iscat,ilbl,ica,miter,niter,
      1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,nvar,varident,varparam,npro,jsurf,jalb,jxsc,jtan,
-     3  jpre,jrad,jlogg,wgeom,flat,flon,nx,lx,xa,sa,ny,y,se,idum)
+     3  jpre,jrad,jlogg,jfrac,wgeom,flat,flon,nx,lx,xa,sa,ny,y,se,
+     4  idum)
 
       if(ica.eq.1)close(39)
  

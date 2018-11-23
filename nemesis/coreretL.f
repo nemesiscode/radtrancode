@@ -1,8 +1,8 @@
       subroutine coreretL(runname,ispace,iscat,ilbl,ica,kiter,phlimit,
      1  inum,fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,npro,
      2  gasgiant,lin,lpre,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,
-     3  jpre,jrad,jlogg,occult,ionpeel,wgeom,flat,flon,nx,lx,xa,sa,ny,
-     4  y,se1,xn,sm,sn,st,yn,kk,aa,dd)
+     3  jpre,jrad,jlogg,jfrac,occult,ionpeel,wgeom,flat,flon,nx,lx,xa,
+     4  sa,ny,y,se1,xn,sm,sn,st,yn,kk,aa,dd)
 C     $Id:
 C     ******************************************************************
 C
@@ -88,6 +88,7 @@ C     Set measurement vector and source vector lengths here.
       integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,jsurf
       integer jalb,jalbx,jtan,jpre,jtanx,jprex,iscat1,i1,k1
       integer jrad,jradx,jlogg,jloggx,lx(mx),jxsc,jxscx,npro
+      integer jfrac,jfracx
       real phlimit,alambda,xtry,tphi
       integer xflag,ierr,ncont,flagh2p,npro1,jpara,occult,ilbl,inum
       real xdnu,xmap(maxv,maxgas+2+maxcon,maxpro)
@@ -210,7 +211,8 @@ C     Load state vector with a priori
 
        if(lin.eq.1)then
         call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,varparamx,
-     1   jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,nxx,xnx,stx)
+     1   jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,jfracx,nxx,xnx,
+     2   stx)
 
         xdiff = abs(xlat-xlatx)
         if(xdiff.gt.lat_tolerance)then
@@ -237,7 +239,8 @@ C     Load state vector with a priori
 
 C       Write out x-data to temporary .str file for later routines.
         call writextmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
+     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+     2   jfracx)
 
        else
 C       substituting and retrieving parameters from .pre file.
@@ -245,7 +248,8 @@ C       Current record frrom .pre file already read in by
 C       readapriori.f. Hence just read in from temporary .str file
 
         call readxtmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
+     1   nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+     2   jfracx)
        
        endif
 
@@ -272,7 +276,7 @@ c      if calculating directly the LBL-tables in the run
          CALL forwardnoglblL(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,flon,nconv,vconv,angles,gasgiant,occult,ionpeel,
      2    lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,
-     3    jprex,jradx,jloggx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx)
+     3    jprex,jradx,jloggx,jfracx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx)
 
 c      if reading absorption coefficient from look-up tables
        else
@@ -301,7 +305,7 @@ c      if reading absorption coefficient from look-up tables
 
          CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1    vconvT,gasgiant,lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,
-     2    jxscx,jtanx,jprex,jradx,jloggx,RADIUS,nxx,xnx)
+     2    jxscx,jtanx,jprex,jradx,jloggx,jfracx,RADIUS,nxx,xnx)
         
          iscat1=1
          CALL forwardnogL(runname,ispace,iscat1,fwhm,ngeom,nav,
@@ -378,7 +382,7 @@ C      endif
          CALL forwardnoglblL(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,flon,nconv,vconv,angles,gasgiant,occult,ionpeel,
      2    lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
-     3    jrad,jlogg,RADIUS,nx,xn,ifix,ny,yn,kk)
+     3    jrad,jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk)
          print*,'call OK'
       else
 
@@ -413,7 +417,7 @@ C        enddo
 
         CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1    vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
-     2    jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
+     2    jxsc,jtan,jpre,jrad,jlogg,jfrac,RADIUS,nx,xn)
 
         print*,'Now calling forwardnogL'
         iscat1=1
@@ -583,7 +587,7 @@ C       temporary kernel matrix kk1. Does it improve the fit?
           CALL forwardnoglblL(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,flon,nconv,vconv,angles,gasgiant,occult,ionpeel,
      2     lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
-     3     jrad,jlogg,RADIUS,nx,xn1,ifix,ny,yn1,kk1)
+     3     jrad,jlogg,jfrac,RADIUS,nx,xn1,ifix,ny,yn1,kk1)
           print*,'call OK'
         else
 
@@ -611,7 +615,7 @@ C       temporary kernel matrix kk1. Does it improve the fit?
 
           CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1       vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
-     2       jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn1)
+     2       jxsc,jtan,jpre,jrad,jlogg,jfrac,RADIUS,nx,xn1)
 
           iscat1=1
           CALL forwardnogL(runname,ispace,iscat1,fwhm,ngeom,nav,

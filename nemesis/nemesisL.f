@@ -63,6 +63,7 @@ C     TIME2: System time at the end of program execution.
       integer jrad,jradx,jlogg,jloggx,jxsc,jxscx,occult
       integer jloggx1,jxscx1,jtanx1,jprex1,jradx1,jalbx1,jsurfx1
       integer nprox1,nvarx1,varidentx1(mvar,3),nxx1
+      integer jfrac,jfracx,jfracx1
       real xlatx1,xlonx1,varparamx1(mvar,mparam),xnx1(mx),stx1(mx,mx)
 C     ********** Scattering variables **********************
       real xwave(maxsec),xf(maxcon,maxsec),xg1(maxcon,maxsec)
@@ -280,8 +281,8 @@ C      and if so, skipped
        if(lin.gt.0)then
       
         call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,
-     1    varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,nxx,
-     2    xnx,stx)
+     1    varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+     2    jfracx,nxx,xnx,stx)
       
        endif
 
@@ -293,7 +294,7 @@ C      Reading if there are previous retrieved variables
        if(lin.eq.4)then
         call readraw(lprx,xlatx1,xlonx1,nprox1,nvarx1,varidentx1,
      1    varparamx1,jsurfx1,jalbx1,jxscx1,jtanx1,jprex1,jradx1,jloggx1,
-     2    nxx1,xnx1,stx1)
+     2    jfracx1,nxx1,xnx1,stx1)
        endif
 
 C     Read in measurement vector, obs. geometry and covariances
@@ -363,7 +364,8 @@ C      Calculate the tabulated wavelengths of lbl look up tables
 
 C     set up a priori of x and its covariance
       CALL readapriori(runname,lin,lpre,xlat,npro,nvar,varident,
-     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,nx,xa,sa,lx)
+     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,jfrac,nx,xa,
+     2  sa,lx)
 
       DO i = 1, nx
         xn(i)=xa(i)
@@ -401,8 +403,8 @@ C     set up a priori of x and its covariance
       call coreretL(runname,ispace,iscat,ilbl,ica,kiter,phlimit,
      1  inum,fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,npro,
      2  gasgiant,lin,lpre,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,
-     3  jpre,jrad,jlogg,occult,ionpeel,wgeom,flat,flon,nx,lx,xa,sa,
-     4  ny,y,se,xn,sm,sn,st,yn,kk,aa,dd)
+     3  jpre,jrad,jlogg,jfrac,occult,ionpeel,wgeom,flat,flon,nx,lx,xa,
+     4  sa,ny,y,se,xn,sm,sn,st,yn,kk,aa,dd)
 
 C     Calculate retrieval errors.
 C     Simple errors, set to sqrt of diagonal of ST
@@ -417,11 +419,11 @@ C     write output
       if(occult.eq.4)iform=6
       CALL writeout(iform,runname,ispace,lout,ispec,xlat,xlon,npro,
      1 nvar,varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err1,ngeom,
-     2 nconv,vconv,gasgiant,jpre,jrad,jlogg,iscat,lin)
+     2 nconv,vconv,gasgiant,jpre,jrad,jlogg,jfrac,iscat,lin)
 
       CALL writeoutp(iform,runname,ispace,loutp,ispec,xlat,xlon,npro,
      1 nvar,varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err1,ngeom,
-     2 nconv,vconv,gasgiant,jpre,jrad,jlogg,iscat,lin)
+     2 nconv,vconv,gasgiant,jpre,jrad,jlogg,jfrac,iscat,lin)
 
 
       if(lin.eq.4)then

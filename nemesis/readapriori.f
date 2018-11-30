@@ -67,9 +67,9 @@ C     ****************************************************************
 
       integer i,j,nx,ix,jx,npro,jsurf,np,jalb,jtan,jpre,jrad,maxlat,k
       integer jlogg,nmode,nwave,max_mode, max_wave,jxsc,icloud
-      integer jfrac,jfracx
+      integer jfrac,jfracx,mlong
       parameter (max_mode = 10)
-      parameter (max_wave = 1000)
+      parameter (max_wave = 1000, mlong=20)
       parameter(maxlat=100)
 
 C     ****************************************************************
@@ -81,12 +81,14 @@ C     ****************************************************************
 
       real xsec(max_mode,max_wave,2),wave(max_wave)
       real x0(mx),sx(mx,mx),err,err1,ref1,pref(maxpro)
+      real dhsphere(maxpro,mlong)
       real eref(maxlat,maxpro),reflat(maxlat),htan
       real delp,xfac,pknee,eknee,edeep,xdeep,xlat,xlatx,xlonx,pshld
       real xstep,estep,efsh,xfsh,varparam(mvar,mparam),flat,hknee,pre
       real ref(maxlat,maxpro),clen,SXMINFAC,arg,valb,alb,refp,errp
       real xknee,xrh,erh,xcdeep,ecdeep,radius,Grav,plim
-      real xcwid,ecwid,ptrop,refradius,xsc
+      real xcwid,ecwid,ptrop,refradius,xsc,clen1,clen2
+      integer nlong,ilong,ipar
       parameter (Grav=6.672E-11)
 C     SXMINFAC is minimum off-diagonal factor allowed in the
 C     a priori covariance matrix
@@ -105,6 +107,7 @@ C     a priori covariance matrix
       real tau0,ntemp,teff,alpha,T0,xf,exf
       real etau0,entemp,eteff,ealpha,eT0
       real csx,cserr,nimagshell,errshell,flon
+      real flon1,dlon
       logical filexist
       integer i1,j1,nlocation,ilocation
       real tmpgrid(mparam),findgen(mparam),yout
@@ -1572,6 +1575,169 @@ C                xfac = exp(-arg*arg)
 202          continue
 
 C             nx=nx+nlevel
+
+
+           elseif(varident(ivar,3).eq.30)then
+C          ***** inhomogeneous disc model 1  ********
+             read(27,1)ipfile
+             print*,'reading variable ',ivar,' from ',ipfile
+             open(28,file=ipfile,status='old')
+             read(28,*)nlong,nlevel,clen1,clen2
+             if(nlong+nlevel+1.gt.mparam)then
+              print*,'nlong+nlevel+2 > mparam',nlocation,mparam
+              print*,'Need to reduce nlong,nlevel or increase mparam'
+              stop
+             endif
+             varparam(ivar,1)=nlong*nlevel
+             varparam(ivar,2)=nlevel
+             ipar=3
+             do 301 ilong=1,nlong
+C             Read in longitude
+              read(28,*)flon
+              varparam(ivar,ipar)=flon
+              ipar=ipar+1
+301          continue
+
+             ix=nx
+             do 303 i=1,nlevel
+              read(28,*)pref(i),(dhsphere(i,j),j=1,nlong),
+     1         eref(1,i)
+              varparam(ivar,ipar)=pref(i)
+              ipar=ipar+1
+              do 304 j=1,nlong
+               ix=nx + (j-1)*nlevel+i
+C              For vmrs and cloud density always hold the log. 
+C              Avoids instabilities arising from greatly different profiles 
+C              such as T and vmrs
+               if(varident(ivar,1).eq.0)then
+C               *** temperature, leave alone ****
+                x0(ix) = dhsphere(i,j)
+                err = eref(1,i)
+               else
+C               **** vmr, cloud, para-H2 , fcloud, take logs ***
+                if(ref(1,i).gt.0.0) then
+                  x0(ix) = alog(dhsphere(i,j)) 
+                  lx(ix)=1
+                else 
+                  print*,'Error in readapriori.f. Cant take log of zero'
+                  print*,i,dhsphere(i,j)
+                  stop
+                endif
+                err = eref(1,i)/dhsphere(i,j)
+               endif
+               sx(ix,ix)=err**2
+304           continue
+303          continue
+
+             do 305 k=1,nlong
+
+              do 306 i=1,nlevel
+               ix = nx + (k-1)*nlevel+i 
+               do 307 j = i+1,nlevel
+                jx = nx + (k-1)*nlevel+j
+                if(pref(i).lt.0.0) then
+                  print*,'Error in readapriori.f. A priori file '
+                  print*,'must be on pressure grid '
+                  stop
+                endif            
+
+                delp = log(pref(j))-log(pref(i))
+                
+                arg = abs(delp/clen1)
+                xfac = exp(-arg)
+                if(xfac.ge.SXMINFAC)then  
+                 sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
+                 sx(jx,ix) = sx(ix,jx)
+                endif
+307            continue
+306           continue
+305          continue
+
+             do 310 k=1,nlevel
+              do 308 i=1,nlong
+               ix = nx + (i-1)*nlevel + k
+               do 309 j=i+1,nlong
+                jx = nx + (j-1)*nlevel + k    
+                flon = varparam(ivar,2+i)
+                flon1 = varparam(ivar,2+j)
+                dlon = flon1-flon
+                if(dlon.gt.180.) dlon=dlon-360.
+                if(dlon.lt.-180) dlon=dlon+360.
+
+                arg = abs(dlon/clen2)
+                xfac = exp(-arg)
+                if(xfac.ge.SXMINFAC)then  
+                 sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
+                 sx(jx,ix) = sx(ix,jx)
+                endif
+                        
+309            continue
+308           continue
+310          continue
+
+
+             nx=nx+nlevel*nlong
+
+
+           elseif(varident(ivar,3).eq.31)then
+C          ***** inhomogeneous disc model 2  ********
+             read(27,1)ipfile
+             print*,'reading variable ',ivar,' from ',ipfile
+             open(28,file=ipfile,status='old')
+             read(28,*)nlong,clen2
+             if(nlong+1.gt.mparam)then
+              print*,'nlong+nlevel+1 > mparam',nlocation,mparam
+              print*,'Need to reduce nlong,nlevel or increase mparam'
+              stop
+             endif
+             varparam(ivar,1)=nlong
+             ipar=2
+             do 311 ilong=1,nlong
+C             Read in longitude
+              read(28,*)flon
+              varparam(ivar,ipar)=flon
+              ipar=ipar+1
+311          continue
+
+
+
+             read(27,*)(dhsphere(1,j),j=1,nlong),err
+             do 401 j=1,nlong
+              ix=nx+j
+              xfac=dhsphere(1,j)
+              if(xfac.gt.0.0)then
+               x0(ix)=alog(xfac)
+               lx(ix)=1
+              else
+               print*,'Error in readpriori - xfac must be > 0'
+               stop
+              endif
+              err = err/xfac
+              sx(ix,ix) = err**2
+401          continue 
+
+             do 408 i=1,nlong
+               ix = nx + i
+               do 409 j=i+1,nlong
+                jx = nx + j    
+                flon = varparam(ivar,1+i)
+                flon1 = varparam(ivar,1+j)
+                dlon = flon1-flon
+                if(dlon.gt.180.) dlon=dlon-360.
+                if(dlon.lt.-180) dlon=dlon+360.
+
+                arg = abs(dlon/clen2)
+                xfac = exp(-arg)
+                if(xfac.ge.SXMINFAC)then  
+                 sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
+                 sx(jx,ix) = sx(ix,jx)
+                endif
+                        
+409            continue
+408           continue
+
+
+             nx=nx+nlong
 
            else         
             print*,'vartype profile parametrisation not recognised'

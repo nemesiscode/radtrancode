@@ -41,8 +41,10 @@ C       Variable is not temperature  - may need to take exponent
         if(imod.eq.25)iflag=1  ! Shortened continuous model
         if(imod.eq.28)iflag=1 !Modify just one element of a profile
         if(imod.eq.29)iflag=1 ! continuous profile
+        if(imod.eq.30)iflag=1 ! continuous profile inhomogeneous disc
       endif
 
+      if(imod.eq.31)iflag=1 ! log multiplier - inhomogeneous disc
       if(imod.eq.1.and.ip.eq.2)iflag=1 ! log fsh - fixed knee
       if(imod.eq.20.and.ip.eq.2)iflag=1 ! log fsh - fixed knee
       if(imod.eq.4.and.ip.eq.2)iflag=1 ! log fsh - var. knee

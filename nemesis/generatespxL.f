@@ -61,6 +61,7 @@ C     TIME2: System time at the end of program execution.
       real vkstart,vkend,vkstep
       integer idump,kiter,jtan,jtanx,jalbx,jpre,jprex,idum,lvec
       integer ivar,npvar,jrad,jlogg,iform,jradx,jloggx,jxscx
+      integer jfrac,jfracx
 C     ********** Scattering variables **********************
       real xwave(maxsec),xf(maxcon,maxsec),xg1(maxcon,maxsec)
       real xg2(maxcon,maxsec)
@@ -236,7 +237,8 @@ C       Calculate the tabulated wavelengths of lbl look up tables
 C     set up a priori of x and its covariance
       lin1=0
       CALL readapriori(runname,lin1,lpre,xlat,npro,nvar,varident,
-     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,nx,xa,sa,lx)
+     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,jfrac,nx,xa,
+     2  sa,lx)
 
       write(lvec,*)nspec,'    !nspec'   
       write(lvec,*)npro,'    !npro'
@@ -295,8 +297,8 @@ C     Add forward errors to measurement covariances
 
        if(lin.gt.0) then
         call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,
-     1   varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,nxx,
-     2   xnx,stx)
+     1   varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+     2   jfracx,nxx,xnx,stx)
 
         ioff=0
         do ivar=1,nvar
@@ -345,7 +347,7 @@ C     Add forward errors to measurement covariances
 	
       if(iscat.eq.0)then
          CALL forwardavfovL(runname,ispace,fwhm,ngeom,nav,
-     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,occult,
      3     nx,xn,ny,yn,kk)      
 

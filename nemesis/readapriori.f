@@ -1,5 +1,6 @@
       subroutine readapriori(opfile,lin,lpre,xlat,npro,nvar,varident,
-     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,nx,x0,sx,lx)
+     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,jfrac,nx,x0,
+     2  sx,lx)
 C     $Id:
 C     ****************************************************************
 C     Subroutine to read in apriori vector and covariance matrix
@@ -36,6 +37,7 @@ C					correction
 C	jpre		integer		Position of ref. tangent  pressure
 C       jrad            integer         Position of radius of planet
 C       jlogg           integer         Position of surface log_10(g) of planet
+C       jfrac		integer		Position of fractional coverage
 C	nx 		integer 	number of elements in state vector
 C	x0(mx)		real		a priori vector
 C	sx(mx,mx)	real		a priori covariance matrix
@@ -65,8 +67,9 @@ C     ****************************************************************
 
       integer i,j,nx,ix,jx,npro,jsurf,np,jalb,jtan,jpre,jrad,maxlat,k
       integer jlogg,nmode,nwave,max_mode, max_wave,jxsc,icloud
+      integer jfrac,jfracx,mlong
       parameter (max_mode = 10)
-      parameter (max_wave = 1000)
+      parameter (max_wave = 1000, mlong=20)
       parameter(maxlat=100)
 
 C     ****************************************************************
@@ -79,11 +82,14 @@ C     ****************************************************************
       real xsec(max_mode,max_wave,2),wave(max_wave)
       real x0(mx),sx(mx,mx),err,err1,ref1,pref(maxpro)
       real eref(maxlat,maxpro),reflat(maxlat),htan,htop,etop
+      real dhsphere(maxpro,mlong)
       real delp,xfac,pknee,eknee,edeep,xdeep,xlat,xlatx,xlonx,pshld
       real xstep,estep,efsh,xfsh,varparam(mvar,mparam),flat,hknee,pre
       real ref(maxlat,maxpro),clen,SXMINFAC,arg,valb,alb,refp,errp
       real xknee,xrh,erh,xcdeep,ecdeep,radius,Grav,plim
       real xcwid,ecwid,ptrop,refradius,xsc,ascat,escat,shape,eshape
+      real clen1,clen2
+      integer nlong,ilong,ipar
       parameter (Grav=6.672E-11)
 C     SXMINFAC is minimum off-diagonal factor allowed in the
 C     a priori covariance matrix
@@ -99,10 +105,12 @@ C     a priori covariance matrix
       real r0,er0,dr,edr,vm,nm,nmshell,nimag,delv,xy,v0
       real xldeep,eldeep,xlhigh,elhigh
       real v1,v1err,v2,v2err,p1,p1err,p2,p2err
-      real tau0,ntemp,teff,alpha,T0
+      real tau0,ntemp,teff,alpha,T0,xf,exf
       real etau0,entemp,eteff,ealpha,eT0
-      real csx,cserr,nimagshell,errshell
+      real csx,cserr,nimagshell,errshell,flon
+      real flon1,dlon
       logical filexist
+      integer i1,j1,nlocation,ilocation
       real tmpgrid(mparam),findgen(mparam),yout
 
 C     Initialise a priori parameters
@@ -120,6 +128,7 @@ C     Initialise a priori parameters
       jpre = -1
       jrad = -1
       jlogg = -1
+      jfrac = -1
       runname=opfile
 
 C     Pass jrad and jlogg to planrad common block
@@ -1487,6 +1496,251 @@ c             *** vmr, cloud, para-H2 , fcloud, take logs ***
             sx(ix,ix) = err**2
             nx = nx+1
 
+
+           elseif(varident(ivar,3).eq.29)then
+C          ***** multiple continuous profiles at different locations  ********
+             read(27,1)ipfile
+             print*,'reading variable ',ivar,' from ',ipfile
+             open(28,file=ipfile,status='old')
+             read(28,*)nlocation,nlevel,clen
+             if(nlevel.ne.npro)then
+              print*,'profiles must be listed on same grid as .prf'
+              stop
+             endif
+             if(2*nlocation+1.gt.mparam)then
+              print*,'2*nlocation+1 > mparam',nlocation,mparam
+              print*,'Need to reduce nlocation or increase mparam'
+              stop
+             endif
+             varparam(ivar,1)=nlocation
+             i=2
+             do 201 ilocation=1,nlocation
+C             Read in latitude/longitude
+              read(28,*)flat,flon
+              varparam(ivar,i)=flat
+              varparam(ivar,i+1)=flon
+              i=i+2
+201          continue
+
+             do 202 ilocation=1,nlocation
+C             Read in apriori fraction
+              do 203 i=1,nlevel
+               read(28,*)pref(i),ref(1,i),eref(1,i)
+               ix = i+nx
+C              For vmrs and cloud density always hold the log. 
+C              Avoids instabilities arising from greatly different profiles 
+C              such as T and vmrs
+               if(varident(ivar,1).eq.0)then
+C               *** temperature, leave alone ****
+                x0(ix) = ref(1,i)
+                err = eref(1,i)
+               else
+C               **** vmr, cloud, para-H2 , fcloud, take logs ***
+                if(ref(1,i).gt.0.0) then
+                  x0(ix) = alog(ref(1,i)) 
+                  lx(ix)=1
+                else 
+                  print*,'Error in readapriori.f. Cant take log of zero'
+                  print*,i,ref(i,i)
+                  stop
+                endif
+                err = eref(1,i)/ref(1,i)
+               endif
+               sx(ix,ix)=err**2
+
+203           continue
+
+              do i = 1,nlevel
+               ix = nx + i 
+               do j = i+1,nlevel
+                jx = nx + j
+                if(pref(i).lt.0.0) then
+                  print*,'Error in readapriori.f. A priori file '
+                  print*,'must be on pressure grid '
+                  stop
+                endif            
+
+                delp = log(pref(j))-log(pref(i))
+                
+                arg = abs(delp/clen)
+                xfac = exp(-arg)
+C                xfac = exp(-arg*arg)
+                if(xfac.ge.SXMINFAC)then  
+                 sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
+                 sx(jx,ix) = sx(ix,jx)
+                endif
+               enddo
+              enddo
+
+              nx=nx+nlevel
+
+202          continue
+
+C             nx=nx+nlevel
+
+
+           elseif(varident(ivar,3).eq.30)then
+C          ***** inhomogeneous disc model 1  ********
+             read(27,1)ipfile
+             print*,'reading variable ',ivar,' from ',ipfile
+             open(28,file=ipfile,status='old')
+             read(28,*)nlong,nlevel,clen1,clen2
+             if(nlong+nlevel+1.gt.mparam)then
+              print*,'nlong+nlevel+2 > mparam',nlocation,mparam
+              print*,'Need to reduce nlong,nlevel or increase mparam'
+              stop
+             endif
+             varparam(ivar,1)=nlong*nlevel
+             varparam(ivar,2)=nlevel
+             ipar=3
+             do 301 ilong=1,nlong
+C             Read in longitude
+              read(28,*)flon
+              varparam(ivar,ipar)=flon
+              ipar=ipar+1
+301          continue
+
+             ix=nx
+             do 303 i=1,nlevel
+              read(28,*)pref(i),(dhsphere(i,j),j=1,nlong),
+     1         eref(1,i)
+              varparam(ivar,ipar)=pref(i)
+              ipar=ipar+1
+              do 304 j=1,nlong
+               ix=nx + (j-1)*nlevel+i
+C              For vmrs and cloud density always hold the log. 
+C              Avoids instabilities arising from greatly different profiles 
+C              such as T and vmrs
+               if(varident(ivar,1).eq.0)then
+C               *** temperature, leave alone ****
+                x0(ix) = dhsphere(i,j)
+                err = eref(1,i)
+               else
+C               **** vmr, cloud, para-H2 , fcloud, take logs ***
+                if(ref(1,i).gt.0.0) then
+                  x0(ix) = alog(dhsphere(i,j)) 
+                  lx(ix)=1
+                else 
+                  print*,'Error in readapriori.f. Cant take log of zero'
+                  print*,i,dhsphere(i,j)
+                  stop
+                endif
+                err = eref(1,i)/dhsphere(i,j)
+               endif
+               sx(ix,ix)=err**2
+304           continue
+303          continue
+
+             do 305 k=1,nlong
+
+              do 306 i=1,nlevel
+               ix = nx + (k-1)*nlevel+i 
+               do 307 j = i+1,nlevel
+                jx = nx + (k-1)*nlevel+j
+                if(pref(i).lt.0.0) then
+                  print*,'Error in readapriori.f. A priori file '
+                  print*,'must be on pressure grid '
+                  stop
+                endif            
+
+                delp = log(pref(j))-log(pref(i))
+                
+                arg = abs(delp/clen1)
+                xfac = exp(-arg)
+                if(xfac.ge.SXMINFAC)then  
+                 sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
+                 sx(jx,ix) = sx(ix,jx)
+                endif
+307            continue
+306           continue
+305          continue
+
+             do 310 k=1,nlevel
+              do 308 i=1,nlong
+               ix = nx + (i-1)*nlevel + k
+               do 309 j=i+1,nlong
+                jx = nx + (j-1)*nlevel + k    
+                flon = varparam(ivar,2+i)
+                flon1 = varparam(ivar,2+j)
+                dlon = flon1-flon
+                if(dlon.gt.180.) dlon=dlon-360.
+                if(dlon.lt.-180) dlon=dlon+360.
+
+                arg = abs(dlon/clen2)
+                xfac = exp(-arg)
+                if(xfac.ge.SXMINFAC)then  
+                 sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
+                 sx(jx,ix) = sx(ix,jx)
+                endif
+                        
+309            continue
+308           continue
+310          continue
+
+
+             nx=nx+nlevel*nlong
+
+
+           elseif(varident(ivar,3).eq.31)then
+C          ***** inhomogeneous disc model 2  ********
+             read(27,1)ipfile
+             print*,'reading variable ',ivar,' from ',ipfile
+             open(28,file=ipfile,status='old')
+             read(28,*)nlong,clen2
+             if(nlong+1.gt.mparam)then
+              print*,'nlong+nlevel+1 > mparam',nlocation,mparam
+              print*,'Need to reduce nlong,nlevel or increase mparam'
+              stop
+             endif
+             varparam(ivar,1)=nlong
+             ipar=2
+             do 311 ilong=1,nlong
+C             Read in longitude
+              read(28,*)flon
+              varparam(ivar,ipar)=flon
+              ipar=ipar+1
+311          continue
+
+
+
+             read(27,*)(dhsphere(1,j),j=1,nlong),err
+             do 401 j=1,nlong
+              ix=nx+j
+              xfac=dhsphere(1,j)
+              if(xfac.gt.0.0)then
+               x0(ix)=alog(xfac)
+               lx(ix)=1
+              else
+               print*,'Error in readpriori - xfac must be > 0'
+               stop
+              endif
+              err = err/xfac
+              sx(ix,ix) = err**2
+401          continue 
+
+             do 408 i=1,nlong
+               ix = nx + i
+               do 409 j=i+1,nlong
+                jx = nx + j    
+                flon = varparam(ivar,1+i)
+                flon1 = varparam(ivar,1+j)
+                dlon = flon1-flon
+                if(dlon.gt.180.) dlon=dlon-360.
+                if(dlon.lt.-180) dlon=dlon+360.
+
+                arg = abs(dlon/clen2)
+                xfac = exp(-arg)
+                if(xfac.ge.SXMINFAC)then  
+                 sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
+                 sx(jx,ix) = sx(ix,jx)
+                endif
+                        
+409            continue
+408           continue
+
+
+             nx=nx+nlong
+
            else         
             print*,'vartype profile parametrisation not recognised'
             stop
@@ -2485,7 +2739,12 @@ C           If set to 0, default Creme Brulee model is used where CB top pressur
             endif
 
             nx = nx+7
-
+           elseif(varident(ivar,1).eq.102)then
+            ix = nx+1
+            read(27,*)x0(ix),err
+            sx(ix,ix) = err**2
+            jfrac = ix
+            nx=nx+1
            else
             print*,'vartype not recognised'
             stop
@@ -2516,7 +2775,7 @@ C     the mass using the a priori log(g) AND radius
 
        call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,
      1  varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
-     2  nxx,xnx,sxx)
+     2  jfracx,nxx,xnx,sxx)
 
        xdiff = abs(xlat-xlatx)
        if(xdiff.gt.5.0)then
@@ -2600,7 +2859,8 @@ C     the mass using the a priori log(g) AND radius
 C     Write out x-data to temporary .str file for later routines.
       if(lin.eq.3.or.lin.eq.4)then
        call writextmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1  nxx,xnx,sxx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
+     1  nxx,xnx,sxx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+     2  jfracx)
       endif
 
       return

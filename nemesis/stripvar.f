@@ -66,7 +66,11 @@ C     **************************** CODE ********************************
          if(varidentx(ivarx,3).eq.26)np = 4
          if(varidentx(ivarx,3).eq.27)np = 3
          if(varidentx(ivarx,3).eq.28)np = 1
+         if(varidentx(ivarx,3).eq.29)np = int(varparamx(ivarx,1))*nprox
+         if(varidentx(ivarx,3).eq.30)np = int(varparamx(ivarx,1))
+         if(varidentx(ivarx,3).eq.31)np = int(varparamx(ivarx,1))
         else
+         if(varidentx(ivarx,1).eq.102)np = 1
          if(varidentx(ivarx,1).eq.555)np = 1
          if(varidentx(ivarx,1).eq.333)np = 1
          if(varidentx(ivarx,1).eq.999)np = 1

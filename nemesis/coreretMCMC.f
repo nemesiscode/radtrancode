@@ -1,7 +1,8 @@
       subroutine coreretMCMC(runname,ispace,iscat,ilbl,ica,miter,
-     1  niter,fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,
+     1  niter,fwhm,xlat,xlon,ngeom,nav,nwave,vwave,nconv,vconv,
      2  angles,gasgiant,nvar,varident,varparam,npro,jsurf,jalb,jxsc,
-     3  jtan,jpre,jrad,jlogg,wgeom,flat,nx,lx,xa,sa,ny,y,se1,idum)
+     3  jtan,jpre,jrad,jlogg,jfrac,wgeom,flat,flon,nx,lx,xa,sa,ny,y,
+     4  se1,idum)
 C     $Id:
 C     ******************************************************************
 C
@@ -23,6 +24,7 @@ C	miter	integer	Total number of report steps
 C	niter	integer Number of iterations between reporting steps
 C	fwhm	real	Required FWHM of final convoluted spectrum
 C	xlat	real	Latitude of observed site.
+C	xlon	real	Longitude of observed site.
 C	ngeom	integer	Number of observation angles at which site is observed
 C	nav(ngeom) integer  Number of synthetic spectra required
 C                       to simulate each FOV-averaged measurement spectrum.
@@ -56,6 +58,7 @@ C	jpre		integer	Position of tangent pressure in
 C				xa (if included)
 C	wgeom(mgeom,mav) real	Integration weights 
 C	flat(mgeom,mav)	real	Integration point latitudes 
+C	flon(mgeom,mav)	real	Integration point longitudes 
 C	nx		integer	Number of elements in measurement vector
 C       lx(mx)          integer 1 if log, 0 otherwise
 C	xa(mx)		real	a priori state vector
@@ -77,11 +80,12 @@ C     Set measurement vector and source vector lengths here.
       integer iter,kiter,ica,iscat,i,j,icheck,j1,j2,jsurf,lin
       integer jalb,jtan,jpre,ilbl,jrad,jlogg,miter,niter,idum,itry
       integer xflag,ierr,ncont,flagh2p,npro1,jpara,jxsc,jxscx
+      integer jfrac,jfracx
       real xdnu,xmap(maxv,maxgas+2+maxcon,maxpro)
       CHARACTER*100 runname,itname,abort,aname,buffer
 
       real xn(mx),se1(my),calc_chi,kk(my,mx),calc_phiprior
-      real fwhm,xlat,xn1(mx),ran11,test,RADIUS,err,ferr
+      real fwhm,xlat,xlon,xn1(mx),ran11,test,RADIUS,err,ferr
       integer ix,np,npro,lout,iplanet,lx(mx)
       real alpha,alpha_chi,alpha_phi
       logical accept
@@ -93,7 +97,7 @@ C     Set measurement vector and source vector lengths here.
       real vwave(mgeom,mwave),vconv(mgeom,mconv),angles(mgeom,mav,3)
       real xa(mx),sa(mx,mx),y(my),yn(my)
       real yn1(my),sx(mx,mx)
-      real wgeom(mgeom,mav),flat(mgeom,mav)
+      real wgeom(mgeom,mav),flat(mgeom,mav),flon(mgeom,mav)
       real vwaveT(mwave),vconvT(mconv)
       integer nwaveT,nconvT,npvar,iprfcheck
       logical gasgiant
@@ -182,27 +186,27 @@ C     Set lin=0 to prevent code looking for previous retrievals
       if(ilbl.eq.1)then
          print*,'Calling forwardnoglbl - B'
          CALL forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,
-     1    wgeom,flat,nconv,vconv,angles,gasgiant,lin,
+     1    wgeom,flat,flon,nconv,vconv,angles,gasgiant,lin,
      2    nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3    jlogg,RADIUS,nx,xn,ifix,ny,yn,kk,kiter)
+     3    jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter)
       else
 
        if(iscat.ne.2)then
  
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
-     3   RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
+     3   jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
        else
 
         CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1   vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
-     2   jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
+     2   jxsc,jtan,jpre,jrad,jlogg,jfrac,RADIUS,nx,xn)
 
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
-     3   RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
+     3   jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
 
        endif
       endif
@@ -259,10 +263,12 @@ C       Now calculate next iterated xn
 C       Test to see if any vmrs have gone negative.
         xflag=0
         call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
-     1    nvar,varident,varparam,nx,xn1,jpre,ncont,flagh2p,xmap,ierr)
+     1   xlon,nvar,varident,varparam,nx,xn1,jpre,ncont,flagh2p,
+     2   xmap,ierr)
         if (ierr.eq.1)then
           goto 403
         endif
+
 
 
 C       Calculate test spectrum using trial state vector xn1. 
@@ -270,23 +276,23 @@ C       Put output spectrum into temporary spectrum yn1.
 
         if(ilbl.eq.1)then
          CALL forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,     
-     1    wgeom,flat,nconv,vconv,angles,gasgiant,lin,
+     1    wgeom,flat,flon,nconv,vconv,angles,gasgiant,lin,
      2    nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
-     3    RADIUS,nx,xn1,ifix,ny,yn1,kk,kiter)
+     3    jfrac,RADIUS,nx,xn1,ifix,ny,yn1,kk,kiter)
         else
          if(iscat.ne.2)then
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
-     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3     jlogg,RADIUS,nx,xn1,ifix,ny,yn1,kk,kiter,iprfcheck)
+     3     jlogg,jfrac,RADIUS,nx,xn1,ifix,ny,yn1,kk,kiter,iprfcheck)
          else
           CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1     vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
-     2     jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn1)
+     2     jxsc,jtan,jpre,jrad,jlogg,jfrac,RADIUS,nx,xn1)
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
-     1     wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3     jlogg,RADIUS,nx,xn1,ifix,ny,yn1,kk,kiter,iprfcheck)
+     3     jlogg,jfrac,RADIUS,nx,xn1,ifix,ny,yn1,kk,kiter,iprfcheck)
          endif
         endif
 

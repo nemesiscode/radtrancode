@@ -1,6 +1,6 @@
       subroutine calc_input_files(runname,ispace,iscat,fwhm,flat,
-     1 nconv,vconv,angles,gasgiant,lin,nvar,varident,varparam,
-     2 jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
+     1 flon,nconv,vconv,angles,gasgiant,lin,nvar,varident,varparam,
+     2 jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,jfrac,RADIUS,nx,xn)
 C     $Id:
 C     **************************************************************
 C     Subroutine to write out input files for last successful iteration of
@@ -13,6 +13,7 @@ C                               vwave are in wavenumbers(0) or
 C                               wavelengths (1)
 C       fwhm            real    Desired FWHM of final spectrum
 C       flat(mgeom,mav)  real    Integration point latitudes
+C       flon(mgeom,mav)  real    Integration point longitudes
 C       nconv(mgeom)    integer Number of convolution wavelengths
 C       vconv(mgeom,mconv) real    Convolution wavelengths
 C       angles(mgeom,mav,3) real    Observation angles
@@ -36,6 +37,8 @@ C       jrad		integer position radius element in
 C                               xn (if included)
 C       jlogg		integer position surface gravity (log(g)) element in
 C                               xn (if included)
+C       jfrac		integer position of profile fraction element in
+C                               xn (if included)
 C       RADIUS		real    Planetary radius at 0km altitude
 C       nx              integer Number of elements in state vector
 C       xn(mx)          real	State vector
@@ -54,16 +57,16 @@ C     **************************************************************
       include '../radtran/includes/gascom.f'
       include '../radtran/includes/planrad.f'
       include 'arraylen.f'
-      real xlat,Grav,fwhm
+      real xlat,Grav,fwhm,xlon
       parameter (Grav=6.672E-11)
       integer layint,inormal,iray,itype,nlayer,laytyp,iscat
       integer iptf,jrad,j1,iav,ispace
       real RADIUS
-      integer imie,imie1,jlogg
+      integer imie,imie1,jlogg,jfrac
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       real vconv(mgeom,mconv),flat(mgeom,mav)
       real layht,tsurf,esurf,angles(mgeom,mav,3)
-      real xn(mx)
+      real xn(mx),flon(mgeom,mav)
       real vconv1(mconv)
       integer ny,jsurf,jalb,jxsc,jtan,jpre,nem
       integer nphi,ipath,iconv,k
@@ -116,6 +119,7 @@ C     miniumum zenith angle
       print*,'Angles : ',sol_ang,emiss_ang,aphi
       print*,'nf = ',nf
       xlat = flat(igeom,iav)
+      xlon = flon(igeom,iav)
 
 
 C     If we're retrieving planet radius then add correction to reference
@@ -145,9 +149,9 @@ C     mass to units of 1e24 kg.
 C     Set up all files for a direct cirsrad run
       print*,'calling gsetrad'
       call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,
-     1     lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
-     2     layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
-     3     nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
+     1 lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
+     2 layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,xlon,
+     2 lin,nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
       print*,'gsetrad called OK'
 
       return

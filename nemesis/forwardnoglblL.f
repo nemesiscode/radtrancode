@@ -1,7 +1,7 @@
       subroutine forwardnoglblL(runname,ispace,iscat,fwhm,ngeom,nav,
-     1 wgeom,flat,nconv,vconv,angles,gasgiant,occult,ionpeel,
+     1 wgeom,flat,flon,nconv,vconv,angles,gasgiant,occult,ionpeel,
      2 lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3 jlogg,RADIUS,nx,xn,ifix,ny,yn,kk)
+     3 jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate a synthetic spectrum and KK-matrix using
@@ -26,6 +26,7 @@ C                                       to simulate each FOV-averaged
 C                                       measurement spectrum.
 C       wgeom(mgeom,mav)real     Integration weights to use
 C       flat(mgeom,mav)  real    Integration point latitudes
+C       flon(mgeom,mav)  real    Integration point longitudes
 C       nconv(mgeom)    integer Number of convolution wavelengths
 C       vconv(mgeom,mconv) real    Convolution wavelengths
 C       angles(mgeom,mav,3) real    Observation angles
@@ -49,6 +50,8 @@ C				xn (if included)
 C       jrad            integer position radius element in
 C                               xn (if included)
 C       jlogg           integer position surface gravity (log(g)) element in
+C                               xn (if included)
+C       jfrac           integer position of profile fraction element in
 C                               xn (if included)
 C       nx              integer Number of elements in state vector
 C       xn(mx)          real	State vector
@@ -83,12 +86,12 @@ C     **************************************************************
       real gradients(maxout4)
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       real vconv(mgeom,mconv),wgeom(mgeom,mav),flat(mgeom,mav)
-      real layht,tsurf,esurf,angles(mgeom,mav,3)
+      real layht,tsurf,esurf,angles(mgeom,mav,3),flon(mgeom,mav)
       real xn(mx),yn(my),kk(my,mx),ytmp(my),ystore(my)
-      real x0,x1,wing,vrel,maxdv,delv
+      real x0,x1,wing,vrel,maxdv,delv,xlon
       real vconv1(mconv),RADIUS
       integer ny,jsurf,jalb,jxsc,jtan,jpre,nem,nav(mgeom)
-      integer nphi,ipath,iconv,k,imie,imie1,jrad,jlogg
+      integer nphi,ipath,iconv,k,imie,imie1,jrad,jlogg,jfrac
       integer nmu,isol,lowbc,nf,nf1,nx2,occult,ionpeel
       real dist,galb,sol_ang,emiss_ang,z_ang,aphi,vv,Grav
       parameter (Grav=6.672E-11)
@@ -184,6 +187,7 @@ C            nf=20
          print*,'Angles : ',sol_ang,emiss_ang,aphi
          print*,'nf = ',nf
          xlat = flat(igeom,iav)
+         xlon = flon(igeom,iav)
 
          nx2 = nx+1
 
@@ -264,8 +268,9 @@ C         Set up parameters for scattering cirsrad run.
 C         Set up all files for a direct cirsrad run
           call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,
      1     lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
-     2     layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
-     3     nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
+     2     layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,xlon,
+     3     lin,nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,
+     4     xmap)
 
 C         If planet is not a gas giant and observation is not at limb then
 C         we need to read in the surface emissivity spectrum

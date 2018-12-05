@@ -1,6 +1,6 @@
       subroutine readaprioriMCMC(opfile,lin,lpre,xlat,npro,nvar,
      1  varident,
-     2  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,nx,
+     2  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,jfrac,nx,
      3  x0,sx,lx)
 
 C     $Id:
@@ -39,6 +39,7 @@ C					correction
 C	jpre		integer		Position of ref. tangent  pressure
 C       jrad            integer         Position of radius of planet
 C       jlogg           integer         Position of surface log_10(g) of planet
+C       jfrac           integer         Position of profile fraction element
 C	nx 		integer 	number of elements in state vector
 C	x0(mx)		real		a priori vector
 C	sx(mx,mx)	real		a priori covariance matrix
@@ -65,6 +66,7 @@ C     ****************************************************************
 
       integer i,j,nx,ix,jx,npro,jsurf,np,jalb,jtan,jpre,jrad,maxlat,k
       integer jlogg,nmode,nwave,max_mode, max_wave, jxsc, icloud
+      integer jfrac,jfracx
       parameter (max_mode = 10)
       parameter (max_wave = 1000)
       parameter(maxlat=100)
@@ -115,6 +117,7 @@ C     Initialise a priori parameters
       jpre = -1
       jrad = -1
       jlogg = -1
+      jfrac = -1
       runname=opfile
 
 C     Pass jrad and jlogg to planrad common block
@@ -1674,7 +1677,7 @@ C     the mass using the a priori log(g) AND radius
 
        call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,
      1  varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
-     2  nxx,xnx,sxx)
+     2  jfracx,nxx,xnx,sxx)
 
        xdiff = abs(xlat-xlatx)
        if(xdiff.gt.5.0)then
@@ -1739,7 +1742,8 @@ C     the mass using the a priori log(g) AND radius
 C     Write out x-data to temporary .str file for later routines.
       if(lin.eq.3)then
        call writextmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1  nxx,xnx,sxx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
+     1  nxx,xnx,sxx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+     2  jfracx)
       endif
 
       return

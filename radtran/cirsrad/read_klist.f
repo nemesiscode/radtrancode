@@ -27,7 +27,7 @@ C
 C_HIST:	???????	???	Orginal version.
 C***********************************************************************
 
-      SUBROUTINE read_klist (klist,ngas,idgas,isogas,nwave,vwave)
+      SUBROUTINE read_klist (klist,ngas,idgas,isogas,nwave,vwave,nkl)
 
       IMPLICIT NONE
 

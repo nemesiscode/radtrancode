@@ -85,7 +85,7 @@ C     parameters defined in pathcom.
 C     ../includes/laygrad.f holds the variables for use in gradient 
 C     calculations.
 
-      INTEGER iparam,ipro,ntab1,ntab2
+      INTEGER iparam,ipro,ntab1,ntab2,nkl,ii
 C     NTAB1: = NPATH*NWAVE, must be less than maxout3
 C     NTAB2: = NPATH*NWAVE*NV, must be less than maxout4.
       INTEGER nwave,i,j,nparam,jj,icont,nconv
@@ -187,7 +187,7 @@ C Read the ktables or lbltables
          WRITE(*,1050)klist
 
          WRITE(*,*)'     CALLING read_klist'
-         CALL read_klist (klist, ngas, idgas, isogas, nwave, vwave)
+         CALL read_klist (klist, ngas, idgas, isogas, nwave, vwave,nkl)
          WRITE(*,*)'     read_klist COMPLETE'
          WRITE(*,*)' '
       ELSE
@@ -411,6 +411,9 @@ C
 C	Wrap up: formats, return, and end.
 C
 C=======================================================================
+      DO ii=101,nkl+100
+	CLOSE(UNIT=ii)
+      ENDDO
 
       CALL close_scat(ncont)
 

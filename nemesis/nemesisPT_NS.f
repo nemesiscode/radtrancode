@@ -2,8 +2,8 @@
      1 mcnvmr, ith, intemp, inpres, invmr, 
      2 inmass, inrad, inheight, inknee,indeep, infsh, 
      3 inpartr, inpartvar, imagnum, inimag, inreal, inknee2, 
-     4 indeep2, infsh2, 
-     4 innav, inflat, inflon, insolzen, inemzen, inazi, inwt,
+     4 indeep2, infsh2, inscat, intop,
+     4 innav, inflat, inflon, insolzen, inemzen, inazi, inwt, inshape,
      5 MCMCspec)
 C     $Id:
 C     ******************************************************************
@@ -98,6 +98,7 @@ c and change the shape of the array
       real inrad, inmass, MCMCsum(mcntemp)
       real indeep, infsh, inknee
       real indeep2, infsh2, inknee2
+      real inscat, intop, inshape
       real inpartr, inpartvar, inimag(imagnum), inreal
       integer mcntemp, mcnvmr, imagnum, MCMCimnum
       character*3 sith
@@ -110,7 +111,7 @@ cf2py intent(in) intemp,invmr,ith,inpres
 cf2py intent(in) inmass, inrad
 cf2py intent(in) inheight
 cf2py intent(in) indeep, infsh, inknee
-cf2py intent(in) indeep2, infsh2, inknee2
+cf2py intent(in) indeep2, infsh2, inknee2, inscat, intop
 cf2py intent(in) inpartr, inpartvar, inimag, inreal
 cf2py intent(in) innav, inflat, inflon, insolzen, inemzen, inazi 
 cf2py intent(in) inwt, imagnum
@@ -197,6 +198,10 @@ c     1   MCMCemzen(i), MCMCazi(i), MCMCwt(i)
       MCMCpr = inpartr
       MCMCpvar = inpartvar
       MCMCreal = inreal
+
+      MCMCscat = inscat
+      MCMCtop = intop
+      MCMCshape = inshape
 
       MCMCmass = inmass
       MCMCrad = inrad

@@ -102,7 +102,7 @@ C     a priori covariance matrix
       integer nxx,nsec,ncont1,nlay,tmp
       real xwid,ewid,y,y0,lambda0,vi(mx),vtmp(mx),xt(mx)
       real r0,er0,dr,edr,vm,nm,nmshell,nimag,delv,xy
-      real xldeep,eldeep,xlhigh,elhigh
+      real xldeep,eldeep,xlhigh,elhigh,arg1
       real v1,v1err,v2,v2err,p1,p1err,p2,p2err
       real tau0,ntemp,teff,alpha,T0,xf,exf
       real etau0,entemp,eteff,ealpha,eT0
@@ -110,6 +110,7 @@ C     a priori covariance matrix
       real flon1,dlon
       logical filexist
       integer i1,j1,nlocation,ilocation
+      integer nlen,il,ip,jl,jp
       real tmpgrid(mparam),findgen(mparam),yout
 
 C     Initialise a priori parameters
@@ -1583,21 +1584,15 @@ C          ***** inhomogeneous disc model 1  ********
              print*,'reading variable ',ivar,' from ',ipfile
              open(28,file=ipfile,status='old')
              read(28,*)nlong,nlevel,clen1,clen2
-             if(nlong+nlevel+1.gt.mparam)then
-              print*,'nlong+nlevel+2 > mparam',nlocation,mparam
+             if(nlevel+2.gt.mparam)then
+              print*,'nlevel+2 > mparam',
+     1         nlevel+2,mparam
               print*,'Need to reduce nlong,nlevel or increase mparam'
               stop
              endif
              varparam(ivar,1)=nlong*nlevel
              varparam(ivar,2)=nlevel
              ipar=3
-             do 301 ilong=1,nlong
-C             Read in longitude
-              read(28,*)flon
-              varparam(ivar,ipar)=flon
-              ipar=ipar+1
-301          continue
-
              ix=nx
              do 303 i=1,nlevel
               read(28,*)pref(i),(dhsphere(i,j),j=1,nlong),
@@ -1629,54 +1624,93 @@ C               **** vmr, cloud, para-H2 , fcloud, take logs ***
 304           continue
 303          continue
 
-             do 305 k=1,nlong
+             nlen = nlong*nlevel
+             do 405 i=1,nlen
+              ip = i-nlevel*int((float(i)-0.5)/float(nlevel))
+              il = 1 + int((float(i)-0.5)/float(nlevel))
+              ix=nx+i
+              if(pref(ip).lt.0.0) then
+               print*,'Error in readapriori.f. A priori file '
+               print*,'must be on pressure grid '
+               print*,'Model 30'
+               stop
+              endif            
 
-              do 306 i=1,nlevel
-               ix = nx + (k-1)*nlevel+i 
-               do 307 j = i+1,nlevel
-                jx = nx + (k-1)*nlevel+j
-                if(pref(i).lt.0.0) then
-                  print*,'Error in readapriori.f. A priori file '
-                  print*,'must be on pressure grid '
-                  stop
-                endif            
+              do 406 j=i+1,nlen
+               jp = j-nlevel*int((float(j)-0.5)/float(nlevel))
+               jl = 1 + int((float(j)-0.5)/float(nlevel))
+               jx=nx+j
+               delp = log(pref(jp))-log(pref(ip))
+               arg = abs(delp/clen1)
 
-                delp = log(pref(j))-log(pref(i))
-                
-                arg = abs(delp/clen1)
-                xfac = exp(-arg)
-                if(xfac.ge.SXMINFAC)then  
+               flon = varparam(ivar,2+il)
+               flon1 = varparam(ivar,2+jl)
+               dlon = flon1-flon
+               if(dlon.gt.180.) dlon=dlon-360.
+               if(dlon.lt.-180) dlon=dlon+360.
+               arg1 = abs(dlon/clen2)
+
+               xfac = exp(-(arg+arg1))
+               if(xfac.ge.SXMINFAC)then  
                  sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
                  sx(jx,ix) = sx(ix,jx)
-                endif
-307            continue
-306           continue
-305          continue
+               endif
 
-             do 310 k=1,nlevel
-              do 308 i=1,nlong
-               ix = nx + (i-1)*nlevel + k
-               do 309 j=i+1,nlong
-                jx = nx + (j-1)*nlevel + k    
-                flon = varparam(ivar,2+i)
-                flon1 = varparam(ivar,2+j)
-                dlon = flon1-flon
-                if(dlon.gt.180.) dlon=dlon-360.
-                if(dlon.lt.-180) dlon=dlon+360.
+C               print*,i,j,ip,jp,il,jl,delp,dlon
 
-                arg = abs(dlon/clen2)
-                xfac = exp(-arg)
-                if(xfac.ge.SXMINFAC)then  
-                 sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
-                 sx(jx,ix) = sx(ix,jx)
-                endif
+406           continue
+405          continue               
+
+C             stop
+
+C             do 305 k=1,nlong
+
+C              do 306 i=1,nlevel
+C               ix = nx + (k-1)*nlevel+i 
+C               do 307 j = i+1,nlevel
+C                jx = nx + (k-1)*nlevel+j
+C                if(pref(i).lt.0.0) then
+C                  print*,'Error in readapriori.f. A priori file '
+C                  print*,'must be on pressure grid '
+C                  stop
+C                endif            
+
+C                delp = log(pref(j))-log(pref(i))                
+C                arg = abs(delp/clen1)
+C                xfac = exp(-arg)
+
+C                if(xfac.ge.SXMINFAC)then  
+C                 sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
+C                 sx(jx,ix) = sx(ix,jx)
+C                endif
+C307            continue
+C306           continue
+C305          continue
+
+C             do 310 k=1,nlevel
+C              do 308 i=1,nlong
+C               ix = nx + (i-1)*nlevel + k
+C               do 309 j=i+1,nlong
+C                jx = nx + (j-1)*nlevel + k    
+C                flon = varparam(ivar,2+i)
+C                flon1 = varparam(ivar,2+j)
+C                dlon = flon1-flon
+C                if(dlon.gt.180.) dlon=dlon-360.
+C                if(dlon.lt.-180) dlon=dlon+360.
+C
+C                arg = abs(dlon/clen2)
+C                xfac = exp(-arg)
+C                if(xfac.ge.SXMINFAC)then  
+C                 sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
+C                 sx(jx,ix) = sx(ix,jx)
+C                endif
                         
-309            continue
-308           continue
-310          continue
+C309            continue
+C308           continue
+C310          continue
 
 
-             nx=nx+nlevel*nlong
+             nx=nx+nlen
 
 
            elseif(varident(ivar,3).eq.31)then
@@ -1685,21 +1719,7 @@ C          ***** inhomogeneous disc model 2  ********
              print*,'reading variable ',ivar,' from ',ipfile
              open(28,file=ipfile,status='old')
              read(28,*)nlong,clen2
-             if(nlong+1.gt.mparam)then
-              print*,'nlong+nlevel+1 > mparam',nlocation,mparam
-              print*,'Need to reduce nlong,nlevel or increase mparam'
-              stop
-             endif
              varparam(ivar,1)=nlong
-             ipar=2
-             do 311 ilong=1,nlong
-C             Read in longitude
-              read(28,*)flon
-              varparam(ivar,ipar)=flon
-              ipar=ipar+1
-311          continue
-
-
 
              read(27,*)(dhsphere(1,j),j=1,nlong),err
              do 401 j=1,nlong

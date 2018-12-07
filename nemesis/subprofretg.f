@@ -77,7 +77,7 @@ C     ***********************************************************************
       REAL RHO,F,DQDX(MAXPRO),DX,PLIM,XFACP,CWID,PTROP, NEWF
       REAL DNDH(MAXPRO),DQDH(MAXPRO),FCLOUD(MAXPRO),XLON
       REAL dtempdx(MAXPRO,5),T0,Teff,alpha,ntemp,tau0
-      REAL XP1(MAXPRO),LP1(MAXPRO),XP2(MAXPRO)
+      REAL XP1(MAXPRO),LP1(MAXPRO),XP2(MAXPRO),GRAD1
       REAL LPMIN,LPMAX,DLP,XPS(MAXPRO),XP2S(MAXPRO)
       DOUBLE PRECISION Q(MAXPRO),OD(MAXPRO),ND(MAXPRO),XOD
       INTEGER ISCALE(MAXGAS),XFLAG,NPVAR,MAXLAT,IERR
@@ -104,15 +104,18 @@ C     ***********************************************************************
       REAL A,B,C,D,SVP,PP,LATITUDE,LONGITUDE,LAT1,LON1
       REAL V1(3),V0(3),XP
       REAL MOLWT,SCALE(MAXPRO),XMAP1,SCALEH
-      REAL XMAP(MAXV,MAXGAS+2+MAXCON,MAXPRO)
+      REAL XMAP(MAXV,MAXGAS+2+MAXCON,MAXPRO),DTR
+      PARAMETER (DTR=PI/180.)
 
-      INTEGER NVAR,VARIDENT(MVAR,3),NLOCATE,J1
-      REAL VARPARAM(MVAR,MPARAM)
-      REAL XWID,Y,Y0,XX,L1
+      INTEGER NVAR,VARIDENT(MVAR,3),NLOCATE,J1,MLON,MTHET
+      PARAMETER(MLON=20,MTHET=3*MLON+1)
+      REAL YTH,YYTH(MTHET),YYTH2(MTHET)
+      REAL VARPARAM(MVAR,MPARAM),YLONG(MLON)
+      REAL XWID,Y,Y0,XX,L1,THETA(MTHET),GRADTH(MAXPRO,MX)
       LOGICAL GASGIANT,FEXIST,VPEXIST,NTEST,ISNAN
-      REAL VP(MAXGAS),VP1
-      INTEGER SVPFLAG(MAXGAS),SVPFLAG1
-      INTEGER NVP,ISWITCH(MAXGAS),IP1,IP2,JKNEE
+      REAL VP(MAXGAS),VP1,XS
+      INTEGER SVPFLAG(MAXGAS),SVPFLAG1,NLONG,NTHETA
+      INTEGER NVP,ISWITCH(MAXGAS),IP1,IP2,JKNEE,NLEVEL
       REAL XLDEEP,XLHIGH,HVS,dlogp
       COMMON /SROM223/PCUT
 
@@ -2618,6 +2621,143 @@ C            print*,'sub5',J1,XN(J1),I,X1(I)
              ENDIF
              XMAP(J1,IPAR,I)=X1(I)
            ENDIF
+         ENDDO
+
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.30)THEN
+C        Model 30. Inhomogenous disc profile at multiple locations
+C        ***************************************************************
+
+C        Need to set up cubic spline interpolation in longitude for
+C        each vertical level
+         NLONG = INT(VARPARAM(IVAR,1)/VARPARAM(IVAR,2)+0.1)
+         NLEVEL = INT(VARPARAM(IVAR,2))
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+            DX=2.0
+         ELSE
+            DX=0.1
+         ENDIF
+
+         DO J=1,NLEVEL
+          LP1(J)=ALOG(VARPARAM(IVAR,J+2))!read in pressure grid
+          DO K=1,NP
+           GRADTH(J,K)=0.
+          ENDDO
+         ENDDO
+
+         DO J=1,NLEVEL
+          SUM=0.
+          DO I=1,NLONG
+           J1=NXTEMP+(J-1)*NLEVEL+I
+           YLONG(I)=XN(J1)
+           SUM=SUM+XN(J1)/FLOAT(NLONG)
+          ENDDO
+          CALL SPLANG(NLONG,YLONG,NTHETA,THETA,YYTH,YYTH2)
+          CALL SPLINT(THETA,YYTH,YYTH2,NTHETA,LONGITUDE,YTH)
+          XP1(J) = SUM + (YTH-SUM)*COS(LATITUDE*DTR)
+
+          DO I=1,NLONG
+
+           YLONG(I)=YLONG(I)+DX
+
+           CALL SPLANG(NLONG,YLONG,NTHETA,THETA,YYTH,YYTH2)
+           CALL SPLINT(THETA,YYTH,YYTH2,NTHETA,LONGITUDE,YTH)
+
+           XX = SUM + (YTH-SUM)*COS(LATITUDE*DTR)
+           K = (J-1)*NLEVEL+I
+           GRADTH(J,K)=(XX-XP1(J))/DX
+
+           YLONG(I)=YLONG(I)-DX
+
+          ENDDO          
+
+         ENDDO
+
+C        Now need to do vertical interpolation to get actual profile
+C        Fit a cubic spline to the points
+         CALL CSPLINE(LP1,XP1,NLEVEL,1e30,1e30,XP2)
+
+         DO J=1,NPRO
+          L1 = ALOG(P(J))
+          CALL CSPLINT(LP1,XP1,XP2,NLEVEL,L1,XX)
+
+          IF(VARIDENT(IVAR,1).EQ.0)THEN
+           X1(J)=XX
+          ELSE
+           X1(J)=EXP(XX)
+          ENDIF
+          IF(X1(J).LT.1e-36)X1(J)=1e-36
+         ENDDO
+
+C        Now do functional derivatives - numerical
+         XPS=XP1
+         DO J=1,NPRO
+          L1 = ALOG(P(J))
+          XPS(J)=XP1(J)+DX
+          CALL CSPLINE(LP1,XPS,NLEVEL,1e30,1e30,XP2S)
+          CALL CSPLINT(LP1,XPS,XP2S,NLEVEL,L1,XX)
+          IF(VARIDENT(IVAR,1).NE.0)THEN
+           XX=EXP(XX)
+          ENDIF
+          IF(XX.LT.1e-36)XX=1e-36
+          GRAD = (XX-X1(J))/DX
+
+          DO K=1,NP
+           GRAD1=GRAD*GRADTH(J,K)
+           XMAP(NXTEMP+K,IPAR,J)=GRAD1
+           IF(VARIDENT(IVAR,1).EQ.0)THEN
+            XMAP(NXTEMP+K,IPAR,J)=GRAD1
+           ELSE
+            XMAP(NXTEMP+K,IPAR,J)=GRAD1*X1(J)
+           ENDIF
+          ENDDO
+         ENDDO
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.31)THEN
+C        Model 31. Inhomogenous disc scaling factor
+C        ***************************************************************
+
+
+C        Need to set up cubic spline interpolation in longitude
+         NLONG = INT(VARPARAM(IVAR,1))
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+            DX=2.0
+         ELSE
+            DX=0.1
+         ENDIF
+
+         DO K=1,NP
+           GRADTH(1,K)=0.
+         ENDDO
+
+         SUM=0.
+         DO I=1,NLONG
+          J1=NXTEMP+I
+          YLONG(I)=XN(J1)
+          SUM=SUM+XN(J1)/FLOAT(NLONG)
+         ENDDO
+         CALL SPLANG(NLONG,YLONG,NTHETA,THETA,YYTH,YYTH2)
+         CALL SPLINT(THETA,YYTH,YYTH2,NTHETA,LONGITUDE,YTH)
+         XS = SUM + (YTH-SUM)*COS(LATITUDE*DTR)
+
+         DO I=1,NLONG
+
+          YLONG(I)=YLONG(I)+DX
+
+          CALL SPLANG(NLONG,YLONG,NTHETA,THETA,YYTH,YYTH2)
+          CALL SPLINT(THETA,YYTH,YYTH2,NTHETA,LONGITUDE,YTH)
+
+          XX = SUM + (YTH-SUM)*COS(LATITUDE*DTR)
+          GRADTH(1,I)=(XX-XS)/DX
+
+          YLONG(I)=YLONG(I)-DX
+
+         ENDDO
+         DO J=1,NPRO
+          X1(J) = XREF(J)*EXP(XS)
+          DO I=1,NLONG
+           XMAP(NXTEMP+I,IPAR,J)=X1(J)*GRADTH(1,I)
+          ENDDO
          ENDDO
 
 

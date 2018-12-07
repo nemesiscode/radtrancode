@@ -99,6 +99,22 @@ C       Variable is not temperature  - may need to take exponent
       if(ivar.eq.333)iflag=0	! Planet surface gravity
       if(ivar.eq.444)iflag=1	! Particle size and ref. index
       if(ivar.eq.445)iflag=1	! Particle size and ref. index (coated sphere)
+      if(ivar.eq.443)then
+         if(ip.eq.1)iflag=1     ! Log scaling factor
+         if(ip.eq.2)iflag=0     ! Knee height
+         if(ip.eq.3)iflag=0     ! Power law exponent
+      endif
+      if(ivar.eq.442)then
+         if(ip.eq.1)iflag=1     ! Log scaling factor
+         if(ip.eq.2)iflag=0     ! Knee height
+         if(ip.eq.3)iflag=0     ! Knee height
+         if(ip.eq.4)iflag=0     ! Power law exponent
+      endif
+      if(ivar.eq.441)then
+         if(ip.eq.1)iflag=1     ! Log scaling factor
+         if(ip.eq.2)iflag=0     ! Knee height
+         if(ip.eq.3)iflag=0     ! Power law exponent
+      endif
       if(ivar.eq.222)iflag=1	! Larry's cloud model
       if(ivar.eq.223)iflag=1	! Larry's revised cloud model
       if(ivar.eq.224)iflag=1	! Larry's revised cloud model with ext UTC

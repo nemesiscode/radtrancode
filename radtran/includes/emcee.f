@@ -34,6 +34,9 @@ C***********************************************************************
       REAL MCMCemzen(50),MCMCazi(50),MCMCwt(50)
       COMMON /MCMCmr7/ MCMCemzen,MCMCazi,MCMCwt
 
+      REAL MCMCtop, MCMCscat, MCMCshape
+      COMMON /MCMCmr9/ MCMCtop, MCMCscat, MCMCshape
+
       INTEGER MCtemplen, MCMCnav
       COMMON /MCMCint/ MCtemplen, MCMCnav
 

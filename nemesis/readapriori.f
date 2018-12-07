@@ -81,13 +81,14 @@ C     ****************************************************************
 
       real xsec(max_mode,max_wave,2),wave(max_wave)
       real x0(mx),sx(mx,mx),err,err1,ref1,pref(maxpro)
+      real eref(maxlat,maxpro),reflat(maxlat),htan,htop,etop
       real dhsphere(maxpro,mlong)
-      real eref(maxlat,maxpro),reflat(maxlat),htan
       real delp,xfac,pknee,eknee,edeep,xdeep,xlat,xlatx,xlonx,pshld
       real xstep,estep,efsh,xfsh,varparam(mvar,mparam),flat,hknee,pre
       real ref(maxlat,maxpro),clen,SXMINFAC,arg,valb,alb,refp,errp
       real xknee,xrh,erh,xcdeep,ecdeep,radius,Grav,plim
-      real xcwid,ecwid,ptrop,refradius,xsc,clen1,clen2
+      real xcwid,ecwid,ptrop,refradius,xsc,ascat,escat,shape,eshape
+      real clen1,clen2
       integer nlong,ilong,ipar
       parameter (Grav=6.672E-11)
 C     SXMINFAC is minimum off-diagonal factor allowed in the
@@ -187,7 +188,8 @@ C             Avoids instabilities arising from greatly different profiles
 C             such as T and vmrs
               if(varident(ivar,1).eq.0)then
 C              *** temperature, leave alone ****
-               x0(ix) = ref(1,i)
+                x0(ix) = ref(1,i)
+                if(MCMCflag.eq.1) x0(ix)=MCMCtemp(i)
                err = eref(1,i)
               else
 C              **** vmr, cloud, para-H2 , fcloud, take logs ***
@@ -2122,6 +2124,206 @@ C               xfac = exp(-arg*arg)
              enddo
 
              nx = nx+3+(np*2)
+                            elseif (varident(ivar,1).eq.443)then
+C            ** Cloud with variable top pressure, deep value and power 
+C				law cross section with variable index. Currently only
+C				works for MultiNest
+
+
+               if(MCMCflag.ne.1)then
+               print*, 'Error in readapriori.f. MultiNest cloud'
+               print*, 'is being used in Optimal Estimation mode'
+               stop
+               else 
+                hknee = MCMCtop
+                xdeep = MCMCdeep
+                
+               eknee = 0.5*MCMCtop
+               edeep = 0.5*MCMCdeep
+       
+               ix = nx+1
+			   if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+              else
+                print*,'Error in readapriori. xdeep must be > 0.0'
+                stop
+              endif
+              err = edeep/xdeep
+               sx(ix,ix)=err**2
+               ix=nx+2
+               x0(ix) = hknee
+               sx(ix,ix) = eknee**2
+               ix = nx+3
+               ascat = MCMCscat
+               escat = 0.1*MCMCscat
+               x0(ix) = ascat
+               sx(ix,ix) = escat**2
+               
+               nx = nx+3
+
+              
+			   varparam(ivar,1)=-ascat
+             
+ 			endif
+                            elseif (varident(ivar,1).eq.442) then
+C            ** Cloud with variable top and base pressures, deep value and power 
+C				law cross section with variable index. Currently only
+C				works for MultiNest
+
+
+               if(MCMCflag.ne.1)then
+               print*, 'Error in readapriori.f. MultiNest cloud'
+               print*, 'is being used in Optimal Estimation mode'
+               stop
+               else 
+                hknee = MCMChknee
+                xdeep = MCMCdeep
+                htop = MCMCtop
+                
+                eknee = 0.5*MCMChknee
+                etop = 0.5*MCMCtop
+               edeep = 0.5*MCMCdeep
+       
+               ix = nx+1
+			   if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+              else
+                print*,'Error in readapriori. xdeep must be > 0.0'
+                stop
+              endif
+              err = edeep/xdeep
+               sx(ix,ix)=err**2
+               ix=nx+2
+               x0(ix) = hknee
+               sx(ix,ix) = eknee**2
+               ix = nx+3
+               x0(ix) = htop
+               sx(ix,ix) = etop**2
+               ix = nx+4
+               ascat = MCMCscat
+               escat = 0.1*MCMCscat
+               x0(ix) = ascat
+               sx(ix,ix) = escat**2
+               
+               nx = nx+4
+
+              
+			   varparam(ivar,1)=-ascat
+             
+ 			endif       
+                            elseif (varident(ivar,1).eq.441) then
+C            ** Haze with variable base pressure & opacity,  and power 
+C     law cross section with variable index, with opaque grey cloud beneath.
+                              
+C		 Currently only works for MultiNest
+
+
+               if(MCMCflag.ne.1)then
+               print*, 'Error in readapriori.f. MultiNest cloud'
+               print*, 'is being used in Optimal Estimation mode'
+               stop
+               else 
+                hknee = MCMChknee
+                xdeep = MCMCdeep
+                
+                eknee = 0.5*MCMChknee
+               edeep = 0.5*MCMCdeep
+       
+               ix = nx+1
+			   if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+              else
+                print*,'Error in readapriori. xdeep must be > 0.0'
+                stop
+              endif
+              err = edeep/xdeep
+               sx(ix,ix)=err**2
+               ix=nx+2
+               x0(ix) = hknee
+               sx(ix,ix) = eknee**2
+               ix = nx+3
+               ascat = MCMCscat
+               escat = 0.1*MCMCscat
+               x0(ix) = ascat
+               sx(ix,ix) = escat**2
+               
+               nx = nx+3
+
+              
+			   varparam(ivar,1)=-ascat
+             
+ 			endif       
+                     elseif (varident(ivar,1).eq.440)then
+C     Benneke 2015 cloud parameterisation. Variable cloud base height, cloud profile
+C     shape factor, condensate mole fraction (amount) and variable radius.                  C     Refractive index is taken from lab data for a specific species and needs
+C     to be provided. Log-normal distribution with variance 2.             
+C     
+               print*, 'Benneke cloud model in use'
+	       print*, 'Model still under development'
+               if(MCMCflag.ne.1)then
+               print*, 'Error in readapriori.f. MultiNest cloud'
+               print*, 'is being used in Optimal Estimation mode'
+               stop
+               else 
+C            ** Variable cloud particle size distribution and composition
+
+C              Read variance
+               read(27,*)v0
+
+                pknee = 10**MCMChknee
+                xdeep = MCMCdeep
+                shape = MCMCshape
+                
+                eknee = 0.5*MCMChknee
+                edeep = 0.5*MCMCdeep
+                eshape = 0.5*MCMCshape
+                
+                r0 = MCMCpr
+                er0 = 1.0e-7*r0
+C     endif
+
+                varparam(ivar,1)=r0
+                varparam(ivar,2)=v0
+
+               ix=nx+1
+               x0(ix)=pknee
+               sx(ix,ix)=(eknee/pknee)**2
+               lx(ix)=1
+
+               ix=nx+2
+               x0(ix)=xdeep
+               sx(ix,ix)=(edeep/xdeep)**2
+               lx(ix)=1
+
+               ix=nx+3
+               x0(ix)=alog(shape)
+               sx(ix,ix)=(eshape/shape)**2
+               lx(ix)=1
+
+C              Read number of wavelengths 
+               rifile='refindex.dat'
+
+               open(28,file=rifile,status='old')
+               read(28,*)np
+               close(28)
+
+               call get_xsecA(opfile,nmode,nwave,wave,xsec)
+               if(np.ne.nwave)then
+       print*,'Error in readapriori.f. Number of wavelengths in ref.'
+       print*,'index file does not match number of wavelengths in'
+       print*,'xsc file. Wavelengths in these two files should match'
+                print*,rifile,np
+                print*,opfile,nwave
+                stop
+               endif
+
+               varparam(ivar,2)=clen
+               endif
+
+             nx = nx+3
 
  
 C **************** add mass variable  ***************

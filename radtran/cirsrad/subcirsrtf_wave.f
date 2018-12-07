@@ -66,7 +66,7 @@ C       bins, paths, etc.)
 
 	INTEGER		nwave, I, J, npath1, nout, ispace
 
-	INTEGER		INormal,Iray,nem
+	INTEGER		INormal,Iray,nem,nkl,ii
 	REAL		Dist,tsurf,radius1,zheight(maxpro)
         REAL		vem(maxsec),emissivity(maxsec)
 	REAL		vwave(nwave), output(maxout3),radextra
@@ -157,7 +157,7 @@ C-----------------------------------------------------------------------
 	 WRITE(*,1050)klist
 
 	 WRITE(*,*)'     CALLING read_klist'
-	 CALL read_klist (klist, ngas, idgas, isogas, nwave, vwave)
+	 CALL read_klist (klist, ngas, idgas, isogas, nwave, vwave,nkl)
 	 WRITE(*,*)'     read_klist COMPLETE'
 	 WRITE(*,*)' '
         ELSE
@@ -255,6 +255,10 @@ C-----------------------------------------------------------------------
 
 1050	FORMAT (/, 6x, 'Klist filename: ', A)
 1080    FORMAT (' subCIRSrtf_wave: output arrays too small - recompile')
+
+        DO ii=101,nkl+100
+		CLOSE(UNIT=ii)
+	ENDDO
 
 	RETURN
 

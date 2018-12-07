@@ -34,7 +34,7 @@ C-----------------------------------------------------------------------
 41    FORMAT('Read_khead. Opening : ',A) 
 
       OPEN(UNIT=LUN0,FILE=KTAFIL,STATUS='OLD',ACCESS='DIRECT',
-     1RECL=IRECL)
+     1RECL=IRECL, ACTION='READ')
 
       READ(LUN0,REC=1)IREC0
       READ(LUN0,REC=2)NPOINT

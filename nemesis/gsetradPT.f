@@ -54,10 +54,6 @@ C     ************************************************************************
       real layht,xdnu,r0,v0
       real vconv(mconv),minlam,lambda0
       integer flagh2p, nmode, nwave, max_mode, max_wave
-      integer jloggx,ierr,ierrx,jxscx,jfracx
-      real layht,xdnu
-      real vconv(mconv)
-      integer flagh2p
       double precision mu(maxmu),wtmu(maxmu)
       real xn(mx),xnx(mx),stx(mx,mx)
       real xmap(maxv,maxgas+2+maxcon,maxpro)
@@ -94,11 +90,13 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
       if(jpara.ne.0)then
        flagh2p=1
       endif
-
+       
+      print*,'Gsetrad iscat before subprofretg = ',iscat       
       xflag=0
       call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,xlon,
      1  nvar,varident,varparam,nx,xn,jpre,ncont,flagh2p,xmap,ierr)
 
+      print*,'Gsetrad iscat after subprofretgg = ',iscat
       hcorrx=0.0
 
       if(lin.eq.1.or.lin.eq.3)then
@@ -382,7 +380,7 @@ C           np=2
        endif
       enddo
       
-
+      print*,'GsetradPT iscat at end =',iscat
       call gwritepatPT(runname,iscat,nconv,vconv,fwhm,layht,
      2 nlayer,laytyp,layint,flagh2p)
 

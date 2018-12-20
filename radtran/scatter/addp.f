@@ -41,23 +41,52 @@ C---------------------------------------------------------------------
       INTEGER ISCAT1
 C
       IF (JDIM.NE.MAXMU) CALL ABEND(' ADD: DIMENSION ERROR')
-C
+C     Subroutine solves Eq. 7b,8b,9b of Plass et al. (1973) 
+C     Here :
+C        R1 is R10 for the homogenous layer 1 being added 
+C                    (and thus equal to R01)
+C        T1 is T10 for the homogenous layer 1 being added
+C		     (and thus equal to T10)
+C        J1 is the source function for the homegenous layer 1
+C                    (and thus same in +ve and -ve directions)
+C                    +ve is going in direction from layer 1 to 2nd layer
+C 		     -ve is going in direction from 2nd layer to layer 1
+C	 RSUB is R12 for the 2nd layer (homegenous or composite)
+C	 TSUB is T21 for the 2nd layer (homegenous or composite)
+C        JSUB is source function for 2nd layer (homegenous or composite)
+C		     going in -ve direction (i.e. JM21)
+C        RANS is R02 for combined layers
+C	 TANS is T20 for combineds layers
+C        JANS is JM20 for combined layers (i.e. in -ve direction)
+
       IF(ISCAT1.EQ.1)THEN
-C      2nd layer is scattering.
+C      2nd layer is scattering. Solve Eq. 7b,8b,9b of Plass et al. (1973)
        CALL MMUL(-1.0D0,RSUB,R1,BCOM,NMU,NMU,NMU,JDIM,JDIM,JDIM)
+C       BCOM=-RSUB*R1
        CALL MADD(1.0D0,E,BCOM,BCOM,NMU,NMU,JDIM,JDIM)
+C       BCOM=E-RSUB*R1
        CALL MATINV8(BCOM,NMU,JDIM,ACOM)
+C       ACOM = INV(E-RSUB*R1)
        CALL MEQU(BCOM,NMU,JDIM,ACOM)
+C       BCOM=INV(E-RSUB*R1)
        CALL MMUL(1.0D0,T1,BCOM,CCOM,NMU,NMU,NMU,JDIM,JDIM,JDIM)
+C       CCOM=T1*INV(E-RSUB*R1)
        CALL MMUL(1.0D0,CCOM,RSUB,RANS,NMU,NMU,NMU,JDIM,JDIM,JDIM)
+C       RANS=T1*INV(E-RSUB*R1)*RSUB
        CALL MMUL(1.0D0,RANS,T1,ACOM,NMU,NMU,NMU,JDIM,JDIM,JDIM)
+C       ACOM=T1*INV(E-RSUB*R1)*RSUB*T1
        CALL MADD(1.0D0,R1,ACOM,RANS,NMU,NMU,JDIM,JDIM)
+C       RANS = R1+T1*INV(E-RSUB*R1)*RSUB*T1
        CALL MMUL(1.0D0,CCOM,TSUB,TANS,NMU,NMU,NMU,JDIM,JDIM,JDIM)
+C       TANS=T1*INV(E-RSUB*R1)*TSUB
        CALL MMUL(1.0D0,RSUB,J1,JCOM,NMU,NMU,1,JDIM,JDIM,1)
+C       JCOM=RSUB*J1
        CALL MADD(1.0D0,JSUB,JCOM,JCOM,NMU,1,JDIM,1)
+C       JCOM=JSUB+RSUB*J1
        CALL MMUL(1.0D0,CCOM,JCOM,JANS,NMU,NMU,1,JDIM,JDIM,1)
+C       JANS=T1*INV(E-RSUB*R1)*(JSUB+RSUB*J1)
        CALL MADD(1.0D0,J1,JANS,JANS,NMU,1,JDIM,1)
-  
+C       JANS = J1+T1*INV(E-RSUB*R1)*(JSUB+RSUB*J1)  
       ELSE
 C       2nd layer is non-scattering
        CALL MMUL(1.0D0,RSUB,J1,JCOM,NMU,NMU,1,JDIM,JDIM,1)

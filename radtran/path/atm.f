@@ -502,7 +502,8 @@ C     need multiple paths if calculating a weighting function or if performing
 C     a thermal integration outside genlbl
       IF(WF)IPATH=NUSE
       IF(THERM.AND.BROAD)IPATH=NUSE
-      IF(NETFLUX.OR.UPFLUX)IPATH=NUSE
+      IF(UPFLUX)IPATH=NUSE
+      IF(NETFLUX.AND.(.NOT.SCATTER))IPATH=NUSE
       DO 29 J=1,IPATH
 C      WRITE(*,207)J
 207   FORMAT(' path',I3)

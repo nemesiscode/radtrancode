@@ -42,7 +42,7 @@ C
        ENDDO
        NITER = 0
 110    NITER = NITER+1
-       IF (NITER.GT.2000) THEN
+       IF (NITER.GT.10000) THEN
          PRINT*,'SUBR. HANSEN:  NORMALIZATION FAILS TO CONVERGE'
          PRINT*,'Leaving phase matrices uncorrected' 
          RETURN

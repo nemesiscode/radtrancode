@@ -100,7 +100,9 @@ F_SOURCES = \
 	extractcb.f \
 	gwritepatcb.f \
 	readmmr.f \
-	readrdw.f
+	readrdw.f \
+	splang.f \
+	splangint.f
 
 INCDIR = ../../radtran/includes
 INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/lincom.f $(INCDIR)/pathcom.f \
@@ -243,4 +245,5 @@ Calc_chisq: calc_chisq.f $(LIBRARY)
 Testbrown: testbrown.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Testbrown testbrown.f \
 	$(LIBRARY) $(LIB)/rtm_util.a $(FRECIPES)
+
 

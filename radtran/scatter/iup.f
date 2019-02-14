@@ -18,6 +18,17 @@ C
 C     See Plass et al.(1993), Apl. Opt. 12, pp 314-329.
 C
 C     This is equation 5
+C	RA = R10
+C	RB = R12
+C	TA = T01
+C       TB = T21
+C	JA = JP01
+C       JB = JM21
+C	UMI = I2-
+C       U0PL(common) is I0+
+C	UTMI(common) is I2-
+C
+C       Output UMI is I1-
 C
 C     calculate r12*r10 -> ACOM
       CALL MMUL(1.0D0,RB,RA,ACOM,NMU,NMU,NMU,JDIM,JDIM,JDIM)

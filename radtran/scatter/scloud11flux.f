@@ -260,13 +260,14 @@ C	  HOMOGENEOUS LAYER L; INSERT INTO ARRAY X(I,J,L).
 C **********************************************************************    
 C
       IPOW0 = 16
+      print*,'LT1,LTOT',LT1,LTOT
       DO 2000 L = 1,LT1
         if(idump.ne.0)print*,'L,IGDIST =',L,IGDIST
         TAUT = 1.0D0*TAU(L)
         BC = 1.0D0*BNU(L)
 C        OMEGA = 1.0D0*(1. - EPS(L))
         OMEGA = OMEGAS(L)
-
+C        print*,'BC',L,BC
         TAUSCAT = TAUT*OMEGA
         TAUR = TAURAY(L)
 
@@ -465,6 +466,10 @@ C  BUT NOT FOR THE INHOMOGENEOUS RESULTING "TOP" LAYER.
 C
 C  i.e. XTOP(I,J,L) is the effective reflectivity, transmission and emission
 C  of the top L layers of the atmosphere (i.e. layers 1-L)
+C  Specifically
+C    RTOP(I,J,L) is RL0
+C    TTOP(I,J,L) is T0L
+C    JTOP(J,1,L) is JP0L
 C **********************************************************************
       DO J = 1,NMU
         JTOP(J,1,1) = JL(J,1,1)
@@ -483,11 +488,16 @@ C         print*,L,RTOP(1,1,L),RL(1,1,L+1)
 C         print*,L+1,RTOP(1,1,L+1)
       ENDDO
 
+C      print*,'l,rl(1,1,l),tl(1,1,l),jl(1,1,l)'
+C      do l=1,ltot
+C        print*,L,RL(1,1,L),TL(1,1,L),JL(1,1,L)
+C      enddo
 C      print*,'l,rtop(1,1,l),ttop(1,1,l),jtop(1,1,l)'
 C      do l=1,ltot
+C        print*,l,rtop(1,1,l),ttop(1,1,l),jtop(1,1,l)
 C       write(6,101)l,rtop(1,1,l),ttop(1,1,l),jtop(1,1,l)
 C      enddo
-
+C      print*,' '
 
 C ***********************************************************************
 C  CALCULATE UPWARD MATRICES FOR COMPOSITE OF L LAYERS FROM BASE OF CLOUD.
@@ -496,6 +506,10 @@ C  AS FOR "TOP", R01 = R10 & T01 = T10 IS VALID FOR LAYER BEING ADDED ONLY.
 C
 C  i.e. XBASE(I,J,L) is the effective reflectivity, transmission and emission
 C  of the bottom L layers of the atmosphere (i.e. layers LTOT-L+1 to LTOT)
+C  Specifically (M = LTOT)
+C    RBASE(I,J,L) is RLM
+C    TBASE(I,J,L) is TML
+C    JBASE(J,1,L) is JMLM
 C ***********************************************************************
       DO J = 1,NMU
         JBASE(J,1,1) = JL(J,1,LTOT)
@@ -504,20 +518,36 @@ C ***********************************************************************
           TBASE(I,J,1) = TL(I,J,LTOT)
         ENDDO
       ENDDO
-C      print*,'Rbase',RBASE(1,1,1),TBASE(1,1,1)
+C      print*,'Rbase,Tbase,Jbase',RBASE(1,1,1),TBASE(1,1,1),
+C     1 JBASE(1,1,1)
+C      print*,'R,T,J'
+C      do l=1,ltot
+C       print*,L,RL(1,1,L),TL(1,1,L),JL(1,1,L)
+C      enddo
+
       DO L = 1,LTOT-1
         if(idump.gt.0)print*,'Multiply ',L,' of ',LTOT-1
         K = LTOT-L
 C        print*,RBASE(1,1,L),RL(1,1,K)
 C        print*,TBASE(1,1,L),TL(1,1,K)
+C         print*,L,K,ISCL(K)
         CALL ADDP( RL(1,1,K), TL(1,1,K), JL(1,1,K), ISCL(K),
      1  RBASE(1,1,L), TBASE(1,1,L), JBASE(1,1,L), RBASE(1,1,L+1), 
      2  TBASE(1,1,L+1), JBASE(1,1,L+1), NMU, MAXMU)
+
+C        CALL ADDP( RBASE(1,1,L), TBASE(1,1,L), JBASE(1,1,L), ISCL(K),
+C     1  RL(1,1,K), TL(1,1,K), JL(1,1,K), RBASE(1,1,L+1), 
+C     2  TBASE(1,1,L+1), JBASE(1,1,L+1), NMU, MAXMU)
 C        print*,rbase(1,1,L+1),tbase(1,1,L+1)
       ENDDO
 
+C      print*,'l,rl(1,1,l),tl(1,1,l),jl(1,1,l)'
+C      do l=1,ltot
+C        print*,L,RL(1,1,L),TL(1,1,L),JL(1,1,L)
+C      enddo
 C      print*,'l,rbase(1,1,l),tbase(1,1,l),jbase(1,1,l)'
 C      do l=1,ltot
+C        print*,l,rbase(1,1,l),tbase(1,1,l),jbase(1,1,l)
 C       write(6,101)l,rbase(1,1,l),tbase(1,1,l),jbase(1,1,l)
 C      enddo
 101   format(i4,3(f12.8))
@@ -576,20 +606,32 @@ C         UPL(J,1,L) GOES DOWN OUT OF LAYER L.
 C          UMI(J,1,L) GOES UP OUT OF LAYER L.
 C ****************************************************
 C       print*,'l,k,umi,upl',ISOL,FSOL
+
+       DO I=1,NMU
+        UMI(I,1,1)=JBASE(I,1,1)
+       ENDDO
        DO L = 1,LTOT-1
         K = LTOT-L
+C       Calculate I(L+1)-
         CALL IUP( RTOP(1,1,L), TTOP(1,1,L), JTOP(1,1,L),
      1    RBASE(1,1,K), TBASE(1,1,K), JBASE(1,1,K), UMI(1,1,L+1),
      2    NMU, MAXMU)
 C        CALL IUP( RTOP(1,1,L), TTOP(1,1,L), JTOP(1,1,L),
 C     1    RBASE(1,1,K), TBASE(1,1,K), JBASE(1,1,K), UMI(1,1,L),
 C     2    NMU, MAXMU)
+
+C       Calculate I(L)+
         CALL IDOWN( RTOP(1,1,L), TTOP(1,1,L), JTOP(1,1,L),
      1    RBASE(1,1,K), TBASE(1,1,K), JBASE(1,1,K), UPL(1,1,L),
      2    NMU, MAXMU)
-C        print*,L,k,umi(1,1,l),upl(1,1,l)
-       ENDDO
 
+C        print*,L,K
+C        print*,rtop(1,1,l),ttop(1,1,l),jtop(1,1,l)
+C        print*,rbase(1,1,k),tbase(1,1,k),jbase(1,1,k)
+C        print*,umi(1,1,l),upl(1,1,l)
+       ENDDO
+C       stop
+ 
 
 C *******************************************************
 C     CALCULATING EXTERIOR INTENSITIES UTPL AND U0MI
@@ -600,7 +642,7 @@ C       write(6,102)RBASE(1,1,LTOT),U0PL(1,1)
 C       print*,IMU0,mu(imu0),wtmu(imu0),(u0pl(k,1),k=1,nmu)
 
 C      Basically upward radiation at top of atmosphere:
-C      U0MI = U0PL*RBASE + TBASE*UTMI + JBASE
+C      U0MI = U0PL*RBASE(LTOT) + TBASE*UTMI(LTOT) + JBASE(LTOT)
  
        CALL MMUL(1.0D0,RBASE(1,1,LTOT),U0PL,ACOM,NMU,NMU,1,
      1   MAXMU,MAXMU,1)
@@ -614,7 +656,7 @@ C       write(6,102)ACOM(1,1)
        CALL MADD(1.0D0,JBASE(1,1,LTOT),ACOM,U0MI,NMU,1,MAXMU,1)
 
 C      Basically downward radiation at bottom of atmosphere:
-C      UTPL = U0PL*TTOP + RTOP*UTMI + JTOP
+C      UTPL = U0PL*TTOP(NLAY) + RTOP(NLAY)*UTMI + JTOP(NLAY)
 
        CALL MMUL(1.0D0,TTOP(1,1,LT1),U0PL,ACOM,NMU,NMU,1,
      1  MAXMU,MAXMU,1)

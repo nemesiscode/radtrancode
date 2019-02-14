@@ -3190,7 +3190,7 @@ C26       CONTINUE
 
 
          ENDIF
-         NP = 3
+         NP = 4
 
 
       ELSEIF(VARIDENT(IVAR,1).EQ.441)THEN
@@ -3339,7 +3339,7 @@ C26       CONTINUE
 
 
          ENDIF
-         NP = 3
+         NP = 4
 
         ELSEIF(VARIDENT(IVAR,1).EQ.440)THEN
 C     Benneke et al. 2015 cloud. Variable particle size,

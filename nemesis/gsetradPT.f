@@ -130,14 +130,22 @@ C         ********* Power law cross-section spectrum  **********
 
 		 icont=1
          call get_xsecA(runname,nmode,nwave,wave,xsec)
+
+	 do i=1,nwave
+		do j=1,ncont
+			xsc(i,j)=xsec(j,i,1)
+			ssa(i,j)=xsec(j,i,2)
+		enddo
+	 enddo
+
          
          call file(runname,runname,'xsc')
          open(9,file=runname,status='unknown')
          write(9,*)ncont
          xsc(1,icont)=1.0
          ssa(1,icont)=1.0
-         write(9,*)wave(1),xsc(1,icont)
-         write(9,*)ssa(1,icont)
+         write(9,*)wave(1),(xsc(1,j),j=1,ncont)
+         write(9,*)(ssa(1,j),j=1,ncont)
          do i=2,nwave
           xsc(i,icont)=(wave(i)/wave(1))
      1     **(varparamx(ivarx,1))
@@ -156,14 +164,19 @@ C         ********* Power law cross-section spectrum  **********
 
 		 icont=1
          call get_xsecA(runname,nmode,nwave,wave,xsec)
-         
+ 	 do i=1,nwave
+		do j=1,ncont
+			xsc(i,j)=xsec(j,i,1)
+			ssa(i,j)=xsec(j,i,2)
+		enddo
+	 enddo         
          call file(runname,runname,'xsc')
          open(9,file=runname,status='unknown')
          write(9,*)ncont
          xsc(1,icont)=1.0
          ssa(1,icont)=1.0
-         write(9,*)wave(1),xsc(1,icont)
-         write(9,*)ssa(1,icont)
+         write(9,*)wave(1),(xsc(1,j),j=1,ncont)
+         write(9,*)(ssa(1,j),j=1,ncont)
          do i=2,nwave
           xsc(i,icont)=(wave(i)/wave(1))
      1     **(varparamx(ivarx,1))
@@ -181,15 +194,20 @@ C         ********* Power law cross-section spectrum  **********
          
 		 icont=1
 		 
-         call get_xsecA(runname,nmode,nwave,wave,xsc)
-         
+         call get_xsecA(runname,nmode,nwave,wave,xsec)
+         do i=1,nwave
+		do j=1,ncont
+			xsc(i,j)=xsec(j,i,1)
+			ssa(i,j)=xsec(j,i,2)
+		enddo
+	 enddo
          call file(runname,runname,'xsc')
          open(9,file=runname,status='unknown')
          write(9,*)ncont
          xsc(1,icont)=1.0
          ssa(1,icont)=1.0
-         write(9,*)wave(1),xsc(1,icont)
-         write(9,*)ssa(1,icont)
+         write(9,*)wave(1),(xsc(1,j),j=1,ncont)
+         write(9,*)(ssa(1,j),j=1,ncont)
          do i=2,nwave
           xsc(i,icont)=(wave(i)/wave(1))
      1     **(varparam(ivar,1))
@@ -257,15 +275,20 @@ C         ********* Power law cross-section spectrum  **********
 
 		 icont=1
 		 
-         call get_xsecA(runname,nmode,nwave,wave,xsc)
-         
+         call get_xsecA(runname,nmode,nwave,wave,xsec)
+         do i=1,nwave
+		do j=1,ncont
+			xsc(i,j)=xsec(j,i,1)
+			ssa(i,j)=xsec(j,i,2)
+		enddo
+	 enddo
          call file(runname,runname,'xsc')
          open(9,file=runname,status='unknown')
          write(9,*)ncont
          xsc(1,icont)=1.0
          ssa(1,icont)=1.0
-         write(9,*)wave(1),xsc(1,icont)
-         write(9,*)ssa(1,icont)
+         write(9,*)wave(1),(xsc(1,j),j=1,ncont)
+         write(9,*)(ssa(1,j),j=1,ncont)
          do i=2,nwave
           xsc(i,icont)=(wave(i)/wave(1))
      1     **(varparam(ivar,1))
@@ -284,15 +307,20 @@ C         ********* Power law cross-section spectrum  **********
 
 		 icont=1
 		 
-         call get_xsecA(runname,nmode,nwave,wave,xsc)
-         
+         call get_xsecA(runname,nmode,nwave,wave,xsec)
+	 do i=1,nwave
+		do j=1,ncont
+			xsc(i,j)=xsec(j,i,1)
+			ssa(i,j)=xsec(j,i,2)
+		enddo
+	 enddo         
          call file(runname,runname,'xsc')
          open(9,file=runname,status='unknown')
          write(9,*)ncont
          xsc(1,icont)=1.0
          ssa(1,icont)=1.0
-         write(9,*)wave(1),xsc(1,icont)
-         write(9,*)ssa(1,icont)
+         write(9,*)wave(1),(xsc(1,j),j=1,ncont)
+         write(9,*)(ssa(1,j),j=1,ncont)
          do i=2,nwave
           xsc(i,icont)=(wave(i)/wave(1))
      1     **(varparam(ivar,1))
@@ -310,15 +338,20 @@ C         ********* Power law cross-section spectrum  **********
 
 		 icont=1
 		 
-         call get_xsecA(runname,nmode,nwave,wave,xsc)
-         
+         call get_xsecA(runname,nmode,nwave,wave,xsec)
+         do i=1,nwave
+		do j=1,ncont
+			xsc(i,j)=xsec(j,i,1)
+			ssa(i,j)=xsec(j,i,2)
+		enddo
+	 enddo
          call file(runname,runname,'xsc')
          open(9,file=runname,status='unknown')
          write(9,*)ncont
          xsc(1,icont)=1.0
          ssa(1,icont)=1.0
-         write(9,*)wave(1),xsc(1,icont)
-         write(9,*)ssa(1,icont)
+         write(9,*)wave(1),(xsc(1,j),j=1,ncont)
+         write(9,*)(ssa(1,j),j=1,ncont)
          do i=2,nwave
           xsc(i,icont)=(wave(i)/wave(1))
      1     **(varparam(ivar,1))

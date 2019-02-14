@@ -78,7 +78,7 @@ C     ***********************************************************************
       REAL DNDH(MAXPRO),DQDH(MAXPRO),FCLOUD(MAXPRO),HTOP,PTOP,XLON
       REAL dtempdx(MAXPRO,5),T0,Teff,alpha,ntemp,tau0
       REAL XP1(MAXPRO),LP1(MAXPRO),XP2(MAXPRO),GRAD1
-      REAL LPMIN,LPMAX,DLP,XPS(MAXPRO),XP2S(MAXPRO)
+      REAL LPMIN,LPMAX,DLP,XPS(MAXPRO),XP2S(MAXPRO),XF
       DOUBLE PRECISION Q(MAXPRO),OD(MAXPRO),ND(MAXPRO),XOD
       INTEGER ISCALE(MAXGAS),XFLAG,NPVAR,MAXLAT,IERR
       INTEGER NLATREF,ILATREF,JLAT,KLAT,ICUT,JX,JLEV
@@ -86,7 +86,7 @@ C     ***********************************************************************
       REAL HREF(MAXLAT,MAXPRO),TREF(MAXLAT,MAXPRO),FLAT
       REAL PREF(MAXLAT,MAXPRO),VMRREF(MAXLAT,MAXPRO,MAXGAS)
       REAL LATREF(MAXLAT),MOLWTREF(MAXLAT),XFSHREF
-      REAL XRH,XCDEEP,P1,PS,PS1,PH,Y1,Y2,YY1,YY2
+      REAL XRH,XCDEEP,P1,PS,PS1,PH,Y1,Y2,YY1,YY2,ODX
       real plog,p1log,p2log,p2,v1log,v2log,grad
       REAL XCH4,PCH4,PCUT,GETRADIUS,RPARTICLE,SHAPE
       INTEGER ICLOUD(MAXCON,MAXPRO),NCONT1,JSPEC,IFLA,I1,I2
@@ -887,11 +887,6 @@ C        Calculate gradient numerically as it's just too hard otherwise
           DX=0.05*XN(NXTEMP+ITEST-1)
           IF(DX.EQ.0.)DX=0.1
 
-          IF(ITEST.GT.1)THEN
-C            print*,'ITEST,IPAR,XN,DX = ',ITEST,IPAR,
-C     1		XN(NXTEMP+ITEST-1),DX
-C            print*,'XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
-          ENDIF
           IF(ITEST.EQ.2)THEN
             XDEEP=EXP(XN(NXTEMP+1)+DX)
           ENDIF
@@ -904,23 +899,16 @@ C            print*,'XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
 
 
 C         Start ND,Q,OD at zero
+C         N is in units of particles/cm3
 C         OD is in units of particles/cm2 = particles/cm3 x length(cm)
 C         Q is specific density = particles/gram = (particles/cm3) / (g/cm3)
           DO J=1,NPRO
            ND(J)=0.
            OD(J)=0
            Q(J)=0.
-           DNDH(J)=0.
-           DQDH(J)=0.
           ENDDO
 
           JFSH=-1
-
-          if(MCMCflag.eq.1)then
-           if(HKNEE.ge.H(NPRO))THEN
-            HKNEE = H(NPRO)
-           endif
-          endif
 
           CALL VERINT(P,H,NPRO,HKNEE,PKNEE)
 
@@ -963,15 +951,12 @@ C           Calculate density of atmosphere  (g/cm3)
             IF(JFSH.LT.0)THEN
              ND(J)=1.0
              JFSH=1
-           ELSE
+            ELSE
              ND(J)=ND(J-1)*DPEXP(-DELH/XFAC)
              DNDH(J)=ND(J)*DELH/(XFAC**2)+DPEXP(-DELH/XFAC)*DNDH(J-1)
             ENDIF
             Q(J)=ND(J)/RHO
-            DQDH(J) = DNDH(J)/RHO
            ENDIF
-
-c           print*,'BLAH:',J,H(J), HKNEE, ND(J),JFSH
 
           ENDDO
 
@@ -981,14 +966,13 @@ C         Integrate optical thickness
           DO J=NPRO-1,1,-1
            DELH = H(J+1) - H(J)
            XFAC = SCALE(J)*XFSH         
-           OD(J)=OD(J+1)+0.5*(ND(J) + ND(J+1))*XFAC*1E5
-           IF(H(J).LE.HKNEE.AND.JFSH.LT.0)THEN
-            F = (HKNEE-H(J))/DELH
-            XOD = (1.-F)*OD(J) + F*OD(J+1)
-            JFSH=1
+           OD(J)=OD(J+1)+(ND(J) - ND(J+1))*XFAC*1E5
+           IF(H(J).LT.HKNEE.AND.JFSH.LT.0)THEN
+              OD(J)=OD(J+1)+XFAC*1E5
+              JFSH=1.
            ENDIF
-c           print*, 'OD F XOD JFSH',OD(J),F,XOD,JFSH,ND(J),ND(J+1)
           ENDDO
+          XOD=OD(1)
 
 C         The following section was found not to be as accurate as
 C         desired due to misalignments at boundaries and so needs some 
@@ -997,13 +981,6 @@ C         post-processing in gsetrad.f
            OD(J)=XDEEP*OD(J)/XOD
            ND(J)=XDEEP*ND(J)/XOD
            Q(J)=XDEEP*Q(J)/XOD
-           IF(H(J).LT.HKNEE)THEN
-            IF(H(J+1).GE.HKNEE)THEN
-             Q(J)=Q(J)*(1.0 - (HKNEE-H(J))/(H(J+1)-H(J)))
-            ELSE
-             Q(J) = 0.0
-            ENDIF
-           ENDIF
 c           print*, 'Q: ', Q(J), XDEEP, XOD
            IF(Q(J).GT.1e10)Q(J)=1e10
            IF(Q(J).LT.1e-36)Q(J)=1e-36
@@ -1021,10 +998,6 @@ C            print*,'J,X1(J)',J,X1(J)
             XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
 C            PRINT*,'ITEST,J,XMAP',ITEST,J,Q(J),X1(J),(Q(J)-X1(J))/DX
            ENDIF
-
-           DNDH(J)=DNDH(J)*XDEEP/XOD
-           DQDH(J)=DQDH(J)*XDEEP/XOD
-           DQDX(J)=Q(J)/XOD
 
           ENDDO
 
@@ -2760,6 +2733,161 @@ C        Need to set up cubic spline interpolation in longitude
           ENDDO
          ENDDO
 
+        ELSEIF(VARIDENT(IVAR,3).EQ.32)THEN
+C        ***************************************************************
+C        Model 32. Profile is represented by a value at a variable pressure level
+C        plus a fractional scale height. Below the knee pressure the profile is 
+C        set to drop exponentially. Similar model to model 8.
+C        ***************************************************************
+
+         IF(VARIDENT(IVAR,1).GE.0)THEN
+          PRINT*,'Warning from SUBPROFRETG. You are using a'
+          PRINT*,'cloud profile parameterisation for a non-cloud'
+          PRINT*,'variable'         
+          STOP 
+         ENDIF
+
+C        Calculate gradient numerically as it's just too hard otherwise
+         DO 207 ITEST=1,4
+
+
+          XDEEP = EXP(XN(NXTEMP+1))
+          XFSH  = EXP(XN(NXTEMP+2))
+          PKNEE = EXP(XN(NXTEMP+3))
+
+          DX=0.05*XN(NXTEMP+ITEST-1)
+          IF(DX.EQ.0.)DX=0.1
+
+          IF(ITEST.EQ.2)THEN
+            XDEEP=EXP(XN(NXTEMP+1)+DX)
+          ENDIF
+          IF(ITEST.EQ.3)THEN
+            XFSH  = EXP(XN(NXTEMP+2)+DX)
+          ENDIF
+          IF(ITEST.EQ.4)THEN
+            PKNEE = EXP(XN(NXTEMP+3)+DX)
+          ENDIF
+
+
+          CALL VERINT(P,H,NPRO,HKNEE,PKNEE)
+          print*,pknee,hknee
+
+C         Start ND,Q,OD at zero
+C 	  N is in units of particles/cm3
+C         OD is in units of particles/cm2 = particles/cm3 x length(cm)
+C         Q is specific density = particles/gram = (particles/cm3) / (g/cm3)
+          DO J=1,NPRO
+           ND(J)=0.
+           OD(J)=0
+           Q(J)=0.
+          ENDDO
+
+          JKNEE=-1
+          XF=1.
+C         find levels in atmosphere that span pknee
+          DO J=1,NPRO-1
+           IF(P(J).GE.PKNEE.AND.P(J+1).LT.PKNEE)THEN
+            JKNEE=J
+           ENDIF
+          ENDDO
+ 
+          IF(JKNEE.LT.0)THEN
+           Print*,'subprofretg: Error in model 32. Stop'
+           STOP
+          ENDIF          
+
+          DELH=H(JKNEE+1)-HKNEE
+          XFAC=0.5*(SCALE(JKNEE)+SCALE(JKNEE+1))*XFSH
+          ND(JKNEE+1)=DPEXP(-DELH/XFAC)
+
+          DELH = HKNEE-H(JKNEE)
+          XFAC=XF
+          ND(JKNEE)=DPEXP(-DELH/XFAC)
+         
+          DO J=JKNEE+2,NPRO
+           DELH = H(J)-H(J-1)
+           XFAC = SCALE(J)*XFSH
+           ND(J) = ND(J-1)*DPEXP(-DELH/XFAC)
+          ENDDO
+          
+          DO J=1,JKNEE-1
+           DELH = H(JKNEE)-H(J)
+           XFAC = XF
+           ND(J) = DPEXP(-DELH/XFAC)
+          ENDDO
+
+          DO J=1,NPRO
+            IF(AMFORM.EQ.0)THEN
+             XMOLWT=MOLWT
+            ELSE
+             XMOLWT=XXMOLWT(J)
+            ENDIF
+C           Calculate density of atmosphere  (g/cm3)
+            RHO = (0.1013*XMOLWT/R)*(P(J)/T(J))
+C           Calculate initial particles/gram
+            Q(J)=ND(J)/RHO
+          ENDDO
+
+C         Now integrate optical thickness
+          OD(NPRO)=ND(NPRO)*SCALE(NPRO)*XFSH*1E5
+          JFSH=-1
+C          print*,'OD ',NPRO,JKNEE,OD(NPRO)
+          DO J=NPRO-1,1,-1
+           IF(J.GT.JKNEE)THEN
+             DELH = H(J+1) - H(J)
+             XFAC = SCALE(J)*XFSH
+C             print*,ND(J),ND(J+1),(ND(J) - ND(J+1))*XFAC*1E5         
+             OD(J)=OD(J+1)+(ND(J) - ND(J+1))*XFAC*1E5
+           ELSE
+             IF(J.EQ.JKNEE)THEN
+              DELH = H(J+1)-HKNEE
+              XFAC = 0.5*(SCALE(J)+SCALE(J+1))*XFSH         
+              OD(J)=OD(J+1)+(1. - ND(J+1))*XFAC*1E5
+C              print*,ND(J+1),(1 - ND(J+1))*XFAC*1E5         
+              DELH = HKNEE-H(J)
+              XFAC = XF
+              OD(J)=OD(J)+(1. - ND(J))*XFAC*1E5
+C              print*,ND(J),(1 - ND(J))*XFAC*1E5                    
+             ELSE
+              DELH = H(J+1)-H(J)
+              XFAC = XF
+              OD(J)=OD(J+1)+(ND(J+1) - ND(J))*XFAC*1E5
+C              print*,ND(J),ND(J+1),(ND(J+1) - ND(J))*XFAC*1E5         
+             ENDIF
+           ENDIF
+C           print*,'OD ',J,JKNEE,OD(J)
+          ENDDO
+
+          ODX=OD(1)
+
+C         Now normalise specific density profile.
+C         This is also redone in gsetrad.f to make this totally secure.
+          DO J=1,NPRO
+           OD(J)=OD(J)*XDEEP/ODX
+           ND(J)=ND(J)*XDEEP/ODX
+           Q(J)=Q(J)*XDEEP/ODX
+C           print*,XDEEP,OD(J)
+           IF(Q(J).GT.1e10)Q(J)=1e10
+           IF(Q(J).LT.1e-36)Q(J)=1e-36
+           NTEST=ISNAN(Q(J))
+           IF(NTEST)THEN
+            print*,'Error in subprofretg.f, cloud density is NAN'
+            print*,'Setting to 1e-36'
+	    Q(J)=1e-36
+           ENDIF
+
+           IF(ITEST.EQ.1)THEN
+            X1(J)=Q(J)
+C            print*,'J,X1(J)',J,X1(J)
+           ELSE
+            XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
+C            PRINT*,'ITEST,J,XMAP',ITEST,J,Q(J),X1(J),(Q(J)-X1(J))/DX
+           ENDIF
+
+          ENDDO
+
+207       CONTINUE
+
 
         ELSE
 
@@ -3631,24 +3759,6 @@ C        **********************************************************
 
 1000  CONTINUE
 
-
-C     Now make sure the resulting VMRs add up to 1.0 for an
-C     AMFORM=1 profile
-      IF(AMFORM.EQ.1)THEN
-        CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
-      ENDIF
-
-
-C     ********  Modify profile with hydrostatic equation ********
-      IF(JHYDRO.EQ.0)THEN
-       CALL XHYDROSTATH(AMFORM,IPLANET,LATITUDE,NPRO,NVMR,MOLWT,
-     1  IDGAS,ISOGAS,H,P,T,VMR,SCALE)
-      ELSE
-       CALL XHYDROSTATP(AMFORM,IPLANET,LATITUDE,NPRO,NVMR,MOLWT,
-     1  IDGAS,ISOGAS,H,P,T,VMR,HTAN,PTAN,SCALE)
-      ENDIF
-
-
 C     ********* Check to see if anything should saturate *************
 
 C     Default is that nothing condenses, even if it should. Set flags
@@ -3716,7 +3826,7 @@ C		 Also calculate partial pressure of gas in question PP
              IF(PP.GT.SVP)THEN
                IF(JSWITCH.EQ.0)THEN
                  PRINT*,'Subprofretg: gas predicted to condense'
-                 PRINT*,'setting to SVP x VP'
+                 PRINT*,'setting to VMR to SVP x VP / PRESS'
                  PRINT*,IDGAS(IGAS),ISOGAS(IGAS)
                ENDIF 
                VMR(J,IGAS)=SVP/P(J)
@@ -3744,6 +3854,16 @@ c ** allow for presence of a cold trap if condensation occurs anywhere on the pr
 	     IF (JSWITCH.EQ.1) THEN
 	       IF (SVPFLAG(IGAS).EQ.1) THEN
 c		 * don't bother applying a cold trap, use simple condensation only *
+                 print*,IGAS,IDGAS(IGAS)
+C                *** Extra hack code here for Methane on Neptune
+                 IF(IDGAS(IGAS).EQ.6)THEN
+                  DO J=1,NPRO
+C                  methane and above tropopause
+                   IF(P(J).LT.0.1.AND.VMR(J,IGAS).GT.1.5E-3)THEN
+                    VMR(J,IGAS)=1.5E-3
+                   ENDIF
+                  ENDDO
+                 ENDIF
 	       ELSE IF (SVPFLAG(IGAS).EQ.2) THEN
 c		 * assume gas is sourced from interior and has no local minima 
 c		   ie the gas can only decrease with increasing altitude *
@@ -3775,6 +3895,23 @@ c			  have local minima and maxima at high altitude**
 
 233   ENDDO
 c  ** end of loop around gases **
+
+C     Now make sure the resulting VMRs add up to 1.0 for an
+C     AMFORM=1 profile
+      IF(AMFORM.EQ.1)THEN
+        CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
+      ENDIF
+
+
+C     ********  Modify profile with hydrostatic equation ********
+      IF(JHYDRO.EQ.0)THEN
+       CALL XHYDROSTATH(AMFORM,IPLANET,LATITUDE,NPRO,NVMR,MOLWT,
+     1  IDGAS,ISOGAS,H,P,T,VMR,SCALE)
+      ELSE
+       CALL XHYDROSTATP(AMFORM,IPLANET,LATITUDE,NPRO,NVMR,MOLWT,
+     1  IDGAS,ISOGAS,H,P,T,VMR,HTAN,PTAN,SCALE)
+      ENDIF
+
       
 C     ************* Write out modified profiles *********
 

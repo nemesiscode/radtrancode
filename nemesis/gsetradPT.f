@@ -243,7 +243,7 @@ C       *****Calculate cross sections from refindex files****
            read(15,*)iwave
            read(15,*)lambda0
            do i=1,np1
-            read(15,*),wave(i),nreal(i),nimag(i)
+            read(15,*)wave(i),nreal(i),nimag(i)
             srefind(i,1)=nreal(i)
             srefind(i,2)=nimag(i)
            enddo
@@ -387,7 +387,7 @@ C       *****Calculate cross sections from refindex files****
            read(15,*)iwave
            read(15,*)lambda0
            do i=1,np1
-            read(15,*),wave(i),nreal(i),nimag(i)
+            read(15,*)wave(i),nreal(i),nimag(i)
             srefind(i,1)=nreal(i)
             srefind(i,2)=nimag(i)
            enddo

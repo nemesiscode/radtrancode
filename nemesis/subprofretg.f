@@ -102,7 +102,7 @@ C     ***********************************************************************
       INTEGER I,J,K,N,AMFORM,IPLANET,NGAS,IGAS,NX,NXTEMP,IX,ISPACE
       REAL TEMP
       REAL A,B,C,D,SVP,PP,LATITUDE,LONGITUDE,LAT1,LON1
-      REAL V1(3),V0(3),XP,DLONG,FLONG
+      REAL V1(3),V0(3),XP,DLONG,FLONG,LONGITUDE1
       INTEGER ILONG
       REAL MOLWT,SCALE(MAXPRO),XMAP1,SCALEH
       REAL XMAP(MAXV,MAXGAS+2+MAXCON,MAXPRO),DTR
@@ -2609,12 +2609,15 @@ C        Need to interpolation in longitude for each vertical level
          print*,'Model 30 - latitude,longitude = ',LATITUDE,
      &           LONGITUDE
          DLONG=360.0/FLOAT(NLONG)
-         ILONG=INT(LONGITUDE/DLONG)
+         LONGITUDE1=LONGITUDE
+         IF(LONGITUDE.LT.0.0)LONGITUDE1=LONGITUDE+360.
+         IF(LONGITUDE.GE.360.0)LONGITUDE1=LONGITUDE-360.
+         ILONG=1+INT(LONGITUDE1/DLONG)
          IF(ILONG.EQ.NLONG)THEN
           ILONG=ILONG-1
          ENDIF
-         FLONG = (LONGITUDE - (ILONG-1)*DLONG)/DLONG
-C         print*,ILONG,FLONG
+         FLONG = (LONGITUDE1 - (ILONG-1)*DLONG)/DLONG
+         print*,LONGITUDE1,ILONG,FLONG
 
          IF(VARIDENT(IVAR,1).EQ.0)THEN
             DX=2.0
@@ -2626,88 +2629,43 @@ C        Read in pressure grid from varparam
 C        print*,'Model 30 - pressure'
          DO J=1,NLEVEL
           LP1(J)=ALOG(VARPARAM(IVAR,J+2))
-          print*,J,LP1(J),EXP(LP1(J))
+C          print*,J,LP1(J),EXP(LP1(J))
           DO K=1,NP
            GRADL(J,K)=0.
           ENDDO
          ENDDO
 
-C         open(13,file='test.dat',status='unknown')
          DO J=1,NLEVEL
           SUM=0.
           DO I=1,NLONG
            J1=NXTEMP+(I-1)*NLEVEL+J
            YLONG(I)=XN(J1)
            SUM=SUM+XN(J1)/FLOAT(NLONG)
-C           print*,'Model 30 I, YLONG(I)',I,YLONG(I)
           ENDDO
-C          write(13,*)LONGITUDE
-C          write(13,*)(ylong(i),i=1,nlong)
-C          print*,'Model 30',NTHETA,(THETA(I),I=1,NTHETA)
-C          CALL SPLANG(NLONG,YLONG,NTHETA,THETA,YYTH,YYTH2)
-C          CALL SPLINT(THETA,YYTH,YYTH2,NTHETA,LONGITUDE,YTH)
-C          XP1(J) = SUM + (YTH-SUM)*COS(LATITUDE*DTR)
-
+C          print*,'ylong',(YLONG(I),I=1,NLONG)
+C          print*,SUM
           YTH = (1.0-FLONG)*YLONG(ILONG)+FLONG*YLONG(ILONG+1)
           XP1(J) = SUM + (YTH-SUM)*COS(LATITUDE*DTR)
 
-C          print*,'SUM,YTH,LATITUDE,COS(LATITUDE*DTR),XP',
-C     1 SUM,YTH,LATITUDE,COS(LATITUDE*DTR),XP1(J)
-
+C          print*,ILONG,FLONG,YLONG(ILONG),YLONG(ILONG+1),YTH          
+C          print*,LATITUDE,COS(LATITUDE*DTR),J,XP1(J)
           K=(ILONG-1)*NLEVEL+J
-          GRADL(J,K)=1.0-FLONG
+          GRADL(J,K)=(1.0-FLONG)*COS(LATITUDE*DTR)
           K=ILONG*NLEVEL+J
-          GRADL(J,K)=FLONG
-
-C          print*,'long_int',j,exp(lp1(j)),xp1(j)
-C          print*,'Model 30 : ',J,LONGITUDE,XP1(J)
-C          DO I=1,NLONG
-C          print*,'Sum,latitude',SUM,LATITUDE
-C          DO I=ILONG,ILONG+1
-
-C           YLONG(I)=YLONG(I)+DX
-
-C           CALL SPLANG(NLONG,YLONG,NTHETA,THETA,YYTH,YYTH2)
-C           CALL SPLINT(THETA,YYTH,YYTH2,NTHETA,LONGITUDE,YTH)
-
-C           YTH = (1.0-FLONG)*YLONG(ILONG)+FLONG*YLONG(ILONG+1)         
-C           XX = SUM + (YTH-SUM)*COS(LATITUDE*DTR)
-
-C           K = (I-1)*NLEVEL+J
-C          GRADL is rate of change of local level parameter with respect to 
-C            each element of NLEVEL*NLONG state vector
-C           GRADL(J,K)=(XX-XP1(J))/DX
-C           print*,'Model 30 : J,K,DX,GRADL(J,K)',J,K,DX,GRADL(J,K)
-C           YLONG(I)=YLONG(I)-DX
-C           write(13,*)XX,J,K,GRADL(J,K)
-           
-C          ENDDO          
+          GRADL(J,K)=FLONG*COS(LATITUDE*DTR)
 
          ENDDO
-C         close(13)
 
-C         OPEN(12,file='gradl.txt',status='unknown')
-C         WRITE(12,*)NLEVEL,NLONG,NP
-C         WRITE(12,*)(LP1(J),J=1,NLEVEL)
-C         DO J=1,NLEVEL
-C          WRITE(12,*)(GRADL(J,K),K=1,NP)
-C         ENDDO
-C         CLOSE(12)
+C        Now need to interpolate local NLEVEL profile to NPRO profile
 
-C        Now need to do vertical interpolation to get actual profile
-C        Interpolate local NLEVEL profile to NPRO profile
-C         CALL CSPLINE(LP1,XP1,NLEVEL,1e30,1e30,XP2)
          DO JLEV=1,NLEVEL
           print*,'Sanity XP1',JLEV,LP1(JLEV),EXP(LP1(JLEV)),
      1     XP1(JLEV)
          ENDDO
 
          DO J=1,NPRO
+
           L1 = ALOG(P(J))
-C          CALL CSPLINT(LP1,XP1,XP2,NLEVEL,L1,XX)
-
-C          CALL VERINT(LP1,XP1,NLEVEL,XX,L1)
-
 
           F=-1.
           DO JLEV=1,NLEVEL-1
@@ -2719,11 +2677,20 @@ C          CALL VERINT(LP1,XP1,NLEVEL,XX,L1)
           ENDDO
 111       CONTINUE
           IF(F.LT.0)THEN
-            ILEV=NLEVEL-1
-            F = (L1-LP1(ILEV))/(LP1(ILEV+1)-LP1(ILEV))
+            IF(L1.GT.LP1(1))THEN
+             ILEV=1
+             F = (L1-LP1(ILEV))/(LP1(ILEV+1)-LP1(ILEV))
+            ELSE
+             ILEV=NLEVEL-1
+             F = (L1-LP1(ILEV))/(LP1(ILEV+1)-LP1(ILEV))
+            ENDIF
+            print*,'Model 30 warning - pressure out of range'
+            print*,'Having to extrapolate'
+            print*,L1,LP1(1),LP1(NLEVEL)
+            print*,ILEV,LP1(ILEV),LP1(ILEV+1),F
           ENDIF
+
           XX = (1.0-F)*XP1(ILEV)+F*XP1(ILEV+1)
-C          print*,J,L1,ILEV,F,XX
 
           IF(VARIDENT(IVAR,1).EQ.0)THEN
            X1(J)=XX
@@ -2741,64 +2708,34 @@ C          print*,J,L1,ILEV,F,XX
            ENDIF
           ENDDO
 
-          print*,'Prof int',J,P(J),X1(J)
+          print*,'Prof_int',J,P(J),X1(J)
 
          ENDDO
-
-C        Now do functional derivatives - numerical
-C         DO J=1,NLEVEL
-C          XPS(J)=XP1(J)
-C         ENDDO
-C         DO JLEV=1,NLEVEL
-C          XPS(JLEV)=XP1(JLEV)+DX
-C          CALL CSPLINE(LP1,XPS,NLEVEL,1e30,1e30,XP2S)
-C          DO J=1,NPRO
-C           L1 = ALOG(P(J))
-C           CALL CSPLINT(LP1,XPS,XP2S,NLEVEL,L1,XX)
-
-C           CALL VERINT(LP1,XPS,NLEVEL,XX,L1)
-C           IF(VARIDENT(IVAR,1).NE.0)THEN
-C            XX=EXP(XX)
-C           ENDIF
-C           IF(XX.LT.1e-36)XX=1e-36
-
-C          Calculate rate of change of profile vector element
-C          with respect to each level parameter     
-C           GRAD = (XX-X1(J))/DX
-
-C           DO K=1,NP
-C             XMAP(NXTEMP+K,IPAR,J)=GRAD*GRADL(JLEV,K)
-C             GRADTMP(J,K)=GRAD*GRADL(JLEV,K)
-
-C            GRAD1=GRAD*GRADL(J,K)
-C            IF(VARIDENT(IVAR,1).EQ.0)THEN
-C             XMAP(NXTEMP+K,IPAR,J)=GRAD1
-C            ELSE
-C             XMAP(NXTEMP+K,IPAR,J)=GRAD1*X1(J)
-C            ENDIF
-C           ENDDO
-C          ENDDO
-
-C          XPS(JLEV)=XP1(JLEV)
-
-C         ENDDO
-
-C         OPEN(12,FILE='gradtmp.txt',status='unknown')
-C         WRITE(12,*)NPRO,NLEVEL,NLONG,NP
-C         WRITE(12,*)(ALOG(P(J)),J=1,NPRO)
-C         DO J=1,NPRO
-C          WRITE(12,*)(GRADTMP(J,K),K=1,NP)
-C         ENDDO
-C         CLOSE(12)
-C         stop
 
         ELSEIF(VARIDENT(IVAR,3).EQ.31)THEN
 C        Model 31. Inhomogenous disc scaling factor
 C        ***************************************************************
 
-
-C        Need to set up cubic spline interpolation in longitude
+C        Need to interpolation in longitude
          NLONG = INT(VARPARAM(IVAR,1))
+
+
+         print*,'Model 31 - nlong,np = ',nlong,np
+         print*,'Model 31 - latitude,longitude = ',LATITUDE,
+     &           LONGITUDE
+
+         LONGITUDE1=LONGITUDE
+         IF(LONGITUDE.LT.0.0)LONGITUDE1=LONGITUDE+360.
+         IF(LONGITUDE.GE.360.0)LONGITUDE1=LONGITUDE-360.
+
+         DLONG=360.0/FLOAT(NLONG)
+         ILONG=INT(LONGITUDE1/DLONG)
+         IF(ILONG.EQ.NLONG)THEN
+          ILONG=ILONG-1
+         ENDIF
+         FLONG = (LONGITUDE1 - (ILONG-1)*DLONG)/DLONG
+C         print*,ILONG,FLONG
+
          IF(VARIDENT(IVAR,1).EQ.0)THEN
             DX=2.0
          ELSE
@@ -2815,26 +2752,16 @@ C        Need to set up cubic spline interpolation in longitude
           YLONG(I)=XN(J1)
           SUM=SUM+XN(J1)/FLOAT(NLONG)
          ENDDO
-         CALL SPLANG(NLONG,YLONG,NTHETA,THETA,YYTH,YYTH2)
-         CALL SPLINT(THETA,YYTH,YYTH2,NTHETA,LONGITUDE,YTH)
+
+         YTH = (1.0-FLONG)*YLONG(ILONG)+FLONG*YLONG(ILONG+1)
          XS = SUM + (YTH-SUM)*COS(LATITUDE*DTR)
 
-         DO I=1,NLONG
+         GRADL(1,ILONG)=(1.0-FLONG)*COS(LATITUDE*DTR)
+         GRADL(1,ILONG+1)=FLONG*COS(LATITUDE*DTR)
 
-          YLONG(I)=YLONG(I)+DX
-
-          CALL SPLANG(NLONG,YLONG,NTHETA,THETA,YYTH,YYTH2)
-          CALL SPLINT(THETA,YYTH,YYTH2,NTHETA,LONGITUDE,YTH)
-
-          XX = SUM + (YTH-SUM)*COS(LATITUDE*DTR)
-          GRADL(1,I)=(XX-XS)/DX
-
-          YLONG(I)=YLONG(I)-DX
-
-         ENDDO
          DO J=1,NPRO
           X1(J) = XREF(J)*EXP(XS)
-          DO I=1,NLONG
+          DO I=ILONG,ILONG+1
            XMAP(NXTEMP+I,IPAR,J)=X1(J)*GRADL(1,I)
           ENDDO
          ENDDO

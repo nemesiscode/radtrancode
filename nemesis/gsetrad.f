@@ -465,7 +465,7 @@ C     See if Sromovsky cloud layer model is specified.
       do ivar=1,nvar
        if(varident(ivar,3).eq.9.or.varident(ivar,3).eq.10)icheck=1
        if(varident(ivar,3).eq.14.or.varident(ivar,3).eq.15)icheck=1
-       if(varident(ivar,3).eq.8)icheck=1
+       if(varident(ivar,3).eq.8.or.varident(ivar,3).eq.32)icheck=1
       enddo
 
 
@@ -501,11 +501,11 @@ C     Compute the drv file to get the aerosol optical depths
          if(varident(ivar,1).le.100)then
 
           if(varident(ivar,3).eq.9.or.varident(ivar,3).eq.21.
-     1 or.varident(ivar,3).eq.8)then
+     1 or.varident(ivar,3).eq.8.or.varident(ivar,3).eq.32)then
               icont=abs(varident(ivar,1))
               od1=exp(xn(nx1+1))
               xscal(icont)=xod(icont)/od1
-              print*,icont,xod(icont),od1
+              print*,'scaledust',icont,xod(icont),od1
               do j=1,NN
                dust(icont,j)=dust(icont,j)/xscal(icont)
               enddo

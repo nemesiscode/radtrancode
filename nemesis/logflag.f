@@ -32,6 +32,7 @@ C       Variable is not temperature  - may need to take exponent
         if(imod.eq.18.and.ip.eq.1)iflag=1 ! extended profile         
         if(imod.eq.8.and.ip.eq.1)iflag=1 ! variable knee profile
         if(imod.eq.9.and.ip.eq.1)iflag=1 ! variable knee profile
+        if(imod.eq.32.and.ip.eq.1)iflag=1 ! variable knee profile
         if(imod.eq.21.and.ip.eq.1)iflag=1 ! variable knee profile
         if(imod.eq.24.and.ip.eq.1)iflag=1 ! deep profile
         if(imod.eq.27.and.ip.eq.1)iflag=1 ! step profile (deep value)
@@ -55,6 +56,8 @@ C       Variable is not temperature  - may need to take exponent
       if(imod.eq.18.and.ip.eq.2)iflag=1 ! log fsh - extended
       if(imod.eq.8.and.ip.eq.2)iflag=1 ! log fsh - var. knee
       if(imod.eq.8.and.ip.eq.3)iflag=1 ! variable knee profile
+      if(imod.eq.32.and.ip.eq.2)iflag=1 ! variable knee profile
+      if(imod.eq.32.and.ip.eq.3)iflag=1 ! variable knee profile
       if(imod.eq.9.and.ip.eq.2)iflag=1 ! log fsh - var. knee
       if(imod.eq.19.and.ip.eq.2)iflag=1 ! log fsh - var. knee
       if(imod.eq.9.and.ip.eq.4)iflag=1 ! log cwid - var knee

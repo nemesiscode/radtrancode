@@ -108,7 +108,7 @@ C     a priori covariance matrix
       real tau0,ntemp,teff,alpha,T0,xf,exf
       real etau0,entemp,eteff,ealpha,eT0
       real csx,cserr,nimagshell,errshell,flon
-      real flon1,dlon
+      real flon1,dlon,dlong
       logical filexist
       integer i1,j1,nlocation,ilocation
       integer nlen,il,ip,jl,jp
@@ -1583,9 +1583,11 @@ C             nx=nx+nlevel
            elseif(varident(ivar,3).eq.30)then
 C          ***** inhomogeneous disc model 1  ********
              read(27,1)ipfile
+             print*,'Model 30'
              print*,'reading variable ',ivar,' from ',ipfile
              open(28,file=ipfile,status='old')
              read(28,*)nlong,nlevel,clen1,clen2
+             print*,nlong,nlevel,clen1,clen2
              if(nlevel+2.gt.mparam)then
               print*,'nlevel+2 > mparam',
      1         nlevel+2,mparam
@@ -1600,9 +1602,11 @@ C          ***** inhomogeneous disc model 1  ********
               read(28,*)pref(i),(dhsphere(i,j),j=1,nlong),
      1         eref(1,i)
               varparam(ivar,ipar)=pref(i)
+C              print*,i,pref(i),ivar,varident(ivar,1)
               ipar=ipar+1
               do 304 j=1,nlong
                ix=nx + (j-1)*nlevel+i
+C               print*,ix,j,i
 C              For vmrs and cloud density always hold the log. 
 C              Avoids instabilities arising from greatly different profiles 
 C              such as T and vmrs
@@ -1612,7 +1616,7 @@ C               *** temperature, leave alone ****
                 err = eref(1,i)
                else
 C               **** vmr, cloud, para-H2 , fcloud, take logs ***
-                if(ref(1,i).gt.0.0) then
+                if(dhsphere(i,j).gt.0.0) then
                   x0(ix) = alog(dhsphere(i,j)) 
                   lx(ix)=1
                 else 
@@ -1622,95 +1626,52 @@ C               **** vmr, cloud, para-H2 , fcloud, take logs ***
                 endif
                 err = eref(1,i)/dhsphere(i,j)
                endif
+C               print*,'Model 30A: ix,x0(ix)',ix,x0(ix)
                sx(ix,ix)=err**2
 304           continue
 303          continue
 
              nlen = nlong*nlevel
+             dlong = 360.0/float(nlong)
              do 405 i=1,nlen
               ip = i-nlevel*int((float(i)-0.5)/float(nlevel))
               il = 1 + int((float(i)-0.5)/float(nlevel))
               ix=nx+i
+C              print*,'ix,il,ip',ix,il,ip
               if(pref(ip).lt.0.0) then
                print*,'Error in readapriori.f. A priori file '
                print*,'must be on pressure grid '
                print*,'Model 30'
                stop
               endif            
-
+C              print*,'Press = ',pref(ip)
               do 406 j=i+1,nlen
                jp = j-nlevel*int((float(j)-0.5)/float(nlevel))
                jl = 1 + int((float(j)-0.5)/float(nlevel))
                jx=nx+j
+C               print*,'jx,jl,jp',jx,jl,jp
+C               print*,'P(J) = ',pref(jp)
+
                delp = log(pref(jp))-log(pref(ip))
                arg = abs(delp/clen1)
 
-               flon = varparam(ivar,2+il)
-               flon1 = varparam(ivar,2+jl)
+               flon = (il-1)*dlong
+               flon1 = (jl-1)*dlong
                dlon = flon1-flon
                if(dlon.gt.180.) dlon=dlon-360.
                if(dlon.lt.-180) dlon=dlon+360.
                arg1 = abs(dlon/clen2)
 
+C               print*,ix,jx,delp,clen1,arg,flon,flon1,dlon,clen2,arg1
                xfac = exp(-(arg+arg1))
+C               print*,xfac
                if(xfac.ge.SXMINFAC)then  
                  sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
                  sx(jx,ix) = sx(ix,jx)
                endif
 
-C               print*,i,j,ip,jp,il,jl,delp,dlon
-
 406           continue
 405          continue               
-
-C             stop
-
-C             do 305 k=1,nlong
-
-C              do 306 i=1,nlevel
-C               ix = nx + (k-1)*nlevel+i 
-C               do 307 j = i+1,nlevel
-C                jx = nx + (k-1)*nlevel+j
-C                if(pref(i).lt.0.0) then
-C                  print*,'Error in readapriori.f. A priori file '
-C                  print*,'must be on pressure grid '
-C                  stop
-C                endif            
-
-C                delp = log(pref(j))-log(pref(i))                
-C                arg = abs(delp/clen1)
-C                xfac = exp(-arg)
-
-C                if(xfac.ge.SXMINFAC)then  
-C                 sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
-C                 sx(jx,ix) = sx(ix,jx)
-C                endif
-C307            continue
-C306           continue
-C305          continue
-
-C             do 310 k=1,nlevel
-C              do 308 i=1,nlong
-C               ix = nx + (i-1)*nlevel + k
-C               do 309 j=i+1,nlong
-C                jx = nx + (j-1)*nlevel + k    
-C                flon = varparam(ivar,2+i)
-C                flon1 = varparam(ivar,2+j)
-C                dlon = flon1-flon
-C                if(dlon.gt.180.) dlon=dlon-360.
-C                if(dlon.lt.-180) dlon=dlon+360.
-C
-C                arg = abs(dlon/clen2)
-C                xfac = exp(-arg)
-C                if(xfac.ge.SXMINFAC)then  
-C                 sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
-C                 sx(jx,ix) = sx(ix,jx)
-C                endif
-                        
-C309            continue
-C308           continue
-C310          continue
-
 
              nx=nx+nlen
 
@@ -1760,6 +1721,53 @@ C          ***** inhomogeneous disc model 2  ********
 
 
              nx=nx+nlong
+
+
+           elseif (varident(ivar,3).eq.32)then
+C            ******** profile held as value at a VARIABLE knee pressure
+C            ******** plus a fractional scale height. Below the knee
+C            ******** pressure the profile is set to drop off exponentially
+C            Read in xdeep,fsh,pknee
+             read(27,*)pknee,eknee
+             read(27,*)xdeep,edeep
+             read(27,*)xfsh,efsh
+             ix = nx+1
+             if(varident(ivar,1).eq.0)then
+C             *** temperature, leave alone ********
+              x0(ix)=xdeep
+              err = edeep
+             else
+C             *** vmr, fcloud, para-H2 or cloud, take logs *********
+              if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+              else
+                print*,'Error in readapriori. xdeep must be > 0.0'
+                stop
+              endif
+              err = edeep/xdeep
+             endif
+             sx(ix,ix)=err**2
+             ix = nx+2
+             if(xfsh.gt.0.0)then
+               x0(ix) = alog(xfsh)
+               lx(ix)=1
+             else
+               print*,'Error in readapriori - xfsh must be > 0'
+               stop
+             endif
+             sx(ix,ix) = (efsh/xfsh)**2
+             ix = nx+3
+             if(pknee.gt.0)then
+                x0(ix)=alog(pknee)
+                lx(ix)=1
+             else
+                print*,'Error in readapriori - pknee must be > 0'
+                stop
+             endif
+             sx(ix,ix) = (eknee/pknee)**2
+
+             nx = nx+3
 
            else         
             print*,'vartype profile parametrisation not recognised'

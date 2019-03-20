@@ -203,7 +203,8 @@ C      Read in reduced wavelength grid
         j2=j2+nwave(igeom)
        enddo
       endif
-      iterred=1!iteration at which to commence retrieval
+
+      iterred=1		!iteration at which to commence retrieval
 
       if(ilbl.eq.0.or.ilbl.eq.2)then
 C      Find all the calculation and convolution wavelengths and rank
@@ -534,6 +535,8 @@ C     vectors xn, yn
       do i=1,ny
        yn1(i)=yn(i)
       enddo
+
+      print*,'iterred,kiter',iterred,kiter
 
       do 401 iter = iterred, kiter
 

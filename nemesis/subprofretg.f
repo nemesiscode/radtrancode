@@ -103,7 +103,7 @@ C     ***********************************************************************
       REAL TEMP
       REAL A,B,C,D,SVP,PP,LATITUDE,LONGITUDE,LAT1,LON1
       REAL V1(3),V0(3),XP,DLONG,FLONG,LONGITUDE1
-      INTEGER ILONG
+      INTEGER ILONG,JLONG
       REAL MOLWT,SCALE(MAXPRO),XMAP1,SCALEH
       REAL XMAP(MAXV,MAXGAS+2+MAXCON,MAXPRO),DTR
       PARAMETER (DTR=PI/180.)
@@ -2613,11 +2613,19 @@ C        Need to interpolation in longitude for each vertical level
          IF(LONGITUDE.LT.0.0)LONGITUDE1=LONGITUDE+360.
          IF(LONGITUDE.GE.360.0)LONGITUDE1=LONGITUDE-360.
          ILONG=1+INT(LONGITUDE1/DLONG)
-         IF(ILONG.EQ.NLONG)THEN
-          ILONG=ILONG-1
-         ENDIF
          FLONG = (LONGITUDE1 - (ILONG-1)*DLONG)/DLONG
-         print*,LONGITUDE1,ILONG,FLONG
+         if(flong.gt.1.0)then 
+          print*,'Error: flong > 1.0'
+          stop
+         endif
+         IF(ILONG.LT.NLONG)THEN
+          JLONG=ILONG+1
+         ELSE
+          JLONG=1
+         ENDIF
+
+         print*,'LONGITUDE1,ILONG,JLONG,FLONG',
+     &    LONGITUDE1,ILONG,JLONG,FLONG
 
          IF(VARIDENT(IVAR,1).EQ.0)THEN
             DX=2.0
@@ -2644,24 +2652,24 @@ C          print*,J,LP1(J),EXP(LP1(J))
           ENDDO
 C          print*,'ylong',(YLONG(I),I=1,NLONG)
 C          print*,SUM
-          YTH = (1.0-FLONG)*YLONG(ILONG)+FLONG*YLONG(ILONG+1)
-          XP1(J) = SUM + (YTH-SUM)*COS(LATITUDE*DTR)
+          YTH = (1.0-FLONG)*YLONG(ILONG)+FLONG*YLONG(JLONG)
+          XP1(J) = SUM + (YTH-SUM)*(COS(LATITUDE*DTR))**0.25
 
-C          print*,ILONG,FLONG,YLONG(ILONG),YLONG(ILONG+1),YTH          
+C          print*,ILONG,FLONG,YLONG(ILONG),YLONG(JLONG),YTH          
 C          print*,LATITUDE,COS(LATITUDE*DTR),J,XP1(J)
           K=(ILONG-1)*NLEVEL+J
-          GRADL(J,K)=(1.0-FLONG)*COS(LATITUDE*DTR)
-          K=ILONG*NLEVEL+J
-          GRADL(J,K)=FLONG*COS(LATITUDE*DTR)
+          GRADL(J,K)=(1.0-FLONG)*(COS(LATITUDE*DTR))**0.25
+          K=(JLONG-1)*NLEVEL+J
+          GRADL(J,K)=FLONG*(COS(LATITUDE*DTR))**0.25
 
          ENDDO
 
 C        Now need to interpolate local NLEVEL profile to NPRO profile
 
-         DO JLEV=1,NLEVEL
-          print*,'Sanity XP1',JLEV,LP1(JLEV),EXP(LP1(JLEV)),
-     1     XP1(JLEV)
-         ENDDO
+C         DO JLEV=1,NLEVEL
+C          print*,'Sanity XP1',JLEV,LP1(JLEV),EXP(LP1(JLEV)),
+C     1     XP1(JLEV)
+C         ENDDO
 
          DO J=1,NPRO
 
@@ -2708,9 +2716,25 @@ C        Now need to interpolate local NLEVEL profile to NPRO profile
            ENDIF
           ENDDO
 
-          print*,'Prof_int',J,P(J),X1(J)
+C          print*,'Prof_int',J,P(J),X1(J)
 
          ENDDO
+
+C         open(12,file='grad1.txt',status='unknown')
+C          write(12,*)nlong,nlevel,npro
+C          write(12,*)latitude,longitude,ilong,jlong,
+C     1     flong,(cos(latitude*dtr))**0.25
+
+C          do i = 1,nlevel
+C            write(12,*)lp1(i),xp1(i)
+C          enddo
+C          do i = 1,npro
+C            write(12,*)alog(p(i)),x1(i)
+C          enddo
+C          do i=1,npro
+C            write(12,*)(gradtmp(i,k),k=1,np)
+C          enddo
+C         close(12)
 
         ELSEIF(VARIDENT(IVAR,3).EQ.31)THEN
 C        Model 31. Inhomogenous disc scaling factor
@@ -2727,13 +2751,22 @@ C        Need to interpolation in longitude
          LONGITUDE1=LONGITUDE
          IF(LONGITUDE.LT.0.0)LONGITUDE1=LONGITUDE+360.
          IF(LONGITUDE.GE.360.0)LONGITUDE1=LONGITUDE-360.
-
          DLONG=360.0/FLOAT(NLONG)
-         ILONG=INT(LONGITUDE1/DLONG)
-         IF(ILONG.EQ.NLONG)THEN
-          ILONG=ILONG-1
-         ENDIF
+         ILONG=1+INT(LONGITUDE1/DLONG)
          FLONG = (LONGITUDE1 - (ILONG-1)*DLONG)/DLONG
+         if(flong.gt.1.0)then 
+          print*,'Error: flong > 1.0'
+          stop
+         endif
+         IF(ILONG.LT.NLONG)THEN
+          JLONG=ILONG+1
+         ELSE
+          JLONG=1
+         ENDIF
+
+
+
+
 C         print*,ILONG,FLONG
 
          IF(VARIDENT(IVAR,1).EQ.0)THEN
@@ -2754,10 +2787,10 @@ C         print*,ILONG,FLONG
          ENDDO
 
          YTH = (1.0-FLONG)*YLONG(ILONG)+FLONG*YLONG(ILONG+1)
-         XS = SUM + (YTH-SUM)*COS(LATITUDE*DTR)
+         XS = SUM + (YTH-SUM)*(COS(LATITUDE*DTR))**0.25
 
-         GRADL(1,ILONG)=(1.0-FLONG)*COS(LATITUDE*DTR)
-         GRADL(1,ILONG+1)=FLONG*COS(LATITUDE*DTR)
+         GRADL(1,ILONG)=(1.0-FLONG)*(COS(LATITUDE*DTR))**0.25
+         GRADL(1,ILONG+1)=FLONG*(COS(LATITUDE*DTR))**0.25
 
          DO J=1,NPRO
           X1(J) = XREF(J)*EXP(XS)

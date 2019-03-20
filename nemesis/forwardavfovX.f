@@ -100,6 +100,7 @@ C     **************************************************************
       real v1(3),v0(3),xx,xp,xlat1,xlon1
       integer ix,ivar,npvar,i1
       parameter (pi=3.1415927)
+      character*1 ans
 
       integer nvar,varident(mvar,3),npro,nvmr
       real varparam(mvar,mparam)
@@ -123,6 +124,9 @@ c  ** variables for solar reflected cloud **
       integer solnpt,iform,iread
 
       common /solardat/iread, iform, stelrad, solwave, solrad,  solnpt
+
+
+1     format(a)
 
 C     jradf and jloggf are passed via the planrad common block
       jradf=jrad
@@ -232,7 +236,7 @@ C     mass to units of 1e24 kg.
          xlon = flon(igeom,iav)   
          xgeom = wgeom(igeom,iav)
 
-         print*,'t1',jfrac,xgeom
+C         print*,'t1',jfrac,xgeom
          if(jfrac.gt.0)then
 C          print*,'test1'
           if(nav(igeom).ne.2)then
@@ -315,6 +319,7 @@ C         Calculate gradients
              enddo
              ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + iconv
              kk(ioff+j,i)=kk(ioff+j,i)+xgeom*gradients(ioff2)
+C             print*,i,j,ioff,ioff2,xgeom,gradients(ioff2),kk(ioff+j,i)
             enddo
            endif           
 
@@ -360,6 +365,17 @@ C          Model 102 - weighted average of two profiles.
            endif
 
           enddo
+
+
+C          open(12,file='grad2.txt',status='unknown')
+C          write(12,*)sol_ang,emiss_ang,xgeom,nconv1,nx
+C          do j=1,nconv1
+C           write(12,*)(kk(ioff+j,i),i=1,nx)
+C          enddo
+C          close(12)
+C          read(5,1)ans
+
+
 
 C          print*,'B'
   

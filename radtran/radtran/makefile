@@ -159,6 +159,7 @@ $(LIBRARY)(%.o): %.f $(INCLUDES)
 bin :   \
 	Aground \
 	Ave_table \
+	Channel_ave_table \
 	Calc_fnktablec \
 	Calc_lbltable \
 	Aband_ktable \
@@ -198,6 +199,11 @@ Ave_table : ave_table.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Ave_table ave_table.f $(LIBRARY) \
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES)  \
 	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a
+
+Channel_ave_table : channel_ave_table.f $(LIBRARY) $(LIB)/spec_data.a
+	$(FC) $(FCFLAGS) -o $(BIN)/Channel_ave_table channel_ave_table.f $(LIBRARY) \
+	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(LIB)/cirsrad.a \
+	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a $(FRECIPES)
 
 Calc_fnktablec : calc_fnktablec.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Calc_fnktablec calc_fnktablec.f $(LIBRARY) \

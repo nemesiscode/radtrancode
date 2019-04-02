@@ -89,7 +89,7 @@ C     **************************************************************
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       real vconv(mgeom,mconv),vconv1(mconv)
       real layht,tsurf,esurf,gradtsurf(maxout3)
-      real xn(mx),yn(my),kk(my,mx),yn1(my)
+      real xn(mx),yn(my),kk(my,mx),yn1(my),ytmp(my)
       integer ny,iconv,iextra
       integer nphi,ipath,jx
       integer nmu,isol,lowbc,nf
@@ -98,13 +98,13 @@ C     **************************************************************
       character*100 runname,solfile,solname
       real xmap(maxv,maxgas+2+maxcon,maxpro),xfac,pi,xdist
       real v1(3),v0(3),xx,xp,xlat1,xlon1
-      integer ix,ivar,npvar,i1
+      integer ix,ivar,npvar,i1,ifov
       parameter (pi=3.1415927)
       character*1 ans
 
       integer nvar,varident(mvar,3),npro,nvmr
       real varparam(mvar,mparam)
-      logical gasgiant,fexist,gasgiant1
+      logical gasgiant,fexist,gasgiant1,ipfov
       real vem(maxsec),emissivity(maxsec)
       common /imiescat/imie1
 
@@ -226,6 +226,13 @@ C     mass to units of 1e24 kg.
        if(nwave1.gt.1)call sort(nwave1,vwave1)
        if(nconv1.gt.1)call sort(nconv1,vconv1)
 
+       ipfov=.false.
+       if(nav(igeom).gt.100)then
+        ipfov=.true.
+        ifov=76
+        open(ifov,file='fov.txt',status='unknown')
+        write(ifov,*)nav(igeom),nconv1
+       endif
 
        do 110 iav = 1,nav(igeom)
          sol_ang = angles(igeom,iav,1)
@@ -304,8 +311,16 @@ C         Not an SCR calculation. Assume 1st path is the thermal emission
            endif
  	   ioff1=nconv1*(ipath-1)+iconv
            yn(ioff+j)=yn(ioff+j)+xgeom*calcout(ioff1)
+           if(ipfov)then
+             ytmp(j)=calcout(ioff1)
+           endif
           enddo
     
+          if(ipfov)then
+           write(ifov,*)iav,xlat,xlon,xgeom,
+     1       (ytmp(j),j=1,nconv1)
+          endif
+
 C          print*,'A'
 C         Calculate gradients
           do i=1,nx
@@ -506,6 +521,11 @@ C          Now the gradients
 
 
 110    continue
+
+       if(ipfov)then
+        close(ifov)
+        stop
+       endif
 
 C       print*,'C'
        if(jtan.gt.0.or.jpre.gt.0.or.jlogg.gt.0)then

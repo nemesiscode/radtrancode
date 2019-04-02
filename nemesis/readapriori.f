@@ -108,7 +108,7 @@ C     a priori covariance matrix
       real tau0,ntemp,teff,alpha,T0,xf,exf
       real etau0,entemp,eteff,ealpha,eT0
       real csx,cserr,nimagshell,errshell,flon
-      real flon1,dlon,dlong
+      real flon1,dlon,dlong,xpc
       logical filexist
       integer i1,j1,nlocation,ilocation
       integer nlen,il,ip,jl,jp
@@ -1630,6 +1630,11 @@ C               print*,'Model 30A: ix,x0(ix)',ix,x0(ix)
                sx(ix,ix)=err**2
 304           continue
 303          continue
+             read(28,*)xpc
+             close(28)
+C             print*,ivar,ipar,nlevel,xpc
+             varparam(ivar,ipar)=xpc
+C             print*,'A',varparam(ivar,3+nlevel)
 
              nlen = nlong*nlevel
              dlong = 360.0/float(nlong)
@@ -1681,10 +1686,12 @@ C          ***** inhomogeneous disc model 2  ********
              read(27,1)ipfile
              print*,'reading variable ',ivar,' from ',ipfile
              open(28,file=ipfile,status='old')
-             read(28,*)nlong,clen2
-             varparam(ivar,1)=nlong
-
-             read(27,*)(dhsphere(1,j),j=1,nlong),err
+              read(28,*)nlong,clen2
+              varparam(ivar,1)=nlong
+              read(28,*)(dhsphere(1,j),j=1,nlong),err
+              read(28,*)xpc
+              varparam(ivar,2)=xpc
+             close(28)
              do 401 j=1,nlong
               ix=nx+j
               xfac=dhsphere(1,j)
@@ -1698,13 +1705,14 @@ C          ***** inhomogeneous disc model 2  ********
               err = err/xfac
               sx(ix,ix) = err**2
 401          continue 
-
+ 
+             dlong=360.0/float(nlong)
              do 408 i=1,nlong
                ix = nx + i
                do 409 j=i+1,nlong
                 jx = nx + j    
-                flon = varparam(ivar,1+i)
-                flon1 = varparam(ivar,1+j)
+                flon = (i-1)*dlong
+                flon1 = (j-1)*dlong
                 dlon = flon1-flon
                 if(dlon.gt.180.) dlon=dlon-360.
                 if(dlon.lt.-180) dlon=dlon+360.
@@ -1717,6 +1725,7 @@ C          ***** inhomogeneous disc model 2  ********
                 endif
                         
 409            continue
+C               print*,ix,sx(ix,ix:nx+nlong)
 408           continue
 
 
@@ -2818,6 +2827,7 @@ C     the mass using the a priori log(g) AND radius
        endif
 
        ioffx=0
+
        do 21 ivarx=1,nvarx
         npx=1
         if(varidentx(ivarx,1).le.100)then
@@ -2827,6 +2837,7 @@ C     the mass using the a priori log(g) AND radius
         if(varidentx(ivarx,1).eq.887)npx=int(varparamx(ivarx,1))
         if(varidentx(ivarx,1).eq.444)npx=2+int(varparamx(ivarx,1))
         if(varidentx(ivarx,1).eq.445)npx=3+int(varparamx(ivarx,1))
+        print*,'ivarx, npx = ',ivarx,npx
      
         ioff=0
         do 22 ivar=1,nvar
@@ -2838,6 +2849,7 @@ C     the mass using the a priori log(g) AND radius
          if(varident(ivar,1).eq.887)np=int(varparam(ivar,1))
          if(varident(ivar,1).eq.444)np=2+int(varparam(ivar,1))
          if(varident(ivar,1).eq.445)np=3+int(varparam(ivar,1))
+         print*,'ivar, np = ',ivar,np
 
 
          if(varidentx(ivarx,1).eq.varident(ivar,1))then
@@ -2847,7 +2859,7 @@ C     the mass using the a priori log(g) AND radius
             if(varidentx(ivarx,3).eq.28)then
              if(varparamx(ivarx,1).eq.varparam(ivar,1))then
  
-              print*,'Updating variable : ',ivar,' :  ',
+              print*,'A:Updating variable : ',ivar,' :  ',
      1           (varident(ivar,j),j=1,3)
               do i=1,np
                x0(ioff+i)=xnx(ioffx+i)
@@ -2859,7 +2871,7 @@ C     the mass using the a priori log(g) AND radius
              endif             
             else
 
-             print*,'Updating variable : ',ivar,' :  ',
+             print*,'B:Updating variable : ',ivar,' :  ',
      1 		(varident(ivar,j),j=1,3)
              do 33 i=1,np
               x0(ioff+i)=xnx(ioffx+i)
@@ -2884,11 +2896,30 @@ C     the mass using the a priori log(g) AND radius
 
       endif
 
+C      do i=1,nx
+C       print*,i,x0(i),sqrt(sx(i,i))
+C      enddo
+
+C      stop
+
 C     Write out x-data to temporary .str file for later routines.
       if(lin.eq.3.or.lin.eq.4)then
-       call writextmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1  nxx,xnx,sxx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
-     2  jfracx)
+
+C       print*,xlatx,nvarx
+C       do i=1,nvarx
+C        print*,(varidentx(i,j),j=1,3)
+C       enddo
+C       do i=1,nvarx
+C        print*,(varparamx(i,j),j=1,mparam)
+C       enddo
+C       print*,nprox
+C       print*,nxx,(xnx(i),i=1,nxx
+C       print*,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+C     2  jfracx
+
+       call writextmp(runname,xlatx,xlonx,nvarx,varidentx,
+     1  varparamx,nprox,nxx,xnx,sxx,jsurfx,jalbx,jxscx,jtanx,
+     2  jprex,jradx,jloggx,jfracx)
       endif
 
       return

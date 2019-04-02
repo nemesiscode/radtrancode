@@ -117,7 +117,7 @@ C     ***********************************************************************
       REAL VP(MAXGAS),VP1,XS,GRADL(MAXPRO,MX)
       INTEGER SVPFLAG(MAXGAS),SVPFLAG1,NLONG,NTHETA
       INTEGER NVP,ISWITCH(MAXGAS),IP1,IP2,JKNEE,NLEVEL
-      REAL XLDEEP,XLHIGH,HVS,dlogp
+      REAL XLDEEP,XLHIGH,HVS,dlogp,XPC
       COMMON /SROM223/PCUT
 
 C----------------------------------------------------------------------------
@@ -2637,11 +2637,17 @@ C        Read in pressure grid from varparam
 C        print*,'Model 30 - pressure'
          DO J=1,NLEVEL
           LP1(J)=ALOG(VARPARAM(IVAR,J+2))
-C          print*,J,LP1(J),EXP(LP1(J))
+          print*,J,VARPARAM(IVAR,J+2),LP1(J),EXP(LP1(J))
           DO K=1,NP
            GRADL(J,K)=0.
           ENDDO
          ENDDO
+       
+C        Set exponent of cos(lat) variation
+C         print*,IVAR,NLEVEL+3,VARPARAM(IVAR,NLEVEL+3)
+
+         XPC = VARPARAM(IVAR,NLEVEL+3) 
+         print*,'XPC = ',XPC
 
          DO J=1,NLEVEL
           SUM=0.
@@ -2653,14 +2659,14 @@ C          print*,J,LP1(J),EXP(LP1(J))
 C          print*,'ylong',(YLONG(I),I=1,NLONG)
 C          print*,SUM
           YTH = (1.0-FLONG)*YLONG(ILONG)+FLONG*YLONG(JLONG)
-          XP1(J) = SUM + (YTH-SUM)*(COS(LATITUDE*DTR))**0.25
+          XP1(J) = SUM + (YTH-SUM)*(COS(LATITUDE*DTR))**XPC
 
 C          print*,ILONG,FLONG,YLONG(ILONG),YLONG(JLONG),YTH          
 C          print*,LATITUDE,COS(LATITUDE*DTR),J,XP1(J)
           K=(ILONG-1)*NLEVEL+J
-          GRADL(J,K)=(1.0-FLONG)*(COS(LATITUDE*DTR))**0.25
+          GRADL(J,K)=(1.0-FLONG)*(COS(LATITUDE*DTR))**XPC
           K=(JLONG-1)*NLEVEL+J
-          GRADL(J,K)=FLONG*(COS(LATITUDE*DTR))**0.25
+          GRADL(J,K)=FLONG*(COS(LATITUDE*DTR))**XPC
 
          ENDDO
 
@@ -2723,7 +2729,7 @@ C          print*,'Prof_int',J,P(J),X1(J)
 C         open(12,file='grad1.txt',status='unknown')
 C          write(12,*)nlong,nlevel,npro
 C          write(12,*)latitude,longitude,ilong,jlong,
-C     1     flong,(cos(latitude*dtr))**0.25
+C     1     flong,(cos(latitude*dtr))**xpc
 
 C          do i = 1,nlevel
 C            write(12,*)lp1(i),xp1(i)
@@ -2766,8 +2772,7 @@ C        Need to interpolation in longitude
 
 
 
-
-C         print*,ILONG,FLONG
+         print*,ILONG,JLONG,FLONG,NP
 
          IF(VARIDENT(IVAR,1).EQ.0)THEN
             DX=2.0
@@ -2786,17 +2791,23 @@ C         print*,ILONG,FLONG
           SUM=SUM+XN(J1)/FLOAT(NLONG)
          ENDDO
 
-         YTH = (1.0-FLONG)*YLONG(ILONG)+FLONG*YLONG(ILONG+1)
-         XS = SUM + (YTH-SUM)*(COS(LATITUDE*DTR))**0.25
 
-         GRADL(1,ILONG)=(1.0-FLONG)*(COS(LATITUDE*DTR))**0.25
-         GRADL(1,ILONG+1)=FLONG*(COS(LATITUDE*DTR))**0.25
+C        Set exponent of cos(lat) variation
+         XPC=VARPARAM(IVAR,2)
+         print*,'XPC = ',XPC    
+
+
+         YTH = (1.0-FLONG)*YLONG(ILONG)+FLONG*YLONG(JLONG)
+         XS = SUM + (YTH-SUM)*(COS(LATITUDE*DTR))**XPC
+
+         GRADL(1,ILONG)=(1.0-FLONG)*(COS(LATITUDE*DTR))**XPC
+         GRADL(1,JLONG)=FLONG*(COS(LATITUDE*DTR))**XPC
 
          DO J=1,NPRO
-          X1(J) = XREF(J)*EXP(XS)
-          DO I=ILONG,ILONG+1
-           XMAP(NXTEMP+I,IPAR,J)=X1(J)*GRADL(1,I)
-          ENDDO
+           X1(J) = XREF(J)*EXP(XS)
+           XMAP(NXTEMP+ILONG,IPAR,J)=X1(J)*GRADL(1,ILONG)
+           XMAP(NXTEMP+JLONG,IPAR,J)=X1(J)*GRADL(1,JLONG)
+C           print*,ipar,j,xref(j),x1(j)
          ENDDO
 
         ELSEIF(VARIDENT(IVAR,3).EQ.32)THEN

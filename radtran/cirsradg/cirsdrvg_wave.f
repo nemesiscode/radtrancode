@@ -259,7 +259,7 @@ C-----------------------------------------------------------------------
 
 
       CALL READFLAGS(RUNNAME,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
-     1 IPTF,IMIE)
+     1 IPTF,IMIE, iuvscat)
       IMIE1=IMIE
 
       CALL FILE(runname,CIAFIL,'cia')

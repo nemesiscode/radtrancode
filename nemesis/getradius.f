@@ -41,7 +41,7 @@ C        print*,'X = ',X
 C        print*,'X = ',X
        ENDIF
        IF(VARIDENT(IVAR,1).LE.100)THEN
-        NP=NPVAR(VARIDENT(IVAR,3),NPRO)
+        NP=NPVAR(VARIDENT(IVAR,3),NPRO,VARPARAM(IVAR,1))
 C        print*,'D',(VARIDENT(IVAR,J),J=1,3),NP
        ELSE
         NP=1

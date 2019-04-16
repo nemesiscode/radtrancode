@@ -1,6 +1,7 @@
       subroutine forwardPT(runname,ispace,fwhm,ngeom,nav,
-     1 wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,nvar,
-     2 varident,varparam,jrad,jlogg,RADIUS,nx,xn,ny,yn,kk,qfla)
+     1 wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     2 nvar,varident,varparam,jrad,jlogg,jfrac,RADIUS,nx,xn,ny,yn,kk,
+     3 qfla)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate a primary transit spectrum of an exoplanet.
@@ -22,6 +23,7 @@ C                                       to simulate each FOV-averaged
 C                                       measurement spectrum.
 C	wgeom(mgeom,mav)real	Integration weights to use
 C	flat(mgeom,mav)	real	Integration point latitudes
+C	flon(mgeom,mav)	real	Integration point longitudes
 C       nwave(mgeom) 	integer Number of calculation wavelengths
 C       vwave(mgeom,mwave) real Calculation wavelengths
 C       nconv(mgeom)    integer Number of convolution wavelengths
@@ -64,12 +66,14 @@ C     **************************************************************
       real wgeom(mgeom,mav),flat(mgeom,mav),fh,thetrot
       integer layint,inormal,iray,iptf,itype,nlayer,laytyp
       integer nwave(mgeom),jsurf,jrad,jlogg,nem,nav(mgeom),nwave1
+      integer jfrac
       real vwave(mgeom,mwave),angles(mgeom,mav,3),vwave1(mwave)
       real calcout(maxout3),fwhm,calcoutL(maxout3)
       real calcout1(maxout3),gradients1(maxout4)
       real calcout2(maxout3),gradients2(maxout4)
       real gradients(maxout4),vv,gradientsL(maxout4)
       real ytrans(maxpat),yarea(maxpat),Grav,xref,dx
+      real xlon,flon(mgeom,mav)
       parameter (Grav=6.672E-11)
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       integer ipixA,ipixB,ichan,imie,imie1
@@ -222,12 +226,13 @@ C     mass to units of 1e24 kg.
       iav=1
 
       xlat=flat(igeom,iav)
+      xlon=flon(igeom,iav)
 
 
 C     Set up all files for a direct cirsrad run of limb spectra and
 C     near-limb observations
       call gsetradPT(runname,nconv1,vconv1,fwhm,ispace,iscat,
-     1    gasgiant,layht,nlayer,laytyp,layint,xlat,lin,
+     1    gasgiant,layht,nlayer,laytyp,layint,xlat,xlon,lin,
      3    nvar,varident,varparam,nx,xn,xmap)
 
 C     If planet is not a gas giant then we need to read in the surface
@@ -249,7 +254,7 @@ C     abort and return
 
 
       CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
-     1  IPTF,IMIE)
+     1  IPTF,IMIE, iuvscat)
       IMIE1=IMIE
 
 C     Set up parameters for non-scattering cirsrad run.
@@ -367,7 +372,7 @@ C      Need to compute RoC of signal with surface gravity numerically
        mass2 = 1e-20*10**(xn(jlogg))*(radius2**2)/Grav
 
        call gsetradPT(runname,nconv1,vconv1,fwhm,ispace,iscat,
-     1    gasgiant,layht,nlayer,laytyp,layint,xlat,lin,
+     1    gasgiant,layht,nlayer,laytyp,layint,xlat,xlon,lin,
      3    nvar,varident,varparam,nx,xn,xmap)
 
 

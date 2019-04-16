@@ -1,6 +1,7 @@
       subroutine intradfield(runname,ispace,xlat,nwave,vwave,
      1 nconv,vconv,gasgiant,lin,nvar,varident,
-     2 varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
+     2 varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,jfrac,RADIUS,
+     3 nx,xn)
 C
 C     $Id:
 C     **************************************************************
@@ -38,6 +39,8 @@ C       jrad            integer position of radius element in
 C                               xn (if included)
 C       jlogg           integer position of surface gravity element in
 C                               xn (if included)
+C       jfrac           integer position of profile fraction element in
+C                               xn (if included)
 C	RADIUS		real	Planetary radius (km)
 C       nx              integer Number of elements in state vector
 C       xn(mx)          real    State vector
@@ -69,7 +72,7 @@ C     **************************************************************
       parameter (Grav=6.672E-11)
       real layht,tsurf
       real xn(mx),dtr
-      integer jsurf,jalb,jxsc,jtan,jpre,nem,jlogg,jrad
+      integer jsurf,jalb,jxsc,jtan,jpre,nem,jlogg,jrad,jfrac
       integer nphi,ipath,fintrad
       character*100 fintname
       integer nmu,isol,lowbc,nf,nx2,kiter
@@ -150,7 +153,7 @@ C     mass to units of 1e24 kg.
       endif
 
       CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
-     1 IPTF,IMIE)
+     1 IPTF,IMIE, iuvscat)
       IMIE1=IMIE
 
       itype=13			        ! scloud11flux

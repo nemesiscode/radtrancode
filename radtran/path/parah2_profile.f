@@ -88,10 +88,10 @@ C     Skip the header
 54    READ(1,10)buffer
       IF(buffer(1:1).EQ.'#')GOTO 54
       READ(buffer,*)amform
-      IF(AMFORM.EQ.1)THEN
-       READ(1,*)iplanet,latitude,npro,nvmr
-      ELSE
+      IF(AMFORM.EQ.0)THEN
        READ(1,*)iplanet,latitude,npro,nvmr,molwt
+      ELSE
+       READ(1,*)iplanet,latitude,npro,nvmr
       ENDIF
 C Read in the gas-identificaiton information
       DO 20 i=1,nvmr

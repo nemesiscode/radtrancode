@@ -188,7 +188,7 @@ C       skipping blank lines
         IPROC(L)=K
        ELSE IF(TEXT(1:5).EQ.'MODEL')THEN
         CALL RDMOD(TEXT1(6:))
-        IF(AMFORM.EQ.1)THEN
+        IF(AMFORM.EQ.1.OR.AMFORM.EQ.2)THEN
          print*,'AMFORM=',AMFORM
          GASFIL='gasinfo04.dat'
          CALL DATARCHIVE(GASFIL)

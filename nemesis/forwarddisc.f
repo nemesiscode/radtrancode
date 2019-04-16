@@ -1,7 +1,7 @@
       subroutine forwarddisc(runname,ispace,iscat,fwhm,ngeom,
-     1 nav,wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
+     1 nav,wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2 lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3 jlogg,RADIUS,nx,xn,ny,yn,kk)
+     3 jlogg,jfrac,RADIUS,nx,xn,ny,yn,kk)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate an FOV-averaged spectrum and
@@ -21,6 +21,7 @@ C                                       to simulate each FOV-averaged
 C                                       measurement spectrum.
 C	wgeom(mgeom,mav)real	Integration weights to use
 C	flat(mgeom,mav)	real	Integration point latitudes
+C	flon(mgeom,mav)	real	Integration point longitudes
 C       nwave(mgeom) 	integer Number of calculation wavelengths
 C       vwave(mgeom,mwave) real Calculation wavelengths
 C       nconv(mgeom)    integer Number of convolution wavelengths
@@ -47,6 +48,8 @@ C     	jrad		integer Position of radius in
 C                               xn (if included)
 C     	jlogg		integer Position of surface log(g) in
 C                               xn (if included)
+C     	jfrac		integer Position of profile fraction in
+C                               xn (if included)
 C	RADIUS		real	Radius of planet (km) 
 C       nx              integer Number of elements in state vector
 C       xn(mx)          real	State vector
@@ -68,19 +71,19 @@ C     **************************************************************
 
       implicit none
       integer i,j,lin,ispace,iav,ispace1
-      integer ngeom,ioff,igeom,jrad,jlogg
+      integer ngeom,ioff,igeom,jrad,jlogg,jfrac
       real interpem,RADIUS
       include '../radtran/includes/arrdef.f'
       include '../radtran/includes/gascom.f'
       include 'arraylen.f'
       INCLUDE '../radtran/includes/planrad.f'
-      real xlat,planck_wave,planckg_wave,Bg
+      real xlat,planck_wave,planckg_wave,Bg,xgeom
       real wgeom(mgeom,mav),flat(mgeom,mav),pressR,delp
       integer layint,inormal,iray,itype,nlayer,laytyp,iscat
       integer nwave(mgeom),jsurf,nem,nav(mgeom),nwave1
       integer jalb,jxsc,jtan,jpre,k,iptf,imie,imie1
       real vwave(mgeom,mwave),angles(mgeom,mav,3),vwave1(mwave)
-      real pi
+      real pi,flon(mgeom,mav),xlon
       parameter(pi=3.1415927)
       real calcout(maxout3),fwhm,loggR,dellg
       real gradients(maxout4),vv
@@ -184,10 +187,27 @@ C     mass to units of 1e24 kg.
          aphi = angles(igeom,iav,3)
 
          xlat = flat(igeom,iav)   
+         xlon = flon(igeom,iav)   
+         xgeom = wgeom(igeom,iav)   
+
+         if(jfrac.gt.0)then
+          if(nav(igeom).ne.2)then
+           print*,'Error in forwarddisc'
+           print*,'Model 102 only suitable for NAV=2'
+           stop
+          endif
+
+          if(iav.eq.1)then
+           xgeom=xn(jfrac)
+          else
+           xgeom=1.0 - xn(jfrac)
+          endif
+
+         endif
 
 C        Set up parameters for non-scattering cirsrad run.
          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
-     1    IPTF,IMIE)
+     1    IPTF,IMIE, iuvscat)
          IMIE1=IMIE
 
          itype=11			! scloud11. not used here
@@ -196,8 +216,9 @@ C        Set up parameters for non-scattering cirsrad run.
 C        Set up all files for a direct cirsrad run
          call gsetraddisc(runname,iscat,nmu,mu,wtmu,isol,dist,
      1    lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
-     2    layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
-     3    nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
+     2    layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,xlon,
+     3    lin,nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,
+     4    xmap)
 
 C        If planet is not a gas giant and observation is not at limb then
 C        we need to read in the surface emissivity spectrum
@@ -230,35 +251,69 @@ C        we need to read in the surface emissivity spectrum
           endif
 
 	  ioff1=nconv1*(ipath-1)+iconv
-          yn(ioff+j)=yn(ioff+j)+wgeom(igeom,iav)*calcout(ioff1)
-          ytmp(ioff+j)=wgeom(igeom,iav)*calcout(ioff1)
+          yn(ioff+j)=yn(ioff+j)+xgeom*calcout(ioff1)
+          ytmp(ioff+j)=xgeom*calcout(ioff1)
 
          enddo
 
-    
+C         Calculate gradients    
          do i=1,nx
-           do j=1,nconv1
-            iconv=-1
-            do k = 1,nconv1
-             if(vconv(igeom,j).eq.vconv1(k))iconv=k
+
+           if(i.ne.jtan.and.i.ne.jpre.and.i.ne.jrad.and.i.ne.jlogg.
+     1 and.i.ne.jfrac)then
+            do j=1,nconv1
+             iconv=-1
+             do k = 1,nconv1
+              if(vconv(igeom,j).eq.vconv1(k))iconv=k
+             enddo
+             ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + iconv
+             kk(ioff+j,i)=kk(ioff+j,i)+xgeom*
+     1        gradients(ioff2)
             enddo
-            ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + iconv
-            kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*
-     1	     gradients(ioff2)
+           endif
 
-            if(i.eq.jsurf)then 
- 	     ioff1=nconv1*(ipath-1)+iconv
-             kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*
+
+C          Model 102 - weighted average of two profiles.
+           if(i.eq.jfrac)then
+
+            do j=1,nconv1
+             iconv=-1
+             do k = 1,nconv1
+              if(vconv(igeom,j).eq.vconv1(k))iconv=k
+             enddo
+             ioff1=nconv1*(ipath-1)+iconv
+             if(iav.eq.1)then
+              kk(ioff+j,i)=kk(ioff+j,i)+calcout(ioff1)
+             else
+              kk(ioff+j,i)=kk(ioff+j,i)-calcout(ioff1)
+             endif
+            enddo
+           endif
+
+           if(i.eq.jsurf)then 
+            do j=1,nconv1
+             iconv=-1
+             do k = 1,nconv1
+              if(vconv(igeom,j).eq.vconv1(k))iconv=k
+             enddo
+             ioff1=nconv1*(ipath-1)+iconv
+             kk(ioff+j,i)=kk(ioff+j,i)+xgeom*
      1		gradtsurf(ioff1)
-            endif
+            enddo
+           endif
 
-            if(i.eq.jrad)then
- 	     ioff1=nconv1*(ipath-1)+iconv
-             kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*
+           if(i.eq.jrad)then
+            do j=1,nconv1
+             iconv=-1
+             do k = 1,nconv1
+              if(vconv(igeom,j).eq.vconv1(k))iconv=k
+             enddo
+             ioff1=nconv1*(ipath-1)+iconv
+             kk(ioff+j,i)=kk(ioff+j,i)+xgeom*
      1		2.*calcout(ioff1)/RADIUS2             
-            endif
+            enddo
+           endif
 
-           enddo
          enddo
 
          if (reflecting_atmos) then
@@ -297,17 +352,17 @@ C          If doing integrated flux from planet need a factor to stop the
 C          matrix inversion crashing
            if(iform.eq.3)xfac=xfac*1e-18
 
-           yn(ioff+j)=yn(ioff+j) + xfac*wgeom(igeom,iav)*
+           yn(ioff+j)=yn(ioff+j) + xfac*xgeom*
      1					calcout(ioff1)*Bg
            if(jrad.gt.0)then
             kk(ioff+j,jrad)=kk(ioff+j,jrad) +
-     1         (2*xfac/RADIUS)*wgeom(igeom,iav)*calcout(ioff1)*Bg
+     1         (2*xfac/RADIUS)*xgeom*calcout(ioff1)*Bg
            endif
 
            do i=1,nx
             ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + iconv
             kk(ioff+j,i)=kk(ioff+j,i) +
-     1         xfac*wgeom(igeom,iav)*gradients(ioff2)*Bg
+     1         xfac*xgeom*gradients(ioff2)*Bg
            enddo
      
           enddo
@@ -331,10 +386,12 @@ C       Need to calculate RoC of radiance with surface gravity numerically
          aphi = angles(igeom,iav,3)
 
          xlat = flat(igeom,iav)   
+         xlon = flon(igeom,iav)   
+         xgeom = wgeom(igeom,iav)   
 
 C        Set up parameters for non-scattering cirsrad run.
          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
-     1    IPTF,IMIE)
+     1    IPTF,IMIE, iuvscat)
          IMIE1=IMIE
 
          itype=11			! scloud11. not used here
@@ -343,8 +400,9 @@ C        Set up parameters for non-scattering cirsrad run.
 C        Set up all files for a direct cirsrad run
          call gsetraddisc(runname,iscat,nmu,mu,wtmu,isol,dist,
      1    lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
-     2    layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
-     3    nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
+     2    layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,xlon,
+     3    lin,nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,
+     4    xmap)
 
 C        If planet is not a gas giant and observation is not at limb then
 C        we need to read in the surface emissivity spectrum
@@ -377,7 +435,7 @@ C        we need to read in the surface emissivity spectrum
           endif
 
 	  ioff1=nconv1*(ipath-1)+iconv
-          yn1(ioff+j)=yn1(ioff+j)+wgeom(igeom,iav)*calcout(ioff1)
+          yn1(ioff+j)=yn1(ioff+j)+xgeom*calcout(ioff1)
          enddo
 
    
@@ -417,7 +475,7 @@ C          If doing integrated flux from planet need a factor to stop the
 C          matrix inversion crashing
            if(iform.eq.3)xfac=xfac*1e-18
 
-           yn1(ioff+j)=yn1(ioff+j) + xfac*wgeom(igeom,iav)*
+           yn1(ioff+j)=yn1(ioff+j) + xfac*xgeom*
      1					calcout(ioff1)*Bg
      
           enddo

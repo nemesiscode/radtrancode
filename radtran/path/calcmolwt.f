@@ -1,7 +1,6 @@
       REAL FUNCTION CALCMOLWT(NGAS,VMR,ID,ISO)
 C     ****************************************************************
-C     Subroutine to calculate molecular weight at a level in the atmosphere
-C     (assuming the vmrs) add up to 1.0.
+C     Subroutine to calculate molecular weight at a level in the atmosphere.
 C     Code assumes the GASFIL data has already been read in elsewhere by
 C     RDGAS subroutine
 C
@@ -29,6 +28,8 @@ C     ****************************************************************
         XXMASS=XXMASS+GETMASS(ID(IGAS),ISO(IGAS))*VMR(IGAS)
         SUM=SUM+VMR(IGAS)
 100   CONTINUE
+
+      XXMASS = XXMASS / SUM
 
       TEST=ABS(SUM-1.0)
 

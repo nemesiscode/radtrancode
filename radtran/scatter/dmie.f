@@ -50,7 +50,7 @@ C-----------------------------------------------------------------------
      1 QEXT,QSCAT,CTBRQS,X,
      2 ELTRMX(4,100,2),THETD(100),RX,TAA(2),TAB(2),TB(2),TC(2),
      3 TD(2),TE(2),PI(3,100),TAU(3,100),CSTHT(100),SI2THT(100),T(5)
-      COMPLEX*16 WM1,FNA,FNB,TC1,TC2,WFN1,WFN2,ACAP(15000),
+      COMPLEX*16 WM1,FNA,FNB,TC1,TC2,WFN1,WFN2,ACAP(30000),
      1 FNAP,FNBP,RF,RRF,RRFX
       EQUIVALENCE (WFN1,TAA(1)),(WFN2,TAB(1)),(FNA,TB(1)),(FNB,TC(1)),
      1(FNAP,TD(1)),(FNBP,TE(1))

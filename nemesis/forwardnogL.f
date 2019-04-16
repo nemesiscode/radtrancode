@@ -1,7 +1,7 @@
       subroutine forwardnogL(runname,ispace,fwhm,ngeom,nav,
-     1 wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,nvar,
-     2 varident,varparam,jsurf,jalb,jxsc,jtan,jpre,occult,ionpeel,
-     3 nx,xn,ny,yn,kk)
+     1 wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     2 nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,occult,
+     3 ionpeel,nx,xn,ny,yn,kk)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate an FOV-averaged limb spectra using CIRSRADG,
@@ -19,6 +19,7 @@ C                                       to simulate each FOV-averaged
 C                                       measurement spectrum.
 C	wgeom(mgeom,mav)real	Integration weights to use
 C	flat(mgeom,mav)	real	Integration point latitudes
+C	flon(mgeom,mav)	real	Integration point longitudes
 C       nwave(mgeom) 	integer Number of calculation wavelengths
 C       vwave(mgeom,mwave) real Calculation wavelengths
 C       nconv(mgeom)    integer Number of convolution wavelengths
@@ -65,13 +66,14 @@ C     **************************************************************
       include '../radtran/includes/arrdef.f'
       include '../radtran/includes/gascom.f'
       include 'arraylen.f'
+      real flon(mgeom,mav),xlon
       real xlat,planck_wave,planckg_wave,Bg,height(maxlay),htan
       real wgeom(mgeom,mav),flat(mgeom,mav),fh,baseh1(maxlay)
       integer layint,inormal,iray,itype,nlayer,laytyp
-      integer iptf,imie,imie1,occult,iconv,idummy,ionpeel,jlev
+      integer iptf,imie,imie1,occult,iconv,idummy,ionpeel,jlevlo,jlevhi
       integer nwave(mgeom),jsurf,nem,nav(mgeom),nwave1
       real vwave(mgeom,mwave),angles(mgeom,mav,3),vwave1(mwave)
-      real calcout(maxout3),fwhm,calcoutL(maxout3)
+      real calcout(maxout3),fwhm,calcoutL(maxout3),htanlo,htanhi
       real calcout1(maxout3),gradients1(maxout4),xn1(mx)
       real gradients(maxout4),vv,gradientsL(maxout4),pi,AU
       parameter (pi=3.1415927, AU=1.49597870e8)
@@ -173,6 +175,7 @@ C     NemesisL
       enddo
 
       xlat = flat(1,1)   
+      xlon = flon(1,1)   
 
       call setup(runname,gasgiant,nmu,mu,wtmu,isol,dist,lowbc,
      1 galb,nf,nphi,layht,tsurf,nlayer,laytyp,layint)
@@ -180,7 +183,8 @@ C     NemesisL
 
 
 C     Calculating the atmospheric path to calculate for the onion-peeling 
-      jlev=1
+      jlevlo=1
+      jlevhi=1
       if(ionpeel.eq.1)then
 C     It is assumed that the base level of the atmospheric layers computed
 C     by RADTRAN is read from the height.lay file
@@ -213,10 +217,12 @@ C        Read in one line of header
         print*,baseh1(i)
        enddo
 
-       htan = angles(1,1,1)  !Assumed there is only one tangent height
+       htanlo = angles(1,1,1)
+       htanhi = angles(ngeom,1,1)
 
        do i=1,nlay1
-        if(baseh1(i).le.htan.and.baseh1(i+1).gt.htan)jlev=i
+        if(baseh1(i).le.htanlo.and.baseh1(i+1).gt.htanlo)jlevlo=i
+        if(baseh1(i).le.htanhi.and.baseh1(i+1).gt.htanhi)jlevhi=i
        enddo
       endif
 
@@ -229,9 +235,9 @@ C        Read in one line of header
       iscat=0
 C     Set up all files for a direct cirsrad run of limb spectra
       call gsetradL(runname,nconv1,vconv1,fwhm,ispace,iscat,
-     1    gasgiant,layht,nlayer,laytyp,layint,xlat,lin,hcorrx,
+     1    gasgiant,layht,nlayer,laytyp,layint,xlat,xlon,lin,hcorrx,
      2    nvar,varident,varparam,nx,xn,jpre,tsurf,occult,ionpeel,
-     3    jlev,xmap)
+     3    jlevlo,jlevhi,xmap)
 
 
 C     If planet is not a gas giant then we need to read in the 
@@ -250,7 +256,7 @@ C      surface emissivity spectrum
 C     Set up parameters for non-scattering cirsrad run.
 
       CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
-     1 IPTF,IMIE)
+     1 IPTF,IMIE, iuvscat)
       IMIE1=IMIE
 
       itype=12			! scloud12. not used here
@@ -329,8 +335,11 @@ c     MAIN LOOP - CALCULATING SPECTRUM GIVEN AT EACH GEOMETRY
            endif
          
 
-C          Correcting for reading the correct indices in case we have just one htan
-           jpath = jpath - (jlev - 1)
+C          In the onion peeling method it is assumed that the tangent
+C          heights coincide with the base altitude of each layer
+           if(ionpeel.eq.1)then
+            jpath=igeom
+           endif
 
 
            if(occult.eq.2)then
@@ -396,7 +405,7 @@ C             divide thermal emission + solar occultation by solar radiance at t
            iscat = 0
            call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,lowbc,
      1      galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,layht,
-     2      nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
+     2      nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,xlon,lin,
      3      nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,
      4      xmap)
       
@@ -476,9 +485,9 @@ c       Initialise yn1 array
 
 C       Set up all files to recalculate limb spectra after perturbation
         call gsetradL(runname,nconv1,vconv1,fwhm,ispace,iscat,
-     1    gasgiant,layht,nlayer,laytyp,layint,xlat,lin,hcorrx,
+     1    gasgiant,layht,nlayer,laytyp,layint,xlat,xlon,lin,hcorrx,
      2    nvar,varident,varparam,nx,xn,jpre,tsurf,occult,ionpeel,
-     3    jlev,xmap)
+     3    jlevlo,jlevhi,xmap)
 
         call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace,
      1   vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf,
@@ -515,8 +524,11 @@ C       Set up all files to recalculate limb spectra after perturbation
            fh = (htan-height(jpath))/(height(jpath+1)-height(jpath))
        
 
-C          Correcting for reading the correct indices in case we have just one htan
-           jpath = jpath - (jlev - 1)
+C          In the onion peeling method it is assumed that the tangent
+C          heights coincide with the base altitude of each layer
+           if(ionpeel.eq.1)then
+            jpath=igeom
+           endif
 
  
 c          Now we calculate the actual spectra at the given tangent height

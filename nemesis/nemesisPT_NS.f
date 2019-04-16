@@ -2,8 +2,8 @@
      1 mcnvmr, ith, intemp, inpres, invmr, 
      2 inmass, inrad, inheight, inknee,indeep, infsh, 
      3 inpartr, inpartvar, imagnum, inimag, inreal, inknee2, 
-     4 indeep2, infsh2, 
-     4 innav, inflat, inflon, insolzen, inemzen, inazi, inwt,
+     4 indeep2, infsh2, inscat, intop,
+     4 innav, inflat, inflon, insolzen, inemzen, inazi, inwt, inshape,
      5 MCMCspec)
 C     $Id:
 C     ******************************************************************
@@ -62,6 +62,7 @@ C     New compiler time
       real vkstart,vkend,vkstep
       integer idump,kiter,jtan,jalb,jalbx,jpre,jtanx,jprex,iplanet
       integer jrad,jradx,inumeric,jlogg,jloggx,jxsc,jxscx
+      integer jfrac,jfracx
 C     ********** Scattering variables **********************
       real xwave(maxsec),xf(maxcon,maxsec),xg1(maxcon,maxsec)
       real xg2(maxcon,maxsec)
@@ -98,6 +99,7 @@ c and change the shape of the array
       real inrad, inmass, MCMCsum(mcntemp)
       real indeep, infsh, inknee
       real indeep2, infsh2, inknee2
+      real inscat, intop, inshape
       real inpartr, inpartvar, inimag(imagnum), inreal
       integer mcntemp, mcnvmr, imagnum, MCMCimnum
       character*3 sith
@@ -110,7 +112,7 @@ cf2py intent(in) intemp,invmr,ith,inpres
 cf2py intent(in) inmass, inrad
 cf2py intent(in) inheight
 cf2py intent(in) indeep, infsh, inknee
-cf2py intent(in) indeep2, infsh2, inknee2
+cf2py intent(in) indeep2, infsh2, inknee2, inscat, intop
 cf2py intent(in) inpartr, inpartvar, inimag, inreal
 cf2py intent(in) innav, inflat, inflon, insolzen, inemzen, inazi 
 cf2py intent(in) inwt, imagnum
@@ -197,6 +199,10 @@ c     1   MCMCemzen(i), MCMCazi(i), MCMCwt(i)
       MCMCpr = inpartr
       MCMCpvar = inpartvar
       MCMCreal = inreal
+
+      MCMCscat = inscat
+      MCMCtop = intop
+      MCMCshape = inshape
 
       MCMCmass = inmass
       MCMCrad = inrad
@@ -353,7 +359,7 @@ C      and if so, skipped
       
         call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,
      1    varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
-     2    nxx,xnx,stx)
+     2    jfracx,nxx,xnx,stx)
       
        endif
 
@@ -406,7 +412,8 @@ C     Calculate the tabulated wavelengths of c-k look up tables
 
 C     set up a priori of x and its covariance
       CALL readapriori(runname,lin,lpre,xlat,npro,nvar,varident,
-     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,nx,xa,sa,lx)
+     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,jfrac,nx,xa,
+     2  sa,lx)
 
       DO i = 1, nx
         xn(i)=xa(i)
@@ -445,10 +452,10 @@ C      jtan=-1
 C      jsurf=-1
 
       call coreretPT(runname,ispace,iscat,ica,kiter,phlimit,
-     1  fwhm,xlat,ngeom,nav,nwave,vwave,nconv,vconv,angles,
+     1  fwhm,xlat,xlon,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jxsc,
-     3  jtan,jpre,jrad,jlogg,radius,wgeom,flat,nx,lx,xa,sa,ny,y,se,
-     4  inumeric,xn,sm,sn,st,yn,kk,aa,dd)
+     3  jtan,jpre,jrad,jlogg,jfrac,radius,wgeom,flat,flon,nx,lx,xa,sa,
+     4  ny,y,se,inumeric,xn,sm,sn,st,yn,kk,aa,dd)
 
 C     Calculate retrieval errors.
 C     Simple errors, set to sqrt of diagonal of ST
@@ -460,7 +467,7 @@ C     write output
       print*,'Calling writeout'
       CALL writeout(iform,runname,ispace,lout,ispec,xlat,xlon,npro,
      1 nvar,varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err1,ngeom,
-     2 nconv,vconv,gasgiant,jpre,jrad,jlogg,iscat,lin)
+     2 nconv,vconv,gasgiant,jpre,jrad,jlogg,jfrac,iscat,lin)
       print*,'writeout OK'
 
       CALL writeraw(lraw,ispec,xlat,xlon,npro,nvar,varident,

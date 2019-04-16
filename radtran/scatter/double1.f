@@ -73,7 +73,15 @@ C           print*,cc(i,i),pplpl(i,j),pplmi(i,j)
           DO I=1,NMU
            PRINT*,(PPLMI(I,K),K=1,NMU)
           ENDDO
-          STOP
+
+          PRINT*,'Doing a brutal renormalisation'
+
+          XFAC=1./(2.0*PI*SUM)
+          DO I=1,NMU
+           PPLPL(I,J)=PPLPL(I,J)*XFAC
+           PPLMI(I,J)=PPLMI(I,J)*XFAC
+          END DO
+
          ENDIF
         END DO
       ENDIF 

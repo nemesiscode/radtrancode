@@ -1,5 +1,5 @@
       SUBROUTINE GWRITEPATSO(RUNNAME,ISCAT,NCONV,VCONV,FWHM,LAYHT,
-     1 NLAYER,LAYTYP,LAYINT,OCCULT,FLAGH2P,JLEV)
+     1 NLAYER,LAYTYP,LAYINT,OCCULT,FLAGH2P,JLEVLO,JLEVHI)
 C     $Id:
 C     *******************************************************************
 C     Subroutine to write out the .pat file needed for a CIRSradg run.
@@ -16,8 +16,10 @@ C       LAYTYP          integer         Type of layering
 C       LAYINT          integer         Type of layer integration
 C	OCCULT		integer		Solar occultation flag
 C	FLAGH2P		integer		Equals 1 if para-H2 is variable
-C       JLEV            integer         Indicates the atmospheric level
-C                                       at which the path will be computed
+C       JLEVLO            integer       Indicates the lowest atmospheric level
+C                                       at which the paths will be computed
+C       JLEVHI            integer       Indicates the highest atmospheric level
+C                                       at which the paths will be computed
 C
 C     Pat Irwin	29/7/96		Original
 C     Pat Irwin 17/10/03	Tidied for Nemesis
@@ -30,7 +32,7 @@ C     *******************************************************************
       CHARACTER*100 RUNNAME
       REAL LAYHT,VCONV(MCONV),LAYANG,DELV,FWHM
       INTEGER LAYTYP,LAYINT,NLAYER,NCONV,LAYBOT,FLAGH2P,ISCAT,ILAYER
-      INTEGER OCCULT,JLEV
+      INTEGER OCCULT,JLEVLO,JLEVHI
       REAL VARPARAM(MVAR,MPARAM)
       CHARACTER*80 TEXT
 
@@ -101,7 +103,7 @@ C     *******************************************************************
 C      OCCULT=2 means calculate just atmospheric transmission. Hence,
 C      we do not need to set up any thermal emission paths
 
-       DO 101 ILAYER=JLEV,JLEV+1
+       DO 101 ILAYER=JLEVLO,JLEVHI+1
 
         WRITE(31,1)'atm'
         TEXT='limb'
@@ -126,7 +128,7 @@ C      we do not need to set up any thermal emission paths
 
       IF(OCCULT.GT.0)THEN
 
-       DO 102 ILAYER=JLEV,JLEV+1
+       DO 102 ILAYER=JLEVLO,JLEVHI+1
 
         WRITE(31,1)'atm'
         TEXT='limb'

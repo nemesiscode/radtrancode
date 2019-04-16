@@ -1,7 +1,7 @@
       subroutine forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
-     1 wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
+     1 wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2 lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3 jlogg,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,icheck)
+     3 jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,icheck)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate a synthetic spectrum and KK-matrix using
@@ -27,6 +27,7 @@ C                                       to simulate each FOV-averaged
 C                                       measurement spectrum.
 C       wgeom(mgeom,mav)real     Integration weights to use
 C       flat(mgeom,mav)  real    Integration point latitudes
+C       flon(mgeom,mav)  real    Integration point longitudes
 C       nwave(mgeom) integer Number of calculation wavelengths
 C       vwave(mgeom,mwave) real    Calculation wavelengths
 C       nconv(mgeom)    integer Number of convolution wavelengths
@@ -51,6 +52,8 @@ C				xn (if included)
 C       jrad		integer position radius element in
 C                               xn (if included)
 C       jlogg		integer position surface gravity (log(g)) element in
+C                               xn (if included)
+C       jfrac		integer position of profile fraction element in
 C                               xn (if included)
 C       RADIUS		real    Planetary radius at 0km altitude
 C       nx              integer Number of elements in state vector
@@ -81,7 +84,7 @@ C     **************************************************************
       include '../radtran/includes/gascom.f'
       include '../radtran/includes/planrad.f'
       include 'arraylen.f'
-      real xlat,xref,dx,Grav
+      real xlat,xref,dx,Grav,xgeom
       parameter (Grav=6.672E-11)
       integer layint,inormal,iray,itype,nlayer,laytyp,iscat
       integer nwave(mgeom),ix,ix1,iav,nwave1,iptf,jrad,j1
@@ -90,11 +93,11 @@ C     **************************************************************
       real gradients(maxout4),pi
       parameter (pi=3.1415927)
       integer check_profile,icheck,imie,imie1,jlogg,ifix(mx)
-      integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
+      integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1,jfrac
       real vconv(mgeom,mconv),wgeom(mgeom,mav),flat(mgeom,mav)
-      real layht,tsurf,esurf,angles(mgeom,mav,3)
+      real layht,tsurf,esurf,angles(mgeom,mav,3),flon(mgeom,mav)
       real xn(mx),yn(my),kk(my,mx),ytmp(my),ystore(my)
-      real vconv1(mconv),vwave1(mwave)
+      real vconv1(mconv),vwave1(mwave),xlon
       integer ny,jsurf,jalb,jtan,jpre,nem,nav(mgeom)
       integer nphi,ipath,iconv,k,jxsc
       integer nmu,isol,lowbc,nf,nf1,nx2,kiter
@@ -226,6 +229,23 @@ C            nf=20
          print*,'Angles : ',sol_ang,emiss_ang,aphi
          print*,'nf = ',nf
          xlat = flat(igeom,iav)
+         xlon = flon(igeom,iav)
+         xgeom = wgeom(igeom,iav)
+
+         if(jfrac.gt.0)then
+          if(nav(igeom).ne.2)then
+           print*,'Error in forwardavfovX'
+           print*,'Model 102 only suitable for NAV=2'
+           stop
+          endif
+
+          if(iav.eq.1)then
+           xgeom=xn(jfrac)
+          else
+           xgeom=1.0 - xn(jfrac)
+          endif
+
+         endif
 
          if(kiter.ge.0)then
            nx2 = nx+1
@@ -286,7 +306,7 @@ C        mass to units of 1e24 kg.
 C        Set up parameters for scattering cirsrad run.
 
          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
-     1    IPTF,IMIE)
+     1    IPTF,IMIE, iuvscat)
          IMIE1=IMIE
           itype=11			! scloud11wave
 
@@ -299,8 +319,9 @@ C         Set up all files for a direct cirsrad run
           print*,'calling gsetrad'
           call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,
      1     lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
-     2     layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
-     3     nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
+     2     layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,xlon,
+     3     lin,nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,
+     4     xmap)
           print*,'gsetrad called OK'
 
 C         If planet is not a gas giant and observation is not at limb then
@@ -359,12 +380,12 @@ C         Unless an SCR calculation, first path is assumed to be thermal emissio
 
            if(ix.eq.0)then
             do j=1,nconv1 
-             yn(ioff+j)=yn(ioff+j)+wgeom(igeom,iav)*ytmp(ioff+j)
+             yn(ioff+j)=yn(ioff+j)+xgeom*ytmp(ioff+j)
              ystore(ioff+j)=ytmp(ioff+j)
             enddo
            else
             do j=1,nconv1
-             kk(ioff+j,ix)=kk(ioff+j,ix)+wgeom(igeom,iav)*
+             kk(ioff+j,ix)=kk(ioff+j,ix)+xgeom*
      1                      (ytmp(ioff+j) - ystore(ioff+j))/dx  
             enddo 
             xn(ix)=xref
@@ -395,18 +416,18 @@ C         Unless an SCR calculation, first path is assumed to be thermal emissio
            if(ix.eq.0)then
             do j=1,nconv1
              j1=j+nconv1
-             yn(ioff+j)=yn(ioff+j)+wgeom(igeom,iav)*ytmp(ioff+j)
+             yn(ioff+j)=yn(ioff+j)+xgeom*ytmp(ioff+j)
              ystore(ioff+j)=ytmp(ioff+j)
              yn(ioff+j1)=yn(ioff+j1)+
-     1		wgeom(igeom,iav)*ytmp(ioff+j1)
+     1		xgeom*ytmp(ioff+j1)
              ystore(ioff+j1)=ytmp(ioff+j1)
             enddo
            else
             do j=1,nconv1
              j1=j+nconv1
-             kk(ioff+j,ix)=kk(ioff+j,ix)+wgeom(igeom,iav)*
+             kk(ioff+j,ix)=kk(ioff+j,ix)+xgeom*
      1                      (ytmp(ioff+j) - ystore(ioff+j))/dx  
-             kk(ioff+j1,ix)=kk(ioff+j1,ix)+wgeom(igeom,iav)*
+             kk(ioff+j1,ix)=kk(ioff+j1,ix)+xgeom*
      1                      (ytmp(ioff+j1) - ystore(ioff+j1))/dx  
             enddo 
             xn(ix)=xref

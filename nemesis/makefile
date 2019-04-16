@@ -100,7 +100,9 @@ F_SOURCES = \
 	extractcb.f \
 	gwritepatcb.f \
 	readmmr.f \
-	readrdw.f
+	readrdw.f \
+	splang.f \
+	splangint.f
 
 INCDIR = ../../radtran/includes
 INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/lincom.f $(INCDIR)/pathcom.f \
@@ -142,6 +144,7 @@ bin :   \
 	Nemesisdisc \
 	Generatespx \
 	GeneratespxL \
+	PTresults \
 	GenerateMCSspx \
 	Convertitertomre \
 	Testack \
@@ -209,6 +212,11 @@ GeneratespxL: generatespxL.f $(LIBRARY)
         $(LIB)/matrices.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
         $(FRECIPES)
 
+PTresults: ptresults.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/PTresults ptresults.f $(LIBRARY) \
+        $(LIB)/scatter.a $(LIB)/path.a $(LIB)/radtran.a \
+        $(LIB)/matrices.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
+        $(FRECIPES)
 
 GenerateMCSspx: generateMCSspx.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/GenerateMCSspx generateMCSspx.f \
@@ -237,4 +245,5 @@ Calc_chisq: calc_chisq.f $(LIBRARY)
 Testbrown: testbrown.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Testbrown testbrown.f \
 	$(LIBRARY) $(LIB)/rtm_util.a $(FRECIPES)
+
 

@@ -21,7 +21,7 @@ C     Set measurement vector and source vector lengths here.
       real vkstart,vkend,vkstep,rerr(mgeom,mconv)
       real flon(mgeom,mav),xerr,vwave(mgeom,mwave)
       real vwave1(mwave)
-      real vconv(mgeom,mconv),jpre,jlogg,jrad,iscat,lin
+      real vconv(mgeom,mconv),jpre,jlogg,jrad,iscat,lin,jfrac
       real xn1(mx),xa(mx),y(my),se1(my),yn1(my),yn(my)
       real chisq,phi,kk(my,mx),err1(mx),woff,phlimit
       real ochisq
@@ -137,7 +137,8 @@ C     Calculate the tabulated wavelengths of c-k look up tables
 
 C     set up a priori of x and its covariance
       CALL readapriori(runname,lin,lpre,xlat,npro,nvar,varident,
-     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,nx,xa,sa,lx)
+     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,jfrac,nx,xa,
+     2  sa,lx)
 
 
       print*,'D iform = ',iform
@@ -169,7 +170,7 @@ C     Simple errors, set to sqrt of diagonal of ST
         print*,'Writing out mre :',iform
         CALL writeout(iform,runname,ispace,lout,ispec,xlat,xlon,npro,
      1   nvar,varident,varparam,nx,ny,y,yn,se1,xa,sa,xn1,err1,ngeom,
-     2   nconv,vconv,gasgiant,jpre,jrad,jlogg,iscat,lin)
+     2   nconv,vconv,gasgiant,jpre,jrad,jlogg,jfrac,iscat,lin)
 
         close(lout)
         ochisq=chisq

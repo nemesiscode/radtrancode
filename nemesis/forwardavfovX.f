@@ -1,7 +1,7 @@
       subroutine forwardavfovX(runname,ispace,iscat,fwhm,ngeom,
-     1 nav,wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,
+     1 nav,wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2 lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3 jlogg,RADIUS,nx,xn,ny,yn,kk)
+     3 jlogg,jfrac,RADIUS,nx,xn,ny,yn,kk)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate an FOV-averaged spectrum and
@@ -21,6 +21,7 @@ C                                       to simulate each FOV-averaged
 C                                       measurement spectrum.
 C	wgeom(mgeom,mav)real	Integration weights to use
 C	flat(mgeom,mav)	real	Integration point latitudes
+C	flon(mgeom,mav)	real	Integration point longitudes
 C       nwave(mgeom) 	integer Number of calculation wavelengths
 C       vwave(mgeom,mwave) real Calculation wavelengths
 C       nconv(mgeom)    integer Number of convolution wavelengths
@@ -46,6 +47,8 @@ C				xn (if included)
 C       jrad            integer position radius element in
 C                               xn (if included)
 C	jlogg		integer	position of surface log_10(g) in
+C                               xn (if included)
+C	jfrac		integer	position of profile fraction in
 C                               xn (if included)
 C       RADIUS          real    Planetary radius at 0km altitude
 C       nx              integer Number of elements in state vector
@@ -75,29 +78,33 @@ C     **************************************************************
       real xlat,planck_wave,planckg_wave,Bg,Grav
       parameter (Grav=6.672E-11)
       real wgeom(mgeom,mav),flat(mgeom,mav),pressR,delp
-      real loggR,dellg
+      real loggR,dellg,flon(mgeom,mav),xlon,xgeom
       integer layint,inormal,iray,itype,nlayer,laytyp,iscat
       integer nwave(mgeom),jsurf,nem,nav(mgeom),nwave1
       integer jalb,jxsc,jtan,jpre,k,iptf,jrad,imie,imie1,jlogg
+      integer jfrac
       real vwave(mgeom,mwave),angles(mgeom,mav,3),vwave1(mwave)
       real calcout(maxout3),fwhm,RADIUS
       real gradients(maxout4),vv
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1
       real vconv(mgeom,mconv),vconv1(mconv)
       real layht,tsurf,esurf,gradtsurf(maxout3)
-      real xn(mx),yn(my),kk(my,mx),yn1(my)
+      real xn(mx),yn(my),kk(my,mx),yn1(my),ytmp(my)
       integer ny,iconv,iextra
-      integer nphi,ipath
+      integer nphi,ipath,jx
       integer nmu,isol,lowbc,nf
       real dist,galb,sol_ang,emiss_ang,aphi
       double precision mu(maxmu),wtmu(maxmu)
       character*100 runname,solfile,solname
       real xmap(maxv,maxgas+2+maxcon,maxpro),xfac,pi,xdist
+      real v1(3),v0(3),xx,xp,xlat1,xlon1
+      integer ix,ivar,npvar,i1,ifov
       parameter (pi=3.1415927)
+      character*1 ans
 
-      integer nvar,varident(mvar,3)
+      integer nvar,varident(mvar,3),npro,nvmr
       real varparam(mvar,mparam)
-      logical gasgiant,fexist
+      logical gasgiant,fexist,gasgiant1,ipfov
       real vem(maxsec),emissivity(maxsec)
       common /imiescat/imie1
 
@@ -118,10 +125,15 @@ c  ** variables for solar reflected cloud **
 
       common /solardat/iread, iform, stelrad, solwave, solrad,  solnpt
 
+
+1     format(a)
+
 C     jradf and jloggf are passed via the planrad common block
       jradf=jrad
       jloggf=jlogg
 
+
+      call readrefhead(runname,npro,nvmr,gasgiant1)
 
 C      print*,runname
 C      print*,ispace,iscat,fwhm,ngeom
@@ -214,6 +226,13 @@ C     mass to units of 1e24 kg.
        if(nwave1.gt.1)call sort(nwave1,vwave1)
        if(nconv1.gt.1)call sort(nconv1,vconv1)
 
+       ipfov=.false.
+       if(nav(igeom).gt.100)then
+        ipfov=.true.
+        ifov=76
+        open(ifov,file='fov.txt',status='unknown')
+        write(ifov,*)nav(igeom),nconv1
+       endif
 
        do 110 iav = 1,nav(igeom)
          sol_ang = angles(igeom,iav,1)
@@ -221,6 +240,25 @@ C     mass to units of 1e24 kg.
          aphi = angles(igeom,iav,3)
 
          xlat = flat(igeom,iav)   
+         xlon = flon(igeom,iav)   
+         xgeom = wgeom(igeom,iav)
+
+C         print*,'t1',jfrac,xgeom
+         if(jfrac.gt.0)then
+C          print*,'test1'
+          if(nav(igeom).ne.2)then
+           print*,'Error in forwardavfovX'
+           print*,'Model 102 only suitable for NAV=2'
+           stop
+          endif
+          if(iav.eq.1)then
+           xgeom=xn(jfrac)
+          else
+           xgeom=1.0 - xn(jfrac)
+          endif
+          print*,'t2',iav,xgeom
+       
+         endif
 
 C        If planet is not a gas giant and observation is not at limb then
 C        we need to read in the surface emissivity spectrum
@@ -236,7 +274,7 @@ C        we need to read in the surface emissivity spectrum
 
 C        Set up parameters for non-scattering cirsrad run.
          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
-     1    IPTF,IMIE)
+     1    IPTF,IMIE, iuvscat)
          IMIE1=IMIE
          itype=11			! scloud11. not used here
 
@@ -244,8 +282,9 @@ C        Set up parameters for non-scattering cirsrad run.
 C        Set up all files for a direct cirsrad run
          call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,
      1    lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
-     2    layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
-     3    nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
+     2    layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,xlon,
+     3    lin,nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,
+     4    xmap)
 
 
          call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
@@ -271,20 +310,48 @@ C         Not an SCR calculation. Assume 1st path is the thermal emission
             stop
            endif
  	   ioff1=nconv1*(ipath-1)+iconv
-           yn(ioff+j)=yn(ioff+j)+wgeom(igeom,iav)*calcout(ioff1)
+           yn(ioff+j)=yn(ioff+j)+xgeom*calcout(ioff1)
+           if(ipfov)then
+             ytmp(j)=calcout(ioff1)
+           endif
           enddo
     
+          if(ipfov)then
+           write(ifov,*)iav,xlat,xlon,xgeom,
+     1       (ytmp(j),j=1,nconv1)
+          endif
+
+C          print*,'A'
 C         Calculate gradients
           do i=1,nx
 
-           if(i.ne.jtan.and.i.ne.jpre.and.i.ne.jrad.and.i.ne.jlogg)then
+           if(i.ne.jtan.and.i.ne.jpre.and.i.ne.jrad.and.i.ne.jlogg.
+     1 and.i.ne.jfrac)then
             do j=1,nconv1
              iconv=-1
              do k = 1,nconv1
               if(vconv(igeom,j).eq.vconv1(k))iconv=k
              enddo
              ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + iconv
-             kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*gradients(ioff2)
+             kk(ioff+j,i)=kk(ioff+j,i)+xgeom*gradients(ioff2)
+C             print*,i,j,ioff,ioff2,xgeom,gradients(ioff2),kk(ioff+j,i)
+            enddo
+           endif           
+
+C          Model 102 - weighted average of two profiles.
+           if(i.eq.jfrac)then
+
+            do j=1,nconv1
+             iconv=-1
+             do k = 1,nconv1
+              if(vconv(igeom,j).eq.vconv1(k))iconv=k
+             enddo
+             ioff1=nconv1*(ipath-1)+iconv
+             if(iav.eq.1)then
+              kk(ioff+j,i)=kk(ioff+j,i)+calcout(ioff1)
+             else
+              kk(ioff+j,i)=kk(ioff+j,i)-calcout(ioff1)
+             endif
             enddo
            endif
 
@@ -295,7 +362,7 @@ C         Calculate gradients
               if(vconv(igeom,j).eq.vconv1(k))iconv=k
              enddo
   	     ioff1=nconv1*(ipath-1)+iconv
-             kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*
+             kk(ioff+j,i)=kk(ioff+j,i)+xgeom*
      1          2.*calcout(ioff1)/RADIUS2
             enddo
            endif
@@ -307,13 +374,25 @@ C         Calculate gradients
               if(vconv(igeom,j).eq.vconv1(k))iconv=k
              enddo
   	     ioff1=nconv1*(ipath-1)+iconv
-             kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*
+             kk(ioff+j,i)=kk(ioff+j,i)+xgeom*
      1          gradtsurf(ioff1)
             enddo
            endif
 
           enddo
 
+
+C          open(12,file='grad2.txt',status='unknown')
+C          write(12,*)sol_ang,emiss_ang,xgeom,nconv1,nx
+C          do j=1,nconv1
+C           write(12,*)(kk(ioff+j,i),i=1,nx)
+C          enddo
+C          close(12)
+C          read(5,1)ans
+
+
+
+C          print*,'B'
   
           if (gasgiant.and.reflecting_atmos) then
            print*,'ADDING IN REFLECTING ATMOSPHERE CONTRIBUTION'
@@ -347,12 +426,12 @@ c	   initialise solar spectrum
 
             Bg = solar*refl_cloud_albedo/3.141592654
            
-            yn(ioff+j)=yn(ioff+j) + wgeom(igeom,iav)*calcout(ioff1)*Bg
+            yn(ioff+j)=yn(ioff+j) + xgeom*calcout(ioff1)*Bg
                       
             do i=1,nx
              ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + iconv
              kk(ioff+j,i)=kk(ioff+j,i) + 
-     1                wgeom(igeom,iav)*gradients(ioff2)*Bg
+     1                xgeom*gradients(ioff2)*Bg
             enddo
 
            enddo
@@ -375,10 +454,10 @@ C         the wideband (path=5)
            endif
            ipath=4
  	   ioff1=nconv1*(ipath-1)+iconv
-           yn(ioff+j)=yn(ioff+j)+wgeom(igeom,iav)*calcout(ioff1)
+           yn(ioff+j)=yn(ioff+j)+xgeom*calcout(ioff1)
            ipath=5
  	   ioff1=nconv1*(ipath-1)+iconv
-           yn(ioff+nconv1+j)=yn(ioff+nconv1+j)+wgeom(igeom,iav)*
+           yn(ioff+nconv1+j)=yn(ioff+nconv1+j)+xgeom*
      1		calcout(ioff1)
           enddo
     
@@ -393,10 +472,10 @@ C          Now the gradients
              enddo
              ipath=4
              ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + iconv
-             kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*gradients(ioff2)
+             kk(ioff+j,i)=kk(ioff+j,i)+xgeom*gradients(ioff2)
              ipath=5
              ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + iconv
-             kk(ioff+nconv1+j,i)=kk(ioff+nconv1+j,i)+wgeom(igeom,iav)*
+             kk(ioff+nconv1+j,i)=kk(ioff+nconv1+j,i)+xgeom*
      1		gradients(ioff2)
             enddo
            endif
@@ -409,11 +488,11 @@ C          Now the gradients
              enddo
              ipath=4
   	     ioff1=nconv1*(ipath-1)+iconv
-             kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*
+             kk(ioff+j,i)=kk(ioff+j,i)+xgeom*
      1          2.*calcout(ioff1)/RADIUS2
              ipath=5
   	     ioff1=nconv1*(ipath-1)+iconv
-             kk(ioff+nconv1+j,i)=kk(ioff+nconv1+j,i)+wgeom(igeom,iav)*
+             kk(ioff+nconv1+j,i)=kk(ioff+nconv1+j,i)+xgeom*
      1          2.*calcout(ioff1)/RADIUS2
             enddo
            endif
@@ -426,11 +505,11 @@ C          Now the gradients
              enddo
              ipath=4
   	     ioff1=nconv1*(ipath-1)+iconv
-             kk(ioff+j,i)=kk(ioff+j,i)+wgeom(igeom,iav)*
+             kk(ioff+j,i)=kk(ioff+j,i)+xgeom*
      1          gradtsurf(ioff1)
              ipath=5
   	     ioff1=nconv1*(ipath-1)+iconv
-             kk(ioff+nconv1+j,i)=kk(ioff+nconv1+j,i)+wgeom(igeom,iav)*
+             kk(ioff+nconv1+j,i)=kk(ioff+nconv1+j,i)+xgeom*
      1          gradtsurf(ioff1)
             enddo
            endif
@@ -443,6 +522,12 @@ C          Now the gradients
 
 110    continue
 
+       if(ipfov)then
+        close(ifov)
+        stop
+       endif
+
+C       print*,'C'
        if(jtan.gt.0.or.jpre.gt.0.or.jlogg.gt.0)then
 
         do 113 iextra=1,3
@@ -477,11 +562,13 @@ C          Now the gradients
           endif
 
           xlat = flat(igeom,iav)   
+          xlon = flon(igeom,iav)   
+          xgeom = wgeom(igeom,iav)   
 
 C         Set up parameters for non-scattering cirsrad run.
  
           CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
-     1     IPTF,IMIE)
+     1     IPTF,IMIE, iuvscat)
           IMIE1=IMIE
 
           itype=11			! scloud11. not used here
@@ -490,8 +577,9 @@ C         Set up parameters for non-scattering cirsrad run.
 C         Set up all files for a direct cirsrad run
           call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,
      1     lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
-     2     layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
-     3     nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
+     2     layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,xlon,
+     3     lin,nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,
+     4     xmap)
 
 
           call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
@@ -509,7 +597,7 @@ C          First path is assumed to be thermal emission if not SCR calculation
              if(vconv(igeom,j).eq.vconv1(k))iconv=k
             enddo 
  	    ioff1=nconv1*(ipath-1)+iconv
-            yn1(ioff+j)=yn1(ioff+j)+wgeom(igeom,iav)*calcout(ioff1)
+            yn1(ioff+j)=yn1(ioff+j)+xgeom*calcout(ioff1)
            enddo
 
           else
@@ -521,11 +609,11 @@ C          First path is assumed to be thermal emission if not SCR calculation
             enddo 
             ipath=4
    	    ioff1=nconv1*(ipath-1)+iconv
-            yn1(ioff+j)=yn1(ioff+j)+wgeom(igeom,iav)*calcout(ioff1)
+            yn1(ioff+j)=yn1(ioff+j)+xgeom*calcout(ioff1)
             ipath=5
  	    ioff1=nconv1*(ipath-1)+iconv
             yn1(ioff+nconv1+j)=yn1(ioff+nconv1+j)+
-     1		wgeom(igeom,iav)*calcout(ioff1)
+     1		xgeom*calcout(ioff1)
            enddo
 
           endif
@@ -585,6 +673,8 @@ C           Assume change in tangent height pressure of 1km.
        endif
 
 100   continue
+
+C      print*,'Done'
 
       return
 

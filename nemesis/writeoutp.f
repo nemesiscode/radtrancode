@@ -1,6 +1,6 @@
       subroutine writeoutp(iform,runname,ispace,lout,ispec,xlat,xlon,
      1  npro,nvar,varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err,ngeom,
-     2  nconv,vconv,gasgiant,jpre,jrad,jlogg,iscat,lin)
+     2  nconv,vconv,gasgiant,jpre,jrad,jlogg,jfrac,iscat,lin)
 C     $Id:
 C     ***********************************************************************
 C     Output the results of retrieval code with the format required by the Matlab
@@ -46,6 +46,8 @@ C	jrad		integer		Indicates if radiusretrieval
 C					performed.
 C	jlogg		integer		Indicates if surface gravity retrieval 
 C					performed.
+C	jfrac		integer		Indicates if profile fraction average 
+C					performed.
 C       iscat		integer		Flag to indicate scattering calc.
 C	lin		integer		Previous retrieval flag
 C
@@ -69,7 +71,7 @@ C     ***********************************************************************
       integer nconv(mgeom),j,ioff,varident(mvar,3),nvar,npro
       integer nxtemp,ivar,np,ix,iflag,ispace,npvar
       integer logflag,xflag,jpara,flagh2p,jpre,ncont,npro1
-      integer iscat,lin,jrad,jlogg,iplanet
+      integer iscat,lin,jrad,jlogg,iplanet,jfrac
       real xa1,ea1,xn1,en1,iav,xdnu,RADIUS,Grav
       parameter (Grav=6.672E-11)
       real vconv(mgeom,mconv),varparam(mvar,mparam)
@@ -79,7 +81,7 @@ C     ***********************************************************************
       real xlatx,varidentx(mvar,3),varparamx(mvar,mparam)
       real stx(mx,mx)
       integer nxx,xnx(mx),nvarx,nprox,jtanx,jprex,jradx
-      integer icread,jloggx,ierr,ierrx
+      integer icread,jloggx,ierr,ierrx,jfracx
       character*100 runname,aname,buffer,cellfile
       logical gasgiant,cellexist
 
@@ -147,6 +149,9 @@ C     Spectra is in transmission units
         if(varident(ivar,1).eq.887)np = int(varparam(ivar,1))
         if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
         if(varident(ivar,1).eq.445)np = 3+(2*int(varparam(ivar,1)))
+        if(varident(ivar,1).eq.443)np = 3
+        if(varident(ivar,1).eq.442)np = 2
+        if(varident(ivar,1).eq.441)np = 3
         if(varident(ivar,1).eq.222)np = 8
         if(varident(ivar,1).eq.223)np = 9
         if(varident(ivar,1).eq.224)np = 9
@@ -163,7 +168,8 @@ C     Spectra is in transmission units
           xn1 = xn(ix)
           en1 = err(ix)
 
-          iflag = logflag(varident(ivar,1),varident(ivar,3),i)
+          iflag = logflag(varident(ivar,1),varident(ivar,3),
+     &     varparam(ivar,1),i)
           print*,xa1,ea1,xn1,en1,iflag
           if(iflag.eq.1)then
             xa1 = exp(xa1)

@@ -348,7 +348,7 @@ C-----------------------------------------------------------------------
       ENDIF
 
       CALL READFLAGS(OPFILE,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
-     1 IPTF,IMIE)
+     1 IPTF,IMIE,IUVSCAT)
       IMIE1=IMIE
 
 C     See if there is a solar or stellar reference spectrum and read in

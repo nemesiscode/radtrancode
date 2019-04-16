@@ -1,6 +1,7 @@
       subroutine gsetradL(runname,nconv,vconv,fwhm,ispace,iscat,
-     1 gasgiant,layht,nlayer,laytyp,layint,xlat,lin,hcorrx,
-     2 nvar,varident,varparam,nx,xn,jpre,tsurf,occult,ionpeel,jlev,xmap)
+     1 gasgiant,layht,nlayer,laytyp,layint,xlat,xlon,lin,hcorrx,
+     2 nvar,varident,varparam,nx,xn,jpre,tsurf,occult,ionpeel,jlevlo,
+     3 jlevhi,xmap)
 C     $Id:
 C     ************************************************************************
 C     Subroutine to write out the .pat, .prf, .xsc and .sca and aerosol 
@@ -21,6 +22,7 @@ C	nlayer		integer		Number of layers
 C	laytyp		integer		How layers are separated
 C	layint		integer		How layer amounts are integrated
 C	xlat		real		latitude of observation
+C	xlon		real		longitude of observation
 C	lin		integer		Unit number of previous retrieval (if any)
 C       nvar    	integer 	Number of variable profiles 
 C					  (e.g. gas,T,aerosol)
@@ -34,6 +36,12 @@ C       jpre            integer         Position of tangent pressure
 C                                       in xn
 C	occult		integer		Solar occultation flag
 C       ionpeel         integer         Onion-peeling method flag
+C       jlevlo          integer         Indicates the lowest atmospheric
+C                                       level at which the paths will be
+C                                       computed
+C       jlevhi          integer         Indicates the highest
+C                                       atmospheric level at which the
+C                                       paths will be computed
 C	tsurf		real		Surface temperature
 C
 C    Output variables      
@@ -51,13 +59,13 @@ C     ************************************************************************
       include '../radtran/includes/arrdef.f'
       include 'arraylen.f'
 
-      integer nconv,lin,ispace,iscat,xflag,jlev,ionpeel
-      real xlat,fwhm,xlatx,hcorrx,tsurf
+      integer nconv,lin,ispace,iscat,xflag,jlevlo,jlevhi,ionpeel
+      real xlat,fwhm,xlatx,hcorrx,tsurf,xlon,xlonx
       integer nlayer,laytyp,nx,nxx,ncont,jpre
       integer layint,jsurfx,jalbx,jxscx,jtanx,jprex,nprox
       real layht
       real vconv(mconv)
-      integer flagh2p,jpara,jradx,jloggx,ierr,ierrx
+      integer flagh2p,jpara,jradx,jloggx,ierr,ierrx,jfracx
       double precision mu(maxmu),wtmu(maxmu)
       real xn(mx),xnx(mx),stx(mx,mx),xdnu
       real xmap(maxv,maxgas+2+maxcon,maxpro)
@@ -107,7 +115,7 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
       endif
 
       xflag=0
-      call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
+      call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,xlon,
      1  nvar,varident,varparam,nx,xn,jpre,ncont,flagh2p,xmap,ierr)
 
 
@@ -115,8 +123,9 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
 
       if(lin.eq.1.or.lin.eq.3.or.lin.eq.4)then
 
-       call readxtmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1 nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
+       call readxtmp(runname,xlatx,xlonx,nvarx,varidentx,varparamx,
+     1 nprox,nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+     2 jfracx)
 
        call stripvar(nvarx,varidentx,varparamx,nprox,nvar,varident,
      1  varparam,nxx,xnx)
@@ -130,7 +139,7 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
        enddo
 
        xflag=1
-       call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
+       call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,xlon,
      1  nvarx,varidentx,varparamx,nxx,xnx,jprex,ncont,flagh2p,xmapx,
      2  ierrx)
 
@@ -143,7 +152,7 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
 
       if(ionpeel.eq.1)then
        call gwritepatSO(runname,iscat,nconv,vconv,fwhm,layht,nlayer,
-     2  laytyp,layint,occult,flagh2p,jlev)
+     2  laytyp,layint,occult,flagh2p,jlevlo,jlevhi)
       else
        call gwritepatL(runname,iscat,nconv,vconv,fwhm,layht,nlayer,
      2  laytyp,layint,occult,flagh2p)

@@ -1,7 +1,7 @@
       subroutine gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,
      1 lowbc,galb,nf,nconv,vconv,fwhm,ispace,gasgiant,
-     2 layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
-     3 nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
+     2 layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,xlon,
+     3 lin,nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
 C     $Id:
 C     ************************************************************************
 C     Subroutine to write out the .pat, .prf, .xsc and .sca and aerosol 
@@ -38,6 +38,7 @@ C	sol_ang		real		Solar zenith angle
 C	emiss_ang	real		Thermal emission angle
 C	aphi		real		azimuth angle
 C	xlat		real		latitude of observation
+C	xlon		real		longitude of observation
 C	lin		integer		Integer to indicate role of previous
 C                                       retrieval (if any)
 C       nvar    	integer 	Number of variable profiles 
@@ -78,7 +79,7 @@ C     ************************************************************************
       parameter (max_wave = 1000)
 
       integer nconv,lin,ispace,ncont1,xflag,nwave,np,np1
-      real xlat,fwhm,xlatx,tsurf,wave(max_wave)
+      real xlat,fwhm,xlatx,xlonx,tsurf,wave(max_wave),xlon
       real xsec(max_mode,max_wave,2),nimag(max_wave)
       real nreal(max_wave),r0,v0,clen,k2(max_wave)
       real srefind(max_wave,2),parm(3),rs(3),vm,nm
@@ -96,7 +97,7 @@ C     ************************************************************************
       real stx(mx,mx),xdnu,xtest
       real xmap(maxv,maxgas+2+maxcon,maxpro)
       real xmapx(maxv,maxgas+2+maxcon,maxpro)
-      integer jpara
+      integer jpara,jfracx
       character*100 runname,buffer,aname
 
       integer nvar,ivar,varident(mvar,3),i,j,nalb,nalb1
@@ -135,18 +136,19 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
       endif
 
       xflag=0
-      call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
+      call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,xlon,
      1  nvar,varident,varparam,nx,xn,jpre,ncont,flagh2p,xmap,ierr)
 
       if(lin.eq.1.or.lin.eq.3)then
-       call readxtmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1  nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx)
+       call readxtmp(runname,xlatx,xlonx,nvarx,varidentx,varparamx,
+     1  nprox,nxx,xnx,stx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+     2  jfracx)
 
        call stripvar(nvarx,varidentx,varparamx,nprox,nvar,varident,
      1  varparam,nxx,xnx)
       
        xflag=1
-       call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
+       call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,xlon,
      1  nvarx,varidentx,varparamx,nxx,xnx,jprex,ncont,flagh2p,xmapx,
      2  ierrx)
 
@@ -463,14 +465,14 @@ C     See if Sromovsky cloud layer model is specified.
       do ivar=1,nvar
        if(varident(ivar,3).eq.9.or.varident(ivar,3).eq.10)icheck=1
        if(varident(ivar,3).eq.14.or.varident(ivar,3).eq.15)icheck=1
-       if(varident(ivar,3).eq.8)icheck=1
+       if(varident(ivar,3).eq.8.or.varident(ivar,3).eq.32)icheck=1
       enddo
 
 
 C     Check to see if anything bad has happened in the .prf file before 
 C     running subpath
       iprfcheck=check_profile(runname)
-     
+
 C     Compute the drv file to get the aerosol optical depths
       if(icheck.eq.1.and.iprfcheck.eq.0) then
 
@@ -499,11 +501,11 @@ C     Compute the drv file to get the aerosol optical depths
          if(varident(ivar,1).le.100)then
 
           if(varident(ivar,3).eq.9.or.varident(ivar,3).eq.21.
-     1 or.varident(ivar,3).eq.8)then
+     1 or.varident(ivar,3).eq.8.or.varident(ivar,3).eq.32)then
               icont=abs(varident(ivar,1))
               od1=exp(xn(nx1+1))
               xscal(icont)=xod(icont)/od1
-              print*,icont,xod(icont),od1
+              print*,'scaledust',icont,xod(icont),od1
               do j=1,NN
                dust(icont,j)=dust(icont,j)/xscal(icont)
               enddo

@@ -64,7 +64,7 @@ C dummy: Character variable, used for reading-in header on info file
       double precision aa(mx,mx),dd(mx,my)
       real vkstart,vkend,vkstep
       integer idump,kiter,jtan,jtanx,jalbx,jpre,jprex,idum,lvec
-      integer ivar,jrad,jlogg,jxscx
+      integer ivar,jrad,jlogg,jxscx,jfrac
 C     ********** Scattering variables **********************
       real xwave(maxsec),xf(maxcon,maxsec),xg1(maxcon,maxsec)
       real xg2(maxcon,maxsec)
@@ -216,7 +216,8 @@ C     Calculate the tabulated wavelengths of c-k look up tables
 C     set up a priori of x and its covariance
       lin1=0
       CALL readapriori(runname,lin1,lpre,xlat,npro,nvar,varident,
-     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,nx,xa,sa,lx)
+     1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,jfrac,nx,xa,
+     2  sa,lx)
 	
       write(lvec,*)nvar,'   ! nvar'     ! Number of variable profiles
 
@@ -310,29 +311,29 @@ C     Read in forward modelling errors
 	
        if(iscat.eq.0)then
         CALL forwardavfovMCS(runname,ispace,fwhm,xlat,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,marsradius,
      3   satrad,thetrot,altbore,nx,xn,ny,yn,kk)
       elseif(iscat.eq.1)then 
        CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
-     3   RADIUS,nx,xn,ny,yn,kk,kiter)
+     3   jfrac,RADIUS,nx,xn,ny,yn,kk,kiter)
       elseif(iscat.eq.2)then
        CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1   vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
-     2   jxsc,jtan,jpre,jrad,jlogg,RADIUS,nx,xn)
+     2   jxsc,jtan,jpre,jrad,jlogg,jfrac,RADIUS,nx,xn)
        iscat1=1
        CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
-     3   RADIUS,nx,xn,ny,yn,kk,kiter)
+     3   jfrac,RADIUS,nx,xn,ny,yn,kk,kiter)
       else
        iscat1=1
        CALL forwardnogX(runname,ispace,iscat1,fwhm,ngeom,nav,
-     1   wgeom,flat,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
-     3   RADIUS,nx,xn,ny,yn,kk,kiter)
+     3   jfrac,RADIUS,nx,xn,ny,yn,kk,kiter)
       endif
 
 C     Mod to make sure XLAT is set to LMB value (also checks all LMB values the same)	

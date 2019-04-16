@@ -33,10 +33,10 @@ C     First skip header
        READ(BUFFER,*)AMFORM
 1      FORMAT(A)
        READ(1,*)NLATREF
-       IF(AMFORM.EQ.1)THEN
-        READ(1,*)IPLANET,LATITUDE,NPRO,NVMR
-       ELSE
+       IF(AMFORM.EQ.0)THEN
         READ(1,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+       ELSE
+        READ(1,*)IPLANET,LATITUDE,NPRO,NVMR
        ENDIF
       CLOSE(UNIT=1)
 

@@ -55,7 +55,7 @@ C     *************************************************************
       SUBROUTINE MMUL(CONST,AM1,AM2,ANS,N1,N2,N3,IDM1,IDM2,IDM3)
 C     *************************************************************
 C     Subroutine to multiply two  matrices together
-C	ANS = AM1*AM2
+C	ANS = CONST*AM1*AM2
 C
 C     Input variables:
 C	CONST		DOUBLE	Multiplicative constant

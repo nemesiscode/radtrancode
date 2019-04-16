@@ -65,9 +65,7 @@ $(LIBRARY)(%.o): %.f $(INCLUDES)
 bin :    \
 	Cp_lines \
 	Cp_lines_seq \
-	Sort_lines_seq \
 	Cp_lines_seq_modwid \
-	Cp_lines_seq_modwidJ \
 	Inv_scan \
 	Li_lines \
 	Extract_exo_diag \
@@ -96,6 +94,8 @@ bin :    \
 	Write_xsec\
 	Stitchseqtable
 #	Li_linestemp
+#	Sort_lines_seq \
+#	Cp_lines_seq_modwidJ \
 
 Merge : merge.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Merge merge.f $(LIBRARY) \

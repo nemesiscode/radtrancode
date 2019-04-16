@@ -172,7 +172,6 @@ bin :   \
 	Li_spec \
 	Pl_spec \
 	Zerotable \
-	Radtrans \
 	Read_table \
 	Read_lbltable \
 	Concat_table \
@@ -184,8 +183,11 @@ bin :   \
 	Mod_table1b \
 	Mod_table1c \
 	Mod_table2 \
-	Table_trans \
-	Testsubline
+	Table_trans 
+#	Testsubline
+	
+#		Radtrans \
+
 	
 Testsubline : testsubline.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Testsubline testsubline.f $(LIBRARY) \

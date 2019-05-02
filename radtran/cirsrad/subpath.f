@@ -166,7 +166,13 @@ C Skipping blank lines
 	GOTO 2
       ELSE IF (TEXT(1:8).EQ.'INTERVAL') THEN
         READ(2,*)VMIN,VMAX,DELV,FWHM
-        NPOINT = NINT((VMAX-VMIN)/DELV) + 1
+        print*,VMIN,VMAX,DELV,FWHM
+        IF(DELV.GT.0.0)THEN
+         NPOINT = NINT((VMAX-VMIN)/DELV) + 1
+        ELSE
+         NPOINT = 1
+        ENDIF
+        print*,'NPOINT = ',NPOINT
         READ(2,*)ICONV,WING,VREL
         INTERV = .TRUE.
         WRITE(*,*)' '

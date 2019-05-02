@@ -78,9 +78,10 @@ C     ***********************************************************************
       REAL DNDH(MAXPRO),DQDH(MAXPRO),FCLOUD(MAXPRO),HTOP,PTOP,XLON
       REAL dtempdx(MAXPRO,5),T0,Teff,alpha,ntemp,tau0
       REAL XP1(MAXPRO),LP1(MAXPRO),XP2(MAXPRO),GRAD1
-      REAL LPMIN,LPMAX,DLP,XPS(MAXPRO),XP2S(MAXPRO),XF
+      REAL LPMIN,LPMAX,DLP,XPS(MAXPRO),XP2S(MAXPRO)
+      REAL CTAU(MAXPRO),SETXLAPSE,XLAPSE,U,XF,TB
       DOUBLE PRECISION Q(MAXPRO),OD(MAXPRO),ND(MAXPRO),XOD
-      INTEGER ISCALE(MAXGAS),XFLAG,NPVAR,MAXLAT,IERR
+      INTEGER ISCALE(MAXGAS),XFLAG,NPVAR,MAXLAT,IERR,ILAPSE
       INTEGER NLATREF,ILATREF,JLAT,KLAT,ICUT,JX,JLEV,ILEV
       PARAMETER (MAXLAT=20)
       REAL HREF(MAXLAT,MAXPRO),TREF(MAXLAT,MAXPRO),FLAT
@@ -110,7 +111,8 @@ C     ***********************************************************************
 
       INTEGER NVAR,VARIDENT(MVAR,3),NLOCATE,J1,MLON,MTHET
       PARAMETER(MLON=20,MTHET=3*MLON+1)
-      REAL YTH,YYTH(MTHET),YYTH2(MTHET)
+      REAL YTH,YYTH(MTHET),YYTH2(MTHET),FTH,FI,FJ
+      REAL CPHI1,CPHI2
       REAL VARPARAM(MVAR,MPARAM),YLONG(MLON)
       REAL XWID,Y,Y0,XX,L1,THETA(MTHET),GRADTMP(MAXPRO,MX)
       LOGICAL GASGIANT,FEXIST,VPEXIST,NTEST,ISNAN
@@ -2964,6 +2966,182 @@ C            PRINT*,'ITEST,J,XMAP',ITEST,J,Q(J),X1(J),(Q(J)-X1(J))/DX
           ENDDO
 
 207       CONTINUE
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.33)THEN
+C        Model 33. Inhomogenous disc profile at multiple locations
+C        ***************************************************************
+
+C        Need to interpolation in longitude for each vertical level
+         NLONG = INT(VARPARAM(IVAR,1)/VARPARAM(IVAR,2)+0.1)
+         NLEVEL = INT(VARPARAM(IVAR,2))
+         print*,'Model 33 - nlong,nlevel,np = ',nlong,nlevel,np
+         print*,'Model 33 - latitude,longitude = ',LATITUDE,
+     &           LONGITUDE
+         DLONG=360.0/FLOAT(NLONG)
+         LONGITUDE1=LONGITUDE
+         IF(LONGITUDE.LT.0.0)LONGITUDE1=LONGITUDE+360.
+         IF(LONGITUDE.GE.360.0)LONGITUDE1=LONGITUDE-360.
+         ILONG=1+INT(LONGITUDE1/DLONG)
+         FLONG = (LONGITUDE1 - (ILONG-1)*DLONG)/DLONG
+         if(flong.gt.1.0)then 
+          print*,'Error: flong > 1.0'
+          stop
+         endif
+         IF(ILONG.LT.NLONG)THEN
+          JLONG=ILONG+1
+         ELSE
+          JLONG=1
+         ENDIF
+
+         print*,'LONGITUDE1,ILONG,JLONG,FLONG',
+     &    LONGITUDE1,ILONG,JLONG,FLONG
+
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+            DX=2.0
+         ELSE
+            DX=0.1
+         ENDIF
+
+C        Read in pressure grid from varparam
+C        print*,'Model 33 - pressure'
+         DO J=1,NLEVEL
+          LP1(J)=ALOG(VARPARAM(IVAR,J+2))
+          print*,J,VARPARAM(IVAR,J+2),LP1(J),EXP(LP1(J))
+          DO K=1,NP
+           GRADL(J,K)=0.
+          ENDDO
+         ENDDO
+       
+         DO J=1,NLEVEL
+          SUM=0.
+          DO I=1,NLONG
+           J1=NXTEMP+(I-1)*NLEVEL+J
+           YLONG(I)=XN(J1)
+           SUM=SUM+XN(J1)/FLOAT(NLONG)
+          ENDDO
+C          print*,'ylong',(YLONG(I),I=1,NLONG)
+C          print*,SUM
+
+          FI = XN(NXTEMP+NLONG*NLEVEL+ILONG)
+          FJ = XN(NXTEMP+NLONG*NLEVEL+JLONG)
+        
+          YTH = (1.0-FLONG)*YLONG(ILONG)+FLONG*YLONG(JLONG)
+          FTH = (1.0-FLONG)*FI+FLONG*FJ
+
+          CPHI1=(COS(LATITUDE*DTR))**0.25
+          CPHI2=(COS(LATITUDE*DTR))**2.0
+
+          XP1(J) = SUM + (YTH-SUM)*(FTH*CPHI1+(1.0-FTH)*CPHI2)
+
+          K=(ILONG-1)*NLEVEL+J
+          GRADL(J,K)=(1.0-FLONG)*(FTH*CPHI1+(1.0-FTH)*CPHI2)
+
+          K=(JLONG-1)*NLEVEL+J
+          GRADL(J,K)=FLONG*(FTH*CPHI1 +(1.0-FTH)*CPHI2)
+
+          GRADL(J,NLONG*NLEVEL+ILONG)=
+     &     (YTH-SUM)*(CPHI1 - CPHI2)*(1.0-FLONG)
+          GRADL(J,NLONG*NLEVEL+JLONG)=
+     &     (YTH-SUM)*(CPHI1 - CPHI2)*FLONG
+
+         ENDDO
+
+C        Now need to interpolate local NLEVEL profile to NPRO profile
+
+         DO J=1,NPRO
+
+          L1 = ALOG(P(J))
+
+          F=-1.
+          DO JLEV=1,NLEVEL-1
+           IF(L1.LE.LP1(JLEV).AND.L1.GT.LP1(JLEV+1))THEN
+             ILEV=JLEV
+             F = (L1-LP1(JLEV))/(LP1(JLEV+1)-LP1(JLEV))
+             GOTO 151
+            ENDIF
+          ENDDO
+151       CONTINUE
+          IF(F.LT.0)THEN
+            IF(L1.GT.LP1(1))THEN
+             ILEV=1
+             F = (L1-LP1(ILEV))/(LP1(ILEV+1)-LP1(ILEV))
+            ELSE
+             ILEV=NLEVEL-1
+             F = (L1-LP1(ILEV))/(LP1(ILEV+1)-LP1(ILEV))
+            ENDIF
+            print*,'Model 33 warning - pressure out of range'
+            print*,'Having to extrapolate'
+            print*,L1,LP1(1),LP1(NLEVEL)
+            print*,ILEV,LP1(ILEV),LP1(ILEV+1),F
+          ENDIF
+
+          XX = (1.0-F)*XP1(ILEV)+F*XP1(ILEV+1)
+
+          IF(VARIDENT(IVAR,1).EQ.0)THEN
+           X1(J)=XX
+          ELSE
+           X1(J)=EXP(XX)
+          ENDIF
+          IF(X1(J).LT.1e-36)X1(J)=1e-36
+          
+          DO K=1,NP
+           GRADTMP(J,K)=(1.0-F)*GRADL(ILEV,K)+F*GRADL(ILEV+1,K)         
+           IF(VARIDENT(IVAR,1).EQ.0)THEN
+            XMAP(NXTEMP+K,IPAR,J)=GRADTMP(J,K)
+           ELSE
+            XMAP(NXTEMP+K,IPAR,J)=X1(J)*GRADTMP(J,K)
+           ENDIF
+          ENDDO
+
+         ENDDO
+
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.34)THEN
+C        Model 34. Milne-Eddington Temperature Profile
+C        ***************************************************************
+         SETXLAPSE = VARPARAM(IVAR,1)
+
+         DO J=1,NPRO
+          CTAU(I)=0.
+         ENDDO
+
+         TB=XN(NXTEMP+1)
+         XF=EXP(XN(NXTEMP+2))
+
+         CTAU(NPRO)=P(NPRO)
+         X2(NPRO)=TB*((2.0+XF*CTAU(NPRO))/4.0)**0.25 
+
+         DO J=NPRO-1,1,-1
+          CTAU(J)=CTAU(J+1)+P(J)
+          X2(J)=TB*((2.0+XF*CTAU(J))/4.0)**0.25
+C          print*,J,CTAU(J),X2(J)
+         ENDDO
+
+         U = (2.0+XF*CTAU(NPRO))/4.0
+         X1(NPRO)=TB*U**0.25
+         XMAP(NXTEMP+1,IPAR,NPRO)=X1(NPRO)/TB
+         XMAP(NXTEMP+2,IPAR,NPRO)=0.0625*TB*(U**(-0.75))*
+     &    CTAU(NPRO)*XF
+
+         ILAPSE=1
+         DO J=NPRO-1,1,-1
+          DELH = H(J+1)-H(J)
+          XLAPSE = (X2(J)-X2(J+1))/DELH
+C          print*,DELH,XLAPSE,SETXLAPSE
+          IF(XLAPSE.GT.SETXLAPSE.OR.ILAPSE.EQ.0)THEN
+           X1(J)=X1(J+1)+SETXLAPSE*DELH
+           ILAPSE=1
+           XMAP(NXTEMP+1,IPAR,J)=XMAP(NXTEMP+1,IPAR,J+1)
+           XMAP(NXTEMP+2,IPAR,J)=XMAP(NXTEMP+2,IPAR,J+1)            
+C           print*,ILAPSE,XLAPSE,SETXLAPSE
+          ELSE
+           X1(J)=X2(J)
+           U = (2.0+XF*CTAU(J))/4.0
+           XMAP(NXTEMP+1,IPAR,J)=X1(J)/TB
+           XMAP(NXTEMP+2,IPAR,J)=0.0625*TB*(U**(-0.75))*
+     &    CTAU(J)*XF
+          ENDIF
+         ENDDO
 
 
         ELSE

@@ -82,7 +82,7 @@ C     ****************************************************************
       real xsec(max_mode,max_wave,2),wave(max_wave)
       real x0(mx),sx(mx,mx),err,err1,ref1,pref(maxpro)
       real eref(maxlat,maxpro),reflat(maxlat),htan,htop,etop
-      real dhsphere(maxpro,mlong)
+      real dhsphere(maxpro,mlong),hfrac(mlong),efrac
       real delp,xfac,pknee,eknee,edeep,xdeep,xlat,xlatx,xlonx,pshld
       real xstep,estep,efsh,xfsh,varparam(mvar,mparam),flat,hknee,pre
       real ref(maxlat,maxpro),clen,SXMINFAC,arg,valb,alb,refp,errp
@@ -108,7 +108,7 @@ C     a priori covariance matrix
       real tau0,ntemp,teff,alpha,T0,xf,exf
       real etau0,entemp,eteff,ealpha,eT0
       real csx,cserr,nimagshell,errshell,flon
-      real flon1,dlon,dlong,xpc
+      real flon1,dlon,dlong,xpc,xlapse
       logical filexist
       integer i1,j1,nlocation,ilocation
       integer nlen,il,ip,jl,jp
@@ -1778,10 +1778,157 @@ C             *** vmr, fcloud, para-H2 or cloud, take logs *********
 
              nx = nx+3
 
+           elseif(varident(ivar,3).eq.33)then
+C          ***** inhomogeneous disc model 1  ********
+             read(27,1)ipfile
+             print*,'Model 30'
+             print*,'reading variable ',ivar,' from ',ipfile
+             open(28,file=ipfile,status='old')
+             read(28,*)nlong,nlevel,clen1,clen2
+             print*,nlong,nlevel,clen1,clen2
+             if(nlevel+2.gt.mparam)then
+              print*,'nlevel+2 > mparam',
+     1         nlevel+2,mparam
+              print*,'Need to reduce nlong,nlevel or increase mparam'
+              stop
+             endif
+             varparam(ivar,1)=nlong*nlevel
+             varparam(ivar,2)=nlevel
+             ipar=3
+             ix=nx
+             do 403 i=1,nlevel
+              read(28,*)pref(i),(dhsphere(i,j),j=1,nlong),
+     1         eref(1,i)
+              varparam(ivar,ipar)=pref(i)
+              ipar=ipar+1
+              do 404 j=1,nlong
+               ix=nx + (j-1)*nlevel+i
+C              For vmrs and cloud density always hold the log. 
+C              Avoids instabilities arising from greatly different profiles 
+C              such as T and vmrs
+               if(varident(ivar,1).eq.0)then
+C               *** temperature, leave alone ****
+                x0(ix) = dhsphere(i,j)
+                err = eref(1,i)
+               else
+C               **** vmr, cloud, para-H2 , fcloud, take logs ***
+                if(dhsphere(i,j).gt.0.0) then
+                  x0(ix) = alog(dhsphere(i,j)) 
+                  lx(ix)=1
+                else 
+                  print*,'Error in readapriori.f. Cant take log of zero'
+                  print*,i,dhsphere(i,j)
+                  stop
+                endif
+                err = eref(1,i)/dhsphere(i,j)
+               endif
+               sx(ix,ix)=err**2
+404           continue
+403          continue
+
+             read(28,*)(hfrac(j),j=1,nlong),efrac
+
+             nlen = nlong*nlevel
+             do 705 j=1,nlong
+              ix=nx+nlen+j
+              x0(ix)=hfrac(j)
+              sx(ix,ix)=efrac**2
+705          continue
+
+             dlong = 360.0/float(nlong)
+             do 706 i=1,nlen
+              ip = i-nlevel*int((float(i)-0.5)/float(nlevel))
+              il = 1 + int((float(i)-0.5)/float(nlevel))
+              ix=nx+i
+C              print*,'ix,il,ip',ix,il,ip
+              if(pref(ip).lt.0.0) then
+               print*,'Error in readapriori.f. A priori file '
+               print*,'must be on pressure grid '
+               print*,'Model 30'
+               stop
+              endif            
+C              print*,'Press = ',pref(ip)
+              do 707 j=i+1,nlen
+               jp = j-nlevel*int((float(j)-0.5)/float(nlevel))
+               jl = 1 + int((float(j)-0.5)/float(nlevel))
+               jx=nx+j
+C               print*,'jx,jl,jp',jx,jl,jp
+C               print*,'P(J) = ',pref(jp)
+
+               delp = log(pref(jp))-log(pref(ip))
+               arg = abs(delp/clen1)
+
+               flon = (il-1)*dlong
+               flon1 = (jl-1)*dlong
+               dlon = flon1-flon
+               if(dlon.gt.180.) dlon=dlon-360.
+               if(dlon.lt.-180) dlon=dlon+360.
+               arg1 = abs(dlon/clen2)
+
+C               print*,ix,jx,delp,clen1,arg,flon,flon1,dlon,clen2,arg1
+               xfac = exp(-(arg+arg1))
+C               print*,xfac
+               if(xfac.ge.SXMINFAC)then  
+                 sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
+                 sx(jx,ix) = sx(ix,jx)
+               endif
+
+707           continue
+706          continue               
+
+             do 807 i=1,nlong
+              ix=nx+nlen+i
+              do 806 j=i+1,nlong
+               jx=nx+nlen+j
+               flon = (i-1)*dlong
+               flon1 = (j-1)*dlong
+               dlon = flon1-flon
+               if(dlon.gt.180.) dlon=dlon-360.
+               if(dlon.lt.-180) dlon=dlon+360.
+               arg1 = abs(dlon/clen2)
+               xfac = exp(-arg1)
+
+               if(xfac.ge.SXMINFAC)then  
+                 sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
+                 sx(jx,ix) = sx(ix,jx)
+               endif
+
+806           continue
+807          continue
+
+             nx=nx+nlen+nlong
+
+
+           elseif(varident(ivar,3).eq.34)then
+C            **** Milne-Eddington temperature profile *******
+C            Read in bolometric temperature
+             ix = nx+1
+             read(27,*)xfac,err
+             x0(ix)=xfac
+             sx(ix,ix) = err**2
+             lx(ix)=0
+C            Read in pressure-scaling factor
+             ix=ix+1
+             read(27,*)xfac,err
+             if(xfac.gt.0)then
+              x0(ix)=alog(xfac)
+              err = err/xfac
+              sx(ix,ix) = err**2
+              lx(ix)=1         
+             else
+               print*,'Error in readpriori - xfac must be > 0'
+               stop
+             endif
+             read(27,*)xlapse
+             varparam(ivar,1)=xlapse
+
+             nx = nx+2
+
            else         
             print*,'vartype profile parametrisation not recognised'
             stop
            endif
+
 	    
          else
 C          Non-atmospheric and other parameters

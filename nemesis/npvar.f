@@ -16,11 +16,11 @@ C     Pat Irwin	11/5/12
 C
 C     **************************************************************
       implicit none
-      integer imod,np,npro
+      integer imod,np,npro,nlong
       real vpar1
 
       np=1
-      if(imod.le.32)then
+      if(imod.le.34)then
         if(imod.eq.-1)np = npro
         if(imod.eq.0)np = npro
         if(imod.eq.1)np = 2
@@ -52,6 +52,12 @@ C     **************************************************************
         if(imod.eq.30)np = int(vpar1)
         if(imod.eq.31)np = int(vpar1)
         if(imod.eq.32)np = 3
+        if(imod.eq.33)then
+          nlong=16
+          print*,'npvar - model 33: assuming nlong = ',nlong
+          np = int(vpar1)+nlong
+        endif
+        if(imod.eq.34)np = 2
       else
        print*,'npvar:  Model parameterisation not defined = ',imod
       endif

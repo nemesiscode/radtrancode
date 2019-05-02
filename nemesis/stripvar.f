@@ -37,7 +37,7 @@ C     Set measurement vector and source vector lengths here.
       INCLUDE 'arraylen.f'
       integer nprox,nvarx,varidentx(mvar,3),nxx,ivar,ivarx
       real varparamx(mvar,mparam),xnx(mx),varparam(mvar,mparam)
-      integer nvar,varident(mvar,3),ikeep,np,icopy,i,j,ioff
+      integer nvar,varident(mvar,3),ikeep,np,icopy,i,j,ioff,nlong
 
 C     **************************** CODE ********************************
 
@@ -70,6 +70,11 @@ C     **************************** CODE ********************************
          if(varidentx(ivarx,3).eq.30)np = int(varparamx(ivarx,1))
          if(varidentx(ivarx,3).eq.31)np = int(varparamx(ivarx,1))
          if(varidentx(ivarx,3).eq.32)np = 3
+         if(varidentx(ivarx,3).eq.33)then
+           NLONG = INT(VARPARAMX(IVARX,1)/VARPARAMX(IVARX,2)+0.1)
+           np = int(varparamx(ivarx,1)) + NLONG
+         endif
+         if(varidentx(ivarx,3).eq.34)np = 2
         else
          if(varidentx(ivarx,1).eq.102)np = 1
          if(varidentx(ivarx,1).eq.555)np = 1

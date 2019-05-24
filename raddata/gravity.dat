@@ -1,4 +1,4 @@
-86
+87
 # *****************************************************************
 # Data for solar system planets extracted from Astronomical Almanac 1994, pE88
 # *****************************************************************
@@ -7,7 +7,7 @@
 2   Venus         4.8690  0.027    0.0      0.0   6051.8   0.0      -243.0187     1
 3   Earth         5.9742  1.08263 -2.54    -1.61  6378.14  0.00335364  0.99726968 1
 4   Mars          0.64191 1.964   36.0      0.0   3397.0   0.006476    1.02595675 1
-5   Jupiter    1898.8     14.75    0.0   -580.0  71492.0   0.064874    0.41354    0
+5   Jupiter    1898.2     14.75    0.0   -580.0  71492.0   0.064874    0.41354    0
 6   Saturn      568.5     16.45    0.0  -1000.0  60268.0   0.097962    0.44401    0
 7   Uranus       86.625   12.0     0.0      0.0  25559.0   0.022000   -0.71833    0
 8   Neptune     102.78    4.0      0.0      0.0  24764.0   0.017081    0.67125    0
@@ -88,10 +88,13 @@
 83  hatp1b      985.950   0.0      0.0      0.0  92212.61  0.0    100000.0        0
 84  wasp80     1010.364   0.0      0.0      0.0  69211.89  0.0    100000.0        0
 85  exorem     5734.2376  0.0      0.0      0.0  87388.75  0.0    100000.0        0
-86  wasp43b    3894.696   0.0      0.0      0.0  72427.80  0.0    100000.0        0
+86  wasp43bX   3894.696   0.0      0.0      0.0  72427.80  0.0    100000.0        0
+87  WASP-43b   3895.110   0.0      0.0      0.0  74065.70  0.0    100000.0        0
 
 
-#note mj = 1.898E27 rj=69911km  
+# 86 note assumed mj = 1.898E27 rj=69911km. Since discoveed that RJ usually
+#   assumed to be 71492.km.
+# 87 Revised WASP-43b, with correct MJ (1898.2e24) and RJ=71492km   
 # Notes. Some disagreement of radius of HD189733b. Originally set here to be 79021.71 
 # from somewhere, but this was based on an older estimate of the star radius. Current
 # estimate of plan size (via Wikipedia) is 81357.9 km, but this is still not quite 

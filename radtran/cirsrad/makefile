@@ -96,6 +96,7 @@ $(LIBRARY)(%.o): %.f $(INCLUDES)
 
 bin :	\
 	CIRSdrv_wave \
+        CIRSdrv_wavePY \
 	Lbldrv_wave
 
 CIRSdrv_wave : cirsdrv_wave.f $(LIBRARY) $(LIB)/spec_data.a
@@ -103,6 +104,12 @@ CIRSdrv_wave : cirsdrv_wave.f $(LIBRARY) $(LIB)/spec_data.a
 	$(LIB)/radtran.a $(LIB)/path.a \
 	$(LIB)/scatter.a $(LIB)/rtm_util.a $(LIB)/radtran.a \
 	$(LIB)/spec_data.a $(FRECIPES) $(LIB)/matrices.a
+
+CIRSdrv_wavePY : cirsdrv_wavePY.f $(LIBRARY) $(LIB)/spec_data.a
+	$(FC) $(FCFLAGS) -o $(BIN)/CIRSdrv_wavePY cirsdrv_wavePY.f $(LIBRARY) \
+        $(LIB)/radtran.a $(LIB)/path.a \
+        $(LIB)/scatter.a $(LIB)/rtm_util.a $(LIB)/radtran.a \
+        $(LIB)/spec_data.a $(LIB)/lnemesis.a $(FRECIPES) $(LIB)/matrices.a
 
 Lbldrv_wave : lbldrv_wave.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Lbldrv_wave lbldrv_wave.f $(LIBRARY) \

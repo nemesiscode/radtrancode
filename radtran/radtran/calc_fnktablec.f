@@ -79,6 +79,7 @@ C     K_G: Calculated k-distribution.
 C     DEL_G: Gauss-Legendre weights for integration.
 C     **** all these are now defined by zgauleg.f ***
 
+
       IJLCO=0
 
       CALL system_clock(count_rate=cr)
@@ -101,7 +102,6 @@ C     **** all these are now defined by zgauleg.f ***
 
 c  ** calc g_ord and del_g **
       call zgauleg(g_ord,del_g,ng,ngmax)
-
 
       CALL PROMPT('Use Wavelengths(0) or Wavenumbers(1): ')
       READ*,IWAVE
@@ -286,6 +286,7 @@ C      (for exoplanet k-tables)
       READ(5,23)OPFILE
       CALL FILE(OPFILE,KTAFIL,'kta')
 
+
       IRECL=ISYS()
       OPEN(UNIT=LUN0,FILE=KTAFIL,STATUS='UNKNOWN',ACCESS='DIRECT',
      1 RECL=IRECL)
@@ -383,8 +384,14 @@ C          Read in temperature specific linedata file.
            CALL RDGAS
            CALL RDISO
 
+           print*,'keyfile = ',KEYFIL
+
            CALL FILE(OPFILE,LCOFIL,'lco')
            INQUIRE(FILE=LCOFIL,EXIST=FEXIST)
+
+           print*,'LCO file : ',LCOFIL
+           print*,'Exist? : ',FEXIST
+
            IF(FEXIST)THEN
             print*,'LCO file = ',LCOFIL
             CALL INIT_LCO(LCOFIL)

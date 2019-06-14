@@ -381,6 +381,7 @@ C=======================================================================
 C First calculate continuum contribution. CURBIN is the current BIN for
 C which calculations are being made.
       CURBIN = INT((V - VBIN(1))/WING) + 1
+C      print*,'AA',V,VBIN(1),CURBIN,NBIN
 C Calculate the continuum absorption via the IORDP1 polynomial
 C coefficients held in CONTINK.
 
@@ -428,20 +429,21 @@ C=======================================================================
       IBIN2 = CURBIN + 1
 
       IF(IBIN1.LT.1.OR.IBIN2.GT.NBIN)THEN
-        WRITE(*,*)'LBL_FKNEW.f :: *ERROR* Either IBIN1 or IBIN2 is out'
-        WRITE(*,*)'of range.'
-        WRITE(*,*)' '
-        WRITE(*,*)'IBIN1, IBIN2, NBIN = ',IBIN1,IBIN2,NBIN
-        WRITE(*,*)' '
-        WRITE(*,*)'Resetting according to ...'
-        WRITE(*,*)'  IF (IBIN1.LT.1) IBIN1 = 1'
-        WRITE(*,*)'  IF (IBIN2.GT.NBIN) IBIN2 = NBIN',NBIN
-        WRITE(*,*)'VSTART,I,DELV,V',VSTART,I,DELV,V
-        WRITE(*,*)'VBIN(1),WING,CURBIN',VBIN(1),WING,CURBIN
-        stop
+C        WRITE(*,*)'LBL_FKNEW.f :: *ERROR* Either IBIN1 or IBIN2 is out'
+C        WRITE(*,*)'of range.'
+C        WRITE(*,*)' '
+C        WRITE(*,*)'IBIN1, IBIN2, NBIN = ',IBIN1,IBIN2,NBIN
+C        WRITE(*,*)' '
+C        WRITE(*,*)'Resetting according to ...'
+C        WRITE(*,*)'  IF (IBIN1.LT.1) IBIN1 = 1'
+C        WRITE(*,*)'  IF (IBIN2.GT.NBIN) IBIN2 = NBIN',NBIN
+C        WRITE(*,*)'VSTART,I,DELV,V',VSTART,I,DELV,V
+C        WRITE(*,*)'VBIN(1),WING,CURBIN',VBIN(1),WING,CURBIN
       ENDIF
       IF(IBIN1.LT.1)IBIN1 = 1
       IF(IBIN2.GT.NBIN)IBIN2 = NBIN
+
+C      print*,'CC',IBIN1,IBIN2
 
       DO 507 JBIN=IBIN1,IBIN2
 
@@ -485,10 +487,6 @@ C      do i=1,npoint
 C       write(12,*)tx(i),output(i)
 C      enddo
 C      close(12)
-
-C      print*,'press a key to continue'
-C      read(5,1)ans
-
 
       RETURN
 

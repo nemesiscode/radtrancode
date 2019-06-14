@@ -190,7 +190,7 @@ C NOTE: TCORS1 includes factor of 1.e-27 for scaling of stored lines
 
       IF(IJLCO.GT.0)THEN
        IF(ABS(TCALCLCO-296.0).GT.0.5)THEN
-        TCORS1LCO = PARTF(IDLCO,ISOLCO,TEMP,IPTFLCO)/
+        TCORS1LCO = 1E-27*PARTF(IDLCO,ISOLCO,TEMP,IPTFLCO)/
      1       PARTF(IDLCO,ISOLCO,TCALCLCO,IPTFLCO)
         TCORS2LCO = 1.439*(TEMP - TCALCLCO)/(TCALCLCO*TEMP)
 C        print*,TEMP,TCALCLCO,TCORS1LCO
@@ -336,6 +336,7 @@ C Compute absorption coefficient for normal incidence
      1 TCORS1,TCORS2,PRESS,TEMP,FRAC,VLIN(LINE),SLIN(LINE),ELIN(LINE),
      2 ALIN(LINE),SBLIN(LINE),TDW(LINE),TDWS(LINE),LLQ(LINE),
      3 DOUBV(LINE),FNH3,FH2)
+C                IF(K.EQ.1)print*,'AA',VV,K,IP,IT,J,CONVAL(K)
 
                 ENDIF
 21           CONTINUE
@@ -363,16 +364,22 @@ C     have been stripped of weaker lines.
      1   TCORS1LCO,TCORS2LCO,PRESS,TEMP,FRAC,FNH3,FH2,VOUT,YOUT)
 
         DO 301 I=1,NBIN
-
+C         print*,I,VBIN(I),PRESS,TEMP,VOUT(I),YOUT(I)
          DO 302 K=1,IORDP1
           VV=DBLE(VBIN(I)+CONWAV(K))
           CALL VERINT(VOUT,YOUT,NBIN+1,CONVAL(K),SNGL(VV))
+C          print*,'A',VV,CONVAL(K),CONTINK(K,IP,IT,I)
 302      CONTINUE
          DO 203 K=1,IORDP1
+
+C            IF(K.EQ.1)print*,'AA',VV,IP,IT,I,CONTINK(K,IP,IT,I),
+C     1        CONVAL(K)
+
              DO 304 L=1,IORDP1
                CONTINK(K,IP,IT,I) = CONTINK(K,IP,IT,I) + 
      1         UNIT(L,K)*CONVAL(L)
 304          CONTINUE
+C          print*,'B',VV,CONVAL(K),CONTINK(K,IP,IT,I)          
 203      CONTINUE
 
 301     CONTINUE

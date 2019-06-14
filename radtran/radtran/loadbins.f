@@ -108,11 +108,11 @@ C******************************** CODE *********************************
 25    CONTINUE
 
       PRINT*,'LOADBINS: NBIN = ',NBIN
-      PRINT*,'I,VV,NLINES(I),FSTLIN(I),LSTLIN(I)'
-      DO 26 I=1,NBIN
-        WRITE(*,*)I,VMIN+(I-1)*WING,NLINES(I),FSTLIN(I),LSTLIN(I)
-26    CONTINUE
-
+C      PRINT*,'I,VV,NLINES(I),FSTLIN(I),LSTLIN(I)'
+C      DO 26 I=1,NBIN
+C        WRITE(*,*)I,VMIN+(I-1)*WING,NLINES(I),FSTLIN(I),LSTLIN(I)
+C26    CONTINUE
+      PRINT*,'First,Last lines: ',FSTLIN(1),LSTLIN(NBIN)
       RETURN
 
       END

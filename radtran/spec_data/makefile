@@ -65,7 +65,9 @@ $(LIBRARY)(%.o): %.f $(INCLUDES)
 bin :    \
 	Cp_lines \
 	Cp_lines_seq \
+	Sort_lines_seq \
 	Cp_lines_seq_modwid \
+	Cp_lines_seq_modwidJ \
 	Inv_scan \
 	Li_lines \
 	Extract_exo_diag \
@@ -92,10 +94,10 @@ bin :    \
 	Selecttempseqtopbuffloop \
 	Summary \
 	Write_xsec\
+	Selecttempseqcp \
+	Selecttempseqcploop \
 	Stitchseqtable
 #	Li_linestemp
-#	Sort_lines_seq \
-#	Cp_lines_seq_modwidJ \
 
 Merge : merge.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Merge merge.f $(LIBRARY) \
@@ -120,6 +122,14 @@ Cp_lines : cp_lines.f $(LIBRARY)
 Cp_lines_seq : cp_lines_seq.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Cp_lines_seq cp_lines_seq.f $(LIBRARY) \
 	$(LIB)/rtm_util.a
+ 
+Selecttempseqcp : selecttempseqcp.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Selecttempseqcp selecttempseqcp.f $(LIBRARY) \
+	$(LIB)/path.a $(LIB)/rtm_util.a
+
+Selecttempseqcploop : selecttempseqcploop.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Selecttempseqcploop selecttempseqcploop.f $(LIBRARY) \
+	$(LIB)/path.a $(LIB)/rtm_util.a
 
 Sort_lines_seq : sort_lines_seq.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Sort_lines_seq sort_lines_seq.f $(LIBRARY) \

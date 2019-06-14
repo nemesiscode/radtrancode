@@ -42,6 +42,12 @@ C     ****************************************************************
       REAL PRESS,TEMP,FRAC,FNH3,FH2,WY,DPEXP
       CHARACTER*15 LLQ
 
+
+C      print*,NBIN
+C      print*,(VBIN(I),I=1,NBIN)
+C      print*,WING,MAXDV,IPROC,IDGAS,TCORDW,
+C     1 TCORS1,TCORS2,PRESS,TEMP,FRAC,FNH3,FH2
+
       DOUBV=0.
       LLQ='               '
 
@@ -74,9 +80,14 @@ C     Now find LCO table entries covering this range
 
       NJ=1+J2-J1
 
+      print*,V1,V2
+      print*,J1,J2,NJ
+
 C     Calculate number of LCO steps we need to go either side of 
 C     each LCO wavenumber to calculate wings
       NLCO = INT(MAXDV/LCOBINSIZE)
+
+C      print*,'NLCO',NLCO
 
 C     Initialise LCO absorption
       DO I = 1,MLCO    
@@ -105,13 +116,20 @@ C      Stimulated emission coefficient.
        LNABSCO=LOG(SLIN)+LOG(TCORS1)+TCORS2*ELIN+LOG(TSTIM)
        ABSCO=SNGL(EXP(LNABSCO))
 
+C       print*,'ABSCO = ',ABSCO
+
 C      AD is the Doppler-broadened line width
 C      Y is the Lorentz/collision-broadened line width divided by
 C      the Doppler-broadened line width.
 
        AD=TCORDW*SNGL(VLIN)
-       Y = (ALIN*(1.-FRAC)*TRATIO**TDW+(ALIN-SBLIN)*FRAC*
+C       print*,ALIN,SBLIN,(ALIN-SBLIN),FRAC,TRATIO,TDW,TDWS
+C       print*,press,AD
+
+       Y = (ALIN*(1.-FRAC)*TRATIO**TDW+SBLIN*FRAC*
      1  TRATIO**TDWS)*PRESS/AD    
+
+C       print*,AD,Y
 
        SUM=0.0
        DO I=0,NLCO   
@@ -122,6 +140,7 @@ C      the Doppler-broadened line width.
 C       Find line contribution at centre
         WEIGHT(I)=SUBLINE(IDGAS,PRESS,TEMP,IPROC,VV,VLIN,
      1   ABSCO,X,Y,AD,FNH3,FH2,LLQ,DOUBV)
+C        print*,I,VV,VLIN,ABSCO,X,Y,AD,WEIGHT(I)
         IF(I.EQ.0)THEN
          SUM=SUM+WEIGHT(I)
         ELSE
@@ -131,6 +150,7 @@ C       Find line contribution at centre
 
        DO I=0,NLCO
         WEIGHT(I)=WEIGHT(I)/SUM
+C        print*,weight(i)
        ENDDO
 
        I1=J-NLCO
@@ -140,8 +160,9 @@ C       Find line contribution at centre
        DO I=I1,I2
         K=ABS(I-J)
         YY(I-J1+1)=YY(I-J1+1)+ABSCO*WEIGHT(K)
+C        print*,'I1,I2,YY',I1,I2,YY(I-J1+1)
        ENDDO
-
+C       stop
 100   CONTINUE
 
       DO 300 I=1,NBIN+1

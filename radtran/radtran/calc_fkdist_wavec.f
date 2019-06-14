@@ -38,9 +38,10 @@ C***************************** VARIABLES *******************************
       INCLUDE '../includes/arrdef.f'
 
 C Input parameters ...
-      INTEGER NPOINT,NG,NGMAX,IWAVE,ICH,NFIL
+      INTEGER NPOINT,NG,NGMAX,IWAVE,ICH,NFIL,ITYPE
       REAL VMIN,VMAX,DELV,VV,G_ORD(NGMAX),V1,V2
       REAL VFIL(NFIL),TFIL(NFIL),WFIL     
+      CHARACTER*1 ANS
 
       REAL OUTPUT(MPOINT),K_G(NGMAX),OUTPUT1(MPOINT)
       REAL X(MPOINT),VMIN1,VMAX1,DELV1,Y1
@@ -69,6 +70,7 @@ C     Spectrum is calculated in wavenumber space. If we want
 C     a k-table for wavelength space we need to interpolate onto a grid
 C     of equally spaced wavelengths
 
+1     FORMAT(A)
       PRINT*,'CALC_FKDIST_WAVEC: IWAVE = ',IWAVE
 
       DO I=1,NPOINT
@@ -81,7 +83,7 @@ C     of equally spaced wavelengths
         X(I)=VMIN+(I-1)*DELV
        ENDDO
        
-       print*,'NPOINT,DELV=',NPOINT,DELV
+       print*,'NPOINT,VMIN,DELV=',NPOINT,DELV
 
        VMIN1 = 1E4/VMAX
        VMAX1 = 1E4/VMIN
@@ -182,16 +184,13 @@ C        print*,'calc_fkdist_wavec - zero spec - returning'
        G(K)=G(K)/SUM
 311   CONTINUE
 
-      SUMK = 0.0       
-      DO K=1,NKINT-1
-        DG = G(K+1) - G(K)
-        SUMK = SUMK + 0.5*(ORD(K) + ORD(K+1))*DG
-      ENDDO
+      ITYPE=0
 
-      SUMK = 0.0
-      DO 308 J=1,NG
+      IF(ITYPE.EQ.0)THEN
+C      Technically correct method of sampling ORD at the 
+C      Gaussian ordinates G_ORD
+       DO 308 J=1,NG
         GG = G_ORD(J)
-
         K = 1
 243     IF(K.LT.NKINT)THEN
           IF(G(K).LE.GG.AND.G(K+1).GT.GG)THEN
@@ -202,10 +201,17 @@ C        print*,'calc_fkdist_wavec - zero spec - returning'
             GOTO 243
           ENDIF
         ENDIF
-        SUMK = SUMK + DEL_G(J)*K_G(J)
-308   CONTINUE
+308    CONTINUE
 
-C      open(12,file='calc_kdist_wave.dat',status='unknown')
+      ELSE
+C      Empirical method of sampling ORD by ensuring 
+C      Integral(ORD.DG) = Sum(K_G.DEL_G)
+
+       CALL KINTEGRATE(NKINT,ORD,G,NG,K_G,DEL_G)
+
+      ENDIF
+
+C      open(12,file='calc_kdist_wavex.dat',status='unknown')
 C       write(12,*)npoint
 C       do i=1,npoint
 C        write(12,*)x(i),output(i)
@@ -214,10 +220,79 @@ C       write(12,*)nkint
 C       do i=1,nkint
 C        write(12,*)f(i),g(i),ord(i)
 C       enddo
+C       write(12,*)ng
+C       do i=1,ng
+C        write(12,*)g_ord(i),k_g(i)
+C       enddo
 C      close(12)
 
+C      print*,'press a key to continue'
+C      read(5,1)ans
 
 
       RETURN      
+
+      END
+
+
+      SUBROUTINE KINTEGRATE(NKINT,ORD,G,NG,K_G,DEL_G)
+C     *************************************************************
+C     Subroutine to integrate ord.dg and set K_G to be equal to average of
+C     integrals over subranges of width DEL_G
+C
+C     Pat Irwin 17/11/18
+C
+C     *************************************************************
+      IMPLICIT NONE
+      INTEGER NKINT,NG,I,IG
+      REAL ORD(NKINT),G(NKINT),DG,F,ORDX
+      REAL K_G(NG),DEL_G(NG),SUM,GG,DG1
+      SUM=0.
+      DO I=1,NG
+       K_G(I)=0.
+       SUM=SUM+DEL_G(I)
+      ENDDO
+C      print*,SUM
+      DO I=1,NG
+       DEL_G(I)=DEL_G(I)/SUM
+      ENDDO
+
+      IG=1
+      GG=DEL_G(IG)
+      SUM=0.
+      DO 101 I=2,NKINT
+       IF(G(I).LT.GG)THEN
+        K_G(IG)=K_G(IG)+0.5*(ORD(I)+ORD(I-1))*(G(I)-G(I-1))
+       ELSE
+         DG = (GG-G(I-1))
+         F = DG/(G(I)-G(I-1))
+         ORDX = ORD(I-1)*(1.0-F) + ORD(I)*F
+         K_G(IG)=K_G(IG)+0.5*(ORDX+ORD(I-1))*DG
+C         print*,IG,GG,K_G(IG)
+         IF(IG.LT.NG)THEN
+          DG1 = G(I)-GG
+          K_G(IG+1)=K_G(IG+1)+0.5*(ORD(I)+ORDX)*DG1
+          IG=IG+1
+          GG=GG+DEL_G(IG) 
+C          print*,'A',IG,GG,K_G(IG)
+         ENDIF
+       ENDIF 
+101   CONTINUE
+
+      SUM=0
+      DO 102 I=1,NG
+       K_G(I)=K_G(I)/DEL_G(I)
+       SUM=SUM+K_G(I)*DEL_G(I)
+102   CONTINUE
+C      print*,'Rough Sum = ',SUM
+
+      SUM=0.
+      DO 103 I=2,NKINT
+       SUM=SUM+0.5*(ORD(I-1)+ORD(I))*(G(I)-G(I-1))
+103   CONTINUE
+C      print*,'Fine Sum = ',SUM
+C      print*,'Last elements = ',G(NKINT),ORD(NKINT)
+
+      RETURN
 
       END

@@ -102,7 +102,8 @@ F_SOURCES = \
 	readmmr.f \
 	readrdw.f \
 	splang.f \
-	splangint.f
+	splangint.f \
+	interpvivien.f
 
 INCDIR = ../../radtran/includes
 INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/lincom.f $(INCDIR)/pathcom.f \

@@ -57,7 +57,7 @@ C         bins, paths, etc.)
 
         INTEGER         nconv, npath1, itype1, I, J, K, mconv
  	INTEGER		MAXLIN1,ISHAPE, IPTF
-        PARAMETER       (mconv=6000)
+        PARAMETER       (mconv=12000)
 	INTEGER		INormal,Iray, ispace,nem,IBS(2),IBD(2), IFLAG
 	REAL		Dist, FWHM1,X0,X1,WING1,VREL1,MAXDV
         REAL		VBOT,DELV1,RADIUS1,radextra
@@ -184,9 +184,10 @@ C-----------------------------------------------------------------------
         ENDDO
 
 C      Precompute temperature coeffients of layers
+C        print*,'Calling CALCTEMPPARAM. IJLCO = ',IJLCO
         CALL CALCTEMPPARAM(NLAYER,NGAS,PRESS,TEMP,AAMOUNT,
      1 IDGAS,ISOGAS,IPTF)
-
+C        print*,'CALCTEMPPARAM called OK'
 
         NOUT=NPATH*NCONV
         WRITE(*,*)'NPATH,NCONV,NOUT = ',NPATH,NCONV,NOUT

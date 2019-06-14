@@ -85,13 +85,13 @@ C-----------------------------------------------------------------------
       OPEN (UNIT=11,FILE=klist,STATUS='old')
 
 10    nkl = nkl + 1
-      print*,'A'
+C      print*,'A'
       READ(11,1020,END=20)ktafil(nkl)
       IF(ktafil(nkl).EQ.null)GOTO 20
-      print*,ktafil(nkl)
+C      print*,ktafil(nkl)
 
       CALL file(ktafil(nkl),ktafil(nkl),'kta')
-      WRITE(*,1030)ktafil(nkl)
+C      WRITE(*,1030)ktafil(nkl)
       GOTO 10
 	
 20    nkl = nkl - 1
@@ -106,7 +106,7 @@ C-----------------------------------------------------------------------
 
       DO i=1,nkl
         unit(i) = 100 + i
-        WRITE(*,1035)KTAFIL(i)
+C        WRITE(*,1035)KTAFIL(i)
         CALL read_khead(ktafil(i),unit(i),npt(i),xmin(i),delx(i),
      1   fwhm1(i),vcen,idgask(i),isogask(i),pk,tk,t2k,np(i),nt(i),
      2   g_ord,delg,ng(i),irec(i))

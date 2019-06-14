@@ -1,4 +1,4 @@
-      PROGRAM SELECTTEMPSEQTOPBUFF
+      PROGRAM SELECTTEMPSEQCP
 C     $Id: selecttemp.f,v 1.2 2011-06-17 14:51:54 irwin Exp $
 ************************************************************************
 ************************************************************************
@@ -52,20 +52,24 @@ C***************************** VARIABLES *******************************
       INCLUDE '../includes/dbcom.f' 
 C ../includes/dbcom.f stores the linedata base variables.
 
-      INTEGER MINSTR,MAXSTR,ISWAP,IDF,ISOF
-      DOUBLE PRECISION LIMSTR,CC,LNSTR1,XS
+      INTEGER MINSTR,MAXSTR,NSAV,IDF,ISOF
+      DOUBLE PRECISION LIMSTR,CC,LNSTR1,XS,STRMIN,STRMINX
       PARAMETER (MINSTR=-323,MAXSTR=308,CC=10.)
 
       INTEGER NLINES(MINSTR:MAXSTR,MAXISO,MAXDGAS)
-      INTEGER TOTLIN(MINSTR:MAXSTR,MAXDGAS)
+      INTEGER TOTLIN(MINSTR:MAXSTR,MAXDGAS),MAXBIN
+      PARAMETER(MAXBIN=10000)
       DOUBLE PRECISION STRLOSE,STRKEEP,STROUT,WEIGHT
+      DOUBLE PRECISION TSTROUT(MAXBIN),TXLSE(MAXBIN)
+      DOUBLE PRECISION TXWIDA(MAXBIN),TXWIDS(MAXBIN)
+      DOUBLE PRECISION TXTDEP(MAXBIN)
+
+
+
       REAL XWIDA,XWIDS,XLSE,XTDEP
-      INTEGER NSAV,MAXLIN
-      PARAMETER(MAXLIN = 2000000)
-      INTEGER IDX(MAXLIN),IFLAG(MAXLIN)
+      INTEGER JBIN
       INTEGER I,J,K,ID,ISO,IBIN,LINE,FSTLIN,LSTLIN,NBIN,IPTF
       INTEGER FIRST(2),LAST(2),NPAR,IERROR,READI,NLIN,NKEEP,NLOSE
-      DOUBLE PRECISION SSL(MAXLIN)
 
       DOUBLE PRECISION VMIN,VMAX,BINSIZ,VLOW,VHIGH,VMEAN
       DOUBLE PRECISION LIMIT(MAXISO,MAXDGAS),TOTSTR,SUMSTR
@@ -119,14 +123,16 @@ C Read in spectral parameters ...
       READ(*,*)VMIN,VMAX
       IF(VMAX.LE.VMIN)GOTO 2
 
-      WRITE(*,*)'Lines whose summed strength is less than n% of'
-      WRITE(*,*)'the total sum strength in a bin may be omitted'
-22    CALL PROMPT('Enter bin width and number of lines to extract')
-      READ(*,*)BINSIZ,NSAV
+      WRITE(*,*)'Lines whose strength is less than cut-off will'
+      WRITE(*,*)'be assigned to continuum'
+22    CALL PROMPT('Enter bin width and line strength cut-off')
+      READ(*,*)BINSIZ,STRMINX
       IF(BINSIZ.LT.0.01)THEN
         WRITE(*,*)'Bin size is too small'
         GOTO 22
       ENDIF
+      STRMIN=STRMINX*1E20
+      STRMIN=STRMIN*1E27
 
       CALL PROMPT('Enter calculation temperature : ')
       READ(*,*)TEMP
@@ -139,8 +145,9 @@ C Read in spectral parameters ...
       CALL FILE(OPNAME,OPSTR,'lco')
       OPEN(UNIT=4,FILE=OPSTR,STATUS='UNKNOWN')
 
+
       WRITE(BUFFER,114)
-114   FORMAT(' # data records written by routine SELECTTEMPSEQ')
+114   FORMAT(' # data records written by routine SELECTTEMPSEQCP')
       WRITE(3,1)BUFFER(1:DBRECL)
       WRITE(BUFFER,201)
 201   FORMAT(' # original data base file:')
@@ -150,13 +157,15 @@ C Read in spectral parameters ...
       WRITE(3,1)BUFFER(1:DBRECL)
 
       WRITE(4,*)'VMIN, VMAX = ',VMIN,VMAX
-      WRITE(4,*)'BINSIZ,NSAV = ',BINSIZ,NSAV
-C      CALL EDSET
+      WRITE(4,*)'BINSIZ,STRMIN = ',BINSIZ,STRMINX
 
       CALL PROMPT('Enter IPTF (Partition function flag) : ')
       READ*,IPTF
 
       WRITE(4,*)'Calc. Temp, IPTF = ',TEMP,IPTF
+
+      CALL PROMPT('Enter ID,ISO to put in header : ')
+      READ(5,*)IDF,ISOF
 
       OPEN(DBLUN,FILE=DBFILE,STATUS='OLD')
 
@@ -190,9 +199,16 @@ C      CALL EDSET
       TCORS2=1.439*(TEMP-296.)/(296.*TEMP)
 C     For each bin ...
       NBIN = INT((VMAX-VMIN)/BINSIZ)
-      CALL PROMPT('Enter ID,ISO to put in header : ')
-      READ(5,*)IDF,ISOF
-      WRITE(4,*)'ID, ISO = ',IDF,ISOF
+      DO IBIN=1,NBIN
+       TSTROUT(IBIN)=0.
+       TXLSE(IBIN)=0.
+       TXWIDA(IBIN)=0.
+       TXWIDS(IBIN)=0.
+       TXTDEP(IBIN)=0.
+      ENDDO
+
+      JBIN=-1
+
       WRITE(4,*)'NBIN = ',NBIN
 
 C     Find point in database where wavenumber is equal to VMIN
@@ -201,138 +217,107 @@ C     Find point in database where wavenumber is equal to VMIN
       CALL RDLINE(BUFFER)
       IF(LNWAVE.LT.VMIN)GOTO 151
 
-      PRINT*,'NBIN = ',NBIN
+      PRINT*,'Starting transfer'
+      print*,LNSTR,STRMIN
+
+      TS1 = 1.0-EXP(-1.439*SNGL(LNWAVE)/TEMP)
+      TS2 = 1.0-EXP(-1.439*SNGL(LNWAVE)/296.0)
+      TSTIM=1.0
+      IF(TS2.NE.0) TSTIM = TS1/TS2
+      K = -1
+      DO J=1,DBNISO(LOCID(LNID))
+        IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K=J
+      ENDDO                
+      TCORS1=PARTF(LOCID(LNID),K,TEMP,IPTF)
+      LNABSCO = LOG(LNSTR)+LOG(TCORS1)+
+     & (TCORS2*LNLSE)+LOG(TSTIM)
+      LNSTR1=DEXP(LNABSCO)
+
+      IF(LNSTR1.GE.STRMIN)THEN
+        WRITE(3,1)BUFFER(1:DBRECL)
+      ELSE
+        IBIN=1+INT((LNWAVE-VMIN)/BINSIZ)
+
+        WEIGHT=LNSTR1*1E-20
+        TSTROUT(IBIN)=TSTROUT(IBIN)+WEIGHT
+        TXWIDA(IBIN)=TXWIDA(IBIN)+LNWIDA*WEIGHT
+        TXWIDS(IBIN)=TXWIDS(IBIN)+LNWIDS*WEIGHT
+        TXLSE(IBIN)=TXLSE(IBIN)+LNLSE*WEIGHT
+        TXTDEP(IBIN)=TXTDEP(IBIN)+LNTDEP*WEIGHT
+
+      ENDIF
+
+110   READ(DBLUN,1,END=999)BUFFER
+      CALL RDLINE(BUFFER)
+      IF(LNWAVE.GT.VMAX)GOTO 998
+
+      TS1 = 1.0-EXP(-1.439*SNGL(LNWAVE)/TEMP)
+      TS2 = 1.0-EXP(-1.439*SNGL(LNWAVE)/296.0)
+      TSTIM=1.0
+      IF(TS2.NE.0) TSTIM = TS1/TS2
+      K = -1
+      DO J=1,DBNISO(LOCID(LNID))
+        IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K=J
+      ENDDO                
+      TCORS1=PARTF(LOCID(LNID),K,TEMP,IPTF)
+      LNABSCO = LOG(LNSTR)+LOG(TCORS1)+
+     & (TCORS2*LNLSE)+LOG(TSTIM)
+      LNSTR1=DEXP(LNABSCO)
+
+      IF(LNSTR1.GE.STRMIN)THEN
+        WRITE(3,1)BUFFER(1:DBRECL)
+      ELSE
+        IBIN=1+INT((LNWAVE-VMIN)/BINSIZ)
+        IF(IBIN.NE.JBIN)THEN
+         print*,'Processing bin ',IBIN,' out of ',NBIN
+         JBIN=IBIN
+        ENDIF
+        WEIGHT=LNSTR1*1E-20
+        TSTROUT(IBIN)=TSTROUT(IBIN)+WEIGHT
+        TXWIDA(IBIN)=TXWIDA(IBIN)+LNWIDA*WEIGHT
+        TXWIDS(IBIN)=TXWIDS(IBIN)+LNWIDS*WEIGHT
+        TXLSE(IBIN)=TXLSE(IBIN)+LNLSE*WEIGHT
+        TXTDEP(IBIN)=TXTDEP(IBIN)+LNTDEP*WEIGHT
+
+      ENDIF
+      GOTO 110
+998   PRINT*,'Transfer complete'
+999   CONTINUE
+      CLOSE(3)
+      CLOSE(DBLUN)
+
+      DO IBIN=1,NBIN
+        IF(TSTROUT(IBIN).GT.0)THEN
+         TXWIDA(IBIN)=TXWIDA(IBIN)/TSTROUT(IBIN)
+         TXWIDS(IBIN)=TXWIDS(IBIN)/TSTROUT(IBIN)
+         TXLSE(IBIN)=TXLSE(IBIN)/TSTROUT(IBIN)
+         TXTDEP(IBIN)=TXTDEP(IBIN)/TSTROUT(IBIN)
+         TSTROUT(IBIN)=TSTROUT(IBIN)*1E-27
+        ELSE
+         TXWIDA(IBIN)=0.1
+         TXWIDS(IBIN)=0.1
+         TXLSE(IBIN)=888.0
+         TXTDEP(IBIN)=0.5
+        ENDIF
+      ENDDO
+
 
       DO 100 IBIN=1,NBIN
+        VLOW = VMIN + FLOAT(IBIN-1)*BINSIZ
+        VHIGH = VMIN + FLOAT(IBIN)*BINSIZ
+        VMEAN=0.5*(VLOW+VHIGH)
+        STROUT = TSTROUT(IBIN)
+        XWIDA = TXWIDA(IBIN)
+        XWIDS = TXWIDS(IBIN)
+        XLSE = TXLSE(IBIN)
+        XTDEP = TXTDEP(IBIN)
 
-         print*,'ibin = ',ibin
-         VLOW = VMIN + FLOAT(IBIN-1)*BINSIZ
-         VHIGH = VMIN + FLOAT(IBIN)*BINSIZ
-         VMEAN=0.5*(VLOW+VHIGH)
-         WRITE(*,121)IBIN,VLOW,VHIGH
-121      FORMAT(I5,F12.3,'  -',F12.3)
-
-         NLIN=1
-C        Write line into memory
-117      CONTINUE
-C         print*,nlin,lnwave,lnstr
-         CALL ADD_LINE_BUFF(BUFFER,NLIN)
-         TS1 = 1.0-EXP(-1.439*SNGL(LNWAVE)/TEMP)
-         TS2 = 1.0-EXP(-1.439*SNGL(LNWAVE)/296.0)
-         TSTIM=1.0
-         IF(TS2.NE.0) TSTIM = TS1/TS2
-         K = -1
-         DO J=1,DBNISO(LOCID(LNID))
-                IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K=J
-         ENDDO                
-         TCORS1=PARTF(LOCID(LNID),K,TEMP,IPTF)
-         LNABSCO = LOG(LNSTR)+LOG(TCORS1)+
-     &         (TCORS2*LNLSE)+LOG(TSTIM)
-         LNSTR1=DEXP(LNABSCO)
-         SSL(NLIN)=LNSTR1
-         IDX(NLIN)=NLIN
-         IFLAG(NLIN)=0
-C         print*,nlin,ssl(nlin),idx(nlin),iflag(nlin)
-         READ(DBLUN,1,END=999)BUFFER(1:DBRECL)
-         CALL RDLINE(BUFFER)
-         IF(LNWAVE.LT.VHIGH)THEN
-          NLIN=NLIN+1
-          GOTO 117
-         ENDIF
-         BUFFERSAV=BUFFER
-
-         PRINT*,'NLIN,NSAV = ',NLIN,NSAV
-
-         IF(NLIN.GT.NSAV)THEN
-C         Now sort the lines into order of strength
-C          print*,'SORT, NLIN = ',NLIN
-
-101       CONTINUE
-          ISWAP=0
-          DO I=1,NLIN-1
-           IF(SSL(I).LT.SSL(I+1))THEN
-            XS=SSL(I)
-            SSL(I)=SSL(I+1)
-            SSL(I+1)=XS
-            J=IDX(I)
-            IDX(I)=IDX(I+1)
-            IDX(I+1)=J
-            ISWAP=1
-           ENDIF
-          ENDDO
-          IF(ISWAP.GT.0)GOTO 101
-
-C         Mark lines to extract
-          DO I=1,NSAV
-           IFLAG(IDX(I))=1
-C           print*,I,SSL(I),IDX(I)
-          ENDDO
-         ENDIF
-
-C        Initialise continuum
-         STROUT=0.0
-         XWIDA=0.
-         XWIDS=0.
-         XLSE=0.
-         XTDEP=0.
-
-         DO 160 LINE=1,NLIN
-          CALL READ_LINE_BUFF(BUFFER,LINE)
-      
-          IF(NLIN.GT.NSAV.AND.IFLAG(LINE).EQ.0)THEN
-
-           CALL RDLINE(BUFFER)
-
-           TS1 = 1.0-EXP(-1.439*SNGL(LNWAVE)/TEMP)
-           TS2 = 1.0-EXP(-1.439*SNGL(LNWAVE)/296.0)
-           TSTIM=1.0
-           IF(TS2.NE.0) TSTIM = TS1/TS2
-           K = -1
-           DO J=1,DBNISO(LOCID(LNID))
-            IF(LNISO.EQ.DBISO(J,LOCID(LNID)))K=J
-           ENDDO                
-           TCORS1=PARTF(LOCID(LNID),K,TEMP,IPTF)
-           LNABSCO = LOG(LNSTR)+LOG(TCORS1)+(TCORS2*LNLSE)+LOG(TSTIM)
-           LNSTR1=DEXP(DBLE(LNABSCO))
-
-           WEIGHT=LNSTR1*1E-20
-           STROUT=STROUT+WEIGHT
-C           print*,weight,strout
-           XWIDA=XWIDA+LNWIDA*WEIGHT
-           XWIDS=XWIDS+LNWIDS*WEIGHT
-           XLSE=XLSE+LNLSE*WEIGHT
-           XTDEP=XTDEP+LNTDEP*WEIGHT
-          ELSE
-           WRITE(3,1)BUFFER(1:DBRECL)
-          ENDIF 
-160      CONTINUE
-
-         IF(STROUT.GT.0)THEN
-          XWIDA=XWIDA/STROUT
-          XWIDS=XWIDS/STROUT
-          XLSE=XLSE/STROUT
-          XTDEP=XTDEP/STROUT
-          STROUT=STROUT*1E-27
-         ELSE
-          XWIDA=0.1
-          XWIDS=0.1
-          XLSE=888.0
-          XTDEP=0.5
-         ENDIF
-         WRITE(4,*)VMEAN,STROUT,XLSE,XWIDA,XWIDS,XTDEP
-
-         IF(VHIGH.GT.VMAX)GOTO 102
-
-         BUFFER=BUFFERSAV
-         CALL RDLINE(BUFFER)
+        WRITE(4,*)VMEAN,STROUT,XLSE,XWIDA,XWIDS,XTDEP
 
 100   CONTINUE
-102   CONTINUE
-999   CONTINUE
 
-      CLOSE(DBLUN)
-      CLOSE(3)
       CLOSE(4)
+
 
       STOP
 

@@ -243,6 +243,9 @@ C     mass to units of 1e24 kg.
          xlon = flon(igeom,iav)   
          xgeom = wgeom(igeom,iav)
 
+C         print*,'TestAv',iav,nav(igeom),xlat,xlon
+C         print*,'TestAv1',sol_ang,emiss_ang,aphi,xgeom
+
 C         print*,'t1',jfrac,xgeom
          if(jfrac.gt.0)then
 C          print*,'test1'
@@ -295,7 +298,8 @@ C        Need to assume order of paths. First path is assumed to be
 C        thermal emission
 
 
-         print*,'ForwardavfovX: Npath = ',npath
+         print*,'ForwardavfovX: Npath,sol_ang,emiss_ang = ',
+     1 npath,sol_ang,emiss_ang
 
          if(icread.ne.1)then
 C         Not an SCR calculation. Assume 1st path is the thermal emission
@@ -311,6 +315,8 @@ C         Not an SCR calculation. Assume 1st path is the thermal emission
            endif
  	   ioff1=nconv1*(ipath-1)+iconv
            yn(ioff+j)=yn(ioff+j)+xgeom*calcout(ioff1)
+           print*,j,xgeom,calcout(ioff1),xgeom*calcout(ioff1),
+     1       yn(ioff+j)
            if(ipfov)then
              ytmp(j)=calcout(ioff1)
            endif

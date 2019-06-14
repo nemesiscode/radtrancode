@@ -28,7 +28,7 @@ you would set:
 setenv BIN /Users/username/bin
 setenv OBJ /Users/username/obj
 setenv LIB /Users/username/lib 
-setenv RADSRC /Users/username/radtrancode/trunk/radtran
+setenv RADSRC /Users/username/radtrancode/radtran
 
 You also need to make sure that the stack size is unlimited by adding the 
 following line to your .cshrc file:
@@ -58,7 +58,7 @@ setenv FCFLAGS1_FOVGREG "-ffree-form"
 setenv STATIC_FLAG ""
 
 
-To compile the whole code you need to follow the procedure (from the trunk 
+To compile the whole code you need to follow the procedure (from the main 
 directory):
 1) change directory to FOVgreg/ and type 'make lib'
 2) change directory to frecipes/ and type 'make lib'

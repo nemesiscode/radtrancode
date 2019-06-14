@@ -82,24 +82,27 @@ C       overflow)
 16    CONTINUE
       DO 17 J=1,NLAYER
         TCORS2(J)=1.439*(TEMP(J)-296.)/(296.*TEMP(J))
+        TCORS2LC(J)=TCORS2(J)
         IF(ABS(TCALCLCO-TEMP(J)).GT.0.5)THEN
          TCORS2LC(J)=1.439*(TEMP(J)-TCALCLCO)/(TCALCLCO*TEMP(J))
-        ELSE
-         TCORS2LC(J)=TCORS2(J)
         ENDIF
 17    CONTINUE
 
+C      print*,'IJLCO'
       IF(IJLCO.GT.0)THEN
+C       print*,IDLCO,ISOLCO,TCALCLCO
        DO I=1,NGAS
+C        print*,IDGAS(I),ISOGAS(I)
         DO J=1,NLAYER
+C         print*,J,TEMP(J),ABS(TCALCLCO-TEMP(J))
          IF(IDGAS(I).EQ.IDLCO.AND.ISOGAS(I).EQ.ISOLCO)THEN
           IF(ABS(TCALCLCO-TEMP(J)).GT.0.5)THEN
            TCORS1LC(J,I)=PARTF(IDLCO,ISOLCO,TEMP(J),IPTFLCO)/
      1       PARTF(IDLCO,ISOLCO,TCALCLCO,IPTFLCO) 
            TCORS1LC(J,I)=TCORS1LC(J,I)*AAMOUNT(J,I)*1e-20
            TCORS1LC(J,I)=TCORS1LC(J,I)*1e-27
-           print*,'calctempparam',J,tcors1(j,i),tcors1lc(j,i)
-           print*,'calctempparam',I,temp(j),tcalclco
+C           print*,'calctempparam',J,tcors1(j,i),tcors1lc(j,i)
+C           print*,'calctempparam',I,temp(j),tcalclco
           ENDIF
          ENDIF
         ENDDO
@@ -108,11 +111,20 @@ C       overflow)
 
 C      print*,'CALCTEMPPARAM'
 C      DO 18 J=1,NLAYER
-C       PRINT*,'LAYER = ',J
+C       PRINT*,'LAYER, TEMP = ',J, TEMP
+C       PRINT*,(IDGAS(I),I=1,NGAS)
 C       PRINT*,(TCORS1(J,I),I=1,NGAS)
 C       PRINT*,(TCORDW(J,I),I=1,NGAS)
 C       PRINT*,TCORS2(J)
 C18    CONTINUE
+C      print*,'CALCTEMPPARAMLCO'
+C      DO 19 J=1,NLAYER
+C       PRINT*,'LAYER, TEMP = ',J, TEMP
+C       PRINT*,(IDGAS(I),I=1,NGAS)
+C       PRINT*,(TCORS1LC(J,I),I=1,NGAS)
+C       PRINT*,(TCORDW(J,I),I=1,NGAS)
+C       PRINT*,TCORS2LC(J)
+C19    CONTINUE
 
       RETURN
 

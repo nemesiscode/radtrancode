@@ -78,7 +78,9 @@ C     Set minimum fractional error to fix variable.
 
 299   continue
 
-C      print*,'ix,ifix : ',ix,(ifix(j),j=1,nxtemp)
+      do j=1,nxtemp
+       print*,'j,ifix(j) : ',j,ifix(j)
+      enddo
 
       return
 

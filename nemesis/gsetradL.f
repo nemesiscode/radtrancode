@@ -59,24 +59,30 @@ C     ************************************************************************
       include '../radtran/includes/arrdef.f'
       include 'arraylen.f'
 
-      integer nconv,lin,ispace,iscat,xflag,jlevlo,jlevhi,ionpeel
-      real xlat,fwhm,xlatx,hcorrx,tsurf,xlon,xlonx
-      integer nlayer,laytyp,nx,nxx,ncont,jpre
-      integer layint,jsurfx,jalbx,jxscx,jtanx,jprex,nprox
-      real layht
-      real vconv(mconv)
+      integer, intent(in) :: nconv,ispace,iscat,lin,nx
+      integer, intent(in) :: nlayer,layint,laytyp,jpre
+      integer, intent(in) :: nvar,varident(mvar,3)
+      integer, intent(in) :: occult,ionpeel,jlevlo,jlevhi
+      logical, intent(in) :: gasgiant
+      real, intent(in) :: vconv(mconv),fwhm,layht,xlat
+      real, intent(in) :: varparam(mvar,mparam),xlon
+      real, intent(inout) :: tsurf
+      real, intent(out) :: xmap(maxv,maxgas+2+maxcon,maxpro)
+
+
+      integer xflag
+      real xlatx,hcorrx,xlonx
+      integer nxx,ncont
+      integer jsurfx,jalbx,jxscx,jtanx,jprex,nprox
       integer flagh2p,jpara,jradx,jloggx,ierr,ierrx,jfracx
       double precision mu(maxmu),wtmu(maxmu)
       real xn(mx),xnx(mx),stx(mx,mx),xdnu
-      real xmap(maxv,maxgas+2+maxcon,maxpro)
       real xmapx(maxv,maxgas+2+maxcon,maxpro)
       character*100 runname,aname
 
-      integer nvar,varident(mvar,3),i,j,ivar,ivarx
-      real varparam(mvar,mparam)
-      integer nvarx,varidentx(mvar,3),occult
+      integer i,j,ivar,ivarx
+      integer nvarx,varidentx(mvar,3)
       real varparamx(mvar,mparam)
-      logical gasgiant
 
 
 C      print*,'gsetradL debug'

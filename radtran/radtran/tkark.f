@@ -62,8 +62,8 @@ C     *********************************************************************
       integer i,idim,ndim,ico,id,iso,imod
       parameter (P0 = 1.,T0=296.0, idim=500)
       real SQT0,kmamagat
-      parameter (SQT0 = 17.20465053)          ! Sqrt(296.0)
-      parameter (kmamagat = 2.687e4)          ! 1 km-am (1e20 molec/cm2)
+      parameter (SQT0 = 17.20465053)          
+      parameter (kmamagat = 2.687e4)   
       real x,dx,s(idim),A1,A2,humlic,simp_int,Aconst,lx,Cconst,Vconst
       real Bconst,Dconst,Ratio,Tconst
       real z,tmp

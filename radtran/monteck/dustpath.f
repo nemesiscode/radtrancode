@@ -113,7 +113,7 @@ C      calculating the number of molecules per km per cm2
 
        DO 124 J=1,NCONT
          DNOW = (1-F)*DUST(IFL,J) + F*DUST(IFL+1,J)
-         CONT(J)=CONT(J)+DNOW*DUDS*W(I)*MOLWT/AVAGAD
+         CONT(J)=CONT(J)+DNOW*DUDS*W(I)*MOLWT/AVOGAD
 124    CONTINUE
 
 30    CONTINUE

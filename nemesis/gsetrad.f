@@ -74,38 +74,47 @@ C     ************************************************************************
       include '../radtran/includes/arrdef.f'
       include 'arraylen.f'
 
+      integer, intent(in) :: iscat,nmu,isol,lowbc,nf,nconv,ispace
+      integer, intent(in) :: laytyp,layint,lin,nvar,varident(mvar,3)
+      integer, intent(in) :: nlayer,nx,jalb,jxsc,jtan,jpre
+      logical, intent(in) :: gasgiant
+      real, intent(in) :: dist,galb,vconv(mconv),fwhm,layht,xn(mx)
+      real, intent(in) :: aphi,emiss_ang,varparam(mvar,mparam),xlat,xlon
+      real, intent(inout) :: tsurf,sol_ang
+      double precision, intent(in) ::  mu(maxmu),wtmu(maxmu)
+      real, intent(out) :: xmap(maxv,maxgas+2+maxcon,maxpro)
+
+
       integer max_mode, max_wave,iwave,imode
       parameter (max_mode = 10)
       parameter (max_wave = 1000)
 
-      integer nconv,lin,ispace,ncont1,xflag,nwave,np,np1
-      real xlat,fwhm,xlatx,xlonx,tsurf,wave(max_wave),xlon
+      integer ncont1,xflag,nwave,np,np1
+      real xlatx,xlonx,wave(max_wave)
       real xsec(max_mode,max_wave,2),nimag(max_wave)
       real nreal(max_wave),r0,v0,clen,k2(max_wave)
       real srefind(max_wave,2),parm(3),rs(3),vm,nm
       real v1(max_wave),k1(max_wave),vm1,n1(max_wave),n2(max_wave)
-      integer nlayer,laytyp,iscat,nx,nxx,ncont,nx1,iscatmie
-      integer layint,iprfcheck,check_profile,nmode,inorm
-      real layht,xod(maxcon),xscal(maxcon),cwid,pmeth
-      real vconv(mconv),minlam,lambda0
-      integer nmu,isol,lowbc,nf,flagh2p,jalb,jxsc,jtan,jpre
+      integer nxx,ncont,nx1,iscatmie
+      integer iprfcheck,check_profile,nmode,inorm
+      real xod(maxcon),xscal(maxcon),cwid,pmeth
+      real minlam,lambda0
+      integer flagh2p
       integer jsurfx,jalbx,jxscx,jtanx,jprex,nprox,icheck,icont
       integer jradx,npvar,jloggx,npro,nvmr,ierr,ierrx,nxsc
       real x,y
-      double precision mu(maxmu),wtmu(maxmu)
-      real dist,galb,xn(mx),xnx(mx),aphi,emiss_ang,sol_ang
+      real xnx(mx)
       real stx(mx,mx),xdnu,xtest
-      real xmap(maxv,maxgas+2+maxcon,maxpro)
       real xmapx(maxv,maxgas+2+maxcon,maxpro)
       integer jpara,jfracx
       character*100 runname,buffer,aname
 
-      integer nvar,ivar,varident(mvar,3),i,j,nalb,nalb1
-      real varparam(mvar,mparam),alb(maxsec),valb(maxsec)
+      integer ivar,i,j,nalb,nalb1
+      real alb(maxsec),valb(maxsec)
       integer nvarx,varidentx(mvar,3),ivarx,iflagsrom,iflagtest,iflagcb
       real varparamx(mvar,mparam),od1,xsc(maxsec,maxgas)
       real ssa(maxsec,maxgas)
-      logical gasgiant,iflagcloud,cbflag
+      logical iflagcloud,cbflag
       integer NN,NDUST
       REAL DUSTH(MAXLAY),DUST(MAXCON,MAXLAY)
 

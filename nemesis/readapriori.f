@@ -65,9 +65,9 @@ C     ****************************************************************
 
       implicit none
 
-      integer i,j,nx,ix,jx,npro,jsurf,np,jalb,jtan,jpre,jrad,maxlat,k
-      integer jlogg,nmode,nwave,max_mode, max_wave,jxsc,icloud
-      integer jfrac,jfracx,mlong
+      integer i,j,ix,jx,np,maxlat,k
+      integer nmode,nwave,max_mode, max_wave,icloud
+      integer jfracx,mlong
       parameter (max_mode = 10)
       parameter (max_wave = 1000, mlong=20)
       parameter(maxlat=100)
@@ -79,12 +79,18 @@ C     ****************************************************************
       include 'arraylen.f'
 C     ****************************************************************
 
+      integer, intent(in) :: lin,lpre,npro
+      real, intent(in) :: xlat
+      integer,intent(out) :: nvar,lx(mx),varident(mvar,3),jfrac
+      integer,intent(out) :: jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,nx
+      real,intent(out) :: x0(mx),sx(mx,mx),varparam(mvar,mparam)
+
       real xsec(max_mode,max_wave,2),wave(max_wave)
-      real x0(mx),sx(mx,mx),err,err1,ref1,pref(maxpro)
+      real err,err1,ref1,pref(maxpro)
       real eref(maxlat,maxpro),reflat(maxlat),htan,htop,etop
       real dhsphere(maxpro,mlong),hfrac(mlong),efrac
-      real delp,xfac,pknee,eknee,edeep,xdeep,xlat,xlatx,xlonx,pshld
-      real xstep,estep,efsh,xfsh,varparam(mvar,mparam),flat,hknee,pre
+      real delp,xfac,pknee,eknee,edeep,xdeep,xlatx,xlonx,pshld
+      real xstep,estep,efsh,xfsh,flat,hknee,pre
       real ref(maxlat,maxpro),clen,SXMINFAC,arg,valb,alb,refp,errp
       real xknee,xrh,erh,xcdeep,ecdeep,radius,Grav,plim
       real xcwid,ecwid,ptrop,refradius,xsc,ascat,escat,shape,eshape
@@ -95,9 +101,9 @@ C     SXMINFAC is minimum off-diagonal factor allowed in the
 C     a priori covariance matrix
       parameter (SXMINFAC = 0.001)
       real varparamx(mvar,mparam),xnx(mx),sxx(mx,mx),xdiff
-      integer varident(mvar,3),ivar,nvar,nlevel,lin,jsurfx
-      integer jalbx,jtanx,jprex,jradx,jlat,ilat,nlat,lx(mx)
-      integer nprox,nvarx,varidentx(mvar,3),lpre,ioffx,ivarx
+      integer ivar,nlevel,jsurfx
+      integer jalbx,jtanx,jprex,jradx,jlat,ilat,nlat
+      integer nprox,nvarx,varidentx(mvar,3),ioffx,ivarx
       integer npx,ioff,icond,npvar,jloggx,iplanet,jxscx,jlev
       character*100 opfile,buffer,ipfile,runname,rifile,xscfil
       integer nxx,nsec,ncont1,nlay,tmp
@@ -2923,6 +2929,114 @@ C           If set to 0, default Creme Brulee model is used where CB top pressur
             endif
 
             nx = nx+7
+
+
+C********************** ACS-MIR ILS model *******************************
+           elseif(varident(ivar,1).eq.228)then
+
+            ix = nx+1
+            read(27,*)r0,err  !wavenumber offset at lowest wavenumber
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+            ix = nx+1
+            read(27,*)r0,err  !wavenumber offset at highest wavenumber
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+            ix = nx+1
+            read(27,*)r0,err  !Offset of the second gaussian with respect to the first one (assumed spectrally constant)
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+            ix = nx+1
+            read(27,*)r0,err  !FWHM of the main gaussian at the lowest wavenumber
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+            ix = nx+1
+            read(27,*)r0,err  !FWHM of the main gaussian at the highest wavenumber (Assumed linear variation)
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+            ix = nx+1
+            read(27,*)r0,err  !Relative amplitude of the second gaussian with respect to the gaussian at lowest wavenumber
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+            ix = nx+1
+            read(27,*)r0,err  !Relative amplitude of the second gaussian with respect to the gaussian at highest wavenumber (linear variation)
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+C********************** ACS-MIR ILS model *******************************
+           elseif(varident(ivar,1).eq.229)then
+
+            ix = nx+1
+            read(27,*)r0,err  !wavenumber offset (first parameter of second order polynomial)
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+            ix = nx+1
+            read(27,*)r0,err  !wavenumber offset (second parameter of second order polynomial)
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+            ix = nx+1
+            read(27,*)r0,err  !wavenumber offset (third parameter of second order polynomial)
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+            ix = nx+1
+            read(27,*)r0,err  !Offset of the second gaussian with respect to the first one (assumed spectrally constant)
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+            ix = nx+1
+            read(27,*)r0,err  !FWHM of the main gaussian
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+            ix = nx+1
+            read(27,*)r0,err  !Relative amplitude of the second gaussian with respect to the gaussian at lowest wavenumber
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+            ix = nx+1
+            read(27,*)r0,err  !Relative amplitude of the second gaussian with respect to the gaussian at highest wavenumber (linear variation)
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+
+
            elseif(varident(ivar,1).eq.102)then
             ix = nx+1
             read(27,*)x0(ix),err

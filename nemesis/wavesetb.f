@@ -28,7 +28,7 @@ C     ******************************************************************
       include '../radtran/includes/arrdef.f'
       include 'arraylen.f'
       integer nconv,i,j,k,ico,nco,nwave,j1,j2,nconv1,nsub,jj
-      real vwave(mwave),v1,v2,save(100000),temp,vconv(mconv),vcentral
+      real vwave(mwave),v1,v2,save(300000),temp,vconv(mconv),vcentral
       real xdiff,test,vkstart,vkend,vkstep,fwhm,vfil(1000),dv,vj
       real fil(1000)
       logical flag

@@ -1,31 +1,76 @@
 #!/usr/bin/python
 #####################################################################################
 #####################################################################################
-#      	  			        nemesisSO
+#                                   fit_ils_acsmir
 #####################################################################################
 #####################################################################################
 
-# Version of Nemesis for doing retrievals in solar occultation observations
+#Routine for fitting the ILS in ACS-MIR spectra at one tangent height
 
 from nemesis import *
 import matplotlib.pyplot as plt
+from shutil import copyfile
+import shutil
 import numpy as np
 import nemesisf as ns
 import time
 
 runname = raw_input('run name: ')
+alt1 = float(raw_input('Tangent height at which to fit the ILS:'))
+
 nmaxproc = 32  #Maximum number of processors to use at the same time
 
+start = time.time()
 
-#Reading maximum array size in nemesisf in case we need to re-size any array
-mx,my,mconv,mwave,maxpat,maxlay,maxgas,maxsec,mgeom,mvar,mparam,maxmu = check_arraysize_nemesis()
+######################################################
+#        READING THE fit_ils_apr.dat FILE
+######################################################
 
+#This file contains the following information:
+#  First line: Integer indicating the ILS parametrization (e.g 229)
+#  Second line: Number of points for describing parametrization (e.g. 7)
+#  Following lines: Each of the parameters and the a priori error
+
+f = open('fit_ils_apr.dat','r')
+tmp = np.fromfile(f,sep=' ',count=1,dtype='int')
+ilsoption = int(tmp[0])
+tmp = np.fromfile(f,sep=' ',count=1,dtype='int')
+nils = int(tmp[0])
+ilsapr = np.zeros([nils])
+ilserr = np.zeros([nils])
+for i in range(nils):
+    tmp = np.fromfile(f,sep=' ',count=2)
+    ilsapr[i] = float(tmp[0])
+    ilserr[i] = float(tmp[1])
+
+
+######################################################
+#  CREATING NEW DIRECTORY AND MOVING NECESSARY FILES
+######################################################
+
+#Creating directory
+path = 'fit_ils'
+mkdir_p(path)
+
+#Copying necessary files
+copyfile(runname+'.cia', path+'/'+runname+'.cia')
+copyfile(runname+'.sur', path+'/'+runname+'.sur')
+copyfile(runname+'.ref', path+'/'+runname+'.ref')
+copyfile(runname+'.spx', path+'/'+runname+'.spx')
+copyfile(runname+'.set', path+'/'+runname+'.set')
+copyfile(runname+'.fla', path+'/'+runname+'.fla')
+copyfile(runname+'.sha', path+'/'+runname+'.sha')
+copyfile(runname+'.xsc', path+'/'+runname+'.xsc')
+copyfile(runname+'.lls', path+'/'+runname+'.lls')
+copyfile(runname+'.inp', path+'/'+runname+'.inp')
+copyfile('aerosol.ref', path+'/'+'aerosol.ref')
+
+#Moving to directory
+os.chdir(path)
 
 ######################################################
 #    READING INPUT FILES AND SETTING UP VARIABLES
 ######################################################
-
-start = time.time()
 
 #Reading .inp
 ispace,iscat,isolocc,ilbl,inum,ionpeel,woff,niter,philimit,nspec,ioff,lin = read_inp_nemesisl(runname)
@@ -34,6 +79,90 @@ hcorrx = 0.0
 lin = 0            #Does not admit previous retrievals (need to be implemented in this program)
 
 
+#Reading .spx 
+fwhm,xlat,xlon,ngeom,nav,wgeom,nconv1,flat,flon,tanhe,wave,meas,errmeas = read_spx_nemesisl(runname)
+nconv = nconv1[0]
+vconv = np.zeros([nconv])
+vconv[:] = wave[:,0,0]   #In solar occultation, it is assumed that all tangent heights have the same convolution wavenumbers
+
+altspx,ialtspx = find_nearest(tanhe,alt1)
+
+
+#Reading .lls
+ngasact,strlta = read_lls_nemesis(runname)
+
+
+#Reading .ref
+amform,nplanet,xlat,npro,ngas,molwt,gasID,isoID,height,press,temp,vmr = read_ref_nemesis(runname)
+altref,ialtref = find_nearest(height,alt1)
+
+#Reading aerosol.ref
+npro,naero,height,aerodens = read_aerosol_nemesis()
+
+
+######################################################
+#    WRITING NEW FILES WITH THE REQUIRED SETUP
+######################################################
+
+
+#Writing .ref file
+npro = 4
+newheight = np.zeros([npro])
+newpress = np.zeros([npro])
+newtemp = np.zeros([npro])
+newvmr = np.zeros([npro,ngas])
+
+ll = write_ref_nemesis(runname,amform,nplanet,xlat,npro,ngas,molwt,gasID,isoID,\
+                       height[ialtref:ialtref+npro],press[ialtref:ialtref+npro],temp[ialtref:ialtref+npro],vmr[ialtref:ialtref+npro,:])
+
+
+#Writing aerosol.ref file
+ll = write_aerosol_nemesis(npro,naero,height[ialtref:ialtref+npro],aerodens[ialtref:ialtref+npro,:])
+
+#Writing new .spx 
+fwhm = -0.1
+ngeom = 1
+ialtspx1 = int(ialtspx)
+
+ll = write_spx_nemesisSO(runname,fwhm,xlat,xlon,nconv,ngeom,tanhe[ialtspx],wave[:,ialtspx],meas[:,ialtspx],errmeas[:,ialtspx])
+
+
+#Writing new .inp file (ALL active gases are retrieved + tangent pressure fixed + option 229 for ILS fitting)
+fapr = open(runname+'.apr','w')
+str1 = 'ILS fit for ACS-MIR'
+fapr.write(str1+' \n')
+
+gasactID = np.zeros([ngasact],dtype='int')
+isoactID = np.zeros([ngasact],dtype='int')
+for i in range(ngasact):
+    nwave,vmin,delv,npress,ntemp,gasID1,isoID1,presslevels,templevels = read_ltahead_nemesis(strlta[i])
+    gasactID[i] = gasID1
+    isoactID[i] = isoID1
+
+nvar = ngasact + 2
+fapr.write('\t %i \n' % (nvar))
+for i in range(ngasact):
+    fapr.write('%i \t %i \t %i \n' % (gasactID[i],isoactID[i],3))
+    fapr.write('%f \t %f \n' % (1.0,0.5))
+
+fapr.write('%i \t %i \t %i \n' % (666,0,666))
+fapr.write('%7.5f \n' % (altref))
+errpress = 1.0e-20
+fapr.write('%7.5e \t %7.5e \n' % (press[ialtref],errpress))
+
+fapr.write('%i \t %i \t %i \n' % (ilsoption,0,ilsoption))
+for i in range(nils):
+    fapr.write('%7.5f \t %7.5f \n' % (ilsapr[i],ilserr[i]))
+fapr.close()
+
+
+######################################################
+#    RUNNING THE INVERSE METHOD (COPYING NEMESISSO)
+######################################################
+
+#Reading maximum array size in nemesisf in case we need to re-size any array
+mx,my,mconv,mwave,maxpat,maxlay,maxgas,maxsec,mgeom,mvar,mparam,maxmu = check_arraysize_nemesis()
+
 
 #Reading .spx 
 fwhm,xlat,xlon,ngeom,nav,wgeom,nconv1,flat,flon,tanhe,wave,meas,errmeas = read_spx_nemesisl(runname)
@@ -41,38 +170,17 @@ nconv = nconv1[0]
 vconv = np.zeros([nconv])
 vconv[:] = wave[:,0,0]   #In solar occultation, it is assumed that all tangent heights have the same convolution wavenumbers
 
-
-
-
 #Reading .ref
 amform,nplanet,xlat,npro,ngas,molwt,gasID,isoID,height,press,temp,vmr = read_ref_nemesis(runname)
-
-
-
 
 #Read a priori
 lpre = 0
 nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,jfrac,nx,x0,sx,lx = ns.readapriori(runname,lin,lpre,xlat,npro)
 
-
-
 #Reading .set
 nmu,mu,wtmu,nf,nphi,isol,dist,lowbc,galb,tsurf,layht,nlayer,laytyp,layint = read_set_nemesis(runname)
 if nlayer != npro-1:
     sys.exit('error in nemesisSO :: Number of layers in .set file must be equal to npro-1 as we are in solar occultations')
-
-
-#Reading .fla
-inormal,iray,ih2o,ich4,io3,inh3,iptf,imie,iuv = read_fla_nemesis(runname)
-
-
-#Reading .cia 
-aname,xdnu,npara = read_cia_nemesis(runname)
-flagh2p=0
-if npara!=0:
-    flagh2p=1
-
-
 
 
 #Loading first state vector
@@ -84,9 +192,6 @@ xa[0:nx] = x0[0:nx]
 sa[0:nx,0:nx] = sx[0:nx,0:nx]
 
 
-
-
-
 #Calculating measurement error covariance matrix and measurement vector
 ny = ngeom*nconv
 se = np.zeros([ny,ny])
@@ -96,6 +201,10 @@ y = np.reshape(np.transpose(meas[:,:,0]),[ny])
 for i in range(ny):
     se[i,i] = se1[i]   #Assumed to be diagonal
 
+#Opening .itr file to write some information in each iteration so that we can keep track of what's going on
+if niter>0:
+    fitr = open(runname+'.itr','w')
+    fitr.write("\t %i \t %i \t %i\n" % (nx,ny,niter))
 
 
 #If options 228 or 229 are set (retrieval of ACS-MIR instrument line shape) then a .fil reference file must be generated
@@ -135,10 +244,6 @@ for i in range(nvar):
         ll = write_fil_acsmir_v2(runname,nconv,vconv,par1,par2,par3,par4,par5,par6,par7)
 
 
-
-
-
-
 #Calculating the calculation wavelengths
 if ilbl==2:
     nwave,vwave = wavesetc_nemesis(runname,nconv,vconv,fwhm)
@@ -146,17 +251,6 @@ elif ilbl==0:
     nwave,vwave = wavesetb_nemesis(runname,nconv,nconv,fwhm)
 else:
     sys.exit('error :: ilbl must be either 0 (correlated-k) or 1 (lbl)')
-
-
-
-
-
-#Opening .itr file to write some information in each iteration so that we can keep track of what's going on
-if niter>0:
-    fitr = open(runname+'.itr','w')
-    fitr.write("\t %i \t %i \t %i\n" % (nx,ny,niter))
-
-
 
 
 #Checking which elements of the state vector must be fixed
@@ -170,21 +264,17 @@ heightlay[0:nlayer] = height[0:npro-1]
 ll = write_heightlay_nemesis(nlayer,heightlay)
 
 
-
-######################################################
-#    CALCULATE FIRST FORWARD MODEL AND JACOBIAN
-######################################################
-
-
 #Calculating Jacobian
 print('nemesisSO :: Calculating Jacobian matrix kk')
-ny,yn,kk = jacobian_nemesisSO(runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,fwhm,ispace,
-                              ilbl,xlat,xlon,lin,nvar,varident,varparam,jpre,nx,xn,ifix,nmaxproc)
+ny,yn,kk = jacobian_nemesisSO(runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,fwhm,ispace,ilbl,\
+                              xlat,xlon,lin,nvar,varident,varparam,jpre,nx,xn,ifix,nmaxproc)
+
 
 
 #Calculate gain matrix and average kernels
 print('nemesisSO :: Calculating gain matrix')
 dd,aa = calc_gain_matrix_nemesis(nx,ny,kk,sa,se)
+
 
 
 
@@ -200,9 +290,6 @@ print('chisq/ny = '+str(chisq/float(ny)))
 ll = assess_nemesis(nx,ny,kk,sa,se)
 
 
-######################################################
-#        RUN RETRIEVAL FOR EACH ITERATION
-######################################################
 
 #Initializing some variables
 alambda = 1.0   #Marquardt-Levenberg-type 'braking parameter'
@@ -237,9 +324,10 @@ for it in range(niter):
         #Need to be implemented
 
     #Test to see if any vmrs have gone negative.
+    xflag = 0
+    flagh2p = 0
     xnx1 = np.zeros([mx])
     xnx1[0:nx] = xn1[0:nx]
-    xflag=0
     ncont,xmap,ierr = ns.subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,xlon,nvar,varident,varparam,nx,xnx1,jpre,flagh2p)
 
     if (ierr==1):
@@ -272,13 +360,9 @@ for it in range(niter):
         par7 = xn1[iils[6]]
         ll = write_fil_acsmir_v2(runname,nconv,vconv,par1,par2,par3,par4,par5,par6,par7)
 
+    ny,yn1,kk1 = jacobian_nemesisSO(runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,fwhm,ispace,\
+                                    ilbl,xlat,xlon,lin,nvar,varident,varparam,jpre,nx,xn1,ifix,nmaxproc)
 
-    #Calculate test spectrum using trial state vector xn1. 
-    #Put output spectrum into temporary spectrum yn1 with
-    #temporary kernel matrix kk1. Does it improve the fit? 
-    ny,yn1,kk1 = jacobian_nemesisSO(runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,fwhm,ispace,
-                              ilbl,xlat,xlon,lin,nvar,varident,varparam,jpre,nx,xn1,ifix,nmaxproc)
- 
 
     #Calculate value of cost function phi
     chisq = 0.0
@@ -286,7 +370,7 @@ for it in range(niter):
     print('it.   alambda   ophi   phi')
     print(str(it)+'   '+str(alambda)+'   '+str(ophi)+'   '+str(phi))
     print('chisq/ny = '+str(chisq/float(ny)))
-  
+
     #Does the trial solution fit the data better?
     if (phi <= ophi):
         print('Successful iteration. Updating xn,yn and kk')
@@ -322,18 +406,11 @@ for it in range(niter):
 #Calculating final covariance matrix
 sm,sn,st = calc_serr_nemesis(nx,ny,sa,se,dd,aa)
 
+
 #Make sure errors stay as a priori for kiter < 0
 if niter<0:
     st = sa
 
-
-
-######################################################
-#       CALCULATE FORWARD MODEL FOR EACH GAS
-######################################################
-
-
-specret,specretgas = calcgascn_nemesisSO(runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,fwhm,ispace,ilbl,xlat,xlon,lin,nvar,varident,varparam,jpre,nx,xn,WRITE_GCN=True)
 
 
 ######################################################
@@ -360,12 +437,47 @@ nspec = 1
 ll = write_mre_nemesis(runname,iform,ispace,xlat,xlon,npro,nvar,varident,varparam,nx,ny,y,yn,se,\
                        xa,sa,xn,st,ngeom,nconv1,vconv1,gasgiant,jpre,jrad,jlogg,iscat,lin,nspec)
 
-#Writing the .cov file
-ll = write_cov_nemesis(runname,npro,nvar,varident,varparam,nx,ny,sa,sm,sn,st,se,aa,dd,kk)
+
+#Reading .mre file
+lat,lon,ngeom,ny,wave,specret,specmeas,specerrmeas,nx,varident,nxvar,varparam,aprprof,aprerr,retprof,reterr = read_mre_nemesis(runname)
+
+
+#Writing fit_parameters_ils.dat to store results
+os.chdir('../')
+fout = open('fit_parameters_ils.dat','w')
+str1 = 'Tangent height  ::'
+fout.write('%s \t %7.4f \n' % (str1,altref))
+str2 = 'Wavenumber range ::'
+fout.write('%s \t %7.6f \t %7.6f \n' % (str2,vconv.min(),vconv.max()))
+str3 = 'ILS parameters ::'
+fout.write(str3+'\n')
+for i in range(nils):
+    fout.write('\t %7.6f \t  %7.6f \n' % (retprof[i,ngasact+1],reterr[i,ngasact+1]))
+fout.close()
+
+#Making plot
+axis_font = {'size':'20'}
+fig = plt.figure(figsize=(20,8))
+wavemin = vconv.min()
+wavemax = vconv.max()
+ax = plt.axes()
+ax.set_xlim(wavemin,wavemax)
+ax.tick_params(labelsize=20)
+ax.ticklabel_format(useOffset=False)
+plt.xlabel('Wavenumber (cm$^{-1}$)',**axis_font)
+plt.ylabel('Transmission',**axis_font)
+im = ax.plot(wave[:,0],meas[:,0],color='black',linewidth=2.)
+ax.fill_between(wave[:,0],specmeas[:,0]-specerrmeas[:,0],specmeas[:,0]+specerrmeas[:,0],alpha=0.3,color='black')
+im = ax.plot(vconv[0:nconv],yn[0:nconv],linewidth=2.)
+plt.grid()
+fig.savefig('ilsfit.png',dpi=100)
+
+
+#Removing directory
+shutil.rmtree(path)
 
 
 #Finishing pogram
 end = time.time()
 print('Model run OK')
 print(' Elapsed time (s) = '+str(end-start))
-

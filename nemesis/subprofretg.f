@@ -128,6 +128,8 @@ C     ***********************************************************************
       REAL XLDEEP,XLHIGH,HVS,dlogp,XPC
       COMMON /SROM223/PCUT
 
+      CALL RESERVEGAS
+
 C----------------------------------------------------------------------------
 C
 C     First zero-fill HREF, PREF, TREF and VMRREF arrays
@@ -3981,6 +3983,16 @@ C         print*,'Two cloud layering'
          NP = 8
 
         ELSEIF(VARIDENT(IVAR,1).EQ.227)THEN
+C         print*,'Creme Brulee layering'
+         IPAR = -1
+         NP = 7
+
+        ELSEIF(VARIDENT(IVAR,1).EQ.228)THEN
+C         print*,'Creme Brulee layering'
+         IPAR = -1
+         NP = 7
+
+        ELSEIF(VARIDENT(IVAR,1).EQ.229)THEN
 C         print*,'Creme Brulee layering'
          IPAR = -1
          NP = 7

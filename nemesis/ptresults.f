@@ -77,6 +77,7 @@ C----------------------------------------------------------------------------
       DATA (SNAME(J),J=1,12) /'Mercury','Venus','Earth','Mars',
      & 'Jupiter','Saturn', 'Uranus','Neptune','Pluto',
      & 'Sun','Titan','Prplanet'/
+
 C----------------------------------------------------------------------------
 C
 C
@@ -84,6 +85,10 @@ C     READING .REF FILE
 C
 C
 C----------------------------------------------------------------------------
+
+C     Read in reference gas information data
+      CALL RESERVEGAS
+
 
       CALL prompt('Enter run name : ')
       READ(5,1)buffer
@@ -173,6 +178,7 @@ C
 C
 C----------------------------------------------------------------------------
 
+      print*,'PTresults :: Opening .unc file'
 
       call file(runname,uncfile,'unc')
       inquire(file=uncfile,exist=uncexist)
@@ -206,11 +212,13 @@ C
 C----------------------------------------------------------------------------
 
 
+      PRINT*,'PTresults :: Calculating pressure levels'
+
 C     First find level immediately below the reference altitude
 C     Then calculate scale heights at each level
       JTAN=1
       DO I=1,NPRO
-       IF(H(I).LT.HTAN)THEN
+       IF(H(I).LE.HTAN)THEN
         JTAN=I
        ENDIF
        DO J=1,NVMR
@@ -221,13 +229,12 @@ C     Then calculate scale heights at each level
 
        IF(AMFORM.EQ.0)THEN
         XMOLWT=MOLWT
-       ELSEIF(AMFORM.EQ.1)THEN
+       ELSE
         XMOLWT=CALCMOLWT(NVMR,XVMR,IDGAS,ISOGAS)
        ENDIF
 
        SCALE(I)=R*TRET(I)/(XMOLWT*G)
        SCALEERR(I)=R*TRETERR(I)/(XMOLWT*G)
-
       ENDDO
 
 C     Calculate pressure levels just above and below reference height
@@ -255,7 +262,6 @@ C     Calculate pressure levels from HTAN to the top of the atmosphere
 301   CONTINUE
 
 c     Calculate pressure levels from HTAN to the bottom of the atmosphere
-      PRINT*,JTAN
       DO 311 I=JTAN-1,1,-1
         SH = 0.5*(SCALE(I) + SCALE(I+1))
         SHERR = 0.5*SQRT((SCALEERR(I))**2.0 + (SCALEERR(I+1))**2.0)
@@ -275,6 +281,7 @@ C
 C
 C----------------------------------------------------------------------------
     
+      PRINT*,'PTresults :: Calculating density profiles'
 
       DO I=1,NPRO
 
@@ -318,7 +325,8 @@ C
 C
 C----------------------------------------------------------------------------
 
-      
+      PRINT*,'PTresults :: Writing results into .ptp file'      
+
       call file(runname,ptpfile,'ptp')
       open(UNIT=3,file=ptpfile,status='unknown')
       write(3,*)npro
@@ -334,5 +342,8 @@ C----------------------------------------------------------------------------
       ENDDO
       close(unit=3)
 
+      PRINT*,'Calculation complete'
+
       END
+
 

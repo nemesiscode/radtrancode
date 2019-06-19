@@ -149,7 +149,6 @@ C-----------------------------------------------------------------------
       READ(*,1000)OpFile
 1     FORMAT(A)
 
-
 C-----------------------------------------------------------------------
 C
 C       Reading all required parameters by CIRSrtf_wave from .cdr file
@@ -159,7 +158,7 @@ C-----------------------------------------------------------------------
       lcdr=37
       CALL file(opfile,runname1,'cdr')
       open(lcdr,file=runname1,status='old')
-
+      print*,runname1
       read(lcdr,*)dist
       read(lcdr,*)fwhm
       read(lcdr,*)ispace
@@ -205,11 +204,15 @@ C-----------------------------------------------------------------------
         call wavesetc(opfile,vkstart,vkend,vkstep,nconv,vconv,
      1   fwhm,ishape,nwave,vwave)
         print*,'nwave = ',nwave
+c        do i=1,nwave
+c         print*,vwave(i)
+c        enddo 
+c        pause
       endif
 
 
       if(ilbl.eq.0)then  
-        CALL readkkhead(runname,vkstart,vkend,vkstep)
+        CALL readkkhead(opfile,vkstart,vkend,vkstep)
         print*,'fwhm = ',fwhm
         call wavesetb(opfile,vkstart,vkend,vkstep,nconv,vconv,
      1   fwhm,nwave,vwave)             

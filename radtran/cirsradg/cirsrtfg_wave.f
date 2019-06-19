@@ -29,6 +29,7 @@ C	vconv(nconv)	REAL	Convolution wavenumbers.
 C	nconv		INT	Number of convolution wavenumbers.
 C	npath1		INT	Number of paths in calculation.
 C
+C       iscat           INT     Scattering flag mode
 C
 C	Output variables:
 C	calcout(maxout3) REAL	Output values at each wavenumber for each
@@ -36,9 +37,6 @@ C				output type for each path
 C	gradients(maxout4) REAL	Calculate rate of change of output with 
 C				each of the NV variable elements, for
 C				each wavenumber and for each path.
-C	qfla	LOGICAL Flag for iscat=5 case. If true then calculate
-C                       reduced extinction cross section following Pinhas
-C                       et al. for forward scattering cases. 	
 C
 C_FILE:	unit=4		dump.out
 C
@@ -85,42 +83,56 @@ C     parameters defined in pathcom.
 C     ../includes/laygrad.f holds the variables for use in gradient 
 C     calculations.
 
-      INTEGER iparam,ipro,ntab1,ntab2,nkl,ii
+      integer :: iparam,ipro,ntab1,ntab2
 C     NTAB1: = NPATH*NWAVE, must be less than maxout3
 C     NTAB2: = NPATH*NWAVE*NV, must be less than maxout4.
-      INTEGER nwave,i,j,nparam,jj,icont,nconv
+      integer :: i,j,nparam,jj,icont,status
 
-      INTEGER itype1,npath1,ispace,nem,ILBL,ishape
-      REAL fwhm1,vem(maxsec),emissivity(maxsec),tsurf
-      real gtsurf(maxpat)
-      REAL RADIUS1
+      integer :: ilbl,ishape
+      real :: gtsurf(maxpat)
+      real :: RADIUS1
 C     NB: The variables above have the added '1' to differentiate the 
 C     variables passed into this code from that defined in
 C     ../includes/pathcom.f. The definitions are explained above.
 
-      REAL dist,xref,xcomp
-      INTEGER inormal,iray
+      real :: xref,xcomp,vv
 C     XREF: % complete
 C     XCOMP: % complete printed in increments of 10.
-      REAL vwave(nwave),output(maxpat),vconv(nconv)
-      REAL doutputdq(maxpat,maxlay,maxgas+2+maxcon)
-      REAL doutmoddq(maxpat,maxgas+2+maxcon,maxpro)
-      REAL doutdx(maxpat,maxv),gradtsurf(maxout3)
-      REAL tempgtsurf(maxout3)
-      REAL tempout(maxout3),tgrad(maxout4)
-      REAL calcout(maxout3),gradients(maxout4)
-      REAL xmap(maxv,maxgas+2+maxcon,maxpro)
-      REAL y(maxout),yout(maxout),vv,ygt(maxout),youtgt(maxout)
-      CHARACTER*100 drvfil,radfile,xscfil,runname,sfile
-      CHARACTER*100 klist, FWHMFILE
-      INTEGER iwave,ipath,k,igas,ioff1,ioff2,iv,nv,iscat
-      REAL zheight(maxpro),radextra
-      INTEGER nsw,isw(maxgas+2+maxcon),iswitch,rdamform
-      LOGICAL scatterf,dustf,solexist,fexist,qfla
-      INTEGER NFWHM,MFWHM
-      PARAMETER (MFWHM=1000)
-      LOGICAL FWHMEXIST
-      REAL VFWHM(MFWHM),XFWHM(MFWHM)
+      character (len=100) :: drvfil,radfile,xscfil,runname,sfile
+      character (len=100) :: klist, FWHMFILE
+      integer :: iwave,ipath,k,igas,ioff1,ioff2,iv,ii,nkl
+      real :: zheight(maxpro),radextra
+      integer :: nsw,iswitch,rdamform,npath1
+      logical :: scatterf,dustf,solexist,fexist,qfla,fwhmexist
+      integer :: NFWHM,MFWHM
+      parameter (MFWHM=1000)
+      real :: VFWHM(MFWHM),XFWHM(MFWHM)
+
+c     Allocatable arrays
+      real, allocatable :: output(:),doutputdq(:,:,:)
+      real, allocatable :: doutmoddq(:,:,:),doutdx(:,:),tempgtsurf(:)
+      real, allocatable :: tempout(:),tgrad(:)
+      real, allocatable :: y(:),yout(:),ygt(:),youtgt(:)    
+      integer, allocatable :: isw(:)
+
+c      real :: output(maxpat),doutputdq(maxpat,maxlay,maxgas+2+maxcon)
+c      real ::  doutmoddq(maxpat,maxgas+2+maxcon,maxpro)
+c      real :: doutdx(maxpat,maxv),tempgtsurf(maxout3)
+c      real :: tempout(maxout3),tgrad(maxout4)
+c      real :: y(maxout),yout(maxout),ygt(maxout),youtgt(maxout) 
+c      integer :: isw(maxgas+2+maxcon)
+
+C     Inputs and outputs
+      real, intent(in) :: dist,fwhm1,tsurf
+      integer, intent(in) :: inormal,iray,ispace,nwave,nconv
+      integer, intent(in) :: itype1,nem,nv,iscat
+      real, intent(in) :: vwave(nwave),vconv(nconv),vem(maxsec)
+      real, intent(in) :: xmap(maxv,maxgas+2+maxcon,maxpro)
+      real, intent(In) :: emissivity(maxsec)
+
+      real, intent(out) :: gradtsurf(maxout3)
+      real, intent(out) :: calcout(maxout3),gradients(maxout4)
+
 
 C     Need simple way of passing planetary radius to nemesis
       INCLUDE '../includes/planrad.f'
@@ -187,7 +199,7 @@ C Read the ktables or lbltables
          WRITE(*,1050)klist
 
          WRITE(*,*)'     CALLING read_klist'
-         CALL read_klist (klist, ngas, idgas, isogas, nwave, vwave,nkl)
+         CALL read_klist (klist, ngas, idgas, isogas, nwave, vwave)
          WRITE(*,*)'     read_klist COMPLETE'
          WRITE(*,*)' '
       ELSE
@@ -240,6 +252,13 @@ C	Call CIRSradg_wave.
 C
 C=======================================================================
 
+      allocate(isw(maxgas+2+maxcon),STAT=status)
+      if(status.gt.0)then
+       print*,'error in CIRSrtfg_wave.f'
+       print*,'isw was not properly allocated'
+       stop
+      endif
+
       nparam = ngas + 1 + ncont
       IF(flagh2p.EQ.1)nparam = nparam + 1
 
@@ -284,6 +303,23 @@ C Determine the % complete ...
       WRITE(*,*)' '
       WRITE(*,*)' Waiting for CIRSradg_wave etal to complete ...'
       xcomp = 0.0
+
+
+C Allocating variables
+      allocate(output(maxpat),tempgtsurf(maxout3),STAT=status)
+      if(status.gt.0)then
+       print*,'error in CIRSrtfg_wave.f'
+       print*,'output and tempgtsurf were not properly allocated'
+       stop
+      endif
+
+      allocate(tempout(maxout3),tgrad(maxout4),STAT=status)
+      if(status.gt.0)then
+       print*,'error in CIRSrtfg_wave.f'
+       print*,'tempout and tgrad were not properly allocated'
+       stop
+      endif
+
       DO 1000 iwave=1,nwave
         if(nwave.gt.1)then
           xref = 100.0*FLOAT(iwave - 1)/FLOAT(nwave - 1)
@@ -312,7 +348,13 @@ C          need the current height profile
            call readprfheight(runname,npro,zheight)
            radextra=zheight(npro)
         endif
-    
+  
+        allocate(doutputdq(maxpat,maxlay,maxgas+2+maxcon),STAT=status)
+        if(status.gt.0)then
+         print*,'error in CIRSrtfg_wave.f'
+         print*,'doutputdq was not properly allocated'
+         stop
+        endif
 
 	CALL cirsradg_wave (dist,inormal,iray,delh,nlayer,npath,ngas,
      1  press,temp,pp,amount,iwave,ispace,AMFORM,vv,nlayin,
@@ -320,15 +362,27 @@ C          need the current height profile
      3  nem, vem, emissivity, tsurf, gtsurf, RADIUS1,
      4  flagh2p,hfp,radextra,nsw,isw,output,doutputdq)
 
-
 C Convert from rates of change with respect to layer variables to rates
 C of change of .prf profile variables.
+        allocate(doutmoddq(maxpat,maxgas+2+maxcon,maxpro),STAT=status)
+        if(status.gt.0)then
+         print*,'error in CIRSrtfg_wave.f'
+         print*,'doutmoddq was not properly allocated'
+         stop
+        endif
         CALL map2pro(nparam,doutputdq,doutmoddq)
-
+        deallocate(doutputdq)
 
 C Convert from rates of change of .prf profile variables to rates of
 C change of desired variables.
+        allocate(doutdx(maxpat,maxv),STAT=status)
+        if(status.gt.0)then
+         print*,'error in CIRSrtfg_wave.f'
+         print*,'doutdx was not properly allocated'
+         stop
+        endif
         CALL map2xvec(nparam,npro,npath,nv,xmap,doutmoddq,doutdx)
+        deallocate(doutmoddq)
 
         DO ipath=1,npath
           ioff1 = nwave*(ipath - 1) + iwave
@@ -352,10 +406,27 @@ C     1      tempgtsurf(ioff1)
             tgrad(ioff2) = doutdx(ipath,iv)
           ENDDO
         ENDDO
+        deallocate(doutdx)
 1000  CONTINUE
+
+      deallocate(output,isw)
 
 C Convolve output calculation spectra with a square bin of width FWHM to
 C get convoluted spectra.
+      allocate(yout(maxout),youtgt(maxout),STAT=status)
+      if(status.gt.0)then
+       print*,'error in CIRSrtfg_wave.f'
+       print*,'yout and youtgt were not properly allocated'
+       stop
+      endif
+
+      allocate(y(maxout),ygt(maxout),STAT=status)
+      if(status.gt.0)then
+       print*,'error in CIRSrtfg_wave.f'
+       print*,'y and ygt were not properly allocated'
+       stop
+      endif
+
       DO ipath=1,npath
 
         DO iwave=1,nwave
@@ -406,13 +477,18 @@ C            print*,'YYY',iconv,iv,ipath,ioff2,gradients(ioff2)
         ENDDO
       ENDDO
 
+      deallocate(tempgtsurf,tempout)
+      deallocate(yout,youtgt)
+      deallocate(y,ygt)
+
 C=======================================================================
 C
 C	Wrap up: formats, return, and end.
 C
 C=======================================================================
+
       DO ii=101,nkl+100
-	CLOSE(UNIT=ii)
+        CLOSE(UNIT=ii)
       ENDDO
 
       CALL close_scat(ncont)

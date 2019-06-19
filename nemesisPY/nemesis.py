@@ -70,7 +70,7 @@ def check_arraysize_nemesis():
     """
 
     mx = 401
-    my = 1024
+    my = 8192
     mconv = my
     mwave = 20000
     maxout = 500000
@@ -121,6 +121,102 @@ def find_nearest(array, value):
     array = np.asarray(array)
     idx = (np.abs(array - value)).argmin()
     return array[idx],idx
+
+
+###############################################################################################
+
+def plot_itr_nemesis(runname):
+
+    """
+    FUNCTION NAME : plot_itr_nemesis()
+
+    DESCRIPTION : Plot the data stored in the .itr file
+
+    INPUTS : 
+
+        runname :: Name of the Nemesis run
+
+    OPTIONAL INPUTS: none
+            
+    OUTPUTS : none
+ 
+    CALLING SEQUENCE:
+
+        ll = plot_itr_nemesis(runname)
+
+    MODIFICATION HISTORY : Juan Alday (17/06/2019)
+
+    """
+
+    #Opening file
+    f = open(runname+'.itr','r')
+
+    tmp = np.fromfile(f,sep=' ',count=3,dtype='int')   
+    nx = int(tmp[0])
+    ny = int(tmp[1])
+    niter = int(tmp[2]) 
+
+    
+
+
+
+###############################################################################################
+
+def setifix_nemesis(nx,xa,sa,nvar,varident,varparam,npro):
+
+    """
+    FUNCTION NAME : setifix_nemesis()
+
+    DESCRIPTION : Subroutine to see if the fractional error on any of the state vector
+                  variables is so small that it isn't worth bothering to calculate the 
+                  associated row in the kk matrix.  
+
+    INPUTS : 
+
+        nx :: Number of elements in state vector
+        xa(nx) :: A priori state vector
+        sa(nx,nx) :: A priori covariance matrix
+        nvar :: Number of variables to retrieve
+        varident(nvar,3) :: Variable parameterisation id
+        varparam(nvar,nparam) :: Other parameters defining variable parameterisation
+        npro :: Number of levels in atmospheric profiles
+
+    OPTIONAL INPUTS: none
+            
+    OUTPUTS : 
+     
+        ifix(nx) :: Array indicating if no row of the kk matrix is required
+
+    CALLING SEQUENCE:
+ 
+        ifix = setifix_nemesis(nx,xa,sa,nvar,varident,varparam,npro)
+
+    MODIFICATION HISTORY : Juan Alday (10/06/2019)
+
+    """
+ 
+    nxvar = npvar_nemesis(nvar,npro,varident,varparam)
+    logvar = logflag_nemesis(nvar,npro,varident,varparam)
+
+    ifix = np.zeros([nx],dtype='int')    
+
+    ix = 0
+    for i in range(nvar):
+        for j in range(nxvar[i]):
+            xa1 = xa[ix]
+            ea1 = np.sqrt(abs(sa[ix,ix]))
+
+            if logvar[ix]==1:
+                xa1 = np.exp(xa1)
+                ea1 = xa1*ea1
+           
+            ferr = abs(ea1/xa1)
+            if ferr <= minferr:
+                ifix[ix]=1
+
+            ix = ix + 1
+
+    return ifix
 
 
 ###############################################################################################
@@ -546,6 +642,87 @@ def write_cdr_nemesis(runname,dist,fwhm,ispace,ilbl,nwave,vwave,npath,nconv,vcon
     dummy = 1
     return dummy
 
+###############################################################################################
+
+def write_gdr_nemesis(runname,dist,fwhm,ispace,ilbl,itype,npath,nconv,vconv,\
+                      nem,vem,emissivity,tsurf,nx,nvmr,ncont,npro,xmap):
+
+    """
+    FUNCTION NAME : write_gdr_nemesis()
+
+    DESCRIPTION : Writes a file with .gdr extension, which has the required information to run a 
+                  CIRSdrvg_wavePY simulation, apart from the standard required files (.prf,.pat,.xsc...) 
+
+    INPUTS :
+ 
+        runname :: Name of the Nemesis run
+        dist :: Distance from parent star (AU)
+        fwhm :: Full-Width-at-Half-Max
+        ispace :: Wavenumbers (0) or wavelengths (1)
+        ilbl :: Flag indicating whether to use correlated-k (0) or LBL (2)
+        itype :: Value designating the chosen scattering routine
+        npath :: Number of atmospheric paths to be computed
+        nconv :: Number of convolution wavelengths
+        vconv(nconv) :: Convolution wavelengths
+        nem :: Number of points in surface emissivity spectrum
+        vem(nem) :: Wavenumbers for describing the surface emissivity spectrum
+        emissivity(nem) :: Surface emissivity spectrum
+        tsurf :: Surface temperature (K)
+        nx :: Number of elements in state vector
+        nvmr :: Number of gases in atmosphere
+        ncont :: Number of aerosol types in atmosphere
+        npro :: Number of points in atmospheric profiles
+        xmap(nx,nvmr+3+ncont,npro) :: Matrix giving rate of change of elements of T/P and aerosol 
+                                      .prf values with each of the NV variables.
+
+
+    OPTIONAL INPUTS: None
+            
+    OUTPUTS : 
+
+        Nemesis .gdr file 
+
+    CALLING SEQUENCE:
+ 
+        ll = write_gdr_nemesis(runname,dist,fwhm,ispace,ilbl,itype,npath,nconv,vconv,nem,vem,emissivity,tsurf,nx,nvmr,ncont,npro,xmap)
+
+    MODIFICATION HISTORY : Juan Alday (18/06/2019)
+
+    """
+
+    fcdr = open(runname+'.gdr','w')
+
+    fcdr.write('%7.5f \n' % (dist))
+    fcdr.write('%7.5f \n' % (fwhm))
+    fcdr.write('%i \n' % (ispace))
+    fcdr.write('%i \n' % (ilbl))
+    fcdr.write('%i \n' % (itype))
+    fcdr.write('%i \n' % (npath))
+    fcdr.write('%i \n' % (nconv))
+    for i in range(nconv):
+        fcdr.write('%13.10f \n' % (vconv[i]))
+
+    fcdr.write('%i \n' % (nem))
+    for i in range(nem):
+        fcdr.write('%13.10f \t %7.5f \n' % (vem[i],emissivity[i]))
+    fcdr.write('%7.5f \n' % (tsurf))
+
+    fcdr.write('%i \n' % (nx))
+    fcdr.write('%i \n' % (nvmr))
+    fcdr.write('%i \n' % (ncont))
+    fcdr.write('%i \n' % (npro))
+    for i in range(nx):
+        for j in range(nvmr+3+ncont):
+            for k in range(npro):
+                fcdr.write('%13.10f \n' % (xmap[i,j,k]))
+    fcdr.close()
+
+    dummy = 1
+    return dummy
+
+
+
+
 
 ###############################################################################################
 
@@ -686,7 +863,7 @@ def read_ref_nemesis(runname, MakePlot=False, SavePlot=False):
 
     #Make plot if keyword is specified
     if MakePlot == True:
-        axis_font = {'fontname':'Arial', 'size':'20'}
+        axis_font = {'size':'20'}
         fig, (ax1, ax2, ax3) = plt.subplots(1, 3, sharey=True,figsize=(20,8))
         ax1.plot(press,height,'k-',linewidth=2.)
         ax1.set_xlabel('Pressure (atm)',**axis_font)
@@ -886,7 +1063,7 @@ def read_aerosol_nemesis(MakePlot=False, SavePlot=False):
 
     #Make plot if keyword is specified
     if MakePlot == True:
-        axis_font = {'fontname':'Arial', 'size':'20'}
+        axis_font = {'size':'20'}
         fig = plt.figure(figsize=(10,15))
         ax = plt.axes()
         ax.tick_params(labelsize=20)
@@ -2369,6 +2546,125 @@ def read_set_nemesis(runname):
 ###############################################################################################
 
 
+def lblconv_nemesis(runname,fwhm,ishape,nwave,vwave,y,nconv,vconv):
+
+    """
+        FUNCTION NAME : lblconv_nemesis()
+        
+        DESCRIPTION : Convolve the modelled spectrum with a given instrument line shape
+        
+        INPUTS :
+        
+            runname :: Name of the Nemesis run
+            fwhm :: FWHM of the instrument line shape
+            ishape :: Shape of the instrument function (if FWHM>0.0)
+            nwave :: Number of calculation wavenumbers
+            vwave(nwave) :: Calculation wavenumbers
+            y(nwave) :: Modelled spectrum
+            nconv :: Number of convolution wavenumbers
+            vconv(nconv) :: Convolution wavenumbers
+
+        OPTIONAL INPUTS: none
+        
+        OUTPUTS :
+        
+            yout(nconv) :: Convolved spectrum
+
+        CALLING SEQUENCE:
+        
+            yout = lblconv_nemesis(runname,fwhm,ishape,nwave,vwave,y,nconv,vconv)
+        
+        MODIFICATION HISTORY : Juan Alday (29/04/2019)
+        
+    """
+
+    yout = np.zeros([nconv])
+    ynor = np.zeros([nconv])
+
+    if fwhm>0.0:
+        #Set total width of Hamming/Hanning function window in terms of
+        #numbers of FWHMs for ISHAPE=3 and ISHAPE=4
+        nfw = 3.
+
+        for j in range(nconv):
+            yfwhm = fwhm
+            vcen = vconv[j]
+            if ishape==0:
+                v1 = vcen-0.5*fwhm
+                v2 = v1 + yfwhm
+            elif ishape==1:
+                v1 = vcen-fwhm
+                v2 = vcen+fwhm
+            elif ishape==2:
+                sig = 0.5*yfwhm/np.sqrt( np.log(2.0)  )
+                v1 = vcen - 3.*sig
+                v2 = vcen + 3.*sig
+            else:
+                v1 = vcen - nfw*yfwhm
+                v2 = vcen + nfw*yfwhm
+
+
+            #Find relevant points in tabulated files
+            inwave1 = np.where( (vwave>=v1) & (vwave<=v2) )
+            inwave = inwave1[0]
+
+            np1 = len(inwave)
+            for i in range(np1):
+                f1=0.0
+                if ishape==0:
+                    #Square instrument lineshape
+                    f1=1.0
+                elif ishape==1:
+                    #Triangular instrument shape
+                    f1=1.0 - abs(vwave[inwave[i]] - vcen)/yfwhm
+                elif ishape==2:
+                    #Gaussian instrument shape
+                    f1 = np.exp(-((vwave[inwave[i]]-vcen)/sig)**2.0)
+                else: 
+                    sys.exit('lblconv_nemesis :: ishape not included yet in function')
+
+                if f1>0.0:
+                    yout[j] = yout[j] + f1*y[inwave[i]]
+                    ynor[j] = ynor[j] + f1
+
+            yout[j] = yout[j]/ynor[j]
+
+
+    if fwhm<0.0:
+        #Line shape for each convolution number in each case is read from .fil file
+        nconv1,vconv1,nfil,vfil,afil = read_fil_nemesis(runname)
+
+        if nconv1 != nconv:
+            sys.exit('lblconv_nemesis :: Convolution wavenumbers must be the same in .spx and .fil files')
+
+        for j in range(nconv):
+            v1 = vfil[0,j]
+            v2 = vfil[nfil[j]-1,j]
+            #Find relevant points in tabulated files
+            inwave1 = np.where( (vwave>=v1) & (vwave<=v2) )
+            inwave = inwave1[0]
+
+            np1 = len(inwave)
+            xp = np.zeros([nfil[j]])
+            yp = np.zeros([nfil[j]])
+            xp[:] = vfil[0:nfil[j],j]
+            yp[:] = afil[0:nfil[j],j]
+            for i in range(np1):
+                #Interpolating (linear) for finding the lineshape at the calculation wavenumbers
+                f1 = np.interp(vwave[inwave[i]],xp,yp)
+                if f1>0.0:
+                    yout[j] = yout[j] + f1*y[inwave[i]]
+                    ynor[j] = ynor[j] + f1
+
+            yout[j] = yout[j]/ynor[j]
+
+
+    return yout
+
+
+###############################################################################################
+
+
 def read_idl_cirsdrv(runname,MakePlot=False,SavePlot=False):
     
     """
@@ -2431,7 +2727,7 @@ def read_idl_cirsdrv(runname,MakePlot=False,SavePlot=False):
     
     #Make plot if keyword is specified
     if MakePlot == True:
-        axis_font = {'fontname':'Arial', 'size':'20'}
+        axis_font = {'size':'20'}
         cm = plt.cm.get_cmap('RdYlBu')
         fig = plt.figure(figsize=(20,8))
         wavemin = wave.min()
@@ -2547,7 +2843,7 @@ def read_out_cirsdrv(runname,MakePlot=False,SavePlot=False):
 
     #Make plot if keyword is specified
     if MakePlot == True:
-        axis_font = {'fontname':'Arial', 'size':'20'}
+        axis_font = {'size':'20'}
         cm = plt.cm.get_cmap('RdYlBu')
         fig = plt.figure(figsize=(20,8))
         wavemin = wavecalc.min()
@@ -2568,6 +2864,299 @@ def read_out_cirsdrv(runname,MakePlot=False,SavePlot=False):
 
 
     return npath,nwave,nconv,wavecalc,waveconv,specret_noconv,specret
+
+
+###############################################################################################
+
+
+def read_gut_cirsdrvg(runname,MakePlot=False,SavePlot=False):
+
+    """
+        FUNCTION NAME : read_out_cirsdrvg()
+        
+        DESCRIPTION : Read the .out file from a CIRSdrvg_wave run (convolved spectra and derivatives)
+        
+        INPUTS :
+        
+            runname :: Name of the Nemesis run
+        
+        OPTIONAL INPUTS: none
+        
+        OUTPUTS :
+        
+            npath :: Number of paths
+
+        
+        CALLING SEQUENCE:
+        
+            npath,nconv,nx,vconv,specret,gradients = read_out_cirsdrvg(runname)
+        
+        MODIFICATION HISTORY : Juan Alday (18/06/2019)
+        
+    """
+
+    f = open(runname+'.gut','r')
+    dummy = f.readline().split()
+    npath = int(dummy[0])
+    nconv = int(dummy[1])
+    nx = int(dummy[2])
+
+    vconv = np.zeros([nconv,npath])
+    specret = np.zeros([nconv,npath])
+    gradients = np.zeros([nconv,npath,nx])
+    for i in range(npath):
+        dummy = f.readline().split()
+        ipath = int(dummy[0])
+        for j in range(nconv):
+            ioff1 = nconv*(ipath-1) + j
+            tmp = np.fromfile(f,sep=' ',count=2,dtype='float')
+            vconv[j,i] = tmp[0]
+            specret[j,i] = tmp[1]
+
+        for iv in range(nx):
+            for iconv in range(nconv):
+                ioff2 = nconv*nx*(ipath - 1) + (iv - 1)*nconv + iconv
+                tmp = np.fromfile(f,sep=' ',count=1,dtype='float')
+                gradients[iconv,i,iv] = tmp[0]
+
+
+    #Make plot if keyword is specified
+    if MakePlot == True:
+        axis_font = {'size':'20'}
+        cm = plt.cm.get_cmap('RdYlBu')
+        fig = plt.figure(figsize=(20,8))
+        wavemin = vconv.min()
+        wavemax = vconv.max()
+        ax = plt.axes()
+        ax.set_xlim(wavemin,wavemax)
+        ax.tick_params(labelsize=20)
+        ax.ticklabel_format(useOffset=False)
+        plt.xlabel('Wavenumber (cm$^{-1}$)',**axis_font)
+        plt.ylabel('Transmission',**axis_font)
+        colors = plt.cm.jet(np.linspace(0,1,npath))
+        for i in range(npath):
+            im = ax.plot(vconv[0:nconv,i],specret[0:nconv,i],color=colors[i])
+        plt.grid()
+        plt.show()
+
+
+        #Rearraging the gradients array for making a plot similar to the jacobian
+        kk = np.zeros([nx,nconv*npath])
+        for i in range(nx):
+            ix = 0
+            for j in range(npath):
+                kk[i,ix:ix+nconv] = gradients[0:nconv,j,i]
+                ix = ix + nconv
+
+        for i in range(nx):
+            axis_font = {'size':'20'}
+            cm = plt.cm.get_cmap('RdYlBu')
+            fig = plt.figure(figsize=(20,8))
+            ax = plt.axes()
+            ax.tick_params(labelsize=20)
+            ax.ticklabel_format(useOffset=False)
+            plt.xlabel('Wavenumber (cm$^{-1}$)',**axis_font)
+            plt.ylabel('Transmission',**axis_font)
+            colors = plt.cm.jet(np.linspace(0,1,npath))
+            im = ax.plot(range(nconv*npath),kk[i,:])
+            plt.grid()
+            plt.show()
+
+
+        axis_font = {'size':'20'}
+        cm = plt.cm.get_cmap('RdYlBu')
+        fig = plt.figure(figsize=(20,8))
+        ax = plt.axes()
+        ax.tick_params(labelsize=20)
+        plt.xlabel('Measurement vector y',**axis_font)
+        plt.ylabel('State vector x',**axis_font)
+        ax.imshow(kk,cmap='hot')
+        ax.set_aspect('auto')
+        plt.grid()
+        plt.show()
+
+
+
+
+
+    return npath,nconv,nx,vconv,specret,gradients
+
+
+
+###############################################################################################
+
+
+def read_out_cirsdrvg(runname,MakePlot=False,SavePlot=False):
+
+    """
+        FUNCTION NAME : read_out_cirsdrvg()
+        
+        DESCRIPTION : Read the .out file from a CIRSdrvg_wave run (convolved spectra and derivatives)
+        
+        INPUTS :
+        
+            runname :: Name of the Nemesis run
+        
+        OPTIONAL INPUTS: none
+        
+        OUTPUTS :
+        
+            npath :: Number of paths
+
+        
+        CALLING SEQUENCE:
+        
+            npath,nconv,nx,vconv,specret,gradients = read_out_cirsdrvg(runname)
+        
+        MODIFICATION HISTORY : Juan Alday (18/06/2019)
+        
+    """
+
+    f = open(runname+'.out','r')
+    dummy = f.readline().split()
+    npath = int(dummy[0])
+    nconv = int(dummy[1])
+    nx = int(dummy[2])
+ 
+    vconv = np.zeros([nconv,npath])
+    specret = np.zeros([nconv,npath])
+    gradients = np.zeros([nconv,npath,nx])
+    for i in range(npath):
+        dummy = f.readline().split()
+        ipath = int(dummy[0])
+        for j in range(nconv):
+            ioff1 = nconv*(ipath-1) + j
+            tmp = np.fromfile(f,sep=' ',count=2,dtype='float')
+            vconv[j,i] = tmp[0]
+            specret[j,i] = tmp[1]
+        
+        for iv in range(nx):
+            for iconv in range(nconv):
+                ioff2 = nconv*nx*(ipath - 1) + (iv - 1)*nconv + iconv
+                tmp = np.fromfile(f,sep=' ',count=1,dtype='float')
+                gradients[iconv,i,iv] = tmp[0] 
+
+
+    #Make plot if keyword is specified
+    if MakePlot == True:
+        axis_font = {'size':'20'}
+        cm = plt.cm.get_cmap('RdYlBu')
+        fig = plt.figure(figsize=(20,8))
+        wavemin = vconv.min()
+        wavemax = vconv.max()
+        ax = plt.axes()
+        ax.set_xlim(wavemin,wavemax)
+        ax.tick_params(labelsize=20)
+        ax.ticklabel_format(useOffset=False)
+        plt.xlabel('Wavenumber (cm$^{-1}$)',**axis_font)
+        plt.ylabel('Transmission',**axis_font)
+        colors = plt.cm.jet(np.linspace(0,1,npath))
+        for i in range(npath):
+            im = ax.plot(vconv[0:nconv,i],specret[0:nconv,i],color=colors[i])
+        plt.grid()
+        plt.show()
+
+
+        #Rearraging the gradients array for making a plot similar to the jacobian
+        kk = np.zeros([nx,nconv*npath])
+        for i in range(nx):
+            ix = 0
+            for j in range(npath):
+                kk[i,ix:ix+nconv] = gradients[0:nconv,j,i]
+                ix = ix + nconv
+
+        for i in range(nx):
+            axis_font = {'size':'20'}
+            cm = plt.cm.get_cmap('RdYlBu')
+            fig = plt.figure(figsize=(20,8))
+            ax = plt.axes()
+            ax.tick_params(labelsize=20)
+            ax.ticklabel_format(useOffset=False)
+            plt.xlabel('Wavenumber (cm$^{-1}$)',**axis_font)
+            plt.ylabel('Transmission',**axis_font)
+            colors = plt.cm.jet(np.linspace(0,1,npath))
+            im = ax.plot(range(nconv*npath),kk[i,:])
+            plt.grid()
+            plt.show()
+
+
+        axis_font = {'size':'20'}
+        cm = plt.cm.get_cmap('RdYlBu')
+        fig = plt.figure(figsize=(20,8))
+        ax = plt.axes()
+        ax.tick_params(labelsize=20)
+        plt.xlabel('Measurement vector y',**axis_font)
+        plt.ylabel('State vector x',**axis_font)
+        ax.imshow(kk,cmap='hot')
+        ax.set_aspect('auto')
+        plt.grid()
+        plt.show()
+
+
+
+
+
+    return npath,nconv,nx,vconv,specret,gradients
+
+
+
+###############################################################################################
+
+
+def CIRSdrvg_wavePY(runname,MakePlot=False,SavePlot=False):
+
+    """
+        FUNCTION NAME : CIRSdrvg_wavePY()
+        
+        DESCRIPTION : Run CIRSdrvg_wavePY run (forward model and analytic jacobian)
+        
+        INPUTS :
+        
+            runname :: Name of the Nemesis run
+        
+        OPTIONAL INPUTS: none
+        
+        OUTPUTS :
+        
+            npath :: Number of paths
+            nwave(npath) :: Number of calculation wavelengths
+            nconv(npath) :: Number of convolution wavelengths
+            wavecalc(max(nwave),npath) :: Wavenumber array
+            waveconv(max(nconv),npath) :: Wavenumber array
+            specret_noconv(max(nwave),npath) :: Modelled spectra (non-convolved)
+            specret(max(nconv),npath) :: Modelled spectra (convolved)
+        
+        CALLING SEQUENCE:
+        
+            npath,nconv,nx,vconv,specret,gradients = CIRSdrvg_wavePY(runname)
+        
+        MODIFICATION HISTORY : Juan Alday (29/04/2019)
+        
+    """
+
+    import subprocess as sub
+    from time import sleep
+
+    #Checking that runname.nam exists
+    ex = os.path.isfile(runname+'.nam')
+    if ex == False:
+        f = open(runname+'.nam','w')
+        f.write(runname)
+        f.close()
+
+
+    #Running CIRSdrv_waveSO
+    strproc = 'CIRSdrvg_wavePY < '+runname+'.nam > test_'+runname+'.prc'
+    cirsdrv = sub.Popen(strproc, shell = True, stdout = sub.PIPE)
+    cirsdrv_out = cirsdrv.communicate()
+
+    sleep(1.0)
+
+    npath,nconv,nx,vconv,specret,gradients = read_out_cirsdrvg(runname)
+
+    return npath,nconv,nx,vconv,specret,gradients
+ 
+
 
 ###############################################################################################
 
@@ -2624,7 +3213,7 @@ def CIRSdrv_wavePY(runname,MakePlot=False,SavePlot=False):
 
     #Make plot if keyword is specified
     if MakePlot == True:
-        axis_font = {'fontname':'Arial', 'size':'20'}
+        axis_font = {'size':'20'}
         cm = plt.cm.get_cmap('RdYlBu')
         fig = plt.figure(figsize=(20,8))
         wavemin = wavecalc.min()
@@ -2720,7 +3309,7 @@ def CIRSdrv_waveSO(runname,MakePlot=False,SavePlot=False):
 
     #Make plot if keyword is specified
     if MakePlot == True:
-        axis_font = {'fontname':'Arial', 'size':'20'}
+        axis_font = {'size':'20'}
         cm = plt.cm.get_cmap('RdYlBu')
         fig = plt.figure(figsize=(20,8))
         wavemin = wavecalc.min()
@@ -2859,7 +3448,7 @@ def gsetrad_nemesis(runname,iscat,nmu,mu,wtmu,isol,dist,lowbc,galb,nf,nconv,vcon
 ###############################################################################################
 
 def nemesisSOfm_parallel(ix,runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,fwhm,ispace,xlat,xlon,lin,\
-                   ilbl,nvar,varident,varparam,jpre,nx,nxn,xnx):
+                   ilbl,nvar,varident,varparam,jpre,nx,nxn,xnx,ireq):
 
     """
         FUNCTION NAME : nemesisSOfm_parallel()
@@ -2891,7 +3480,9 @@ def nemesisSOfm_parallel(ix,runname,nconv,vconv,nwave,vwave,npro,height,ngeom,ta
             jpre :: Position of tangent pressure (if retrieved)
             nx :: Number of elements in state vector
             nxn :: Number of state vectors in xnx
-            xn(nx,nxn) :: Matrix containing all state vectors to be computed
+            xnx(nx,nxn) :: Matrix containing all state vectors to be computed
+            ireq(nxn) :: Flag indicating whether the forward model for the 'ix' state vector
+                         in xnx must be performed with any special requirements (see checkvar_nemesisSO)
 
         OPTIONAL INPUTS: none
         
@@ -2901,7 +3492,7 @@ def nemesisSOfm_parallel(ix,runname,nconv,vconv,nwave,vwave,npro,height,ngeom,ta
         
         CALLING SEQUENCE:
          
-            specret = nemesisSOfm_parallel(ix,runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,fwhm,ispace,xlat,xlon,lin,nvar,varident,varparam,jpre,nx,nxn,xnx)
+            specret = nemesisSOfm_parallel(ix,runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,fwhm,ispace,xlat,xlon,lin,nvar,varident,varparam,jpre,nx,nxn,xnx,ireq)
         
         MODIFICATION HISTORY : Juan Alday (29/04/2019)
         
@@ -2923,9 +3514,6 @@ def nemesisSOfm_parallel(ix,runname,nconv,vconv,nwave,vwave,npro,height,ngeom,ta
     layint = 1
     hcorrx = 0.0
     nlayer = npro-1
-
-    #Making array for specifying element in the state vector with special requirements
-    ireq = checkvar_nemesisSO(nx,nvar,npro,varident,varparam)
 
     #Calculating the number oh paths that need to be computed based on 
     mintanhe = tanhe.min()
@@ -2961,31 +3549,37 @@ def nemesisSOfm_parallel(ix,runname,nconv,vconv,nwave,vwave,npro,height,ngeom,ta
         copyfile('height.lay', path+'/'+'height.lay')
 
     if ilbl==2:   #LBL
-        copyfile(runname+'.lls', path+'/'+runname+'.lls')
-        if fwhm > 0.0:
-            copyfile(runname+'.sha', path+'/'+runname+'.sha')
+        if (ireq[ix]==1):
+            copyfile(runname+'.tls', path+'/'+runname+'.lls')
+        else:
+            copyfile(runname+'.lls', path+'/'+runname+'.lls')
+        copyfile(runname+'.sha', path+'/'+runname+'.sha')
     if ilbl==0:  #Correlated-k
         copyfile(runname+'.kls', path+'/'+runname+'.kls')
         if fwhm < 0.0:
             copyfile(runname+'.fil', path+'/'+runname+'.fil')
 
 
-    #Checking if ILS is going to be retrieved
+    #Checking if ILS retrieval is in the state vector. In that case, calculate .fil file
+    ireq1 = checkvar_nemesisSO(nx,nvar,npro,varident,varparam)
     iflag = 0
     for i in range(nx):
-        if ireq[i] == 2:  #Option 228
+        if ireq1[i] == 2:  #Option 228
             iflag = 2
-        if ireq[i] == 3:
+        if ireq1[i] == 3:
             iflag = 3     #Option 229
 
     #Creating new .fil file if necessary
+    xn1 = np.zeros([mx])
+    xn1[0:nx] = xnx[0:nx,ix]
+
     if fwhm < 0.0:  #Creating .fil file in case it is necessary
         if iflag==0:
             copyfile(runname+'.fil', path+'/'+runname+'.fil')
             os.chdir(path)
         if iflag==2:  #Option 228
             os.chdir(path)
-            iils1 = np.where(ireq == 2)
+            iils1 = np.where(ireq1 == 2)
             iils = iils1[0]
             par1 = xn1[iils[0]]
             par2 = xn1[iils[1]]
@@ -2997,7 +3591,7 @@ def nemesisSOfm_parallel(ix,runname,nconv,vconv,nwave,vwave,npro,height,ngeom,ta
             ll = ns.write_fil_acsmir(runname,nconv,vconvnem,par1,par2,par3,par4,par5,par6,par7)
         if iflag==3:  #Option 229
             os.chdir(path)
-            iils1 = np.where(ireq == 3)
+            iils1 = np.where(ireq1 == 3)
             iils = iils1[0]
             par1 = xn1[iils[0]]
             par2 = xn1[iils[1]]
@@ -3009,9 +3603,6 @@ def nemesisSOfm_parallel(ix,runname,nconv,vconv,nwave,vwave,npro,height,ngeom,ta
             ll = write_fil_acsmir_v2(runname,nconv,vconv,par1,par2,par3,par4,par5,par6,par7)
     else:
         os.chdir(path)
-
-    xn1 = np.zeros([mx])
-    xn1[0:nx] = xnx[0:nx,ix]
 
     #Creating files for communicating with CIRSdrv_wavePY
     xmap = ns.gsetradl(runname,nconv,vconvnem,fwhm,ispace,iscat,gasgiant,layht,nlayer,laytyp,layint,xlat,xlon,lin,hcorrx,nvar,varident,varparam,nx,xn1,jpre,tsurf,isolocc,ionpeel,jlevlo,jlevhi)
@@ -3040,11 +3631,11 @@ def nemesisSOfm_parallel(ix,runname,nconv,vconv,nwave,vwave,npro,height,ngeom,ta
 
 ###############################################################################################
 
-def nemesisSOfm(runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,fwhm,ispace,xlat,xlon,lin,\
-                   ilbl,nvar,varident,varparam,jpre,nx,xn):
+def nemesisSOfm(runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,fwhm,ispace,ilbl,xlat,xlon,lin,\
+                 nvar,varident,varparam,jpre,nx,xn,ireq):
 
     """
-        FUNCTION NAME : nemesisSO()
+        FUNCTION NAME : nemesisSOfm()
         
         DESCRIPTION : Reads some input variables like the state vector, and prepares the required files for a CIRSdrv_wave2 run.
                       It also reads an index, which indicates if some element of the state vector must be perturbed. Finalle,
@@ -3055,35 +3646,38 @@ def nemesisSOfm(runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,fwhm,isp
             runname :: Name of the Nemesis run
             nconv :: Number of convolution wavelengths
             vconv(nconv) :: Wavenumber array (cm-1)
-            nwave :: Number of calculation wavelengths
-            vwave(nwave) :: Calculation wavenumber array (cm-1)
             npro :: Number of altitude levels in atmosphere
             height(npro) :: Altitude (km)
             ngeom :: Number of tangent heights
             tanhe(ngeom) :: Tangent height (km)
             fwhm :: Full width at half maximum (cm-1) 
             ispace :: (0) Wavenumber in cm-1 (1) Wavelength in um
+            ilbl :: Flag indicating whether to use correlated-k (0) or lbl (2)
             xlat :: Latitude of observation
             xlon :: Longitude of observation
             lin :: Unit number of previous retrieval (if any)
-            ilbl :: Flag indicating whether to use correlated-k (0) or lbl (2)
             nvar :: Number of variables to retrieve
             varident(nvar,3) :: Variable ID
             varparam(nvar,5) :: Other parameters defining the retrieved variables 
             jpre :: Position of tangent pressure (if retrieved)
             nx :: Number of elements in state vector
             xn(nx) :: State vector 
+            ireq :: Flag indicating whether the forward model must be performed with
+                    any special requirements (see checkvar_nemesisSO)
 
         OPTIONAL INPUTS: none
         
         OUTPUTS :
-       
-            specret_noconv(nconv,npath) :: Modelled spectra (no convolved) 
-            specret(max(nconv),npath) :: Modelled spectra (convolved)
+
+            npath :: Number of atmospheric paths calculated
+            nwave(npath) :: Number of calculation wavenumbers in each path
+            vwave(nwave,npath) :: Calculation wavenumbers in each path
+            specret_noconv(nwave,npath) :: Modelled spectra (no convolved) 
+            specret(nconv,npath) :: Modelled spectra (convolved)
         
         CALLING SEQUENCE:
         
-            specret_noconv,specret = nemesisSOfm(runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,fwhm,ispace,xlat,xlon,lin,nvar,varident,varparam,jpre,nx,xn)
+            npath,nwave,vwave,specret_noconv,specret = nemesisSOfm(runname,nconv,vconv,npro,height,ngeom,tanhe,fwhm,ispace,ilbl,xlat,xlon,lin,nvar,varident,varparam,jpre,nx,xn,ireq)
         
         MODIFICATION HISTORY : Juan Alday (29/04/2019)
         
@@ -3106,9 +3700,6 @@ def nemesisSOfm(runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,fwhm,isp
     hcorrx = 0.0
     nlayer = npro-1
 
-    #Making array for specifying element in the state vector with special requirements
-    ireq = checkvar_nemesisSO(nx,nvar,npro,varident,varparam)
-
     #Calculating the number oh paths that need to be computed based on 
     mintanhe = tanhe.min()
     maxtanhe = tanhe.max()
@@ -3121,7 +3712,7 @@ def nemesisSOfm(runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,fwhm,isp
         sys.exit('error in nemesisSOfm :: jlevhi has more than one value')
 
     jlevlo = int(jlevlo1[0]) + 1  #because of the fortran indexing
-    jlevhi = int(jlevhi1[0]) + 1
+    jlevhi = int(jlevhi1[0])  #this is actually wrong in gsetradL. should be +1 
 
     #Making new arrays so that they have the same dimensions as in the Fortran routines
     mx,my,mconv,mwave,maxpat,maxlay,maxgas,maxsec,mgeom,mvar,mparam,maxmu = check_arraysize_nemesis()
@@ -3144,33 +3735,37 @@ def nemesisSOfm(runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,fwhm,isp
         copyfile('height.lay', path+'/'+'height.lay')
 
     if ilbl==2:   #LBL
-        copyfile(runname+'.lls', path+'/'+runname+'.lls')
-        if fwhm > 0.0:
-            copyfile(runname+'.sha', path+'/'+runname+'.sha')
-        if fwhm < 0.0:
-            copyfile(runname+'.fil', path+'/'+runname+'.fil')
+        if (ireq==1):
+            copyfile(runname+'.tls', path+'/'+runname+'.lls')
+        else:
+            copyfile(runname+'.lls', path+'/'+runname+'.lls')
+        copyfile(runname+'.sha', path+'/'+runname+'.sha')
     if ilbl==0:  #Correlated-k
         copyfile(runname+'.kls', path+'/'+runname+'.kls')
         if fwhm < 0.0:
             copyfile(runname+'.fil', path+'/'+runname+'.fil')
       
 
-    #Checking if ILS is going to be retrieved
+    #Checking if ILS retrieval scheme is in state vector, and creates the .fil file if it is
+    ireq1 = checkvar_nemesisSO(nx,nvar,npro,varident,varparam)
     iflag = 0
     for i in range(nx):
-        if ireq[i] == 2:  #Option 228
+        if ireq1[i] == 2:  #Option 228
             iflag = 2
-        if ireq[i] == 3:
+        if ireq1[i] == 3:
             iflag = 3     #Option 229
 
     #Creating new .fil file if necessary
+    xn1 = np.zeros([mx])
+    xn1[0:nx] = xn[0:nx]
+
     if fwhm < 0.0:  #Creating .fil file in case it is necessary
         if iflag==0:
             copyfile(runname+'.fil', path+'/'+runname+'.fil')
             os.chdir(path)
         if iflag==2:  #Option 228
             os.chdir(path)
-            iils1 = np.where(ireq == 2)
+            iils1 = np.where(ireq1 == 2)
             iils = iils1[0]
             par1 = xn1[iils[0]]
             par2 = xn1[iils[1]]
@@ -3182,7 +3777,7 @@ def nemesisSOfm(runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,fwhm,isp
             ll = ns.write_fil_acsmir(runname,nconv,vconvnem,par1,par2,par3,par4,par5,par6,par7)
         if iflag==3:  #Option 229
             os.chdir(path)
-            iils1 = np.where(ireq == 3)
+            iils1 = np.where(ireq1 == 3)
             iils = iils1[0]
             par1 = xn1[iils[0]]
             par2 = xn1[iils[1]]
@@ -3194,9 +3789,6 @@ def nemesisSOfm(runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,fwhm,isp
             ll = write_fil_acsmir_v2(runname,nconv,vconv,par1,par2,par3,par4,par5,par6,par7)
     else:
         os.chdir(path)
-
-    xn1 = np.zeros([mx])
-    xn1[0:nx] = xn[0:nx]
 
     #Creating files for communicating with CIRSdrv_wavePY
     xmap = ns.gsetradl(runname,nconv,vconvnem,fwhm,ispace,iscat,gasgiant,layht,nlayer,laytyp,layint,xlat,xlon,lin,hcorrx,nvar,varident,varparam,nx,xn1,jpre,tsurf,isolocc,ionpeel,jlevlo,jlevhi)
@@ -3215,14 +3807,205 @@ def nemesisSOfm(runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,fwhm,isp
     ll = write_cdr_nemesis(runname,dist,fwhm,ispace,ilbl,nwave,vwave,npath,nconv,vconv,nem,vem,emissivity,tsurf) 
 
     #Running CIRSdrv_wavePY
-    npath,nwave1,nconv1,wavecalc,waveconv,specret_noconv,specret = CIRSdrv_wavePY(runname)
+    npath,nwave1,nconv1,vwave1,waveconv,specret_noconv,specret = CIRSdrv_wavePY(runname)
     os.chdir('../')
 
     #Removing folder
-    shutil.rmtree(path)
+    #shutil.rmtree(path)
 
-    return specret_noconv,specret
+    return npath,nwave1,vwave1,specret_noconv,specret
 
+
+
+###############################################################################################
+
+def nemesisSOfmg(runname,nconv,vconv,npro,height,ngeom,tanhe,fwhm,ispace,ilbl,xlat,xlon,lin,\
+                 nvmr,ncont,nvar,varident,varparam,jpre,nx,xn,ireq):
+
+    """
+        FUNCTION NAME : nemesisSOfm()
+        
+        DESCRIPTION : Reads some input variables like the state vector, and prepares the required files for a CIRSdrv_wave2 run.
+                      It also reads an index, which indicates if some element of the state vector must be perturbed. Finalle,
+                      it calls CIRSdrv_waveSO and waits for the output
+        
+        INPUTS :
+        
+            runname :: Name of the Nemesis run
+            nconv :: Number of convolution wavelengths
+            vconv(nconv) :: Wavenumber array (cm-1)
+            npro :: Number of altitude levels in atmosphere
+            height(npro) :: Altitude (km)
+            ngeom :: Number of tangent heights
+            tanhe(ngeom) :: Tangent height (km)
+            fwhm :: Full width at half maximum (cm-1) 
+            ispace :: (0) Wavenumber in cm-1 (1) Wavelength in um
+            ilbl :: Flag indicating whether to use correlated-k (0) or lbl (2)
+            xlat :: Latitude of observation
+            xlon :: Longitude of observation
+            lin :: Unit number of previous retrieval (if any)
+            nvmr :: Number of gases in atmosphere
+            ncont :: Number of aerosol types in atmosphere
+            nvar :: Number of variables to retrieve
+            varident(nvar,3) :: Variable ID
+            varparam(nvar,5) :: Other parameters defining the retrieved variables 
+            jpre :: Position of tangent pressure (if retrieved)
+            nx :: Number of elements in state vector
+            xn(nx) :: State vector 
+            ireq :: Flag indicating whether the forward model must be performed with
+                    any special requirements (see checkvar_nemesisSO)
+
+        OPTIONAL INPUTS: none
+        
+        OUTPUTS :
+
+            npath :: Number of atmospheric paths calculated
+            nwave(npath) :: Number of calculation wavenumbers in each path
+            vwave(nwave,npath) :: Calculation wavenumbers in each path
+            specret_noconv(nwave,npath) :: Modelled spectra (no convolved) 
+            specret(nconv,npath) :: Modelled spectra (convolved)
+        
+        CALLING SEQUENCE:
+        
+            specret_noconv,specret = nemesisSOfmg(runname,nconv,vconv,npro,height,ngeom,tanhe,fwhm,ispace,ilbl,xlat,xlon,lin,nvmr,ncont,nvar,varident,varparam,jpre,nx,xn,ireq)
+        
+        MODIFICATION HISTORY : Juan Alday (18/06/2019)
+        
+    """
+
+    import nemesisf as ns
+    from shutil import copyfile
+    from time import sleep
+
+    #Parameters assumed for this version of Nemesis
+    iscat = 0 #No scattering
+    gasgiant = False #Assumed that it is Mars
+    isolocc = 2 #Transmission (not thermal emission)
+    tsurf = 100.0 #arbitrary
+    dist = 1.5 #arbitrary in transmission
+    ionpeel = 1
+    itype = 12
+    layht = 0.0
+    laytyp = 5
+    layint = 1
+    hcorrx = 0.0
+    nlayer = npro-1
+
+    #Calculating the number oh paths that need to be computed based on 
+    mintanhe = tanhe.min()
+    maxtanhe = tanhe.max()
+    jlevlo1 = np.where(height == mintanhe)
+    jlevhi1 = np.where(height == maxtanhe)
+
+    if (len(jlevlo1) > 1):
+        sys.exit('error in nemesisSOfmg :: jlevlo has more than one value')
+    if (len(jlevhi1) > 1):
+        sys.exit('error in nemesisSOfmg :: jlevhi has more than one value')
+
+    jlevlo = int(jlevlo1[0]) + 1  #because of the fortran indexing
+    jlevhi = int(jlevhi1[0])      
+
+    #Making new arrays so that they have the same dimensions as in the Fortran routines
+    mx,my,mconv,mwave,maxpat,maxlay,maxgas,maxsec,mgeom,mvar,mparam,maxmu = check_arraysize_nemesis()
+    vconvnem = np.zeros([mconv])
+    vconvnem[0:nconv] = vconv[:]
+
+    #Creating directory to calculate the run and moving necessary files
+    ix=0
+    path = str(ix)
+    mkdir_p(path)
+
+    #Creating directory to calculate the run and moving necessary files
+    ix=10000
+    path = str(ix)
+    mkdir_p(path)
+
+    #Copying necessary files
+    copyfile(runname+'.cia', path+'/'+runname+'.cia')
+    copyfile(runname+'.ref', path+'/'+runname+'.ref')
+    copyfile(runname+'.fla', path+'/'+runname+'.fla')
+    copyfile(runname+'.xsc', path+'/'+runname+'.xsc')
+    copyfile('aerosol.ref', path+'/'+'aerosol.ref')
+
+    if laytyp==5:   #Base altitude of atmospheric layers must be read from height.lay
+        copyfile('height.lay', path+'/'+'height.lay')
+
+    if ilbl==2:   #LBL
+        if (ireq==1):
+            copyfile(runname+'.tls', path+'/'+runname+'.lls')
+        else:
+            copyfile(runname+'.lls', path+'/'+runname+'.lls')
+        copyfile(runname+'.sha', path+'/'+runname+'.sha')
+    if ilbl==0:  #Correlated-k
+        copyfile(runname+'.kls', path+'/'+runname+'.kls')
+        if fwhm < 0.0:
+            copyfile(runname+'.fil', path+'/'+runname+'.fil')
+
+
+    #Checking if ILS retrieval scheme is in state vector, and creates the .fil file if it is
+    ireq1 = checkvar_nemesisSO(nx,nvar,npro,varident,varparam)
+    iflag = 0
+    for i in range(nx):
+        if ireq1[i] == 2:  #Option 228
+            iflag = 2
+        if ireq1[i] == 3:
+            iflag = 3     #Option 229
+
+    #Creating new .fil file if necessary
+    xn1 = np.zeros([mx])
+    xn1[0:nx] = xn[0:nx]
+
+    if fwhm < 0.0:  #Creating .fil file in case it is necessary
+        if iflag==0:
+            copyfile(runname+'.fil', path+'/'+runname+'.fil')
+            os.chdir(path)
+        if iflag==2:  #Option 228
+            os.chdir(path)
+            iils1 = np.where(ireq1 == 2)
+            iils = iils1[0]
+            par1 = xn1[iils[0]]
+            par2 = xn1[iils[1]]
+            par3 = xn1[iils[2]]
+            par4 = xn1[iils[3]]
+            par5 = xn1[iils[4]]
+            par6 = xn1[iils[5]]
+            par7 = xn1[iils[6]]
+            ll = ns.write_fil_acsmir(runname,nconv,vconvnem,par1,par2,par3,par4,par5,par6,par7)
+        if iflag==3:  #Option 229
+            os.chdir(path)
+            iils1 = np.where(ireq1 == 3)
+            iils = iils1[0]
+            par1 = xn1[iils[0]]
+            par2 = xn1[iils[1]]
+            par3 = xn1[iils[2]]
+            par4 = xn1[iils[3]]
+            par5 = xn1[iils[4]]
+            par6 = xn1[iils[5]]
+            par7 = xn1[iils[6]]
+            ll = write_fil_acsmir_v2(runname,nconv,vconv,par1,par2,par3,par4,par5,par6,par7)
+    else:
+        os.chdir(path)
+
+    #Creating files for communicating with CIRSdrvg_wavePY
+    xmap = ns.gsetradl(runname,nconv,vconvnem,fwhm,ispace,iscat,gasgiant,layht,nlayer,laytyp,layint,xlat,xlon,lin,hcorrx,nvar,varident,varparam,nx,xn1,jpre,tsurf,isolocc,ionpeel,jlevlo,jlevhi)
+
+    #In solar occultation we do not mind about the surface emissivity
+    nem = 2
+    vem = np.zeros([nem])
+    emissivity = np.zeros([nem])
+    vem[0]=-100.0
+    vem[1]=1.0e7
+    emissivity[0:nem]=1.0
+
+    #Writing .gdr file for communicating with CIRSdrvg_wavePY
+    npath = ngeom
+    ll = write_gdr_nemesis(runname,dist,fwhm,ispace,ilbl,itype,npath,nconv,vconv,nem,vem,emissivity,tsurf,nx,nvmr,ncont,npro,xmap)
+
+    #Running CIRSdrvg_wavePY
+    npath,nconv1,nx,vconv,specret,gradients = CIRSdrvg_wavePY(runname)
+    os.chdir('../')
+
+    return npath,nconv1,nx,vconv,specret,gradients
 
 
 
@@ -3929,7 +4712,7 @@ def jacobian_nemesis(runname,iscat,nmu,mu,wtmu,isol,dist,lowbc,galb,nf,ngeom,nav
 
     #Make plot if keyword is specified
     if MakePlot == True:
-        axis_font = {'fontname':'Arial', 'size':'20'}
+        axis_font = {'size':'20'}
         cm = plt.cm.get_cmap('RdYlBu')
         fig = plt.figure(figsize=(20,8))
         ax = plt.axes()
@@ -3948,7 +4731,7 @@ def jacobian_nemesis(runname,iscat,nmu,mu,wtmu,isol,dist,lowbc,galb,nf,ngeom,nav
             fig.savefig(runname+'_fm.eps',dpi=100)
 
 
-        axis_font = {'fontname':'Arial', 'size':'20'}
+        axis_font = {'size':'20'}
         cm = plt.cm.get_cmap('RdYlBu')
         fig = plt.figure(figsize=(20,8))
         ax = plt.axes()
@@ -4042,6 +4825,12 @@ def jacobian_nemesisSO(runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,f
                 xnx[i-1,i] = 0.05
 
 
+    #Checking if there are any special requirements for each state vector 
+    #Note: ILS retrieval is automatically implemented if that parameterization is in the state vector
+    ireq1 = checkvar_nemesisSO(nx,nvar,npro,varident,varparam)
+    ireq = np.zeros([nx+1],dtype='int')
+    ireq[1:nx+1] = ireq1[:]
+
     #################################################################################
     # Calling the forward model all the times
     #################################################################################
@@ -4074,7 +4863,7 @@ def jacobian_nemesisSO(runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,f
             iproc[j] = iproc[j] + ix
         pool = multiprocessing.Pool(processes=nprocrun[i])
         fmproc=partial(nemesisSOfm_parallel,runname=runname,nconv=nconv,vconv=vconv,nwave=nwave,vwave=vwave,npro=npro,height=height,ngeom=ngeom,tanhe=tanhe,fwhm=fwhm, \
-                                   ispace=ispace,ilbl=ilbl,xlat=xlat,xlon=xlon,lin=lin,nvar=nvar,varident=varident,varparam=varparam,jpre=jpre,nx=nx,nxn=nxn,xnx=xnx)
+                                   ispace=ispace,ilbl=ilbl,xlat=xlat,xlon=xlon,lin=lin,nvar=nvar,varident=varident,varparam=varparam,jpre=jpre,nx=nx,nxn=nxn,xnx=xnx,ireq=ireq)
         result_list = pool.map(fmproc,iproc)
         for j in range(nprocrun[i]):
             specret2_1 = result_list[j]
@@ -4095,10 +4884,8 @@ def jacobian_nemesisSO(runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,f
             flagpt = 1
 
     if flagpt == 1:
-       copyfile(runname+'.lls', runname+'_ref.lls')
-       copyfile(runname+'.tls', runname+'.lls')
-       spec_noconv,specretpt = nemesisSOfm(runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,fwhm,ispace,ilbl,xlat,xlon,lin,nvar,varident,varparam,jpre,nx,xn)
-       copyfile(runname+'_ref.lls', runname+'.lls')
+       ireq2 = 1 #Indicates that the .tls file must be used instead
+       spec_noconv,specretpt = nemesisSOfm(runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,fwhm,ispace,ilbl,xlat,xlon,lin,nvar,varident,varparam,jpre,nx,xn,ireq2)
        ynpt = np.resize(np.transpose(specretpt),[ny])
 
        ynrest = np.zeros([ngeom*nconv])
@@ -4127,7 +4914,7 @@ def jacobian_nemesisSO(runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,f
 
     #Make plot if keyword is specified
     if MakePlot == True:
-        axis_font = {'fontname':'Arial', 'size':'20'}
+        axis_font = {'size':'20'}
         cm = plt.cm.get_cmap('RdYlBu')
         fig = plt.figure(figsize=(20,8))
         wavemin = vconv.min()
@@ -4149,7 +4936,7 @@ def jacobian_nemesisSO(runname,nconv,vconv,nwave,vwave,npro,height,ngeom,tanhe,f
             fig.savefig(runname+'_fm.eps',dpi=100)
 
 
-        axis_font = {'fontname':'Arial', 'size':'20'}
+        axis_font = {'size':'20'}
         cm = plt.cm.get_cmap('RdYlBu')
         fig = plt.figure(figsize=(20,8))
         ax = plt.axes()
@@ -4272,10 +5059,18 @@ def npvar_nemesis(nvar,npro,varident,varparam):
 #    if nvar==1:
 #        imod = varident[2]
 
+#    nxvar = np.zeros([nvar],dtype='int')
+#    for i in range(nvar):
+#        if nvar>1:
+#        imod = varident[i,2]
+
+    if nvar==1:
+        imod = varident[2]
+
     nxvar = np.zeros([nvar],dtype='int')
     for i in range(nvar):
-#        if nvar>1:
-        imod = varident[i,2]
+        if nvar>1:
+            imod = varident[i,2]
 
 
         if imod == -1:
@@ -5010,7 +5805,7 @@ def ngauss(npx,x,ng,iamp,imean,ifwhm,MakePlot=False):
 
     #Make plot if keyword is specified
     if MakePlot == True:
-        axis_font = {'fontname':'Arial', 'size':'20'}
+        axis_font = {'size':'20'}
         cm = plt.cm.get_cmap('RdYlBu')
         fig = plt.figure(figsize=(15,8))
         wavemin = x.min()

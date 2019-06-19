@@ -106,7 +106,7 @@ C     a priori covariance matrix
       integer nprox,nvarx,varidentx(mvar,3),ioffx,ivarx
       integer npx,ioff,icond,npvar,jloggx,iplanet,jxscx,jlev
       character*100 opfile,buffer,ipfile,runname,rifile,xscfil
-      integer nxx,nsec,ncont1,nlay,tmp
+      integer nxx,nsec,ncont1,nlay,tmp,iex
       real xwid,ewid,y,y0,lambda0,vi(mx),vtmp(mx),xt(mx)
       real r0,er0,dr,edr,vm,nm,nmshell,nimag,delv,xy,v0
       real xldeep,eldeep,xlhigh,elhigh,arg1
@@ -1592,7 +1592,14 @@ C          ***** inhomogeneous disc model 1  ********
              print*,'Model 30'
              print*,'reading variable ',ivar,' from ',ipfile
              open(28,file=ipfile,status='old')
-             read(28,*)nlong,nlevel,clen1,clen2
+             read(28,1)buffer
+             if(buffer(1:2).eq.'Ex')then
+              iex=1
+              read(28,*)nlong,nlevel,clen1,clen2
+             else
+              iex=0
+              read(buffer,*)nlong,nlevel,clen1,clen2
+             endif
              print*,nlong,nlevel,clen1,clen2
              if(nlevel+2.gt.mparam)then
               print*,'nlevel+2 > mparam',
@@ -1605,8 +1612,13 @@ C          ***** inhomogeneous disc model 1  ********
              ipar=3
              ix=nx
              do 303 i=1,nlevel
-              read(28,*)pref(i),(dhsphere(i,j),j=1,nlong),
+              if(iex.eq.0)then
+               read(28,*)pref(i),(dhsphere(i,j),j=1,nlong),
      1         eref(1,i)
+              else
+               read(28,*)pref(i),(dhsphere(i,j),j=1,nlong),
+     1         (eref(j,i),j=1,nlong)
+              endif
               varparam(ivar,ipar)=pref(i)
 C              print*,i,pref(i),ivar,varident(ivar,1)
               ipar=ipar+1
@@ -1619,7 +1631,11 @@ C              such as T and vmrs
                if(varident(ivar,1).eq.0)then
 C               *** temperature, leave alone ****
                 x0(ix) = dhsphere(i,j)
-                err = eref(1,i)
+                if(iex.eq.0)then
+                 err = eref(1,i)
+                else
+                 err = eref(j,i)
+                endif
                else
 C               **** vmr, cloud, para-H2 , fcloud, take logs ***
                 if(dhsphere(i,j).gt.0.0) then
@@ -1630,7 +1646,11 @@ C               **** vmr, cloud, para-H2 , fcloud, take logs ***
                   print*,i,dhsphere(i,j)
                   stop
                 endif
-                err = eref(1,i)/dhsphere(i,j)
+                if(iex.eq.0)then
+                 err = eref(1,i)/dhsphere(i,j)
+                else
+                 err = eref(j,i)/dhsphere(i,j)
+                endif
                endif
 C               print*,'Model 30A: ix,x0(ix)',ix,x0(ix)
                sx(ix,ix)=err**2
@@ -1692,11 +1712,23 @@ C          ***** inhomogeneous disc model 2  ********
              read(27,1)ipfile
              print*,'reading variable ',ivar,' from ',ipfile
              open(28,file=ipfile,status='old')
-              read(28,*)nlong,clen2
-              varparam(ivar,1)=nlong
-              read(28,*)(dhsphere(1,j),j=1,nlong),err
-              read(28,*)xpc
-              varparam(ivar,2)=xpc
+               read(28,1)buffer
+               if(buffer(1:2).eq.'Ex')then
+                iex=1
+                read(28,*)nlong,clen2
+               else
+                iex=0
+                read(buffer,*)nlong,clen2
+               endif
+               varparam(ivar,1)=nlong
+               if(iex.eq.0)then
+                read(28,*)(dhsphere(1,j),j=1,nlong),err
+               else
+                read(28,*)(dhsphere(1,j),j=1,nlong),
+     1           (eref(j,1),j=1,nlong)
+               endif
+               read(28,*)xpc
+               varparam(ivar,2)=xpc
              close(28)
              do 401 j=1,nlong
               ix=nx+j
@@ -1708,8 +1740,14 @@ C          ***** inhomogeneous disc model 2  ********
                print*,'Error in readpriori - xfac must be > 0'
                stop
               endif
-              err = err/xfac
+              if(iex.eq.0)then
+               err = err/xfac
+              else
+               err = eref(j,1)/xfac
+              endif
+
               sx(ix,ix) = err**2
+
 401          continue 
  
              dlong=360.0/float(nlong)

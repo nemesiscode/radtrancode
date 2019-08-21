@@ -31,20 +31,24 @@ C     ******************************************************************
       real vwave(mwave),v1,v2,save(300000),temp,vconv(mconv),vcentral
       real xdiff,test,vkstart,vkend,vkstep,fwhm,vfil(1000),dv,vj
       real fil(1000)
-      logical flag
+      logical flag,wasp
       character*100 runname
 C     *******************************************************************
+
+C     Set wasp=.true. to enable hybrid k-tables for wasp-43b analysis
+      wasp=.false.
 
 C     If k-tables are tabulated on an irregular wavelength grid OR have
 C     have been calculated with a built-in instrument function then
 C     just set the calculation wavelengths to be the convolution wavelengths
 
-
-C      print*,'vconv'
-C      print*,nconv
-C      do i=1,nconv
-C       print*,i,vconv(i)
-C      enddo
+      if(wasp)then
+       print*,'vconv'
+       print*,nconv
+       do i=1,nconv
+        print*,i,vconv(i)
+       enddo
+      endif
       if(vkstep.lt.0.or.fwhm.eq.0)then
         ico=nconv
         do i=1,nconv
@@ -67,6 +71,7 @@ C      enddo
          do 442 k=1,nconv1
           read(12,*)vcentral
           read(12,*)nsub
+          if(wasp) print*,'vcen,nsub',vcentral,nsub
           if(nsub.gt.1000)then
            print*,'Error in wavesetb: vfil array not big enough'
            print*,nsub
@@ -126,6 +131,39 @@ cc           dv = 100.0*abs(vcentral-vconv(i))/vconv(i)
       endif
       nco=ico
 
+      if(vkstep.eq.0.and.wasp)then
+C      hybrid k-tables for WASP-43b tests
+        ico=0
+        call file(runname,runname,'fil')
+        print*,'Reading filter file : ',runname
+        open(12,file=runname,status='old')
+         read(12,*)nconv1
+         if(nconv.ne.nconv1)then
+          print*,'Error in wavesetb'
+          print*,'Number of channels in filter file not the same as'
+          print*,'number of channels is spectral measurement file'
+          print*,'nconv1,nconv : ',nconv1,nconv
+          stop
+         endif
+         do 543 k=1,nconv1
+          read(12,*)vcentral
+          read(12,*)nsub
+          print*,'vcen,nsub',vcentral,nsub
+          if(nsub.gt.1000)then
+           print*,'Error in wavesetb: vfil array not big enough'
+           print*,nsub
+           stop
+          endif
+          do j=1,nsub
+           read(12,*)vfil(j),fil(j)
+           ico=ico+1
+           save(ico)=vfil(j)
+          enddo
+543      continue
+         nco=ico
+      endif
+
+
 C     sort calculation wavelengths into order
 440   continue
       flag=.false.
@@ -168,10 +206,12 @@ C         print*,'ico,vwave',ico,vwave(ico)
       nwave=ico
       endif
 
-C      print*,'nwave = ',nwave
-C      do i=1,nwave
-C       print*,i,vwave(i)
-C      enddo
+      if(wasp)then
+       print*,'nwave = ',nwave
+       do i=1,nwave
+        print*,i,vwave(i)
+       enddo
+      endif
 
       print*,'wavesetb: nwave = ',nwave
       return

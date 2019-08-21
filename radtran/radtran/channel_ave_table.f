@@ -164,6 +164,8 @@ C           print*,vfil(k,j),fil(k,j)
       VMIN1=VCEN(1)
       VMAX=VCEN(NCONV)
       DELV1=-1.0
+      CALL PROMPT('Set DELV to either -1 or 0 (-1 default) : ')
+      READ*,DELV1
       FWHM=0.0
       CALL FILE(OPFILE1,KTAFIL,'kta')
       OPEN(UNIT=LUN1,FILE=KTAFIL,STATUS='UNKNOWN',ACCESS='DIRECT',

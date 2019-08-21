@@ -68,6 +68,7 @@ C DELK: Wavenumber step of evaluation points.
       REAL kout(maxlay,maxgas,maxg),dkoutdt(maxlay,maxgas,maxg)
       CHARACTER*100 klist
       CHARACTER*200 ktafil(maxkfil),null
+      LOGICAL xnorm
       COMMON /interpk/ lun,ireck,xmink,delk,frack,pk,npk,tk,t2k,ntk,
      2 ngk,delvk,fwhmk,g_ord,delg,kout,dkoutdt
 
@@ -78,7 +79,7 @@ C
 C	Read in names of files.
 C
 C-----------------------------------------------------------------------
-
+      xnorm=.true.
       nkl = 0
       null = ' '
       print*,'klist file : ',klist
@@ -238,6 +239,9 @@ C-----------------------------------------------------------------------
         ENDDO
       ENDDO
 
+C      Uncomment following line to use WASP43-b hybrid k-tables.
+C      xnorm=.false.
+
       DO i=1,ngas
         DO j=1,nkl
           IF ((idgas(i).EQ.idgask(j)).AND.
@@ -264,7 +268,7 @@ C-----------------------------------------------------------------------
                dx = 100*ABS((vwave(k)-XCENK(ipo))/XCENK(ipo))
 C              IF DELV in ktables = 0, then find the nearest entry
 C              at a wavelength less than or equal to that requested
-               if(delx(j).eq.0)then
+               if(delx(j).eq.0.and.xnorm)then
 C                print*,ipo,xcenk(ipo),vwave(k)                
                 IF(dx.lt.MAXDX1.and.XCENK(ipo).le.vwave(k))THEN
                   imatch=1
@@ -286,9 +290,11 @@ C     1			delx(j),frack(k,i)
                else
 C              IF DELV in ktables < 0, then find the nearest entry
 C              and 'snap' the calculation to this wavelength.
+C                print*,'Snap'
                 IF(dx.lt.MAXDX1)THEN
                   imatch=1
                   jpo=ipo
+C                  print*,k,ipo
                   iflag(k,i) = 1
                   lun(k,i) = unit(j)
                   xmink(k,i) = xmin(j)

@@ -32,11 +32,14 @@ C       bins, paths, etc.)
 	REAL		vcentral,ytmp(maxout)
         DOUBLE PRECISION sum,sumf,yi,yold
 	CHARACTER*100	runname
+        LOGICAL		xnorm
 C-----------------------------------------------------------------------
 C
 C	Do a quick check first. Extrapolate end points if needed.
 C
 C-----------------------------------------------------------------------
+
+        xnorm = .true.
 
 C       set the FWHM to be the same as the spacing of k-distribs
 C       in look-up table
@@ -180,8 +183,8 @@ C         Channel Integrator Mode: Slightly more advanced than previous
 C           Make sure you're using the right filter function for the
 C           channel requested.
 C            dv = 100*abs(vcentral-vconv(i))/vconv(i)
-           dv = abs(vcentral-vconv(i))
-C           print*,'averaged consistency',i,vconv(i),vcentral
+            dv = abs(vcentral-vconv(i))
+C            print*,'averaged consistency',i,vconv(i),vcentral
             if(dv.lt.0.00001)then
              do j=1,nwave
               if(vwave(j).ge.vfil(1).and.vwave(j).le.vfil(nsub))then
@@ -190,24 +193,37 @@ C           print*,'averaged consistency',i,vconv(i),vcentral
               else
                ytmp(j)=0.0
               endif
+C              print*,j,vwave(j),ytmp(j)
              enddo
 
              sumf = 0.0
              sum = 0.0
 
 
+C	      Uncomment following line to use WASP43-b hybrid k-tables.
+C             xnorm=.false.
 
-             do j=1,nwave-1
+             if(xnorm)then
+              do j=1,nwave-1
+ 
+C               print*,j,vwave(j),vwave(j+1)
+               if(ytmp(j).ne.0)then
+                delv = vwave(j+1)-vwave(j)
+                sum=sum+ytmp(j)*y(j)*delv
+                sumf=sumf+ytmp(j)*delv
+               endif
+              enddo
+             else
+              do j=1,nwave
+ 
+C               print*,j,vwave(j)
+               if(ytmp(j).ne.0)then
+                sum=sum+ytmp(j)*y(j)
+                sumf=sumf+ytmp(j)
+               endif
+              enddo
 
-              if(ytmp(j).ne.0)then
-               delv = vwave(j+1)-vwave(j)
-               sum=sum+ytmp(j)*y(j)*delv
-               sumf=sumf+ytmp(j)*delv
-              else
-               sum=sum
-               sumf=sumf
-              endif
-             enddo
+             endif
 
              yout(I)=sngl(sum/sumf)
 C             print*,'nconv,vconv,yout',nconv,vconv(i),yout(I)

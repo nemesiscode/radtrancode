@@ -278,6 +278,9 @@ C          table BELOW that requested, already set up in read_klist.f.
           endif
         ENDIF
 
+C        uncomment this line to enable hybrid WASP43-b ktables.
+C        coinc=.true.
+
         ntab = np*abs(nt)*ng
         if(ntab.gt.MTAB)then
          print*,'Error in get_kg, NTAB>MTAB'

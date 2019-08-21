@@ -199,7 +199,7 @@ C Read the ktables or lbltables
          WRITE(*,1050)klist
 
          WRITE(*,*)'     CALLING read_klist'
-         CALL read_klist (klist, ngas, idgas, isogas, nwave, vwave)
+         CALL read_klist (klist, ngas, idgas, isogas, nwave, vwave, nkl)
          WRITE(*,*)'     read_klist COMPLETE'
          WRITE(*,*)' '
       ELSE

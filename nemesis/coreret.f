@@ -601,10 +601,26 @@ C        Check to see if log numbers have gone out of range
 
 C       Test to see if any vmrs have gone negative.
         xflag=0
+        print*,'coreret - testing subprofretg'
+C        print*,XFLAG,runname,ISPACE,ISCAT,GASGIANT,XLAT,XLON,NVAR
+C        do i=1,nvar
+C         print*,(varident(i,j),j=1,3)
+C         print*,(varparam(i,j),j=1,5)
+C        enddo
+C        print*,nx
+C        do i=1,nx
+C         print*,i,xn1(i)
+C        enddo
+C        print*,JPRE,NCONT,FLAGH2P
+
+
         call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
      1    xlon,nvar,varident,varparam,nx,xn1,jpre,ncont,flagh2p,
      2    xmap,ierr)
+        print*,'coreret - ierr = ',ierr
+
         if (ierr.eq.1)then
+          print*,'VMRS gone negative. Increase brake and try again'
           alambda = alambda*10.0             ! increase Marquardt brake
           if(alambda.gt.1e10)alambda=1e10
           goto 401
@@ -629,6 +645,27 @@ C       Test to see if any vmrs have gone negative.
          if(varident(ivar,1).eq.227)np = 7
 
          do j=ix,ix+np-1
+
+          if(varident(ivar,3).eq.31)then
+           if(varident(ivar,1).eq.0)then
+             if(xn1(j).lt.1.0) then
+               print*,'Mod 31. Temperature has gone negative'
+               print*,'Increase alambda'
+               alambda = alambda*10.0             ! increase Marquardt brake
+               if(alambda.gt.1e10)alambda=1e10
+               goto 401
+             endif
+           else
+             if(exp(xn1(j)).gt.1000.)then
+               print*,'Mod 31. vmr factor exceeds 1000'
+               print*,'Increase alambda'
+               alambda = alambda*10.0             ! increase Marquardt brake
+               if(alambda.gt.1e10)alambda=1e10
+               goto 401
+             endif
+           endif
+          endif
+
           if(varident(ivar,1).eq.0)then
            if(varident(ivar,3).eq.0) then
             if(xn1(j).lt.1.0) then

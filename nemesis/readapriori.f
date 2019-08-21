@@ -1600,6 +1600,7 @@ C          ***** inhomogeneous disc model 1  ********
               iex=0
               read(buffer,*)nlong,nlevel,clen1,clen2
              endif
+             print*,'iex = ',iex
              print*,nlong,nlevel,clen1,clen2
              if(nlevel+2.gt.mparam)then
               print*,'nlevel+2 > mparam',

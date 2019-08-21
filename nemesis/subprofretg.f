@@ -123,7 +123,7 @@ C     ***********************************************************************
       REAL XWID,Y,Y0,XX,L1,THETA(MTHET),GRADTMP(MAXPRO,MX)
       LOGICAL FEXIST,VPEXIST,NTEST,ISNAN,FVIVIEN
       REAL VP(MAXGAS),VP1,XS,GRADL(MAXPRO,MX)
-      INTEGER SVPFLAG(MAXGAS),SVPFLAG1,NLONG,NTHETA
+      INTEGER SVPFLAG(MAXGAS),SVPFLAG1,NLONG,NTHETA,N1,N2
       INTEGER NVP,ISWITCH(MAXGAS),IP1,IP2,JKNEE,NLEVEL
       REAL XLDEEP,XLHIGH,HVS,dlogp,XPC
       COMMON /SROM223/PCUT
@@ -132,6 +132,21 @@ C     ***********************************************************************
 
 C----------------------------------------------------------------------------
 C
+
+C      print*,'Check subprofretg'
+C      print*,XFLAG,IPFILE,ISPACE,ISCAT,GASGIANT,XLAT,XLON,NVAR
+C      do i=1,nvar
+C       print*,(varident(i,j),j=1,3)
+C       print*,(varparam(i,j),j=1,5)
+C      enddo      
+C      print*,nx
+C      do i=1,nx
+C       print*,i,xn(i)
+C      enddo
+C      print*,JPRE,NCONT,FLAGH2P
+
+
+
 C     First zero-fill HREF, PREF, TREF and VMRREF arrays
       do i=1,MAXLAT
        do j=1,MAXPRO
@@ -261,6 +276,7 @@ C        Now interpolate to correct latitude
          LONGITUDE=XLON
 
          FVIVIEN=.FALSE.
+C         FVIVIEN=.TRUE.
 
          IF(FVIVIEN)THEN
 
@@ -324,8 +340,23 @@ C        Skip header
 
 C      Make sure that vmrs add up to 1 if AMFORM=1
        IF(AMFORM.EQ.1)THEN
+        print*,'XX. ISCALE = ',(ISCALE(J),J=1,NVMR) 
         CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
         
+        IF(IERR.EQ.1)THEN
+         print*,'XX. Warning from Adjustvmr: IERR = ',IERR
+         print*,'Warning from subprofretg. VMRS do not add to 1'
+         print*,'Resetting to reference'       
+         DO I=1,NPRO
+          DO J=1,NVMR
+           VMR(I,J)=(1.0-FLAT)*VMRREF(JLAT,I,J)+
+     &		FLAT*VMRREF(JLAT+1,I,J)
+          ENDDO
+         ENDDO
+         CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
+         print*,'XX. IERRX = ',IERR
+        ENDIF
+
         DO 301 I=1,NPRO
          DO K=1,NVMR
           XVMR(K)=VMR(I,K)
@@ -334,7 +365,9 @@ c          print*,I,K,XVMR(K)
          XXMOLWT(I)=CALCMOLWT(NVMR,XVMR,IDGAS,ISOGAS)
 301     CONTINUE
 c      Calculate MOLWT but dont add VMRs to 1 if AMFORM=2
+
        ELSEIF(AMFORM.EQ.2)THEN
+
         DO I=1,NPRO
          DO K=1,NVMR
           XVMR(K)=VMR(I,K)
@@ -2689,6 +2722,13 @@ C         print*,IVAR,NLEVEL+3,VARPARAM(IVAR,NLEVEL+3)
           ENDDO
 C          print*,'ylong',(YLONG(I),I=1,NLONG)
 C          print*,SUM
+
+C         Alternate - setting pole temperature to average of morning and
+C                     afternoon terminators.
+          N1=NLONG/4
+          N2=N1+2*N1        
+          SUM=0.5*(YLONG(N1+1)+YLONG(N2+1))
+
           YTH = (1.0-FLONG)*YLONG(ILONG)+FLONG*YLONG(JLONG)
           XP1(J) = SUM + (YTH-SUM)*(COS(LATITUDE*DTR))**XPC
 
@@ -4193,7 +4233,24 @@ c  ** end of loop around gases **
 C     Now make sure the resulting VMRs add up to 1.0 for an
 C     AMFORM=1 profile
       IF(AMFORM.EQ.1)THEN
+        print*,'ISCALE : ',(ISCALE(J),J=1,NVMR)
         CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
+        print*,'IERR  = ',IERR
+
+        IF(IERR.EQ.1)THEN
+         print*,'Warning from subprofretg. VMRS do not add to 1'
+         print*,'Resetting to reference'       
+         DO I=1,NPRO
+          DO J=1,NVMR
+           VMR(I,J)=(1.0-FLAT)*VMRREF(JLAT,I,J)+
+     &		FLAT*VMRREF(JLAT+1,I,J)
+          ENDDO
+         ENDDO
+         CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
+         print*,'IERRX  = ',IERR
+
+        ENDIF
+
       ENDIF
 
 

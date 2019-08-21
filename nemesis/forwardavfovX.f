@@ -530,6 +530,7 @@ C          Now the gradients
 
        if(ipfov)then
         close(ifov)
+        print*,'ipfov = .true.  Stopping'
         stop
        endif
 

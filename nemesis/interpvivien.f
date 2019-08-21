@@ -22,7 +22,7 @@
 C      print*,'XLAT,XLON = ',XLAT,XLON
          
       IF(NLON1.NE.64)THEN
-       ANAME='process_vivien.txt'
+       ANAME='process_vivien_mod.txt'
        OPEN(12,FILE=ANAME,STATUS='OLD')
         READ(12,*)NLON1,NLAT1
         IF(NLON.NE.NLON1)THEN

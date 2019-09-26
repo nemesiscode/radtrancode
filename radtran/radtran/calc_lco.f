@@ -87,7 +87,7 @@ C     Calculate number of LCO steps we need to go either side of
 C     each LCO wavenumber to calculate wings
       NLCO = INT(MAXDV/LCOBINSIZE)
 
-C      print*,'NLCO',NLCO
+      print*,'NLCO',NLCO
 
 C     Initialise LCO absorption
       DO I = 1,MLCO    
@@ -149,8 +149,10 @@ C        print*,I,VV,VLIN,ABSCO,X,Y,AD,WEIGHT(I)
        ENDDO
 
        DO I=0,NLCO
-        WEIGHT(I)=WEIGHT(I)/SUM
+        IF(SUM.GT.0)THEN
+         WEIGHT(I)=WEIGHT(I)/SUM
 C        print*,weight(i)
+        ENDIF
        ENDDO
 
        I1=J-NLCO

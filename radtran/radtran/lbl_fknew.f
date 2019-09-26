@@ -400,6 +400,7 @@ C      stop
        X=X+CONTINK(J,IP,IT,CURBIN)*VTMP
        VTMP=VTMP*VTMP
       ENDDO
+
 C      print*,'X = ',X
 
 C The text within the IF statement below should probably be kept
@@ -469,6 +470,11 @@ C          WRITE(*,*)' Stopping program.'
 C          STOP
            TAUTMP=0.0
         ENDIF
+        IF(ISNAN(TAUTMP))THEN
+         print*,'Error in lbl_fknew - NAN'
+         stop
+        ENDIF
+
 507   CONTINUE
 
 C Now scaling for each path

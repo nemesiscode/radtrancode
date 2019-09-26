@@ -14,12 +14,17 @@ C
 C_ARGS:	Input variables:
 C	OUTPUT(MPOINT)	REAL	Supplied lbl spectrum. Variable is passed
 C				via the /SPECTRUM/ common block for speed.
+C       IWAVE		INTEGER	0=Wavelength, 1=Wavenumber
 C       VMIN		REAL	Lowest wavenumber.
 C  	DELV		REAL	Wavenumber spacing of LBL spectrum.
 C       NPOINT		INTEGER	Number of points in spectrum.
+C       NFIL		INTEGER	Number of points in filter function
+C	VFIL(NFIL)	REAL	Filter function wavelengths/wavenumbers
+C	TFIL(NFILE)	REAL	Filter function transmissions
 C       G_ORD(MAXG)	REAL	Gauss-Legendre ordinates for calculating the
 C				k-distribution.
 C       NG              INTEGER Number of ordinates in k-distribution.
+C	NGMAX		INTEGER Maximum allowable size of NG
 C
 C	Output variables:
 C	K_G(MAXG)		REAL	Calculated k-distribution.
@@ -89,6 +94,9 @@ C     of equally spaced wavelengths
        VMAX1 = 1E4/VMIN
        DELV1 = (VMAX1-VMIN1)/FLOAT(NPOINT-1)
 
+       print*,'NPOINT,VMIN1,VMAX1,DELV1=',NPOINT,VMIN1,
+     1  VMAX1,DELV1
+
        DO I=1,NPOINT
         V1 = VMIN1+(I-1)*DELV1
         V2 = 1E4/V1
@@ -99,6 +107,7 @@ C     of equally spaced wavelengths
        DO I=1,NPOINT
         OUTPUT(I)=OUTPUT1(I)
        ENDDO
+
       ENDIF
 
 C=======================================================================
@@ -125,6 +134,10 @@ C=======================================================================
           YY(I) = YMIN
         ELSE
           YY(I) = ALOG10(OUTPUT(I))
+          IF(ISNAN(YY(I)))THEN
+           print*,'NAN',I,OUTPUT(I)
+           YY(I)=YMIN
+          ENDIF
         ENDIF
         YMAX = MAX(YMAX,YY(I))
 304   CONTINUE
@@ -135,7 +148,7 @@ C=======================================================================
       ENDDO
       KMIN = FLOOR(YMIN)
       KMAX = CEILING(YMAX)
-
+      print*,KMIN,KMAX,YMIN,YMAX
       IF(YMIN.EQ.YMAX)THEN
         DO I=1,NG
           IF(KMIN.EQ.XMINK)THEN
@@ -144,7 +157,7 @@ C=======================================================================
             K_G(I) = 10**KMIN
           ENDIF
         ENDDO
-C        print*,'calc_fkdist_wavec - zero spec - returning'
+        print*,'calc_fkdist_wavec - zero spec - returning'
         RETURN
       ENDIF
 
@@ -166,6 +179,7 @@ C        print*,'calc_fkdist_wavec - zero spec - returning'
            WFIL=0.0
          ENDIF
         ENDIF
+C        print*,VV,NFIL,WFIL
 
         K = 1 + INT((YY(I) - KMIN)/DELK)
         YK = KMIN + (K - 1)*DELK
@@ -173,7 +187,6 @@ C        print*,'calc_fkdist_wavec - zero spec - returning'
         IF(XFR.GE.0.5.AND.K.LT.NKINT)K = K + 1
         F(K) = F(K) + WFIL
 306   CONTINUE
-
       SUM = 0.0
       DO 307 K=1,NKINT
         SUM = SUM + F(K)
@@ -183,6 +196,7 @@ C        print*,'calc_fkdist_wavec - zero spec - returning'
       DO 311 K=1,NKINT
        G(K)=G(K)/SUM
 311   CONTINUE
+
 
       ITYPE=0
 
@@ -229,6 +243,7 @@ C      close(12)
 C      print*,'press a key to continue'
 C      read(5,1)ans
 
+      print*,'CALC_FKDIST_WAVEC called OK'
 
       RETURN      
 

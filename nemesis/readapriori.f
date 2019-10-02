@@ -90,7 +90,7 @@ C     ****************************************************************
       real eref(maxlat,maxpro),reflat(maxlat),htan,htop,etop
       real dhsphere(maxpro,mlong),hfrac(mlong),efrac
       real delp,xfac,pknee,eknee,edeep,xdeep,xlatx,xlonx,pshld
-      real xstep,estep,efsh,xfsh,flat,hknee,pre
+      real xstep,estep,efsh,xfsh,flat,hknee,pre,flat1,dlat
       real ref(maxlat,maxpro),clen,SXMINFAC,arg,valb,alb,refp,errp
       real xknee,xrh,erh,xcdeep,ecdeep,radius,Grav,plim
       real xcwid,ecwid,ptrop,refradius,xsc,ascat,escat,shape,eshape
@@ -1968,6 +1968,186 @@ C            Read in pressure-scaling factor
              varparam(ivar,1)=xlapse
 
              nx = nx+2
+
+
+           elseif(varident(ivar,3).eq.35)then
+C          ***** axisymmetric model continuous  ********
+             read(27,1)ipfile
+             print*,'Model 35'
+             print*,'reading variable ',ivar,' from ',ipfile
+             open(28,file=ipfile,status='old')
+             read(28,1)buffer
+             if(buffer(1:2).eq.'Ex')then
+              iex=1
+              read(28,*)nlat,nlevel,clen1,clen2
+             else
+              iex=0
+              read(buffer,*)nlat,nlevel,clen1,clen2
+             endif
+             print*,'iex = ',iex
+             print*,nlat,nlevel,clen1,clen2
+             if(nlevel+2.gt.mparam)then
+              print*,'nlevel+2 > mparam',
+     1         nlevel+2,mparam
+              print*,'Need to reduce nlong,nlevel or increase mparam'
+              stop
+             endif
+             varparam(ivar,1)=nlat*nlevel
+             varparam(ivar,2)=nlevel
+             ipar=3
+             ix=nx
+             do 363 i=1,nlevel
+              if(iex.eq.0)then
+               read(28,*)pref(i),(dhsphere(i,j),j=1,nlat),
+     1         eref(1,i)
+              else
+               read(28,*)pref(i),(dhsphere(i,j),j=1,nlat),
+     1         (eref(j,i),j=1,nlat)
+              endif
+              varparam(ivar,ipar)=pref(i)
+C              print*,i,pref(i),ivar,varident(ivar,1)
+              ipar=ipar+1
+              do 364 j=1,nlat
+               ix=nx + (j-1)*nlevel+i
+C              For vmrs and cloud density always hold the log. 
+C              Avoids instabilities arising from greatly different profiles 
+C              such as T and vmrs
+               if(varident(ivar,1).eq.0)then
+C               *** temperature, leave alone ****
+                x0(ix) = dhsphere(i,j)
+                if(iex.eq.0)then
+                 err = eref(1,i)
+                else
+                 err = eref(j,i)
+                endif
+               else
+C               **** vmr, cloud, para-H2 , fcloud, take logs ***
+                if(dhsphere(i,j).gt.0.0) then
+                  x0(ix) = alog(dhsphere(i,j)) 
+                  lx(ix)=1
+                else 
+                  print*,'Error in readapriori.f. Cant take log of zero'
+                  print*,i,dhsphere(i,j)
+                  stop
+                endif
+                if(iex.eq.0)then
+                 err = eref(1,i)/dhsphere(i,j)
+                else
+                 err = eref(j,i)/dhsphere(i,j)
+                endif
+               endif
+               sx(ix,ix)=err**2
+364           continue
+363          continue
+             close(28)
+
+             nlen = nlat*nlevel
+             dlat = 180.0/float(nlat-1)
+             do 465 i=1,nlen
+              ip = i-nlevel*int((float(i)-0.5)/float(nlevel))
+              il = 1 + int((float(i)-0.5)/float(nlevel))
+              ix=nx+i
+C              print*,'ix,il,ip',ix,il,ip
+              if(pref(ip).lt.0.0) then
+               print*,'Error in readapriori.f. A priori file '
+               print*,'must be on pressure grid '
+               print*,'Model 35'
+               stop
+              endif            
+C              print*,'Press = ',pref(ip)
+              do 466 j=i+1,nlen
+               jp = j-nlevel*int((float(j)-0.5)/float(nlevel))
+               jl = 1 + int((float(j)-0.5)/float(nlevel))
+               jx=nx+j
+C               print*,'jx,jl,jp',jx,jl,jp
+C               print*,'P(J) = ',pref(jp)
+
+               delp = log(pref(jp))-log(pref(ip))
+               arg = abs(delp/clen1)
+
+               flat = -90+(il-1)*dlat
+               flat1 = -90+(jl-1)*dlat
+               dlat = flat1-flat
+               arg1 = abs(dlat/clen2)
+
+C               print*,ix,jx,delp,clen1,arg,flon,flon1,dlon,clen2,arg1
+               xfac = exp(-(arg+arg1))
+C               print*,xfac
+               if(xfac.ge.SXMINFAC)then  
+                 sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
+                 sx(jx,ix) = sx(ix,jx)
+               endif
+
+466           continue
+465          continue               
+
+             nx=nx+nlen
+
+
+           elseif(varident(ivar,3).eq.36)then
+C          ***** axisymmetric model continuous  ********
+             read(27,1)ipfile
+             print*,'reading variable ',ivar,' from ',ipfile
+             open(28,file=ipfile,status='old')
+               read(28,1)buffer
+               if(buffer(1:2).eq.'Ex')then
+                iex=1
+                read(28,*)nlong,clen2
+               else
+                iex=0
+                read(buffer,*)nlat,clen2
+               endif
+               varparam(ivar,1)=nlat
+               if(iex.eq.0)then
+                read(28,*)(dhsphere(1,j),j=1,nlat),err
+               else
+                read(28,*)(dhsphere(1,j),j=1,nlat),
+     1           (eref(j,1),j=1,nlat)
+               endif
+             close(28)
+             do 461 j=1,nlat
+              ix=nx+j
+              xfac=dhsphere(1,j)
+              if(xfac.gt.0.0)then
+               x0(ix)=alog(xfac)
+               lx(ix)=1
+              else
+               print*,'Error in readpriori - xfac must be > 0'
+               stop
+              endif
+              if(iex.eq.0)then
+               err = err/xfac
+              else
+               err = eref(j,1)/xfac
+              endif
+
+              sx(ix,ix) = err**2
+
+461          continue 
+ 
+             dlat=180.0/float(nlat-1)
+             do 468 i=1,nlat
+               ix = nx + i
+               do 469 j=i+1,nlat
+                jx = nx + j    
+                flat = -90+(i-1)*dlong
+                flat1 = -90+(j-1)*dlong
+                dlat = flat1-flat
+
+                arg = abs(dlat/clen2)
+                xfac = exp(-arg)
+                if(xfac.ge.SXMINFAC)then  
+                 sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
+                 sx(jx,ix) = sx(ix,jx)
+                endif
+                        
+469            continue
+C               print*,ix,sx(ix,ix:nx+nlong)
+468           continue
+
+
+             nx=nx+nlat
+
 
            else         
             print*,'vartype profile parametrisation not recognised'

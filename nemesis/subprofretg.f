@@ -111,15 +111,16 @@ C     ***********************************************************************
       REAL TEMP
       REAL A,B,C,D,SVP,PP,LATITUDE,LONGITUDE,LAT1,LON1
       REAL V1(3),V0(3),XP,DLONG,FLONG,LONGITUDE1
-      INTEGER ILONG,JLONG
+      REAL DLAT
+      INTEGER ILONG,JLONG,ILAT
       REAL MOLWT,SCALE(MAXPRO),XMAP1,SCALEH,DTR
       PARAMETER (DTR=PI/180.)
 
-      INTEGER NLOCATE,J1,MLON,MTHET
-      PARAMETER(MLON=20,MTHET=3*MLON+1)
+      INTEGER NLOCATE,J1,MLON,MTHET,MLAT,NLAT
+      PARAMETER(MLON=20,MTHET=3*MLON+1,MLAT=20)
       REAL YTH,YYTH(MTHET),YYTH2(MTHET),FTH,FI,FJ
       REAL CPHI1,CPHI2
-      REAL YLONG(MLON)
+      REAL YLONG(MLON),YLAT(MLAT)
       REAL XWID,Y,Y0,XX,L1,THETA(MTHET),GRADTMP(MAXPRO,MX)
       LOGICAL FEXIST,VPEXIST,NTEST,ISNAN,FVIVIEN
       REAL VP(MAXGAS),VP1,XS,GRADL(MAXPRO,MX)
@@ -3210,6 +3211,162 @@ C           print*,ILAPSE,XLAPSE,SETXLAPSE
            XMAP(NXTEMP+2,IPAR,J)=0.0625*TB*(U**(-0.75))*
      &    CTAU(J)*XF
           ENDIF
+         ENDDO
+
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.35)THEN
+C        Model 35. Axisymmetric model continuous
+C        ***************************************************************
+
+C        Need to interpolation in longitude for each vertical level
+         NLAT = INT(VARPARAM(IVAR,1)/VARPARAM(IVAR,2)+0.1)
+         NLEVEL = INT(VARPARAM(IVAR,2))
+         print*,'Model 35 - nlat,nlevel,np = ',nlat,nlevel,np
+         print*,'Model 35 - latitude,longitude = ',LATITUDE,
+     &           LONGITUDE
+         DLAT=180.0/FLOAT(NLAT-1)
+         ILAT=1+INT((90.0+LATITUDE)/DLAT)
+         FLAT = (90+LATITUDE - (ILAT-1)*DLAT)/DLAT
+         if(flat.gt.1.0)then 
+          print*,'Error: flat > 1.0'
+          stop
+         endif
+         IF(ILAT.LT.NLAT)THEN
+          JLAT=ILAT+1
+         ELSE
+          stop
+         ENDIF
+
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+            DX=2.0
+         ELSE
+            DX=0.1
+         ENDIF
+
+C        Read in pressure grid from varparam
+C        print*,'Model 35 - pressure'
+         DO J=1,NLEVEL
+          LP1(J)=ALOG(VARPARAM(IVAR,J+2))
+          print*,J,VARPARAM(IVAR,J+2),LP1(J),EXP(LP1(J))
+          DO K=1,NP
+           GRADL(J,K)=0.
+          ENDDO
+         ENDDO
+       
+         DO J=1,NLEVEL
+          DO I=1,NLAT
+           J1=NXTEMP+(I-1)*NLEVEL+J
+           YLAT(I)=XN(J1)
+          ENDDO
+
+          XP1(J) = (1.0-FLAT)*YLAT(ILAT)+FLAT*YLAT(JLAT)
+
+          K=(ILAT-1)*NLEVEL+J
+          GRADL(J,K)=(1.0-FLAT)
+          K=(JLAT-1)*NLEVEL+J
+          GRADL(J,K)=FLAT
+
+         ENDDO
+
+         DO J=1,NPRO
+
+          L1 = ALOG(P(J))
+
+          F=-1.
+          DO JLEV=1,NLEVEL-1
+           IF(L1.LE.LP1(JLEV).AND.L1.GT.LP1(JLEV+1))THEN
+             ILEV=JLEV
+             F = (L1-LP1(JLEV))/(LP1(JLEV+1)-LP1(JLEV))
+             GOTO 1181
+            ENDIF
+          ENDDO
+1181      CONTINUE
+          IF(F.LT.0)THEN
+            IF(L1.GT.LP1(1))THEN
+             ILEV=1
+             F = (L1-LP1(ILEV))/(LP1(ILEV+1)-LP1(ILEV))
+            ELSE
+             ILEV=NLEVEL-1
+             F = (L1-LP1(ILEV))/(LP1(ILEV+1)-LP1(ILEV))
+            ENDIF
+            print*,'Model 35 warning - pressure out of range'
+            print*,'Having to extrapolate'
+            print*,L1,LP1(1),LP1(NLEVEL)
+            print*,ILEV,LP1(ILEV),LP1(ILEV+1),F
+          ENDIF
+
+          XX = (1.0-F)*XP1(ILEV)+F*XP1(ILEV+1)
+
+          IF(VARIDENT(IVAR,1).EQ.0)THEN
+           X1(J)=XX
+          ELSE
+           X1(J)=EXP(XX)
+          ENDIF
+          IF(X1(J).LT.1e-36)X1(J)=1e-36
+          
+          DO K=1,NP
+           GRADTMP(J,K)=(1.0-F)*GRADL(ILEV,K)+F*GRADL(ILEV+1,K)         
+           IF(VARIDENT(IVAR,1).EQ.0)THEN
+            XMAP(NXTEMP+K,IPAR,J)=GRADTMP(J,K)
+           ELSE
+            XMAP(NXTEMP+K,IPAR,J)=X1(J)*GRADTMP(J,K)
+           ENDIF
+          ENDDO
+
+
+         ENDDO
+
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.36)THEN
+C        Model 36. Axisymmetric scaling
+C        ***************************************************************
+
+C        Need to interpolation in longitude
+         NLAT = INT(VARPARAM(IVAR,1))
+
+
+         print*,'Model 36 - nlat,np = ',nlat,np
+         print*,'Model 36 - latitude,longitude = ',LATITUDE,
+     &           LONGITUDE
+
+         DLAT=180.0/FLOAT(NLAT-1)
+         ILAT=1+INT((90+LATITUDE)/DLAT)
+         FLAT = (90+LATITUDE - (ILAT-1)*DLAT)/DLAT
+         if(flat.gt.1.0)then 
+          print*,'Error: flong > 1.0'
+          stop
+         endif
+         IF(ILAT.LT.NLAT)THEN
+          JLAT=ILAT+1
+         ELSE
+          stop
+         ENDIF
+
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+            DX=2.0
+         ELSE
+            DX=0.1
+         ENDIF
+
+         DO K=1,NP
+           GRADL(1,K)=0.
+         ENDDO
+
+         SUM=0.
+         DO I=1,NLAT
+          J1=NXTEMP+I
+          YLAT(I)=XN(J1)
+         ENDDO
+
+         XS = (1.0-FLAT)*YLONG(ILAT)+FLAT*YLAT(JLAT)
+
+         GRADL(1,ILAT)=(1.0-FLAT)
+         GRADL(1,JLAT)=FLAT
+
+         DO J=1,NPRO
+           X1(J) = XREF(J)*EXP(XS)
+           XMAP(NXTEMP+ILONG,IPAR,J)=X1(J)*GRADL(1,ILONG)
+           XMAP(NXTEMP+JLONG,IPAR,J)=X1(J)*GRADL(1,JLONG)
          ENDDO
 
 

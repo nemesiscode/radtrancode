@@ -33,7 +33,7 @@ C MAXPATH, LIMGAS, etc.
       PARAMETER (LUN0=30,LUN1=31,MBIN=1000)
 C MAXOUT: the maximum number of output points.
 
-      INTEGER J,J1,J2,N
+      INTEGER J,J1,J2,N,A
       REAL COEF(4),XA(4),YA(4),XMIN,XMAX,X1,X2
       INTEGER I,IP,IT,LOOP,IBIN
 C I, IP, IT, LOOP: Incremators.
@@ -58,7 +58,7 @@ C TIME2: System time at the end of program execution.
 C IDGAS1: The local gas identifier.
 C ISOGAS1: The local gas-isotopic identifier; if zero all isotopes of the
 C gas are included.
-      REAL V,V1,F,V2,SUMK,KX,SUM1
+      REAL V,V1,F,V2,SUMK,KX,SUM1,MIN_DIFF,MIN_DIFF2,DIFF,DIFF2
       REAL DELV0,FWHM0,XOFF,XREF,SUMC
       REAL VMIN0,VMAX,VMAX0,V_START,V_END,FRAC
 
@@ -70,8 +70,13 @@ C G_ORD: Gauss-Legendre ordinates for calculating the k-distribution.
 C DEL_G: Gauss-Legendre weights for integration.
       REAL TMP,GW(MBIN*20),GK(MBIN*20)
       REAL XK,KG(MAXG),YY
-      REAL VCEN(100),VFIL(100,1000),FIL(100,1000)
+<<<<<<< HEAD
+      REAL VCEN(500),VCEN0(6000),VFIL(500,1000),FIL(500,1000)
       INTEGER NSUB(100),NCONV,K,IREC1
+=======
+      REAL VCEN(500),VCEN0(6000),VFIL(500,1000),FIL(500,1000)
+      INTEGER NSUB(500),NCONV,K,IREC1
+>>>>>>> daa98c9... Added capability to Channel_Ave_Table to average over constant R tables
       REAL VMIN1,DELV1,XF(1000),YF(1000)
 
       CHARACTER*100 KTAFIL,OPFILE1,FILFILE
@@ -139,7 +144,17 @@ C program since execution.
         READ(LUN0,REC=IREC)TEMP1(J)
         WRITE(*,*)' ',TEMP1(j)
         IREC = IREC + 1
-302   CONTINUE
+ 302  CONTINUE
+      IF(DELV.LE.0.0)THEN
+       DO 303 J=1,NPOINT   
+       READ(LUN0,REC=IREC)VCEN0(J)
+       IREC = IREC+1
+303    CONTINUE
+      ELSE
+       DO 304 J=1,NPOINT  
+        VCEN0(J)=VMIN+FLOAT(J-1)*DELV
+304    CONTINUE
+      ENDIF
 
       CALL PROMPT('Enter output (smoothed) filename : ')
       READ(5,23)OPFILE1
@@ -160,10 +175,16 @@ C           print*,vfil(k,j),fil(k,j)
       CLOSE(12)
 
 
+      IF(DELV.LE.0.0)THEN
+      IREC1=IREC0-NPOINT+NCONV
+      ELSE
       IREC1=IREC0+NCONV
+      ENDIF
       VMIN1=VCEN(1)
       VMAX=VCEN(NCONV)
       DELV1=-1.0
+      CALL PROMPT('Set DELV to either -1 or 0 (-1 default) : ')
+      READ*,DELV1
       FWHM=0.0
       CALL FILE(OPFILE1,KTAFIL,'kta')
       OPEN(UNIT=LUN1,FILE=KTAFIL,STATUS='UNKNOWN',ACCESS='DIRECT',
@@ -196,19 +217,38 @@ C           print*,vfil(k,j),fil(k,j)
         WRITE(LUN1,REC=IREC)TEMP1(J)
         IREC = IREC + 1
 202   CONTINUE
-      DO 303 J=1,NCONV
+      DO 305 J=1,NCONV
+C        WRITE(*,*)'Hi VCEN', VCEN(J)
         WRITE(LUN1,REC=IREC)VCEN(J)
         IREC=IREC+1
-303   CONTINUE
+305   CONTINUE
 
 
-      DO 1000 I=1,NCONV
-
+      DO 1000 I=1,NCONV    
         v1 = vfil(i,1)
         v2 = vfil(i,nsub(i))
+        IF(DELV.LE.0.0) THEN
+           MIN_DIFF=100.0
+           MIN_DIFF2=100.0
+            DO A=1,NPOINT
+               DIFF = ABS(V1-VCEN0(A))
+               DIFF2 = ABS(V2-VCEN0(A))
+C               WRITE(*,*)'DIFF',DIFF,DIFF2,VCEN0(A),NPOINT
+               IF((DIFF.LT.MIN_DIFF).AND.(V1.LT.VCEN0(A))) THEN
+                  j1=A
+                  MIN_DIFF= DIFF
+               ENDIF
+               IF(DIFF2.LT.MIN_DIFF2.AND.(V2.GT.VCEN0(A))) THEN
+                  j2=A
+                  MIN_DIFF2 = DIFF2
+               ENDIF
+            ENDDO
+C        WRITE(*,*),'J1,J2',J1,J2             
+        ELSE
         j1 = 1 + int((v1-vmin)/delv)
         j2 = 1 + int((v2-vmin)/delv)
-        
+        ENDIF
+      
         print*,i,nsub(i)
         print*,v1,v2
         print*,j1,j2,1+j2-j1
@@ -221,8 +261,7 @@ C           print*,vfil(k,j),fil(k,j)
         enddo
 
         WRITE(*,*)'CHANNEL_AVE_TABLE.f :: CALCULATING : ',
-     &    I,' OF ',NCONV
-
+     &    I,' OF ',NCONV, VCEN(I)
 
         DO 901 IP=1,NP
          DO 902 IT=1,NT
@@ -231,20 +270,32 @@ C           print*,vfil(k,j),fil(k,j)
           SUMK=0.
           DO 900 J=J1,J2
 
-            V = VMIN + (J-1)*DELV
-            CALL VERINT(XF,YF,NSUB(I),YY,V)
-        
-            IREC=IREC0 + NP*NT*NG*(J-1) + NT*NG*(IP-1) + NG*(IT-1)
 
+             IF(DELV.LE.0.0)THEN
+               IF(IT.EQ.1.AND.IP.EQ.1)THEN
+ 		 WRITE(*,*)'VCEN range = ',VCEN0(J1),VCEN0(J2)
+		 WRITE(*,*)'.fil range = ',V1,V2
+		ENDIF
+                V = VCEN0(J)
+                ELSE
+                   V = VMIN + (J-1)*DELV
+                 ENDIF  
+            CALL VERINT(XF,YF,NSUB(I),YY,V)
+            IREC=IREC0 + NP*NT*NG*(J-1) + NT*NG*(IP-1) + NG*(IT-1)
             DO 903 LOOP=1,NG
                 READ(LUN0,REC=IREC)KX
+C                IF(KX.EQ.0.0) WRITE(*,*)'ALERT 0 K',IP,IT,J,LOOP 
                 IREC = IREC + 1
                 NC=NC+1
                 GK(NC)=KX
-                GW(NC)=DEL_G(LOOP)*YY
+                IF(DELV.LE.0.0)THEN
+                GW(NC)=DEL_G(LOOP)*YY*0.5*(VCEN0(J+1)-VCEN0(J-1))
+                ELSE
+      		GW(NC)=DEL_G(LOOP)*YY
+     		ENDIF
+C          WRITE(*,*)'V,GK,WEIGHT',VCEN0(J),GK(NC),GW(NC)
                 SUMK=SUMK+GW(NC)
 903         CONTINUE
-            
 900       CONTINUE
 
           IF (NC.GT.MBIN*20)THEN
@@ -258,15 +309,16 @@ C           print*,vfil(k,j),fil(k,j)
            GW(LOOP)=GW(LOOP)/SUMK
            SUM1=SUM1+GW(LOOP)
           ENDDO
-
-
-C         Now sort k-coefficients
+C          WRITE(*,*)'SUM1',SUM1    
+C     Now sort k-coefficients
+C           WRITE(*,*)'SORT K',DEL_G,NG,NC
           CALL RANK(DEL_G,NG,GK,GW,NC,KG)
 
 
-          IREC2=IREC1 + NP*NT*NG*(I-1) + NT*NG*(IP-1) + NG*(IT-1)
-
+          
+      IREC2=IREC1+NP*NT*NG*(I-1)+NT*NG*(IP-1)+NG*(IT-1)
           DO 808 LOOP=1,NG
+C             WRITE(*,*)'Final K',KG(LOOP),DEL_G(LOOP)
              WRITE(LUN1,REC=IREC2)KG(LOOP)
              IREC2 = IREC2 + 1
 808       CONTINUE

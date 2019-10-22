@@ -17,6 +17,7 @@ C	inh3	integer	Include Lutz and Owen ammonia continuum
 C	iptf	integer	Use modified CH4 high-T part. func. (1)
 C       imie	integer	Use PHASEN.DAT phase file (1) or hgphaseN.dat phase
 C			file otherwise
+C	iuvscat integer Include additional UV opacity (Henrik Melin)
 C
 C     Pat Irwin	21/2/12
 C

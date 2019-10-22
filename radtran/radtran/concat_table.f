@@ -335,10 +335,9 @@ C******************************** CODE *********************************
       ENDIF
 
       IREC = IREC0
-      IREC1 = IREC01
-      IREC2 = IREC02
+      IREC1 = IREC01+(I1-1)*NP1*NT1*NG1
 
-      DO 297 I=1,NPOINT1
+      DO 297 I=I1,I2
        DO 20 J=1,NP1
          DO 30 K=1,NT1
            DO 40 LOOP=1,NG1
@@ -352,7 +351,10 @@ C******************************** CODE *********************************
 30       CONTINUE
 20     CONTINUE
 297   CONTINUE
-      DO 298 I=1,NPOINT2
+
+      IREC2 = IREC02+(J1-1)*NP2*NT2*NG2
+
+      DO 298 I=J1,J2
        DO 21 J=1,NP2
          DO 31 K=1,NT2
            DO 41 LOOP=1,NG2

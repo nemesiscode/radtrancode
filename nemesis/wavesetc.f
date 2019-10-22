@@ -27,13 +27,25 @@ C     ******************************************************************
       implicit none
       include '../radtran/includes/arrdef.f'
       include 'arraylen.f'
-      integer nconv,i,j,k,ico,nco,nwave,j1,j2,nconv1,nsub,jj
-      integer ishape
-      real vwave(mwave),v1,v2,save(100000),temp,vconv(mconv),vcentral
-      real xdiff,test,vkstart,vkend,vkstep,fwhm,vfil(1000),dv,vj
-      real fil(1000)
+
+      integer, intent(in) :: nconv
+      integer, intent(out) :: nwave
+      real, intent(in) :: fwhm,vkstart,vkend,vkstep
+
+      real :: v1,v2,temp,vcentral
+      real :: xdiff,test,dv,vj
+      integer :: i,j,k,ico,nco,j1,j2,nconv1,nsub,jj
+      integer :: ishape,savemax,status
+      parameter (savemax = 1000000)
+
+      real, intent(in) :: vconv(mconv)
+      real, intent(out) :: vwave(mwave)
+      real, allocatable :: fil(:),vfil(:),save(:)
+ 
+c      real :: save(savemax),vfil(maxfil),fil(maxfil)
+
       logical flag
-      character*100 runname
+      character*100 runname,runname1
 C     *******************************************************************
 
 C     If k-tables are tabulated on an irregular wavelength grid OR have
@@ -47,11 +59,32 @@ C      do i=1,nconv
 C       print*,i,vconv(i)
 C      enddo
 
+
+      allocate (save(savemax),STAT=status)
+      if(status.gt.0)then
+       print*,'error in wavesetc.f'
+       print*,'save was not properly allocated'
+       stop
+      endif
+
+      do i=1,savemax
+       save(i)=0.0
+      enddo
+
       ico = 0
       if(fwhm.lt.0.0)then
-        call file(runname,runname,'fil')
-        print*,'Reading : ',runname
-        open(12,file=runname,status='old')
+
+        allocate (vfil(maxfil),fil(maxfil),STAT=status)
+        if(status.gt.0)then
+         print*,'error in wavesetc.f'
+         print*,'vfil and fil were not properly allocated'
+         stop
+        endif
+
+
+        call file(runname,runname1,'fil')
+        print*,'Reading : ',runname1
+        open(12,file=runname1,status='old')
          read(12,*)nconv1
          if(nconv.ne.nconv1)then
           print*,'Error in wavesetc'
@@ -100,6 +133,8 @@ C      enddo
 
         close(12)
 
+        deallocate(vfil,fil)
+
       else
 
         do 444 i=1,nconv
@@ -112,6 +147,7 @@ C      enddo
           else
            dv = 3*fwhm
           endif
+
           j1=int((vconv(i)-dv-vkstart)/vkstep)
           j2=2+int((vconv(i)+dv-vkstart)/vkstep)
           v1 = vkstart + (j1-1)*vkstep
@@ -147,6 +183,7 @@ C     sort calculation wavelengths into order
          save(i+1)=temp
         endif
 445   continue
+
       if (flag) goto 440
       nwave=nco
       do i=1,nwave
@@ -172,11 +209,12 @@ C     Now weed out repeated wavelengths
           stop
          endif
          vwave(ico)=save(i)
-C         print*,'ico,vwave',ico,vwave(ico)
        end if
 446   continue
       nwave=ico
       endif
+
+      deallocate(save)
 
 C      print*,'nwave = ',nwave
 C      do i=1,nwave

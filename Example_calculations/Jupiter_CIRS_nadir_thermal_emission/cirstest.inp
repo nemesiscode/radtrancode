@@ -1,0 +1,8 @@
+0 0 0			! ISPACE, ISCAT, ILBL
+0.0			! Wavenumber offset to add to measured spectrum
+noisespec.dat
+15			! Number of iterations
+0.1			! Minimum % change in phi before terminating
+1 1			! Total spectra to fit and starting ID
+0			! Don't substitute previous retrievals
+

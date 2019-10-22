@@ -26,12 +26,16 @@ C     ***************************************************************
       implicit none
       include '../radtran/includes/arrdef.f'
       include 'arraylen.f'
-      integer nvar,varident(mvar,3),ifix(mx),nxtemp,ivar,i,np
-      integer npvar,iflag,logflag,npro,ix,j
+
+      integer, intent(in) :: nvar,varident(mvar,3),npro
+      real, intent(in) :: varparam(mvar,mparam),sa(mx,mx),xa(mx)
+      integer, intent(out) :: ifix(mx)
+
+      integer nxtemp,ivar,i,np
+      integer npvar,iflag,logflag,ix,j
       real xa1,ea1,ferr,minferr
 C     Set minimum fractional error to fix variable.
       parameter (minferr = 1e-6)
-      real varparam(mvar,mparam),sa(mx,mx),xa(mx)
 
             
       nxtemp=0
@@ -51,6 +55,8 @@ C     Set minimum fractional error to fix variable.
        if(varident(ivar,1).eq.225)np = 11
        if(varident(ivar,1).eq.226)np = 8
        if(varident(ivar,1).eq.227)np = 7
+       if(varident(ivar,1).eq.228)np = 7
+       if(varident(ivar,1).eq.229)np = 7
 
        do i=1,np
         ix = nxtemp+i
@@ -78,7 +84,9 @@ C     Set minimum fractional error to fix variable.
 
 299   continue
 
-C      print*,'ix,ifix : ',ix,(ifix(j),j=1,nxtemp)
+      do j=1,nxtemp
+       print*,'j,ifix(j) : ',j,ifix(j)
+      enddo
 
       return
 

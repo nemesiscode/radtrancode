@@ -70,17 +70,27 @@ C     ***********************************************************************
       INCLUDE '../radtran/includes/emcee.f'
       INCLUDE 'arraylen.f'
 
+      integer, intent(in) :: xflag,ispace,iscat,nvar,nx,jpre
+      integer, intent(in) :: varident(mvar,3),flagh2p
+      real, intent(in) ::varparam(mvar,mparam),xlat,xlon
+      character (len=100) :: ipfile,aname,buffer
+      logical, intent(in) :: gasgiant
+
+      real, intent(out) :: xmap(maxv,maxgas+2+maxcon,maxpro)
+      integer, intent(out) :: ncont,ierr
+
       REAL XN(MX),DPEXP,DELH,XFAC,DXFAC,XTMP,SUM,PMIN,XSTEP
       REAL H(MAXPRO),P(MAXPRO),T(MAXPRO),VMR(MAXPRO,MAXGAS)
-      REAL CONT(MAXCON,MAXPRO),XLAT,X,XREF(MAXPRO),X1(MAXPRO)
+      REAL CONT(MAXCON,MAXPRO),X,XREF(MAXPRO),X1(MAXPRO)
       REAL PKNEE,HKNEE,XDEEP,XFSH,PARAH2(MAXPRO),XH,XKEEP,X2(MAXPRO)
       REAL RHO,F,DQDX(MAXPRO),DX,PLIM,XFACP,CWID,PTROP, NEWF
-      REAL DNDH(MAXPRO),DQDH(MAXPRO),FCLOUD(MAXPRO),HTOP,PTOP,XLON
+      REAL DNDH(MAXPRO),DQDH(MAXPRO),FCLOUD(MAXPRO),HTOP,PTOP
       REAL dtempdx(MAXPRO,5),T0,Teff,alpha,ntemp,tau0
       REAL XP1(MAXPRO),LP1(MAXPRO),XP2(MAXPRO),GRAD1
-      REAL LPMIN,LPMAX,DLP,XPS(MAXPRO),XP2S(MAXPRO),XF
+      REAL LPMIN,LPMAX,DLP,XPS(MAXPRO),XP2S(MAXPRO)
+      REAL CTAU(MAXPRO),SETXLAPSE,XLAPSE,U,XF,TB
       DOUBLE PRECISION Q(MAXPRO),OD(MAXPRO),ND(MAXPRO),XOD
-      INTEGER ISCALE(MAXGAS),XFLAG,NPVAR,MAXLAT,IERR
+      INTEGER ISCALE(MAXGAS),NPVAR,MAXLAT,ILAPSE
       INTEGER NLATREF,ILATREF,JLAT,KLAT,ICUT,JX,JLEV,ILEV
       PARAMETER (MAXLAT=20)
       REAL HREF(MAXLAT,MAXPRO),TREF(MAXLAT,MAXPRO),FLAT
@@ -92,36 +102,52 @@ C     ***********************************************************************
       INTEGER ICLOUD(MAXCON,MAXPRO),NCONT1,JSPEC,IFLA,I1,I2
       INTEGER NPRO,NPRO1,NVMR,JZERO,IV,IP,IVAR,JCONT,JVMR
       INTEGER IDGAS(MAXGAS),ISOGAS(MAXGAS),IPAR,JPAR,IVMR,NP
-      INTEGER IDAT,NCONT,FLAGH2P,JFSH,JPRE,JHYDRO,ISCAT,ICOND
+      INTEGER IDAT,JFSH,JHYDRO,ICOND
       REAL HTAN,PTAN,R,REFRADIUS
       REAL GASDATA(20,5),XVMR(MAXGAS),XMOLWT,XXMOLWT(MAXPRO)
       REAL CALCMOLWT,XRHO(MAXPRO)
       INTEGER JSWITCH,ITEST,ICL
-      CHARACTER*100 IPFILE,BUFFER
-      CHARACTER*100 ANAME
-      INTEGER I,J,K,N,AMFORM,IPLANET,NGAS,IGAS,NX,NXTEMP,IX,ISPACE
+      INTEGER I,J,K,N,AMFORM,IPLANET,NGAS,IGAS,NXTEMP,IX
       REAL TEMP
       REAL A,B,C,D,SVP,PP,LATITUDE,LONGITUDE,LAT1,LON1
       REAL V1(3),V0(3),XP,DLONG,FLONG,LONGITUDE1
-      INTEGER ILONG,JLONG
-      REAL MOLWT,SCALE(MAXPRO),XMAP1,SCALEH
-      REAL XMAP(MAXV,MAXGAS+2+MAXCON,MAXPRO),DTR
+      REAL DLAT
+      INTEGER ILONG,JLONG,ILAT
+      REAL MOLWT,SCALE(MAXPRO),XMAP1,SCALEH,DTR
       PARAMETER (DTR=PI/180.)
 
-      INTEGER NVAR,VARIDENT(MVAR,3),NLOCATE,J1,MLON,MTHET
-      PARAMETER(MLON=20,MTHET=3*MLON+1)
-      REAL YTH,YYTH(MTHET),YYTH2(MTHET)
-      REAL VARPARAM(MVAR,MPARAM),YLONG(MLON)
+      INTEGER NLOCATE,J1,MLON,MTHET,MLAT,NLAT
+      PARAMETER(MLON=20,MTHET=3*MLON+1,MLAT=20)
+      REAL YTH,YYTH(MTHET),YYTH2(MTHET),FTH,FI,FJ
+      REAL CPHI1,CPHI2
+      REAL YLONG(MLON),YLAT(MLAT)
       REAL XWID,Y,Y0,XX,L1,THETA(MTHET),GRADTMP(MAXPRO,MX)
-      LOGICAL GASGIANT,FEXIST,VPEXIST,NTEST,ISNAN
+      LOGICAL FEXIST,VPEXIST,NTEST,ISNAN,FVIVIEN
       REAL VP(MAXGAS),VP1,XS,GRADL(MAXPRO,MX)
-      INTEGER SVPFLAG(MAXGAS),SVPFLAG1,NLONG,NTHETA
+      INTEGER SVPFLAG(MAXGAS),SVPFLAG1,NLONG,NTHETA,N1,N2
       INTEGER NVP,ISWITCH(MAXGAS),IP1,IP2,JKNEE,NLEVEL
-      REAL XLDEEP,XLHIGH,HVS,dlogp
+      REAL XLDEEP,XLHIGH,HVS,dlogp,XPC
       COMMON /SROM223/PCUT
+
+      CALL RESERVEGAS
 
 C----------------------------------------------------------------------------
 C
+
+C      print*,'Check subprofretg'
+C      print*,XFLAG,IPFILE,ISPACE,ISCAT,GASGIANT,XLAT,XLON,NVAR
+C      do i=1,nvar
+C       print*,(varident(i,j),j=1,3)
+C       print*,(varparam(i,j),j=1,5)
+C      enddo      
+C      print*,nx
+C      do i=1,nx
+C       print*,i,xn(i)
+C      enddo
+C      print*,JPRE,NCONT,FLAGH2P
+
+
+
 C     First zero-fill HREF, PREF, TREF and VMRREF arrays
       do i=1,MAXLAT
        do j=1,MAXPRO
@@ -250,6 +276,28 @@ C        Now interpolate to correct latitude
          LATITUDE=XLAT
          LONGITUDE=XLON
 
+         FVIVIEN=.FALSE.
+C         FVIVIEN=.TRUE.
+
+         IF(FVIVIEN)THEN
+
+          CALL INTERPVIVIEN(XLAT,XLON,NPRO,NVMR,P,H,T,VMR)
+
+          CALL XHYDROSTATH(AMFORM,IPLANET,LATITUDE,NPRO,NVMR,
+     1  MOLWT,IDGAS,ISOGAS,H,P,T,VMR,SCALE)
+
+C          OPEN(12,FILE='TEST.OUT',STATUS='UNKNOWN')
+C          WRITE(12,*)NPRO,NVMR
+C          DO I=1,NPRO
+C           WRITE(12,*)P(I),H(I),T(I),(VMR(I,J),J=1,NVMR)
+C          ENDDO
+C          CLOSE(12)
+
+C          STOP
+
+
+         ENDIF
+
        ELSE
 
          IF(AMFORM.EQ.0)THEN
@@ -293,8 +341,23 @@ C        Skip header
 
 C      Make sure that vmrs add up to 1 if AMFORM=1
        IF(AMFORM.EQ.1)THEN
+        print*,'XX. ISCALE = ',(ISCALE(J),J=1,NVMR) 
         CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
         
+        IF(IERR.EQ.1)THEN
+         print*,'XX. Warning from Adjustvmr: IERR = ',IERR
+         print*,'Warning from subprofretg. VMRS do not add to 1'
+         print*,'Resetting to reference'       
+         DO I=1,NPRO
+          DO J=1,NVMR
+           VMR(I,J)=(1.0-FLAT)*VMRREF(JLAT,I,J)+
+     &		FLAT*VMRREF(JLAT+1,I,J)
+          ENDDO
+         ENDDO
+         CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
+         print*,'XX. IERRX = ',IERR
+        ENDIF
+
         DO 301 I=1,NPRO
          DO K=1,NVMR
           XVMR(K)=VMR(I,K)
@@ -303,7 +366,9 @@ c          print*,I,K,XVMR(K)
          XXMOLWT(I)=CALCMOLWT(NVMR,XVMR,IDGAS,ISOGAS)
 301     CONTINUE
 c      Calculate MOLWT but dont add VMRs to 1 if AMFORM=2
+
        ELSEIF(AMFORM.EQ.2)THEN
+
         DO I=1,NPRO
          DO K=1,NVMR
           XVMR(K)=VMR(I,K)
@@ -2637,11 +2702,17 @@ C        Read in pressure grid from varparam
 C        print*,'Model 30 - pressure'
          DO J=1,NLEVEL
           LP1(J)=ALOG(VARPARAM(IVAR,J+2))
-C          print*,J,LP1(J),EXP(LP1(J))
+          print*,J,VARPARAM(IVAR,J+2),LP1(J),EXP(LP1(J))
           DO K=1,NP
            GRADL(J,K)=0.
           ENDDO
          ENDDO
+       
+C        Set exponent of cos(lat) variation
+C         print*,IVAR,NLEVEL+3,VARPARAM(IVAR,NLEVEL+3)
+
+         XPC = VARPARAM(IVAR,NLEVEL+3) 
+         print*,'XPC = ',XPC
 
          DO J=1,NLEVEL
           SUM=0.
@@ -2652,15 +2723,22 @@ C          print*,J,LP1(J),EXP(LP1(J))
           ENDDO
 C          print*,'ylong',(YLONG(I),I=1,NLONG)
 C          print*,SUM
+
+C         Alternate - setting pole temperature to average of morning and
+C                     afternoon terminators.
+          N1=NLONG/4
+          N2=N1+2*N1        
+          SUM=0.5*(YLONG(N1+1)+YLONG(N2+1))
+
           YTH = (1.0-FLONG)*YLONG(ILONG)+FLONG*YLONG(JLONG)
-          XP1(J) = SUM + (YTH-SUM)*(COS(LATITUDE*DTR))**0.25
+          XP1(J) = SUM + (YTH-SUM)*(COS(LATITUDE*DTR))**XPC
 
 C          print*,ILONG,FLONG,YLONG(ILONG),YLONG(JLONG),YTH          
 C          print*,LATITUDE,COS(LATITUDE*DTR),J,XP1(J)
           K=(ILONG-1)*NLEVEL+J
-          GRADL(J,K)=(1.0-FLONG)*(COS(LATITUDE*DTR))**0.25
+          GRADL(J,K)=(1.0-FLONG)*(COS(LATITUDE*DTR))**XPC
           K=(JLONG-1)*NLEVEL+J
-          GRADL(J,K)=FLONG*(COS(LATITUDE*DTR))**0.25
+          GRADL(J,K)=FLONG*(COS(LATITUDE*DTR))**XPC
 
          ENDDO
 
@@ -2723,7 +2801,7 @@ C          print*,'Prof_int',J,P(J),X1(J)
 C         open(12,file='grad1.txt',status='unknown')
 C          write(12,*)nlong,nlevel,npro
 C          write(12,*)latitude,longitude,ilong,jlong,
-C     1     flong,(cos(latitude*dtr))**0.25
+C     1     flong,(cos(latitude*dtr))**xpc
 
 C          do i = 1,nlevel
 C            write(12,*)lp1(i),xp1(i)
@@ -2766,8 +2844,7 @@ C        Need to interpolation in longitude
 
 
 
-
-C         print*,ILONG,FLONG
+         print*,ILONG,JLONG,FLONG,NP
 
          IF(VARIDENT(IVAR,1).EQ.0)THEN
             DX=2.0
@@ -2786,17 +2863,23 @@ C         print*,ILONG,FLONG
           SUM=SUM+XN(J1)/FLOAT(NLONG)
          ENDDO
 
-         YTH = (1.0-FLONG)*YLONG(ILONG)+FLONG*YLONG(ILONG+1)
-         XS = SUM + (YTH-SUM)*(COS(LATITUDE*DTR))**0.25
 
-         GRADL(1,ILONG)=(1.0-FLONG)*(COS(LATITUDE*DTR))**0.25
-         GRADL(1,ILONG+1)=FLONG*(COS(LATITUDE*DTR))**0.25
+C        Set exponent of cos(lat) variation
+         XPC=VARPARAM(IVAR,2)
+         print*,'XPC = ',XPC    
+
+
+         YTH = (1.0-FLONG)*YLONG(ILONG)+FLONG*YLONG(JLONG)
+         XS = SUM + (YTH-SUM)*(COS(LATITUDE*DTR))**XPC
+
+         GRADL(1,ILONG)=(1.0-FLONG)*(COS(LATITUDE*DTR))**XPC
+         GRADL(1,JLONG)=FLONG*(COS(LATITUDE*DTR))**XPC
 
          DO J=1,NPRO
-          X1(J) = XREF(J)*EXP(XS)
-          DO I=ILONG,ILONG+1
-           XMAP(NXTEMP+I,IPAR,J)=X1(J)*GRADL(1,I)
-          ENDDO
+           X1(J) = XREF(J)*EXP(XS)
+           XMAP(NXTEMP+ILONG,IPAR,J)=X1(J)*GRADL(1,ILONG)
+           XMAP(NXTEMP+JLONG,IPAR,J)=X1(J)*GRADL(1,JLONG)
+C           print*,ipar,j,xref(j),x1(j)
          ENDDO
 
         ELSEIF(VARIDENT(IVAR,3).EQ.32)THEN
@@ -2953,6 +3036,338 @@ C            PRINT*,'ITEST,J,XMAP',ITEST,J,Q(J),X1(J),(Q(J)-X1(J))/DX
           ENDDO
 
 207       CONTINUE
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.33)THEN
+C        Model 33. Inhomogenous disc profile at multiple locations
+C        ***************************************************************
+
+C        Need to interpolation in longitude for each vertical level
+         NLONG = INT(VARPARAM(IVAR,1)/VARPARAM(IVAR,2)+0.1)
+         NLEVEL = INT(VARPARAM(IVAR,2))
+         print*,'Model 33 - nlong,nlevel,np = ',nlong,nlevel,np
+         print*,'Model 33 - latitude,longitude = ',LATITUDE,
+     &           LONGITUDE
+         DLONG=360.0/FLOAT(NLONG)
+         LONGITUDE1=LONGITUDE
+         IF(LONGITUDE.LT.0.0)LONGITUDE1=LONGITUDE+360.
+         IF(LONGITUDE.GE.360.0)LONGITUDE1=LONGITUDE-360.
+         ILONG=1+INT(LONGITUDE1/DLONG)
+         FLONG = (LONGITUDE1 - (ILONG-1)*DLONG)/DLONG
+         if(flong.gt.1.0)then 
+          print*,'Error: flong > 1.0'
+          stop
+         endif
+         IF(ILONG.LT.NLONG)THEN
+          JLONG=ILONG+1
+         ELSE
+          JLONG=1
+         ENDIF
+
+         print*,'LONGITUDE1,ILONG,JLONG,FLONG',
+     &    LONGITUDE1,ILONG,JLONG,FLONG
+
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+            DX=2.0
+         ELSE
+            DX=0.1
+         ENDIF
+
+C        Read in pressure grid from varparam
+C        print*,'Model 33 - pressure'
+         DO J=1,NLEVEL
+          LP1(J)=ALOG(VARPARAM(IVAR,J+2))
+          print*,J,VARPARAM(IVAR,J+2),LP1(J),EXP(LP1(J))
+          DO K=1,NP
+           GRADL(J,K)=0.
+          ENDDO
+         ENDDO
+       
+         DO J=1,NLEVEL
+          SUM=0.
+          DO I=1,NLONG
+           J1=NXTEMP+(I-1)*NLEVEL+J
+           YLONG(I)=XN(J1)
+           SUM=SUM+XN(J1)/FLOAT(NLONG)
+          ENDDO
+C          print*,'ylong',(YLONG(I),I=1,NLONG)
+C          print*,SUM
+
+          FI = XN(NXTEMP+NLONG*NLEVEL+ILONG)
+          FJ = XN(NXTEMP+NLONG*NLEVEL+JLONG)
+        
+          YTH = (1.0-FLONG)*YLONG(ILONG)+FLONG*YLONG(JLONG)
+          FTH = (1.0-FLONG)*FI+FLONG*FJ
+
+          CPHI1=(COS(LATITUDE*DTR))**0.25
+          CPHI2=(COS(LATITUDE*DTR))**2.0
+
+          XP1(J) = SUM + (YTH-SUM)*(FTH*CPHI1+(1.0-FTH)*CPHI2)
+
+          K=(ILONG-1)*NLEVEL+J
+          GRADL(J,K)=(1.0-FLONG)*(FTH*CPHI1+(1.0-FTH)*CPHI2)
+
+          K=(JLONG-1)*NLEVEL+J
+          GRADL(J,K)=FLONG*(FTH*CPHI1 +(1.0-FTH)*CPHI2)
+
+          GRADL(J,NLONG*NLEVEL+ILONG)=
+     &     (YTH-SUM)*(CPHI1 - CPHI2)*(1.0-FLONG)
+          GRADL(J,NLONG*NLEVEL+JLONG)=
+     &     (YTH-SUM)*(CPHI1 - CPHI2)*FLONG
+
+         ENDDO
+
+C        Now need to interpolate local NLEVEL profile to NPRO profile
+
+         DO J=1,NPRO
+
+          L1 = ALOG(P(J))
+
+          F=-1.
+          DO JLEV=1,NLEVEL-1
+           IF(L1.LE.LP1(JLEV).AND.L1.GT.LP1(JLEV+1))THEN
+             ILEV=JLEV
+             F = (L1-LP1(JLEV))/(LP1(JLEV+1)-LP1(JLEV))
+             GOTO 151
+            ENDIF
+          ENDDO
+151       CONTINUE
+          IF(F.LT.0)THEN
+            IF(L1.GT.LP1(1))THEN
+             ILEV=1
+             F = (L1-LP1(ILEV))/(LP1(ILEV+1)-LP1(ILEV))
+            ELSE
+             ILEV=NLEVEL-1
+             F = (L1-LP1(ILEV))/(LP1(ILEV+1)-LP1(ILEV))
+            ENDIF
+            print*,'Model 33 warning - pressure out of range'
+            print*,'Having to extrapolate'
+            print*,L1,LP1(1),LP1(NLEVEL)
+            print*,ILEV,LP1(ILEV),LP1(ILEV+1),F
+          ENDIF
+
+          XX = (1.0-F)*XP1(ILEV)+F*XP1(ILEV+1)
+
+          IF(VARIDENT(IVAR,1).EQ.0)THEN
+           X1(J)=XX
+          ELSE
+           X1(J)=EXP(XX)
+          ENDIF
+          IF(X1(J).LT.1e-36)X1(J)=1e-36
+          
+          DO K=1,NP
+           GRADTMP(J,K)=(1.0-F)*GRADL(ILEV,K)+F*GRADL(ILEV+1,K)         
+           IF(VARIDENT(IVAR,1).EQ.0)THEN
+            XMAP(NXTEMP+K,IPAR,J)=GRADTMP(J,K)
+           ELSE
+            XMAP(NXTEMP+K,IPAR,J)=X1(J)*GRADTMP(J,K)
+           ENDIF
+          ENDDO
+
+         ENDDO
+
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.34)THEN
+C        Model 34. Milne-Eddington Temperature Profile
+C        ***************************************************************
+         SETXLAPSE = VARPARAM(IVAR,1)
+
+         DO J=1,NPRO
+          CTAU(I)=0.
+         ENDDO
+
+         TB=XN(NXTEMP+1)
+         XF=EXP(XN(NXTEMP+2))
+
+         CTAU(NPRO)=P(NPRO)
+         X2(NPRO)=TB*((2.0+XF*CTAU(NPRO))/4.0)**0.25 
+
+         DO J=NPRO-1,1,-1
+          CTAU(J)=CTAU(J+1)+P(J)
+          X2(J)=TB*((2.0+XF*CTAU(J))/4.0)**0.25
+C          print*,J,CTAU(J),X2(J)
+         ENDDO
+
+         U = (2.0+XF*CTAU(NPRO))/4.0
+         X1(NPRO)=TB*U**0.25
+         XMAP(NXTEMP+1,IPAR,NPRO)=X1(NPRO)/TB
+         XMAP(NXTEMP+2,IPAR,NPRO)=0.0625*TB*(U**(-0.75))*
+     &    CTAU(NPRO)*XF
+
+         ILAPSE=1
+         DO J=NPRO-1,1,-1
+          DELH = H(J+1)-H(J)
+          XLAPSE = (X2(J)-X2(J+1))/DELH
+C          print*,DELH,XLAPSE,SETXLAPSE
+          IF(XLAPSE.GT.SETXLAPSE.OR.ILAPSE.EQ.0)THEN
+           X1(J)=X1(J+1)+SETXLAPSE*DELH
+           ILAPSE=1
+           XMAP(NXTEMP+1,IPAR,J)=XMAP(NXTEMP+1,IPAR,J+1)
+           XMAP(NXTEMP+2,IPAR,J)=XMAP(NXTEMP+2,IPAR,J+1)            
+C           print*,ILAPSE,XLAPSE,SETXLAPSE
+          ELSE
+           X1(J)=X2(J)
+           U = (2.0+XF*CTAU(J))/4.0
+           XMAP(NXTEMP+1,IPAR,J)=X1(J)/TB
+           XMAP(NXTEMP+2,IPAR,J)=0.0625*TB*(U**(-0.75))*
+     &    CTAU(J)*XF
+          ENDIF
+         ENDDO
+
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.35)THEN
+C        Model 35. Axisymmetric model continuous
+C        ***************************************************************
+
+C        Need to interpolation in longitude for each vertical level
+         NLAT = INT(VARPARAM(IVAR,1)/VARPARAM(IVAR,2)+0.1)
+         NLEVEL = INT(VARPARAM(IVAR,2))
+         print*,'Model 35 - nlat,nlevel,np = ',nlat,nlevel,np
+         print*,'Model 35 - latitude,longitude = ',LATITUDE,
+     &           LONGITUDE
+         DLAT=180.0/FLOAT(NLAT-1)
+         ILAT=1+INT((90.0+LATITUDE)/DLAT)
+         FLAT = (90+LATITUDE - (ILAT-1)*DLAT)/DLAT
+         if(flat.gt.1.0)then 
+          print*,'Error: flat > 1.0'
+          stop
+         endif
+         IF(ILAT.LT.NLAT)THEN
+          JLAT=ILAT+1
+         ELSE
+          stop
+         ENDIF
+
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+            DX=2.0
+         ELSE
+            DX=0.1
+         ENDIF
+
+C        Read in pressure grid from varparam
+C        print*,'Model 35 - pressure'
+         DO J=1,NLEVEL
+          LP1(J)=ALOG(VARPARAM(IVAR,J+2))
+          print*,J,VARPARAM(IVAR,J+2),LP1(J),EXP(LP1(J))
+          DO K=1,NP
+           GRADL(J,K)=0.
+          ENDDO
+         ENDDO
+       
+         DO J=1,NLEVEL
+          DO I=1,NLAT
+           J1=NXTEMP+(I-1)*NLEVEL+J
+           YLAT(I)=XN(J1)
+          ENDDO
+
+          XP1(J) = (1.0-FLAT)*YLAT(ILAT)+FLAT*YLAT(JLAT)
+
+          K=(ILAT-1)*NLEVEL+J
+          GRADL(J,K)=(1.0-FLAT)
+          K=(JLAT-1)*NLEVEL+J
+          GRADL(J,K)=FLAT
+
+         ENDDO
+
+         DO J=1,NPRO
+
+          L1 = ALOG(P(J))
+
+          F=-1.
+          DO JLEV=1,NLEVEL-1
+           IF(L1.LE.LP1(JLEV).AND.L1.GT.LP1(JLEV+1))THEN
+             ILEV=JLEV
+             F = (L1-LP1(JLEV))/(LP1(JLEV+1)-LP1(JLEV))
+             GOTO 1181
+            ENDIF
+          ENDDO
+1181      CONTINUE
+          IF(F.LT.0)THEN
+            IF(L1.GT.LP1(1))THEN
+             ILEV=1
+             F = (L1-LP1(ILEV))/(LP1(ILEV+1)-LP1(ILEV))
+            ELSE
+             ILEV=NLEVEL-1
+             F = (L1-LP1(ILEV))/(LP1(ILEV+1)-LP1(ILEV))
+            ENDIF
+            print*,'Model 35 warning - pressure out of range'
+            print*,'Having to extrapolate'
+            print*,L1,LP1(1),LP1(NLEVEL)
+            print*,ILEV,LP1(ILEV),LP1(ILEV+1),F
+          ENDIF
+
+          XX = (1.0-F)*XP1(ILEV)+F*XP1(ILEV+1)
+
+          IF(VARIDENT(IVAR,1).EQ.0)THEN
+           X1(J)=XX
+          ELSE
+           X1(J)=EXP(XX)
+          ENDIF
+          IF(X1(J).LT.1e-36)X1(J)=1e-36
+          
+          DO K=1,NP
+           GRADTMP(J,K)=(1.0-F)*GRADL(ILEV,K)+F*GRADL(ILEV+1,K)         
+           IF(VARIDENT(IVAR,1).EQ.0)THEN
+            XMAP(NXTEMP+K,IPAR,J)=GRADTMP(J,K)
+           ELSE
+            XMAP(NXTEMP+K,IPAR,J)=X1(J)*GRADTMP(J,K)
+           ENDIF
+          ENDDO
+
+
+         ENDDO
+
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.36)THEN
+C        Model 36. Axisymmetric scaling
+C        ***************************************************************
+
+C        Need to interpolation in longitude
+         NLAT = INT(VARPARAM(IVAR,1))
+
+
+         print*,'Model 36 - nlat,np = ',nlat,np
+         print*,'Model 36 - latitude,longitude = ',LATITUDE,
+     &           LONGITUDE
+
+         DLAT=180.0/FLOAT(NLAT-1)
+         ILAT=1+INT((90+LATITUDE)/DLAT)
+         FLAT = (90+LATITUDE - (ILAT-1)*DLAT)/DLAT
+         if(flat.gt.1.0)then 
+          print*,'Error: flong > 1.0'
+          stop
+         endif
+         IF(ILAT.LT.NLAT)THEN
+          JLAT=ILAT+1
+         ELSE
+          stop
+         ENDIF
+
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+            DX=2.0
+         ELSE
+            DX=0.1
+         ENDIF
+
+         DO K=1,NP
+           GRADL(1,K)=0.
+         ENDDO
+
+         SUM=0.
+         DO I=1,NLAT
+          J1=NXTEMP+I
+          YLAT(I)=XN(J1)
+         ENDDO
+
+         XS = (1.0-FLAT)*YLONG(ILAT)+FLAT*YLAT(JLAT)
+
+         GRADL(1,ILAT)=(1.0-FLAT)
+         GRADL(1,JLAT)=FLAT
+
+         DO J=1,NPRO
+           X1(J) = XREF(J)*EXP(XS)
+           XMAP(NXTEMP+ILONG,IPAR,J)=X1(J)*GRADL(1,ILONG)
+           XMAP(NXTEMP+JLONG,IPAR,J)=X1(J)*GRADL(1,JLONG)
+         ENDDO
 
 
         ELSE
@@ -3769,6 +4184,16 @@ C         print*,'Creme Brulee layering'
          IPAR = -1
          NP = 7
 
+        ELSEIF(VARIDENT(IVAR,1).EQ.228)THEN
+C         print*,'Creme Brulee layering'
+         IPAR = -1
+         NP = 7
+
+        ELSEIF(VARIDENT(IVAR,1).EQ.229)THEN
+C         print*,'Creme Brulee layering'
+         IPAR = -1
+         NP = 7
+
         ELSE
 
          PRINT*,'SUBPROFRETG: VARTYPE NOT RECOGNISED'
@@ -3965,7 +4390,24 @@ c  ** end of loop around gases **
 C     Now make sure the resulting VMRs add up to 1.0 for an
 C     AMFORM=1 profile
       IF(AMFORM.EQ.1)THEN
+        print*,'ISCALE : ',(ISCALE(J),J=1,NVMR)
         CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
+        print*,'IERR  = ',IERR
+
+        IF(IERR.EQ.1)THEN
+         print*,'Warning from subprofretg. VMRS do not add to 1'
+         print*,'Resetting to reference'       
+         DO I=1,NPRO
+          DO J=1,NVMR
+           VMR(I,J)=(1.0-FLAT)*VMRREF(JLAT,I,J)+
+     &		FLAT*VMRREF(JLAT+1,I,J)
+          ENDDO
+         ENDDO
+         CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
+         print*,'IERRX  = ',IERR
+
+        ENDIF
+
       ENDIF
 
 

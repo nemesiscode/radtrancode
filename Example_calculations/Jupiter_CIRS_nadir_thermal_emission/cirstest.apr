@@ -1,0 +1,4 @@
+******** any header info you like. One line only ********
+1			! number of variable profiles (vmr,T, or cont)
+0 0 0			! Temperature - continuous
+testapr.dat

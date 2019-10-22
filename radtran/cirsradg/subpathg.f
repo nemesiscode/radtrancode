@@ -184,7 +184,11 @@ C Skipping blank lines.
         GOTO 2
       ELSE IF (text(1:8).EQ.'INTERVAL') THEN
         READ(2,*)vmin,vmax,delv,fwhm
-        NPOINT = NINT((vmax - vmin)/delv) + 1
+        if(delv.gt.0.0)then
+         NPOINT = NINT((vmax - vmin)/delv) + 1
+        else
+         NPOINT = 1
+        endif
         READ(2,*)iconv,wing,vrel
         interv = .TRUE.
         WRITE(*,*)' '

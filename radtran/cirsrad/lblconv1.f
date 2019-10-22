@@ -146,7 +146,8 @@ C         Channel Integrator Mode: Slightly more advanced than previous
 C           Make sure you're using the right filter function for the
 C           channel requested.
             dv = 100*abs(vcentral-vconv(j))/vconv(j)
-            if(dv.lt.1.0)then
+c            if(dv.lt.1.0)then
+            if(dv.lt.0.0001)then
              V1 = VFIL(1)
              V2 = VFIL(NSUB)
 

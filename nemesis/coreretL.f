@@ -265,7 +265,7 @@ C       endif
 
 C      Calc. gradient of all elements of xnx matrix.
        do i=1,nxx
-        ifixx(i)=1
+        ifixx(i)=0
        enddo
 
 c      if calculating directly the LBL-tables in the run
@@ -541,6 +541,13 @@ C     vectors xn, yn
         print*,'Calling calcnextxn'
 C       Now calculate next iterated xn1
         call calcnextxn(nx,ny,xa,xn,y,yn,dd,aa,x_out)
+
+C       Force fixed state vector elements to remain fixed!
+        do i=1,nx
+         if(ifix(i).eq.1)then
+          x_out(i)=xn(i)
+         endif
+        enddo
 
 145     continue
 C       x_out(nx) is the next iterated value of xn using classical N-L

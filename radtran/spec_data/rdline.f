@@ -107,6 +107,17 @@ C        'Oxford' ExoMOL format
      2     LNUVQ,LNUVS,LNLVQ,LNLVS,LNUJ,LNUK,LNLJ,LNLK,LNACC04
 108       FORMAT(I2,I1,F12.6,F6.3,1X,I3,F5.4,F4.2,F5.4,F4.2,
      &     F5.4,F4.2,F10.4,A18,I3,A18,I3,I5,I4,I4,I4,1X,6I1)
+        ELSE IF(DBRECL.EQ.55)THEN
+C        'Oxford1' TheoRETS format
+          READ(BUFFER,109,END=99)LNID,LNISO,LNWAVE,LNSTR,EXP,
+     1     LNLSE,LNWIDA,LNTDEP,LNWIDS,LNTDEPS
+109       FORMAT(I2,I1,F12.6,F6.3,1X,I3,F10.4,F6.4,F4.2,F6.4,F4.2)
+        ELSE IF(DBRECL.EQ.65)THEN
+C        'Oxford2' TheoRETS format
+          READ(BUFFER,110,END=99)LNID,LNISO,LNWAVE,LNSTR,EXP,
+     1     LNLSE,LNWIDA,LNTDEP,LNWIDA1,LNTDEP1,LNWIDS,LNTDEPS
+110       FORMAT(I2,I1,F12.6,F6.3,1X,I3,F10.4,F6.4,F4.2,F6.4,F4.2,
+     1F6.4,F4.2)
         ELSE
           WRITE(*,*)' RDLINE.f :: HITRAN format not recognised.'
           WRITE(*,*)' Stopping program.'
@@ -116,7 +127,7 @@ C        'Oxford' ExoMOL format
           STOP
         ENDIF
         
-       IF(DBRECL.EQ.52)THEN
+       IF(DBRECL.EQ.52.OR.DBRECL.EQ.55.OR.DBRECL.EQ.65)THEN
         LNEINA=0.0
         LNPROB= 0.0
         EXP1= 1

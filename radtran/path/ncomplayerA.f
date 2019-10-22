@@ -194,7 +194,9 @@ C            print*,CONT(KEXT,I)
         SH = -(CLTOPH(NCLOUD)-CLBOTH(NCLOUD))/
      &		LOG(CLTOPP(NCLOUD)/CLBOTP(NCLOUD))
 	print*,'SH=',SH
-        IF(FSH(NCLOUD).NE.1.0)THEN KEXT=NCLOUD
+        IF(FSH(NCLOUD).NE.1.0)THEN 
+          KEXT=NCLOUD
+        ENDIF
         DO 667 J=1,NCLAY(NCLOUD)
           I=I+1
           BASEH(I)=CLBOTH(NCLOUD) + FLOAT(J-1)*CDELH

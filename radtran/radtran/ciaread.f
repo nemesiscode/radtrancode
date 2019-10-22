@@ -75,10 +75,10 @@ C       9............H2-CH4
 
            read(12)temps
 C          convert from double precision to real
-           print*,'CIAREAD. Temperatures'
+C           print*,'CIAREAD. Temperatures'
            do 21 i=1, NUMT
              tempk1(i) = sngl(temps(i))
-             print*,tempk1(i)
+C             print*,tempk1(i)
 21         continue
 
            read(12)kcia

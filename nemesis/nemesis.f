@@ -318,6 +318,7 @@ C      Calculate the tabulated wavelengths of c-k look up tables
          vwave(igeom,j)=vwave1(j)
         enddo
         nwave(igeom)=nwave1
+        print*,igeom,nconv1,nwave1
        enddo
       endif
 

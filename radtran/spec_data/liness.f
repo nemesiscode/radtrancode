@@ -96,8 +96,10 @@ C First open database .key file
      1 ACCESS='DIRECT',RECL=DBRECL)
 
       IF(DBRECL.EQ.128)THEN
-       CALL PROMPT('Oxford-ExoMOL format - enter fH2 : ')
-       READ*,FH2
+C       CALL PROMPT('Oxford-ExoMOL format - enter fH2 : ')
+C       READ*,FH2
+        FH2 = 0.865
+        print*,'FH2 = ',FH2
       ENDIF
 
       CALL FNDWAV(VMIN)

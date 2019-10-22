@@ -52,7 +52,7 @@ C***************************** VARIABLES *******************************
       INCLUDE '../includes/dbcom.f' 
 C ../includes/dbcom.f stores the linedata base variables.
 
-      INTEGER MINSTR,MAXSTR,ISWAP
+      INTEGER MINSTR,MAXSTR,ISWAP,IDF,ISOF
       DOUBLE PRECISION LIMSTR,CC,LNSTR1,XS
       PARAMETER (MINSTR=-323,MAXSTR=308,CC=10.)
 
@@ -190,8 +190,9 @@ C      CALL EDSET
       TCORS2=1.439*(TEMP-296.)/(296.*TEMP)
 C     For each bin ...
       NBIN = INT((VMAX-VMIN)/BINSIZ)
-      
-
+      CALL PROMPT('Enter ID,ISO to put in header : ')
+      READ(5,*)IDF,ISOF
+      WRITE(4,*)'ID, ISO = ',IDF,ISOF
       WRITE(4,*)'NBIN = ',NBIN
 
 C     Find point in database where wavenumber is equal to VMIN
@@ -320,7 +321,7 @@ C           print*,weight,strout
          ENDIF
          WRITE(4,*)VMEAN,STROUT,XLSE,XWIDA,XWIDS,XTDEP
 
-         IF(VHIGH.GE.VMAX)GOTO 102
+         IF(VHIGH.GT.VMAX)GOTO 102
 
          BUFFER=BUFFERSAV
          CALL RDLINE(BUFFER)

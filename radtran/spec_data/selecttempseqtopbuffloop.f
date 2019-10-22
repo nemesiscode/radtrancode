@@ -52,7 +52,7 @@ C***************************** VARIABLES *******************************
       INCLUDE '../includes/dbcom.f' 
 C ../includes/dbcom.f stores the linedata base variables.
 
-      INTEGER MINSTR,MAXSTR,ISWAP
+      INTEGER MINSTR,MAXSTR,ISWAP,IDF,ISOF
       DOUBLE PRECISION LIMSTR,CC,LNSTR1,XS
       PARAMETER (MINSTR=-323,MAXSTR=308,CC=10.)
 
@@ -170,6 +170,9 @@ C Read in spectral parameters ...
 
       NBIN = INT((VMAX-VMIN)/BINSIZ)
 
+      CALL PROMPT('Enter ID,ISO to put in header : ')
+      READ(5,*)IDF,ISOF
+
       DO 1001 ITEMP=1,NTEMP
        ILUN(ITEMP)=50+ITEMP-1
        JLUN(ITEMP)=80+ITEMP-1
@@ -200,7 +203,7 @@ C Read in spectral parameters ...
        WRITE(JLUN(ITEMP),*)'VMIN, VMAX = ',VMIN,VMAX
        WRITE(JLUN(ITEMP),*)'BINSIZ,NSAV = ',BINSIZ,NSAV
        WRITE(JLUN(ITEMP),*)'Calc. Temp, IPTF = ',TEMP,IPTF
-       WRITE(JLUN(ITEMP),*)'ID, ISO = ',ID,ISO
+       WRITE(JLUN(ITEMP),*)'ID, ISO = ',IDF,ISOF
        WRITE(JLUN(ITEMP),*)'NBIN = ',NBIN
        WRITE(BUFFER,203)
 203    FORMAT(' # original data base header if any:')
@@ -387,7 +390,7 @@ C            print*,weight,strout
 
 1000    CONTINUE
 
-        IF(VHIGH.GE.VMAX)GOTO 102
+        IF(VHIGH.GT.VMAX)GOTO 102
 
         BUFFER=BUFFERSAV
         CALL RDLINE(BUFFER)

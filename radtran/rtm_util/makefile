@@ -33,7 +33,8 @@ F_SOURCES = \
         wtext.f \
         cspline.f \
         csplint.f \
-        isys.f
+        isys.f \
+	bilinear.f
 
 OBJ = $(F_SOURCES:.f=.o)
 LIBRARY = $(LIB)/rtm_util.a

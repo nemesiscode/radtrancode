@@ -1151,6 +1151,11 @@ C
 C	Returns the real and imaginary parts of the index of refraction 
 C	of NH4SH. Data is taken from a file of Andy Collard's given by
 C       Barbara Carlson.
+C       *NEW PGJI 3/7/19 Data are now actually thought to have come from
+C       Ferraro et al. (1980): 
+C         J. R. Ferraro, G. Sill, and U. Fink, “Infrared intensity measurements 
+C         of cryodeposited thin films of NH3, NH4HS, H2S, and assignments of 
+C         absorption bands,” Appl. Spectrosc. 34, 525–533 (1980)
 C       Wavelengths are supplied in microns. 
 C       The table lists indices in order of wavelength , real, and 
 C       imaginary index.

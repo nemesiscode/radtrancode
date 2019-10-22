@@ -237,7 +237,7 @@ C     plotting section
        WRITE(12,322)XLABEL
        WRITE(12,322)YLABEL
 322    FORMAT(A)
-323    FORMAT(1X,F16.6,' ',E16.6)
+323    FORMAT(1X,F17.6,' ',E17.7)
        DO 998 I=1,NPLOT
                 IF(X(I).LT.XMIN)GOTO 998
                 IF(X(I).GT.XMAX)GOTO 998

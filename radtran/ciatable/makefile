@@ -70,7 +70,8 @@ bin :   \
 	Makeisotable \
 	Makefptable \
 	Makefptable_allcia \
-	Testfracpara
+	Testfracpara \
+	Testh2h2v2s
 
 Makeciatable: makeciatable.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Makeciatable makeciatable.f $(LIBRARY)
@@ -87,4 +88,10 @@ Makefptable_allcia: makefptable_allcia.f $(LIBRARY)
 
 Testfracpara: testfracpara.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Testfracpara testfracpara.f $(LIBRARY)
+
+Testh2h2v2s: testh2h2v2s.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Testh2h2v2s testh2h2v2s.f $(LIBRARY)
+
+Testcalcpara: testcalcpara.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Testcalcpara testcalcpara.f $(LIBRARY)
 

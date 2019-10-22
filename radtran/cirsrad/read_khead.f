@@ -30,7 +30,7 @@ C-----------------------------------------------------------------------
    
       IRECL=ISYS()
 
-      WRITE(*,41)KTAFIL
+C      WRITE(*,41)KTAFIL
 41    FORMAT('Read_khead. Opening : ',A) 
 
       OPEN(UNIT=LUN0,FILE=KTAFIL,STATUS='OLD',ACCESS='DIRECT',

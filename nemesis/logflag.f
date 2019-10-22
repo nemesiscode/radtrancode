@@ -43,9 +43,11 @@ C       Variable is not temperature  - may need to take exponent
         if(imod.eq.28)iflag=1 !Modify just one element of a profile
         if(imod.eq.29)iflag=1 ! continuous profile
         if(imod.eq.30)iflag=1 ! continuous profile inhomogeneous disc
+        if(imod.eq.35)iflag=1 ! continuous profile inhomogeneous disc
       endif
 
       if(imod.eq.31)iflag=1 ! log multiplier - inhomogeneous disc
+      if(imod.eq.36)iflag=1 ! log multiplier - inhomogeneous disc
       if(imod.eq.1.and.ip.eq.2)iflag=1 ! log fsh - fixed knee
       if(imod.eq.20.and.ip.eq.2)iflag=1 ! log fsh - fixed knee
       if(imod.eq.4.and.ip.eq.2)iflag=1 ! log fsh - var. knee
@@ -61,6 +63,7 @@ C       Variable is not temperature  - may need to take exponent
       if(imod.eq.9.and.ip.eq.2)iflag=1 ! log fsh - var. knee
       if(imod.eq.19.and.ip.eq.2)iflag=1 ! log fsh - var. knee
       if(imod.eq.9.and.ip.eq.4)iflag=1 ! log cwid - var knee
+      if(imod.eq.34.and.ip.eq.2)iflag=1 ! OD scalar
       if(imod.ge.12.and.imod.le.13)then 
           if(ip.eq.1)iflag=1 	       ! Gaussian/Lorentz cloud
           if(ip.eq.2)iflag=1 

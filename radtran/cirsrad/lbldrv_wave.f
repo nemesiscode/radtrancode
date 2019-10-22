@@ -114,7 +114,6 @@ C-----------------------------------------------------------------------
       call system_clock(time1)
       xwave(1)=-1                       ! Reset to force read of hgphase*
 C                                         files for scloud10-11
-
       WRITE(*,*)'           '
       WRITE(*,*)'           WELCOME TO lbldrv_WAVE'
       WRITE(*,*)' '
@@ -254,6 +253,7 @@ C     if present.
       if(solexist)then
          call opensol(solfile,solname)
          CALL init_solar_wave(ispace,solname)
+         print*,'Solar file = ',solname
       endif
       iform=0
 

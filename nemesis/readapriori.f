@@ -65,9 +65,9 @@ C     ****************************************************************
 
       implicit none
 
-      integer i,j,nx,ix,jx,npro,jsurf,np,jalb,jtan,jpre,jrad,maxlat,k
-      integer jlogg,nmode,nwave,max_mode, max_wave,jxsc,icloud
-      integer jfrac,jfracx,mlong
+      integer i,j,ix,jx,np,maxlat,k
+      integer nmode,nwave,max_mode, max_wave,icloud
+      integer jfracx,mlong
       parameter (max_mode = 10)
       parameter (max_wave = 1000, mlong=20)
       parameter(maxlat=100)
@@ -79,12 +79,18 @@ C     ****************************************************************
       include 'arraylen.f'
 C     ****************************************************************
 
+      integer, intent(in) :: lin,lpre,npro
+      real, intent(in) :: xlat
+      integer,intent(out) :: nvar,lx(mx),varident(mvar,3),jfrac
+      integer,intent(out) :: jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,nx
+      real,intent(out) :: x0(mx),sx(mx,mx),varparam(mvar,mparam)
+
       real xsec(max_mode,max_wave,2),wave(max_wave)
-      real x0(mx),sx(mx,mx),err,err1,ref1,pref(maxpro)
+      real err,err1,ref1,pref(maxpro)
       real eref(maxlat,maxpro),reflat(maxlat),htan,htop,etop
-      real dhsphere(maxpro,mlong)
-      real delp,xfac,pknee,eknee,edeep,xdeep,xlat,xlatx,xlonx,pshld
-      real xstep,estep,efsh,xfsh,varparam(mvar,mparam),flat,hknee,pre
+      real dhsphere(maxpro,mlong),hfrac(mlong),efrac
+      real delp,xfac,pknee,eknee,edeep,xdeep,xlatx,xlonx,pshld
+      real xstep,estep,efsh,xfsh,flat,hknee,pre,flat1,dlat
       real ref(maxlat,maxpro),clen,SXMINFAC,arg,valb,alb,refp,errp
       real xknee,xrh,erh,xcdeep,ecdeep,radius,Grav,plim
       real xcwid,ecwid,ptrop,refradius,xsc,ascat,escat,shape,eshape
@@ -95,12 +101,12 @@ C     SXMINFAC is minimum off-diagonal factor allowed in the
 C     a priori covariance matrix
       parameter (SXMINFAC = 0.001)
       real varparamx(mvar,mparam),xnx(mx),sxx(mx,mx),xdiff
-      integer varident(mvar,3),ivar,nvar,nlevel,lin,jsurfx
-      integer jalbx,jtanx,jprex,jradx,jlat,ilat,nlat,lx(mx)
-      integer nprox,nvarx,varidentx(mvar,3),lpre,ioffx,ivarx
+      integer ivar,nlevel,jsurfx
+      integer jalbx,jtanx,jprex,jradx,jlat,ilat,nlat
+      integer nprox,nvarx,varidentx(mvar,3),ioffx,ivarx
       integer npx,ioff,icond,npvar,jloggx,iplanet,jxscx,jlev
       character*100 opfile,buffer,ipfile,runname,rifile,xscfil
-      integer nxx,nsec,ncont1,nlay,tmp
+      integer nxx,nsec,ncont1,nlay,tmp,iex
       real xwid,ewid,y,y0,lambda0,vi(mx),vtmp(mx),xt(mx)
       real r0,er0,dr,edr,vm,nm,nmshell,nimag,delv,xy,v0
       real xldeep,eldeep,xlhigh,elhigh,arg1
@@ -108,7 +114,7 @@ C     a priori covariance matrix
       real tau0,ntemp,teff,alpha,T0,xf,exf
       real etau0,entemp,eteff,ealpha,eT0
       real csx,cserr,nimagshell,errshell,flon
-      real flon1,dlon,dlong
+      real flon1,dlon,dlong,xpc,xlapse
       logical filexist
       integer i1,j1,nlocation,ilocation
       integer nlen,il,ip,jl,jp
@@ -1586,7 +1592,15 @@ C          ***** inhomogeneous disc model 1  ********
              print*,'Model 30'
              print*,'reading variable ',ivar,' from ',ipfile
              open(28,file=ipfile,status='old')
-             read(28,*)nlong,nlevel,clen1,clen2
+             read(28,1)buffer
+             if(buffer(1:2).eq.'Ex')then
+              iex=1
+              read(28,*)nlong,nlevel,clen1,clen2
+             else
+              iex=0
+              read(buffer,*)nlong,nlevel,clen1,clen2
+             endif
+             print*,'iex = ',iex
              print*,nlong,nlevel,clen1,clen2
              if(nlevel+2.gt.mparam)then
               print*,'nlevel+2 > mparam',
@@ -1599,8 +1613,13 @@ C          ***** inhomogeneous disc model 1  ********
              ipar=3
              ix=nx
              do 303 i=1,nlevel
-              read(28,*)pref(i),(dhsphere(i,j),j=1,nlong),
+              if(iex.eq.0)then
+               read(28,*)pref(i),(dhsphere(i,j),j=1,nlong),
      1         eref(1,i)
+              else
+               read(28,*)pref(i),(dhsphere(i,j),j=1,nlong),
+     1         (eref(j,i),j=1,nlong)
+              endif
               varparam(ivar,ipar)=pref(i)
 C              print*,i,pref(i),ivar,varident(ivar,1)
               ipar=ipar+1
@@ -1613,7 +1632,11 @@ C              such as T and vmrs
                if(varident(ivar,1).eq.0)then
 C               *** temperature, leave alone ****
                 x0(ix) = dhsphere(i,j)
-                err = eref(1,i)
+                if(iex.eq.0)then
+                 err = eref(1,i)
+                else
+                 err = eref(j,i)
+                endif
                else
 C               **** vmr, cloud, para-H2 , fcloud, take logs ***
                 if(dhsphere(i,j).gt.0.0) then
@@ -1624,12 +1647,21 @@ C               **** vmr, cloud, para-H2 , fcloud, take logs ***
                   print*,i,dhsphere(i,j)
                   stop
                 endif
-                err = eref(1,i)/dhsphere(i,j)
+                if(iex.eq.0)then
+                 err = eref(1,i)/dhsphere(i,j)
+                else
+                 err = eref(j,i)/dhsphere(i,j)
+                endif
                endif
 C               print*,'Model 30A: ix,x0(ix)',ix,x0(ix)
                sx(ix,ix)=err**2
 304           continue
 303          continue
+             read(28,*)xpc
+             close(28)
+C             print*,ivar,ipar,nlevel,xpc
+             varparam(ivar,ipar)=xpc
+C             print*,'A',varparam(ivar,3+nlevel)
 
              nlen = nlong*nlevel
              dlong = 360.0/float(nlong)
@@ -1681,10 +1713,24 @@ C          ***** inhomogeneous disc model 2  ********
              read(27,1)ipfile
              print*,'reading variable ',ivar,' from ',ipfile
              open(28,file=ipfile,status='old')
-             read(28,*)nlong,clen2
-             varparam(ivar,1)=nlong
-
-             read(27,*)(dhsphere(1,j),j=1,nlong),err
+               read(28,1)buffer
+               if(buffer(1:2).eq.'Ex')then
+                iex=1
+                read(28,*)nlong,clen2
+               else
+                iex=0
+                read(buffer,*)nlong,clen2
+               endif
+               varparam(ivar,1)=nlong
+               if(iex.eq.0)then
+                read(28,*)(dhsphere(1,j),j=1,nlong),err
+               else
+                read(28,*)(dhsphere(1,j),j=1,nlong),
+     1           (eref(j,1),j=1,nlong)
+               endif
+               read(28,*)xpc
+               varparam(ivar,2)=xpc
+             close(28)
              do 401 j=1,nlong
               ix=nx+j
               xfac=dhsphere(1,j)
@@ -1695,16 +1741,23 @@ C          ***** inhomogeneous disc model 2  ********
                print*,'Error in readpriori - xfac must be > 0'
                stop
               endif
-              err = err/xfac
-              sx(ix,ix) = err**2
-401          continue 
+              if(iex.eq.0)then
+               err = err/xfac
+              else
+               err = eref(j,1)/xfac
+              endif
 
+              sx(ix,ix) = err**2
+
+401          continue 
+ 
+             dlong=360.0/float(nlong)
              do 408 i=1,nlong
                ix = nx + i
                do 409 j=i+1,nlong
                 jx = nx + j    
-                flon = varparam(ivar,1+i)
-                flon1 = varparam(ivar,1+j)
+                flon = (i-1)*dlong
+                flon1 = (j-1)*dlong
                 dlon = flon1-flon
                 if(dlon.gt.180.) dlon=dlon-360.
                 if(dlon.lt.-180) dlon=dlon+360.
@@ -1717,6 +1770,7 @@ C          ***** inhomogeneous disc model 2  ********
                 endif
                         
 409            continue
+C               print*,ix,sx(ix,ix:nx+nlong)
 408           continue
 
 
@@ -1769,10 +1823,337 @@ C             *** vmr, fcloud, para-H2 or cloud, take logs *********
 
              nx = nx+3
 
+           elseif(varident(ivar,3).eq.33)then
+C          ***** inhomogeneous disc model 1  ********
+             read(27,1)ipfile
+             print*,'Model 30'
+             print*,'reading variable ',ivar,' from ',ipfile
+             open(28,file=ipfile,status='old')
+             read(28,*)nlong,nlevel,clen1,clen2
+             print*,nlong,nlevel,clen1,clen2
+             if(nlevel+2.gt.mparam)then
+              print*,'nlevel+2 > mparam',
+     1         nlevel+2,mparam
+              print*,'Need to reduce nlong,nlevel or increase mparam'
+              stop
+             endif
+             varparam(ivar,1)=nlong*nlevel
+             varparam(ivar,2)=nlevel
+             ipar=3
+             ix=nx
+             do 403 i=1,nlevel
+              read(28,*)pref(i),(dhsphere(i,j),j=1,nlong),
+     1         eref(1,i)
+              varparam(ivar,ipar)=pref(i)
+              ipar=ipar+1
+              do 404 j=1,nlong
+               ix=nx + (j-1)*nlevel+i
+C              For vmrs and cloud density always hold the log. 
+C              Avoids instabilities arising from greatly different profiles 
+C              such as T and vmrs
+               if(varident(ivar,1).eq.0)then
+C               *** temperature, leave alone ****
+                x0(ix) = dhsphere(i,j)
+                err = eref(1,i)
+               else
+C               **** vmr, cloud, para-H2 , fcloud, take logs ***
+                if(dhsphere(i,j).gt.0.0) then
+                  x0(ix) = alog(dhsphere(i,j)) 
+                  lx(ix)=1
+                else 
+                  print*,'Error in readapriori.f. Cant take log of zero'
+                  print*,i,dhsphere(i,j)
+                  stop
+                endif
+                err = eref(1,i)/dhsphere(i,j)
+               endif
+               sx(ix,ix)=err**2
+404           continue
+403          continue
+
+             read(28,*)(hfrac(j),j=1,nlong),efrac
+
+             nlen = nlong*nlevel
+             do 705 j=1,nlong
+              ix=nx+nlen+j
+              x0(ix)=hfrac(j)
+              sx(ix,ix)=efrac**2
+705          continue
+
+             dlong = 360.0/float(nlong)
+             do 706 i=1,nlen
+              ip = i-nlevel*int((float(i)-0.5)/float(nlevel))
+              il = 1 + int((float(i)-0.5)/float(nlevel))
+              ix=nx+i
+C              print*,'ix,il,ip',ix,il,ip
+              if(pref(ip).lt.0.0) then
+               print*,'Error in readapriori.f. A priori file '
+               print*,'must be on pressure grid '
+               print*,'Model 30'
+               stop
+              endif            
+C              print*,'Press = ',pref(ip)
+              do 707 j=i+1,nlen
+               jp = j-nlevel*int((float(j)-0.5)/float(nlevel))
+               jl = 1 + int((float(j)-0.5)/float(nlevel))
+               jx=nx+j
+C               print*,'jx,jl,jp',jx,jl,jp
+C               print*,'P(J) = ',pref(jp)
+
+               delp = log(pref(jp))-log(pref(ip))
+               arg = abs(delp/clen1)
+
+               flon = (il-1)*dlong
+               flon1 = (jl-1)*dlong
+               dlon = flon1-flon
+               if(dlon.gt.180.) dlon=dlon-360.
+               if(dlon.lt.-180) dlon=dlon+360.
+               arg1 = abs(dlon/clen2)
+
+C               print*,ix,jx,delp,clen1,arg,flon,flon1,dlon,clen2,arg1
+               xfac = exp(-(arg+arg1))
+C               print*,xfac
+               if(xfac.ge.SXMINFAC)then  
+                 sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
+                 sx(jx,ix) = sx(ix,jx)
+               endif
+
+707           continue
+706          continue               
+
+             do 807 i=1,nlong
+              ix=nx+nlen+i
+              do 806 j=i+1,nlong
+               jx=nx+nlen+j
+               flon = (i-1)*dlong
+               flon1 = (j-1)*dlong
+               dlon = flon1-flon
+               if(dlon.gt.180.) dlon=dlon-360.
+               if(dlon.lt.-180) dlon=dlon+360.
+               arg1 = abs(dlon/clen2)
+               xfac = exp(-arg1)
+
+               if(xfac.ge.SXMINFAC)then  
+                 sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
+                 sx(jx,ix) = sx(ix,jx)
+               endif
+
+806           continue
+807          continue
+
+             nx=nx+nlen+nlong
+
+
+           elseif(varident(ivar,3).eq.34)then
+C            **** Milne-Eddington temperature profile *******
+C            Read in bolometric temperature
+             ix = nx+1
+             read(27,*)xfac,err
+             x0(ix)=xfac
+             sx(ix,ix) = err**2
+             lx(ix)=0
+C            Read in pressure-scaling factor
+             ix=ix+1
+             read(27,*)xfac,err
+             if(xfac.gt.0)then
+              x0(ix)=alog(xfac)
+              err = err/xfac
+              sx(ix,ix) = err**2
+              lx(ix)=1         
+             else
+               print*,'Error in readpriori - xfac must be > 0'
+               stop
+             endif
+             read(27,*)xlapse
+             varparam(ivar,1)=xlapse
+
+             nx = nx+2
+
+
+           elseif(varident(ivar,3).eq.35)then
+C          ***** axisymmetric model continuous  ********
+             read(27,1)ipfile
+             print*,'Model 35'
+             print*,'reading variable ',ivar,' from ',ipfile
+             open(28,file=ipfile,status='old')
+             read(28,1)buffer
+             if(buffer(1:2).eq.'Ex')then
+              iex=1
+              read(28,*)nlat,nlevel,clen1,clen2
+             else
+              iex=0
+              read(buffer,*)nlat,nlevel,clen1,clen2
+             endif
+             print*,'iex = ',iex
+             print*,nlat,nlevel,clen1,clen2
+             if(nlevel+2.gt.mparam)then
+              print*,'nlevel+2 > mparam',
+     1         nlevel+2,mparam
+              print*,'Need to reduce nlong,nlevel or increase mparam'
+              stop
+             endif
+             varparam(ivar,1)=nlat*nlevel
+             varparam(ivar,2)=nlevel
+             ipar=3
+             ix=nx
+             do 363 i=1,nlevel
+              if(iex.eq.0)then
+               read(28,*)pref(i),(dhsphere(i,j),j=1,nlat),
+     1         eref(1,i)
+              else
+               read(28,*)pref(i),(dhsphere(i,j),j=1,nlat),
+     1         (eref(j,i),j=1,nlat)
+              endif
+              varparam(ivar,ipar)=pref(i)
+C              print*,i,pref(i),ivar,varident(ivar,1)
+              ipar=ipar+1
+              do 364 j=1,nlat
+               ix=nx + (j-1)*nlevel+i
+C              For vmrs and cloud density always hold the log. 
+C              Avoids instabilities arising from greatly different profiles 
+C              such as T and vmrs
+               if(varident(ivar,1).eq.0)then
+C               *** temperature, leave alone ****
+                x0(ix) = dhsphere(i,j)
+                if(iex.eq.0)then
+                 err = eref(1,i)
+                else
+                 err = eref(j,i)
+                endif
+               else
+C               **** vmr, cloud, para-H2 , fcloud, take logs ***
+                if(dhsphere(i,j).gt.0.0) then
+                  x0(ix) = alog(dhsphere(i,j)) 
+                  lx(ix)=1
+                else 
+                  print*,'Error in readapriori.f. Cant take log of zero'
+                  print*,i,dhsphere(i,j)
+                  stop
+                endif
+                if(iex.eq.0)then
+                 err = eref(1,i)/dhsphere(i,j)
+                else
+                 err = eref(j,i)/dhsphere(i,j)
+                endif
+               endif
+               sx(ix,ix)=err**2
+364           continue
+363          continue
+             close(28)
+
+             nlen = nlat*nlevel
+             dlat = 180.0/float(nlat-1)
+             do 465 i=1,nlen
+              ip = i-nlevel*int((float(i)-0.5)/float(nlevel))
+              il = 1 + int((float(i)-0.5)/float(nlevel))
+              ix=nx+i
+C              print*,'ix,il,ip',ix,il,ip
+              if(pref(ip).lt.0.0) then
+               print*,'Error in readapriori.f. A priori file '
+               print*,'must be on pressure grid '
+               print*,'Model 35'
+               stop
+              endif            
+C              print*,'Press = ',pref(ip)
+              do 466 j=i+1,nlen
+               jp = j-nlevel*int((float(j)-0.5)/float(nlevel))
+               jl = 1 + int((float(j)-0.5)/float(nlevel))
+               jx=nx+j
+C               print*,'jx,jl,jp',jx,jl,jp
+C               print*,'P(J) = ',pref(jp)
+
+               delp = log(pref(jp))-log(pref(ip))
+               arg = abs(delp/clen1)
+
+               flat = -90+(il-1)*dlat
+               flat1 = -90+(jl-1)*dlat
+               dlat = flat1-flat
+               arg1 = abs(dlat/clen2)
+
+C               print*,ix,jx,delp,clen1,arg,flon,flon1,dlon,clen2,arg1
+               xfac = exp(-(arg+arg1))
+C               print*,xfac
+               if(xfac.ge.SXMINFAC)then  
+                 sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
+                 sx(jx,ix) = sx(ix,jx)
+               endif
+
+466           continue
+465          continue               
+
+             nx=nx+nlen
+
+
+           elseif(varident(ivar,3).eq.36)then
+C          ***** axisymmetric model continuous  ********
+             read(27,1)ipfile
+             print*,'reading variable ',ivar,' from ',ipfile
+             open(28,file=ipfile,status='old')
+               read(28,1)buffer
+               if(buffer(1:2).eq.'Ex')then
+                iex=1
+                read(28,*)nlong,clen2
+               else
+                iex=0
+                read(buffer,*)nlat,clen2
+               endif
+               varparam(ivar,1)=nlat
+               if(iex.eq.0)then
+                read(28,*)(dhsphere(1,j),j=1,nlat),err
+               else
+                read(28,*)(dhsphere(1,j),j=1,nlat),
+     1           (eref(j,1),j=1,nlat)
+               endif
+             close(28)
+             do 461 j=1,nlat
+              ix=nx+j
+              xfac=dhsphere(1,j)
+              if(xfac.gt.0.0)then
+               x0(ix)=alog(xfac)
+               lx(ix)=1
+              else
+               print*,'Error in readpriori - xfac must be > 0'
+               stop
+              endif
+              if(iex.eq.0)then
+               err = err/xfac
+              else
+               err = eref(j,1)/xfac
+              endif
+
+              sx(ix,ix) = err**2
+
+461          continue 
+ 
+             dlat=180.0/float(nlat-1)
+             do 468 i=1,nlat
+               ix = nx + i
+               do 469 j=i+1,nlat
+                jx = nx + j    
+                flat = -90+(i-1)*dlong
+                flat1 = -90+(j-1)*dlong
+                dlat = flat1-flat
+
+                arg = abs(dlat/clen2)
+                xfac = exp(-arg)
+                if(xfac.ge.SXMINFAC)then  
+                 sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
+                 sx(jx,ix) = sx(ix,jx)
+                endif
+                        
+469            continue
+C               print*,ix,sx(ix,ix:nx+nlong)
+468           continue
+
+
+             nx=nx+nlat
+
+
            else         
             print*,'vartype profile parametrisation not recognised'
             stop
            endif
+
 	    
          else
 C          Non-atmospheric and other parameters
@@ -2767,6 +3148,114 @@ C           If set to 0, default Creme Brulee model is used where CB top pressur
             endif
 
             nx = nx+7
+
+
+C********************** ACS-MIR ILS model *******************************
+           elseif(varident(ivar,1).eq.228)then
+
+            ix = nx+1
+            read(27,*)r0,err  !wavenumber offset at lowest wavenumber
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+            ix = nx+1
+            read(27,*)r0,err  !wavenumber offset at highest wavenumber
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+            ix = nx+1
+            read(27,*)r0,err  !Offset of the second gaussian with respect to the first one (assumed spectrally constant)
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+            ix = nx+1
+            read(27,*)r0,err  !FWHM of the main gaussian at the lowest wavenumber
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+            ix = nx+1
+            read(27,*)r0,err  !FWHM of the main gaussian at the highest wavenumber (Assumed linear variation)
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+            ix = nx+1
+            read(27,*)r0,err  !Relative amplitude of the second gaussian with respect to the gaussian at lowest wavenumber
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+            ix = nx+1
+            read(27,*)r0,err  !Relative amplitude of the second gaussian with respect to the gaussian at highest wavenumber (linear variation)
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+C********************** ACS-MIR ILS model *******************************
+           elseif(varident(ivar,1).eq.229)then
+
+            ix = nx+1
+            read(27,*)r0,err  !wavenumber offset (first parameter of second order polynomial)
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+            ix = nx+1
+            read(27,*)r0,err  !wavenumber offset (second parameter of second order polynomial)
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+            ix = nx+1
+            read(27,*)r0,err  !wavenumber offset (third parameter of second order polynomial)
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+            ix = nx+1
+            read(27,*)r0,err  !Offset of the second gaussian with respect to the first one (assumed spectrally constant)
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+            ix = nx+1
+            read(27,*)r0,err  !FWHM of the main gaussian
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+            ix = nx+1
+            read(27,*)r0,err  !Relative amplitude of the second gaussian with respect to the gaussian at lowest wavenumber
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+            ix = nx+1
+            read(27,*)r0,err  !Relative amplitude of the second gaussian with respect to the gaussian at highest wavenumber (linear variation)
+            x0(ix)=r0
+            sx(ix,ix)=err**2
+            lx(ix)=0
+            nx = nx + 1
+
+
+
            elseif(varident(ivar,1).eq.102)then
             ix = nx+1
             read(27,*)x0(ix),err
@@ -2818,6 +3307,7 @@ C     the mass using the a priori log(g) AND radius
        endif
 
        ioffx=0
+
        do 21 ivarx=1,nvarx
         npx=1
         if(varidentx(ivarx,1).le.100)then
@@ -2827,6 +3317,7 @@ C     the mass using the a priori log(g) AND radius
         if(varidentx(ivarx,1).eq.887)npx=int(varparamx(ivarx,1))
         if(varidentx(ivarx,1).eq.444)npx=2+int(varparamx(ivarx,1))
         if(varidentx(ivarx,1).eq.445)npx=3+int(varparamx(ivarx,1))
+        print*,'ivarx, npx = ',ivarx,npx
      
         ioff=0
         do 22 ivar=1,nvar
@@ -2838,6 +3329,7 @@ C     the mass using the a priori log(g) AND radius
          if(varident(ivar,1).eq.887)np=int(varparam(ivar,1))
          if(varident(ivar,1).eq.444)np=2+int(varparam(ivar,1))
          if(varident(ivar,1).eq.445)np=3+int(varparam(ivar,1))
+         print*,'ivar, np = ',ivar,np
 
 
          if(varidentx(ivarx,1).eq.varident(ivar,1))then
@@ -2847,7 +3339,7 @@ C     the mass using the a priori log(g) AND radius
             if(varidentx(ivarx,3).eq.28)then
              if(varparamx(ivarx,1).eq.varparam(ivar,1))then
  
-              print*,'Updating variable : ',ivar,' :  ',
+              print*,'A:Updating variable : ',ivar,' :  ',
      1           (varident(ivar,j),j=1,3)
               do i=1,np
                x0(ioff+i)=xnx(ioffx+i)
@@ -2859,7 +3351,7 @@ C     the mass using the a priori log(g) AND radius
              endif             
             else
 
-             print*,'Updating variable : ',ivar,' :  ',
+             print*,'B:Updating variable : ',ivar,' :  ',
      1 		(varident(ivar,j),j=1,3)
              do 33 i=1,np
               x0(ioff+i)=xnx(ioffx+i)
@@ -2884,11 +3376,30 @@ C     the mass using the a priori log(g) AND radius
 
       endif
 
+C      do i=1,nx
+C       print*,i,x0(i),sqrt(sx(i,i))
+C      enddo
+
+C      stop
+
 C     Write out x-data to temporary .str file for later routines.
       if(lin.eq.3.or.lin.eq.4)then
-       call writextmp(runname,xlatx,nvarx,varidentx,varparamx,nprox,
-     1  nxx,xnx,sxx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
-     2  jfracx)
+
+C       print*,xlatx,nvarx
+C       do i=1,nvarx
+C        print*,(varidentx(i,j),j=1,3)
+C       enddo
+C       do i=1,nvarx
+C        print*,(varparamx(i,j),j=1,mparam)
+C       enddo
+C       print*,nprox
+C       print*,nxx,(xnx(i),i=1,nxx
+C       print*,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+C     2  jfracx
+
+       call writextmp(runname,xlatx,xlonx,nvarx,varidentx,
+     1  varparamx,nprox,nxx,xnx,sxx,jsurfx,jalbx,jxscx,jtanx,
+     2  jprex,jradx,jloggx,jfracx)
       endif
 
       return

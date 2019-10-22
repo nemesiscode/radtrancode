@@ -594,7 +594,7 @@ C     *********************************************************************
       integer i,idim,ndim
       parameter (P0 = 1.,T0=296.0, C1=1.439,idim=500)
       real SQT0
-      parameter (SQT0 = 17.20465053)		! Sqrt(296.0)
+      parameter (SQT0 = 17.20465053)
       real x,dx,s(idim),A1,A2,humlic,simp_int_m,Aconst,lx,Cconst,Vconst
       real Bconst,Dconst,Ratio,Tconst
 

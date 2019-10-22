@@ -16,7 +16,7 @@ C	Line data variables.
 C
 C-----------------------------------------------------------------------
       INTEGER MAXLIN
-      PARAMETER (MAXLIN=1000000)
+      PARAMETER (MAXLIN=10000000)
 C MAXLIN: maximum number of lines which can be stored.
 
       INTEGER IDLIN(2,MAXLIN),NLINE(2),NXTREC

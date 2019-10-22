@@ -51,17 +51,26 @@ C       Defines the maximum values for a series of variables (layers,
 C         bins, paths, etc.)
 	INCLUDE '../includes/arrdef.f'
 
-        CHARACTER*100	opfile,sfile,FWHMFILE
-        INTEGER         nwave, nconv, npath, itype, I, J, K
-	INTEGER		INormal,Iray,ispace,nem,ILBL,ishape
-        INTEGER		NFWHM,MFWHM
-        PARAMETER(MFWHM=1000)
-	REAL		Dist, FWHM
-        REAL          vwave(nwave), vconv(nconv), convout(maxout3),
-     1                  output(maxout3), y(maxout), yout(maxout),tsurf,
-     2			vem(MAXSEC),emissivity(MAXSEC)
-        LOGICAL		FWHMEXIST
-        REAL            VFWHM(MFWHM),XFWHM(MFWHM)
+
+C       Input variables
+        character (len=100) :: opfile,sfile,FWHMFILE
+        integer, intent(in) :: inormal,iray,ispace,nwave,nconv
+        integer, intent(in) :: npath,itype,nem
+        real, intent(in) :: vwave(nwave), vconv(nconv)
+        real, intent(in) :: vem(MAXSEC),emissivity(MAXSEC)
+        real, intent(in) :: dist,fwhm,tsurf
+        real, intent(out) :: convout(maxout3),output(maxout3)
+
+
+C       Variables
+        integer :: i,j,k,ilbl,ishape,nfwhm,mfwhm,status
+        parameter (mfwhm=1000)
+        logical :: fwhmexist
+
+C       Arrays
+        real, allocatable :: y(:), yout(:)
+        real :: vfwhm(mfwhm),xfwhm(mfwhm)
+ 
         common/lbltable/ilbl
 
 
@@ -109,6 +118,13 @@ C       is first determined in subnrtf, and subnrtf does not know the
 C       value of NCONV.
 C-----------------------------------------------------------------------
 
+        allocate (y(maxout),yout(maxout),STAT=status)
+        if(status.gt.0)then
+         print*,'error in cirsrtf_wave.f'
+         print*,'arrays were not properly allocated'
+         stop
+        endif
+
 
         IF ((NCONV * NPATH).GT.MAXOUT3) THEN
            PRINT*, 'FATAL ERROR: NCONV*NPATH > MAXOUT3, so that the '
@@ -118,6 +134,7 @@ C-----------------------------------------------------------------------
            PRINT*, 'MAXOUT3= ', maxout3
            STOP
         ENDIF
+
 
         DO I= 1, npath
            DO J= 1, nwave
@@ -139,6 +156,8 @@ C-----------------------------------------------------------------------
            ENDDO
 
         ENDDO
+ 
+        deallocate(y,yout)
 
 	RETURN
 

@@ -290,7 +290,6 @@ C           print*,'Wavenumber coincides with tabulated value'
                 Y3=TABLE(I3+1)
                 Y4=TABLE(I4+1)
 
-
                 IF((Y1.LE.0.0).OR.(Y2.LE.0.0).OR.
      &		   (Y3.LE.0.0).OR.(Y4.LE.0.0))THEN
 
@@ -304,7 +303,11 @@ C           print*,'Wavenumber coincides with tabulated value'
 			Y2 = TABLE(I2+I)
 			Y3 = TABLE(I3+I)
 			Y4 = TABLE(I4+I)
-                        Y1=LOG(Y1)
+                        IF(Y1.LT.1E-37)Y1=1E-37
+                        IF(Y2.LT.1E-37)Y2=1E-37
+                        IF(Y3.LT.1E-37)Y3=1E-37
+                        IF(Y4.LT.1E-37)Y4=1E-37
+                        Y1=LOG(Y2)
                         Y2=LOG(Y2)
                         Y3=LOG(Y3)
                         Y4=LOG(Y4)

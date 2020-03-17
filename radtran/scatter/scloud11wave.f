@@ -74,7 +74,7 @@ C     ***********************************************************************
      2 lfrac(MAXCON,MAXLAY),aphi,drad,solar1,sum
       integer nf,imu,iray
       integer igdist,imie
-      logical lrep
+      logical lrep,checkconv
       common /imiescat/imie
 
       DOUBLE PRECISION MU(MAXMU), WTMU(MAXMU), MM(MAXMU,MAXMU),
@@ -280,8 +280,15 @@ C     PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
       
 C     ******* Define convergence (max % change in last two iterations
 C     Set very small now to make sure we never apply this.
-      DEFCONV=1e-20
+C      DEFCONV=1e-20
 
+C     Set convergence to be a little less draconian: 0.0001%
+C     Should be fine for back-scattering conditions.
+      DEFCONV=0.0001
+
+C     Flag for printing out convergence information
+      checkconv=.false.
+C      checkconv=.true.
 
       DO 1000 IC=0,NF
 
@@ -594,13 +601,14 @@ C ***********************************************************************
        IF(ZMU0.LE.MU(J).AND.ZMU0.GT.MU(J+1))ISOL = J
       END DO
       IF(ZMU0.LE.MU(NMU))ISOL=NMU-1 
-       
+C      print*,'ZMU0, ISOL = ',ZMU0,ISOL 
       
       IEMM=1
       DO J=1,NMU-1
        IF(ZMU.LE.MU(J).AND.ZMU.GT.MU(J+1))IEMM = J
       END DO
       IF(ZMU.LE.MU(NMU))IEMM=NMU-1
+C      print*,'ZMU, IEMM',ZMU, IEMM
 
       FSOL = SNGL((MU(ISOL)-ZMU0)/(MU(ISOL)-MU(ISOL+1)))
       FEMM = SNGL((MU(IEMM)-ZMU)/(MU(IEMM)-MU(IEMM+1)))
@@ -655,7 +663,13 @@ C ***********************************************************************
 
       RAD=RAD+DRAD
       CONV = ABS(100*DRAD/RAD)
-     
+      if(igdist.eq.1.and.checkconv)then
+       print*,'Conv: IMU0,IMU,NF,IC,RAD,DRAD,100*DRAD/RAD',
+     1  INT((1-FSOL)*ISOL+FSOL*(ISOL+1)+0.5),
+     2  INT((1-FEMM)*IEMM+FEMM*(IEMM+1)+0.5),NF,IC,RAD,DRAD,
+     3  100*DRAD/RAD
+      endif
+
       IF(CONV.LT.DEFCONV)THEN
        PRINT*,'scloud11wave: Converged after ',IC,
      1  ' fourier components'

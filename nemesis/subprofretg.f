@@ -108,7 +108,8 @@ C     ***********************************************************************
       REAL CALCMOLWT,XRHO(MAXPRO)
       INTEGER JSWITCH,ITEST,ICL
       INTEGER I,J,K,N,AMFORM,IPLANET,NGAS,IGAS,NXTEMP,IX
-      REAL TEMP
+      REAL TEMP,RADIUS,G
+      CHARACTER*8 PNAME
       REAL A,B,C,D,SVP,PP,LATITUDE,LONGITUDE,LAT1,LON1
       REAL V1(3),V0(3),XP,DLONG,FLONG,LONGITUDE1
       REAL DLAT
@@ -3369,6 +3370,23 @@ C        Need to interpolation in longitude
            XMAP(NXTEMP+JLONG,IPAR,J)=X1(J)*GRADL(1,JLONG)
          ENDDO
 
+        ELSEIF(VARIDENT(IVAR,3).EQ.37)THEN
+C        Model 37. constant opacity/bar model
+C        ***************************************************************
+         P1=VARPARAM(IVAR,1)
+         P2=VARPARAM(IVAR,2)
+         XDEEP = EXP(XN(NXTEMP+1))
+
+         DO J=1,NPRO
+          X1(J)=0.0
+C         Need to convert opacity/bar to particles/gram
+
+          IF(P(J)*1.013.LE.P1.AND.P(J)*1.013.GE.P2)THEN
+           CALL NEWGRAV(IPLANET,XLAT,H(J),RADIUS,G,PNAME)
+           X1(J)=10*XDEEP*G/1e5
+           XMAP(NXTEMP+1,IPAR,J)=X1(J)
+          ENDIF
+         ENDDO
 
         ELSE
 
@@ -4456,7 +4474,6 @@ C      print*,'subprofretg. Writing aerosol.prf'
       WRITE(2,*)NPRO, NCONT
       DO 41 I=1,NPRO
         WRITE(2,*) H(I),(CONT(J,I),J=1,NCONT)
-c        print*, 'AERO:', H(I), CONT(1,I)
 41    CONTINUE
       CLOSE(2)
 

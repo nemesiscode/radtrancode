@@ -14,7 +14,8 @@ C       runname         character*100    Root run name.
 C	iscat		integer		0=thermal emission	
 C					1=plane parallel scattering 
 C					2= limb/near-limb scattering
-C					3= single-scattering calculations 
+C					3= single-scattering calculations plane-parallel
+C					4= single-scattering calculations spherical 
 C	nmu		integer		Number of zenith ordinates
 C	mu(maxmu)	double pr.	Cos(zenith angles)
 C	wtmu(maxmu)	double pr.	Quadrature weights
@@ -607,6 +608,7 @@ C       check that rescaling has happened correctly
 
            r0 = exp(xn(nx1+1))
            v0 = exp(xn(nx1+2))
+           print*,'444 r0,v0 = ',r0,v0
            if(varident(ivar,1).eq.445)then
             csx = exp(xn(nx1+3))
             nmshell = varparam(ivar,6)

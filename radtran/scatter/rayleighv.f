@@ -15,8 +15,8 @@ C	rayleighv	real	scattering cross section (cm2)
 C
 C     **************************************************************
      
-      real v,lambda
-      parameter (C=8.8E-28)		! provided by B. Bezard
+      real :: v,lambda
+      real, parameter :: C=8.8E-28		! provided by B. Bezard
  
       lambda = 10000/v			! lambda in microns
       lambda = lambda**4		

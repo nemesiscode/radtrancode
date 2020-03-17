@@ -19,7 +19,8 @@ C                               wavelengths (1)
 C	iscat		integer 0=non-scattering
 C				1=plane-parallel scattering
 C				2=non-plane limb/near-limb scattering
-C				3=single-scattering
+C				3=single-scattering plane parallel
+C				4=single-scattering spherical
 C       fwhm            real    Desired FWHM of final spectrum
 C       ngeom           integer Number of observation geometries included.
 C       nav(mgeom)      integer         Number of synthetic spectra required
@@ -270,10 +271,14 @@ C            nf=20
              else
                goto 111
              endif
+            endif
+C           Special fix for retrieval test
+            if(ix.eq.5)then
+             dx=1.0
             endif                             
             xn(ix)=xn(ix)+dx
           endif
-C          print*,'ix,xref,dx,xn(ix)',ix,xref,dx,xn(ix)
+          print*,'ix,xref,dx,xn(ix)',ix,xref,dx,xn(ix)
           if(jsurf.gt.0)then
            tsurf = xn(jsurf)
           endif

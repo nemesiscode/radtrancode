@@ -268,7 +268,7 @@ C      Convert wavelength range to wavenumber range if IWAVE=0
        CALL RDISO
 
        CALL FILE(OPFILE,LCOFIL,'lco')
-C       PRINT*,'Looking for LCO: ',LCOFIL
+       PRINT*,'Looking for LCO: ',LCOFIL
        INQUIRE(FILE=LCOFIL,EXIST=FEXIST)
        IF(FEXIST)THEN
               print*,'LCO file = ',LCOFIL

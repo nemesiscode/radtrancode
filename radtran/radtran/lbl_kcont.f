@@ -362,9 +362,14 @@ C     have been stripped of weaker lines.
 
         CALL CALC_LCO(VBIN,NBIN,WING,MAXDV,IPROC,IDGAS,TCORDW,
      1   TCORS1LCO,TCORS2LCO,PRESS,TEMP,FRAC,FNH3,FH2,VOUT,YOUT)
-
+        
         DO 301 I=1,NBIN
 C         print*,I,VBIN(I),PRESS,TEMP,VOUT(I),YOUT(I)
+          IF (ISNAN(YOUT(I)))THEN
+           print*,'NAN gas come out of CALC_LCO'
+           print*,I,VBIN(I)
+           stop
+          ENDIF
          DO 302 K=1,IORDP1
           VV=DBLE(VBIN(I)+CONWAV(K))
           CALL VERINT(VOUT,YOUT,NBIN+1,CONVAL(K),SNGL(VV))

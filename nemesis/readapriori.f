@@ -94,7 +94,7 @@ C     ****************************************************************
       real ref(maxlat,maxpro),clen,SXMINFAC,arg,valb,alb,refp,errp
       real xknee,xrh,erh,xcdeep,ecdeep,radius,Grav,plim
       real xcwid,ecwid,ptrop,refradius,xsc,ascat,escat,shape,eshape
-      real clen1,clen2
+      real clen1,clen2,press1,press2
       integer nlong,ilong,ipar
       parameter (Grav=6.672E-11)
 C     SXMINFAC is minimum off-diagonal factor allowed in the
@@ -2148,6 +2148,31 @@ C               print*,ix,sx(ix,ix:nx+nlong)
 
              nx=nx+nlat
 
+           elseif (varident(ivar,3).eq.37)then
+C          ***** specified opacity per bar between two pressure  ********
+C           Read in pressures
+             read(27,*)press1,press2
+             if(press2.gt.press1)then
+              print*,'Error in readapriori.f for model 37'
+              print*,'p2 should be less than p1'
+              stop
+             endif
+             varparam(ivar,1)=press1
+             varparam(ivar,2)=press2
+             ix = nx+1
+             read(27,*)xfac,err
+             if(xfac.gt.0.0)then
+               x0(ix)=alog(xfac)
+               lx(ix)=1
+             else
+               print*,'Error in readpriori - xfac must be > 0'
+               print*,'Error in readpriori - xfac must be > 0'
+               stop
+             endif
+             err = err/xfac
+             sx(ix,ix) = err**2
+
+             nx = nx+1
 
            else         
             print*,'vartype profile parametrisation not recognised'

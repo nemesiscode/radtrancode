@@ -16,7 +16,8 @@ C			Set to 1 to use plane-parallel scattering RTM
 C			Set to 2 if internal radiation field to be 
 C				    calculated first for limb/near-limb 
 C				    observations.
-C			Set to 3 for single-scattering calculations
+C			Set to 3 for single-scattering calculation plane parallel
+C			Set to 4 for single-scattering calculation spherical
 C	ilbl	integer	Set to 0 for correlated-k caculation
 C                       Set to 1 for lbl calculation
 C                       Set to 2 for lbl-table calculation

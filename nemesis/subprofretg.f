@@ -129,6 +129,7 @@ C     ***********************************************************************
       INTEGER NVP,ISWITCH(MAXGAS),IP1,IP2,JKNEE,NLEVEL
       REAL XLDEEP,XLHIGH,HVS,dlogp,XPC
       COMMON /SROM223/PCUT
+      REAL XC1,XC2,RH,SLOPE,xch4new(maxpro),xch4newgrad(maxpro)
 
       CALL RESERVEGAS
 
@@ -3386,6 +3387,23 @@ C         Need to convert opacity/bar to particles/gram
            X1(J)=10*XDEEP*G/1e5
            XMAP(NXTEMP+1,IPAR,J)=X1(J)
           ENDIF
+         ENDDO
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.38)THEN
+C        Model 38. Karkoschka CH4 model
+C        ***************************************************************
+         XC1=VARPARAM(IVAR,1)
+         XC2=VARPARAM(IVAR,2)
+         RH=VARPARAM(IVAR,3)
+
+         SLOPE = EXP(XN(NXTEMP+1))
+         
+         CALL modifych4kark(npro,P,T,xc1,xc2,RH,slope,
+     1    xch4new,xch4newgrad)
+        
+         DO J=1,NPRO
+          X1(J)=xch4new(J)
+          XMAP(NXTEMP+1,IPAR,J)=X1(J)*xch4newgrad(J)
          ENDDO
 
         ELSE

@@ -70,7 +70,13 @@ C     **************************** CODE ********************************
          if(varidentx(ivarx,1).eq.999)np = 1
          if(varidentx(ivarx,1).eq.888)np = int(varparamx(ivarx,1))
          if(varidentx(ivarx,1).eq.887)np = int(varparamx(ivarx,1))
-         if(varidentx(ivarx,1).eq.444)np = 2+int(varparamx(ivarx,1))
+         if(varidentx(ivarx,1).eq.444)then
+          if(varparamx(ivarx,2).gt.0.0)then
+           np = 2+int(varparamx(ivarx,1))
+          else
+           np = 3
+          endif
+         endif
          if(varidentx(ivarx,1).eq.445)then
           np = 3+(2*int(varparamx(ivarx,1)))
          endif

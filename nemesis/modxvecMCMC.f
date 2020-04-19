@@ -171,7 +171,11 @@ C         **** cloud x-section spectrum  *******
             enddo
           elseif(varident(ivar,3).eq.444)then  
 C         **** Particle refractive index spectrum *******
-            np = 2+int(varparam(ivar,1))
+            if(varparam(ivar,2).gt.0.0)then
+             np = 2+int(varparam(ivar,1))
+            else
+             np = 3
+            endif
             do i=1,np
              xn(ix+i)=x0(ix+i)+err(ix+i)*gasdev1(idum)
             enddo

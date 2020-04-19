@@ -286,7 +286,13 @@ C      therefore need to reseed it to continue to get pseudo-random numbers
          endif
          if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
          if(varident(ivar,1).eq.887)np = int(varparam(ivar,1))
-         if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
+         if(varident(ivar,1).eq.444)then
+          if(varparam(ivar,2).gt.0.0)then
+           np = 2+int(varparam(ivar,1))
+          else
+           np = 3
+          endif
+         endif
          if(varident(ivar,1).eq.445)np = 3+int(varparam(ivar,1))
          if(varident(ivar,1).eq.222)np = 8
          if(varident(ivar,1).eq.223)np = 9
@@ -304,7 +310,13 @@ C      therefore need to reseed it to continue to get pseudo-random numbers
            endif
            if(varidentx(ivarx,1).eq.888)npx = int(varparamx(ivarx,1))
            if(varidentx(ivarx,1).eq.887)npx = int(varparamx(ivarx,1))
-           if(varidentx(ivarx,1).eq.444)npx = 2+int(varparamx(ivarx,1))
+           if(varidentx(ivarx,1).eq.444)then
+            if(varparamx(ivarx,2).gt.0.0)then
+             npx = 2+int(varparamx(ivarx,1))
+            else
+             npx = 3
+            endif
+           endif
            if(varidentx(ivarx,1).eq.445)npx = 3+int(varparamx(ivarx,1))
 
            if(varidentx(ivarx,1).eq.0.and.npx.eq.npro)then

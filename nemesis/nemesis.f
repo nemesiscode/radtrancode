@@ -355,7 +355,7 @@ C     set up a priori of x and its covariance
         ENDDO
       ENDDO 
 
-      idump=0	! flag for diagnostic print dumps
+      idump=0  ! flag for diagnostic print dumps
 
       if(nspec.eq.1)then
         ica = 1		! 1 = single retrieval

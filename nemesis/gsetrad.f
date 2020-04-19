@@ -548,7 +548,14 @@ C     Compute the drv file to get the aerosol optical depths
           np=1
           if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
           if(varident(ivar,1).eq.887)np = int(varparam(ivar,1))
-          if(varident(ivar,1).eq.444)np = 2+int(varparam(ivar,1))
+          if(varident(ivar,1).eq.444)then           
+           if(varparam(ivar,2).gt.0.0)then
+            np = 2+int(varparam(ivar,1))
+           else
+            np = 3
+           endif
+C           print*,'xxz1',ivar,varparam(ivar,2),np
+          endif
           if(varident(ivar,1).eq.445)np = 3+2*int(varparam(ivar,1))
           if(varident(ivar,1).eq.222)np = 8
           if(varident(ivar,1).eq.223)np = 9
@@ -560,6 +567,8 @@ C     Compute the drv file to get the aerosol optical depths
          endif
 
          nx1=nx1+np
+
+C         print*,'xxy',nx1,np
 
         enddo
 
@@ -608,7 +617,7 @@ C       check that rescaling has happened correctly
 
            r0 = exp(xn(nx1+1))
            v0 = exp(xn(nx1+2))
-           print*,'444 r0,v0 = ',r0,v0
+           print*,varident(ivar,1),' r0,v0 = ',r0,v0
            if(varident(ivar,1).eq.445)then
             csx = exp(xn(nx1+3))
             nmshell = varparam(ivar,6)
@@ -631,36 +640,66 @@ C          np1 should now match nwave
            endif
            do i=1,nwave
             if(varident(ivar,1).eq.444)then
-             nimag(i)=exp(xn(nx1+2+i))
-             nimagshell(i) = 0.0
+             if(varparam(ivar,2).gt.0.0)then
+              nimag(i)=exp(xn(nx1+2+i))
+              nimagshell(i) = 0.0
+             else
+              nimag(i)=exp(xn(nx1+3))
+C              print*,'xxy',nx1,nx1+3,exp(xn(nx1+3))
+              nimagshell(i) = 0.0
+             endif
             else
-             nimag(i)=exp(xn(nx1+3+i))
-             nimagshell(i) = exp(xn(nx1+3+i+np1))
+             if(varident(ivar,1).eq.445)then
+              if(varparam(ivar,2).gt.0.0)then
+               nimag(i)=exp(xn(nx1+3+i))
+               nimagshell(i) = exp(xn(nx1+3+i+np1))
+              else
+               nimag(i)=exp(xn(nx1+3))
+               nimagshell(i) = exp(xn(nx1+3+np1))
+              endif
+             else
+              nimag(i)=exp(xn(nx1+3))
+              nimagshell(i) = exp(xn(nx1+3+np1)) 
+             endif
             endif
+C            print*,'xx',i,nimag(i)
            enddo
 
-C          Compute nreal from KK
-           if(ispace.eq.0)then
-C           nimag in wavenumber space, can transfer directly
-            do i=1,nwave
-             v1(i)=wave(i)
-             k1(i)=nimag(i)
-             k2(i)=nimagshell(i)
-             vm1=vm
-            enddo
+C           print*,'xx',varident(ivar,1),varident(ivar,2)
+           if(varparam(ivar,2).gt.0.0.or.
+     &        varident(ivar,1).eq.446)then
+C           Compute nreal from KK
+C            print*,'xx kramer'
+            if(ispace.eq.0)then
+C            nimag in wavenumber space, can transfer directly
+             do i=1,nwave
+              v1(i)=wave(i)
+              k1(i)=nimag(i)
+              k2(i)=nimagshell(i)
+              vm1=vm
+             enddo
+            else
+C           If nimag is in wavelength space, need to convert to wavenumbers
+             do i=1,nwave
+              v1(i)=1e4/wave(nwave+1-i)
+              k1(i)=nimag(nwave+1-i)
+              k2(i)=nimagshell(nwave+1-i)
+              vm1=1e4/vm
+             enddo
+            endif
+
+            call kk_new_sub(nwave,v1,k1,vm1,nm,n1)
+            call kk_new_sub(nwave,v1,k2,vm1,nmshell,n2)
+
            else
-C          If nimag is in wavelength space, need to convert to wavenumbers
+
+C           Set nr to be constant across range
             do i=1,nwave
-             v1(i)=1e4/wave(nwave+1-i)
-             k1(i)=nimag(nwave+1-i)
-             k2(i)=nimagshell(nwave+1-i)
-             vm1=1e4/vm
+             n1(i)=nm
+             n2(i)=nmshell
+C             print*,'xx mod',i,n1(i)
             enddo
            endif
-
-           call kk_new_sub(nwave,v1,k1,vm1,nm,n1)
-           call kk_new_sub(nwave,v1,k2,vm1,nmshell,n2)
-
            
            buffer='refindexN.dat' 
            buffer(9:9)=char(ivar+48)
@@ -699,6 +738,7 @@ C          Find minimum wavelength
      1                  nrealshell(i),nimagshell(i)
 	    else
              write(12,*)wave(i),nreal(i),nimag(i)
+C             print*,'xx',wave(i),nreal(i),nimag(i)
 	    endif
            enddo
            close(12)
@@ -718,12 +758,17 @@ C          Find minimum wavelength
            if(varident(ivar,1).eq.445)then
             np=3+(2*np1)
            else
-            np=2+np1
+            if(varparam(ivar,2).gt.0.0)then
+             np=2+np1
+            else
+             np=3
+            endif
            endif
 
        endif
 
        nx1=nx1+np
+C       print*,'xxz',ivar,nx1,np,nx1
 
       enddo
 

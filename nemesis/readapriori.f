@@ -119,6 +119,7 @@ C     a priori covariance matrix
       integer i1,j1,nlocation,ilocation
       integer nlen,il,ip,jl,jp
       real tmpgrid(mparam),findgen(mparam),yout
+      real xc1,xc2
 
 C     Initialise a priori parameters
       do i=1,mx
@@ -2174,13 +2175,38 @@ C           Read in pressures
 
              nx = nx+1
 
+           elseif(varident(ivar,3).eq.38)then
+C          ***** karkoschka neptune methane profile  ********
+C            Read in slope parameter
+             ix = nx+1
+             read(27,*)xfac,err
+             if(xfac.gt.0.0)then
+               x0(ix)=alog(xfac)
+               lx(ix)=1
+             else
+               print*,'Error in readpriori - xfac must be > 0'
+               stop
+             endif
+             err = err/xfac
+             sx(ix,ix) = err**2
+
+C            Read in slope parameters xdeep, xstrat,RH
+             read(27,*)xc1,xc2,xrh
+
+             varparam(ivar,1)=xc1
+             varparam(ivar,2)=xc2
+             varparam(ivar,3)=xrh
+
+             nx = nx+1
+
            else         
             print*,'vartype profile parametrisation not recognised'
             stop
            endif
 
-	    
+
          else
+
 C          Non-atmospheric and other parameters
 
 C          extra line to force varident(ivar,3)=varident(ivar,1)
@@ -2421,27 +2447,36 @@ C              read x-section normalising wavelength (-1 to not normalise)
                  err = 0.1*nimag
                 endif
                 ix=nx+2+i
-                x0(ix)=alog(nimag)
-                sx(ix,ix)=(err/nimag)**2
-                lx(ix)=1
+                if(i.eq.1.or.clen.gt.0.0)then
+                 x0(ix)=alog(nimag)
+                 sx(ix,ix)=(err/nimag)**2
+                 lx(ix)=1
+                endif
                enddo
              close(28)
 
-             do i=1,np
-              do j=i+1,np
-               delv = vi(i)-vi(j)
-               arg = abs(delv/clen)
-               xfac = exp(-arg)
-C               xfac = exp(-arg*arg)
-               if(xfac.ge.SXMINFAC)then  
-                sx(nx+2+i,nx+2+j)=
-     & sqrt(sx(nx+2+i,nx+2+i)*sx(nx+2+j,nx+2+j))*xfac
-                sx(nx+2+j,nx+2+i)=sx(nx+2+i,nx+2+j)
-               endif
+             if(clen.gt.0.0)then
+              do i=1,np
+               do j=i+1,np
+                delv = vi(i)-vi(j)
+                arg = abs(delv/clen)
+                xfac = exp(-arg)
+C                xfac = exp(-arg*arg)
+                if(xfac.ge.SXMINFAC)then  
+                 sx(nx+2+i,nx+2+j)=
+     &  sqrt(sx(nx+2+i,nx+2+i)*sx(nx+2+j,nx+2+j))*xfac
+                 sx(nx+2+j,nx+2+i)=sx(nx+2+i,nx+2+j)
+                endif
+               enddo
               enddo
-             enddo
 
-             nx = nx+2+np
+              nx = nx+2+np
+
+             else
+
+              nx = nx + 3
+
+             endif
 
            elseif (varident(ivar,1).eq.445)then
 C            ** Variable cloud particle size distribution and composition using Maltmieser coated sphere model **
@@ -3340,7 +3375,13 @@ C     the mass using the a priori log(g) AND radius
         endif
         if(varidentx(ivarx,1).eq.888)npx=int(varparamx(ivarx,1))
         if(varidentx(ivarx,1).eq.887)npx=int(varparamx(ivarx,1))
-        if(varidentx(ivarx,1).eq.444)npx=2+int(varparamx(ivarx,1))
+        if(varidentx(ivarx,1).eq.444)then
+         if(varparamx(ivarx,2).gt.0.0)then
+          npx=2+int(varparamx(ivarx,1))
+         else
+          npx = 3
+         endif
+        endif
         if(varidentx(ivarx,1).eq.445)npx=3+int(varparamx(ivarx,1))
         print*,'ivarx, npx = ',ivarx,npx
      
@@ -3352,7 +3393,13 @@ C     the mass using the a priori log(g) AND radius
          endif
          if(varident(ivar,1).eq.888)np=int(varparam(ivar,1))
          if(varident(ivar,1).eq.887)np=int(varparam(ivar,1))
-         if(varident(ivar,1).eq.444)np=2+int(varparam(ivar,1))
+         if(varident(ivar,1).eq.444)then
+          if(varparam(ivar,2).gt.0.0)then
+           np=2+int(varparam(ivar,1))
+          else
+           np = 3
+          endif
+         endif
          if(varident(ivar,1).eq.445)np=3+int(varparam(ivar,1))
          print*,'ivar, np = ',ivar,np
 

@@ -51,7 +51,13 @@ C        print*,'D',(VARIDENT(IVAR,J),J=1,3),NP
         NP=1
         IF(VARIDENT(IVAR,1).EQ.888)NP=INT(VARPARAM(IVAR,1))
         IF(VARIDENT(IVAR,1).EQ.887)NP=INT(VARPARAM(IVAR,1))
-        IF(VARIDENT(IVAR,1).EQ.444)NP=2+INT(VARPARAM(IVAR,1))
+        if(varident(ivar,1).eq.444)then
+         if(varparam(ivar,2).gt.0.0)then
+          np = 2+int(varparam(ivar,1))
+         else
+          np = 3
+         endif
+        endif
         IF(VARIDENT(IVAR,1).EQ.445)NP=3+(2*INT(VARPARAM(IVAR,1)))
         IF(VARIDENT(IVAR,1).EQ.222)NP=8
         IF(VARIDENT(IVAR,1).EQ.223)NP=9

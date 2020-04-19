@@ -3577,7 +3577,11 @@ C          post-processing in gsetrad.f
          IF(VARIDENT(IVAR,1).EQ.445)THEN
           NP = 3+(2*INT(VARPARAM(IVAR,1)))
          ELSE
-          NP = 2+INT(VARPARAM(IVAR,1))
+          IF(VARPARAM(IVAR,2).GT.0.0)THEN
+           NP = 2+INT(VARPARAM(IVAR,1))
+          ELSE
+           NP = 3
+          ENDIF
          ENDIF
 
       ELSEIF(VARIDENT(IVAR,1).EQ.443)THEN

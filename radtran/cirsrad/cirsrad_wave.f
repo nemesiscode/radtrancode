@@ -688,7 +688,6 @@ C-----------------------------------------------------------------------
 				 bsec(L) = xsec(2,K,L)
 				 asec2(L) = xsec2(1,K,L)
 				 bsec2(L) = xsec2(2,K,L)
-
 				ENDDO
 
 				CALL csplint (vsec, asec, asec2, 
@@ -696,7 +695,7 @@ C-----------------------------------------------------------------------
 				CALL csplint (vsec, bsec, bsec2,
      1					nsec, x, tau2)
 
-				if(tau.lt.0)then
+			if(tau.lt.0.or.isnan(asec2(1)))then
 C             			 print*,'tau lt 0: Particle type ',K
 C                                 print*,nsec,vsec(1),vsec(nsec)
 C                                 print*,nsec,asec(1),asec(nsec)
@@ -720,7 +719,7 @@ C                                 endif
                                 endif
 
 
-				if(tau2.lt.0)then
+			if(tau2.lt.0.or.isnan(bsec2(1)))then
 C              			  print*,'tau2 lt 0: Particle type ',K
 C                                 print*,nsec,vsec(1),vsec(nsec)
 C                                 print*,nsec,bsec(1),bsec(nsec)
@@ -2221,13 +2220,13 @@ C                  Calculate Rayleigh scattering too
                   r1(L)=traceLOS(J+1,L)
                  ENDDO
                  rtmp=sqrt(sproduct(r1,r1))                 
-                 print*,'rtmp-RADIUS1 = ',rtmp-RADIUS1
+C                 print*,'rtmp-RADIUS1 = ',rtmp-RADIUS1
                  
                  muinc = abs(sproduct(svec,r1)/rtmp)
                  muemiss = abs(sproduct(vec1,r1)/rtmp)
-                 print*,muinc,muemiss
+C                 print*,muinc,muemiss
                  dtr=3.1415927/180.0
-                 print*,J,acos(muinc)/dtr,acos(muemiss)/dtr
+C                 print*,J,acos(muinc)/dtr,acos(muemiss)/dtr
                  ssfac = muinc/(muinc+muemiss)
 
 

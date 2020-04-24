@@ -70,13 +70,8 @@ C G_ORD: Gauss-Legendre ordinates for calculating the k-distribution.
 C DEL_G: Gauss-Legendre weights for integration.
       REAL TMP,GW(MBIN*20),GK(MBIN*20)
       REAL XK,KG(MAXG),YY
-<<<<<<< HEAD
-      REAL VCEN(500),VCEN0(6000),VFIL(500,1000),FIL(500,1000)
-      INTEGER NSUB(100),NCONV,K,IREC1
-=======
       REAL VCEN(500),VCEN0(6000),VFIL(500,1000),FIL(500,1000)
       INTEGER NSUB(500),NCONV,K,IREC1
->>>>>>> daa98c9... Added capability to Channel_Ave_Table to average over constant R tables
       REAL VMIN1,DELV1,XF(1000),YF(1000)
 
       CHARACTER*100 KTAFIL,OPFILE1,FILFILE

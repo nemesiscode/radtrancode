@@ -1734,7 +1734,7 @@ C                  but scattering clouds
 	          solarA=0.
                   nfx=0
 
-   	    	  call scloud11flux(radg, solarA, sol_ang, 
+   	    	  call scloud11fluxA(radg, solarA, sol_ang, 
      1               lowbc, galb1, iray, mu1, wt1, nmu, nfx, Ig, x,
      2               vv, eps, omegas, bnu, taus, taur, 
      3               nlays, ncont, lfrac, umif, uplf)
@@ -1759,7 +1759,7 @@ C                  but non-scattering clouds
                   nfx=0
                   irayx=0
 
-   	    	  call scloud11flux(radg, solarA, sol_ang, 
+   	    	  call scloud11fluxA(radg, solarA, sol_ang, 
      1               lowbc, galb1, irayx, mu1, wt1, nmu, nfx, Ig, x,
      2               vv, epsb, omegasb, bnu, taus, taur, 
      3               nlays, ncont, lfrac, umif, uplf)
@@ -1782,7 +1782,7 @@ C                  but non-scattering clouds
 C		  Calculate radiation field with sunlight on but for
 C                 for non-scattering conditions to get direct solar component.
 
-   	    	  call scloud11flux(radg, solar, sol_ang, 
+   	    	  call scloud11fluxA(radg, solar, sol_ang, 
      1               lowbc, galb1, irayx, mu1, wt1, nmu, nf, Ig, x,
      2               vv, epsb, omegasb, bnu, taus, taur, 
      3               nlays, ncont, lfrac, umif, uplf)
@@ -1805,10 +1805,10 @@ C                 for non-scattering conditions to get direct solar component.
 
 
 C	          Finally, calculate radiation field for nominal 
-C		   scattering case
+C		   scattering case, including thermal emission and sunlight
 
 
-   	    	  call scloud11flux(radg, solar, sol_ang, 
+   	    	  call scloud11fluxA(radg, solar, sol_ang, 
      1               lowbc, galb1, iray, mu1, wt1, nmu, nf, Ig, x,
      2               vv, eps, omegas, bnu, taus, taur, 
      3               nlays, ncont, lfrac, umif, uplf)

@@ -55,6 +55,7 @@ F_SOURCES = \
 	scloud11wave.f \
 	scloud12wave.f \
 	scloud11flux.f \
+	scloud11fluxA.f \
 	subfithgm.f \
 	modmakephase.f
 
@@ -82,7 +83,7 @@ lib $(LIBRARY): $(LIBCODE)
 
 $(LIBRARY)(%.o): %.f $(INCLUDES)
 	$(FC) $(FCFLAGS) -c $<
-	ar rv $(LIBRARY) $*.o
+	ar rvU $(LIBRARY) $*.o
 	ranlib $(LIBRARY)
 	-rm $*.o
 

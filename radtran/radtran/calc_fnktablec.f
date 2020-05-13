@@ -55,7 +55,7 @@ C--------------------------------------------------------------
 C-----------------------------------------------------------------------------
       INTEGER LUN,LOOP,LUN0,LUN1,MDATA,MFIL,NGMAX,N1
       PARAMETER (LUN=2,LUN0=30,LUN1=31,MFIL=1000)
-      PARAMETER (NGMAX=51)
+c      PARAMETER (NGMAX=51)
       REAL X,PMIN,PMAX,TMIN,TMAX,DT,DP
       REAL VMINC,VMAXC
       INTEGER IREC,IREC0,I,IWAVE,NFIL,IMULTI
@@ -79,6 +79,8 @@ C     K_G: Calculated k-distribution.
 C     DEL_G: Gauss-Legendre weights for integration.
 C     **** all these are now defined by zgauleg.f ***
 
+c LNF - Added this to prevent hard-coding
+      NGMAX=MAXG
 
       IJLCO=0
 
@@ -564,6 +566,7 @@ C            defined by lbl_kcont.f)
 
             DELV=(VEND-VSTART)/FLOAT(NPOINT)
 
+c	    print*,'CALC_FNKTABLEC (VSTART,DELV,NPOINT): ',vstart,delv,npoint
             CALL CALC_FKDIST_WAVEC(IWAVE,VSTART,DELV,NPOINT,
      1    NFIL,VFIL,TFIL,G_ORD,DEL_G,K_G,NGMAX,NG)
 

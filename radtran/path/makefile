@@ -35,6 +35,7 @@ F_SOURCES = \
 	rfcmod.f \
 	sngatm.f \
 	verint.f \
+	verint_dp.f \
 	verintg.f \
 	calcmolwt.f \
 	adjustvmr.f \

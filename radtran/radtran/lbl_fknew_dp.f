@@ -1,4 +1,4 @@
-      SUBROUTINE LBL_FKNEW(IWAVE,VSTART,VEND,PRESS,TEMP,IDGAS,ISOGAS,
+      SUBROUTINE LBL_FKNEW_DP(IWAVE,VSTART,VEND,PRESS,TEMP,IDGAS,ISOGAS,
      1 IPROC,IP,IT,FRAC,MAXDV,IPTF,NPOINT)
 C     $Id: lbl_fknew.f,v 1.7 2011-09-06 15:32:20 irwin Exp $
 C***********************************************************************
@@ -93,6 +93,7 @@ C	8/3/04	NT added iproc=6 option, Rosenkrantz-Ben-Reuven lineshape
 C			with voigt lineshape as default (NH3 only)
 C	4/4/06	NT added in some pre-tabluation of variables to speed
 C			up the code.
+C	Apr 2019	LNF	Double precision version (experimental)
 C***************************** VARIABLES *******************************
 
       IMPLICIT NONE

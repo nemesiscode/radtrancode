@@ -1,7 +1,7 @@
-      PROGRAM CALC_FNKTABLEC
+      PROGRAM CALC_FNKTABLEC_DP
 C     $Id:
 C---------------------------------------------------------------------------
-C_TITLE:  CALC_FNKTABLEC
+C_TITLE:  CALC_FNKTABLEC_DP
 C
 C_ARGS:
 C
@@ -40,6 +40,7 @@ C_HIST:	30.3.00		PGJI	ORIGINAL VERSION
 C	26/4/12		PGJI	Updated for new radtrans/nemesis and added 
 C				option to calculate k-table for spectral 
 C				channels.
+C	Apr 2019	LNF	Double precision version (experimental)
 C   
 C---------------------------------------------------------------------------
 C     note dbcom defines the linedata base variables. it is not normally stored
@@ -55,7 +56,7 @@ C--------------------------------------------------------------
 C-----------------------------------------------------------------------------
       INTEGER LUN,LOOP,LUN0,LUN1,MDATA,MFIL,NGMAX,N1
       PARAMETER (LUN=2,LUN0=30,LUN1=31,MFIL=1000)
-      PARAMETER (NGMAX=51)
+c      PARAMETER (NGMAX=51)
       REAL X,PMIN,PMAX,TMIN,TMAX,DT,DP
       REAL VMINC,VMAXC
       INTEGER IREC,IREC0,I,IWAVE,NFIL,IMULTI
@@ -79,6 +80,9 @@ C     K_G: Calculated k-distribution.
 C     DEL_G: Gauss-Legendre weights for integration.
 C     **** all these are now defined by zgauleg.f ***
 
+c LNF - Added this to prevent hard-coding
+      NGMAX=MAXG
+      
       IJLCO=0
 
       CALL system_clock(count_rate=cr)
@@ -101,7 +105,6 @@ C     **** all these are now defined by zgauleg.f ***
 
 c  ** calc g_ord and del_g **
       call zgauleg(g_ord,del_g,ng,ngmax)
-
 
       CALL PROMPT('Use Wavelengths(0) or Wavenumbers(1): ')
       READ*,IWAVE
@@ -268,12 +271,13 @@ C      Convert wavelength range to wavenumber range if IWAVE=0
        CALL RDISO
 
        CALL FILE(OPFILE,LCOFIL,'lco')
+       PRINT*,'Looking for LCO: ',LCOFIL
        INQUIRE(FILE=LCOFIL,EXIST=FEXIST)
        IF(FEXIST)THEN
               print*,'LCO file = ',LCOFIL
               CALL INIT_LCO(LCOFIL)
        ENDIF
-
+C       PRINT*,'FEXIST = ',FEXIST
       ELSE
 C      If IEXO<>0, then we need to read in temperature-dependent database
 C      (for exoplanet k-tables)
@@ -285,6 +289,7 @@ C      (for exoplanet k-tables)
       CALL PROMPT('Enter output filename : ')
       READ(5,23)OPFILE
       CALL FILE(OPFILE,KTAFIL,'kta')
+
 
       IRECL=ISYS()
       OPEN(UNIT=LUN0,FILE=KTAFIL,STATUS='UNKNOWN',ACCESS='DIRECT',
@@ -383,8 +388,14 @@ C          Read in temperature specific linedata file.
            CALL RDGAS
            CALL RDISO
 
+           print*,'keyfile = ',KEYFIL
+
            CALL FILE(OPFILE,LCOFIL,'lco')
            INQUIRE(FILE=LCOFIL,EXIST=FEXIST)
+
+           print*,'LCO file : ',LCOFIL
+           print*,'Exist? : ',FEXIST
+
            IF(FEXIST)THEN
             print*,'LCO file = ',LCOFIL
             CALL INIT_LCO(LCOFIL)
@@ -550,13 +561,21 @@ C            defined by lbl_kcont.f)
 
             WRITE(*,*)'Pressure, temperature: ',P1,TE1
             WRITE(LUN1,*)'Pressure, temperature: ',P1,TE1
-            CALL LBL_FKNEW(IWAVE,VSTART,VEND,P1,TE1,
+	    
+	    
+	    
+            CALL LBL_FKNEW_DP(IWAVE,VSTART,VEND,P1,TE1,
      1          IDGAS(1),ISOGAS(1),IPROC(1),J,K,FRAC1,MAXDV,IPTF,
      2		NPOINT)
 
-            DELV=(VEND-VSTART)/FLOAT(NPOINT)
 
-            CALL CALC_FKDIST_WAVEC(IWAVE,DBLE(VSTART),DBLE(DELV),NPOINT,
+            DELV=(VEND-VSTART)/FLOAT(NPOINT)
+	    
+
+c	    print*,'CALC_FNKTABLEC_DP (VSTART,DELV): ',vstart,delv
+c	    print*,'CALC_FNKTABLEC_DP (NPOINT): ',npoint
+            
+	    CALL CALC_FKDIST_WAVEC_DP(IWAVE,DBLE(VSTART),DBLE(DELV),NPOINT,
      1    NFIL,VFIL,TFIL,G_ORD,DEL_G,K_G,NGMAX,NG)
 
             WRITE(LUN1,*)(K_G(LOOP),LOOP=1,NG)

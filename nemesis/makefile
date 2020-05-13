@@ -103,7 +103,8 @@ F_SOURCES = \
 	readrdw.f \
 	splang.f \
 	splangint.f \
-	interpvivien.f
+	interpvivien.f \
+	modifych4kark.f
 
 INCDIR = ../../radtran/includes
 INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/lincom.f $(INCDIR)/pathcom.f \

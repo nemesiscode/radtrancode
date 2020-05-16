@@ -1,4 +1,4 @@
-      SUBROUTINE CALC_FKDIST_WAVEC(IWAVE,VMIN,DELV,NPOINT,
+      SUBROUTINE CALC_FKDIST_WAVEC_DP(IWAVE,VMIN,DELV,NPOINT,
      1 NFIL,VFIL,TFIL,G_ORD,DEL_G,K_G,NGMAX,NG)
 C     $Id:
 C***********************************************************************
@@ -14,12 +14,17 @@ C
 C_ARGS:	Input variables:
 C	OUTPUT(MPOINT)	REAL	Supplied lbl spectrum. Variable is passed
 C				via the /SPECTRUM/ common block for speed.
+C       IWAVE		INTEGER	0=Wavelength, 1=Wavenumber
 C       VMIN		REAL	Lowest wavenumber.
 C  	DELV		REAL	Wavenumber spacing of LBL spectrum.
 C       NPOINT		INTEGER	Number of points in spectrum.
+C       NFIL		INTEGER	Number of points in filter function
+C	VFIL(NFIL)	REAL	Filter function wavelengths/wavenumbers
+C	TFIL(NFILE)	REAL	Filter function transmissions
 C       G_ORD(MAXG)	REAL	Gauss-Legendre ordinates for calculating the
 C				k-distribution.
 C       NG              INTEGER Number of ordinates in k-distribution.
+C	NGMAX		INTEGER Maximum allowable size of NG
 C
 C	Output variables:
 C	K_G(MAXG)		REAL	Calculated k-distribution.
@@ -38,15 +43,14 @@ C***************************** VARIABLES *******************************
       INCLUDE '../includes/arrdef.f'
 
 C Input parameters ...
-      INTEGER NPOINT,NG,NGMAX,IWAVE,ICH,NFIL
+      INTEGER NPOINT,NG,NGMAX,IWAVE,ICH,NFIL,ITYPE
       DOUBLE PRECISION VMIN,VMAX,DELV,V1,V2
       REAL VV,G_ORD(NGMAX)
       REAL VFIL(NFIL),TFIL(NFIL),WFIL     
+      CHARACTER*1 ANS
 
       REAL K_G(NGMAX)
-      
       DOUBLE PRECISION OUTPUT(MPOINT),OUTPUT1(MPOINT)
-      
       DOUBLE PRECISION X(MPOINT),VMIN1,VMAX1,DELV1,Y1,X1(MPOINT)
 
 
@@ -73,65 +77,51 @@ C     Spectrum is calculated in wavenumber space. If we want
 C     a k-table for wavelength space we need to interpolate onto a grid
 C     of equally spaced wavelengths
 
-      PRINT*,'CALC_FKDIST_WAVEC: IWAVE = ',IWAVE
+1     FORMAT(A)
+      PRINT*,'FKDIST_WAVEC_DP (IWAVE) =',IWAVE
+      print*,'FKDIST_WAVEC_DP (NPOINT) = ',npoint
+c      print*,'FKDIST_WAVEC_DP (VMIN, DELV) = ',vmin,delv
 
       DO I=1,NPOINT
         X(I)=VMIN+(I-1)*DELV
       ENDDO
-      
-      
-      open(12,file='kdist_wave_spec1.dat',status='unknown')
-       write(12,*)npoint
-       do i=1,npoint
-        write(12,*)x(i),output(i)
-       enddo
-      close(12)
 
-      
+CCCC For debugging
+c      open(12,file='kdist_wavec_dp_spec1.dat',status='unknown')
+c       write(12,*)npoint
+c       do i=1,npoint
+c        write(12,*)x(i),output(i)
+c       enddo
+c      close(12)
+CCCC End debugging
 
       IF(IWAVE.EQ.0)THEN
        VMAX=VMIN+(NPOINT-1)*DELV
        DO I=1,NPOINT
         X(I)=VMIN+(I-1)*DELV
        ENDDO
-
-       print*,'NPOINT,DELV=',NPOINT,DELV
+       
+c       print*,'FKDIST_WAVEC_DP: (NPOINT,VMIN,DELV)=',NPOINT,DELV
 
        VMIN1 = 1E4/VMAX
        VMAX1 = 1E4/VMIN
        DELV1 = (VMAX1-VMIN1)/FLOAT(NPOINT-1)
 
-       print*,'VMIN1,VMAX1=',VMIN1,VMAX1,VMIN,VMAX
+c       print*,'FKDIST_WAVEC_DP: (VMIN1,VMAX1,DELV1)=',VMIN1,
+c     1  VMAX1,DELV1
 
        DO I=1,NPOINT
         V1 = VMIN1+(I-1)*DELV1
         V2 = 1E4/V1
-c        CALL VERINT(X,OUTPUT,NPOINT,Y1,V2)
-	CALL VERINT_DP(X,OUTPUT,NPOINT,Y1,V2)
+        CALL VERINT_DP(X,OUTPUT,NPOINT,Y1,V2)
         OUTPUT1(I)=Y1
-c Fletcher addition:
-        X1(I)=V2
-	
        ENDDO
-       print*,'End Loop:',v1,v2,y1,vmin1,delv1
-       
+
        DO I=1,NPOINT
         OUTPUT(I)=OUTPUT1(I)
-c	X(I)=X1(I)
-c	print*,'Loop 2:',VMIN1+(I-1)*DELV1,output(i),x(i),1e4/x(i)
        ENDDO
-       
-       
-       
+
       ENDIF
-      
-      
-      open(12,file='kdist_wave_spec2.dat',status='unknown')
-       write(12,*)npoint
-       do i=1,npoint
-        write(12,*)x1(i),output1(i)
-       enddo
-      close(12)
 
 C=======================================================================
 C
@@ -157,6 +147,10 @@ C=======================================================================
           YY(I) = YMIN
         ELSE
           YY(I) = DLOG10(OUTPUT(I))
+          IF(ISNAN(YY(I)))THEN
+           print*,'NAN',I,OUTPUT(I)
+           YY(I)=YMIN
+          ENDIF
         ENDIF
         YMAX = MAX(YMAX,YY(I))
 304   CONTINUE
@@ -167,7 +161,7 @@ C=======================================================================
       ENDDO
       KMIN = FLOOR(YMIN)
       KMAX = CEILING(YMAX)
-
+      print*,KMIN,KMAX,YMIN,YMAX
       IF(YMIN.EQ.YMAX)THEN
         DO I=1,NG
           IF(KMIN.EQ.XMINK)THEN
@@ -176,7 +170,7 @@ C=======================================================================
             K_G(I) = 10**KMIN
           ENDIF
         ENDDO
-C        print*,'calc_fkdist_wavec - zero spec - returning'
+        print*,'calc_fkdist_wavec_dp - zero spec - returning'
         RETURN
       ENDIF
 
@@ -198,6 +192,7 @@ C        print*,'calc_fkdist_wavec - zero spec - returning'
            WFIL=0.0
          ENDIF
         ENDIF
+C        print*,VV,NFIL,WFIL
 
         K = 1 + INT((YY(I) - KMIN)/DELK)
         YK = KMIN + (K - 1)*DELK
@@ -205,7 +200,6 @@ C        print*,'calc_fkdist_wavec - zero spec - returning'
         IF(XFR.GE.0.5.AND.K.LT.NKINT)K = K + 1
         F(K) = F(K) + WFIL
 306   CONTINUE
-
       SUM = 0.0
       DO 307 K=1,NKINT
         SUM = SUM + F(K)
@@ -216,16 +210,14 @@ C        print*,'calc_fkdist_wavec - zero spec - returning'
        G(K)=G(K)/SUM
 311   CONTINUE
 
-      SUMK = 0.0       
-      DO K=1,NKINT-1
-        DG = G(K+1) - G(K)
-        SUMK = SUMK + 0.5*(ORD(K) + ORD(K+1))*DG
-      ENDDO
 
-      SUMK = 0.0
-      DO 308 J=1,NG
+      ITYPE=0
+
+      IF(ITYPE.EQ.0)THEN
+C      Technically correct method of sampling ORD at the 
+C      Gaussian ordinates G_ORD
+       DO 308 J=1,NG
         GG = G_ORD(J)
-
         K = 1
 243     IF(K.LT.NKINT)THEN
           IF(G(K).LE.GG.AND.G(K+1).GT.GG)THEN
@@ -236,22 +228,101 @@ C        print*,'calc_fkdist_wavec - zero spec - returning'
             GOTO 243
           ENDIF
         ENDIF
-        SUMK = SUMK + DEL_G(J)*K_G(J)
-308   CONTINUE
+308    CONTINUE
 
-      open(12,file='calc_kdist_wave.dat',status='unknown')
+      ELSE
+C      Empirical method of sampling ORD by ensuring 
+C      Integral(ORD.DG) = Sum(K_G.DEL_G)
+
+       CALL KINTEGRATE(NKINT,ORD,G,NG,K_G,DEL_G)
+
+      ENDIF
+
+CCCC Debugging
+      open(12,file='calc_kdist_wavex_dp.dat',status='unknown')
        write(12,*)npoint
        do i=1,npoint
-        write(12,*)x(i),output(i)
+	write(12,*)x(i),output(i)
        enddo
        write(12,*)nkint
        do i=1,nkint
-        write(12,*)f(i),g(i),ord(i)
+	write(12,*)f(i),g(i),ord(i)
+       enddo
+       write(12,*)ng
+       do i=1,ng
+	write(12,*)g_ord(i),k_g(i)
        enddo
       close(12)
+CCCC End debugging
 
+C      print*,'press a key to continue'
+C      read(5,1)ans
 
+      print*,'CALC_FKDIST_WAVEC_DP called OK'
 
       RETURN      
+
+      END
+
+
+      SUBROUTINE KINTEGRATE(NKINT,ORD,G,NG,K_G,DEL_G)
+C     *************************************************************
+C     Subroutine to integrate ord.dg and set K_G to be equal to average of
+C     integrals over subranges of width DEL_G
+C
+C     Pat Irwin 17/11/18
+C
+C     *************************************************************
+      IMPLICIT NONE
+      INTEGER NKINT,NG,I,IG
+      REAL ORD(NKINT),G(NKINT),DG,F,ORDX
+      REAL K_G(NG),DEL_G(NG),SUM,GG,DG1
+      SUM=0.
+      DO I=1,NG
+       K_G(I)=0.
+       SUM=SUM+DEL_G(I)
+      ENDDO
+C      print*,SUM
+      DO I=1,NG
+       DEL_G(I)=DEL_G(I)/SUM
+      ENDDO
+
+      IG=1
+      GG=DEL_G(IG)
+      SUM=0.
+      DO 101 I=2,NKINT
+       IF(G(I).LT.GG)THEN
+        K_G(IG)=K_G(IG)+0.5*(ORD(I)+ORD(I-1))*(G(I)-G(I-1))
+       ELSE
+         DG = (GG-G(I-1))
+         F = DG/(G(I)-G(I-1))
+         ORDX = ORD(I-1)*(1.0-F) + ORD(I)*F
+         K_G(IG)=K_G(IG)+0.5*(ORDX+ORD(I-1))*DG
+C         print*,IG,GG,K_G(IG)
+         IF(IG.LT.NG)THEN
+          DG1 = G(I)-GG
+          K_G(IG+1)=K_G(IG+1)+0.5*(ORD(I)+ORDX)*DG1
+          IG=IG+1
+          GG=GG+DEL_G(IG) 
+C          print*,'A',IG,GG,K_G(IG)
+         ENDIF
+       ENDIF 
+101   CONTINUE
+
+      SUM=0
+      DO 102 I=1,NG
+       K_G(I)=K_G(I)/DEL_G(I)
+       SUM=SUM+K_G(I)*DEL_G(I)
+102   CONTINUE
+C      print*,'Rough Sum = ',SUM
+
+      SUM=0.
+      DO 103 I=2,NKINT
+       SUM=SUM+0.5*(ORD(I-1)+ORD(I))*(G(I)-G(I-1))
+103   CONTINUE
+C      print*,'Fine Sum = ',SUM
+C      print*,'Last elements = ',G(NKINT),ORD(NKINT)
+
+      RETURN
 
       END

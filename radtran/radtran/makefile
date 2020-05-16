@@ -24,6 +24,7 @@ F_SOURCES = \
 	calc_lco.f \
 	calc_esum5.f \
 	calc_fkdist_wavec.f \
+	calc_fkdist_wavec_dp.f \
 	calc_lor_width.f \
 	calc_mlk1_k.f \
 	co2cia.f \
@@ -73,6 +74,7 @@ F_SOURCES = \
 	lbl_kcont.f \
 	lbl_kdists.f \
 	lbl_fknew.f \
+	lbl_fknew_dp.f \
 	lbl_know.f \
 	loadbins.f \
 	malkmus_lor.f \
@@ -161,6 +163,7 @@ bin :   \
 	Ave_table \
 	Channel_ave_table \
 	Calc_fnktablec \
+	Calc_fnktablec_dp \
 	Calc_lbltable \
 	Aband_ktable \
 	Aband_ktablec \
@@ -212,6 +215,11 @@ Calc_fnktablec : calc_fnktablec.f $(LIBRARY) $(LIB)/spec_data.a
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
 	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a
 
+Calc_fnktablec_dp : calc_fnktablec_dp.f $(LIBRARY) $(LIB)/spec_data.a
+	$(FC) $(FCFLAGS) -o $(BIN)/Calc_fnktablec_dp calc_fnktablec_dp.f $(LIBRARY) \
+	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
+	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a
+	
 Calc_lbltable : calc_lbltable.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Calc_lbltable calc_lbltable.f $(LIBRARY) \
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \

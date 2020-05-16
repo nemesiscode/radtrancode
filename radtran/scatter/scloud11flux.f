@@ -160,6 +160,7 @@ C     Reset the order of angles:
       DO I=1,NMU
         MU(I) = MU1(NMU+1-I)
         WTMU(I) = WT1(NMU+1-I)
+        print*,'MU',MU(I),WTMU(I)
       ENDDO
 
       PI = 4.0D0*DATAN(1.0D0)
@@ -363,7 +364,7 @@ C       Assign phase function coefficients for each atmospheric layer
 
          ENDIF
 
-         TAUT = TAUT + TAUR
+C         TAUT = TAUT + TAUR
          OMEGA = (TAUSCAT+TAUR)/TAUT
          
          if(idump.gt.0)then
@@ -577,9 +578,10 @@ C       print*,J,MU(J),ZMU0
        IF(ZMU0.LE.MU(J).AND.ZMU0.GT.MU(J+1))ISOL = J
       END DO
       IF(ZMU0.LE.MU(NMU))ISOL=NMU-1 
-C      print*,'ISOL,FSOL=',ISOL,FSOL
-      
       FSOL = SNGL((MU(ISOL)-ZMU0)/(MU(ISOL)-MU(ISOL+1)))
+
+      print*,'ISOL,FSOL=',ISOL,FSOL
+      stop
 
       if(idump.gt.0)then
        print*,'isol,fsol',isol,fsol

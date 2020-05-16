@@ -116,7 +116,7 @@ C--------------------------------------------------------------------------
 
 
       if(idump.gt.0)then
-      print*,'scloud11flux : sol_ang',sol_ang,'solar', solar,
+      print*,'scloud11fluxA : sol_ang',sol_ang,'solar', solar,
      1  'lowbc',lowbc,'galb',galb,'nmu',nmu, 'nf',nf, 'nlay',nlay,
      2  'ncont',ncont,'igdist',igdist
       print*,'vwave : ',vwave,'vv : ',vv
@@ -140,8 +140,8 @@ C     Find correction for any quadrature errors
        xfac=xfac+sngl(mu1(i)*wt1(i))
       enddo
       xfac=0.5/xfac
-      print*,'xfac = ',xfac
-      print*,'Galb = ',galb
+C      print*,'xfac = ',xfac
+C      print*,'Galb = ',galb
 
 C     In case of Lambertian reflection, add extra dummy layer at bottom,
 C     whose transmission matrix = (1-A)*Unit-Matrix. This layer must be
@@ -160,7 +160,7 @@ C     Reverse the order of angles to run from mu = 1.0 to smaller
       DO I=1,NMU
         MU(I) = MU1(NMU+1-I)
         WTMU(I) = WT1(NMU+1-I)
-        print*,'MU',MU(I),WTMU(I)
+C        print*,'MU',MU(I),WTMU(I)
       ENDDO
 
       PI = 4.0D0*DATAN(1.0D0)
@@ -337,34 +337,35 @@ C       Assign phase function coefficients for each atmospheric layer
 
           ENDIF
 
-         END DO
+        END DO
+C       Now add Rayleigh scattering
       
-         IF((TAUSCAT+TAUR).GT.0.0)THEN
+        IF((TAUSCAT+TAUR).GT.0.0)THEN
             FRAC = TAUR/(TAUSCAT+TAUR)
-         ELSE
+        ELSE
             FRAC = 0.0
-         ENDIF
+        ENDIF
 
-         SFRAC = SFRAC+FRAC
+        SFRAC = SFRAC+FRAC
       
-         IF(FRAC.GT.0)THEN
+        IF(FRAC.GT.0)THEN
           DO JP = 1,NMU
             DO IP = 1,NMU
              PPLPL(IP,JP) = PPLR(IC,IP,JP)
              PPLMI(IP,JP) = PMIR(IC,IP,JP)
             END DO
-          END DO
+         END DO
 
-          if(idump.gt.0)print*,'Layer ',L,' Adding fraction ',
+         if(idump.gt.0)print*,'Layer ',L,' Adding fraction ',
      &     FRAC,' of Rayleigh scattering '
-          CALL MADD(FRAC,PPLPLS,PPLPL,PPLPLS,NMU,NMU,
+         CALL MADD(FRAC,PPLPLS,PPLPL,PPLPLS,NMU,NMU,
      1      MAXMU,MAXMU)
-          CALL MADD(FRAC,PPLMIS,PPLMI,PPLMIS,NMU,NMU,
+         CALL MADD(FRAC,PPLMIS,PPLMI,PPLMIS,NMU,NMU,
      1      MAXMU,MAXMU)
 
-         ENDIF
+        ENDIF
 
-         TAUT = TAUT + TAUR
+C         TAUT = TAUT + TAUR    Erroneous line - TAUT already includes TAUR
          OMEGA = (TAUSCAT+TAUR)/TAUT
          
          if(idump.gt.0)then

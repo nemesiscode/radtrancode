@@ -161,7 +161,8 @@ C=======================================================================
       ENDDO
       KMIN = FLOOR(YMIN)
       KMAX = CEILING(YMAX)
-      print*,KMIN,KMAX,YMIN,YMAX
+      print*,'FKDIST_WAVEC_DP (KMIN, KMAX):',KMIN,KMAX
+      print*,'FKDIST_WAVEC_DP (YMIN, YMAX):',YMIN,YMAX
       IF(YMIN.EQ.YMAX)THEN
         DO I=1,NG
           IF(KMIN.EQ.XMINK)THEN
@@ -239,20 +240,20 @@ C      Integral(ORD.DG) = Sum(K_G.DEL_G)
       ENDIF
 
 CCCC Debugging
-      open(12,file='calc_kdist_wavex_dp.dat',status='unknown')
-       write(12,*)npoint
-       do i=1,npoint
-	write(12,*)x(i),output(i)
-       enddo
-       write(12,*)nkint
-       do i=1,nkint
-	write(12,*)f(i),g(i),ord(i)
-       enddo
-       write(12,*)ng
-       do i=1,ng
-	write(12,*)g_ord(i),k_g(i)
-       enddo
-      close(12)
+c      open(12,file='calc_kdist_wavex_dp.dat',status='unknown')
+c       write(12,*)npoint
+c       do i=1,npoint
+c	write(12,*)x(i),output(i)
+c       enddo
+c       write(12,*)nkint
+c       do i=1,nkint
+c	write(12,*)f(i),g(i),ord(i)
+c       enddo
+c       write(12,*)ng
+c       do i=1,ng
+c	write(12,*)g_ord(i),k_g(i)
+c       enddo
+c      close(12)
 CCCC End debugging
 
 C      print*,'press a key to continue'

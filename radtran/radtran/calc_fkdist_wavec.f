@@ -86,7 +86,7 @@ CCCC For debugging
 c      open(12,file='kdist_wave_spec1.dat',status='unknown')
 c       write(12,*)npoint
 c       do i=1,npoint
-c        write(12,*)x(i),output(i)
+c	write(12,*)x(i),output(i)
 c       enddo
 c      close(12)
 CCCC End debugging
@@ -97,14 +97,14 @@ CCCC End debugging
         X(I)=VMIN+(I-1)*DELV
        ENDDO
        
-c       print*,'FKDIST_WAVEC: (NPOINT,VMIN,DELV)=',NPOINT,DELV
+       print*,'FKDIST_WAVEC: (NPOINT,DELV)=',NPOINT,DELV
 
        VMIN1 = 1E4/VMAX
        VMAX1 = 1E4/VMIN
        DELV1 = (VMAX1-VMIN1)/FLOAT(NPOINT-1)
 
-c       print*,'FKDIST_WAVEC: (VMIN1,VMAX1,DELV1)=',VMIN1,
-c     1  VMAX1,DELV1
+       print*,'FKDIST_WAVEC: (VMIN1,VMAX1,DELV1)=',VMIN1,
+     1  VMAX1,DELV1
 
        DO I=1,NPOINT
         V1 = VMIN1+(I-1)*DELV1
@@ -149,6 +149,9 @@ C=======================================================================
           ENDIF
         ENDIF
         YMAX = MAX(YMAX,YY(I))
+c	IF(YY(I)-1.ne.YY(I))THEN
+c	  YMAX = MAX(YMAX,YY(I))
+c	ENDIF
 304   CONTINUE
 
       SUMK = 0.0
@@ -157,7 +160,8 @@ C=======================================================================
       ENDDO
       KMIN = FLOOR(YMIN)
       KMAX = CEILING(YMAX)
-      print*,KMIN,KMAX,YMIN,YMAX
+      print*,'FKDIST_WAVEC (KMIN, KMAX):',KMIN,KMAX
+      print*,'FKDIST_WAVEC (YMIN, YMAX):',YMIN,YMAX
       IF(YMIN.EQ.YMAX)THEN
         DO I=1,NG
           IF(KMIN.EQ.XMINK)THEN
@@ -236,18 +240,18 @@ C      Integral(ORD.DG) = Sum(K_G.DEL_G)
 
 CCCC Debugging
 c      open(12,file='calc_kdist_wavex.dat',status='unknown')
-c       write(12,*)npoint
-c       do i=1,npoint
-c	write(12,*)x(i),output(i)
-c       enddo
-c       write(12,*)nkint
-c       do i=1,nkint
-c	write(12,*)f(i),g(i),ord(i)
-c       enddo
-c       write(12,*)ng
-c       do i=1,ng
-c	write(12,*)g_ord(i),k_g(i)
-c       enddo
+c      write(12,*)npoint
+c      do i=1,npoint
+c      write(12,*)x(i),output(i)
+c      enddo
+c      write(12,*)nkint
+c      do i=1,nkint
+c      write(12,*)f(i),g(i),ord(i)
+c      enddo
+c      write(12,*)ng
+c      do i=1,ng
+c      write(12,*)g_ord(i),k_g(i)
+c      enddo
 c      close(12)
 CCCC End debugging
 

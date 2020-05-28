@@ -288,9 +288,9 @@ C to 6.
 cc      WRITE(*,*)'LBL_FKNEW.f :: NPOINT = ',NPOINT
 
       IF(FPOINT.GE.FLOAT(MPOINT))THEN
-cc        WRITE(*,*)'LBL_FKNEW.f :: *WARNING* NPOINT > MPOINT'
-cc        WRITE(*,*)'NPOINT, MPOINT = ',NPOINT,MPOINT
-cc        WRITE(*,*)'Setting NPOINT equal to MPOINT.'
+	WRITE(*,*)'LBL_FKNEW.f :: *WARNING* NPOINT > MPOINT'
+	WRITE(*,*)'NPOINT, MPOINT = ',NPOINT,MPOINT
+	WRITE(*,*)'Setting NPOINT equal to MPOINT.'
         NPOINT = MPOINT - 1
       ELSE
         NPOINT=INT(FPOINT)
@@ -304,6 +304,9 @@ cc        WRITE(*,*)'Setting NPOINT equal to 3.'
 
       DELV = (VEND - VSTART)/NPOINT
       NPOINT = NPOINT + 1
+      
+      
+      print*,'LBL_FKNEW: DELV, NPOINT: ',delv,npoint
 
 C Initialising pointers and bins
       WING = VBIN(2) - VBIN(1)

@@ -1,4 +1,4 @@
-      real function rayleighv(v,P,T)
+      real function rayleighv_ignatiev(v,P,T)
 C     **************************************************************
 C     Function to evaluate the Rayleigh scattering cross section for
 C     CO2 air using data from Ignatiev et al. (1997)
@@ -25,8 +25,8 @@ C     **************************************************************
       lambda2 = lambda**2
       lambda4 = lambda2**2		
             
-      x = A1*nu1/(C1-1.0/lambda2)^2
-      x = x + A2*nu2/(C2-1.0/lambda2)^2
+      x = A1*nu1/(C1-1.0/lambda2)**2
+      x = x + A2*nu2/(C2-1.0/lambda2)**2
       
       rayleighv = kboltz*x/(10*lambda4)
 

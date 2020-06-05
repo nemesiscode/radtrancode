@@ -46,6 +46,7 @@ F_SOURCES = \
 	raman_wallace_srom.f \
 	calc_raman.f \
 	rayleighv.f \
+	rayleighv_ignatiev.f \
 	read_hg.f \
 	read_xsc.f \
 	readphlay.f \
@@ -83,7 +84,7 @@ lib $(LIBRARY): $(LIBCODE)
 
 $(LIBRARY)(%.o): %.f $(INCLUDES)
 	$(FC) $(FCFLAGS) -c $<
-	ar rv $(LIBRARY) $*.o
+	ar rvU $(LIBRARY) $*.o
 	ranlib $(LIBRARY)
 	-rm $*.o
 

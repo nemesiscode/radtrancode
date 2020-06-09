@@ -85,6 +85,13 @@ C         bins, paths, etc.)
         PARAMETER(MFWHM=1000)
         LOGICAL         FWHMEXIST,FEXIST
         REAL            VFWHM(MFWHM),XFWHM(MFWHM)
+c	** file containing an instrument function **
+        integer		minst
+        parameter(minst=1000)
+        character*100   instfile
+        logical         FINSTEXIST
+        integer		ninst
+        real		vinst(minst),finst(minst)
 
 
         common/scatd/mu1, wt1, galb
@@ -134,6 +141,24 @@ C       If such a file exists then read in the data
           ENDDO
          CLOSE(13)
         ENDIF
+
+c  **   See if file is present containing an instrument function **
+c	  only used if .sha option=5
+        call file(opfile,instfile,'fin')
+        inquire(file=instfile,exist=FINSTEXIST)
+c       if such a file exists then read in the data
+        if(FINSTEXIST)then
+          print*,'reading instrument function from : ',instfile
+          open(13,file=instfile,status='old')
+          read(13,*)ninst
+          if (ninst.gt.minst) then
+            pause 'ERROR: lblrtf_wave: ninst .gt. minst'
+          endif
+          do i=1,ninst
+            read(13,*)vinst(i),finst(i)
+          enddo
+          close(13)
+        endif
 
 C-----------------------------------------------------------------------
 C
@@ -374,7 +399,8 @@ C        write(37,*),vv,output(1)
         IF(IFLAG.EQ.1)THEN
 
            CALL lblconv(opfile,fwhm,ishape,npath,ispace,vv,delv,yp,
-     1      nconv,dble(vconv),yout,ynor,FWHMEXIST,NFWHM,VFWHM,XFWHM)
+     1      nconv,dble(vconv),yout,ynor,FWHMEXIST,NFWHM,VFWHM,XFWHM,
+     2      FINSTEXIST,minst,ninst,vinst,finst)
 
         ENDIF
 

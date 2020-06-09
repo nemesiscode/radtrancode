@@ -11,7 +11,8 @@ C-----------------------------------------------------------------------
 
 	SUBROUTINE lblconv(runname,fwhm, ishape, npath, ispace, 
      1     vwave, delv, y, nconv, vconv,yout,ynor,FWHMEXIST,NFWHM,
-     2     VFWHM,XFWHM)
+     2     VFWHM,XFWHM,
+     3     FINSTEXIST,minst,ninst,vinst,finst)
 
 	IMPLICIT NONE
 
@@ -35,12 +36,84 @@ C       bins, paths, etc.)
 	REAL		ytmp(maxout)
 	REAL		f1,f2,XOFF,HAMMING,NFW,HANNING
 	CHARACTER*100	runname
+c  ** instrument function (should be defined if ishape=5) **
+      integer	minst
+      logical     FINSTEXIST
+      integer	ninst
+      real		vinst(minst),finst(minst)
 
 C        print*,'LBLCONV --> FWHM = ',FWHM
 
 
+	  IF((ishape.eq.5).and.FINSTEXIST)then
+c  **     apply an instrument function read from .fin file in 
+c  **	    lblrtf_wave.f. If a .fin file doesn't exist then ignore
+c  **	    this block and move to next option
 
-        IF(fwhm.gt.0.0)THEN
+C        vwave, delv are in wavenumbers
+
+         vwave1=vwave-delv
+
+         delx=delv
+         if(ispace.eq.1)then
+          delx=1e4*sngl(delv/(vwave*vwave))
+         endif
+
+         DO J=1,NCONV
+
+C         Find limits of instrument function in wavenumbers
+          V1=VCONV(J)+vinst(1)
+          V2=VCONV(J)+vinst(ninst)
+          VCEN=VCONV(J)
+
+c	    convert to wavelength if ispace=1
+          IF(ISPACE.EQ.1)THEN
+            VT=V1
+            V1=1e4/V2
+            V2=1e4/VT
+          ENDIF
+
+          F1=0.0
+          F2=0.0
+          IF(VWAVE.GE.V1.AND.VWAVE.LE.V2)THEN
+            IF(ISPACE.EQ.0)THEN
+              xoff = SNGL(VWAVE-VCEN)
+            ELSE
+              xoff = 1E4/SNGL(VWAVE-VCEN)
+            ENDIF
+            call verint(vinst,finst,ninst,F2,xoff)
+          ENDIF
+          IF(VWAVE1.GE.V1.AND.VWAVE1.LE.V2)THEN
+            IF(ISPACE.EQ.0)THEN
+              xoff = SNGL(VWAVE1-VCEN)
+            ELSE
+              xoff = 1E4/SNGL(VWAVE1-VCEN)
+            ENDIF
+            call verint(vinst,finst,ninst,F1,xoff)
+          ENDIF
+          IF(F2.LT.0.0)THEN
+            PRINT*,'F2 gone slightly negative. Fixing at 0.',F2
+            F2=0.0
+          ENDIF
+          IF(F1.LT.0.0)THEN
+            PRINT*,'F1 gone slightly negative. Fixing at 0.',F1
+            F1=0.0
+          ENDIF
+
+          IF(F1.GT.0.0.OR.F2.GT.0.0)THEN 
+C           print*,J,V1,VWAVE1,VWAVE,V2,F1,F2
+           DO I=1,NPATH
+C            print*,I,Y(I,1),Y(I,2),0.5*(F1*Y(I,1)+F2*Y(I,2))*DELX
+C            print*,0.5*(F1+F2)*DELX
+            YOUT(I,J)=YOUT(I,J)+0.5*(F1*Y(I,1)+F2*Y(I,2))*DELX
+            YNOR(I,J)=YNOR(I,J)+0.5*(F1+F2)*DELX
+C            print*,J,YOUT(I,J),YNOR(I,J)
+           ENDDO
+          ENDIF
+         ENDDO
+
+        
+        ELSEIF(fwhm.gt.0.0)THEN
 
 C         print*,vwave,delv,fwhm,npath
 C         print*,runname

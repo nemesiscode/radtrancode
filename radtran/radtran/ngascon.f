@@ -62,7 +62,7 @@ C
         REAL INTERP_C2H6_XSECTIONS, INTERP_H2O_XSECTIONS
         REAL INTERP_PH3_XSECTIONS, INTERP_C4H2_XSECTIONS
         REAL INTERP_CH4_XSECTIONS, INTERP_CO_XSECTIONS
-        REAL INTERP_GEH4_XSECTIONS
+        REAL INTERP_GEH4_XSECTIONS, INTERP_C3H8_XSECTIONS
 
 C        REAL INTERPBASS1
         REAL NH3CONT
@@ -279,6 +279,10 @@ C           GEH4 - Radtran id 33, bit = 128
 C           H2O - Radtran id 1, bit = 256
             elseif ((id.eq.1).and.(IAND(256, iuvscat).eq.256)) then 
              ABSORB = ABSORB + AMOUNT*INTERP_H2O_XSECTIONS(FF,TEMP)
+
+C           C3H8 - Radtran id 34, bit = 512
+            elseif ((id.eq.34).and.(IAND(512, iuvscat).eq.512)) then 
+             ABSORB = ABSORB + AMOUNT*INTERP_C3H8_XSECTIONS(FF,TEMP)
              
             endif 
 

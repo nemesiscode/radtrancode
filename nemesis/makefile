@@ -104,7 +104,8 @@ F_SOURCES = \
 	splang.f \
 	splangint.f \
 	interpvivien.f \
-	modifych4kark.f
+	modifych4kark.f \
+	modifych4irwin.f
 
 INCDIR = ../../radtran/includes
 INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/lincom.f $(INCDIR)/pathcom.f \
@@ -127,17 +128,17 @@ clean:
 touch:
 	touch $(F_SOURCES)
 
-
 lib $(LIBRARY): $(LIBCODE)
 
 $(LIBRARY)(%.o): %.f $(INCLUDES)
 	$(FC) $(FCFLAGS) -c $<
-	ar rv $(LIBRARY) $*.o
+	ar rvU $(LIBRARY) $*.o       
 	ranlib $(LIBRARY)
 	-rm $*.o
 
 
 bin :   \
+	NemesisX \
 	Nemesis \
 	NemesisL \
 	NemesisMC \
@@ -152,6 +153,12 @@ bin :   \
 	Testack \
 	Calc_chisq \
 	Testbrown
+
+NemesisX: nemesis.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/NemesisX nemesis.f $(LIBRARY) \
+	$(LIB)/cirsradg.a $(LIB)/cirsrad.a $(LIB)/radtran.a \
+	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a \
+	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) 
 
 Nemesis: nemesis.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Nemesis nemesis.f $(LIBRARY) \

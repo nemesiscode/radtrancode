@@ -2199,6 +2199,29 @@ C            Read in slope parameters xdeep, xstrat,RH
 
              nx = nx+1
 
+           elseif(varident(ivar,3).eq.39)then
+C          ***** irwin neptune methane profile  ********
+C            Read in deep ch4 vmr
+             ix = nx+1
+             read(27,*)xfac,err
+             if(xfac.gt.0.0)then
+               x0(ix)=alog(xfac)
+               lx(ix)=1
+             else
+               print*,'Error in readpriori - xfac must be > 0'
+               stop
+             endif
+             err = err/xfac
+             sx(ix,ix) = err**2
+
+C            Read in parameters xstrat,RH
+             read(27,*)xc2,xrh
+
+             varparam(ivar,1)=xc2
+             varparam(ivar,2)=xrh
+
+             nx = nx+1
+
            else         
             print*,'vartype profile parametrisation not recognised'
             stop

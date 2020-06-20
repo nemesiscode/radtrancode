@@ -3406,6 +3406,22 @@ C        ***************************************************************
           XMAP(NXTEMP+1,IPAR,J)=X1(J)*xch4newgrad(J)
          ENDDO
 
+        ELSEIF(VARIDENT(IVAR,3).EQ.39)THEN
+C        Model 39. Irwin CH4 model
+C        ***************************************************************
+         XC1=VARPARAM(IVAR,1)
+         RH=VARPARAM(IVAR,2)
+
+         XC1 = EXP(XN(NXTEMP+1))
+         
+         CALL modifych4irwin(npro,P,T,xc1,xc2,RH,
+     1    xch4new,xch4newgrad)
+        
+         DO J=1,NPRO
+          X1(J)=xch4new(J)
+          XMAP(NXTEMP+1,IPAR,J)=X1(J)*xch4newgrad(J)
+         ENDDO
+
         ELSE
 
          PRINT*,'Subprofretg: Model parametrisation code is not defined'

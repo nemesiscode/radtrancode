@@ -1,5 +1,26 @@
       subroutine modifych4kark(npro,patm,temp,ch4tropvmr,ch4stratvmr,
      1  RH,slope,xnew,xnewgrad)
+C     ************************************************************************************
+C     Subroutine to reproduce the Neptune CH4 parameterisation of Karkoschka and Tomasko (2011)
+C 
+C     Input variables:
+C	npro		integer	Number of levels in profile
+C	patm(npro)	REAL	Pressure of atmosphere (atm)
+C	temp(npro)	REAL	Pressure of atmosphere (atm)
+C	ch4tropvmr	REAL	Required limiting tropospheric VMR
+C	ch4stratvmr	REAL	Required limiting stratospheric VMR
+C	RH		REAL	Required limiting relative humidity (fraction, i.e., in range 0 to 1)
+C	slope		REAL	Required slope of tropospheric CH4 (0.01*d_pbar/d_ch4)
+C
+C     Output variables
+C	xnew(npro)	REAL	Output CH4 VMR profile
+C	xnewgrad(npro)	REAL	Rate of change of CH4 VMRs with required slope parameter, slope.
+C
+C     Pat Irwin
+C	20/6/20
+C
+C     ************************************************************************************
+
       IMPLICIT NONE
       INCLUDE '../radtran/includes/arrdef.f'
       INTEGER npro,I,J,K,J3

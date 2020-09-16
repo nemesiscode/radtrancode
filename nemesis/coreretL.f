@@ -309,7 +309,7 @@ c      if reading absorption coefficient from look-up tables
      2    jxscx,jtanx,jprex,jradx,jloggx,jfracx,RADIUS,nxx,xnx)
         
          iscat1=1
-         CALL forwardnogL(runname,ispace,iscat1,fwhm,ngeom,nav,
+         CALL forwardnogL(runname,ispace,fwhm,ngeom,nav,
      1    wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2    lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,
      3    jprex,occult,ionpeel,nxx,xnx,ny,ynx,kkx)
@@ -422,7 +422,7 @@ C        enddo
 
         print*,'Now calling forwardnogL'
         iscat1=1
-        CALL forwardnogL(runname,ispace,iscat1,fwhm,ngeom,nav,
+        CALL forwardnogL(runname,ispace,fwhm,ngeom,nav,
      1    wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2    nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,occult,
      3    ionpeel,nx,xn,ny,yn,kk)
@@ -636,7 +636,7 @@ C       temporary kernel matrix kk1. Does it improve the fit?
      2       jxsc,jtan,jpre,jrad,jlogg,jfrac,RADIUS,nx,xn1)
 
           iscat1=1
-          CALL forwardnogL(runname,ispace,iscat1,fwhm,ngeom,nav,
+          CALL forwardnogL(runname,ispace,fwhm,ngeom,nav,
      1       wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2       lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
      3       occult,ionpeel,nx,xn1,ny,yn1,kk1)

@@ -65,7 +65,7 @@ C Continuum variables ...
 C******************************** CODE *********************************
 
 
-      DO 16 I=1,NGAS
+      DO 15 I=1,NGAS
 C     Check isotopes included in model for each gas and set mass for doppler
 C     width calculation
        XMASS = GETMASS(IDGAS(I),ISOGAS(I))
@@ -79,7 +79,8 @@ C       overflow)
         TCORS1(J,I)=1.E-27*TCORS1(J,I)
         TCORDW(J,I)=4.301E-7*SQRT(TEMP(J)/XMASS)
         TCORS1LC(J,I)=TCORS1(J,I)
-16    CONTINUE
+16     CONTINUE
+15    CONTINUE
       DO 17 J=1,NLAYER
         TCORS2(J)=1.439*(TEMP(J)-296.)/(296.*TEMP(J))
         TCORS2LC(J)=TCORS2(J)

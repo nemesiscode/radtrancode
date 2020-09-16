@@ -1391,7 +1391,7 @@ C               flux by the solar flux
                 if(iread.eq.999.and.iform.eq.1)then
 C                Set dist to -1 to get total power spectrum of star
                  xdist=-1.0
-                 call get_solar_wave(vwave,xdist,xsolar)
+                 call get_solar_wave(x,xdist,xsolar)
                  xfac=xfac/xsolar
                 endif
 C               If doing integrated flux from planet need a factor to stop the
@@ -2111,7 +2111,7 @@ C               flux by the solar flux
                 if(iread.eq.999.and.iform.eq.1)then
 C                Set dist to -1 to get total power spectrum of star
                  xdist=-1.0
-                 call get_solar_wave(vwave,xdist,xsolar)
+                 call get_solar_wave(x,xdist,xsolar)
                  xfac=xfac/xsolar
                 endif
 C               If doing integrated flux from planet need a factor to stop the

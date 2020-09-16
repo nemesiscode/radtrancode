@@ -91,9 +91,9 @@ C     Calculate the fit
 
 C       Here if a least squares fit must be made to points over the bin
         K=IORDP1
-        DO 125 ISIG=1,NPT
+        DO 127 ISIG=1,NPT
          SIG(ISIG)=1.
-125     CONTINUE
+127     CONTINUE
         DO 126 L=1,K
          LISTA(L)=L
 126     CONTINUE
@@ -106,20 +106,22 @@ C       here if insufficient points to fit polynomial so simply computing
 C       a NPT-1 order polynomial
         DO 121 L=1,NPT
          AA(1,L)=1.
-         DO 121 J=2,NPT
+         DO 122 J=2,NPT
           AA(J,L)=AA(J-1,L)*X1(L)
+122      CONTINUE
 121     CONTINUE
-
 
         CALL DMATINV(AA,NPT,MORD,BB)
 
         DO 123 L=1,IORDP1
          COEFF(L)=0.
 123     CONTINUE
-        DO 122 L=1,NPT
-         DO 122 J=1,NPT
+
+        DO 124 L=1,NPT
+         DO 125 J=1,NPT
           COEFF(L)=COEFF(L)+SNGL(BB(J,L))*Y(IMIN-1+J)
-122     CONTINUE
+125      CONTINUE
+124     CONTINUE
 
       END IF
 

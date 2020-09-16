@@ -265,7 +265,7 @@ C  ..........................................................................
 	  KUDEL = 0.5 * KU * ABS(PAR(2)) / SQRT(T)
 	  Y 	= ABS(PAR(3)) * (P/P0) * SQRT(T0)/T
 
-	  D1    = SNGL(VOIGTF_EKS(0.,Y))
+	  D1    = SNGL(VOIGTF_EKS(DBLE(0.),DBLE(Y)))
 	  B1    = D1/(1.0 + KUDEL*D1)
 	  C1    = 0.01*B1
 
@@ -280,9 +280,9 @@ C  ..........................................................................
 
 	  DO 20 I=0,NPTS
 	    X 	= FLOAT(I) * DELX
-	    VT 	= SNGL(VOIGTF_EKS(X,Y))
+	    VT 	= SNGL(VOIGTF_EKS(DBLE(X),DBLE(Y)))
 	    X2 	= FLOAT(NPTS) * DELX + FLOAT(I+1) * DELX2
-	    VT2 = SNGL(VOIGTF_EKS(X2,Y))
+	    VT2 = SNGL(VOIGTF_EKS(DBLE(X2),DBLE(Y)))
 	    TAU = TAU  + WT(I) * VT  / (1.0 + KUDEL * VT)
 	    TAU2= TAU2 + WT(I) * VT2 / (1.0 + KUDEL * VT2)
 20	  CONTINUE
@@ -495,7 +495,7 @@ C  See the notes above for IMOD=2 for full details of the numerical integration.
 	  KUDEL = 0.5 * KU * ABS(PAR(2)) / SQRT(T)
 	  Y	= ABS(PAR(3)) * (P/P0) * SQRT(T0)/T
 
-	  D1    = SNGL(VOIGTF_EKS(0.,Y))
+	  D1    = SNGL(VOIGTF_EKS(DBLE(0.),DBLE(Y)))
 	  B1    = D1/(1.0 + KUDEL*D1)
 	  C1    = 0.01*B1
 
@@ -509,9 +509,9 @@ C  See the notes above for IMOD=2 for full details of the numerical integration.
 
 	  DO 21 I=0,NPTS
 	    X	= FLOAT(I) * DELX
-	    VT	= SNGL(VOIGTF_EKS(X,Y))
+	    VT	= SNGL(VOIGTF_EKS(DBLE(X),DBLE(Y)))
 	    X2	= FLOAT(NPTS)*DELX + FLOAT(I+1)*DELX2
-	    VT2	= SNGL(VOIGTF_EKS(X2,Y))
+	    VT2	= SNGL(VOIGTF_EKS(DBLE(X2),DBLE(Y)))
 	    TAU	= TAU  + WT(I) * VT  / (1.0 + KUDEL * VT)
 	    TAU2= TAU2 + WT(I) * VT2 / (1.0 + KUDEL * VT2)
 21	  CONTINUE
@@ -579,7 +579,7 @@ C  See the notes above for IMOD=2 for full details of the numerical integration.
 	  P3	= C + (1.0-C) / ABS(PAR(4))
 	  Y	= (P/P0) * (SQRT(T0)/T) * ABS(PAR(3)) * P3
 
-	  D1    = SNGL(VOIGTF_EKS(0.,Y))
+	  D1    = SNGL(VOIGTF_EKS(DBLE(0.),DBLE(Y)))
 	  B1    = D1/(1.0 + KUDEL*D1)
 	  C1    = 0.01*B1
 
@@ -593,9 +593,9 @@ C  See the notes above for IMOD=2 for full details of the numerical integration.
 
 	  DO 420 I=0,NPTS
 	    X 	= FLOAT(I) * DELX
-	    VT 	= SNGL(VOIGTF_EKS(X,Y))
+	    VT 	= SNGL(VOIGTF_EKS(DBLE(X),DBLE(Y)))
 	    X2 	= FLOAT(NPTS) * DELX + FLOAT(I+1) * DELX2
-	    VT2 = SNGL(VOIGTF_EKS(X2,Y))
+	    VT2 = SNGL(VOIGTF_EKS(DBLE(X2),DBLE(Y)))
 	    TAU = TAU + WT(I) * VT  / (1.0 + KUDEL * VT)
 	    TAU2= TAU2+ WT(I) * VT2 / (1.0 + KUDEL * VT2)
 420	  CONTINUE
@@ -639,7 +639,7 @@ C  See the notes above for IMOD=2 for full details of the numerical integration.
 	  P3	= C + (1.0-C) / ABS(PAR(5))
 	  Y	= (P/P0) * (SQRT(T0)/T) * ABS(PAR(3)) * P3
 
-	  D1    = SNGL(VOIGTF_EKS(0.,Y))
+	  D1    = SNGL(VOIGTF_EKS(DBLE(0.),DBLE(Y)))
 	  B1    = D1/(1.0 + KUDEL*D1)
 	  C1    = 0.01*B1
 
@@ -653,9 +653,9 @@ C  See the notes above for IMOD=2 for full details of the numerical integration.
 
 	  DO 421 I=0,NPTS
 	    X	= FLOAT(I) * DELX
-	    VT	= SNGL(VOIGTF_EKS(X,Y))
+	    VT	= SNGL(VOIGTF_EKS(DBLE(X),DBLE(Y)))
 	    X2	= FLOAT(NPTS) * DELX + FLOAT(I+1) * DELX2
-	    VT2	= SNGL(VOIGTF_EKS(X2,Y))
+	    VT2	= SNGL(VOIGTF_EKS(DBLE(X2),DBLE(Y)))
 	    TAU	= TAU  + WT(I) * VT  / (1.0 + KUDEL * VT)
 	    TAU2= TAU2 + WT(I) * VT2 / (1.0 + KUDEL * VT2)
 421	  CONTINUE
@@ -807,9 +807,9 @@ C  ranges as part of the same loop.
 
 	  DO 30 I=0,NPTS
 	    X 	= FLOAT(I) * DELX
-	    VT 	= SNGL(VOIGTF_EKS(X,Y))
+	    VT 	= SNGL(VOIGTF_EKS(DBLE(X),DBLE(Y)))
 	    X2 	= FLOAT(NPTS) * DELX + FLOAT(I+1) * DELX2
-	    VT2 = SNGL(VOIGTF_EKS(X2,Y))
+	    VT2 = SNGL(VOIGTF_EKS(DBLE(X2),DBLE(Y)))
 	    TAU = TAU  + WT(I) * LOG(1.0 + TERM * VT)
 	    TAU2= TAU2 + WT(I) * LOG(1.0 + TERM * VT2)
 30	  CONTINUE
@@ -885,9 +885,9 @@ C  ranges as part of the same loop.
 
 	  DO 130 I=0,NPTS
 	    X 	= FLOAT(I) * DELX
-	    VT 	= SNGL(VOIGTF_EKS(X,Y))
+	    VT 	= SNGL(VOIGTF_EKS(DBLE(X),DBLE(Y)))
 	    X2 	= FLOAT(NPTS) * DELX + FLOAT(I+1) * DELX2
-	    VT2 = SNGL(VOIGTF_EKS(X2,Y))
+	    VT2 = SNGL(VOIGTF_EKS(DBLE(X2),DBLE(Y)))
 	    TAU = TAU  + WT(I) * LOG(1.0 + TERM * VT)
 	    TAU2= TAU2 + WT(I) * LOG(1.0 + TERM * VT2)
 130	  CONTINUE
@@ -936,9 +936,9 @@ C  ranges as part of the same loop.
 
 	  DO 131 I=0,NPTS
 	    X 	= FLOAT(I) * DELX
-	    VT 	= SNGL(VOIGTF_EKS(X,Y))
+	    VT 	= SNGL(VOIGTF_EKS(DBLE(X),DBLE(Y)))
 	    X2 	= FLOAT(NPTS) * DELX + FLOAT(I+1) * DELX2
-	    VT2 = SNGL(VOIGTF_EKS(X2,Y))
+	    VT2 = SNGL(VOIGTF_EKS(DBLE(X2),DBLE(Y)))
 	    TAU = TAU  + WT(I) * LOG(1.0 + TERM * VT)
 	    TAU2= TAU2 + WT(I) * LOG(1.0 + TERM * VT2)
 131	  CONTINUE
@@ -1187,9 +1187,9 @@ C  ranges as part of the same loop.
 
 	  DO 630 I=0,NPTS
 	    X 	= FLOAT(I) * DELX
-	    VT 	= SNGL(VOIGTF_EKS(X,Y))
+	    VT 	= SNGL(VOIGTF_EKS(DBLE(X),DBLE(Y)))
 	    X2 	= FLOAT(NPTS) * DELX + FLOAT(I+1) * DELX2
-	    VT2 = SNGL(VOIGTF_EKS(X2,Y))
+	    VT2 = SNGL(VOIGTF_EKS(DBLE(X2),DBLE(Y)))
 	    TAU = TAU  + WT(I) * LOG(1.0 + TERM * VT)
 	    TAU2= TAU2 + WT(I) * LOG(1.0 + TERM * VT2)
 630	  CONTINUE

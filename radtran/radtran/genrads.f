@@ -1676,8 +1676,8 @@ C       BAND: overlapping lines, general random band models
         DO 502 LINE=FSTLIN(CURBIN),LSTLIN(CURBIN)
 C         Compute stimulated emission term
           IF(VLIN(LINE).LT.10000)THEN
-           TS1 = 1.0-DPEXP(-1.439*VLIN(LINE)/TEMP(LAYER))
-           TS2 = 1.0-DPEXP(-1.439*VLIN(LINE)/296.0)
+           TS1 = 1.0-DPEXP(SNGL(-1.439*VLIN(LINE)/TEMP(LAYER)))
+           TS2 = 1.0-DPEXP(SNGL(-1.439*VLIN(LINE)/296.0))
            TSTIM=1.0
            IF(TS2.NE.0) TSTIM = TS1/TS2
           ELSE
@@ -2037,7 +2037,7 @@ C        calculate y=alpha_L/alpha_D at path conditions
          Y=Y0*P*(17.20465053/T)*(Q + (1-Q)/SFB)
 
 C        Calculate absorption coefficient at path temperature
-         KNU=(KNU0*(296./T)**QROT)*dpexp(1.439*EL*(1/296. - 1/T))
+         KNU=(KNU0*(296./T)**QROT)*dpexp(SNGL(1.439*EL*(1/296. - 1/T)))
 
          SUMK=SUMK + KNU*Q
          SUMY=SUMY + SQRT(KNU*Y*Q)
@@ -2093,7 +2093,7 @@ C        calculate y=alpha_L/alpha_D at path conditions
          Y=Y0*P*SQRT(296.0/T)*(Q + (1-Q)/SFB)
 
 C        Calculate absorption coefficient at path temperature
-         KNU=(KNU0*(296./T)**QROT)*dpexp(1.439*EL*(1/296. - 1/T))
+         KNU=(KNU0*(296./T)**QROT)*dpexp(SNGL(1.439*EL*(1/296. - 1/T)))
 
          SUMK=SUMK + KNU*Q
          SUMY=SUMY + SQRT(KNU*Y*Q)

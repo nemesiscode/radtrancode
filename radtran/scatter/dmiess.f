@@ -137,15 +137,17 @@ C
    22 ACAP( NMX1+1 )  =  ( 0.0,0.0 )                                    
       IF ( IFLAG .EQ. 2 )   GO TO 26                                    
          DO 29   N = 1,3                                                
-   29    W( N,NMX1+1 )  =  ( 0.0,0.0 )                                  
+          W( N,NMX1+1 )  =  ( 0.0,0.0 )
+   29    ENDDO                                  
    26 CONTINUE                                                          
       DO 23   N = 1,NMX1                                                
          NN = NMX1 - N + 1                                              
          ACAP(NN) = (NN+1) * RRFX - 1.0 / ((NN+1) * RRFX + ACAP(NN+1))
          IF ( IFLAG .EQ. 2 )   GO TO 23                                 
             DO 31   M = 1,3                                             
-   31       W( M,NN ) = (NN+1) / Z(M+1)  -                              
+             W( M,NN ) = (NN+1) / Z(M+1)  -                              
      1                   1.0 / (  (NN+1) / Z(M+1)  +  W( M,NN+1 )  )    
+   31       ENDDO
    23 CONTINUE                                                          
 C                                                                       
       DO 30   J = 1,JX                                                  
@@ -434,15 +436,16 @@ C
          RETURN                                                        
   100 CONTINUE
       DO 120 J = 1,JX                                                   
-        DO 120 K = 1,2                                                    
+        DO 121 K = 1,2                                                    
          DO  115  I= 1,4                                                
          	T(I)  =  ELTRMX(I,J,K)                                         
-  115    ENDDO                                                       
+115      ENDDO                                                       
          ELTRMX(1,J,K)  =      T(3)*T(3)+T(4)*T(4) 
          ELTRMX(2,J,K)  =      T(1)*T(1)+T(2)*T(2)                                           
          ELTRMX(3,J,K)  =  T(1) * T(3)  +  T(2) * T(4)                  
          ELTRMX(4,J,K)  =  T(2) * T(3)  -  T(4) * T(1)
-  120   ENDDO                  
+121     ENDDO 
+120   ENDDO                  
                                                           
       T(1)    =    2.0 * RX**2                                          
       QEXT    =   QEXT * T(1)                                           

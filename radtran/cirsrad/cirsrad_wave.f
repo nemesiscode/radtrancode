@@ -107,7 +107,7 @@ C		Passed variables
 	INTEGER	nlayer, npath, ngas, limlay, limcont, nwave, 
      1		nlayin(npath), incdim, layinc(incdim, npath), 
      2          idgas(ngas), isogas(ngas), imod(npath),igas,
-     3 		infr,ish,irayx
+     3 		infr,infrt,ish,irayx
 
 	REAL	press(nlayer), temp(nlayer), pp(limlay,ngas), 
      1		amount(limlay,ngas), vwave(nwave), cont(limcont,nlayer), 
@@ -242,7 +242,7 @@ C       Solar reference spectrum common block
         common/interp_phase_initial/first
 
 	PARAMETER	(tsun=5900.,theta0=4.65241e-3, pi=3.141593,
-     1			error=5.e-5,LUNIS=61,infr=62) 
+     1			error=5.e-5,LUNIS=61,infr=62,infrt=63) 
 
 C-----------------------------------------------------------------------
 C
@@ -508,6 +508,13 @@ C       open output file for internal radiation field output.
          write(infr,*)(vwave(i),i=1,nwave)
          write(infr,*)(basep(i),i=1,nlayer)
          write(infr,*)(baseh(i),i=1,nlayer)
+
+         open(infrt,file='ishtop.dat',status='unknown')
+         write(infrt,*)nmu
+         write(infrt,*)nwave
+         write(infrt,*)nf
+         write(infrt,*)sol_ang
+         write(infrt,*)(vwave(i),i=1,nwave)
         endif
   
 
@@ -1717,13 +1724,15 @@ C                 upwelling radiation field to local temperature.
                   else
                     radground = esurf*planck_wave(ispace,x,tsurf)
                   endif
-                  print*,'tsurf,radgound',tsurf,radground
 
                   galb1=galb
 
                   if(galb1.lt.0)then
                          galb1 = dble(1.-esurf)
                   endif
+
+                  print*,'x,galb1 = ',x,galb1
+                  print*,'tsurf,radgound',tsurf,radground
 
                   do J=1,nmu
                     radg(J)=radground
@@ -2292,24 +2301,37 @@ C     1				output(Ipath,I)
                  write(infr,*)solar
                  write(infr,*)radground
                  write(infr,*)galb1
+                 write(infrt,*)solar
+                 write(infrt,*)radground
+                 write(infrt,*)galb1
                  do imu=1,nmu
                   do ilays=1,nlays
                    do ic=1,nf+1
                      write(infr,*)gplf(imu,ilays,ic)
+                     if(ilays.eq.1)write(infrt,*)gplf(imu,ilays,ic)
                    enddo
                    do ic=1,nf+1
                      write(infr,*)gmif(imu,ilays,ic)
+                     if(ilays.eq.1)write(infrt,*)gmif(imu,ilays,ic)
                    enddo
                    do ic=1,nf+1
                      write(infr,*)gplfb(imu,ilays,ic)
+                     if(ilays.eq.1)write(infrt,*)gplfb(imu,ilays,ic)
                    enddo
                    do ic=1,nf+1
                      write(infr,*)gmifb(imu,ilays,ic)
+                     if(ilays.eq.1)write(infrt,*)gmifb(imu,ilays,ic)
                    enddo
                    write(infr,*)gplfa(imu,ilays)
                    write(infr,*)gmifa(imu,ilays)
                    write(infr,*)gplfc(imu,ilays)
                    write(infr,*)gmifc(imu,ilays)
+                   if(ilays.eq.1)then
+                     write(infrt,*)gplfa(imu,ilays)
+                     write(infrt,*)gmifa(imu,ilays)
+                     write(infrt,*)gplfc(imu,ilays)
+                     write(infrt,*)gmifc(imu,ilays)
+                   endif
                   enddo
                  enddo
                 endif
@@ -2342,6 +2364,7 @@ C-----------------------------------------------------------------------
 
         if(ish.eq.1)then
          close(infr)
+         close(infrt)
         endif
 
 	RETURN

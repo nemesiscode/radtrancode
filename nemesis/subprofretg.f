@@ -97,13 +97,13 @@ C     ***********************************************************************
       REAL PREF(MAXLAT,MAXPRO),VMRREF(MAXLAT,MAXPRO,MAXGAS)
       REAL LATREF(MAXLAT),MOLWTREF(MAXLAT),XFSHREF
       REAL XRH,XCDEEP,P1,PS,PS1,PH,Y1,Y2,YY1,YY2,ODX
-      real plog,p1log,p2log,p2,v1log,v2log,grad
+      real plog,p1log,p2log,p2,v1log,v2log,grad,p3
       REAL XCH4,PCH4,PCUT,GETRADIUS,RPARTICLE,SHAPE
       INTEGER ICLOUD(MAXCON,MAXPRO),NCONT1,JSPEC,IFLA,I1,I2
       INTEGER NPRO,NPRO1,NVMR,JZERO,IV,IP,IVAR,JCONT,JVMR
       INTEGER IDGAS(MAXGAS),ISOGAS(MAXGAS),IPAR,JPAR,IVMR,NP
-      INTEGER IDAT,JFSH,JHYDRO,ICOND
-      REAL HTAN,PTAN,R,REFRADIUS
+      INTEGER IDAT,JFSH,JHYDRO,ICOND,JFSH1
+      REAL HTAN,PTAN,R,REFRADIUS,XCOL
       REAL GASDATA(20,5),XVMR(MAXGAS),XMOLWT,XXMOLWT(MAXPRO)
       REAL CALCMOLWT,XRHO(MAXPRO)
       INTEGER JSWITCH,ITEST,ICL
@@ -3409,18 +3409,86 @@ C        ***************************************************************
         ELSEIF(VARIDENT(IVAR,3).EQ.39)THEN
 C        Model 39. Irwin CH4 model
 C        ***************************************************************
-         XC1=VARPARAM(IVAR,1)
-         RH=VARPARAM(IVAR,2)
-
          XC1 = EXP(XN(NXTEMP+1))
+         XC2 = VARPARAM(IVAR,1)
+         RH = VARPARAM(IVAR,2)
+
          
-         CALL modifych4irwin(npro,P,T,xc1,xc2,RH,
-     1    xch4new,xch4newgrad)
+         CALL modifych4irwin(npro,P,T,xc1,xc2,RH,xch4new,xch4newgrad)
         
          DO J=1,NPRO
           X1(J)=xch4new(J)
           XMAP(NXTEMP+1,IPAR,J)=X1(J)*xch4newgrad(J)
          ENDDO
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.40)THEN
+C        Model 40. toledo haze model
+C        ***************************************************************
+         XCOL = EXP(XN(NXTEMP+1))
+         XFSH = EXP(XN(NXTEMP+2))
+         XFAC = (1.0-XFSH)/XFSH
+C        New gradient correction if fsh is held as logs
+         DXFAC = -1.0/XFSH
+
+         P1 = VARPARAM(IVAR,1)
+         P2 = VARPARAM(IVAR,2)
+         P3 = VARPARAM(IVAR,3)
+
+
+         DO I=1,NPRO
+          X1(J)=1E-36
+          X2(J)=1E-36
+         ENDDO
+
+
+         JFSH=0
+         JFSH1=0     
+
+         DO I=1,NPRO
+          IF(P(J).GT.P1)THEN
+            X1(J) = 1e-36
+          ELSE
+            IF(J.GT.1)THEN 
+              DELH=H(J)-H(J-1)
+            ELSE
+              DELH=0
+            ENDIF
+            IF(JFSH.EQ.0)THEN
+	      X1(J)=XCOL
+              JFSH=1
+            ELSE
+              IF(P(J).GT.P2)THEN
+                X1(J)=X1(J-1)*EXP(-DELH*XFAC/SCALE(J))
+                XMAP(NXTEMP+1,IPAR,J)=XMAP(NXTEMP+1,IPAR,J-1)*
+     1                  EXP(-DELH*XFAC/SCALE(J))
+                XMAP(NXTEMP+2,IPAR,J)=(-DELH/SCALE(J))*DXFAC*
+     1            X1(J-1)*EXP(-DELH*XFAC/SCALE(J)) +
+     2            XMAP(NXTEMP+2,IPAR,J-1)*EXP(-DELH*XFAC/SCALE(J))
+              ELSE
+               IF(JFSH1.EQ.0)THEN
+                 X2(J)=X1(J-1)*EXP(-DELH*XFAC/SCALE(J))
+                 JFSH1=1
+                 XMAP(NXTEMP+1,IPAR+1,J)=XMAP(NXTEMP+1,IPAR,J-1)*
+     1                  EXP(-DELH*XFAC/SCALE(J))
+                 XMAP(NXTEMP+2,IPAR+1,J)=(-DELH/SCALE(J))*DXFAC*
+     1            X1(J-1)*EXP(-DELH*XFAC/SCALE(J)) +
+     2            XMAP(NXTEMP+2,IPAR+1,J-1)*EXP(-DELH*XFAC/SCALE(J))
+               ELSE
+                 IF(P(J).GE.P3)THEN
+                  X2(J)=X2(J-1)*EXP(-DELH*XFAC/SCALE(J))
+                  XMAP(NXTEMP+1,IPAR+1,J)=XMAP(NXTEMP+1,IPAR,J-1)*
+     1                  EXP(-DELH*XFAC/SCALE(J))
+                  XMAP(NXTEMP+2,IPAR+1,J)=(-DELH/SCALE(J))*DXFAC*
+     1             X1(J-1)*EXP(-DELH*XFAC/SCALE(J)) +
+     2             XMAP(NXTEMP+2,IPAR+1,J-1)*EXP(-DELH*XFAC/SCALE(J))
+                 ENDIF
+               ENDIF
+              ENDIF
+            ENDIF
+          ENDIF
+
+         ENDDO
+
 
         ELSE
 
@@ -4285,9 +4353,14 @@ C        **********************************************************
            DO I=1,NPRO
             CONT(JCONT,I)=X1(I)
            ENDDO
-          ELSE
            DO I=1,NPRO
             CONT(JCONT,I)=X1(I)/XRHO(I)
+           ENDDO
+          ENDIF
+          IF(VARIDENT(IVAR,3).EQ.40)THEN
+           DO I=1,NPRO
+            CONT(JCONT,I)=X1(I)
+            CONT(JCONT+1,I)=X2(I)
            ENDDO
           ENDIF
          ELSEIF(JCONT.EQ.NCONT+2)THEN

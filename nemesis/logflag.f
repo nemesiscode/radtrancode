@@ -51,6 +51,7 @@ C       Variable is not temperature  - may need to take exponent
       if(imod.eq.37)iflag=1 ! constant opacity/bar
       if(imod.eq.38)iflag=1 ! karkoschka ch4 slope
       if(imod.eq.39)iflag=1 ! irwin ch4 parameterisation
+      if(imod.eq.40)iflag=1 ! toledo haze parameterisation
       if(imod.eq.1.and.ip.eq.2)iflag=1 ! log fsh - fixed knee
       if(imod.eq.20.and.ip.eq.2)iflag=1 ! log fsh - fixed knee
       if(imod.eq.4.and.ip.eq.2)iflag=1 ! log fsh - var. knee

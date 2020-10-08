@@ -86,7 +86,7 @@ C     ****************************************************************
       real,intent(out) :: x0(mx),sx(mx,mx),varparam(mvar,mparam)
 
       real xsec(max_mode,max_wave,2),wave(max_wave)
-      real err,err1,ref1,pref(maxpro)
+      real err,err1,ref1,pref(maxpro),xcol
       real eref(maxlat,maxpro),reflat(maxlat),htan,htop,etop
       real dhsphere(maxpro,mlong),hfrac(mlong),efrac
       real delp,xfac,pknee,eknee,edeep,xdeep,xlatx,xlonx,pshld
@@ -101,7 +101,7 @@ C     SXMINFAC is minimum off-diagonal factor allowed in the
 C     a priori covariance matrix
       parameter (SXMINFAC = 0.001)
       real varparamx(mvar,mparam),xnx(mx),sxx(mx,mx),xdiff
-      integer ivar,nlevel,jsurfx
+      integer ivar,nlevel,jsurfx,icont
       integer jalbx,jtanx,jprex,jradx,jlat,ilat,nlat
       integer nprox,nvarx,varidentx(mvar,3),ioffx,ivarx
       integer npx,ioff,icond,npvar,jloggx,iplanet,jxscx,jlev
@@ -110,7 +110,7 @@ C     a priori covariance matrix
       real xwid,ewid,y,y0,lambda0,vi(mx),vtmp(mx),xt(mx)
       real r0,er0,dr,edr,vm,nm,nmshell,nimag,delv,xy,v0
       real xldeep,eldeep,xlhigh,elhigh,arg1
-      real v1,v1err,v2,v2err,p1,p1err,p2,p2err
+      real v1,v1err,v2,v2err,p1,p1err,p2,p2err,p3
       real tau0,ntemp,teff,alpha,T0,xf,exf
       real etau0,entemp,eteff,ealpha,eT0
       real csx,cserr,nimagshell,errshell,flon
@@ -2219,8 +2219,44 @@ C            Read in parameters xstrat,RH
 
              varparam(ivar,1)=xc2
              varparam(ivar,2)=xrh
-
              nx = nx+1
+
+           elseif(varident(ivar,3).eq.40)then
+C          ***** toledo photochemical haze profile  ********
+C            Read in total base specific density (particles/g)
+             ix = nx+1
+             read(27,*)xcol,err
+             if(xcol.gt.0.0)then
+               x0(ix)=alog(xcol)
+               lx(ix)=1
+             else
+               print*,'Error in readpriori - xcol must be > 0'
+               stop
+             endif
+             err = err/xcol
+             sx(ix,ix) = err**2
+
+C            Read in fractional scale height
+             ix = nx+1
+             read(27,*)xfsh,efsh
+             if(xfsh.gt.0.0)then
+               x0(ix)=alog(xfsh)
+               lx(ix)=1
+             else
+               print*,'Error in readpriori - xfsh must be > 0'
+               stop
+             endif
+             err = efsh/xfsh
+             sx(ix,ix) = err**2
+
+
+C            Read in parameters p1,p2,p3
+             read(27,*)p1,p2,p3
+
+             varparam(ivar,1)=p1
+             varparam(ivar,2)=p2
+             varparam(ivar,3)=p3
+             nx = nx+2
 
            else         
             print*,'vartype profile parametrisation not recognised'

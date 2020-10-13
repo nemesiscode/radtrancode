@@ -61,7 +61,7 @@ C     **************************************************************
         if(imod.eq.35)np = int(vpar1)
         if(imod.eq.36)np = int(vpar1)
         if(imod.eq.40)np = 2
-        if(imod.eq.40)np = 5
+        if(imod.eq.41)np = 5
       else
        print*,'npvar:  Model parameterisation not defined = ',imod
       endif

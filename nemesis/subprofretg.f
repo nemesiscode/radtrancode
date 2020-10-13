@@ -130,7 +130,7 @@ C     ***********************************************************************
       REAL XLDEEP,XLHIGH,HVS,dlogp,XPC
       COMMON /SROM223/PCUT
       REAL XC1,XC2,RH,SLOPE,xch4new(maxpro),xch4newgrad(maxpro)
-
+      REAL PD,RHC,RHM,VX,PT
       CALL RESERVEGAS
 
 C----------------------------------------------------------------------------
@@ -3487,6 +3487,27 @@ C        New gradient correction if fsh is held as logs
             ENDIF
           ENDIF
 
+         ENDDO
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.41)THEN
+C        Model 41. Sromovsky descended CH4 model
+C        ***************************************************************
+         XC1 = EXP(XN(NXTEMP+1))
+         PD = EXP(XN(NXTEMP+2))
+         RHC = EXP(XN(NXTEMP+3))
+         RHM = EXP(XN(NXTEMP+4))
+         VX = EXP(XN(NXTEMP+5))
+      
+         XC2 = VARPARAM(IVAR,1)
+         PT = VARPARAM(IVAR,2)
+         
+         CALL modifych4sromovsky(npro,P,T,xc1,xc2,PD,PT,RHC,RHM,VX,
+     1    xch4new)
+        
+         DO J=1,NPRO
+          X1(J)=xch4new(J)
+C         Calculating gradients from the Sromovsky model is too hard so set to zero
+          XMAP(NXTEMP+1,IPAR,J)=0.0
          ENDDO
 
 

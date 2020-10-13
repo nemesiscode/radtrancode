@@ -2258,6 +2258,82 @@ C            Read in parameters p1,p2,p3
              varparam(ivar,3)=p3
              nx = nx+2
 
+           elseif(varident(ivar,3).eq.41)then
+C          ***** sromovsky descended methane profile  ********
+C            Read in deep ch4 vmr
+             ix = nx+1
+             read(27,*)xfac,err
+             if(xfac.gt.0.0)then
+               x0(ix)=alog(xfac)
+               lx(ix)=1
+             else
+               print*,'Error in readpriori:41:1 - xfac must be > 0'
+               stop
+             endif
+             err = err/xfac
+             sx(ix,ix) = err**2
+
+C            read in deep pressure
+             ix=ix+1
+             read(27,*)p1,err
+             if(p1.gt.0.0)then
+               x0(ix)=alog(p1)
+               lx(ix)=1
+             else
+               print*,'Error in readpriori:41:2 - p1 must be > 0'
+               stop
+             endif
+             err = err/p1
+             sx(ix,ix) = err**2
+
+C            read in cloud top RH (0-1)
+             ix=ix+1
+             read(27,*)p1,err
+             if(p1.gt.0.0)then
+               x0(ix)=alog(p1)
+               lx(ix)=1
+             else
+               print*,'Error in readpriori:41:3 - rhc must be > 0'
+               stop
+             endif
+             err = err/p1  
+             sx(ix,ix) = err**2
+
+C            read in tropopause RH (0-1)
+             ix=ix+1
+             read(27,*)p1,err
+             if(p1.gt.0.0)then
+               x0(ix)=alog(p1)
+               lx(ix)=1
+             else
+               print*,'Error in readpriori:41:4 - rhm must be > 0'
+               stop
+             endif
+             err = err/p1  
+             sx(ix,ix) = err**2
+
+C            read in descended vx parameter
+             ix=ix+1
+             read(27,*)p1,err
+             if(p1.gt.0.0)then
+               x0(ix)=alog(p1)
+               lx(ix)=1
+             else
+               print*,'Error in readpriori:41:5 -vx must be > 0'
+               stop
+             endif
+             err = err/p1  
+             sx(ix,ix) = err**2
+
+        
+C            Read in parameters: xstrat and tropopause pressure
+             read(27,*)xc2,xrh
+
+             varparam(ivar,1)=xc2
+             varparam(ivar,2)=xrh
+
+             nx = nx+5
+
            else         
             print*,'vartype profile parametrisation not recognised'
             stop

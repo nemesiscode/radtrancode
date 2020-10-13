@@ -105,7 +105,8 @@ F_SOURCES = \
 	splangint.f \
 	interpvivien.f \
 	modifych4kark.f \
-	modifych4irwin.f
+	modifych4irwin.f \
+	modifych4sromovsky.f
 
 INCDIR = ../../radtran/includes
 INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/lincom.f $(INCDIR)/pathcom.f \
@@ -152,7 +153,8 @@ bin :   \
 	Convertitertomre \
 	Testack \
 	Calc_chisq \
-	Testbrown
+	Testbrown \
+	Testsrom
 
 NemesisX: nemesis.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/NemesisX nemesis.f $(LIBRARY) \
@@ -254,5 +256,9 @@ Calc_chisq: calc_chisq.f $(LIBRARY)
 Testbrown: testbrown.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Testbrown testbrown.f \
 	$(LIBRARY) $(LIB)/rtm_util.a $(FRECIPES)
+
+Testsrom: testsrom.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Testsrom testsrom.f \
+	$(LIBRARY) $(LIB)/path.a $(LIB)/rtm_util.a $(FRECIPES)
 
 

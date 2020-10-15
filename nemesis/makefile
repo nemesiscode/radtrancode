@@ -95,6 +95,7 @@ F_SOURCES = \
 	getradius.f \
 	getcloud21.f \
 	ackermanmarley.f \
+	ackermanmarleyx.f \
 	calc_input_files.f \
 	tbrownrc.f \
 	extractcb.f \
@@ -246,7 +247,7 @@ Convertitertomre: convertitertomre.f $(LIBRARY)
 
 Testack: testack.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Testack testack.f \
-	$(LIBRARY) $(LIB)/path.a $(LIB)/radtran.a $(LIB)/rtm_util.a \
+	$(LIBRARY) $(LIB)/path.a $(LIB)/radtran.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
 	$(FRECIPES)
 
 Calc_chisq: calc_chisq.f $(LIBRARY)

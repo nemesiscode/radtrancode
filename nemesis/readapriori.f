@@ -2333,6 +2333,41 @@ C            Read in parameters: xstrat and tropopause pressure
              varparam(ivar,2)=xrh
 
              nx = nx+5
+           elseif(varident(ivar,3).eq.42)then
+C          ***** Ackerman and Marley vmr/cloud model  ********
+C            Read in upwards flux
+             ix = nx+1
+             read(27,*)xfac,err
+             if(xfac.gt.0.0)then
+               x0(ix)=alog(xfac)
+               lx(ix)=1
+             else
+               print*,'Error in readpriori:42:1 - xfac must be > 0'
+               stop
+             endif
+             err = err/xfac
+             sx(ix,ix) = err**2
+
+C            read in f_rain
+             ix=ix+1
+             read(27,*)p1,err
+             if(p1.gt.0.0)then
+               x0(ix)=alog(p1)
+               lx(ix)=1
+             else
+               print*,'Error in readpriori:42:2 - p1 must be > 0'
+               stop
+             endif
+             err = err/p1
+             sx(ix,ix) = err**2
+
+C            Read in parameters: Imodel and Jcont
+             read(27,*)xc2,xrh
+
+             varparam(ivar,1)=xc2
+             varparam(ivar,2)=xrh
+
+             nx = nx+2
 
            else         
             print*,'vartype profile parametrisation not recognised'

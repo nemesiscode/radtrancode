@@ -52,7 +52,7 @@ C     First skip header
       ELSE
         READ(1,*)IPLANET,LATITUDE,NPRO,NVMR
       ENDIF
-      print*,IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+C      print*,IPLANET,LATITUDE,NPRO,NVMR,MOLWT
 
       IF(NPRO.GT.MAXPRO)THEN
           PRINT*,'Error in subprofretg. NPRO>MAXPRO ',NPRO,MAXPRO
@@ -170,6 +170,8 @@ C     First skip header
       NCONT=0
 
       DO 101 IVMR=1,NVMR
+       PRINT*,'IVMR, IDGAS(IVMR) = ',IVMR, IDGAS(IVMR)
+
        DO 99 JGAS=1,NGAS
         IF(GASDATA(JGAS,1).EQ.IDGAS(IVMR))THEN
 C        Constituent may condense. May need to modify mole fraction and cloud
@@ -182,7 +184,13 @@ C        Constituent may condense. May need to modify mole fraction and cloud
          QV(1)=VMR(1,IVMR)
          QC(1)=0.
          QT(1)=QV(1)
-         ICONDENSE=0
+         ICONDENSE=-1
+
+         IF(IMODEL.EQ.0)THEN
+           PRINT*,'J, QT(J), QV(J), QC(J)'
+         ELSE
+           PRINT*,'J, QT(J), QV(J), QC(J), DELQT'
+         ENDIF
 
          DO 97 J=2,NPRO
 C         Calculate saturated vapour mole fraction

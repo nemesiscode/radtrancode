@@ -130,7 +130,7 @@ C     ***********************************************************************
       REAL XLDEEP,XLHIGH,HVS,dlogp,XPC
       COMMON /SROM223/PCUT
       REAL XC1,XC2,RH,SLOPE,xch4new(maxpro),xch4newgrad(maxpro)
-      REAL PD,RHC,RHM,VX,PT
+      REAL PD,RHC,RHM,VX,PT,FLUX,FRAIN,IMODEL
       CALL RESERVEGAS
 
 C----------------------------------------------------------------------------
@@ -3507,6 +3507,29 @@ C        ***************************************************************
          DO J=1,NPRO
           X1(J)=xch4new(J)
 C         Calculating gradients from the Sromovsky model is too hard so set to zero
+          XMAP(NXTEMP+1,IPAR,J)=0.0
+         ENDDO
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.42)THEN
+C        Model 42. Ackerman and Marley model
+C        ***************************************************************
+         FLUX = EXP(XN(NXTEMP+1))
+         FRAIN = EXP(XN(NXTEMP+2))
+      
+         IMODEL = INT(VARPARAM(IVAR,1))
+         JSPEC = INT(VARPARAM(IVAR,2))
+         
+         do i=1,nvmr
+           
+         enddo
+            
+         CALL ackermanmarleyx(IPLANET,LATITUDE,AMFORM,NPRO,NVMR,
+     1    P,T,H,VMR,NCONT,CONT,FLUX,IMODEL,FRAIN,JVMR,X1,X2)
+        
+         DO J=1,NPRO
+          X1(J)=xch4new(J)
+C         Calculating gradients from the Ackerman and Marley  model is too 
+C         hard so set to zero
           XMAP(NXTEMP+1,IPAR,J)=0.0
          ENDDO
 

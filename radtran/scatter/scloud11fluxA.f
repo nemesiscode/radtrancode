@@ -49,8 +49,8 @@ C       lfrac(MAXCON,MAXSCATLAY) real*4 Fraction of scattering contributed by ea
 C                                  type in each layer
 C
 C	Output variables
-C       uplf(maxmu,MAXSCATLAY,MAXF) real      Internal radiances (downwards)
-C       umif(maxmu,MAXSCATLAY,MAXF) real      Internal radiances (upwards)
+C       uplf(maxmu,MAXSCATLAY,MAXF) real      Internal radiances (downwards) at bottom of each layer
+C       umif(maxmu,MAXSCATLAY,MAXF) real      Internal radiances (upwards) at top of each layer
 C
 C	New History
 C
@@ -669,7 +669,7 @@ C       print*,'U0MI,UTPL : '
 C       write(6,102)U0MI(1,1,1),UTPL(1,1,LT1)
 
       DO 302 IMU = 1, NMU
-C       Reverse the order the zenith angles in the final arrays
+C       Reverse the order of the zenith angles in the final arrays
 C       again such that they go from small to large mu as listed in the 
 C       <runname>.sca files
         JMU  = NMU+1-IMU

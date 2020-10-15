@@ -51,7 +51,9 @@
 #       29jan16 NAT PH3 updated based on fit to CRC94 online data for T<300K
 #	15oct20 PGJI	CH4 parameters seem incorrect. Updated to following, consistent
 #			with PRAXIS book, CRC data and Dortmund Data Bank for methane
-#			sublimation curve
+#			sublimation curve.
+#                       (previously 1.050377e+01 -1.116966e+03 -4.633456e-03 0.0)
+#			New data is:
 #			10.6944  -1163.83  0.0  0.0     
 #
 ########################################################################

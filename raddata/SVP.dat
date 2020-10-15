@@ -49,12 +49,16 @@
 #	01oct14 PGJI	Added C2H5CN
 #       07dec14 PGJI	Corrected C2H5CN
 #       29jan16 NAT PH3 updated based on fit to CRC94 online data for T<300K
-#     
+#	15oct20 PGJI	CH4 parameters seem incorrect. Updated to following, consistent
+#			with PRAXIS book, CRC data and Dortmund Data Bank for methane
+#			sublimation curve
+#			10.6944  -1163.83  0.0  0.0     
+#
 ########################################################################
 18
 1    15.278   -5980.3   8.8294E-3  -1.2169E-5
 2    2.524826e+01     -3.882969e+03     -2.722391e-02      0.000000e+00
-6    1.050377e+01     -1.116966e+03     -4.633456e-03      0.000000e+00
+6    1.069440e+01     -1.163830e+03      0.000000e+00      0.000000e+00
 11   23.224   -4245.8  -2.2775E-2   0.0000E+0
 28   1.144684e+01     -1.974438e+03     -4.358464e-03      0.000000e+00
 33   15.850   -2108.6  -4.0205E-2   8.8775E-5

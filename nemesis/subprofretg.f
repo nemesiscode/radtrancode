@@ -106,6 +106,7 @@ C     ***********************************************************************
       REAL HTAN,PTAN,R,REFRADIUS,XCOL
       REAL GASDATA(20,5),XVMR(MAXGAS),XMOLWT,XXMOLWT(MAXPRO)
       REAL CALCMOLWT,XRHO(MAXPRO)
+      REAL RADCOND,DENSCOND,MWCOND
       INTEGER JSWITCH,ITEST,ICL
       INTEGER I,J,K,N,AMFORM,IPLANET,NGAS,IGAS,NXTEMP,IX
       REAL TEMP,RADIUS,G
@@ -3518,21 +3519,37 @@ C        ***************************************************************
       
          IMODEL = INT(VARPARAM(IVAR,1))
          JSPEC = INT(VARPARAM(IVAR,2))
+         DENSCOND = VARPARAM(IVAR,3)
+         RADCOND = VARPARAM(IVAR,4)
+         MWCOND = VARPARAM(IVAR,5)
          
-         do i=1,nvmr
-           
-         enddo
-            
-         CALL ackermanmarleyx(IPLANET,LATITUDE,AMFORM,NPRO,NVMR,
-     1    P,T,H,VMR,NCONT,CONT,FLUX,IMODEL,FRAIN,JVMR,X1,X2)
+         IF(AMFORM.EQ.1)THEN
+          DO I=1,NPRO
+           XXMOLWT(I)=MOLWT
+          ENDDO
+         ENDIF
+
+         JVMR=-1
+         DO I=1,NVMR
+          IF((IDGAS(I).EQ.VARIDENT(IVAR,1)).AND.
+     1     (ISOGAS(I).EQ.VARIDENT(IVAR,2)))THEN
+           JVMR=I
+          ENDIF
+         ENDDO
+
+         CALL ACKERMANMARLEYX1(IPLANET,LATITUDE,AMFORM,NPRO,NVMR,
+     1    IDGAS,ISOGAS,P,T,H,VMR,XXMOLWT,NCONT,CONT,FLUX,IMODEL,
+     2    FRAIN,JVMR,DENSCOND,RADCOND,MWCOND,X1,X2)
+
+C        X1 is set directly by subroutine
+C        X2 is associated specific density profile for condensate
+C         type JSPEC. This is assigned to the aerosol.prf file later
         
          DO J=1,NPRO
-          X1(J)=xch4new(J)
 C         Calculating gradients from the Ackerman and Marley  model is too 
 C         hard so set to zero
           XMAP(NXTEMP+1,IPAR,J)=0.0
          ENDDO
-
 
         ELSE
 
@@ -4378,7 +4395,8 @@ C       print*,'sub6',IPAR
           VMR(I,IPAR)=X1(I)
          ENDDO
 
-C        Extra section for combined cloud/gas profile - Model 10.
+C        Extra section for combined cloud/gas profile - Model 10 and
+C        model 41
 C        **********************************************************
          IF(JSPEC.GT.0.AND.JSPEC.LE.NCONT)THEN
           DO I=1,NPRO

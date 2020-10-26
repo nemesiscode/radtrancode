@@ -22,7 +22,7 @@ C     **************************************************************************
 
       IMPLICIT NONE
       INCLUDE '../radtran/includes/arrdef.f'
-      INTEGER npro,I,J,K,J3
+      INTEGER npro,I,J,K
       REAL PATM(MAXPRO),TEMP(MAXPRO)
       REAL XNEWGRAD(MAXPRO)
       REAL ch4stratvmr,ch4tropvmr,RH,pbar(maxpro),psvp(maxpro)
@@ -36,15 +36,10 @@ C     Taken from /home/irwinp/PRAXIS/properties/gravity/calc_wlapse.pro
 C     SCH4=[10.6815,-1163.83] ; sublimation L'*R = 9671.42
       parameter (SCH40=10.6815,SCH41=-1163.83)      
 C     NB, psvp is in bar.
-      j3=-1
 
-      print*,ch4tropvmr,ch4stratvmr,RH
       do 10 i = 1,npro
         xnewgrad(i)=0.
         pbar(i)=patm(i)*1.013
-        if(pbar(i).gt.0.3)then
-         j3=i
-        endif
         tmp=SCH40+SCH41/temp(i)
         if(tmp.lt.-69.0)then
          psvp(i)=1e-30
@@ -64,7 +59,6 @@ C     NB, psvp is in bar.
          xnewgrad(i)=1.0
         endif
         xnew(i)=pch4(i)/pbar(i)
-C        print*,i,psvp(i),patm(i),pbar(i),xnew(i)
 10    continue
 
       return

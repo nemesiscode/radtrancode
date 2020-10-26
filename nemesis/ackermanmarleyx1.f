@@ -1,6 +1,6 @@
-      SUBROUTINE ACKERMANMARLEYX(IPLANET,LATITUDE,AMFORM,NPRO,NVMR,
-     1 IDGAS,ISOGAS,P,T,H,VMR,XMOL,NCONT,CONT,FLUX,IMODEL,FRAIN,JVMR,
-     2 X1,X2)
+      SUBROUTINE ACKERMANMARLEYX1(IPLANET,LATITUDE,AMFORM,NPROIN,NVMR,
+     1 IDGAS,ISOGAS,PIN,TIN,HIN,VMRIN,XMOLIN,NCONT,CONTIN,FLUX,IMODEL,
+     2 FRAIN,JVMR,DENSCOND,RADCOND,MWCOND,X1,X2)
 C     **************************************************************   
 C     Subroutine to condense clouds as per the formalism of 
 C     Ackerman and Marley (2001). 
@@ -9,21 +9,25 @@ C     Input variables
 C	IPLANET	INTEGER		Planet number (needed to compute gravity)
 C	LATITUDE  REAL		Latitude (needed to compute gravity)
 C	AMFORM	INTEGER		Profile type
-C	NPRO	INTEGER		Number of vertical levels
+C	NPROIN	INTEGER		Number of vertical levels
 C	NVMR	INTEGER		Number of gas vmr profiles
 C	IDGAS(NVMR) INTEGER	Gas IDs
 C	ISOGAS(NVMR) INTEGER	Gas ISOs
-C	P(MAXPRO)	REAL	Pressure(atm)
-C	T(MAXPRO)	REAL	Temperaures(K)
-C	H(MAXPRO)	REAL	Heights (km)
-C	VMR(MAXPRO,MAXGAS) REAL	Vmrs
-C	XMOL(MAXPRO)	REAL	Molecular weight profile
+C	PIN(MAXPRO)	REAL	Pressure(atm)
+C	TIN(MAXPRO)	REAL	Temperaures(K)
+C	HIN(MAXPRO)	REAL	Heights (km)
+C	VMRIN(MAXPRO,MAXGAS) REAL	Vmrs
+C	XMOLIN(MAXPRO)	REAL	Molecular weight profile
 C	NCONT	INTEGER		Number of cloud types
+C	CONTIN(MAXCON,MAXPRO) REAL	Specific densities
 C       FLUX	REAL		Convective heat flux (can set to
 C				 STEF_BOLTZ*T_eff**4). Assume units of W m-2
 C       IMODEL  INTEGER		Model. 0 = Lewis, 1=Ackerman
 C       FRAIN	REAL		f_rain parameter of Ackerman model
 C       JVMR	INTEGER		Gas IVMR to consider applying this model to
+C       DENSCOND REAL		Density of condensate material (g/cm3)
+C       RADCOND	REAL		Radius of condensate (microns)
+C       MWCOND	REAL		Molecular weight (g) of condensed phase
 C
 C     Output variables
 C	X1(MAXPRO)	REAL	Output vmr profile
@@ -41,24 +45,22 @@ C     **************************************************************
       REAL CONT(MAXCON,MAXPRO),MOLWT,LATITUDE,R,DTDZ(MAXPRO)
       REAL QCONT(MAXCON,MAXPRO),FLUX,CP,RADIUS,DALR(MAXPRO)
       REAL CALCMOLWT,XVMR(MAXGAS),GASDATA(20,5),DELH
-      REAL XMOLWT,CPSPEC,EDDY(MAXPRO)
+      REAL XMOLWT,CPSPEC,EDDY(MAXPRO),PIN(MAXPRO),TIN(MAXPRO)
+      REAL HIN(MAXPRO),VMRIN(MAXPRO,MAXGAS),CONTIN(MAXCON,MAXPRO)
+      REAL XMOLIN(MAXPRO)
       REAL A,B,C,D,SVP,QS,DPEXP,SCALE(MAXPRO),G,X,L,LH
       REAL QV(MAXPRO),QT(MAXPRO),QC(MAXPRO),RHO(MAXPRO),XLAMBDA,KBOLTZ
       REAL WS(MAXPRO),FRAIN,DELQT,QT1,KMIN,X1(MAXPRO),X2(MAXPRO)
       REAL DENSCOND,RADCOND,MWCOND,N(MAXPRO),V,MP,M1,NM,NC
-      REAL NAVAGADRO,NP,XMOL(MAXPRO)
+      REAL NAVAGADRO,NP,XMOL(MAXPRO),X1A(MAXPRO),X2A(MAXPRO)
       INTEGER K,AMFORM,NPRO,NVMR,I,IERR,NGAS,IPLANET,JVMR
       INTEGER IDGAS(MAXGAS),ISOGAS(MAXGAS),ISCALE(MAXGAS),J
-      INTEGER JGAS,IVMR,NCONT,ICONDENSE,IMODEL
+      INTEGER JGAS,IVMR,NCONT,ICONDENSE,IMODEL,NPROIN
       CHARACTER*100 IPFILE,BUFFER,OPFILE
       CHARACTER*100 AEFILE,QCFILE,ANAME
       CHARACTER*8 PNAME
       PARAMETER (XLAMBDA = 0.1,KMIN=1e5,KBOLTZ=1.38064852E-23)
       PARAMETER (NAVAGADRO=6.022e23)
-C     DENSCOND is density of condensate material (g/cm3)
-C     RADCOND is radius of condensate
-C     MWCOND is molecular weight of condensed phase
-      PARAMETER (DENSCOND=1.0, RADCOND=0.1,MWCOND=12)
 C     RGAS read in from constdef.f, so set R accordingly and in correct
 C     units of J mol-1 K-1
       R=RGAS*0.001
@@ -70,6 +72,49 @@ C     CP is J K-1 mol-1
 
 C      print*,'Test ',1.0*0.1013*28.0/(R*273.0)
 C     Calculate density of atmosphere (g/cm3) and DALR (K/km)
+
+
+C     First interpolate profile on to a grid with step of ~1 km
+
+      DELH = HIN(NPROIN)-HIN(1)
+      NPRO = 1+INT(DELH/1.0)
+
+      IF(NPRO.GT.MAXPRO)NPRO=MAXPRO
+
+      DELH=(HIN(NPROIN)-HIN(1))/FLOAT(NPRO-1)
+
+      print*,NPROIN,HIN(1),HIN(NPROIN),DELH
+      print*,'NPRO = ',NPRO
+
+      DO 101 J=1,NPRO
+       H(J)=HIN(1)+(J-1)*DELH
+       print*,J,H(J)
+       CALL VERINT(HIN,PIN,NPROIN,P(J),H(J))
+       CALL VERINT(HIN,TIN,NPROIN,T(J),H(J))
+       CALL VERINT(HIN,XMOLIN,NPROIN,XMOL(J),H(J))
+       DO I=1,NVMR
+        DO K=1,NPROIN
+         X1(K)=VMRIN(K,I)
+        ENDDO
+        CALL VERINT(HIN,X1,NPROIN,VMR(J,I),H(J))      
+       ENDDO
+       DO I=1,NCONT
+        DO K=1,NPROIN
+         X1(K)=CONTIN(I,K)
+        ENDDO
+        CALL VERINT(HIN,X1,NPROIN,CONT(I,J),H(J))      
+       ENDDO
+       print*,J,H(J)
+
+101   CONTINUE
+ 
+      DO 102 J=1,NPRO
+       print*,H(J),P(J),T(J),(VMR(J,K),K=1,NVMR)
+102   CONTINUE
+      DO 103 J=1,NPRO
+       print*,H(J),P(J),(CONT(K,J),K=1,NCONT)
+103   CONTINUE
+
       DO 201 J=1,NPRO
         XMOLWT=XMOL(J)
 C       Compute density in g/cm3
@@ -120,7 +165,7 @@ C       print*,J,H(J),SCALE(J),RHO(J),L,EDDY(J),LH,X,WS(J)
       CALL DATARCHIVE(ANAME)
       OPEN(13,FILE=ANAME,STATUS='OLD')
 C      WRITE(*,*)' '
-C      WRITE(*,*)'ackermanmarleyx: reading saturated-vapour-pressure'
+C      WRITE(*,*)'ackermanmarleyx1: reading saturated-vapour-pressure'
 C      WRITE(*,*)'  data from ',ANAME
 C     First skip header
 57    READ(13,1)BUFFER
@@ -163,7 +208,7 @@ C        Constituent may condense. May need to modify mole fraction and cloud
          QC(1)=0.
          QT(1)=QV(1)
 
-         X1(1)=QV(1)
+         X1A(1)=QV(1)
 
 C         IF(IMODEL.EQ.0)THEN
 C           PRINT*,'J, QT(J), QV(J), QC(J)'
@@ -198,7 +243,7 @@ C           print*,J,QT(J),QV(J),QC(J),DELQT
 
           ENDIF
 
-          X1(J)=QV(J)
+          X1A(J)=QV(J)
 C         So QV is mole fraction of gas remaining and QC is equivalent mole 
 C         fraction of condensed gas, QT is equivalent mole fraction of gas and condensate remaining . 
 C         To convert QC into particles per gram we need to do the following:
@@ -209,15 +254,22 @@ C          print*,J,QC(J),N(J),NC
 C         NP is number of condensed particles per cm3 since NM is number of molecules per particle
           NP = NC/NM
 C          print*,NM,NP
-C         X2(J) is number of condensed particles/gram of atmosphere
+C         X2A(J) is number of condensed particles/gram of atmosphere
           
-          X2(J)=NP/RHO(J)
-C          print*,J,NP,RHO(J),X2(J)
+          X2A(J)=NP/RHO(J)
+C          print*,J,NP,RHO(J),X2A(J)
 97       CONTINUE
 
         ENDIF
 
 99    CONTINUE
+
+C     Interpolate answers back on to original grid
+      DO 401 I=1,NPROIN
+       CALL VERINT(H,X1A,NPRO,X1(I),HIN(I))
+       CALL VERINT(H,X2A,NPRO,X2(I),HIN(I))
+401   CONTINUE
+
 
       RETURN
 

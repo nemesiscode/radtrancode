@@ -94,7 +94,7 @@ C     ****************************************************************
       real ref(maxlat,maxpro),clen,SXMINFAC,arg,valb,alb,refp,errp
       real xknee,xrh,erh,xcdeep,ecdeep,radius,Grav,plim
       real xcwid,ecwid,ptrop,refradius,xsc,ascat,escat,shape,eshape
-      real clen1,clen2,press1,press2
+      real clen1,clen2,press1,press2,clen3
       integer nlong,ilong,ipar
       parameter (Grav=6.672E-11)
 C     SXMINFAC is minimum off-diagonal factor allowed in the
@@ -2361,11 +2361,14 @@ C            read in f_rain
              err = err/p1
              sx(ix,ix) = err**2
 
-C            Read in parameters: Imodel and Jcont
-             read(27,*)xc2,xrh
+C            Read in parameters: Imodel and Jcont,denscond,radcond,mwcond
+             read(27,*)xc2,xrh,clen1,clen2,clen3
 
              varparam(ivar,1)=xc2
              varparam(ivar,2)=xrh
+             varparam(ivar,3)=clen1
+             varparam(ivar,4)=clen2
+             varparam(ivar,5)=clen3
 
              nx = nx+2
 

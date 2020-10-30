@@ -107,7 +107,7 @@ C		Passed variables
 	INTEGER	nlayer, npath, ngas, limlay, limcont, nwave, 
      1		nlayin(npath), incdim, layinc(incdim, npath), 
      2          idgas(ngas), isogas(ngas), imod(npath),igas,
-     3 		infr,infrt,ish,irayx
+     3 		infr,infrt,ish,irayx,ivenera
 
 	REAL	press(nlayer), temp(nlayer), pp(limlay,ngas), 
      1		amount(limlay,ngas), vwave(nwave), cont(limcont,nlayer), 
@@ -493,8 +493,10 @@ C-----------------------------------------------------------------------
 C       Look to see if there is a scattering net-flux calculation. If so
 C       open output file for internal radiation field output. 
         ish=0
+        ivenera=0
         do ipath=1,npath
-         if(imod(ipath).eq.24)ish=1
+C         if(imod(ipath).eq.24)ish=1
+         if(imod(ipath).eq.24)ivenera=1
         enddo
         print*,'ish = ',ish
         if(ish.eq.1)then
@@ -516,7 +518,16 @@ C       open output file for internal radiation field output.
          write(infrt,*)sol_ang
          write(infrt,*)(vwave(i),i=1,nwave)
         endif
-  
+ 
+        if(ivenera.eq.1)then
+         print*,'opening venera.dat'
+         open(infr,file='venera.dat',status='unknown')
+         write(infr,*)nlayer
+         write(infr,*)nwave
+         write(infr,*)(vwave(i),i=1,nwave)
+         write(infr,*)(basep(i),i=1,nlayer)
+         write(infr,*)(baseh(i),i=1,nlayer)
+        endif     
 
         IF(IFLUX.EQ.1)THEN
 
@@ -2296,6 +2307,16 @@ C-----------------------------------------------------------------------
 C		 	print*,'Ipath, I, output',Ipath,I,
 C     1				output(Ipath,I)
 		ENDDO
+ 
+                if(ivenera.eq.1)then
+C                For venera-like output write out downwards vertical radiance
+C                Array order is such that imu=nmu is downwards.
+                 write(infr,*)x,solar,radground,galb1
+                 ic=1
+                 do ilays=1,nlays
+                  write(infr,*)gplf(nmu,ilays,ic)
+                 enddo
+                endif
 
                 if(ish.eq.1)then
                  write(infr,*)solar
@@ -2365,6 +2386,10 @@ C-----------------------------------------------------------------------
         if(ish.eq.1)then
          close(infr)
          close(infrt)
+        endif
+
+        if(ivenera.eq.1)then
+         close(infr)
         endif
 
 	RETURN

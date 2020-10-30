@@ -76,7 +76,7 @@ C paths, etc.)
       integer c1,c2,cr,time1,time2,cm
       CHARACTER*80	TEXT
       CHARACTER*100	opfile, patfile, outfile, idlfile, ciafil
-      CHARACTER*100     confil,sfile
+      CHARACTER*100     confil,sfile,surfile
       CHARACTER*1 ANS
 
       REAL xwave(MAXSEC),xf(MAXCON,MAXSEC),xg1(MAXCON,MAXSEC)
@@ -99,7 +99,7 @@ C     Solar spectrum variables and flags
       integer iform,iread,solnpt
       real solwave(maxbin),solrad(maxbin),solradius
       character*100 solfile,solname
-      logical solexist
+      logical solexist,surexist
       common/solardat/iread, iform, solradius, solwave, solrad,  solnpt
 
 
@@ -321,13 +321,21 @@ C-----------------------------------------------------------------------
       WRITE(*,*)'Enter surface temperature (if applicable) : '
       READ(*,*)tsurf
 
-      nem=2
-      vem(1)=-100.0
-      vem(2)=1e7
-      emissivity(1)=1.0
-      emissivity(2)=1.0
-
-
+C     See if file is present forcing surface emissivity spectrum to an 
+C      input spectrum
+      CALL FILE(OPFILE,SURFILE,'sur')
+      INQUIRE(FILE=SURFILE,EXIST=SUREXIST)
+      IF(SUREXIST)THEN
+       CALL readsurfem(surfile,nem,vem,emissivity)
+       print*,'Reading surface emissivity from : ',surfile
+       print*,'nem = ',nem
+      ELSE
+       nem=2
+       vem(1)=-100.0
+       vem(2)=1e7
+       emissivity(1)=1.0
+       emissivity(2)=1.0
+      ENDIF
 
       CALL FILE(OPFILE,CIAFIL,'cia')
 

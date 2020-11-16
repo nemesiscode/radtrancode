@@ -2237,7 +2237,7 @@ C            Read in total base specific density (particles/g)
              sx(ix,ix) = err**2
 
 C            Read in fractional scale height
-             ix = nx+1
+             ix = nx+2
              read(27,*)xfsh,efsh
              if(xfsh.gt.0.0)then
                x0(ix)=alog(xfsh)

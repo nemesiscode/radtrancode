@@ -3435,8 +3435,10 @@ C        New gradient correction if fsh is held as logs
          P2 = VARPARAM(IVAR,2)
          P3 = VARPARAM(IVAR,3)
 
+C         print*,'P1-P3 = ',P1,P2,P3
+C         print*,'XFSH,XFAC : ',XFSH,XFAC
 
-         DO I=1,NPRO
+         DO J=1,NPRO
           X1(J)=1E-36
           X2(J)=1E-36
          ENDDO
@@ -3445,7 +3447,7 @@ C        New gradient correction if fsh is held as logs
          JFSH=0
          JFSH1=0     
 
-         DO I=1,NPRO
+         DO J=1,NPRO
           IF(P(J).GT.P1)THEN
             X1(J) = 1e-36
           ELSE

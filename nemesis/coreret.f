@@ -18,6 +18,7 @@ C				    calculated first for limb/near-limb
 C				    observations.
 C			Set to 3 for single-scattering calculation plane parallel
 C			Set to 4 for single-scattering calculation spherical
+C			Set to 5 for internal flux calculation
 C	ilbl	integer	Set to 0 for correlated-k caculation
 C                       Set to 1 for lbl calculation
 C                       Set to 2 for lbl-table calculation
@@ -383,6 +384,15 @@ C      Calc. gradient of all elements of xnx matrix.
      2    nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
      3    jradx,jloggx,jfracx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,
      4	  iprfcheck)
+       elseif(iscat.eq.5)then
+         print*,'Calling forwardnogXVenus - A1. iscat = ',iscat
+         CALL forwardnogXVenus(runname,ispace,iscat,fwhm,ngeom,nav,
+     1    wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
+     2    nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
+     3    jradx,jloggx,jfracx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,
+     4	  iprfcheck)
+         print*,'forwardnogXVenusX - A1 - called OK'
+
        else
          print*,'Coreret: iscat invalid',iscat
          stop
@@ -491,6 +501,16 @@ C        print*,'forwardnogX OK, jpre = ',jpre
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
      3   jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
         print*,'B - OK'
+       elseif(iscat.eq.5) then
+        print*,'Calling forwardnogXVenus - B1, iscat = ',iscat
+
+        CALL forwardnogXVenus(runname,ispace,iscat,fwhm,ngeom,nav,
+     1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
+     3   jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
+
+C        print*,'forwardnogX OK, jpre = ',jpre
+
        endif
       endif
 
@@ -828,6 +848,13 @@ C       temporary kernel matrix kk1. Does it improve the fit?
      1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
      3     jlogg,jfrac,RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter,iprfcheck)
+         elseif(iscat.eq.5)then
+         print*,'Calling forwardnogXVenus - C'
+          CALL forwardnogXVenus(runname,ispace,iscat,fwhm,ngeom,nav,
+     1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
+     2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
+     3     jlogg,jfrac,RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter,iprfcheck)
+
          endif
         endif
 

@@ -147,12 +147,21 @@ C     mass to units of 1e24 kg.
 
 
 C     Set up all files for a direct cirsrad run
-      print*,'calling gsetrad'
-      call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,
+      if(iscat.eq.5)then
+       print*,'calling gsetradV'
+       call gsetradV(runname,iscat,nmu,mu,wtmu,isol,dist,
      1 lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
      2 layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,xlon,
      2 lin,nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
-      print*,'gsetrad called OK'
+       print*,'gsetradV called OK'
+      else
+       print*,'calling gsetrad'
+       call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,
+     1 lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
+     2 layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,xlon,
+     2 lin,nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
+       print*,'gsetrad called OK'
+      endif
 
       return
 

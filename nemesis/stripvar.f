@@ -82,7 +82,7 @@ C     **************************** CODE ********************************
          if(varidentx(ivarx,3).eq.39)np = 1
          if(varidentx(ivarx,3).eq.40)np = 2
          if(varidentx(ivarx,3).eq.41)np = 5
-         if(varidentx(ivarx,3).eq.42)np = 2
+         if(varidentx(ivarx,3).eq.42)np = 3
         else
          if(varidentx(ivarx,1).eq.102)np = 1
          if(varidentx(ivarx,1).eq.555)np = 1

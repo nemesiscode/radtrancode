@@ -40,6 +40,7 @@ F_SOURCES = \
 	forwardavfovX.f \
 	forwardavfovMCS.f \
 	forwardnogX.f \
+	forwardnogXVenus.f \
 	forwardnogXrdw.f \
 	forwardnoglbl.f \
 	forwardnoglblL.f \
@@ -67,6 +68,7 @@ F_SOURCES = \
 	coreretMCS.f \
 	forwardavfovL.f \
 	gsetrad.f \
+	gsetradV.f \
 	gsetradL.f \
 	gsetradPT.f \
 	gsetraddisc.f \
@@ -76,6 +78,7 @@ F_SOURCES = \
 	computeFOVB.f \
 	gsetradMCS.f \
 	gwritepatL.f \
+	gwritepatV.f \
         gwritepatSO.f \
 	gwritepatMCS.f \
 	gwritepatPT.f \

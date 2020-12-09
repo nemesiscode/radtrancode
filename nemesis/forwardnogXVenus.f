@@ -141,6 +141,7 @@ C     jradf and jloggf are passed via the planrad common block
       jloggf=jlogg
 
       FWHMEXIST=.FALSE.
+      nfwhm=0
 
 
 C      print*,'-----------------'
@@ -231,6 +232,7 @@ C      print*,'nf = ',nf
            nx2 = 1
       endif
 
+C      open(201,file='test.dat',status='unknown')
 
       do 110 ix1=1,nx2
 
@@ -329,9 +331,7 @@ C         Check also to see if surface temperature has gone negative
      1     vwave1,nwave1,npath, output, vconv1, nconv1, itype,
      2     nem,vem,emissivity,tsurf, calcout)
 
-
 C         Now need to read in internal radiances from the venera.dat file
-
           open(12,file='venera.dat',status='old',err=222)
            read(12,*)nlayv
            read(12,*)nwave1v
@@ -350,15 +350,28 @@ C           print*,'nlayv = ',nlayv
 222       close(12)
 
 
+C          write(12,*)nlayv,nwave1v
+C          write(12,*)(basehv(i),i=1,nlayv)
+C          write(12,*)(vwavev(i),i=1,nwave1v)
+C          do 101 i=1,nlayv
+C           write(12,*)(venera(j,i),j=1,nwave1v)
+C101       continue
+
 C         Now need to interpolate internal radiances in the venera.dat file 
 C         to the requested heights in the .spx file.
 
           ipath=1
           ioff=0
+     
+C          write(12,*)nwave1
+C          write(12,*)(vwave1(j),j=1,nwave1)
 
           do 111 igeom=1,ngeom
            hnow = angles(igeom,1,2)
-C           print*,'igeom, hnow = ',igeom,hnow
+         
+           print*,'igeom, hnow = ',igeom,hnow
+C           write(12,*)hnow
+
            do k=1,nwave1v
             do i=1,nlayv
              trad(i)=venera(k,i)
@@ -367,10 +380,13 @@ C           print*,'igeom, hnow = ',igeom,hnow
             yy(k)=y1
            enddo
 C          Smooth as required
-C           print*,nwave1,(yy(i),i=1,nwave1)
+C           write(12,*)(yy(i),i=1,nwave1)
            call cirsconv(runname,fwhm,nwave1,vwave1,yy,nconv1,
      & vconv1,yout,FWHMEXIST,NFWHM,VFWHM,XFWHM)
-C           print*,nconv1,(yout(i),i=1,nconv1)
+C           if(ix.eq.0)then
+C            write(201)nconv1,ngeom
+C            write(201,*)(yout(i),i=1,nconv1)
+C           endif
            do j=1,nconv1
             ytmp(ioff+j)=yout(j)
            enddo
@@ -387,9 +403,23 @@ C           print*,nconv1,(yout(i),i=1,nconv1)
            ioff=ioff+nconv1
 111       continue
 
+C          close(12)
+C          stop
+
           if(ix.gt.0)xn(ix)=xref
-         
+          print*,'ix = ',ix
+C          if(ix.eq.0)then
+C           write(201,*)nconv1
+C           write(201,*)(vconv1(j),j=1,nconv1)
+C           write(201,*)ny
+C           write(201,*)(yn(i),i=1,ny)
+C          endif
+          
 110   continue
+
+C           write(201,*)ny
+C           write(201,*)(yn(i),i=1,ny)
+C           close(201)
 
       close(ulog)
 

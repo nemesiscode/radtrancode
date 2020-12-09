@@ -623,7 +623,7 @@ C        Check to see if log numbers have gone out of range
 
 C       Test to see if any vmrs have gone negative.
         xflag=0
-        print*,'coreret - testing subprofretg'
+C        print*,'coreret - testing subprofretg'
 C        print*,XFLAG,runname,ISPACE,ISCAT,GASGIANT,XLAT,XLON,NVAR
 C        do i=1,nvar
 C         print*,(varident(i,j),j=1,3)

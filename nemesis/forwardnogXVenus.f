@@ -86,7 +86,7 @@ C     **************************************************************
       include '../radtran/includes/gascom.f'
       include '../radtran/includes/planrad.f'
       include 'arraylen.f'
-      real xlat,xref,dx,Grav,xgeom
+      real xlat,xref,dx,Grav,xgeom,f
       parameter (Grav=6.672E-11)
       integer layint,inormal,iray,itype,nlayer,laytyp,iscat
       integer nwave(mgeom),ix,ix1,iav,nwave1,iptf,jrad,j1
@@ -129,12 +129,13 @@ C     **************************************************************
       real vwavev(mconv),basepv(maxlay),basehv(maxlay)
       real solarv(mconv),radgroundv(mconv),galbv(mconv)
       real venera(mconv,maxlay),xx,trad(maxlay),hnow
+      real venera1(mconv,maxlay)
       integer mfwhm,nfwhm
       parameter (mfwhm=1000)
-      logical :: fwhmexist
+      logical fwhmexist
 
 C     Arrays
-      real :: vfwhm(mfwhm),xfwhm(mfwhm)
+      real vfwhm(mfwhm),xfwhm(mfwhm)
 
 C     jradf and jloggf are passed via the planrad common block   
       jradf=jrad
@@ -232,7 +233,9 @@ C      print*,'nf = ',nf
            nx2 = 1
       endif
 
-C      open(201,file='test.dat',status='unknown')
+      xref=0.0
+      dx=0.0
+
 
       do 110 ix1=1,nx2
 
@@ -325,7 +328,7 @@ C         Check also to see if surface temperature has gone negative
            return
           endif
           
-          print*,'forwardnogXVenus',runname,runname
+          print*,'forwardnogXVenus ',runname
 
           call CIRSrtf_wave(runname, dist, inormal, iray,fwhm, ispace,
      1     vwave1,nwave1,npath, output, vconv1, nconv1, itype,
@@ -335,7 +338,6 @@ C         Now need to read in internal radiances from the venera.dat file
           open(12,file='venera.dat',status='old',err=222)
            read(12,*)nlayv
            read(12,*)nwave1v
-C           print*,'nlayv = ',nlayv
            if(nwave1v.ne.nwave1)then
             print*,'nwave1v <> nwave1'
             stop
@@ -343,19 +345,15 @@ C           print*,'nlayv = ',nlayv
            read(12,*)(vwavev(i),i=1,nwave1v)
            read(12,*)(basepv(i),i=1,nlayv)
            read(12,*)(basehv(i),i=1,nlayv)
+C          Note that order of spectra in venera.dat is in reverse direction
+C          Correct here.
            do 100 j=1,nwave1v
             read(12,*)xx,solarv(j),radgroundv(j),galbv(j)
-            read(12,*)(venera(j,i),i=1,nlayv)
+            read(12,*)(venera(j,i),i=nlayv,1,-1)
 100        continue
 222       close(12)
 
 
-C          write(12,*)nlayv,nwave1v
-C          write(12,*)(basehv(i),i=1,nlayv)
-C          write(12,*)(vwavev(i),i=1,nwave1v)
-C          do 101 i=1,nlayv
-C           write(12,*)(venera(j,i),j=1,nwave1v)
-C101       continue
 
 C         Now need to interpolate internal radiances in the venera.dat file 
 C         to the requested heights in the .spx file.
@@ -363,30 +361,40 @@ C         to the requested heights in the .spx file.
           ipath=1
           ioff=0
      
-C          write(12,*)nwave1
-C          write(12,*)(vwave1(j),j=1,nwave1)
+          do igeom=1,ngeom
+            hnow = angles(igeom,1,2)
+            do i=1,nlayv-1
+             if(hnow.ge.basehv(i).and.hnow.lt.basehv(i+1))then
+              k=i
+              f = (hnow-basehv(i))/(basehv(i+1)-basehv(i))
+             endif
+            enddo
+            if(hnow.lt.basehv(1))then
+              k=1
+              f=0.0
+            endif
+            if(hnow.ge.basehv(nlayv))then
+              k=nlayv-1
+              f=(hnow-basehv(k))/(basehv(k+1)-basehv(k))
+            endif
+
+            do j=1,nwave1v
+              venera1(j,igeom)=(1.0-f)*venera(j,k) + 
+     &          f*venera(j,k+1)
+            enddo
+          enddo
 
           do 111 igeom=1,ngeom
            hnow = angles(igeom,1,2)
-         
            print*,'igeom, hnow = ',igeom,hnow
-C           write(12,*)hnow
 
-           do k=1,nwave1v
-            do i=1,nlayv
-             trad(i)=venera(k,i)
-            enddo
-            call verint(basehv,trad,nlayv,y1,hnow)
-            yy(k)=y1
+           do j=1,nwave1
+            yy(j)=venera1(j,igeom)
            enddo
+
 C          Smooth as required
-C           write(12,*)(yy(i),i=1,nwave1)
            call cirsconv(runname,fwhm,nwave1,vwave1,yy,nconv1,
      & vconv1,yout,FWHMEXIST,NFWHM,VFWHM,XFWHM)
-C           if(ix.eq.0)then
-C            write(201)nconv1,ngeom
-C            write(201,*)(yout(i),i=1,nconv1)
-C           endif
            do j=1,nconv1
             ytmp(ioff+j)=yout(j)
            enddo
@@ -403,23 +411,10 @@ C           endif
            ioff=ioff+nconv1
 111       continue
 
-C          close(12)
-C          stop
 
           if(ix.gt.0)xn(ix)=xref
-          print*,'ix = ',ix
-C          if(ix.eq.0)then
-C           write(201,*)nconv1
-C           write(201,*)(vconv1(j),j=1,nconv1)
-C           write(201,*)ny
-C           write(201,*)(yn(i),i=1,ny)
-C          endif
           
 110   continue
-
-C           write(201,*)ny
-C           write(201,*)(yn(i),i=1,ny)
-C           close(201)
 
       close(ulog)
 

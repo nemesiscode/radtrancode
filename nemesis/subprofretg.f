@@ -137,17 +137,17 @@ C     ***********************************************************************
 C----------------------------------------------------------------------------
 C
 
-C      print*,'Check subprofretg'
-C      print*,XFLAG,IPFILE,ISPACE,ISCAT,GASGIANT,XLAT,XLON,NVAR
-C      do i=1,nvar
-C       print*,(varident(i,j),j=1,3)
-C       print*,(varparam(i,j),j=1,5)
-C      enddo      
-C      print*,nx
-C      do i=1,nx
-C       print*,i,xn(i)
-C      enddo
-C      print*,JPRE,NCONT,FLAGH2P
+      print*,'Check subprofretg'
+      print*,XFLAG,IPFILE,ISPACE,ISCAT,GASGIANT,XLAT,XLON,NVAR
+      do i=1,nvar
+        print*,(varident(i,j),j=1,3)
+        print*,(varparam(i,j),j=1,5)
+      enddo      
+      print*,nx
+      do i=1,nx
+       print*,i,xn(i)
+      enddo
+      print*,JPRE,NCONT,FLAGH2P
 
 
 
@@ -707,8 +707,10 @@ C        New gradient correction if fsh is held as logs
         ELSEIF(VARIDENT(IVAR,3).EQ.2)THEN
 C        Model 2. Profile is scaled fraction of reference profile
 C        ***************************************************************
+         print*,NXTEMP+1,XN(NXTEMP+1)
          DO J = 1,NPRO
           X1(J) = XREF(J)*XN(NXTEMP+1)
+          print*,x1(j)
           XMAP(NXTEMP+1,IPAR,J)=XREF(J)
          ENDDO
 	
@@ -717,8 +719,8 @@ C        Model 3. Profile is scaled fraction of reference profile, but
 C         code uses log scaling, which is more robust
 C        ***************************************************************
          DO J = 1,NPRO
-          IF(XREF(J).GT.(1.0E37/EXP(XN(NXTEMP+1))).AND.XREF(J).GT.0.0)
-     1   	   XN(NXTEMP+1)=LOG(1.0E37/XREF(J))
+C          IF(XREF(J).GT.(1.0E37/EXP(XN(NXTEMP+1))).AND.XREF(J).GT.0.0)
+C     1   	   XN(NXTEMP+1)=LOG(1.0E37/XREF(J))
           X1(J) = XREF(J)*EXP(XN(NXTEMP+1))
           XMAP(NXTEMP+1,IPAR,J)=X1(J)
          ENDDO
@@ -4400,6 +4402,7 @@ C       print*,'sub6',IPAR
 C        Extra section for combined cloud/gas profile - Model 10 and
 C        model 41
 C        **********************************************************
+         print*,'DDDD',JSPEC,NCONT
          IF(JSPEC.GT.0.AND.JSPEC.LE.NCONT)THEN
           DO I=1,NPRO
            CONT(JSPEC,I)=X2(I)
@@ -4417,9 +4420,9 @@ C        **********************************************************
            DO I=1,NPRO
             CONT(JCONT,I)=X1(I)
            ENDDO
-           DO I=1,NPRO
-            CONT(JCONT,I)=X1(I)/XRHO(I)
-           ENDDO
+C           DO I=1,NPRO
+C            CONT(JCONT,I)=X1(I)/XRHO(I)
+C           ENDDO
           ENDIF
           IF(VARIDENT(IVAR,3).EQ.40)THEN
            DO I=1,NPRO
@@ -4649,6 +4652,7 @@ C      print*,'subprofretg. Writing aerosol.prf'
       WRITE(2,*)NPRO, NCONT
       DO 41 I=1,NPRO
         WRITE(2,*) H(I),(CONT(J,I),J=1,NCONT)
+        print*,H(I),(CONT(J,I),J=1,NCONT)
 41    CONTINUE
       CLOSE(2)
 

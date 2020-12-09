@@ -137,17 +137,17 @@ C     ***********************************************************************
 C----------------------------------------------------------------------------
 C
 
-      print*,'Check subprofretg'
-      print*,XFLAG,IPFILE,ISPACE,ISCAT,GASGIANT,XLAT,XLON,NVAR
-      do i=1,nvar
-        print*,(varident(i,j),j=1,3)
-        print*,(varparam(i,j),j=1,5)
-      enddo      
-      print*,nx
-      do i=1,nx
-       print*,i,xn(i)
-      enddo
-      print*,JPRE,NCONT,FLAGH2P
+C      print*,'Check subprofretg'
+C      print*,XFLAG,IPFILE,ISPACE,ISCAT,GASGIANT,XLAT,XLON,NVAR
+C      do i=1,nvar
+C        print*,(varident(i,j),j=1,3)
+C        print*,(varparam(i,j),j=1,5)
+C      enddo      
+C      print*,nx
+C      do i=1,nx
+C       print*,i,xn(i)
+C      enddo
+C      print*,JPRE,NCONT,FLAGH2P
 
 
 
@@ -416,7 +416,7 @@ C **************** Modify profile via hydrostatic equation ********
         JHYDRO=1
         HTAN = VARPARAM(I,1)
         PTAN = EXP(XN(JPRE))
-        print*,'subprofretg : htan, ptan = ',htan,ptan
+C        print*,'subprofretg : htan, ptan = ',htan,ptan
        ENDIF
       ENDDO
       IF(JHYDRO.EQ.0)THEN
@@ -4402,7 +4402,6 @@ C       print*,'sub6',IPAR
 C        Extra section for combined cloud/gas profile - Model 10 and
 C        model 41
 C        **********************************************************
-         print*,'DDDD',JSPEC,NCONT
          IF(JSPEC.GT.0.AND.JSPEC.LE.NCONT)THEN
           DO I=1,NPRO
            CONT(JSPEC,I)=X2(I)
@@ -4652,7 +4651,7 @@ C      print*,'subprofretg. Writing aerosol.prf'
       WRITE(2,*)NPRO, NCONT
       DO 41 I=1,NPRO
         WRITE(2,*) H(I),(CONT(J,I),J=1,NCONT)
-        print*,H(I),(CONT(J,I),J=1,NCONT)
+C        print*,H(I),(CONT(J,I),J=1,NCONT)
 41    CONTINUE
       CLOSE(2)
 

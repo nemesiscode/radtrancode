@@ -158,6 +158,7 @@ C***************************** VARIABLES *******************************
 C The include file ...
       INCLUDE '../includes/arrdef.f'
       INCLUDE '../includes/constdef.f'
+      INCLUDE '../includes/electron.f'
 C Defines the maximum values for a series of variables (layers, bins,
 C paths, etc.)
 
@@ -579,6 +580,14 @@ C
 C=======================================================================
 
         DO k=1,ngas
+          IF(IDGAS(K).EQ.81)THEN
+                pelec=pp(J,K)
+                eflag=1
+          ENDIF
+          IF(IDGAS(K).EQ.80) THEN
+                AMOUNTHMIN = AMOUNT(J,K)
+                PPRESSHMIN = pp(J,K)    
+          ENDIF
 C Computes a polynomial approximation to any known continuum spectra 
 C for a particular gas over a defined wavenumber region.
           CALL ngascon(vv,idgas(k),isogas(k),amount(j,k),

@@ -100,6 +100,7 @@ C		Internal dimensions
 C       Defines the maximum values for a series of variables (layers,
 C       bins, paths, etc.)
        INCLUDE '../includes/arrdef.f'
+       INCLUDE '../includes/electron.f'
 
 C		Passed variables
 
@@ -802,6 +803,14 @@ C-----------------------------------------------------------------------
 
 C		        WRITE (*,*) '       CALLING NGascon for each gas'
 			DO K = 1, ngas
+                         IF(IDGAS(K).EQ.81)THEN
+                          pelec=pp(J,K)
+                          eflag=1
+                         ENDIF
+                         IF(IDGAS(K).EQ.80) THEN
+                          AMOUNTHMIN = AMOUNT(J,K)
+                          PPRESSHMIN = pp(J,K)
+                         ENDIF
 
 C	Computes a polynomial approximation to any known continuum spectra 
 C       for a particular gas over a defined wavenumber region.
@@ -1742,8 +1751,8 @@ C                 upwelling radiation field to local temperature.
                          galb1 = dble(1.-esurf)
                   endif
 
-                  print*,'x,galb1 = ',x,galb1
-                  print*,'tsurf,radgound',tsurf,radground
+C                  print*,'x,galb1 = ',x,galb1
+C                  print*,'tsurf,radgound',tsurf,radground
 
                   do J=1,nmu
                     radg(J)=radground

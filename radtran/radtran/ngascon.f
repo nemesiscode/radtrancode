@@ -42,6 +42,7 @@ C_DATA:   /CH2OF0/	incorporated from H2OFT0.F
 C	  /CH2OS0/	incorporated from H2OST0.F
 C	  /CH2OS1/	incorporated from H2OST1.F
 C	  /COMCON/	incorporated from GENDAT.F
+C         /ELECTRON/    incorporated from ELECTRON.F
 C
 C_BUGS:
 C
@@ -53,6 +54,15 @@ C		  sub-routine CONTUM.F)
 C	  16jul01 PGJI modified to return single value.
 C          3feb12 PGJI simplified and rationalised. Also added flag to 
 C                      switch different absorptions on or off.
+C         17dec20 PGJI incorporated H-,e+ copntinuum from Jo Barstow.
+C
+C Useful conversions
+C1 dyn  = 10−5 N        ≡ 1 g⋅cm/s2     ≈ 1.0197 × 10−6 kp      ≈ 2.2481 × 10−6 lbf     ≈ 7.2330 × 10−5 pdl
+C1 kp   = 9.80665 N     = 980665 dyn    ≡ gn ⋅ (1 kg)   ≈ 2.2046 lbf    ≈ 70.932 pdl
+C1 lbf  ≈ 4.448222 N    ≈ 444822 dyn    ≈ 0.45359 kp    ≡ gn ⋅ (1 lb)   ≈ 32.174 pdl
+C1 pdl  ≈ 0.138255 N    ≈ 13825 dyn     ≈ 0.014098 kp   ≈ 0.031081 lbf  ≡ 1 lb⋅ft/s2
+CThe value of gn as used in the official definition of the kilogram-force is used here for all gravitational units.
+
 C-----------------------------------------------------------------------
 C
 	INTEGER ID,ISO,I
@@ -66,6 +76,10 @@ C
 
 C        REAL INTERPBASS1
         REAL NH3CONT
+        REAL HMIN_FF
+        REAL HMIN_BF
+        REAL Nh
+        REAL kb
 C
 C --- Define COMMON blocks containing H2O continuum data ---
 C
@@ -80,7 +94,7 @@ C
 C --- Define COMMON block for Continuum switches
         
         INCLUDE '../includes/gascom.f'
-
+        INCLUDE '../includes/electron.f'
 
 C***********************************************************************
 C ckd 2.1 self continuum data for water
@@ -229,8 +243,21 @@ C            ABSORB = AMOUNT*INTERPBASS1(FF,TEMP)
 C           Serdyuchenko ozone coefficients
             ABSORB = AMOUNT*INTERP_OZONE_SERDYUCHENKO(FF,TEMP)
 
+       ELSEIF ((ID.EQ.48) .AND. (ISO.EQ.0) .AND. (EFLAG.GT.0))THEN
 
-C       ELSEIF ((ID.EQ.11) .AND. ((ISO.EQ.1).OR.(ISO.EQ.0)) )THEN
+C           Free Free calculation for H- opacity
+C           Requires H- (80), e- (81) and H(48) to work - in that order!!!
+            Nh = (PPRESS*1.013E6*PELEC)/PPRESSHMIN
+C            WRITE(*,*), 'ngascon electron', PELEC, AMOUNTHMIN, Nh
+            ABSORB = AMOUNTHMIN*HMIN_FF(FF,TEMP)*Nh
+C            WRITE(*,*) 'ngascon e-',AMOUNT,ABSORB
+
+       ELSEIF ((ID.EQ.80) .AND. (ISO.EQ.0))THEN
+C               Bound-free calculation for H- opacity.
+
+            ABSORB = AMOUNT*HMIN_BF(FF)
+C            WRITE(*,*), 'ngascon H-', AMOUNT, ABSORB
+
        ELSE
 
 	    ABSORB=0.

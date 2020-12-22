@@ -115,18 +115,21 @@ F_SOURCES = \
 	interpbass1.f \
 	read_ozone_serdyuchenko.f \
 	interp_ozone_serdyuchenko.f \
-    interp_c2h2_xsections.f \
+	interp_c2h2_xsections.f \
 	interp_c2h6_xsections.f \
 	interp_c4h2_xsections.f \
+	interp_c3h8_xsections.f \
 	interp_ch4_xsections.f \
 	interp_co_xsections.f \
 	interp_geh4_xsections.f \
 	interp_h2o_xsections.f \
 	interp_nh3_xsections.f \
 	interp_ph3_xsections.f \
-    interp_c3h8_xsections.f \
-	benreuven.f
-  	
+	benreuven.f \
+	interp_c2h2_xsections.f \
+	hmin_ff.f \
+	hmin_bf.f
+
 
 INCDIR = ../includes
 INCLUDES = $(INCDIR)/arrdef.f $(INCDIR)/bincom.f $(INCDIR)/bincoms.f \
@@ -154,7 +157,7 @@ lib $(LIBRARY): $(LIBCODE)
 
 $(LIBRARY)(%.o): %.f $(INCLUDES)
 	$(FC) $(FCFLAGS) -c $<
-	ar rv $(LIBRARY) $*.o
+	ar rvU $(LIBRARY) $*.o
 	ranlib $(LIBRARY)
 	-rm $*.o
 
@@ -187,6 +190,7 @@ bin :   \
 	Mod_table1b \
 	Mod_table1c \
 	Mod_table2 \
+	Mod_tableco2 \
 	Table_trans 
 #	Testsubline
 	
@@ -313,6 +317,11 @@ Cut_table : cut_table.f $(LIBRARY) $(LIB)/spec_data.a
 
 Mod_table : mod_table.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Mod_table mod_table.f $(LIBRARY) \
+	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
+	$(LIB)/scatter.a $(LIB)/path.a
+
+Mod_tableco2 : mod_tableco2.f $(LIBRARY) $(LIB)/spec_data.a
+	$(FC) $(FCFLAGS) -o $(BIN)/Mod_tableco2 mod_tableco2.f $(LIBRARY) \
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
 	$(LIB)/scatter.a $(LIB)/path.a
 

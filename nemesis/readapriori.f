@@ -2349,28 +2349,44 @@ C            Read in upwards flux
              sx(ix,ix) = err**2
 
 C            read in f_rain
-             ix=ix+1
+             ix=nx+2
              read(27,*)p1,err
              if(p1.gt.0.0)then
                x0(ix)=alog(p1)
                lx(ix)=1
              else
-               print*,'Error in readpriori:42:2 - p1 must be > 0'
+               print*,'Error in readpriori:42:2 - f_rain must be > 0'
                stop
              endif
-             err = err/p1
+             err = err/xfac
              sx(ix,ix) = err**2
 
-C            Read in parameters: Imodel and Jcont,denscond,radcond,mwcond
-             read(27,*)xc2,xrh,clen1,clen2,clen3
+           elseif(varident(ivar,3).eq.43)then
+C          ***** Parmentier and Guillot (2014) and Line et al. (2013)
+C        double grey analytic TP profile  ********
+             do i=1,5
+              ix = nx+i
+              read(27,*)xfac,err
+              if(xfac.gt.0.0)then
+                x0(ix)=alog(xfac)
+                lx(ix)=1
+              else
+                print*,'Error in readpriori:43 - xfac must be > 0'
+                stop
+              endif
+              err = err/xfac
+              sx(ix,ix) = err**2
+             enddo
+
+C            Read in parameters: Tstar, Rstar, Sdist, Tint
+             read(27,*)xc2,xrh,clen1,clen2
 
              varparam(ivar,1)=xc2
              varparam(ivar,2)=xrh
              varparam(ivar,3)=clen1
              varparam(ivar,4)=clen2
-             varparam(ivar,5)=clen3
 
-             nx = nx+2
+             nx = nx+5
 
            else         
             print*,'vartype profile parametrisation not recognised'

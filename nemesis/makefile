@@ -111,7 +111,8 @@ F_SOURCES = \
 	interpvivien.f \
 	modifych4kark.f \
 	modifych4irwin.f \
-	modifych4sromovsky.f
+	modifych4sromovsky.f \
+	parmentierguillot1.f
 
 INCDIR = ../../radtran/includes
 INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/lincom.f $(INCDIR)/pathcom.f \
@@ -257,6 +258,16 @@ Testack: testack.f $(LIBRARY)
 
 Testackx: testackx.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Testackx testackx.f \
+	$(LIBRARY) $(LIB)/path.a $(LIB)/radtran.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
+	$(FRECIPES)
+
+Testparm: testparm.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Testparm testparm.f \
+	$(LIBRARY) $(LIB)/path.a $(LIB)/radtran.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
+	$(FRECIPES)
+
+Teste2: teste2.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Teste2 teste2.f \
 	$(LIBRARY) $(LIB)/path.a $(LIB)/radtran.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
 	$(FRECIPES)
 

@@ -113,7 +113,7 @@ C     ***********************************************************************
       CHARACTER*8 PNAME
       REAL A,B,C,D,SVP,PP,LATITUDE,LONGITUDE,LAT1,LON1
       REAL V1(3),V0(3),XP,DLONG,FLONG,LONGITUDE1
-      REAL DLAT
+      REAL DLAT,GRADTOUT(MAXPRO,5),TINT
       INTEGER ILONG,JLONG,ILAT
       REAL MOLWT,SCALE(MAXPRO),XMAP1,SCALEH,DTR
       PARAMETER (DTR=PI/180.)
@@ -132,6 +132,7 @@ C     ***********************************************************************
       COMMON /SROM223/PCUT
       REAL XC1,XC2,RH,SLOPE,xch4new(maxpro),xch4newgrad(maxpro)
       REAL PD,RHC,RHM,VX,PT,FLUX,FRAIN,IMODEL
+      REAL ALPHAP,BETAP,KIRP,GAMMAV1,GAMMAV2,TSTAR,RSTAR,SDIST
       CALL RESERVEGAS
 
 C----------------------------------------------------------------------------
@@ -3553,6 +3554,32 @@ C         type JSPEC. This is assigned to the aerosol.prf file later
 C         Calculating gradients from the Ackerman and Marley  model is too 
 C         hard so set to zero
           XMAP(NXTEMP+1,IPAR,J)=0.0
+         ENDDO
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.43)THEN
+C        Model 43. Parmentier and Guillot (2014) and Line et al. (2013)
+C        double grey analytic TP profile
+C        ***************************************************************
+         ALPHAP = EXP(XN(NXTEMP+1))
+         BETAP = EXP(XN(NXTEMP+2))
+         KIRP = EXP(XN(NXTEMP+3))
+         GAMMAV1 = EXP(XN(NXTEMP+4))
+         GAMMAV2 = EXP(XN(NXTEMP+5))
+         TSTAR = VARPARAM(IVAR,1)
+         RSTAR = VARPARAM(IVAR,2)
+         SDIST = VARPARAM(IVAR,3)
+         TINT = VARPARAM(IVAR,4)
+
+         CALL PARMENTIERGUILLOT1(IPLANET,LATITUDE,NPRO,
+     1    P,H,ALPHAP,BETAP,KIRP,GAMMAV1,GAMMAV2,TSTAR,RSTAR,
+     2    SDIST,TINT,X,GRADTOUT)
+        
+         DO J=1,NPRO
+          XMAP(NXTEMP+1,IPAR,J)=GRADTOUT(J,1)
+          XMAP(NXTEMP+2,IPAR,J)=GRADTOUT(J,2)
+          XMAP(NXTEMP+3,IPAR,J)=GRADTOUT(J,3)
+          XMAP(NXTEMP+4,IPAR,J)=GRADTOUT(J,4)
+          XMAP(NXTEMP+5,IPAR,J)=GRADTOUT(J,5)
          ENDDO
 
         ELSE

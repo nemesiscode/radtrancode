@@ -1622,11 +1622,9 @@ C          ***** inhomogeneous disc model 1  ********
      1         (eref(j,i),j=1,nlong)
               endif
               varparam(ivar,ipar)=pref(i)
-C              print*,i,pref(i),ivar,varident(ivar,1)
               ipar=ipar+1
               do 304 j=1,nlong
                ix=nx + (j-1)*nlevel+i
-C               print*,ix,j,i
 C              For vmrs and cloud density always hold the log. 
 C              Avoids instabilities arising from greatly different profiles 
 C              such as T and vmrs
@@ -1654,15 +1652,12 @@ C               **** vmr, cloud, para-H2 , fcloud, take logs ***
                  err = eref(j,i)/dhsphere(i,j)
                 endif
                endif
-C               print*,'Model 30A: ix,x0(ix)',ix,x0(ix)
                sx(ix,ix)=err**2
 304           continue
 303          continue
              read(28,*)xpc
              close(28)
-C             print*,ivar,ipar,nlevel,xpc
              varparam(ivar,ipar)=xpc
-C             print*,'A',varparam(ivar,3+nlevel)
 
              nlen = nlong*nlevel
              dlong = 360.0/float(nlong)
@@ -1670,20 +1665,16 @@ C             print*,'A',varparam(ivar,3+nlevel)
               ip = i-nlevel*int((float(i)-0.5)/float(nlevel))
               il = 1 + int((float(i)-0.5)/float(nlevel))
               ix=nx+i
-C              print*,'ix,il,ip',ix,il,ip
               if(pref(ip).lt.0.0) then
                print*,'Error in readapriori.f. A priori file '
                print*,'must be on pressure grid '
                print*,'Model 30'
                stop
               endif            
-C              print*,'Press = ',pref(ip)
               do 406 j=i+1,nlen
                jp = j-nlevel*int((float(j)-0.5)/float(nlevel))
                jl = 1 + int((float(j)-0.5)/float(nlevel))
                jx=nx+j
-C               print*,'jx,jl,jp',jx,jl,jp
-C               print*,'P(J) = ',pref(jp)
 
                delp = log(pref(jp))-log(pref(ip))
                arg = abs(delp/clen1)
@@ -1695,9 +1686,8 @@ C               print*,'P(J) = ',pref(jp)
                if(dlon.lt.-180) dlon=dlon+360.
                arg1 = abs(dlon/clen2)
 
-C               print*,ix,jx,delp,clen1,arg,flon,flon1,dlon,clen2,arg1
                xfac = exp(-(arg+arg1))
-C               print*,xfac
+
                if(xfac.ge.SXMINFAC)then  
                  sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
                  sx(jx,ix) = sx(ix,jx)
@@ -1924,7 +1914,7 @@ C               print*,xfac
 
              do 807 i=1,nlong
               ix=nx+nlen+i
-              do 806 j=i+1,nlong
+              do 906 j=i+1,nlong
                jx=nx+nlen+j
                flon = (i-1)*dlong
                flon1 = (j-1)*dlong
@@ -1939,7 +1929,7 @@ C               print*,xfac
                  sx(jx,ix) = sx(ix,jx)
                endif
 
-806           continue
+906           continue
 807          continue
 
              nx=nx+nlen+nlong
@@ -2387,6 +2377,85 @@ C            Read in parameters: Tstar, Rstar, Sdist, Tint
              varparam(ivar,4)=clen2
 
              nx = nx+5
+
+           elseif(varident(ivar,3).eq.44)then
+C          ***** inhomogeneous disc model with Line et al. (2013)
+C          ***** and  Parmentier and Guillot (2014) double grey analytic 
+C          ***** TP profile  ********
+             read(27,1)ipfile
+             print*,'Model 44'
+             print*,'reading variable ',ivar,' from ',ipfile
+             open(28,file=ipfile,status='old')
+             read(28,1)buffer
+             if(buffer(1:2).eq.'Ex')then
+              iex=1
+              read(28,*)nlong,clen2
+             else
+              iex=0
+              read(buffer,*)nlong,clen2
+             endif
+             print*,'iex = ',iex
+             print*,nlong,clen2
+             varparam(ivar,1)=nlong
+             ix=nx
+             do 803 i=1,5
+              if(iex.eq.0)then
+               read(28,*)(dhsphere(i,j),j=1,nlong),
+     1         eref(1,i)
+              else
+               read(28,*)(dhsphere(i,j),j=1,nlong),
+     1         (eref(j,i),j=1,nlong)
+              endif
+              do 804 j=1,nlong
+               ix=nx + (j-1)*5+i
+               if(dhsphere(i,j).gt.0.0) then
+                  x0(ix) = alog(dhsphere(i,j)) 
+                  lx(ix)=1
+               else 
+                  print*,'Error in readapriori.f. Cant take log of zero'
+                  print*,i,dhsphere(i,j)
+                  stop
+               endif
+               if(iex.eq.0)then
+                 err = eref(1,i)/dhsphere(i,j)
+               else
+                 err = eref(j,i)/dhsphere(i,j)
+               endif
+               sx(ix,ix)=err**2
+804           continue
+803          continue
+             read(28,*)xpc
+             varparam(ivar,2)=xpc
+             read(28,*)(varparam(ivar,j),j=3,6)
+             close(28)
+
+             nlen = nlong*5
+             dlong = 360.0/float(nlong)
+             do 805 i=1,nlen
+              il = 1 + int((float(i)-0.5)/5.0)
+              ix=nx+i
+              do 806 j=i+1,nlen
+               jl = 1 + int((float(j)-0.5)/5.0)
+               jx=nx+j
+
+               flon = (il-1)*dlong
+               flon1 = (jl-1)*dlong
+               dlon = flon1-flon
+               if(dlon.gt.180.) dlon=dlon-360.
+               if(dlon.lt.-180) dlon=dlon+360.
+               arg1 = abs(dlon/clen2)
+
+               xfac = exp(-arg1)
+
+               if(xfac.ge.SXMINFAC)then  
+                 sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
+                 sx(jx,ix) = sx(ix,jx)
+               endif
+
+806           continue
+805          continue               
+
+             nx=nx+nlen
 
            else         
             print*,'vartype profile parametrisation not recognised'

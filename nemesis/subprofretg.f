@@ -49,7 +49,7 @@ C	XMAP(MAXV,MAXGAS+2+MAXCON,MAXPRO) REAL Matrix relating functional
 C				derivatives calculated by CIRSRADG to the 
 C				elements of the state vector. 
 C				Elements of XMAP are the rate of change of
-C				the profile vectors (i.e. temperature, vmr prf
+C				the profile vectors (i.e., temperature, vmr prf
 C				files) with respect to the change in the state
 C				vector elements. So if X1(J) is the modified 
 C				temperature,vmr,clouds at level J to be 
@@ -126,6 +126,7 @@ C     ***********************************************************************
       REAL XWID,Y,Y0,XX,L1,THETA(MTHET),GRADTMP(MAXPRO,MX)
       LOGICAL FEXIST,VPEXIST,NTEST,ISNAN,FVIVIEN
       REAL VP(MAXGAS),VP1,XS,GRADL(MAXPRO,MX)
+      REAL GRADLINE(MAXPRO,MAXPRO)
       INTEGER SVPFLAG(MAXGAS),SVPFLAG1,NLONG,NTHETA,N1,N2
       INTEGER NVP,ISWITCH(MAXGAS),IP1,IP2,JKNEE,NLEVEL
       REAL XLDEEP,XLHIGH,HVS,dlogp,XPC
@@ -133,6 +134,10 @@ C     ***********************************************************************
       REAL XC1,XC2,RH,SLOPE,xch4new(maxpro),xch4newgrad(maxpro)
       REAL PD,RHC,RHM,VX,PT,FLUX,FRAIN,IMODEL
       REAL ALPHAP,BETAP,KIRP,GAMMAV1,GAMMAV2,TSTAR,RSTAR,SDIST
+      REAL XLINE(4,MAXPRO),GLINE(4,MAXPRO,5),DXD1,DXD2,DXD3,DXD4
+      REAL LONZ(4),TOUT(MAXPRO)
+      INTEGER IX1,IX2,IX3,IX4,ILON
+
       CALL RESERVEGAS
 
 C----------------------------------------------------------------------------
@@ -2705,20 +2710,16 @@ C        Need to interpolation in longitude for each vertical level
          ENDIF
 
 C        Read in pressure grid from varparam
-C        print*,'Model 30 - pressure'
          DO J=1,NLEVEL
           LP1(J)=ALOG(VARPARAM(IVAR,J+2))
-          print*,J,VARPARAM(IVAR,J+2),LP1(J),EXP(LP1(J))
           DO K=1,NP
            GRADL(J,K)=0.
           ENDDO
          ENDDO
        
 C        Set exponent of cos(lat) variation
-C         print*,IVAR,NLEVEL+3,VARPARAM(IVAR,NLEVEL+3)
 
          XPC = VARPARAM(IVAR,NLEVEL+3) 
-         print*,'XPC = ',XPC
 
          DO J=1,NLEVEL
           SUM=0.
@@ -2727,8 +2728,6 @@ C         print*,IVAR,NLEVEL+3,VARPARAM(IVAR,NLEVEL+3)
            YLONG(I)=XN(J1)
            SUM=SUM+XN(J1)/FLOAT(NLONG)
           ENDDO
-C          print*,'ylong',(YLONG(I),I=1,NLONG)
-C          print*,SUM
 
 C         Alternate - setting pole temperature to average of morning and
 C                     afternoon terminators.
@@ -2739,8 +2738,8 @@ C                     afternoon terminators.
           YTH = (1.0-FLONG)*YLONG(ILONG)+FLONG*YLONG(JLONG)
           XP1(J) = SUM + (YTH-SUM)*(COS(LATITUDE*DTR))**XPC
 
-C          print*,ILONG,FLONG,YLONG(ILONG),YLONG(JLONG),YTH          
-C          print*,LATITUDE,COS(LATITUDE*DTR),J,XP1(J)
+C         Still need to incorporate gradient of SUM
+
           K=(ILONG-1)*NLEVEL+J
           GRADL(J,K)=(1.0-FLONG)*(COS(LATITUDE*DTR))**XPC
           K=(JLONG-1)*NLEVEL+J
@@ -2749,12 +2748,6 @@ C          print*,LATITUDE,COS(LATITUDE*DTR),J,XP1(J)
          ENDDO
 
 C        Now need to interpolate local NLEVEL profile to NPRO profile
-
-C         DO JLEV=1,NLEVEL
-C          print*,'Sanity XP1',JLEV,LP1(JLEV),EXP(LP1(JLEV)),
-C     1     XP1(JLEV)
-C         ENDDO
-
          DO J=1,NPRO
 
           L1 = ALOG(P(J))
@@ -2800,25 +2793,7 @@ C         ENDDO
            ENDIF
           ENDDO
 
-C          print*,'Prof_int',J,P(J),X1(J)
-
          ENDDO
-
-C         open(12,file='grad1.txt',status='unknown')
-C          write(12,*)nlong,nlevel,npro
-C          write(12,*)latitude,longitude,ilong,jlong,
-C     1     flong,(cos(latitude*dtr))**xpc
-
-C          do i = 1,nlevel
-C            write(12,*)lp1(i),xp1(i)
-C          enddo
-C          do i = 1,npro
-C            write(12,*)alog(p(i)),x1(i)
-C          enddo
-C          do i=1,npro
-C            write(12,*)(gradtmp(i,k),k=1,np)
-C          enddo
-C         close(12)
 
         ELSEIF(VARIDENT(IVAR,3).EQ.31)THEN
 C        Model 31. Inhomogenous disc scaling factor
@@ -3572,7 +3547,119 @@ C        ***************************************************************
 
          CALL PARMENTIERGUILLOT1(IPLANET,LATITUDE,NPRO,
      1    P,H,ALPHAP,BETAP,KIRP,GAMMAV1,GAMMAV2,TSTAR,RSTAR,
-     2    SDIST,TINT,X,GRADTOUT)
+     2    SDIST,TINT,X1,GRADTOUT)
+        
+         DO J=1,NPRO
+          XMAP(NXTEMP+1,IPAR,J)=ALPHAP*GRADTOUT(J,1)
+          XMAP(NXTEMP+2,IPAR,J)=BETAP*GRADTOUT(J,2)
+          XMAP(NXTEMP+3,IPAR,J)=KIRP*GRADTOUT(J,3)
+          XMAP(NXTEMP+4,IPAR,J)=GAMMAV1*GRADTOUT(J,4)
+          XMAP(NXTEMP+5,IPAR,J)=GAMMAV2*GRADTOUT(J,5)
+         ENDDO
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.44)THEN
+C        Model 44. Equivalent to Model 30 (i.e., Inhomogenous disc 
+C        profile at multiple locations, but using Parmentier and Guillot 
+C        (2014) and Line et al. (2013) double grey analytic TP profile
+C        ***************************************************************
+
+C        Need to interpolation in longitude for each parameter
+         NLONG = INT(VARPARAM(IVAR,1))
+         print*,'Model 44 - nlong = ',nlong
+         print*,'Model 44 - latitude,longitude = ',LATITUDE,
+     &           LONGITUDE
+         DLONG=360.0/FLOAT(NLONG)
+         LONGITUDE1=LONGITUDE
+         IF(LONGITUDE.LT.0.0)LONGITUDE1=LONGITUDE+360.
+         IF(LONGITUDE.GE.360.0)LONGITUDE1=LONGITUDE-360.
+         ILONG=1+INT(LONGITUDE1/DLONG)
+         FLONG = (LONGITUDE1 - (ILONG-1)*DLONG)/DLONG
+         if(flong.gt.1.0)then 
+          print*,'Error: flong > 1.0'
+          stop
+         endif
+         IF(ILONG.LT.NLONG)THEN
+          JLONG=ILONG+1
+         ELSE
+          JLONG=1
+         ENDIF
+
+C        Set exponent of cos(lat) variation
+         XPC = VARPARAM(IVAR,2) 
+C        Set other TP parameters
+         TSTAR = VARPARAM(IVAR,3)
+         RSTAR = VARPARAM(IVAR,4)
+         SDIST = VARPARAM(IVAR,5)
+         TINT = VARPARAM(IVAR,6)
+
+C        Setting pole temperature to average of morning and
+C                     afternoon terminators.
+         N1=NLONG/4
+         N2=N1+2*N1        
+
+         N1=N1+1
+         N2=N2+1
+  
+         LONZ(1)=ILONG
+         LONZ(2)=JLONG
+         LONZ(3)=N1
+         LONZ(4)=N2
+
+         DO J=1,4
+          I=1
+          ILON=LONZ(J)
+          IX=NXTEMP + (ILON-1)*5+1
+          ALPHAP=EXP(XN(IX))
+          IX=NXTEMP + (ILON-1)*5+2
+          BETAP=EXP(XN(IX))
+          IX=NXTEMP + (ILON-1)*5+3
+          KIRP=EXP(XN(IX))
+          IX=NXTEMP + (ILON-1)*5+4
+          GAMMAV1=EXP(XN(IX))
+          IX=NXTEMP + (ILON-1)*5+5
+          GAMMAV2=EXP(XN(IX))
+
+          CALL PARMENTIERGUILLOT1(IPLANET,LATITUDE,NPRO,
+     1    P,H,ALPHAP,BETAP,KIRP,GAMMAV1,GAMMAV2,TSTAR,RSTAR,
+     2    SDIST,TINT,TOUT,GRADTOUT)
+
+          DO I=1,NPRO
+           XLINE(J,I)=TOUT(I)
+           GLINE(J,I,1)=ALPHAP*GRADTOUT(I,1)
+           GLINE(J,I,2)=BETAP*GRADTOUT(I,2)
+           GLINE(J,I,3)=KIRP*GRADTOUT(I,3)
+           GLINE(J,I,4)=GAMMAV1*GRADTOUT(I,4)
+           GLINE(J,I,5)=GAMMAV2*GRADTOUT(I,5)
+          ENDDO
+         ENDDO
+   
+         DO I=1,NPRO
+
+C        Setting pole temperature to average of morning and
+C                     afternoon terminators.
+          SUM=0.5*(XLINE(3,I)+XLINE(4,I))
+
+          YTH = (1.0-FLONG)*XLINE(1,I)+FLONG*XLINE(2,I)
+          X1(J) = SUM + (YTH-SUM)*(COS(LATITUDE*DTR))**XPC
+          
+          DO K=1,5
+           DXD1=(1.0-FLONG)*GLINE(1,I,K)*(COS(LATITUDE*DTR))**XPC
+           DXD2=FLONG*GLINE(2,I,K)*(COS(LATITUDE*DTR))**XPC
+           DXD3=(1-(COS(LATITUDE*DTR))**XPC)*0.5*GLINE(3,I,K)
+           DXD4=(1-(COS(LATITUDE*DTR))**XPC)*0.5*GLINE(4,I,K)
+           IX1 = NXTEMP+LONZ(1)*5+K
+           IX2 = NXTEMP+LONZ(2)*5+K
+           IX3 = NXTEMP+LONZ(3)*5+K
+           IX4 = NXTEMP+LONZ(4)*5+K
+           XMAP(IX1,IPAR,I)=DXD1
+           XMAP(IX2,IPAR,I)=DXD2
+           XMAP(IX3,IPAR,I)=DXD3
+           XMAP(IX4,IPAR,I)=DXD4
+
+          ENDDO
+    
+         ENDDO
+
         
          DO J=1,NPRO
           XMAP(NXTEMP+1,IPAR,J)=GRADTOUT(J,1)

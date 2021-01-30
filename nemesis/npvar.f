@@ -20,7 +20,7 @@ C     **************************************************************
       real vpar1
 
       np=1
-      if(imod.le.43)then
+      if(imod.le.44)then
         if(imod.eq.-1)np = npro
         if(imod.eq.0)np = npro
         if(imod.eq.1)np = 2
@@ -64,6 +64,7 @@ C     **************************************************************
         if(imod.eq.41)np = 5
         if(imod.eq.42)np = 2
         if(imod.eq.43)np = 5
+        if(imod.eq.44)np = 5*int(vpar1)
       else
        print*,'npvar:  Model parameterisation not defined = ',imod
       endif

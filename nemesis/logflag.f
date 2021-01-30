@@ -55,6 +55,7 @@ C       Variable is not temperature  - may need to take exponent
       if(imod.eq.41)iflag=1 ! sromovsky methane parameterisation
       if(imod.eq.42)iflag=1 ! ackerman and marley parameterisation
       if(imod.eq.43)iflag=1 ! double grey parameterised T-profile
+      if(imod.eq.44)iflag=1 ! inhomogenous disc double grey parameterised T-profile
       if(imod.eq.1.and.ip.eq.2)iflag=1 ! log fsh - fixed knee
       if(imod.eq.20.and.ip.eq.2)iflag=1 ! log fsh - fixed knee
       if(imod.eq.4.and.ip.eq.2)iflag=1 ! log fsh - var. knee

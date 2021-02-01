@@ -12,7 +12,7 @@ cd somewhere safe
 
 then type
 
-git clone git@gitlab.physics.ox.ac.uk:planetary/radtrancode.git
+git clone https://github.com/patirwin123/radtrancode.git
 
 You should now have the current git repository in your safe directory.
 

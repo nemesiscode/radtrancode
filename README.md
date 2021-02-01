@@ -12,7 +12,11 @@ cd somewhere safe
 
 then type
 
-git clone https://github.com/patirwin123/radtrancode.git
+git clone https://github.com/patirwin123/radtrancode.git if GitHub
+
+or
+
+git clone git@gitlab.physics.ox.ac.uk:planetary/radtrancode.git if GitLab
 
 You should now have the current git repository in your safe directory.
 
@@ -43,5 +47,5 @@ To update your copy with the latest version on github the command is:
 git pull origin
 (updates the default branch master)
 
-To check in your updates to github you type
+To check in your updates to github/gitlab you type
 git push origin <branchname>

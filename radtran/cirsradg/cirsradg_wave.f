@@ -580,11 +580,11 @@ C
 C=======================================================================
 
         DO k=1,ngas
-          IF(IDGAS(K).EQ.81)THEN
+          IF(IDGAS(K).EQ.80)THEN
                 pelec=pp(J,K)
                 eflag=1
           ENDIF
-          IF(IDGAS(K).EQ.80) THEN
+          IF(IDGAS(K).EQ.91) THEN
                 AMOUNTHMIN = AMOUNT(J,K)
                 PPRESSHMIN = pp(J,K)    
           ENDIF

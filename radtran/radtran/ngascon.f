@@ -246,13 +246,15 @@ C           Serdyuchenko ozone coefficients
        ELSEIF ((ID.EQ.48) .AND. (ISO.EQ.0) .AND. (EFLAG.GT.0))THEN
 
 C           Free Free calculation for H- opacity
-C           Requires H- (80), e- (81) and H(48) to work - in that order!!!
+C           Requires H- (91), e- (80) and H(48) to work.
+C             relevant variables set in cirsrad/cirsrad_wave.f 
+C             and cirsradg/cirsradg_wave.f
             Nh = (PPRESS*1.013E6*PELEC)/PPRESSHMIN
 C            WRITE(*,*), 'ngascon electron', PELEC, AMOUNTHMIN, Nh
             ABSORB = AMOUNTHMIN*HMIN_FF(FF,TEMP)*Nh
 C            WRITE(*,*) 'ngascon e-',AMOUNT,ABSORB
 
-       ELSEIF ((ID.EQ.80) .AND. (ISO.EQ.0))THEN
+       ELSEIF ((ID.EQ.91) .AND. (ISO.EQ.0))THEN
 C               Bound-free calculation for H- opacity.
 
             ABSORB = AMOUNT*HMIN_BF(FF)

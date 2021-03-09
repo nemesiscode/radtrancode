@@ -35,7 +35,7 @@ C     Set measurement vector and source vector lengths here.
 
       CALL readrefhead(runname,npro,nvmr,gasgiant)
       if(npro.gt.maxpro)then
-       print*,'Error in Nemesis. npro > maxpro : ',npro,maxpro
+       print*,'Error: npro > maxpro : ',npro,maxpro
        stop
       endif
 
@@ -48,9 +48,9 @@ C     Also read in whether scattering is required (iscat)
 C     Also read in whether lbl calculation is required (ilbl)
       READ(32,*)ispace,iscat,ilbl
 
-      if(ilbl.gt.0) then
-       print*,'Nemesis - LBL calculation'
-      endif
+C      if(ilbl.gt.0) then
+C       print*,'Nemesis - LBL calculation'
+C      endif
       if(ilbl.eq.0)CALL readkkhead(runname,vkstart,vkend,vkstep)
 
 
@@ -75,8 +75,6 @@ C     Read in total number of spectra to fit and starting offset
 999   continue
       CLOSE(32)
 
-      print*,'iform = ',iform
-
 
       lspec=36
       CALL file(runname,runname,'spx')
@@ -87,7 +85,6 @@ C     skip first ioff-1 spectra
 
        call readnextspavX(lspec,iform,woff,xlat,xlon,ngeom,nav,ny,y,se1,
      & fwhm,nconv,vconv,angles,wgeom,flat,flon)
-       print*,'A iform = ',iform
       enddo
     
 
@@ -96,8 +93,6 @@ C     skip first ioff-1 spectra
 C     Read in measurement vector, obs. geometry and covariances
       call readnextspavX(lspec,iform,woff,xlat,xlon,ngeom,nav,ny,y,
      1  se1,fwhm,nconv,vconv,angles,wgeom,flat,flon)
-
-      print*,'B iform = ',iform
 
 C     Read in forward modelling errors
       call forwarderr(ename,ngeom,nconv,vconv,woff,rerr)
@@ -133,15 +128,11 @@ C     Calculate the tabulated wavelengths of c-k look up tables
       enddo
       endif
 
-      print*,'C iform = ',iform
-
 C     set up a priori of x and its covariance
       CALL readapriori(runname,lin,lpre,xlat,npro,nvar,varident,
      1  varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,jfrac,nx,xa,
      2  sa,lx)
 
-
-      print*,'D iform = ',iform
 
 C     Calculate retrieval errors.
 C     Simple errors, set to sqrt of diagonal of ST

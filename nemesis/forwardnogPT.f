@@ -103,6 +103,9 @@ C     **************************************************************
       integer solnpt,iform
 
       common /solardat/iread, iform, stelrad, solwave, solrad,  solnpt
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
  
 
 C     jradf and jloggf are passed via the planrad common block
@@ -213,7 +216,7 @@ C      enddo
       endif
 
 
-      print*,'Nav = ',nav(igeom)
+      if(idiag.gt.0)print*,'Nav = ',nav(igeom)
 
       nconv1 = nconv(igeom)
       nwave1 = nwave(igeom)
@@ -248,7 +251,7 @@ C     emissivity spectrum
 
          ix=ix1-1
 
-         print*,'forwardnogPT, ix,nx = ',ix,nx
+         if(idiag.gt.0)print*,'forwardnogPT, ix,nx = ',ix,nx
 
          if(ix.gt.0)then
           xref = xn(ix)
@@ -294,18 +297,18 @@ C        Set up parameters for non-scattering cirsrad run.
 
 
 C        Get base heights of layers
-         print*,'Calling readdrv'
-         print*,runname
+         if(idiag.gt.0)print*,'Calling readdrv'
+         if(idiag.gt.0)print*,runname
          call readdrvh(runname,height)        
          area0 = pi*stelrad**2
          area1 = pi*(radius2+height(1))**2
 
-         print*,'AA',runname
-         print*,'AA',pi,stelrad,radius2,height(1)
-         print*,'AA',area0,area1
+         if(idiag.gt.0)print*,'AA',runname
+         if(idiag.gt.0)print*,'AA',pi,stelrad,radius2,height(1)
+         if(idiag.gt.0)print*,'AA',area0,area1
 
 
-         print*,'areas = ',area0,area1
+         if(idiag.gt.0)print*,'areas = ',area0,area1
    
          if(ix.eq.0)then
           write(9,*)nconv1,npath

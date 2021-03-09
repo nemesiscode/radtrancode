@@ -18,6 +18,9 @@ C     **************************************************************
       implicit none
       integer ivar,imod,iflag,ip
       real vpar1
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
       iflag=0
 
       if(ivar.ne.0)then

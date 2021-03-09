@@ -9,6 +9,8 @@ C     **********************************************************
       integer nvar,nx,varident(mvar,3),icheck,npro,i,ilog
       real xn(mx),tmp(maxpro),varparam(mvar,mparam)
       integer np,npvar,istart,logflag,imod,itype,ivar
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       icheck=0
       istart=0

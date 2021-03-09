@@ -62,6 +62,8 @@ C     ********************************************************************
       double precision kk(my,my),kt(my,my)
       double precision sum1,sum2,sum3,sei(my,my)
       double precision dd_out(mx,my),aa_out(mx,mx)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
      
@@ -109,7 +111,7 @@ C       jmod = 1 : Gaussian elimination
 C       jmod = 2 : Cholesky decomposition
 
         jmod=2 
-        print*,'Calc_gain_matrix: Inverting...'
+        if(idiag.gt.0)print*,'Calc_gain_matrix: Inverting...'
         call dinvertm(jmod,icheck,a,ny,my,b)
         b1=ny
         b2=ny
@@ -136,7 +138,7 @@ C       Add sxi to c
 
 C       Invert c, put answer in a
         jmod = 2
-        print*,'Calc_gain_matrix: Inverting...'
+        if(idiag.gt.0)print*,'Calc_gain_matrix: Inverting...'
         call dinvertm(jmod,icheck,c,nx,my,a)
         a1=nx
         a2=nx

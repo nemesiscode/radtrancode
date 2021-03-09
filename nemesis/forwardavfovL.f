@@ -101,6 +101,9 @@ C     **************************************************************
       integer solnpt,iform,iread
 
       common /solardat/iread, iform, stelrad, solwave, solrad,  solnpt
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
 
 
 C      print*,'ForwardavfovL'
@@ -143,7 +146,7 @@ C     Initialise arrays
        stop
       endif
 
-      print*,'forwardavfovL. jpre = ',jpre
+      if(idiag.gt.0)print*,'forwardavfovL. jpre = ',jpre
 
 
 C     Check that all observations have same wavelengths - necessary for
@@ -256,25 +259,24 @@ C     Set up parameters for non-scattering cirsrad run.
 
       itype=12			! scloud12. not used here
 
-      print*,'hcorrx = ',hcorrx
+      if(idiag.gt.0)print*,'hcorrx = ',hcorrx
 
       call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
      1  vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf, 
      2  nx, xmap, vconv1, nconv1, npath, calcoutL, gradientsL,iscat)
 
-C      print*,'hcorrx, npath, nlayer = ',hcorrx,npath,nlayer
-
 C     Read in base heights from '.drv' file
       call readdrvh(runname,height)
 
-      print*,'hcorrx = ',hcorrx
+      if(idiag.gt.0)print*,'hcorrx = ',hcorrx
 
       ioff = 0
 
       do 100 igeom=1,ngeom
-       print*,'ForwardavfovL. Spectrum ',igeom,' of ',ngeom
-       print*,'Nav = ',nav(igeom)
-
+       if(idiag.gt.0)then
+        print*,'ForwardavfovL. Spectrum ',igeom,' of ',ngeom
+        print*,'Nav = ',nav(igeom)
+       endif
        nconv1 = nconv(igeom)
        nwave1 = nwave(igeom)
 
@@ -295,24 +297,29 @@ C     Read in base heights from '.drv' file
          emiss_ang = angles(igeom,iav,2)
          aphi = angles(igeom,iav,3)
          
-         print*,'Iav = ',iav
-         print*,'Angles : ',sol_ang,emiss_ang,aphi
-
+         if(idiag.gt.0)then
+          print*,'Iav = ',iav
+          print*,'Angles : ',sol_ang,emiss_ang,aphi
+         endif
          if(emiss_ang.lt.0)then
-           print*,'Interpolating limb-calculated spectra'
-           htan = sol_ang+hcorr+hcorrx
-           print*,'forwardavfovL: sol_ang, hcorr,hcorrx',
+           if(idiag.gt.0)then
+            print*,'Interpolating limb-calculated spectra'
+            htan = sol_ang+hcorr+hcorrx
+            print*,'forwardavfovL: sol_ang, hcorr,hcorrx',
      1       sol_ang, hcorr,hcorrx
-           print*,'htan = ',htan
+            print*,'htan = ',htan
+           endif
            jpath=-1
            do i=1,nlayer-1
             if(height(i).le.htan.and.height(i+1).gt.htan)jpath=i
            enddo
 
            if(jpath.lt.1)then
-            print*,'Error in forwardavfovL: tangent height is'
-            print*,'out of range'
-            print*,nlayer,height(1),height(nlayer),htan
+            if(idiag.gt.0)then
+             print*,'Error in forwardavfovL: tangent height is'
+             print*,'out of range'
+             print*,nlayer,height(1),height(nlayer),htan
+            endif           
            else
             fh = (htan-height(jpath))/(height(jpath+1)-height(jpath))
            endif
@@ -365,7 +372,6 @@ C           just calculate transmission of path. Assumes no thermal emission in$
              do j=1,nconv1
   	      ioff1=nconv1*(ipath-1)+j
               yn(ioff+j)=yn(ioff+j)+wgeom(igeom,iav)*fh*calcoutL(ioff1)
-C              print*,'X',ipath,j,ioff1,calcoutL(ioff1)
              enddo
     
              do i=1,nx
@@ -387,14 +393,11 @@ C            Add solar occultation radiance to thermal emission
 
              do ipath=jpath+nlayer,jpath+nlayer+1
               fh=1.0-fh
-C              print*,ipath,jpath,nlayer
               do j=1,nconv1
 C              Get Solar irradiance
                CALL get_solar_wave(vconv1(j),dist,solar)
                xsol =  solar/solomeg
-C               print*,vconv1(j),dist,solar,xsol
   	       ioff1=nconv1*(ipath-1)+j
-C               print*, wgeom(igeom,iav),fh,calcoutL(ioff1)
                yn(ioff+j)=yn(ioff+j)+
      1  wgeom(igeom,iav)*fh*calcoutL(ioff1)*xsol
              
@@ -430,7 +433,7 @@ C            divide thermal emission + solar occultation by solar radiance at to
            endif
 
          else
-           print*,'Calculating new nadir-spectra'
+           if(idiag.gt.0)print*,'Calculating new nadir-spectra'
            iscat = 0
            call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,lowbc,
      1      galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,layht,
@@ -472,13 +475,13 @@ C          First path is assumed to be thermal emission
 
       if(jpre.gt.0)then
 
-        print*,'Calculating RoC with tangent pressure'
+        if(idiag.gt.0)print*,'Calculating RoC with tangent pressure'
         pressR = xn(jpre)
         delp = pressR*0.01
-        print*,'delp = ',delp,'P0,P1 = ',exp(pressR),exp(pressR+delp)
-        print*,'Delta P = ',exp(pressR)-exp(pressR+delp)
-C        print*,pressR,pressR+delp
-C        print*,exp(pressR),exp(pressR+delp)
+        if(idiag.gt.0)then
+         print*,'delp = ',delp,'P0,P1 = ',exp(pressR),exp(pressR+delp)
+         print*,'Delta P = ',exp(pressR)-exp(pressR+delp)
+        endif
         xn(jpre)=pressR+delp
 
 C       Set up all files to recalculate limb spectra
@@ -495,23 +498,28 @@ C       Set up all files to recalculate limb spectra
 
         ioff=0
         do 200 igeom=1,ngeom
-         print*,'ForwardavfovL-press. Spectrum ',
+         if(idiag.gt.0)then
+          print*,'ForwardavfovL-press. Spectrum ',
      1    igeom,' of ',ngeom
-         print*,'Nav = ',nav(igeom)
+          print*,'Nav = ',nav(igeom)
+         endif
 
          do 112 iav = 1,nav(igeom)
          sol_ang = angles(igeom,iav,1)
          emiss_ang = angles(igeom,iav,2)
          aphi = angles(igeom,iav,3)
          
-         print*,'Iav = ',iav
-         print*,'Angles : ',sol_ang,emiss_ang,aphi
-
+         if(idiag.gt.0)then
+          print*,'Iav = ',iav
+          print*,'Angles : ',sol_ang,emiss_ang,aphi
+         endif
          if(emiss_ang.lt.0)then
-           print*,'Interpolating limb-calculated spectra'
            htan = sol_ang + hcorr
-           print*,'forwardfovL1: sol_ang,hcorr,htan',sol_ang,
+           if(idiag.gt.0)then
+            print*,'Interpolating limb-calculated spectra'
+            print*,'forwardfovL1: sol_ang,hcorr,htan',sol_ang,
      1      hcorr,htan
+           endif
            jpath=-1
            do i=1,nlayer-1
             if(height(i).le.htan.and.height(i+1).gt.htan)jpath=i
@@ -533,9 +541,10 @@ C          heights coincide with the base altitude of each layer
 C           just calculate transmission of path. Assumes no thermal emission in$
 C           If occult=4 then calculate absorption = 1 - tranmission
 
-            print*,'occult = ',occult
-            print*,'jpath,fh,nconv1 = ',jpath,fh,nconv1
-c            do ipath=jpath+nlayer,jpath+nlayer+1
+            if(idiag.gt.0)then
+             print*,'occult = ',occult
+             print*,'jpath,fh,nconv1 = ',jpath,fh,nconv1
+            endif
             do ipath=jpath,jpath+1
              fh=1.0-fh
              do j=1,nconv1
@@ -545,7 +554,6 @@ c            do ipath=jpath+nlayer,jpath+nlayer+1
               ioff1=nconv1*(ipath-1)+j
               yn1(ioff+j)=yn1(ioff+j)+
      1          wgeom(igeom,iav)*fh*calcout1(ioff1)
-C              print*,ioff,j,yn(ioff+j),yn1(ioff+j)
              enddo
             enddo
             do j=1,nconv1
@@ -624,14 +632,17 @@ C               kk(ioff+j,jpre) = -(yn1(ioff+j)-yn(ioff+j))/(pressR*delp)
          emiss_ang = angles(igeom,iav,2)
          aphi = angles(igeom,iav,3)
          
-         print*,'Iav = ',iav
-         print*,'Angles : ',sol_ang,emiss_ang,aphi
-
+         if(idiag.gt.0)then
+          print*,'Iav = ',iav
+          print*,'Angles : ',sol_ang,emiss_ang,aphi
+         endif
          if(emiss_ang.lt.0)then
-           print*,'Interpolating limb-calculated spectra'
            htan = sol_ang + hcorr + 1.0
-           print*,'forwardfovL1: sol_ang,hcorr,htan',sol_ang,
+           if(idiag.gt.0)then
+            print*,'Interpolating limb-calculated spectra'
+            print*,'forwardfovL1: sol_ang,hcorr,htan',sol_ang,
      1      hcorr,htan
+           endif
            jpath=-1
            do i=1,nlayer-1
             if(height(i).le.htan.and.height(i+1).gt.htan)jpath=i

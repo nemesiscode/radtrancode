@@ -50,6 +50,8 @@ C     ********************************************************************
       double precision kk(my,my),kt(my,my)
       double precision sum1,sum2,sum3
 
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
      
 C     load kk with kk_in
       do i=1,ny
@@ -98,15 +100,17 @@ C     Add se to a
       sum1 = sum1/dble(ny)
       sum2 = sum2/dble(ny)
       sum3 = sum3/dble(ny) 
-      print*,'Assess:'
-      print*,'Average of diagonal elements of Kk*Sx*Kt : ',sum1 
-      print*,'Average of diagonal elements of Se : ',sum2 
-      print*,'Ratio = ',sum1/sum2
-      print*,'Average of Kk*Sx*Kt/Se element ratio : ',sum3 
-      if(sum3.gt.10.0)then
-       print*,'******************* ASSESS WARNING *****************'
-       print*,'Insufficient constraint. Solution likely to be exact'
-       print*,'****************************************************'
+      if(idiag.gt.0)then
+       print*,'Assess:'
+       print*,'Average of diagonal elements of Kk*Sx*Kt : ',sum1 
+       print*,'Average of diagonal elements of Se : ',sum2 
+       print*,'Ratio = ',sum1/sum2
+       print*,'Average of Kk*Sx*Kt/Se element ratio : ',sum3 
+       if(sum3.gt.10.0)then
+        print*,'******************* ASSESS WARNING *****************'
+        print*,'Insufficient constraint. Solution likely to be exact'
+        print*,'****************************************************'
+       endif
       endif
 
       return

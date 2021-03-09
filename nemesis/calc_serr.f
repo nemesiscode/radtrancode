@@ -115,8 +115,6 @@ C     load a with aa-ii
 C     multiply a*b, put answer in c
       call dmult_mat(my,a,aa1,aa2,b,nx,nx,c,c1,c2)
 
-C      print*,'c1,c2 = ',c1,c2
-
 
 C     load a with (aa-ii)T
 
@@ -129,8 +127,6 @@ C     load a with (aa-ii)T
 
 C     multiply c*a, put answer in sn
       call dmult_mat(my,c,c1,c2,a,aa1,aa2,sn,sn1,sn2)
-
-C      print*,'sn1,sn2 = ',sn1,sn2
 
 
 C     Add sn and sm together to give st

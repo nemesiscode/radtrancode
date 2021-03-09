@@ -109,6 +109,8 @@ C     **************************************************************
       integer nvar,varident(mvar,3),ivar
       real varparam(mvar,mparam)
       logical gasgiant
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
 C      print*,'ForwardavfovMCS'
@@ -151,7 +153,7 @@ C     Initialise arrays
        stop
       endif
 
-      print*,'forwardavfovMCS. jpre = ',jpre
+      if(idiag.gt.0)print*,'forwardavfovMCS. jpre = ',jpre
 
 C     Get all the wavelengths for which calculations are required 
 C     at this location, regardless of which geometry.
@@ -220,10 +222,12 @@ C     Now sort wavelength arrays
       enddo      
       if(iswitch.eq.1)goto 41
 
-      print*,'ForwardavfovMCS vconv:'
-      do i=1,nconv1
-       print*,i,vconv1(i)
-      enddo
+      if(idiag.gt.0)then
+       print*,'ForwardavfovMCS vconv:'
+       do i=1,nconv1
+        print*,i,vconv1(i)
+       enddo
+      endif
 
       call setup(runname,gasgiant,nmu,mu,wtmu,isol,dist,lowbc,
      1 galb,nf,nphi,layht,tsurf,nlayer,laytyp,layint)
@@ -262,7 +266,7 @@ C     Set up parameters for non-scattering cirsrad run.
 
       itype=12                  ! scloud12. not used here
 
-      print*,'hcorrx = ',hcorrx
+      if(idiag.gt.0)print*,'hcorrx = ',hcorrx
 
       call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
      1  vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf, 
@@ -271,8 +275,10 @@ C     Set up parameters for non-scattering cirsrad run.
 
       if(jpre.gt.0)then
 
-        print*,'Setting up arrays for calculating  RoC'
-        print*,'with tangent pressure'
+        if(idiag.gt.0)then
+         print*,'Setting up arrays for calculating  RoC'
+         print*,'with tangent pressure'
+        endif
         pressR = xn(jpre)
         delp = pressR*0.01
         xn(jpre)=pressR+delp
@@ -290,12 +296,12 @@ C       Set up all files to recalculate limb spectra
 
       endif
 
-      print*,'hcorrx = ',hcorrx
+      if(idiag.gt.0)print*,'hcorrx = ',hcorrx
 
 C     Read in base heights from '.drv' file
       call readdrvh(runname,height)
 
-      print*,'hcorrx = ',hcorrx
+      if(idiag.gt.0)print*,'hcorrx = ',hcorrx
 
       ioff = 0
 
@@ -310,30 +316,20 @@ C     Define tangent height array
         hview(nlayer+1+i)=layht-(0.001+i*delh)
       enddo
 C     Now calculate viewing angle w.r.t spacecraft
-      print*,'Pre-calc grid'
+      if(idiag.gt.0)print*,'Pre-calc grid'
       do i=1,nview
         thview(i) = asin((RADIUS+hview(i))/SATRAD)
-        print*,i,hview(i),thview(i)
+        if(idiag.gt.0)print*,i,hview(i),thview(i)
       enddo
 
-C      print*,'nconv1 = ',nconv1
-C      do ipath=1,nlayer
-C       print*,ipath,(calcoutL(nconv1*(ipath-1)+iconv),iconv=1,nconv1)
-C      enddo
-C      do i = nlayer+1,nview  
-C       ipath = nlayer+1 + (i-nlayer-1)*2
-C       print*,ipath,(calcoutL(nconv1*(ipath-1)+iconv),iconv=1,nconv1)
-C       ipath=ipath+1
-C       print*,ipath,(calcoutL(nconv1*(ipath-1)+iconv),iconv=1,nconv1)       
-C      enddo
 
       iread=1
 
       do 100 igeom=1,ngeom
-       print*,'ForwardavfovMCS. Obs ',igeom,' of ',ngeom
-
-       print*,'Nav = ',nav(igeom)
-
+       if(idiag.gt.0)then
+        print*,'ForwardavfovMCS. Obs ',igeom,' of ',ngeom
+        print*,'Nav = ',nav(igeom)
+       endif
        nconvtmp = nconv(igeom)
        nwavetmp = nwave(igeom)
 C       Search for B channels to get pixel ID of tangent point. If no B-channels
@@ -353,7 +349,7 @@ C        Get B pixel numbers
 C      Compute A pixel numbers
        ipixA = 1 + 21-ipixB
 
-       print*,'vv, ipixA, ipixB',vv,ipixA,ipixB
+       if(idiag.gt.0)print*,'vv, ipixA, ipixB',vv,ipixA,ipixB
 
        hcorr = 0.0
        do ivar = 1,nvar
@@ -371,24 +367,28 @@ C      Compute A pixel numbers
        emiss_ang = angles(igeom,iav,2)
        aphi = angles(igeom,iav,3)
          
-       print*,'Iav = ',iav
-       print*,'Angles : ',sol_ang,emiss_ang,aphi
+       if(idiag.gt.0)then
+        print*,'Iav = ',iav
+        print*,'Angles : ',sol_ang,emiss_ang,aphi
+       endif
 
        xlat = flat(igeom,iav)   
        xlon = flon(igeom,iav)   
        dtr = 3.1415927/180.0
        if(emiss_ang.lt.0.or.emiss_ang.gt.80)then
-           print*,'Interpolating pre-calculated spectra'
+           if(idiag.gt.0)print*,'Interpolating pre-calculated spectra'
            if(emiss_ang.lt.0)then
              htan = sol_ang+hcorr+hcorrx
            else
              htan = -RADIUS*(1.0-SIN(emiss_ang*dtr))+hcorr+hcorrx
            endif
            caltbore = altbore+hcorr+hcorrx
-           print*,'forwardavfovMCS: sol_ang, hcorr, hcorrx',
-     1       sol_ang, hcorr,hcorrx
-           print*,'htan = ',htan
-           print*,'caltbore = ',caltbore
+           if(idiag.gt.0)then
+            print*,'forwardavfovMCS: sol_ang, hcorr, hcorrx',
+     1       sol_ang, hcorr,hcorrx           
+            print*,'htan = ',htan
+            print*,'caltbore = ',caltbore
+           endif
            thcentre = asin((RADIUS+htan)/SATRAD)
            thbore = asin((RADIUS+caltbore)/SATRAD)
 
@@ -407,8 +407,9 @@ C          pre-calculated array
             esurf = interpem(nem,vem,emissivity,vv)
             ichan = int(10*(0.001+vv-int(vv)))
 
-            print*,'vv,esurf,ichan,thetrot',vv,esurf,ichan,thetrot
-
+            if(idiag.gt.0)then
+             print*,'vv,esurf,ichan,thetrot',vv,esurf,ichan,thetrot
+            endif
             if(abs(thetrot).le.1.0) then
               call computeFOVA(iread,ichan,ipixA,ipixB,thcentre,thbore,
      1        thetrot,nfov,thfov,rfov)
@@ -433,7 +434,7 @@ C          pre-calculated array
 
        else
 
-           print*,'Calculating new nadir-spectra'
+           if(idiag.gt.0)print*,'Calculating new nadir-spectra'
            iscat = 0
            call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,lowbc,
      1      galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,layht,
@@ -458,7 +459,7 @@ C          First path is here assumed to be thermal emission
              if(vv.eq.vconv1(k))iconv=k
             enddo
             ioff1=nconv1*(ipath-1)+iconv
-            print*,j,ioff1,calcout(ioff1)
+            if(idiag.gt.0)print*,j,ioff1,calcout(ioff1)
             yn(ioff+j)=yn(ioff+j)+wgeom(igeom,iav)*calcout(ioff1)
            enddo
 
@@ -482,21 +483,22 @@ C          First path is here assumed to be thermal emission
 
        if(jpre.gt.0)then
 
-        print*,'Calculating RoC with tangent pressure'
+        if(idiag.gt.0)print*,'Calculating RoC with tangent pressure'
 
         iav=1
         sol_ang = angles(igeom,iav,1)
         emiss_ang = angles(igeom,iav,2)
         aphi = angles(igeom,iav,3)
          
-        print*,'Iav = ',iav
-        print*,'Angles : ',sol_ang,emiss_ang,aphi
-
+        if(idiag.gt.0)then
+         print*,'Iav = ',iav
+         print*,'Angles : ',sol_ang,emiss_ang,aphi
+        endif
         xlat = flat(igeom,iav)   
         xlon = flon(igeom,iav)   
 
         if(emiss_ang.lt.0.or.emiss_ang.gt.80)then
-           print*,'Interpolating limb-calculated spectra'
+           if(idiag.gt.0)print*,'Interpolating limb-calculated spectra'
            if(emiss_ang.lt.0)then
              htan = sol_ang+hcorr+hcorrx
            else
@@ -504,8 +506,10 @@ C          First path is here assumed to be thermal emission
            endif
 
            htan = sol_ang + hcorr
-           print*,'forwardfovMCS: sol_ang,hcorr,htan',sol_ang,
+           if(idiag.gt.0)then
+            print*,'forwardfovMCS: sol_ang,hcorr,htan',sol_ang,
      1      hcorr,htan
+           endif
            thcentre = asin((RADIUS+htan)/SATRAD)
  
 C          Now run through wavelengths and find right wavelength in 
@@ -515,7 +519,7 @@ C          pre-calculated array
             do j=1,nconv1
              if(vconv(igeom,i).eq.vconv1(j))iconv=j
             enddo
-            print*,i,vconv(igeom,i),iconv
+            if(idiag.gt.0)print*,i,vconv(igeom,i),iconv
             if(iconv.lt.0)then
              print*,'forwardavfovMCS iconv < 0'
              stop
@@ -524,8 +528,9 @@ C          pre-calculated array
             vv = vconv(igeom,i)
             ichan = int(10*(0.001+vv-int(vv)))
 
-            print*,'PRESS vv,ichan,thetrot',vv,ichan,thetrot
-
+            if(idiag.gt.0)then
+             print*,'PRESS vv,ichan,thetrot',vv,ichan,thetrot
+            endif
             if(abs(thetrot).le.1.0) then
               call computeFOVA(iread,ichan,ipixA,ipixB,thcentre,thbore,
      1        thetrot,nfov,thfov,rfov)
@@ -547,7 +552,7 @@ C          pre-calculated array
 207        continue
         else
 
-           print*,'Calculating new nadir-spectra'
+           if(idiag.gt.0)print*,'Calculating new nadir-spectra'
            iscat = 0
            xn(jpre)=xn(jpre)+delp
            call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,lowbc,
@@ -594,19 +599,21 @@ C          thermal emission
         emiss_ang = angles(igeom,iav,2)
         aphi = angles(igeom,iav,3)
          
-        print*,'Iav = ',iav
-        print*,'Angles : ',sol_ang,emiss_ang,aphi
-
+        if(idiag.gt.0)then
+         print*,'Iav = ',iav
+         print*,'Angles : ',sol_ang,emiss_ang,aphi
+        endif
         xlat = flat(igeom,iav)   
         xlon = flon(igeom,iav)   
 
         if(emiss_ang.lt.0.or.emiss_ang.gt.80)then
-           print*,'Interpolating limb-calculated spectra'
+           if(idiag.gt.0)print*,'Interpolating limb-calculated spectra'
            htan = sol_ang + hcorr + 1.0
            caltbore = altbore + hcorr + 1.0
-           print*,'forwardfovMCS: sol_ang,hcorr,htan',sol_ang,
+           if(idiag.gt.0)then
+            print*,'forwardfovMCS: sol_ang,hcorr,htan',sol_ang,
      1      hcorr,htan
-
+           endif
            thcentre = asin((RADIUS+htan)/SATRAD)
            thbore = asin((RADIUS+caltbore)/SATRAD)
  

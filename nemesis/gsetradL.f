@@ -83,6 +83,8 @@ C     ************************************************************************
       integer i,j,ivar,ivarx
       integer nvarx,varidentx(mvar,3)
       real varparamx(mvar,mparam)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
 C      print*,'gsetradL debug'
@@ -104,7 +106,7 @@ C       print*,i,xn(i)
 C      enddo
 C      print*,'jpre,tsurf,occult',jpre,tsurf,occult
 
-      print*,'gsetradL, lin = ',lin
+      if(idiag.gt.0)print*,'gsetradL, lin = ',lin
 1     format(a)
 C     Look to see if the CIA file refined has variable para-H2 or not.
       call file(runname,runname,'cia')
@@ -136,13 +138,15 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
        call stripvar(nvarx,varidentx,varparamx,nprox,nvar,varident,
      1  varparam,nxx,xnx)
 
-       print*,'gsetradL - variables to be updated from .pre'
-       print*,'xlatx = ',xlatx
-       print*,'nvarx = ',nvarx
-       do i=1,nvarx
-        print*,'varidentx',(varidentx(i,j),j=1,3)
-        print*,'varparamx',(varparamx(i,j),j=1,mparam)
-       enddo
+       if(idiag.gt.0)then
+        print*,'gsetradL - variables to be updated from .pre'
+        print*,'xlatx = ',xlatx
+        print*,'nvarx = ',nvarx
+        do i=1,nvarx
+         print*,'varidentx',(varidentx(i,j),j=1,3)
+         print*,'varparamx',(varparamx(i,j),j=1,mparam)
+        enddo
+       endif
 
        xflag=1
        call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,xlon,

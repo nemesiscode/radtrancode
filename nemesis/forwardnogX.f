@@ -122,6 +122,8 @@ C     **************************************************************
       real cellength,cellpress,celltemp,cellvmr(maxgas)
       common/celldat/icread,cellngas,cellid,celliso,cellvmr,cellength,
      1  cellpress,celltemp
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
 
@@ -131,29 +133,29 @@ C     jradf and jloggf are passed via the planrad common block
 
 
 
-C      print*,'-----------------'
-C      print*,runname
-C      print*,ispace,iscat,fwhm,ngeom
-C      print*,(nav(i),i=1,ngeom)
+C      if(idiag.gt.0)print*,'-----------------'
+C      if(idiag.gt.0)print*,runname
+C      if(idiag.gt.0)print*,ispace,iscat,fwhm,ngeom
+C      if(idiag.gt.0)print*,(nav(i),i=1,ngeom)
 C      do j=1,ngeom
-C       print*,(wgeom(j,i),i=1,nav(j))
-C       print*,(flat(j,i),i=1,nav(j))
+C       if(idiag.gt.0)print*,(wgeom(j,i),i=1,nav(j))
+C       if(idiag.gt.0)print*,(flat(j,i),i=1,nav(j))
 C       do i=1,nav(j)
-C        print*,j,i,(angles(j,i,k),k=1,3)  
+C        if(idiag.gt.0)print*,j,i,(angles(j,i,k),k=1,3)  
 C       enddo
 C      enddo
 C      do j=1,ngeom
-C       print*,nwave(j),(vwave(j,i),i=1,nwave(j))
-C       print*,nconv(j),(vconv(j,i),i=1,nconv(j))
+C       if(idiag.gt.0)print*,nwave(j),(vwave(j,i),i=1,nwave(j))
+C       if(idiag.gt.0)print*,nconv(j),(vconv(j,i),i=1,nconv(j))
 C      enddo
-C      print*,gasgiant,lin,nvar
+C      if(idiag.gt.0)print*,gasgiant,lin,nvar
 C      do i=1,nvar
-C       print*,(varident(i,j),j=1,3)
-C       print*,(varparam(i,j),j=1,mparam)
+C       if(idiag.gt.0)print*,(varident(i,j),j=1,3)
+C       if(idiag.gt.0)print*,(varparam(i,j),j=1,mparam)
 C      enddo
-C      print*,jsurf,jalb,jtan,jpre
-C      print*,nx,ny
-C      print*,(xn(i),i=1,nx)
+C      if(idiag.gt.0)print*,jsurf,jalb,jtan,jpre
+C      if(idiag.gt.0)print*,nx,ny
+C      if(idiag.gt.0)print*,(xn(i),i=1,nx)
 
 
 
@@ -189,8 +191,9 @@ C     Initialise arrays
       ioff = 0
 
       do 100 igeom=1,ngeom
-       print*,'ForwardnogX. Spectrum ',igeom,' of ',ngeom
-       
+       if(idiag.gt.0)then
+        print*,'ForwardnogX. Spectrum ',igeom,' of ',ngeom
+       endif
        nwave1 = nwave(igeom)
        nconv1 = nconv(igeom)
        do 105 i=1,nconv1
@@ -227,8 +230,8 @@ C            nf=20
            nf=nf1
          endif
 
-         print*,'Angles : ',sol_ang,emiss_ang,aphi
-         print*,'nf = ',nf
+         if(idiag.gt.0)print*,'Angles : ',sol_ang,emiss_ang,aphi
+         if(idiag.gt.0)print*,'nf = ',nf
          xlat = flat(igeom,iav)
          xlon = flon(igeom,iav)
          xgeom = wgeom(igeom,iav)
@@ -259,7 +262,7 @@ C            nf=20
 
           ix = ix1-1
 
-          print*,'forwardnogX, ix,nx = ',ix,nx
+          if(idiag.gt.0)print*,'forwardnogX, ix,nx = ',ix,nx
           if(ix.gt.0)then
             xref = xn(ix)
             dx = 0.05*xref
@@ -273,12 +276,17 @@ C            nf=20
              endif
             endif
 C           Special fix for retrieval test
-            if(ix.eq.5)then
-             dx=1.0
+            if(ix.eq.9)then
+             dx=0.1
             endif                             
             xn(ix)=xn(ix)+dx
           endif
-          print*,'ix,xref,dx,xn(ix)',ix,xref,dx,xn(ix)
+C         Nasty Toledo hack
+C          if(ix.ge.11.and.ix.le.191)then
+C           xn(ix+183)=xn(ix)
+C          endif
+
+          if(idiag.gt.0)print*,'ix,xref,dx,xn(ix)',ix,xref,dx,xn(ix)
           if(jsurf.gt.0)then
            tsurf = xn(jsurf)
           endif
@@ -286,6 +294,7 @@ C           Special fix for retrieval test
 C         Check to see if this variable is unconstrained enough to bother
 C         calculating its gradient.
           if(ix.gt.0.and.ifix(ix).eq.1)then
+           if(idiag.gt.0)print*,'Fix ',ix,xref
            xn(ix)=xref
            goto 111
           endif
@@ -315,19 +324,19 @@ C        Set up parameters for scattering cirsrad run.
          IMIE1=IMIE
           itype=11			! scloud11wave
 
-          print*,'************** FORWARDNOGX ***********'
-          print*,'******** INORMAL = ',INORMAL
-          print*,'******** ITYPE = ',ITYPE
+          if(idiag.gt.0)print*,'************** FORWARDNOGX ***********'
+          if(idiag.gt.0)print*,'******** INORMAL = ',INORMAL
+          if(idiag.gt.0)print*,'******** ITYPE = ',ITYPE
 
 
 C         Set up all files for a direct cirsrad run
-          print*,'calling gsetrad'
+          if(idiag.gt.0)print*,'calling gsetrad'
           call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,
      1     lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
      2     layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,xlon,
      3     lin,nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,
      4     xmap)
-          print*,'gsetrad called OK'
+          if(idiag.gt.0)print*,'gsetrad called OK'
 
 C         If planet is not a gas giant and observation is not at limb then
 C         we need to read in the surface emissivity spectrum.
@@ -346,26 +355,28 @@ C         Read in emissivity file
 C         Check to see if any temperatures or vmrs have gone
 C         negative and if so abort
           icheck = check_profile(runname)
-          print*,'forwardnogX, icheck = ',icheck
+          if(idiag.gt.0)print*,'forwardnogX, icheck = ',icheck
 C         Check also to see if surface temperature has gone negative
           if(tsurf.lt.0.0)icheck=1   
-          print*,tsurf,icheck
+          if(idiag.gt.0)print*,tsurf,icheck
 
           if(icheck.eq.1)then
+           if(idiag.gt.0)then
            print*,'Profiles have gone awry. Abort, increase brakes and'
            print*,'try again'
+           endif
            return
           endif
           
-          print*,'forwardnogX',runname,runname
+          if(idiag.gt.0)print*,'forwardnogX',runname,runname
 
           call CIRSrtf_wave(runname, dist, inormal, iray,fwhm, ispace,
      1     vwave1,nwave1,npath, output, vconv1, nconv1, itype,
      2     nem,vem,emissivity,tsurf, calcout)
 
 
-C          print*,'Npath, ix = ',npath,ix
-C          print*,'Transferring calculation'
+C          if(idiag.gt.0)print*,'Npath, ix = ',npath,ix
+C          if(idiag.gt.0)print*,'Transferring calculation'
 C         Unless an SCR calculation, first path is assumed to be thermal emission
 
           if(icread.ne.1)then       
@@ -436,6 +447,14 @@ C         Unless an SCR calculation, first path is assumed to be thermal emissio
      1                      (ytmp(ioff+j1) - ystore(ioff+j1))/dx  
             enddo 
             xn(ix)=xref
+
+
+C           Nasty Toledo hack
+C            if(ix.ge.11.and.ix.le.191)then
+C             xn(ix+183)=xref
+C            endif
+
+
            endif
 
           endif

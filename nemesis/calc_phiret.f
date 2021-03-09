@@ -32,6 +32,8 @@ C     *******************************************************************
       double precision sai(mx,mx),phi1,phi2,a(my,my),b(my,my)
       double precision bt(my,my),c(my,my)
       integer i,j,a1,a2,b1,b2,bt1,bt2,c1,c2
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
      
       phi1 = 0.0
 
@@ -94,8 +96,9 @@ C     Multiply bt*a, put answer in c
 
       phi2 = c(1,1)
 
-      print*,'calc_phiret: phi1,phi2 = ',sngl(phi1),sngl(phi2)
-
+      if(idiag.gt.0)then
+        print*,'calc_phiret: phi1,phi2 = ',sngl(phi1),sngl(phi2)
+      endif
       calc_phiret = sngl(phi1+phi2)
 
       return

@@ -28,6 +28,8 @@ C     ***********************************************************************
       integer nx,i,j,ispec,lraw,npro
       real xn(mx),st(mx,mx),xlat,xlon,varparam(mvar,mparam)
       integer varident(mvar,3),nvar,ivar
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       write(lraw,*) ispec,'   ! ispec'
       write(lraw,*)xlat,xlon,' ! Latitude, Longitude'

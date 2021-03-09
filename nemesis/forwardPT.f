@@ -105,6 +105,8 @@ C     **************************************************************
 
       real stelrad,solwave(maxbin),solrad(maxbin)
       integer solnpt,iform
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       common /solardat/iread, iform, stelrad, solwave, solrad,  solnpt
 
@@ -190,10 +192,6 @@ C     Now sort wavelength arrays
       enddo      
       if(iswitch.eq.1)goto 41
 
-C      print*,'ForwardPT vconv:'
-C      do i=1,nconv1
-C       print*,i,vconv1(i)
-C      enddo
 
       call setup(runname,gasgiant,nmu,mu,wtmu,isol,dist,lowbc,
      1 galb,nf,nphi,layht,tsurf,nlayer,laytyp,layint)
@@ -270,7 +268,7 @@ C     Set up parameters for non-scattering cirsrad run.
 C     Read in base heights from '.drv' file
       call readdrvh(runname,height)
 
-      print*,'Nav = ',nav(igeom)
+      if(idiag.gt.0)print*,'Nav = ',nav(igeom)
 
       nconv1 = nconv(igeom)
       nwave1 = nwave(igeom)
@@ -282,7 +280,7 @@ C     Read in base heights from '.drv' file
        stop
       endif
          
-      print*,'Iav,nconv1 = ',iav,nconv1
+      if(idiag.gt.0)print*,'Iav,nconv1 = ',iav,nconv1
 
 C     Now run through wavelengths and find right wavelength in 
 C     pre-calculated array
@@ -309,12 +307,9 @@ C     pre-calculated array
          trans = calcoutL(ioff1)
          ytrans(ipath)=trans
          y1(ipath) = 2.*pi*h1*(1.-trans)
-C         print*,radius2,height(ipath),h1,trans,y1(ipath)
          do j=1,nx
           ioff2=nconv1*nx*(ipath-1)+(j-1)*nconv1+iconv
           y2(ipath,j)=-2.*pi*h1*gradientsL(ioff2)
-C          print*,height(ipath),ipath,y1(ipath),trans,j,
-C     1       y2(ipath,j),gradientsL(ioff2)
          enddo
 205     continue        
 
@@ -326,7 +321,6 @@ C     1       y2(ipath,j),gradientsL(ioff2)
          dh = height(ipath+1)-height(ipath)
 
          area = area + 0.5*(y1(ipath)+y1(ipath+1))*dh
-C         print*,ipath,dh,area
          yarea(ipath)=0.5*(y1(ipath)+y1(ipath+1))*dh
          do j=1,nx
           darea(j)=darea(j)+0.5*(y2(ipath,j)+y2(ipath+1,j))*dh
@@ -340,9 +334,6 @@ C         print*,ipath,dh,area
         yn(iconv)=sngl(100.0*(area1+area)/area0)
 
         write(9,*)area,yn(iconv)
-
-C        print*,'Areas',area0,area1,area,area1+area,yn(iconv),
-C     1    100*area1/area0
 
         do j=1,nx
              kk(iconv,j) = sngl(100.*darea(j)/area0)

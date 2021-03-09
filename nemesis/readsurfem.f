@@ -18,11 +18,13 @@ C     ***********************************************************************
       include '../radtran/includes/arrdef.f'
       real emissivity(maxsec),vem(maxsec)
       character*100 xscfil,buffer
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       iunit=19
 
       call file(xscfil,xscfil,'sur')
-      print*,'readsurfem: surface emissivity file : ',xscfil
+      if(idiag.gt.0)print*,'readsurfem: surface emissivity file : ',xscfil
 
       open(iunit,file=xscfil,status='old')
 1     format(a)

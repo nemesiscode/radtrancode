@@ -59,6 +59,10 @@ C     DENSCOND is density of condensate material (g/cm3)
 C     RADCOND is radius of condensate
 C     MWCOND is molecular weight of condensed phase
       PARAMETER (DENSCOND=1.0, RADCOND=0.1,MWCOND=12)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
+
 C     RGAS read in from constdef.f, so set R accordingly and in correct
 C     units of J mol-1 K-1
       R=RGAS*0.001
@@ -68,7 +72,7 @@ C     gas with translational and rotational degrees of freedom activated.
 C     CP is J K-1 mol-1
       CP = 4*R
 
-C      print*,'Test ',1.0*0.1013*28.0/(R*273.0)
+C      if(idiag.gt.0)print*,'Test ',1.0*0.1013*28.0/(R*273.0)
 C     Calculate density of atmosphere (g/cm3) and DALR (K/km)
       DO 201 J=1,NPRO
         XMOLWT=XMOL(J)
@@ -83,7 +87,7 @@ C       DALR is in units of K/km
         DALR(J)=1000.*G/CPSPEC
 C       Compute scale height (km)
         SCALE(J)=R*T(J)/(XMOLWT*G)
-C        print*,J,P(J),T(J),RHO(J),SCALE(J),XMOLWT
+C        if(idiag.gt.0)print*,J,P(J),T(J),RHO(J),SCALE(J),XMOLWT
 201   CONTINUE
 
 C     Calculate DT_DZ
@@ -109,7 +113,7 @@ C      WS is convective velocity scale in cm s-1
        WS(J) = EDDY(J)/(L*1e5)
 C       WS(J) = 1000.
 C       EDDY(J)=2e8
-C       print*,J,H(J),SCALE(J),RHO(J),L,EDDY(J),LH,X,WS(J)
+C       if(idiag.gt.0)print*,J,H(J),SCALE(J),RHO(J),L,EDDY(J),LH,X,WS(J)
         write(12,*)H(J),P(J),T(J),SCALE(J),RHO(J),L,EDDY(J),WS(J)
 202   CONTINUE
 
@@ -132,21 +136,21 @@ C     First skip header
       CLOSE(13)
 
 
-C      PRINT*,'JVMR, IDGAS(JVMR), ISOGAS(JVMR) = ',JVMR, IDGAS(JVMR),
+C      if(idiag.gt.0)print*,'JVMR, IDGAS(JVMR), ISOGAS(JVMR) = ',JVMR, IDGAS(JVMR),
 C     1  ISOGAS(JVMR)
 
 
 C     Volume of condensed particles (m3)
       V = 1.3333*PI*(RADCOND*1e-6)**3
-C      print*,'R,D = ',RADCOND,DENSCOND
-C      print*,'V = ',V
+C      if(idiag.gt.0)print*,'R,D = ',RADCOND,DENSCOND
+C      if(idiag.gt.0)print*,'V = ',V
 C     Mass of condensed particle (kg)
       MP = DENSCOND*V
-C      print*,'MP = ',MP
+C      if(idiag.gt.0)print*,'MP = ',MP
 C     Mass of one molecule
       M1 = 1E-3*MWCOND/NAVAGADRO
 C     Number of molecules per condensed particle
-C      print*,'M1,mwcond,NAVAGADRO',M1,mwcond,NAVAGADRO
+C      if(idiag.gt.0)print*,'M1,mwcond,NAVAGADRO',M1,mwcond,NAVAGADRO
       NM = MP/M1
 
       DO 99 JGAS=1,NGAS
@@ -166,9 +170,9 @@ C        Constituent may condense. May need to modify mole fraction and cloud
          X1(1)=QV(1)
 
 C         IF(IMODEL.EQ.0)THEN
-C           PRINT*,'J, QT(J), QV(J), QC(J)'
+C           if(idiag.gt.0)print*,'J, QT(J), QV(J), QC(J)'
 C         ELSE
-C           PRINT*,'J, QT(J), QV(J), QC(J), DELQT'
+C           if(idiag.gt.0)print*,'J, QT(J), QV(J), QC(J), DELQT'
 C         ENDIF
 
          DO 97 J=2,NPRO
@@ -182,7 +186,7 @@ C         Calculate saturated vapour mole fraction
            QC(J)=MAX(0.0,QV(J-1)-QS)
            QT(J)=QV(J)+QC(J)
 
-C           print*,J,QT(J),QV(J),QC(J)
+C           if(idiag.gt.0)print*,J,QT(J),QV(J),QC(J)
 
           ELSE
 
@@ -194,7 +198,7 @@ C          Calculate DELH in cm
            QV(J)=MIN(QT(J),QS)
            QV(J)=MIN(QV(J),QV(J-1))
 
-C           print*,J,QT(J),QV(J),QC(J),DELQT
+C           if(idiag.gt.0)print*,J,QT(J),QV(J),QC(J),DELQT
 
           ENDIF
 
@@ -205,14 +209,14 @@ C         To convert QC into particles per gram we need to do the following:
 
 C         NC is number of condensed molecules per cm3, since N(J) is number density of air (molecule/cm3)
           NC = QC(J)*N(J)
-C          print*,J,QC(J),N(J),NC
+C          if(idiag.gt.0)print*,J,QC(J),N(J),NC
 C         NP is number of condensed particles per cm3 since NM is number of molecules per particle
           NP = NC/NM
-C          print*,NM,NP
+C          if(idiag.gt.0)print*,NM,NP
 C         X2(J) is number of condensed particles/gram of atmosphere
           
           X2(J)=NP/RHO(J)
-C          print*,J,NP,RHO(J),X2(J)
+C          if(idiag.gt.0)print*,J,NP,RHO(J),X2(J)
 97       CONTINUE
 
         ENDIF

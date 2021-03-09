@@ -101,6 +101,9 @@ C     **************************************************************
 
       common /solardat/iread, iform, stelrad, solwave, solrad,  solnpt
 
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
 
 C      print*,'ForwardavfovL'
 C      print*,runname
@@ -142,7 +145,7 @@ C     Initialise arrays
        stop
       endif
 
-      print*,'forwardnogL. jpre = ',jpre
+      if(idiag.gt.0)print*,'forwardnogL. jpre = ',jpre
 
 C     Check that all observations have same wavelengths - necessary for
 C     NemesisL
@@ -213,9 +216,11 @@ C        Read in one line of header
          print*,'is read from the height.lay file, but it doesnt exist'
        endif
 
-       do i=1,nlay1
-        print*,baseh1(i)
-       enddo
+       if(idiag.gt.0)then
+        do i=1,nlay1
+         print*,baseh1(i)
+        enddo
+       endif
 
        htanlo = angles(1,1,1)
        htanhi = angles(ngeom,1,1)
@@ -261,7 +266,7 @@ C     Set up parameters for non-scattering cirsrad run.
 
       itype=12			! scloud12. not used here
 
-      print*,'hcorrx = ',hcorrx
+      if(idiag.gt.0)print*,'hcorrx = ',hcorrx
  
       call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
      1  vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf, 
@@ -270,7 +275,7 @@ C     Set up parameters for non-scattering cirsrad run.
 C     Read in base heights from '.drv' file
       call readdrvh(runname,height)
 
-      print*,'hcorrx = ',hcorrx
+      if(idiag.gt.0)print*,'hcorrx = ',hcorrx
 
       ioff = 0
 
@@ -280,9 +285,10 @@ c     MAIN LOOP - CALCULATING SPECTRUM GIVEN AT EACH GEOMETRY
       ioff = 0
 
       do 100 igeom=1,ngeom
-       print*,'ForwardavfovL. Spectrum ',igeom,' of ',ngeom
-       print*,'Nav = ',nav(igeom)
-
+       if(idiag.gt.0)then
+        print*,'ForwardavfovL. Spectrum ',igeom,' of ',ngeom
+        print*,'Nav = ',nav(igeom)
+       endif
        nconv1 = nconv(igeom)
        nwave1 = nwave(igeom)
 
@@ -303,15 +309,15 @@ c     MAIN LOOP - CALCULATING SPECTRUM GIVEN AT EACH GEOMETRY
          emiss_ang = angles(igeom,iav,2)
          aphi = angles(igeom,iav,3)
          
-         print*,'Iav = ',iav
-         print*,'Angles : ',sol_ang,emiss_ang,aphi
+         if(idiag.gt.0)print*,'Iav = ',iav
+         if(idiag.gt.0)print*,'Angles : ',sol_ang,emiss_ang,aphi
 
          if(emiss_ang.lt.0)then
-           print*,'Interpolating limb-calculated spectra'
+           if(idiag.gt.0)print*,'Interpolating limb-calculated spectra'
            htan = sol_ang+hcorr+hcorrx
-           print*,'forwardavfovL: sol_ang, hcorr,hcorrx',
+           if(idiag.gt.0)print*,'forwardavfovL: sol_ang, hcorr,hcorrx',
      1       sol_ang, hcorr,hcorrx
-           print*,'htan = ',htan
+           if(idiag.gt.0)print*,'htan = ',htan
            jpath=-1
            do i=1,nlayer-1
             if(height(i).le.htan.and.height(i+1).gt.htan)jpath=i
@@ -401,7 +407,7 @@ C             divide thermal emission + solar occultation by solar radiance at t
 
          else
 
-           print*,'Calculating new nadir-spectra'
+           if(idiag.gt.0)print*,'Calculating new nadir-spectra'
            iscat = 0
            call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,lowbc,
      1      galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,layht,
@@ -455,8 +461,10 @@ c       Initialise yn1 array
          yn1(i)=0.0
         enddo
 
-        print*,'ForwardnogL :: Calculating gradients numerically'
-        print*,'ix,xn(ix) = ',ix,xn(ix)
+        if(idiag.gt.0)then
+         print*,'ForwardnogL :: Calculating gradients numerically'
+         print*,'ix,xn(ix) = ',ix,xn(ix)
+        endif
 
         xref = xn(ix)
         dx = 0.05*xref
@@ -480,7 +488,7 @@ c       Initialise yn1 array
 
         xn(ix)=xn(ix)+dx
         do i = 1,nx
-         print*,i,xn1(i),xn(i),xn(i)-xn1(i)
+         if(idiag.gt.0)print*,i,xn1(i),xn(i),xn(i)-xn1(i)
         enddo
 
 C       Set up all files to recalculate limb spectra after perturbation
@@ -495,23 +503,25 @@ C       Set up all files to recalculate limb spectra after perturbation
 
         ioff=0
         do 200 igeom=1,ngeom
-         print*,'ForwardnogL. Spectrum ',
+         if(idiag.gt.0)print*,'ForwardnogL. Spectrum ',
      1    igeom,' of ',ngeom
-         print*,'Nav = ',nav(igeom)
+         if(idiag.gt.0)print*,'Nav = ',nav(igeom)
 
          do 113 iav = 1,nav(igeom)
           sol_ang = angles(igeom,iav,1)
           emiss_ang = angles(igeom,iav,2)
           aphi = angles(igeom,iav,3)
 
-          print*,'Iav = ',iav
-          print*,'Angles : ',sol_ang,emiss_ang,aphi
+          if(idiag.gt.0)print*,'Iav = ',iav
+          if(idiag.gt.0)print*,'Angles : ',sol_ang,emiss_ang,aphi
 
           if(emiss_ang.lt.0)then
-           print*,'Interpolating limb-calculated spectra'
+           if(idiag.gt.0)print*,'Interpolating limb-calculated spectra'
            htan = sol_ang + hcorr
-           print*,'forwardfovL1: sol_ang,hcorr,htan',sol_ang,
+           if(idiag.gt.0)then
+            print*,'forwardfovL1: sol_ang,hcorr,htan',sol_ang,
      1      hcorr,htan
+           endif
            jpath=-1
            do i=1,nlayer-1
             if(height(i).le.htan.and.height(i+1).gt.htan)jpath=i
@@ -537,8 +547,8 @@ c          Now we calculate the actual spectra at the given tangent height
 C           just calculate transmission of path. Assumes no thermal emission 
 C           into line of sight. First nlayers are transmission.
 
-            print*,'occult = ',occult
-            print*,'jpath,fh,nconv1 = ',jpath,fh,nconv1
+            if(idiag.gt.0)print*,'occult = ',occult
+            if(idiag.gt.0)print*,'jpath,fh,nconv1 = ',jpath,fh,nconv1
             do ipath=jpath,jpath+1
              fh=1.0-fh
              do j=1,nconv1

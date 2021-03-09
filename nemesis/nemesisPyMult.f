@@ -107,6 +107,8 @@ c and change the shape of the array
       character*3 sith
       character*255 path, path1, oldpath, path2
       logical countexist
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
 cf2py intent(in) runname, specsize,mcntemp,mcnvmr
@@ -152,10 +154,10 @@ C RG find free directory to do calculation
       else
        write( sith, '(i3)' ) ith
       endif
-      print*, path, ith, sith
+      if(idiag.gt.0)print*, path, ith, sith
       CALL chdir(TRIM(path1)//'/'//TRIM(sith))
       CALL getcwd(path)
-      print*, ith, sith, path, path1
+      if(idiag.gt.0)print*, ith, sith, path, path1
 
 c RG assign array elements. This intermediate way of passing is due to
 c being unable to pass the allocatable arrays (necessary for the F77-Py
@@ -176,8 +178,6 @@ c if number of averaging points = 0, use regular .spx file.
         MCMCemzen(i)=inemzen(i)
         MCMCazi(i)=inazi(i)
         MCMCwt(i)= inwt(i)
-c        print*, MCMCnav, MCMCflat(i), MCMCflon(i), MCMCsolzen(i), 
-c     1   MCMCemzen(i), MCMCazi(i), MCMCwt(i)
        ENDDO    
       else
        PHASEflag=0
@@ -258,7 +258,7 @@ c      READ(5,1)buffer
 c      runname = buffer(1:36)
 c      runname = 'cirstest'
 
-      print*,'checking files'
+      if(idiag.gt.0)print*,'checking files'
 C     Make sure input files are OK
       CALL checkfiles(runname)
 
@@ -268,7 +268,7 @@ C     Make sure input files are OK
        stop
       endif
 
-      print*,'Files OK',gasgiant
+      if(idiag.gt.0)print*,'Files OK',gasgiant
 
       CALL file(runname,runname,'inp')
       OPEN(32,file=runname,status='old')
@@ -318,8 +318,8 @@ C              propagation of retrieval errors).
       CLOSE(32)
 
 
-      print*,'iform1 = ',iform1
-      print*,'percbool = ', percbool
+      if(idiag.gt.0)print*,'iform1 = ',iform1
+      if(idiag.gt.0)print*,'percbool = ', percbool
 
       if(iform1.eq.2)then
        print*,'Error in input file. Iform can be 0, 1 or 3 for Nemesis'
@@ -368,14 +368,16 @@ C     Open output file
       open(lraw,file=runname,status='unknown')
       write(lout,*)nspec,' ! Total number of retrievals'
       write(lraw,*)nspec,' ! Total number of retrievals'
-      print*,'lin = ',lin
+      if(idiag.gt.0)print*,'lin = ',lin
 
       if(lin.gt.0)then
 C      if previous retrieval to be considered, 
 C      open previous raw retrieval file (copied to .pre)
        lpre=39
        CALL file(runname,runname,'pre')
-       print*,'Nemesis: reading previous retrieval : ',runname
+       if(idiag.gt.0)then
+        print*,'Nemesis: reading previous retrieval : ',runname
+       endif
        open(lpre,file=runname,status='old')
        read(lpre,*)nspecx
        if(nspec+ioff-1.gt.nspecx)then
@@ -553,8 +555,10 @@ C      NemesisPT format
 
 C      Default
        else
-        print*,'Error in writeout - iform not defined. Default=0'
-        write(*,*)'Radiances expressed as nW cm-2 sr-1 cm'
+        if(idiag.gt.0)then
+         print*,'Error in writeout - iform not defined. Default=0'
+         write(*,*)'Radiances expressed as nW cm-2 sr-1 cm'
+        endif
         xfac = 1e9
        endif
 
@@ -583,8 +587,10 @@ C      NemesisPT format
 
 C      Default format
        else
-        print*,'Error in writeout - iform not defined. Default=0'
-        write(*,*)'Radiances expressed as uW cm-2 sr-1 um-1'
+        if(idiag.gt.0)then
+         print*,'Error in writeout - iform not defined. Default=0'
+         write(*,*)'Radiances expressed as uW cm-2 sr-1 um-1'
+        endif
         xfac=1e6
        endif
 
@@ -602,7 +608,7 @@ c      close(200)
 
       CALL chdir(TRIM(path1))
       CALL getcwd(path1)
-      print*, path1
+      if(idiag.gt.0)print*, path1
       END
 
 

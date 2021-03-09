@@ -30,6 +30,8 @@ C     **************************************************************************
       REAL xref(maxpro),xnew(maxpro),slopex,dp,dch4,xnew1(maxpro)
       REAL tmp,pch4(maxpro)
       real SCH40,SCH41
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C     Thermodynamic sata extracted from Handbook of Physics and Chemistry and
 C     Kaye and Labyfor PRAXIS book. 
@@ -39,7 +41,7 @@ C     SCH4=[10.6815,-1163.83] ; sublimation L'*R = 9671.42
 C     NB, psvp is in bar.
       j3=-1
 
-      print*,ch4tropvmr,ch4stratvmr,RH
+      if(idiag.gt.0)print*,ch4tropvmr,ch4stratvmr,RH
       do 10 i = 1,npro
         pbar(i)=patm(i)*1.013
         if(pbar(i).gt.0.3)then
@@ -65,7 +67,7 @@ C     NB, psvp is in bar.
         xref(i)=pch4(i)/pbar(i)
         xnew(i)=xref(i)
         xnew1(i)=xref(i)
-        print*,i,psvp(i),patm(i),pbar(i),xref(i)
+        if(idiag.gt.0)print*,i,psvp(i),patm(i),pbar(i),xref(i)
 10    continue
 
       j3=j3+1
@@ -76,17 +78,19 @@ C     NB, psvp is in bar.
        dch4 = xref(j)-xref(j+1)
        if(dch4.ge.0.0) then
         slopex = 0.01*dp/dch4
-        print*,j,pbar(j),xref(j),xnew(j),dp,dch4,slopex,slope
+        if(idiag.gt.0)then
+         print*,j,pbar(j),xref(j),xnew(j),dp,dch4,slopex,slope
+        endif
         if(slopex.lt.slope.and.k.lt.0) then
          k=j
         endif
        endif
 20    continue
 
-25    print*,'kturn=',k
-      print*,pbar(k),pbar(k+1),pbar(k)-pbar(k+1)
-      print*,xref(k),xref(k+1),xref(k)-xref(k+1)
-      print*,0.01*dp/dch4,slope
+25    if(idiag.gt.0)print*,'kturn=',k
+      if(idiag.gt.0)print*,pbar(k),pbar(k+1),pbar(k)-pbar(k+1)
+      if(idiag.gt.0)print*,xref(k),xref(k+1),xref(k)-xref(k+1)
+      if(idiag.gt.0)print*,0.01*dp/dch4,slope
 
       if(k.ge.0) then
        do 30 j=k,1,-1
@@ -95,7 +99,9 @@ C     NB, psvp is in bar.
         if(xnew(j).gt.ch4tropvmr)then
          xnew(j)=ch4tropvmr
         endif
-        print*,j,dp,xref(j),xnew(j+1)+0.01*dp/slope,xnew(j)
+        if(idiag.gt.0)then
+         print*,j,dp,xref(j),xnew(j+1)+0.01*dp/slope,xnew(j)
+        endif
 30     continue
       endif
 

@@ -30,4 +30,7 @@ manuals/	The Radtrans and Nemesis manuals.
 FOVgreg/	Library of routines for defining MCS Field of View. Only needs 
 		compiling if you're going to run NemesisMCS or GenerateMCSspx.
 
-Pat Irwin	30/4/12
+Meetings/	Selected files from recent meetings.
+
+
+Pat Irwin	9/3/21

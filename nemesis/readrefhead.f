@@ -21,11 +21,14 @@ C     ***********************************************************************
       INTEGER NPRO,NVMR,AMFORM,IPLANET,ISURF,NLATREF
       REAL LATITUDE,MOLWT
       LOGICAL GASGIANT
-
       REAL XGM,XCOEFF(3),XRADIUS,XELLIP,XOMEGA
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
+
       CALL FILE(IPFILE,IPFILE,'ref')
       
-      print*,'Reading reference file from : ',IPFILE
+      if(idiag.gt.0)print*,'Reading reference file from : ',IPFILE
       OPEN(UNIT=1,FILE=IPFILE,STATUS='OLD')
 C     First skip header
 54     READ(1,1)BUFFER

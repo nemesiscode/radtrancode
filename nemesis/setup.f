@@ -44,6 +44,8 @@ C     ******************************************************************
       character*100 runname,setfile
       character*80 buffer
       logical gasgiant
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       lun=73
 
@@ -82,9 +84,11 @@ C     ******************************************************************
       tsurf = realbuf(buffer)		! Surface temperature
 
       if(tsurf.le.0.0)then
+        if(idiag.gt.0)then
         print*,'Warning from nemesis/setup.f. Surface temperature must'
         print*,'be greater than 0.0 for some parts of code that deal'
         print*,'with sensitivity to surface temperature'
+        endif
       endif
 
       read(lun,1)buffer			! Header
@@ -105,7 +109,7 @@ C     ******************************************************************
    
       close(lun)
 
-C      print*,'Setup Read OK'
+C      if(idiag.gt.0)print*,'Setup Read OK'
 
 C     rewrite .set file to keep correctly formatted
       open(lun,file=setfile,status='unknown')

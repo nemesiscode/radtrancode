@@ -15,6 +15,8 @@ C     *****************************************************************
       character*100 runname,buffer
       integer npro,nvmr,npro1,ncont
       logical gasgiant
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       if(my.gt.idim)then
        print*,'Error on checkfiles'
@@ -24,8 +26,8 @@ C     *****************************************************************
 
       call readrefhead(runname,npro,nvmr,gasgiant)
 
-      print*,'Runname : ',runname
-      print*,'NPRO, NVMR : ',npro,nvmr
+      if(idiag.gt.0)print*,'Runname : ',runname
+      if(idiag.gt.0)print*,'NPRO, NVMR : ',npro,nvmr
 1     format(a)
 
       open(12,file='aerosol.ref',status='old')

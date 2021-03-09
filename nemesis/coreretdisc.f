@@ -119,6 +119,8 @@ C     Set measurement vector and source vector lengths here.
       double precision dd(mx,my),aa(mx,mx)
 
       real phi,ophi,chisq,xchi,oxchi
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 C     **************************** CODE ********************************
 
 
@@ -175,7 +177,6 @@ C     Calculate inverse of sa.
       if(icheck.eq.1)then
        print*,'************* WARNING *************'
        print*,'Coreret, sa does not invert cleanly'
-C       print*,'Setting to simple diagonal matrix'
        print*,'Aborting...'
        print*,'***********************************'
        stop
@@ -222,12 +223,14 @@ C        Just substituting parameters from .pre file
          do ivar=1,nvar
           if(varidentx(ivarx,1).eq.varident(ivar,1))then
            if(varidentx(ivarx,2).eq.varident(ivar,2))then
-             print*,'Coreret: Can not use previous retrieval to add'
-             print*,'Radiance error, since identity of variable is'
-             print*,'identical to one of those being retrieved in this'
-             print*,'retrieval'
+             if(idiag.gt.0)then
+              print*,'Coreret: Can not use previous retrieval to add'
+              print*,'Radiance error, since identity of variable is'
+              print*,'identical to one of those being retrieved in this'
+              print*,'retrieval'
           print*,'ivar,varident : ',ivar,(varident(ivar,j),j=1,3)
           print*,'ivarx,varidentx : ',ivarx,(varidentx(ivarx,j),j=1,3)
+             endif
              stop
            endif
           endif
@@ -253,13 +256,13 @@ C       readapriori.f. Hence just read in from temporary .str file
        lin0 = 0
 
        if(iscat.eq.0)then
-        print*,'Calling forwarddisc - A'
+        if(idiag.gt.0)print*,'Calling forwarddisc - A'
         CALL forwarddisc(runname,ispace,iscat,fwhm,ngeom,
      1   nav,wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2   lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,
      3   jprex,jradx,jloggx,jfracx,RADIUS,nxx,xnx,ny,ynx,kkx)
        else
-        print*,'Option not supported for disc-averaging'
+        if(idiag.gt.0)print*,'Option not supported for disc-averaging'
        endif
 
        if(lin.eq.3) then
@@ -310,7 +313,7 @@ C      Calculate inverse of se
       endif
 
       if(iscat.eq.0)then
-        print*,'Calling forwarddisc - B'
+        if(idiag.gt.0)print*,'Calling forwarddisc - B'
         CALL forwarddisc(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
@@ -318,7 +321,7 @@ C      Calculate inverse of se
 
       else
 
-         print*,'Option not supported'
+         if(idiag.gt.0)print*,'Option not supported'
 
       endif
 
@@ -399,8 +402,10 @@ C        Add additional brake for model 102 to stop silly fractions.
 C        Check to see if log numbers have gone out of range
          if(lx(i).eq.1)then
           if(xn1(i).gt.85.or.xn1(i).lt.-85)then
-           print*,'Coreretdisc - log(number gone out of range)'
-           print*,'Increasing brake'
+           if(idiag.gt.0)then
+            print*,'Coreretdisc - log(number gone out of range)'
+            print*,'Increasing brake'
+           endif
            alambda = alambda*10.0               ! increase Marquardt brake
            if(alambda.gt.1e30)then
             print*,'Death spiral - stopping'
@@ -444,7 +449,9 @@ C       Test to see if any vmrs have gone negative.
           if(varident(ivar,1).eq.0)then
            if(varident(ivar,3).eq.0) then
             if(xn1(j).lt.1.0) then
-             print*,'Temperature has gone negative, Increase alambda'
+             if(idiag.gt.0)then
+              print*,'Temperature has gone negative, Increase alambda'
+             endif
              alambda = alambda*10.0             ! increase Marquardt brake
              if(alambda.gt.1e10)alambda=1e10
              goto 145
@@ -452,7 +459,9 @@ C       Test to see if any vmrs have gone negative.
            endif
            if(varident(ivar,3).eq.16.and.j.eq.ix) then
             if(xn1(j).lt.1.0) then
-             print*,'Temperature has gone negative, Increase alambda'
+             if(idiag.gt.0)then
+              print*,'Temperature has gone negative, Increase alambda'
+             endif
              alambda = alambda*10.0             ! increase Marquardt brake
              if(alambda.gt.1e10)alambda=1e10
              goto 145
@@ -467,26 +476,28 @@ C       Put output spectrum into temporary spectrum yn1 with
 C       temporary kernel matrix kk1. Does it improve the fit? 
 
         if(iscat.eq.0)then
-          print*,'Calling forwarddisc - C'
+          if(idiag.gt.0)print*,'Calling forwarddisc - C'
           CALL forwarddisc(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2     lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
      3     jrad,jlogg,jfrac,RADIUS,nx,xn1,ny,yn1,kk1)
         else
-          print*,'Option not supported'
+          if(idiag.gt.0)print*,'Option not supported'
         endif
 
 C       Calculate the cost function for this trial solution.
         phi = calc_phiret(ny,y,yn1,sei,nx,xn1,xa,sai,chisq)
 
         xchi = chisq/float(ny)
-        print*,'chisq/ny = ',xchi
-        print*,'it.,al.,ophi.,phi.',
+        if(idiag.gt.0)print*,'chisq/ny = ',xchi
+        if(idiag.gt.0)print*,'it.,al.,ophi.,phi.',
      1   iter,alambda,ophi,phi
 
 C       Does trial solution fit the data better?
         if(phi.le.ophi)then
-          print*,'Successful iteration. Updating xn,yn and kk'
+          if(idiag.gt.0)then
+           print*,'Successful iteration. Updating xn,yn and kk'
+          endif
           do i=1,nx
            xn(i)=xn1(i)         		! update xn to new value
           enddo
@@ -503,9 +514,9 @@ C         Now calculate the gain matrix and averaging kernels
 C         Has solution converged?
           tphi = 100.0*(ophi-phi)/ophi
           if(tphi.ge.0.0.and.tphi.le.phlimit.and.alambda.lt.1.0)then
-            print*,'%phi, phlimit : ',tphi,phlimit
-            print*,'Phi has converged'
-            print*,'Terminating retrieval'
+            if(idiag.gt.0)print*,'%phi, phlimit : ',tphi,phlimit
+            if(idiag.gt.0)print*,'Phi has converged'
+            if(idiag.gt.0)print*,'Terminating retrieval'
             GOTO 202
           else
             ophi=phi
@@ -525,7 +536,7 @@ C	  Leave xn and kk alone and try again with more braking
          read(83,'(A)')abort
          close(83)
          if(abort.eq.'stop'.or.abort.eq.'STOP')then
-           print*,'Terminating retrieval'
+           if(idiag.gt.0)print*,'Terminating retrieval'
            GOTO 202
          endif
         endif
@@ -545,10 +556,12 @@ C      Write out k-matrix for reference
 
       endif
 
-      print*,'chisq/ny is equal to : ',chisq/float(ny)
+      if(idiag.gt.0)print*,'chisq/ny is equal to : ',chisq/float(ny)
       if(chisq.gt.ny)then
-       print*,'Coreret: WARNING'
-       print*,'chisq/ny should be less than 1 if correctly retrieved'
+       if(idiag.gt.0)then
+        print*,'Coreret: WARNING'
+        print*,'chisq/ny should be less than 1 if correctly retrieved'
+       endif
       endif
 
       CALL calc_serr(nx,ny,sa,se,aa,dd,st,sn,sm)

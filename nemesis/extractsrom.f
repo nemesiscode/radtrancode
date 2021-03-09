@@ -24,6 +24,8 @@ C     **************************************************************
       integer npro,nvmr
       logical gasgiant
       common /srom223/pcut 
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       call readrefhead(runname,npro,nvmr,gasgiant)
 
@@ -103,9 +105,9 @@ C        odepth
 
         if(iflagsrom.eq.225)then
 C        Rate of cut-off of UTC near tropopause
-         print*,'test',(xn(i),i=1,nx)
+         if(idiag.gt.0)print*,'test',(xn(i),i=1,nx)
          ix=ix+1
-         print*,ix,xn(ix),exp(xn(ix))
+         if(idiag.gt.0)print*,ix,xn(ix),exp(xn(ix))
          cwid=exp(xn(ix))
         endif
 

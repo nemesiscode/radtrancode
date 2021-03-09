@@ -109,10 +109,12 @@ C     **************************************************************
       real cellength,cellpress,celltemp,cellvmr(maxgas)
       common/celldat/icread,cellngas,cellid,celliso,cellvmr,cellength,
      1  cellpress,celltemp
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
-      print*,'forwardnoglbl called'
-      print*,'lin = ',lin
+      if(idiag.gt.0)print*,'forwardnoglbl called'
+      if(idiag.gt.0)print*,'lin = ',lin
 
 
 C     jradf and jloggf are passed via the planrad common block
@@ -137,7 +139,7 @@ C     Initialise arrays
       call setup(runname,gasgiant,nmu,mu,wtmu,isol,dist,lowbc,
      1 galb,nf1,nphi,layht,tsurf,nlayer,laytyp,layint)
 
-      print*,'setup called OK'
+      if(idiag.gt.0)print*,'setup called OK'
 
       if(jsurf.gt.0)then
        tsurf = xn(jsurf)
@@ -145,10 +147,11 @@ C     Initialise arrays
 
       ioff = 0
 
-      print*,'ngeom = ',ngeom
+      if(idiag.gt.0)print*,'ngeom = ',ngeom
       do 100 igeom=1,ngeom
-       print*,'Forwardnoglbl. Spectrum ',igeom,' of ',ngeom
-       
+       if(idiag.gt.0)then
+        print*,'Forwardnoglbl. Spectrum ',igeom,' of ',ngeom
+       endif
        nconv1 = nconv(igeom)
        do 105 i=1,nconv1
         vconv1(i)=vconv(igeom,i)
@@ -180,8 +183,8 @@ C            nf=20
            nf=nf1
          endif
 
-         print*,'Angles : ',sol_ang,emiss_ang,aphi
-         print*,'nf = ',nf
+         if(idiag.gt.0)print*,'Angles : ',sol_ang,emiss_ang,aphi
+         if(idiag.gt.0)print*,'nf = ',nf
          xlat = flat(igeom,iav)
          xlon = flon(igeom,iav)
 
@@ -195,7 +198,7 @@ C            nf=20
 
           ix = ix1-1
 
-          print*,'forwardnoglbl, ix,nx = ',ix,nx
+          if(idiag.gt.0)print*,'forwardnoglbl, ix,nx = ',ix,nx
 
           if(ix.gt.0)then
             xref = xn(ix)
@@ -209,9 +212,9 @@ C            nf=20
                goto 111
              endif
             endif           
-            print*,ix,dx,xn(ix)                  
+            if(idiag.gt.0)print*,ix,dx,xn(ix)                  
             xn(ix)=xn(ix)+dx
-            print*,'XN',(xn(j),j=1,nx)
+            if(idiag.gt.0)print*,'XN',(xn(j),j=1,nx)
           endif
           if(jsurf.gt.0)then
            tsurf = xn(jsurf)
@@ -251,10 +254,11 @@ C         Set up parameters for scattering cirsrad run.
 
           itype=11			! scloud11wave
 
-          print*,'************** FORWARDNOGLBL ***********'
-          print*,'******** INORMAL = ',INORMAL
-          print*,'******** ITYPE = ',ITYPE
-
+          if(idiag.gt.0)then
+           print*,'************** FORWARDNOGLBL ***********'
+           print*,'******** INORMAL = ',INORMAL
+           print*,'******** ITYPE = ',ITYPE
+          endif
 
 C         Set up all files for a direct cirsrad run
           call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,
@@ -278,17 +282,23 @@ C         we need to read in the surface emissivity spectrum
 
           call file(runname,runname,'lbl')
           open(11,file=runname,status='old')
-           print*,'LBL data read in'
+           if(idiag.gt.0)print*,'LBL data read in'
            read(11,*)x0,x1,delv
-           print*,'Total calculation range and step (cm-1) : ',
+           if(idiag.gt.0)then
+            print*,'Total calculation range and step (cm-1) : ',
      1      x0,x1,delv
+           endif
            read(11,*)wing,vrel,maxdv
-           print*,'wing, vrel, maxdv : ',wing, vrel, maxdv
+           if(idiag.gt.0)then
+            print*,'wing, vrel, maxdv : ',wing, vrel, maxdv
+           endif
            if(maxdv.ne.vrel)then
-            print*,'*Warning from forwardnoglbl.f: V_cutoff <> vrel.'
-            print*,'*These should usually be set equal'
-            print*,'V_cut_off = ',maxdv
-            print*,'VREL = ',vrel
+            if(idiag.gt.0)then
+             print*,'*Warning from forwardnoglbl.f: V_cutoff <> vrel.'
+             print*,'*These should usually be set equal'
+             print*,'V_cut_off = ',maxdv
+             print*,'VREL = ',vrel
+            endif
            endif 
 
           close(11)

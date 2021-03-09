@@ -136,6 +136,9 @@ C     Set measurement vector and source vector lengths here.
       integer rank(mgeom,mconv),nconvold(mgeom),rankdiff
 
       real phi,ophi,chisq,xchi,oxchi,tmpvar
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
 C     **************************** CODE ********************************
 
 C     ++++++++++++++++++ Read in extra parameters to test vmr profile +++
@@ -234,7 +237,7 @@ C     Initialise s1d
 C     Calculate inverse of sa.
       jmod = 2
       icheck=0
-      print*,'coreret: Checking can invert Sa'
+      if(idiag.gt.0)print*,'coreret: Checking can invert Sa'
       call dinvertm(jmod,icheck,s1d,nx,mx,sai)
       if(icheck.eq.1)then
        print*,'************* WARNING *************'
@@ -308,6 +311,7 @@ C        Just substituting parameters from .pre file
           if(varidentx(ivarx,1).eq.varident(ivar,1))then
            if(varidentx(ivarx,2).eq.varident(ivar,2))then
              print*,'Coreret: Can not use previous retrieval to add'
+           
              print*,'Radiance error, since identity of variable is'
              print*,'identical to one of those being retrieved in this'
              print*,'retrieval'
@@ -342,7 +346,7 @@ C      Calc. gradient of all elements of xnx matrix.
        lin0 = 0
 
        if(ilbl.eq.1)then
-         print*,'Calling forwardnoglbl - A'
+         if(idiag.gt.0)print*,'Calling forwardnoglbl - A'
          CALL forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,flon,nconv,vconv,angles,gasgiant,lin0,
      2    nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
@@ -351,13 +355,13 @@ C      Calc. gradient of all elements of xnx matrix.
  
        if(iscat.eq.0)then
          if(jalbx.lt.0.and.jxscx.lt.0)then
-          print*,'Calling forwardavfovX - A'
+          if(idiag.gt.0)print*,'Calling forwardavfovX - A'
           CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,
      1     nav,wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2     lin0,nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,
      3     jprex,jradx,jloggx,jfracx,RADIUS,nxx,xnx,ny,ynx,kkx)
          else
-          print*,'Calling forwardnogX - A'
+          if(idiag.gt.0)print*,'Calling forwardnogX - A'
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2     nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
@@ -365,33 +369,37 @@ C      Calc. gradient of all elements of xnx matrix.
      4	   iprfcheck)
          endif
        elseif(iscat.eq.1.or.iscat.eq.3.or.iscat.eq.4)then
-         print*,'Calling forwardnogX - A1. iscat = ',iscat
+         if(idiag.gt.0)then
+          print*,'Calling forwardnogX - A1. iscat = ',iscat
+         endif
          CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2    nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
      3    jradx,jloggx,jfracx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,
      4	  iprfcheck)
-         print*,'forwardnogX - A1 - called OK'
+         if(idiag.gt.0)print*,'forwardnogX - A1 - called OK'
        elseif(iscat.eq.2)then
-         print*,'Calling intradfield - A1'
+         if(idiag.gt.0)print*,'Calling intradfield - A1'
          CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1    vconvT,gasgiant,lin0,nvarx,varidentx,
      2    varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
      3    jfracx,RADIUS,nxx,xnx)
-         print*,'intradfield called OK'
+         if(idiag.gt.0)print*,'intradfield called OK'
          CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2    nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
      3    jradx,jloggx,jfracx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,
      4	  iprfcheck)
        elseif(iscat.eq.5)then
-         print*,'Calling forwardnogXVenus - A1. iscat = ',iscat
+         if(idiag.gt.0)then
+          print*,'Calling forwardnogXVenus - A1. iscat = ',iscat
+         endif
          CALL forwardnogXVenus(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2    nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
      3    jradx,jloggx,jfracx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,
      4	  iprfcheck)
-         print*,'forwardnogXVenusX - A1 - called OK'
+         if(idiag.gt.0)print*,'forwardnogXVenusX - A1 - called OK'
 
        else
          print*,'Coreret: iscat invalid',iscat
@@ -407,13 +415,13 @@ C        this run.
      1  varparam,kkx,stx,nxx)
        endif
 
-       print*,'Calc forward model error'
+       if(idiag.gt.0)print*,'Calc forward model error'
        call calcfwderr(nxx,ny,kkx,stx,sf)
 
 C      Add effect of previous retrieval errors to measurement covariance
 C      matrix
 
-       print*,'Writing sef file'
+       if(idiag.gt.0)print*,'Writing sef file'
        call file(runname,runname,'sef')
        open(35,file=runname,status='unknown')
        write(35,*)'Additional measurement covariance matrix due to'
@@ -435,7 +443,7 @@ C      Recalculate inverse of se
         enddo
        enddo
 
-       print*,'Calculating inverse'
+       if(idiag.gt.0)print*,'Calculating inverse'
 C      Calculate inverse of se
        jmod = 2
        icheck=0
@@ -447,69 +455,70 @@ C      Calculate inverse of se
         print*,'***********************************'
         stop
        endif
-       print*,'Inverse OK'
+       if(idiag.gt.0)print*,'Inverse OK'
       endif 
 
 
 198   if(ilbl.eq.1)then
-         print*,'Calling forwardnoglbl - B'
+         if(idiag.gt.0)print*,'Calling forwardnoglbl - B'
          CALL forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,flon,nconv,vconv,angles,gasgiant,lin,
      2    nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
      3    jrad,jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter)
-         print*,'call OK'
+         if(idiag.gt.0)print*,'call OK'
       else
 
        if(iscat.eq.0)then
         if(jalb.lt.0.and.jxsc.lt.0)then
-         print*,'Calling forwardavfovX - B'
+         if(idiag.gt.0)print*,'Calling forwardavfovX - B'
          CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2    nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
      3    jlogg,jfrac,RADIUS,nx,xn,ny,yn,kk)
         else
-         print*,'Calling forwardnogX - B' 
+         if(idiag.gt.0)print*,'Calling forwardnogX - B' 
          CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2    nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
      3    jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
         endif
 
-C        print*,'forwardavfovX OK, jpre = ',jpre
+C        if(idiag.gt.0)print*,'forwardavfovX OK, jpre = ',jpre
 
        elseif(iscat.eq.1.or.iscat.eq.3.or.iscat.eq.4)then
 
-        print*,'Calling forwardnogX - B1, iscat = ',iscat
+        if(idiag.gt.0)print*,'Calling forwardnogX - B1, iscat = ',iscat
 
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
      3   jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
 
-C        print*,'forwardnogX OK, jpre = ',jpre
+C        if(idiag.gt.0)print*,'forwardnogX OK, jpre = ',jpre
 
 
        elseif(iscat.eq.2)then
 
-        print*,'Calling intradfield - B',gasgiant
+        if(idiag.gt.0)print*,'Calling intradfield - B',gasgiant
         CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1   vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
      2   jxsc,jtan,jpre,jrad,jlogg,jfrac,RADIUS,nx,xn)
-        print*,'intradfield - B called OK'
+        if(idiag.gt.0)print*,'intradfield - B called OK'
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
      3   jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
-        print*,'B - OK'
+        if(idiag.gt.0)print*,'B - OK'
        elseif(iscat.eq.5) then
-        print*,'Calling forwardnogXVenus - B1, iscat = ',iscat
-
+        if(idiag.gt.0)then
+          print*,'Calling forwardnogXVenus - B1, iscat = ',iscat
+        endif
         CALL forwardnogXVenus(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
      3   jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
 
-C        print*,'forwardnogX OK, jpre = ',jpre
+C        if(idiag.gt.0)print*,'forwardnogX OK, jpre = ',jpre
 
        endif
       endif
@@ -558,7 +567,7 @@ C     vectors xn, yn
        yn1(i)=yn(i)
       enddo
 
-      print*,'iterred,kiter',iterred,kiter
+      if(idiag.gt.0)print*,'iterred,kiter',iterred,kiter
 
       do 401 iter = iterred, kiter
 
@@ -585,6 +594,11 @@ C       Force fixed state vector elements to remain fixed!
          if(ifix(i).eq.1)then
           x_out(i)=xn(i)
          endif
+C        Nasty hack to set haze2 refractive index to haze1 for
+C        Toledo model.
+C         if(i.ge.11.and.i.le.191)then 
+C          x_out(i+183)=x_out(i)
+C         endif
         enddo
 
         do i=1,nx
@@ -599,10 +613,12 @@ C        Add additional brake for model 102 to stop silly fractions.
           endif
          endif
 
-         print*,'i, x_old, x_next',i,xn(i),xn1(i)
+         if(idiag.gt.0)print*,'i, x_old, x_next',i,xn(i),xn1(i)
          ntest=isnan(xn1(i))
          if(ntest)then
-          print*,'NAN detected. Increase brake and try again'
+          if(idiag.gt.0)then
+           print*,'NAN detected. Increase brake and try again'
+          endif
           alambda=alambda*10.
           if(alambda.gt.1e10)alambda=1e10
           goto 401
@@ -610,39 +626,47 @@ C        Add additional brake for model 102 to stop silly fractions.
 C        Check to see if log numbers have gone out of range
          if(lx(i).eq.1)then
           if(xn1(i).gt.85.or.xn1(i).lt.-85)then
-           print*,'Coreret - log(number gone out of range)'
-           print*,'Increasing brake'
+           if(idiag.gt.0)then
+             print*,'Coreret - log(number gone out of range)'
+           endif
+           if(idiag.gt.0)print*,'Increasing brake'
            alambda=alambda*10
            if(alambda.gt.1e10)alambda=1e10
            goto 401
           else
-           print*,'exp(x_old),exp(x_next)',exp(xn(i)),exp(xn1(i))
+           if(idiag.gt.0)then
+            print*,'exp(x_old),exp(x_next)',exp(xn(i)),exp(xn1(i))
+           endif
           endif
          endif
         enddo
 
 C       Test to see if any vmrs have gone negative.
         xflag=0
-C        print*,'coreret - testing subprofretg'
-C        print*,XFLAG,runname,ISPACE,ISCAT,GASGIANT,XLAT,XLON,NVAR
+C        if(idiag.gt.0)print*,'coreret - testing subprofretg'
+C        if(idiag.gt.0)then
+C         print*,XFLAG,runname,ISPACE,ISCAT,GASGIANT,XLAT,XLON,NVAR
+C        endif
 C        do i=1,nvar
-C         print*,(varident(i,j),j=1,3)
-C         print*,(varparam(i,j),j=1,5)
+C         if(idiag.gt.0)print*,(varident(i,j),j=1,3)
+C         if(idiag.gt.0)print*,(varparam(i,j),j=1,5)
 C        enddo
-C        print*,nx
+C        if(idiag.gt.0)print*,nx
 C        do i=1,nx
-C         print*,i,xn1(i)
+C         if(idiag.gt.0)print*,i,xn1(i)
 C        enddo
-C        print*,JPRE,NCONT,FLAGH2P
+C        if(idiag.gt.0)print*,JPRE,NCONT,FLAGH2P
 
 
         call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,
      1    xlon,nvar,varident,varparam,nx,xn1,jpre,ncont,flagh2p,
      2    xmap,ierr)
-        print*,'coreret - ierr = ',ierr
+        if(idiag.gt.0)print*,'coreret - ierr = ',ierr
 
         if (ierr.eq.1)then
-          print*,'VMRS gone negative. Increase brake and try again'
+          if(idiag.gt.0)then
+           print*,'VMRS gone negative. Increase brake and try again'
+          endif
           alambda = alambda*10.0             ! increase Marquardt brake
           if(alambda.gt.1e10)alambda=1e10
           goto 401
@@ -677,16 +701,18 @@ C        print*,JPRE,NCONT,FLAGH2P
           if(varident(ivar,3).eq.31)then
            if(varident(ivar,1).eq.0)then
              if(xn1(j).lt.1.0) then
-               print*,'Mod 31. Temperature has gone negative'
-               print*,'Increase alambda'
+               if(idiag.gt.0)then
+                print*,'Mod 31. Temperature has gone negative'
+                print*,'Increase alambda'
+               endif
                alambda = alambda*10.0             ! increase Marquardt brake
                if(alambda.gt.1e10)alambda=1e10
                goto 401
              endif
            else
              if(exp(xn1(j)).gt.1000.)then
-               print*,'Mod 31. vmr factor exceeds 1000'
-               print*,'Increase alambda'
+               if(idiag.gt.0)print*,'Mod 31. vmr factor exceeds 1000'
+               if(idiag.gt.0)print*,'Increase alambda'
                alambda = alambda*10.0             ! increase Marquardt brake
                if(alambda.gt.1e10)alambda=1e10
                goto 401
@@ -697,7 +723,9 @@ C        print*,JPRE,NCONT,FLAGH2P
           if(varident(ivar,1).eq.0)then
            if(varident(ivar,3).eq.0) then
             if(xn1(j).lt.1.0) then
-             print*,'Temperature has gone negative, Increase alambda'
+             if(idiag.gt.0)then
+              print*,'Temperature has gone negative, Increase alambda'
+             endif
              alambda = alambda*10.0		! increase Marquardt brake
              if(alambda.gt.1e10)alambda=1e10
              goto 401
@@ -706,7 +734,9 @@ C        print*,JPRE,NCONT,FLAGH2P
 
            if(varident(ivar,3).eq.16.and.j.eq.ix) then
             if(xn1(j).lt.1.0) then
-             print*,'Temperature has gone negative, Increase alambda'
+             if(idiag.gt.0)then
+              print*,'Temperature has gone negative, Increase alambda'
+             endif
              alambda = alambda*10.0		! increase Marquardt brake
              if(alambda.gt.1e10)alambda=1e10
              goto 401
@@ -716,9 +746,11 @@ C        print*,JPRE,NCONT,FLAGH2P
 
           if(varident(ivar,1).eq.444.and.j.eq.ix+1)then
            if(exp(xn1(j)).lt.0.01)then
-             print*,'Variance of size distribution gone too small',
+             if(idiag.gt.0)then
+              print*,'Variance of size distribution gone too small',
      1		exp(xn1(j))
-             print*,'Increase alambda',alambda
+              print*,'Increase alambda',alambda
+             endif
              alambda = alambda*10.0		! increase Marquardt brake
              if(alambda.gt.1e10)alambda=1e10
              goto 401
@@ -729,9 +761,11 @@ C        print*,JPRE,NCONT,FLAGH2P
           if(varident(ivar,1).eq.444)then
            if(j.ge.ix+2.and.j.le.ix+np-1)then
             if(exp(xn1(j)).gt.1)then
-             print*,'Imaginary refractive index too large',
+             if(idiag.gt.0)then
+              print*,'Imaginary refractive index too large',
      1		exp(xn1(j))
-             print*,'Increase alambda',alambda
+              print*,'Increase alambda',alambda
+             endif
              alambda = alambda*10.0		! increase Marquardt brake
              if(alambda.gt.1e10)alambda=1e10
              goto 401
@@ -741,9 +775,11 @@ C        print*,JPRE,NCONT,FLAGH2P
 
           if(varident(ivar,1).eq.445.and.j.eq.ix+1)then
            if(exp(xn1(j)).lt.0.01)then
-             print*,'Variance of size distribution gone too small',
+             if(idiag.gt.0)then
+              print*,'Variance of size distribution gone too small',
      1		exp(xn1(j))
-             print*,'Increase alambda',alambda
+              print*,'Increase alambda',alambda
+             endif
              alambda = alambda*10.0		! increase Marquardt brake
              if(alambda.gt.1e10)alambda=1e10
              goto 401
@@ -752,9 +788,11 @@ C        print*,JPRE,NCONT,FLAGH2P
 
           if(varident(ivar,1).eq.445.and.j.eq.ix+2)then
            if(xn1(j).ge.0)then
-             print*,'Particle shell:core ratio greater than 1',
+             if(idiag.gt.0)then
+              print*,'Particle shell:core ratio greater than 1',
      1		exp(xn1(j))
-             print*,'Increase alambda',alambda
+              print*,'Increase alambda',alambda
+             endif
              alambda = alambda*10.0		! increase Marquardt brake
              if(alambda.gt.1e10)alambda=1e10
              goto 401
@@ -763,8 +801,8 @@ C        print*,JPRE,NCONT,FLAGH2P
 
           if(varident(ivar,1).eq.227.and.j.eq.ix)then!if TC altitude is too low (MIGHT NEED TO CHANGE THIS FOR OTHER WAVELENGTHS)
            if(exp(xn1(j)).gt.5)then
-              print*,'TC altitude too low:',exp(xn1(j))
-              print*,'Increase alambda',alambda
+              if(idiag.gt.0)print*,'TC altitude too low:',exp(xn1(j))
+              if(idiag.gt.0)print*,'Increase alambda',alambda
               alambda = alambda*10.0		! increase Marquardt brake
               if(alambda.gt.1e10)alambda=1e10
               goto 401
@@ -773,8 +811,8 @@ C        print*,JPRE,NCONT,FLAGH2P
 
           if(varident(ivar,1).eq.227.and.j.eq.ix+1)then!if TC opacity becomes too large
            if(exp(xn1(j)).ge.1000)then
-              print*,'TC opacity too high:',exp(xn1(j))
-              print*,'Increase alambda',alambda
+              if(idiag.gt.0)print*,'TC opacity too high:',exp(xn1(j))
+              if(idiag.gt.0)print*,'Increase alambda',alambda
               alambda = alambda*10.0		! increase Marquardt brake
               if(alambda.gt.1e10)alambda=1e10
               goto 401
@@ -789,11 +827,11 @@ C        print*,JPRE,NCONT,FLAGH2P
            endif
            if(exp(xn1(j-3)).lt.1.5*exp(xn1(j)).or.
      1       (tmpvar*exp(xn1(j)))-0.02.lt.exp(xn1(j+2)))then
-              print*,'Breakdown of cloud structure:'
-              print*,'TC base pressure = ',exp(xn1(j-3))
-              print*,'CB pressure = ',exp(xn1(j))
-              print*,'SH pressure = ',exp(xn1(j+2))
-              print*,'Increase alambda',alambda
+              if(idiag.gt.0)print*,'Breakdown of cloud structure:'
+              if(idiag.gt.0)print*,'TC base pressure = ',exp(xn1(j-3))
+              if(idiag.gt.0)print*,'CB pressure = ',exp(xn1(j))
+              if(idiag.gt.0)print*,'SH pressure = ',exp(xn1(j+2))
+              if(idiag.gt.0)print*,'Increase alambda',alambda
               alambda = alambda*10.0		! increase Marquardt brake
               if(alambda.gt.1e10)alambda=1e10
               goto 401
@@ -811,7 +849,7 @@ C       Put output spectrum into temporary spectrum yn1 with
 C       temporary kernel matrix kk1. Does it improve the fit? 
 
         if(ilbl.eq.1)then
-         print*,'Calling forwardnoglbl - C'
+         if(idiag.gt.0)print*,'Calling forwardnoglbl - C'
          CALL forwardnoglbl(runname,ispace,iscat,fwhm,ngeom,nav,     
      1    wgeom,flat,flon,nconv,vconv,angles,gasgiant,lin,
      2    nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
@@ -819,13 +857,13 @@ C       temporary kernel matrix kk1. Does it improve the fit?
         else
          if(iscat.eq.0)then
           if(jalb.lt.0.and.jxsc.lt.0)then
-           print*,'Calling forwardavfovX - C'
+           if(idiag.gt.0)print*,'Calling forwardavfovX - C'
            CALL forwardavfovX(runname,ispace,iscat,fwhm,ngeom,nav,
      1      wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2      lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,
      3      jrad,jlogg,jfrac,RADIUS,nx,xn1,ny,yn1,kk1)
           else
-           print*,'Calling forwardnogX - C'
+           if(idiag.gt.0)print*,'Calling forwardnogX - C'
            CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1      wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2      lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
@@ -834,13 +872,13 @@ C       temporary kernel matrix kk1. Does it improve the fit?
 
          elseif(iscat.eq.1.or.iscat.eq.3.or.iscat.eq.4)then
 
-         print*,'Calling forwardnogX - C'
+         if(idiag.gt.0)print*,'Calling forwardnogX - C'
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
      3     jlogg,jfrac,RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter,iprfcheck)
          elseif(iscat.eq.2)then
-         print*,'Calling intradfield - C'
+         if(idiag.gt.0)print*,'Calling intradfield - C'
           CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
      1     vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
      2     jxsc,jtan,jpre,jrad,jlogg,jfrac,RADIUS,nx,xn1)
@@ -849,7 +887,7 @@ C       temporary kernel matrix kk1. Does it improve the fit?
      2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
      3     jlogg,jfrac,RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter,iprfcheck)
          elseif(iscat.eq.5)then
-         print*,'Calling forwardnogXVenus - C'
+         if(idiag.gt.0)print*,'Calling forwardnogXVenus - C'
           CALL forwardnogXVenus(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
@@ -861,7 +899,9 @@ C       temporary kernel matrix kk1. Does it improve the fit?
         if(iprfcheck.eq.1)then
 C        iteration has led to negative temperatures, vmrs or dust amounts
 C        Increase brake and try again.
-         print*,'Profile gone wobbly, increase brake and try again'
+         if(idiag.gt.0)then
+          print*,'Profile gone wobbly, increase brake and try again'
+         endif
          alambda = alambda*10.0              ! increase Marquardt brake
          if(alambda.gt.1e10)alambda=1e10
          goto 401
@@ -871,14 +911,14 @@ C       Calculate the cost function for this trial solution.
         phi = calc_phiret(ny,y,yn1,sei,nx,xn1,xa,sai,chisq)
 
         xchi = chisq/float(ny)
-        print*,'chisq/ny = ',xchi
-        print*,'it.,al.,ophi.,phi.',
+        if(idiag.gt.0)print*,'chisq/ny = ',xchi
+        if(idiag.gt.0)print*,'it.,al.,ophi.,phi.',
      1   iter,alambda,ophi,phi
 
 C       What's %phi between last and this iteration?    
         tphi = 100.0*(ophi-phi)/ophi
         abstphi = abs(tphi)
-        print*,'%phi, abs(%phi) : ',tphi,abstphi
+        if(idiag.gt.0)print*,'%phi, abs(%phi) : ',tphi,abstphi
 
         if(redwavbool.eqv..true.)then!reduce phlimit in first few iterations of reduced wavelength scheme using a fudge factor to waste less time
          phfac=float(nconv(1))/float(nconvfull(1))
@@ -888,7 +928,9 @@ C       What's %phi between last and this iteration?
 
 C       Does trial solution fit the data better?
         if(phi.le.ophi)then
-            print*,'Successful iteration. Updating xn,yn and kk'
+            if(idiag.gt.0)then
+             print*,'Successful iteration. Updating xn,yn and kk'
+            endif
             do i=1,nx
              xn(i)=xn1(i)         		! update xn to new value
             enddo
@@ -899,19 +941,23 @@ C       Does trial solution fit the data better?
              enddo
             enddo
 
-            print*,'Calculating new gain matrix and averaging kernels'
+            if(idiag.gt.0)then
+             print*,'Calculating new gain matrix and averaging kernels'
+            endif
 C           Now calculate the gain matrix and averaging kernels
             call calc_gain_matrix(nx,ny,kk,sa,sai,se,sei,dd,aa)
 
-            print*,'calc_gain_matrix OK'
+            if(idiag.gt.0)print*,'calc_gain_matrix OK'
           
 C           Has solution converged?
           
             if(tphi.ge.0.0.and.tphi.le.phlimit/phfac.and.
      1       alambda.lt.1.0)then
-              print*,'%phi, phlimit : ',tphi,phlimit/phfac
-              print*,'Phi has converged'
-              print*,'Terminating retrieval'
+              if(idiag.gt.0)then
+               print*,'%phi, phlimit : ',tphi,phlimit/phfac
+               print*,'Phi has converged'
+               print*,'Terminating retrieval'
+              endif
               oxchi=xchi
               if((redwavbool.eqv..true.).and.(irank.lt.maxirank))then
                GOTO 201
@@ -933,7 +979,9 @@ C           If alambda is small enough, increase it to decrease abs(tphi) value.
 	       alambda = alambda*10.0		! increase Marquardt brake further
             else
 C              If lambda is close to 1.0 or greater when condition met, accept that iteration.
-               print*,'Accepting iteration. Updating xn,yn and kk'
+               if(idiag.gt.0)then
+                print*,'Accepting iteration. Updating xn,yn and kk'
+               endif
                do i=1,nx
 	        xn(i)=xn1(i)         		! update xn to new value
 	       enddo
@@ -945,12 +993,16 @@ C              If lambda is close to 1.0 or greater when condition met, accept t
 		 enddo
 	       enddo
 
-	       print*,'%phi, phlimit, alambda : ',tphi,phlimit,alambda
-	       print*,'Phi has converged under the alternate criteria'
+	       if(idiag.gt.0)then
+                print*,'%phi, phlimit, alambda : ',tphi,phlimit,alambda
+	        print*,'Phi has converged under the alternate criteria'
+               endif
 	       if (alambda.ge.1.0) then
-		 print*,'In addition, alambda is >= 1.0'
+		 if(idiag.gt.0)print*,'In addition, alambda is >= 1.0'
 	       endif	
-	       print*,'Terminating retrieval under alternate conditions'
+	       if(idiag.gt.0)then
+               print*,'Terminating retrieval under alternate conditions'
+               endif
                oxchi=xchi
                if((redwavbool.eqv..true.).and.(irank.lt.maxirank))then
                 GOTO 201
@@ -974,8 +1026,10 @@ C       perform the last 2 iterations using the highest-ranked grid
           rankdiff = maxirank - irank
           irank = maxirank - 1
           finalbool = .true.
-          print*, 'Replacing current wavelength grid with'
-          print*, 'highest-ranked grid for last few iterations'
+          if(idiag.gt.0)then
+           print*, 'Replacing current wavelength grid with'
+           print*, 'highest-ranked grid for last few iterations'
+          endif
           goto 201
          else
           goto 202
@@ -990,7 +1044,7 @@ C       perform the last 2 iterations using the highest-ranked grid
          read(83,'(A)')abort
          close(83)
          if(abort.eq.'stop'.or.abort.eq.'STOP')then
-           print*,'Terminating retrieval'
+           if(idiag.gt.0)print*,'Terminating retrieval'
            GOTO 202
          endif
         endif
@@ -1059,8 +1113,10 @@ C       Re-initialise s1e and se
          kkold = kk
          ynold = yn
 
-         print*,'Performing forward model on new wavelengths'
-         print*,'Calling forwardnogX - D'
+         if(idiag.gt.0)then
+          print*,'Performing forward model on new wavelengths'
+          print*,'Calling forwardnogX - D'
+         endif
          CALL forwardnogXrdw(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
@@ -1077,11 +1133,12 @@ C          in order
            endif
            goto 199
         else
-         print*,'Warning coreret.f: '
-         print*,'forwardnoglbl.f, forwardavfovX.f and intradfield.f'
-         print*,'not yet completely optimised for reduced wavelength'
-         print*,'scheme. Refer to forwardnogXrdw.f for reference.'
-
+         if(idiag.gt.0)then
+          print*,'Warning coreret.f: '
+          print*,'forwardnoglbl.f, forwardavfovX.f and intradfield.f'
+          print*,'not yet completely optimised for reduced wavelength'
+          print*,'scheme. Refer to forwardnogXrdw.f for reference.'
+         endif
          if(ilbl.eq.0.or.ilbl.eq.2)then
 C        Find all the calculation and convolution wavelengths and rank
 C        in order
@@ -1095,7 +1152,9 @@ C        in order
 C      
        else
         
-        print*, 'Highest-ranked wavelength grid reached. Ending run.'
+        if(idiag.gt.0)then
+         print*, 'Highest-ranked wavelength grid reached. Ending run.'
+        endif
         goto 202         
 
        endif
@@ -1126,21 +1185,23 @@ C	Make sure input and output spectral errors are consistent when ending run
         enddo
 
 	do i=1,nconv(1)
-	 print*, 'Se=', vconv(1,i), se(i,i)
-	 print*, 'Se1=', vconv(1,i), se1(i)
+	 if(idiag.gt.0)print*, 'Se=', vconv(1,i), se(i,i)
+	 if(idiag.gt.0)print*, 'Se1=', vconv(1,i), se1(i)
 	enddo
       endif
 
-C      print*,'chisq/ny is equal to : ',chisq/float(ny)
-      print*,'chisq/ny is equal to : ',oxchi
+C      if(idiag.gt.0)print*,'chisq/ny is equal to : ',chisq/float(ny)
+      if(idiag.gt.0)print*,'chisq/ny is equal to : ',oxchi
       if(chisq.gt.ny)then
-       print*,'Coreret: WARNING'
-       print*,'chisq/ny should be less than 1 if correctly retrieved'
+       if(idiag.gt.0)then
+        print*,'Coreret: WARNING'
+        print*,'chisq/ny should be less than 1 if correctly retrieved'
+       endif
       endif
 
-      print*,'Calculating final covariance matrix'
+      if(idiag.gt.0)print*,'Calculating final covariance matrix'
       CALL calc_serr(nx,ny,sa,se,aa,dd,st,sn,sm)
-      print*,'Matrix calculated'
+      if(idiag.gt.0)print*,'Matrix calculated'
 
 C     Make sure errors stay as a priori for kiter < 0
       if(kiter.lt.0)then

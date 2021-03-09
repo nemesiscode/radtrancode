@@ -2,6 +2,8 @@
       character*100 ipfile,opfile,aefile,qcfile
       real flux,Teff,frain
       integer imodel
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       call reservegas
 

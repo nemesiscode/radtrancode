@@ -94,10 +94,12 @@ C     ************************************************************************
       integer nvarx,varidentx(mvar,3),ivarx
       real varparamx(mvar,mparam),xsc(maxsec,maxgas)
       real ssa(maxsec,maxgas)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       logical gasgiant
 
-      print*,'gsetraddisc, lin = ',lin
+      if(idiag.gt.0)print*,'gsetraddisc, lin = ',lin
 
 1     format(a)
 
@@ -146,7 +148,7 @@ C        ********* Adjust cloud cross-section spectrum  **********
 51       read(9,1)buffer
          if(buffer(1:1).eq.'#')goto 51
          read(buffer,*)ncont1
-         if(ncont1.ne.ncont)then
+         if(ncont1.ne.ncont.and.idiag.gt.0)then
           print*,'Error in gsetrad ncont1 <> ncont'
           print*,ncont1,ncont
           print*,'file : ',runname
@@ -179,7 +181,7 @@ C        ********* reset surface albedo spectrum  **********
 54       read(9,1)buffer
          if(buffer(1:1).eq.'#')goto 54
          read(buffer,*)nalb1
-         if(nalb1.ne.nalb)then
+         if(nalb1.ne.nalb.and.idiag.gt.0)then
           print*,'Error in gsetraddisc nalbx <> nalb1'
           print*,nalb,nalb1
           print*,'file : ',runname
@@ -252,7 +254,6 @@ C       ***************** Surface temperature correction ***********
 
       do ivar=1,nvar
 
-C       print*,ivar
 
        if(varident(ivar,1).eq.887)then
 

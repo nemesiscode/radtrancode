@@ -29,6 +29,8 @@ C     **************************************************************************
       REAL xnew(maxpro)
       REAL tmp,pch4(maxpro)
       real SCH40,SCH41
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C     Thermodynamic sata extracted from Handbook of Physics and Chemistry and
 C     Kaye and Labyfor PRAXIS book. 

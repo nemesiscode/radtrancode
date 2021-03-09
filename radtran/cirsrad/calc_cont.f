@@ -74,6 +74,8 @@ C     General variables ...
 C     GASCON switches
       INCLUDE '../includes/gascom.f'
       INCLUDE '../includes/lcocom.f'
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C******************************** CODE *********************************
 
@@ -89,7 +91,6 @@ C       Computing continuum for all except adjacent bins
           VV = DBLE(CONWAV(K) + VBIN(J)) 
           DV = SNGL(VV - VLIN(IB,LINE))
 C         Don't calculate at wavenumbers more than MAXDV away
-C          print*,DV,MAXDV
           IF(ABS(DV).LE.MAXDV)THEN
 
            DO 101 LAYER=1,NLAYER
@@ -130,7 +131,7 @@ C     have been stripped of weaker lines.
       IF(IJLCO.GT.0.AND.IX.EQ.1)THEN
        DO 299 IGAS=1,NGAS
         IF(IDGAS(IGAS).EQ.IDLCO.AND.ISOGAS(IGAS).EQ.ISOLCO)THEN
-         print*,'Adding LCO for gas : ',IGAS,IDLCO,ISOLCO
+         if(idiag.gt.0)print*,'Adding LCO for gas : ',IGAS,IDLCO,ISOLCO
          FNH3=-1.0
          FH2=-1.0
          DO 300 LAYER=1,NLAYER
@@ -143,7 +144,9 @@ C     have been stripped of weaker lines.
             VV=VBIN(I)+CONWAV(K)
             CALL VERINT(VOUT,YOUT,NBIN+1,CONVAL,SNGL(VV))
             IF(K.EQ.2)THEN
-             print*,'lco',K,LAYER,I,CONVALS(K,LAYER,I),CONVAL
+             if(idiag.gt.0)then
+              print*,'lco',K,LAYER,I,CONVALS(K,LAYER,I),CONVAL
+             endif
             ENDIF
             CONVALS(K,LAYER,I)=CONVALS(K,LAYER,I)+CONVAL
 302        CONTINUE

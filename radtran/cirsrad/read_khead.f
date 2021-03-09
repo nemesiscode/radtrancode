@@ -27,6 +27,8 @@ C-----------------------------------------------------------------------
      1			G_ORD(MAXG), DEL_G(MAXG), VCEN(MAXBIN),
      2                  TEMP2(MAXK,MAXK)
 	character*200	KTAFIL
+        integer idiag,iquiet
+        common/diagnostic/idiag,iquiet
    
       IRECL=ISYS()
 

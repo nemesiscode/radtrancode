@@ -34,20 +34,25 @@ C - Common blocks
      1		lncons, lcons, sol_ang, emiss_ang, aphi, nf
 	common/phase/thet,cthet,phas,head,irec1,nphas,maxrec
 
+        integer idiag,iquiet
+        common/diagnostic/idiag,iquiet
+
 C-----------------------------------------------------------------------
 C
 C	Read scattering information file.
 C
 C-----------------------------------------------------------------------
 
-	WRITE(*,*)'calling read_scatter1'
+	if(idiag.gt.0)WRITE(*,*)'calling read_scatter1'
 	call read_scatter1(radfile,nmu,mu1,wt1,isol,dist,lowbc, galb, 
      1		nc, liscat, lnorm, lncons, lcons, scatfile, sol_ang, 
      2		emiss_ang, aphi, nf) 
-	WRITE(*,*)'read_scatter1 OK'
-        do i=1,nmu
-         print*,i,mu1(i),wt1(i)
-        enddo
+       if(idiag.gt.0)then
+ 	 WRITE(*,*)'read_scatter1 OK'
+         do i=1,nmu
+          print*,i,mu1(i),wt1(i)
+         enddo
+       endif
 C-----------------------------------------------------------------------
 C
 C	Check some variable sizes.
@@ -86,7 +91,7 @@ C-----------------------------------------------------------------------
 	do I = 1, nc
 		if (liscat(I).eq.4) then 
 			iunit = 10 + I
-                        print*,I,scatfile(i),iunit
+                        if(idiag.gt.0)print*,I,scatfile(i),iunit
 			open (iunit,file=scatfile(I),status='old', 
      1				access='direct', recl=512, form=
      2				'formatted')

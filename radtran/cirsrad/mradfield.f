@@ -10,6 +10,8 @@ C     ****************************************************************
       real vwaveF(maxbin),basehf(maxlay),basepf(maxlay)
       real umif(1000,maxmu,maxscatlay,20,11)
       real uplf(1000,maxmu,maxscatlay,20,11),xtmp
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
       irecl=4
@@ -105,8 +107,10 @@ C      top of atmosphere and set all downwelling radiation to zero
 73     continue
 
       ELSE
-       print*,'modradfield: modification ID unrecognised',IMOD
-       print*,'modradfield: doing nothing'
+       if(idiag.gt.0)then
+        print*,'modradfield: modification ID unrecognised',IMOD
+        print*,'modradfield: doing nothing'
+       endif
       ENDIF
 
 C     Now write out modified radiation field

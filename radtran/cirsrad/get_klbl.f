@@ -36,6 +36,9 @@ C       bins, paths, etc.)
 
 	COMMON /INTERPKLBL/LUN,IREC0,VMIN,DELV,NPOINT,P,NP,T,
      1   T2,NT,KOUT,DKOUTDT
+        integer idiag,iquiet
+        common/diagnostic/idiag,iquiet
+
 C-----------------------------------------------------------------------
 
 

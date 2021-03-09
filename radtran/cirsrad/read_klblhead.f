@@ -26,10 +26,12 @@ C-----------------------------------------------------------------------
 	real		VMIN, DELV, PRESS(MAXK), TEMP(MAXK), 
      1                  TEMP2(MAXK,MAXK)
 	character*200	KTAFIL
+        integer idiag,iquiet
+        common/diagnostic/idiag,iquiet
 
       IRECL=ISYS()
 
-      WRITE(*,41)KTAFIL
+      if(idiag.gt.0)WRITE(*,41)KTAFIL
 41    FORMAT('Read_klblhead. Opening : ',A) 
 
       OPEN(UNIT=LUN0,FILE=KTAFIL,STATUS='OLD',ACCESS='DIRECT',
@@ -43,14 +45,14 @@ C       PRINT*,'is greater than the dimension, MAXBIN,of the VCEN array'
 C       PRINT*,NPOINT,MAXBIN
 C       STOP
 C      ENDIF
-      print*,'IREC0,NPOINT =',IREC0,NPOINT
+      if(idiag.gt.0)print*,'IREC0,NPOINT =',IREC0,NPOINT
       READ(LUN0,REC=3)VMIN
       READ(LUN0,REC=4)DELV
       READ(LUN0,REC=5)NP
       READ(LUN0,REC=6)NT
       READ(LUN0,REC=7)IDGAS
       READ(LUN0,REC=8)ISOGAS
-      print*,'NP,NT,IDGAS,ISOGAS = ',NP,NT,IDGAS,ISOGAS
+      if(idiag.gt.0)print*,'NP,NT,IDGAS,ISOGAS = ',NP,NT,IDGAS,ISOGAS
 
 
 C-----------------------------------------------------------------------

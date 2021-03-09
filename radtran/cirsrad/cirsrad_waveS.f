@@ -205,6 +205,8 @@ C		Common blocks and parameters
 
 	PARAMETER	(tsun=5900.,theta0=4.65241e-3, pi=3.141593,
      1			error=5.e-5,LUNIS=61) 
+        integer idiag,iquiet
+        common/diagnostic/idiag,iquiet
 
 C-----------------------------------------------------------------------
 C
@@ -358,7 +360,9 @@ cc	print*,'TEST: cirsrad_waveS: nwave,nmu=',nwave,nmu
 			muemiss = sngl(dmuemiss)
 			muinc = sngl(dmuinc)
 			ssfac = muinc/(muinc+muemiss)
-                        print*,'ssfac',muinc,muemiss,ssfac
+                        if(idiag.gt.0)then
+                         print*,'ssfac',muinc,muemiss,ssfac
+                        endif
 			do I = 1, nlayer
 				scale(I,1) = sngl(1./dmuemiss + 
      1					1./dmuinc)
@@ -369,7 +373,7 @@ cc	print*,'TEST: cirsrad_waveS: nwave,nmu=',nwave,nmu
      2				 cos((aphi-pi)*pi/180.0) - 
      3				 muemiss*muinc
 
-			print*,'calpha',calpha
+			if(idiag.gt.0)print*,'calpha',calpha
 
 		endif
 	end do
@@ -459,7 +463,7 @@ C-----------------------------------------------------------------------
 
         IFLUX=2
 
-        print*,'IFLUX = ',IFLUX
+        if(idiag.gt.0)print*,'IFLUX = ',IFLUX
 
         IF(IFLUX.EQ.2)THEN
          OPEN(LUNIS,FILE='internal.fld',STATUS='OLD',
@@ -493,7 +497,7 @@ C-----------------------------------------------------------------------
 
         ENDIF
 
-        print*,'IOFF = ',IOFF
+        if(idiag.gt.0)print*,'IOFF = ',IOFF
 
         DO I = 1, nwave
 		x = vwave(I)
@@ -609,11 +613,13 @@ C-----------------------------------------------------------------------
      1					nsec, x, tau2)
 
 				if(tau.lt.0)then
-             			 print*,'tau lt 0: Particle type ',K
-                                 print*,nsec,vsec(1),vsec(nsec)
-                                 print*,nsec,asec(1),asec(nsec)
-                                 print*,x,tau
-                                 print*,'Do linear interpolation'
+                                 if(idiag.gt.0)then
+             			  print*,'tau lt 0: Particle type ',K
+                                  print*,nsec,vsec(1),vsec(nsec)
+                                  print*,nsec,asec(1),asec(nsec)
+                                  print*,x,tau
+                                  print*,'Do linear interpolation'
+                                 endif
                                  jf=-1
                                  do l=1,nsec-1
                          if(x.ge.vsec(l).and.x.lt.vsec(l+1))then
@@ -624,8 +630,8 @@ C-----------------------------------------------------------------------
                                  enddo
                                  if(x.le.vsec(1))tau=asec(1)
                                  if(x.ge.vsec(nsec))tau=asec(nsec)
-                                 print*,'new tau ',tau
-				 if(jf.gt.0)then
+                                 if(idiag.gt.0)print*,'new tau ',tau
+				 if(jf.gt.0.and.idiag.gt.0)then
                                   print*,jf,vsec(jf),vsec(jf+1),xf
                                   print*,asec(jf),asec(jf+1)
                                  endif
@@ -633,11 +639,13 @@ C-----------------------------------------------------------------------
 
 
 				if(tau2.lt.0)then
-             			 print*,'tau2 lt 0: Particle type ',K
-                                 print*,nsec,vsec(1),vsec(nsec)
-                                 print*,nsec,bsec(1),bsec(nsec)
-                                 print*,x,tau2
-                                 print*,'Do linear interpolation'
+                                 if(idiag.gt.0)then
+             			  print*,'tau2 lt 0: Particle type ',K
+                                  print*,nsec,vsec(1),vsec(nsec)
+                                  print*,nsec,bsec(1),bsec(nsec)
+                                  print*,x,tau2
+                                  print*,'Do linear interpolation'
+                                 endif
                                  jf=-1
                                  do l=1,nsec-1
                          if(x.ge.vsec(l).and.x.lt.vsec(l+1))then
@@ -648,14 +656,14 @@ C-----------------------------------------------------------------------
                                  enddo
                                  if(x.le.vsec(1))tau2=bsec(1)
                                  if(x.ge.vsec(nsec))tau2=bsec(nsec)
-                                 print*,'new tau2 ',tau2
-				 if(jf.gt.0)then
+                                 if(idiag.gt.0)print*,'new tau2 ',tau2
+				 if(jf.gt.0.and.idiag.gt.0)then
 				  print*,jf,vsec(jf),vsec(jf+1),xf
 				  print*,bsec(jf),bsec(jf+1)
 				 endif
                                 endif
 
-                                if(cont(K,J).lt.0)then
+                                if(cont(K,J).lt.0.and.idiag.gt.0)then
                                  print*,'CONT,K,J',cont(k,j),k,j
                                 endif
 
@@ -1004,7 +1012,7 @@ C        stop
 
           do j=1,nlays
            jb(J,Ipath)=Jsource(J)
-           print*,'scat',ipath,j,bb(j,ipath),jb(j,ipath)
+           if(idiag.gt.0)print*,'scat',ipath,j,bb(j,ipath),jb(j,ipath)
           enddo
 
         endif
@@ -1152,7 +1160,7 @@ C                        print*,'lowbc,galb1',lowbc,galb1
 
                 ELSEIF (itype.EQ.13) THEN
 
-                   if(nf.ne.0)then
+                   if(nf.ne.0.and.idiag.gt.0)then
                     print*,'Error in cirsrad_waveS, nf <> 0',nf
                    endif
 

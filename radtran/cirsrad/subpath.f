@@ -97,6 +97,8 @@ C PROFFILE: Atmospheric profile filename.
 C AEROFILE: Dust/Aerosol profile filename.
 
       LOGICAL OK,DEF,BIT,REFL
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C********************************* CODE ********************************
 
@@ -115,7 +117,7 @@ C Initialise flags
        ENDDO
       ENDDO
 
-      print*,'Calling SUBPATH'
+      if(idiag.gt.0)print*,'Calling SUBPATH'
 
       CALL FILE(IPFILE,IPFILE,'pat')
       OPEN (UNIT=2,FILE=IPFILE,STATUS= 'OLD')
@@ -166,13 +168,13 @@ C Skipping blank lines
 	GOTO 2
       ELSE IF (TEXT(1:8).EQ.'INTERVAL') THEN
         READ(2,*)VMIN,VMAX,DELV,FWHM
-        print*,VMIN,VMAX,DELV,FWHM
+        if(idiag.gt.0)print*,VMIN,VMAX,DELV,FWHM
         IF(DELV.GT.0.0)THEN
          NPOINT = NINT((VMAX-VMIN)/DELV) + 1
         ELSE
          NPOINT = 1
         ENDIF
-        print*,'NPOINT = ',NPOINT
+        if(idiag.gt.0)print*,'NPOINT = ',NPOINT
         READ(2,*)ICONV,WING,VREL
         INTERV = .TRUE.
         WRITE(*,*)' '
@@ -192,7 +194,7 @@ C Skipping blank lines
       ELSE IF (TEXT(1:5).EQ.'MODEL') THEN
         proffile(1:94) = text(6:100)
         proffile(95:100) = '     '            ! must be this way for IFC
-        print*,'reading : ',proffile
+        if(idiag.gt.0)print*,'reading : ',proffile
         CALL RDMOD(proffile)
       ELSE IF (TEXT(1:10).EQ.'DUST MODEL') THEN
         aerofile(1:89) = text(11:100)

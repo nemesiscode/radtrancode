@@ -87,6 +87,9 @@ C       bins, paths, etc.)
 	CHARACTER*100	logfil, drvfil, radfile, xscfil
 
         common/scatd/mu1, wt1, galb
+        integer idiag,iquiet
+        common/diagnostic/idiag,iquiet
+
 C-----------------------------------------------------------------------
 C
 C	Begin Program.

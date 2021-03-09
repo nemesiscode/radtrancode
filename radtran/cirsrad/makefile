@@ -14,11 +14,9 @@ F_SOURCES = \
 	lblconv1.f \
 	cirsrad_wave.f \
 	cirsrad_waveS.f \
-	cirsrad_waveMC.f \
 	cirsrtf.f \
 	cirsrtf_wave.f \
 	cirsrtf_waveS.f \
-	cirsrtf_waveMC.f \
 	calcsoltau.f \
 	close_scat.f \
 	findloc.f \
@@ -44,7 +42,6 @@ F_SOURCES = \
         scatsourcesol.f \
 	subcirsrtf_wave.f \
 	subcirsrtf_waveS.f \
-	subcirsrtf_waveMC.f \
 	dumpflux.f \
 	streamflux.f \
 	impflux.f \
@@ -62,6 +59,7 @@ F_SOURCES = \
 	lblrtf_wave.f \
 	lblrad_wave.f \
 	calc_fine.f \
+	readsurfem.f \
 	readprfheight.f
 
 INCDIR = ../includes
@@ -89,7 +87,7 @@ lib $(LIBRARY): $(LIBCODE)
 
 $(LIBRARY)(%.o): %.f $(INCLUDES)
 	$(FC) $(FCFLAGS) -c $<
-	ar rv $(LIBRARY) $*.o
+	ar rvU $(LIBRARY) $*.o
 	ranlib $(LIBRARY)
 	-rm $*.o
 

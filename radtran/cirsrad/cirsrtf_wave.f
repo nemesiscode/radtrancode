@@ -73,14 +73,17 @@ C       Arrays
  
         common/lbltable/ilbl
 
+        integer idiag,iquiet
+        common/diagnostic/idiag,iquiet
 
-        PRINT*,'CIRSRTF_WAVE - ILBL = ',ILBL
+
+        if(idiag.gt.0)print*,'CIRSRTF_WAVE - ILBL = ',ILBL
         IF(ILBL.EQ.2)THEN
          call file(opfile,sfile,'sha')
          open(13,file=sfile,status='old')
          READ(13,*)ISHAPE
          close(13)
-         print*,'ISHAPE = ',ISHAPE
+         if(idiag.gt.0)print*,'ISHAPE = ',ISHAPE
         ENDIF
 
 
@@ -89,7 +92,9 @@ C       See if file is present forcing FWHM to vary with wavelength/wavenumber
         INQUIRE(FILE=FWHMFILE,EXIST=FWHMEXIST)
 C       If such a file exists then read in the data
         IF(FWHMEXIST)THEN
-         print*,'Reading FWHM infomration from : ',FWHMFILE
+         if(idiag.gt.0)then
+          print*,'Reading FWHM infomration from : ',FWHMFILE
+         endif
          OPEN(13,FILE=FWHMFILE,status='old')
           READ(13,*)NFWHM
           DO I=1,NFWHM

@@ -244,6 +244,8 @@ C       Solar reference spectrum common block
 
 	PARAMETER	(tsun=5900.,theta0=4.65241e-3, pi=3.141593,
      1			error=5.e-5,LUNIS=61,infr=62,infrt=63) 
+        integer idiag,iquiet
+        common/diagnostic/idiag,iquiet
 
 C-----------------------------------------------------------------------
 C
@@ -488,7 +490,7 @@ C-----------------------------------------------------------------------
          endif
         ENDDO
 
-        print*,'IFLUX = ',IFLUX
+        if(idiag.gt.0)print*,'IFLUX = ',IFLUX
         IOFF = 0
 
 C       Look to see if there is a scattering net-flux calculation. If so
@@ -499,9 +501,9 @@ C       open output file for internal radiation field output.
 C         if(imod(ipath).eq.24)ish=1
          if(imod(ipath).eq.24)ivenera=1
         enddo
-        print*,'ish = ',ish
+        if(idiag.gt.0)print*,'ish = ',ish
         if(ish.eq.1)then
-         print*,'opening ish.dat'
+         if(idiag.gt.0)print*,'opening ish.dat'
          open(infr,file='ish.dat',status='unknown')
          write(infr,*)nlayer
          write(infr,*)nmu
@@ -521,7 +523,7 @@ C         if(imod(ipath).eq.24)ish=1
         endif
  
         if(ivenera.eq.1)then
-         print*,'opening venera.dat'
+         if(idiag.gt.0)print*,'opening venera.dat'
          open(infr,file='venera.dat',status='unknown')
          write(infr,*)nlayer
          write(infr,*)nwave
@@ -570,18 +572,19 @@ C         if(imod(ipath).eq.24)ish=1
          READ(LUNIS,REC=3)nwaveF
          READ(LUNIS,REC=4)ngF
          READ(LUNIS,REC=5)nfF
-         print*,'LUNIS',LUNIS,nlayerF,nmuF,nwaveF,ngF,nfF
-
+         if(idiag.gt.0)then
+          print*,'LUNIS',LUNIS,nlayerF,nmuF,nwaveF,ngF,nfF
+         endif
          if(ngF.ne.ng)then
           print*,'Error in cirsrad_wave: ngf <> ng'
           print*,ngf,ng
           stop
          endif
 
-         print*,nwaveF
+         if(idiag.gt.0)print*,nwaveF
          DO I=1,nwaveF
           READ(LUNIS,REC=5+I)vwaveF(i)
-          print*,vwaveF(i)
+          if(idiag.gt.0)print*,vwaveF(i)
          ENDDO
 
          DO I=1,nlayerF
@@ -590,7 +593,7 @@ C         if(imod(ipath).eq.24)ish=1
 
          DO I=1,nlayerF
           READ(LUNIS,REC=5+NWAVEF+NLAYERF+I)basehF(i)
-          print*,basehF(i)
+          if(idiag.gt.0)print*,basehF(i)
          ENDDO
 
          IOFF = 5+NWAVEF+2*NLAYERF+1
@@ -761,7 +764,7 @@ C				  print*,bsec(jf),bsec(jf+1)
 C				 endif
                                 endif
 
-                                if(cont(K,J).lt.0)then
+                                if(cont(K,J).lt.0.and.idiag.gt.0)then
                                  print*,'CONT,K,J',cont(k,j),k,j
                                 endif
 
@@ -1635,11 +1638,15 @@ C       First need to read in the internal field at ALL altitudes
 C       ************************************************************
 
                 if(isol.eq.0) then
-                 print*,'Importing azimuth-integrated flux'
+                 if(idiag.gt.0)then
+                  print*,'Importing azimuth-integrated flux'
+                 endif
                  call impflux(LUNIS,ioff,nlayerf,nmuf,nff,umif,uplf,
      1                x,nwavef,vwavef,Ig,ng)
                 else
-                 print*,'Importing total internal flux field'
+                 if(idiag.gt.0)then
+                  print*,'Importing total internal flux field'
+                 endif
                  call impfluxsol(LUNIS,ioff,nlayerf,nmuf,nff,umift,
      1                uplft,x,nwavef,vwavef,Ig,ng)
 

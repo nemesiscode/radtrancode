@@ -38,6 +38,8 @@ C       bins, paths, etc.)
 	REAL UT(MAXLAY),VT(MAXLAY),FWHMK,DELVK,UT2(MAXLAY)
         INTEGER IOFF(MAXLAY,4)
         LOGICAL INTERP
+        integer idiag,iquiet
+        common/diagnostic/idiag,iquiet
 
 	COMMON /INTERPK/LUN,IRECK,XMIN,DELX,FRACX,P,NP,T,T2,NT,
      1			NG,DELVK,FWHMK,G_ORD,DELG,KOUT,DKOUTDT

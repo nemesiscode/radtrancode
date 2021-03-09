@@ -26,8 +26,10 @@ c      integer maxlay
       parameter(dtr = 3.1415927/180.0)
       double precision mu(maxmu),wt(maxmu)
       logical limbflag
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
-C      print*,nlays,nmu
+C      if(idiag.gt.0)print*,nlays,nmu
 C      print*,(wt(i),i=1,nmu)
 C      print*,(mu(i),i=1,nmu)
 C      do i=1,nlays
@@ -59,7 +61,7 @@ C     this routine.
        endif
       enddo
 
-      print*,'scatsource: limbflag = ',limbflag
+      if(idiag.gt.0)print*,'scatsource: limbflag = ',limbflag
 
 
 

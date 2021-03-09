@@ -22,6 +22,8 @@ C-----------------------------------------------------------------------
 
 	common/dustspec/xsec,vsec,nsec
 	common/dust/vsec1,xsec1,nsec1,ncont1
+        integer idiag,iquiet
+        common/diagnostic/idiag,iquiet
 
 C-----------------------------------------------------------------------
 C
@@ -31,15 +33,17 @@ C-----------------------------------------------------------------------
 
 	call read_xsec(xscfil)
 
-        print*,'get_xsec: read_xsec OK'
+        if(idiag.gt.0)print*,'get_xsec: read_xsec OK'
 	ncont1 = ncont
 	nsec1 = nsec
-        print*,'nsec1 = ',nsec
+        if(idiag.gt.0)print*,'nsec1 = ',nsec
 	do I = 1, nsec
 		vsec1(I) = vsec(I)
 		do J = 1, ncont
 			xsec1(1,J,I) = xsec(1,J,I)
 			xsec1(2,J,I) = xsec(2,J,I)
+C			print*,xsec1(1,J,I),xsec1(2,J,I)
+
 		enddo
 	enddo
 

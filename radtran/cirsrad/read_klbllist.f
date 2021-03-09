@@ -62,6 +62,8 @@ C DELK: Wavenumber step of evaluation points.
 
       COMMON /interpklbl/ lun,irec0,xmink,delvk,npointk,pk,npk,tk,
      1 t2k,ntk,kout,dkoutdt
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C********************************* CODE ********************************
 
@@ -73,7 +75,7 @@ C-----------------------------------------------------------------------
 
       nkl = 0
       null = ' '
-      print*,'klbllist file : ',klist
+      if(idiag.gt.0)print*,'klbllist file : ',klist
       OPEN (UNIT=11,FILE=klist,STATUS='old')
 
 10    nkl = nkl + 1

@@ -17,12 +17,13 @@ C     ******************************************************************
       integer tabnf(maxf),imu,imu0,ilayer,nem,ispace
       real vem(maxsec),emissivity(maxsec),interpem
       character*100 fintname,tmpname,outname
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
       ipop=0
       nft=0      
       LUNIS=60
       LUNOUT=100
       do 10 isol=1,nsol
-C       print*,'combineflux: isol = ',isol
        fintname = 'internal**.fld'
        i1=int(isol/10)
        i2=isol-i1*10
@@ -87,7 +88,6 @@ C       print*,'combineflux: isol = ',isol
          tmpname(13:13)=char(i2+48)
 
          nf=tabnf(isol)
-C         print*,'isol, nf = ',isol,nf
          call impflux(LUNIS+isol,ioff,nlayer,nmu,nf,umif,uplf,
      1  x,nwave,vwavef,Ig,ng)
 

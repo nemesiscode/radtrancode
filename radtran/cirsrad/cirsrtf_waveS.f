@@ -61,6 +61,8 @@ C         bins, paths, etc.)
         REAL*4          vwave(nwave), vconv(nconv), convout(maxout3),
      1                  output(maxout3), y(maxout), yout(maxout),tsurf,
      2			vem(MAXSEC),emissivity(MAXSEC)
+        integer idiag,iquiet
+        common/diagnostic/idiag,iquiet
 
 C-----------------------------------------------------------------------
 C
@@ -68,13 +70,15 @@ C       Call subroutine subCIRSrtf_wave:
 C
 C-----------------------------------------------------------------------
 
-        print*,'CIRSRTF_WAVES called'
+        if(idiag.gt.0)print*,'CIRSRTF_WAVES called'
 C       See if file is present forcing FWHM to vary with wavelength/wavenumber
         CALL FILE(OPFILE,FWHMFILE,'fwh')
         INQUIRE(FILE=FWHMFILE,EXIST=FWHMEXIST)
 C       If such a file exists then read in the data
         IF(FWHMEXIST)THEN
-         print*,'Reading FWHM information from : ',FWHMFILE
+         if(idiag.gt.0)then
+          print*,'Reading FWHM information from : ',FWHMFILE
+         endif
          OPEN(13,FILE=FWHMFILE,status='old')
           READ(13,*)NFWHM
           DO I=1,NFWHM

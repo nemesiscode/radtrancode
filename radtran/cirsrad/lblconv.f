@@ -37,10 +37,12 @@ C       bins, paths, etc.)
 	REAL		f1,f2,XOFF,HAMMING,NFW,HANNING
 	CHARACTER*100	runname
 c  ** instrument function (should be defined if ishape=5) **
-      integer	minst
-      logical     FINSTEXIST
-      integer	ninst
-      real		vinst(minst),finst(minst)
+        integer	minst
+        logical     FINSTEXIST
+        integer	ninst
+        real		vinst(minst),finst(minst)
+        integer idiag,iquiet
+        common/diagnostic/idiag,iquiet
 
 C        print*,'LBLCONV --> FWHM = ',FWHM
 
@@ -92,11 +94,15 @@ c	    convert to wavelength if ispace=1
             call verint(vinst,finst,ninst,F1,xoff)
           ENDIF
           IF(F2.LT.0.0)THEN
-            PRINT*,'F2 gone slightly negative. Fixing at 0.',F2
+            if(idiag.gt.0)then
+             print*,'F2 gone slightly negative. Fixing at 0.',F2
+            endif
             F2=0.0
           ENDIF
           IF(F1.LT.0.0)THEN
-            PRINT*,'F1 gone slightly negative. Fixing at 0.',F1
+            if(idiag.gt.0)then
+             print*,'F1 gone slightly negative. Fixing at 0.',F1
+            endif
             F1=0.0
           ENDIF
 
@@ -193,11 +199,15 @@ C          Triangular Instrument Shape
             ENDIF
            ENDIF           
            IF(F2.LT.0.0)THEN
-            PRINT*,'F2 gone slightly negative. Fixing at 0.',F2
+            if(idiag.gt.0)then
+             print*,'F2 gone slightly negative. Fixing at 0.',F2
+            endif
             F2=0.0
            ENDIF
            IF(F1.LT.0.0)THEN
-            PRINT*,'F1 gone slightly negative. Fixing at 0.',F1
+            if(idiag.gt.0)then
+             print*,'F1 gone slightly negative. Fixing at 0.',F1
+            endif
             F1=0.0
            ENDIF
 

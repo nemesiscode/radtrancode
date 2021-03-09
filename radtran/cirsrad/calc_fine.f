@@ -72,6 +72,8 @@ C     General variables ...
       INTEGER IFCONT,F1,L1,B1,JBIN
       REAL CONVAL,VTMP
       DOUBLE PRECISION VV
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
 
@@ -98,8 +100,10 @@ C******************************** CODE *********************************
 C        We have now run past the end of buffer 1 and need to read in a 
 C        new load of lines
 C        Pass back flag  
+         if(idiag.gt.0)then
          print*,'Calc_fine: run out of lines - need to read in new set'
          print*,'IBIN,IBX,IB,F1,L1,B1 = ',IBIN,IBX,IB,F1,L1,B1
+         endif
          IFCONT = 1
 C        Error arose while doing LBL simulations in visible range. Problem not yet fixed properly.
         ENDIF

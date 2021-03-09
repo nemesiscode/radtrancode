@@ -33,6 +33,8 @@ C       bins, paths, etc.)
         DOUBLE PRECISION sum,sumf,yi,yold
 	CHARACTER*100	runname
         LOGICAL		xnorm
+        integer idiag,iquiet
+        common/diagnostic/idiag,iquiet
 C-----------------------------------------------------------------------
 C
 C	Do a quick check first. Extrapolate end points if needed.
@@ -44,11 +46,12 @@ C-----------------------------------------------------------------------
 C       set the FWHM to be the same as the spacing of k-distribs
 C       in look-up table
 
-C	WRITE(*,*)'CIRSCONV: FWHM of boxcar = ',FWHM
 
 	IF (nwave.eq.1.and.fwhm.ne.0.0) THEN
-		WRITE(*,*)'CIRSCONV: Too few input points: nwave= ',nwave
-		nconv = nwave
+	 if(idiag.gt.0)then
+           WRITE(*,*)'CIRSCONV: Too few input points: nwave= ',nwave
+	 endif
+         	nconv = nwave
 		vconv(1) = vwave(1)
 		yout(1) = 1
 		GOTO 10
@@ -58,7 +61,6 @@ C	WRITE(*,*)'CIRSCONV: FWHM of boxcar = ',FWHM
 	DO I = 1, nc
 		xc(I) = vwave(I)
 		yc(I) = y(I)
-C                print*,'raw',i,xc(I),yc(I)
 	ENDDO
 
 C-----------------------------------------------------------------------
@@ -114,7 +116,7 @@ C         Check to make sure spectrum has no NaN's
           FLAGNAN=.FALSE.
           if(nc1.lt.nc)FLAGNAN=.TRUE.
 
-          IF(FLAGNAN)THEN
+          IF(FLAGNAN.AND.IDIAG.GT.0)THEN
            print*,'Warning from cirsconv.f: Input spectrum contains'
            print*,'a NaN'
            do i=1,nc
@@ -136,7 +138,6 @@ C         Delete the NaNs and fit output spectrum to remaining points
                 if(fwhmexist)then
                  call verint(vfwhm,xfwhm,nfwhm,yfwhm,vconv(i))
                 endif
-C                print*,'I,VCONV(I),YFWHM',I,VCONV(I),YFWHM
 
 		x1 = vconv(I) - yfwhm/2.
 		x2 = vconv(I) + yfwhm/2.
@@ -184,7 +185,6 @@ C           Make sure you're using the right filter function for the
 C           channel requested.
 C            dv = 100*abs(vcentral-vconv(i))/vconv(i)
             dv = abs(vcentral-vconv(i))
-C            print*,'averaged consistency',i,vconv(i),vcentral
             if(dv.lt.0.00001)then
              do j=1,nwave
               if(vwave(j).ge.vfil(1).and.vwave(j).le.vfil(nsub))then
@@ -193,7 +193,6 @@ C            print*,'averaged consistency',i,vconv(i),vcentral
               else
                ytmp(j)=0.0
               endif
-C              print*,j,vwave(j),ytmp(j)
              enddo
 
              sumf = 0.0
@@ -206,7 +205,6 @@ C             xnorm=.false.
              if(xnorm)then
               do j=1,nwave-1
  
-C               print*,j,vwave(j),vwave(j+1)
                if(ytmp(j).ne.0)then
                 delv = vwave(j+1)-vwave(j)
                 sum=sum+ytmp(j)*y(j)*delv
@@ -216,7 +214,6 @@ C               print*,j,vwave(j),vwave(j+1)
              else
               do j=1,nwave
  
-C               print*,j,vwave(j)
                if(ytmp(j).ne.0)then
                 sum=sum+ytmp(j)*y(j)
                 sumf=sumf+ytmp(j)
@@ -226,7 +223,6 @@ C               print*,j,vwave(j)
              endif
 
              yout(I)=sngl(sum/sumf)
-C             print*,'nconv,vconv,yout',nconv,vconv(i),yout(I)
             endif
 
 205        continue

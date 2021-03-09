@@ -81,6 +81,8 @@ C       bins, paths, etc.)
         common/scatd/mu1, wt1, galb
         common/defang/ipzen1
         common/lbltable/ilbl
+        integer idiag,iquiet
+        common/diagnostic/idiag,iquiet
 
 C       Need simple way of passing planetary radius to nemesis
         INCLUDE '../includes/planrad.f'
@@ -226,7 +228,7 @@ C          need the current height profile
            radextra=zheight(npro)
         endif
 
-        print*,'Calling cirsrad_wave'
+        if(idiag.gt.0)print*,'Calling cirsrad_wave'
 	CALL cirsrad_wave (Dist, INormal, Iray, ispace, DelH, nlayer, 
      1    npath,ngas, maxlay, maxcon, totam, press, temp, pp, amount,
      2    nwave, vwave, nlayin, maxinc, layinc, cont, scale, imod, 

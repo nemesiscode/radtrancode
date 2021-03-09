@@ -71,6 +71,8 @@ C DELK: Wavenumber step of evaluation points.
       LOGICAL xnorm
       COMMON /interpk/ lun,ireck,xmink,delk,frack,pk,npk,tk,t2k,ntk,
      2 ngk,delvk,fwhmk,g_ord,delg,kout,dkoutdt
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C********************************* CODE ********************************
 
@@ -82,7 +84,7 @@ C-----------------------------------------------------------------------
       xnorm=.true.
       nkl = 0
       null = ' '
-      print*,'klist file : ',klist
+      if(idiag.gt.0)print*,'klist file : ',klist
       OPEN (UNIT=11,FILE=klist,STATUS='old')
 
 10    nkl = nkl + 1
@@ -312,7 +314,7 @@ C                  print*,k,ipo
                   stop
               ENDIF
 
-              IF(DELX(J).LT.0.AND.MAXDX1.GT.MAXDX)THEN
+              IF(DELX(J).LT.0.AND.MAXDX1.GT.MAXDX.and.idiag.gt.0)THEN
                print*,'Warning from read_klist.f'
                print*,'DELV < 0 and snapping to nearest point'
                print*,'in table, but not to the precision expected.'

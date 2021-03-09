@@ -151,6 +151,8 @@ C     TCORS2 is the temperature dependence for the Boltzman distribution
 C     TCORDW is the temperature dependence of the doppler width
 C     TRATIO is just 296/T for use in calculating T dependence of line width
 C     TSTIM is the correction for stimulated emission
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 C------------------------------------------------------------------------------
 
 C     code section

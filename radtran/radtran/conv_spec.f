@@ -28,6 +28,10 @@ C-----------------------------------------------------------------------------
       REAL Y(MAXPT)
       INTEGER I,K,L,IREC,IREC0,ISPACE
       LOGICAL BIT
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
+      idiag=1
 
       CALL PROMPT('driving file name? :')
       READ(5,503)OPFILE

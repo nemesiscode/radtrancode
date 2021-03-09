@@ -26,6 +26,8 @@ C     These papameters define the contents of the x section file
       parameter (offset=11)
       real wc2h2x(nwave),kc2h2x(nwave,ntemps),tempc2h2x(ntemps)
       common /c2h2xtable/wc2h2x,tempc2h2x,kc2h2x      
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       ipfile = 'uvXsect_C2H2_smith_1991.dat'
       ipfile = 'uvXsect_C2H2_smith_1991_benilan_2000.dat'
@@ -35,7 +37,7 @@ C     Define the temperatures of the x section columns
 
 C     Check if the array has been populated
       if(int(wc2h2x(1)).ne.140) then
-       print*,'Reading in C2H2 absorption data'
+       if(idiag.gt.0)print*,'Reading in C2H2 absorption data'
        
 C*************************************************************
 C No need to edit below this line

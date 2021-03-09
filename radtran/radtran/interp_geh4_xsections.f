@@ -26,6 +26,8 @@ C     These papameters define the contents of the x section file
       parameter (offset=9)
       real wgeh4x(nwave),kgeh4x(nwave,ntemps),tempgeh4x(ntemps)
       common /geh4xtable/wgeh4x,tempgeh4x,kgeh4x      
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       ipfile = 'uvXsect_GeH4_Chen_1991.dat'
 
@@ -34,7 +36,7 @@ C     Define the temperatures of the x section columns
 
 C     Check if the array has been populated
       if(int(wgeh4x(1)).ne.114) then
-       print*,'Reading in GeH4 absorption data'
+       if(idiag.gt.0)print*,'Reading in GeH4 absorption data'
        
 C*************************************************************
 C No need to edit below this line

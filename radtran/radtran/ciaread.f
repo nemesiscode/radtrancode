@@ -42,6 +42,9 @@ C     The actual temperature values are variable (read-in).
       real u,t,temp1,dudt
       integer cv,ct,pindex,i,j,ii,jj,kk
       logical fexist
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
 
 C     ----------------------------------------------------------------------
 
@@ -64,9 +67,9 @@ C       9............H2-CH4
          inquire(file=aname1,exist=fexist)
 
          if(fexist)then
-           print*,'ciaread. Reading File = ',aname1
+           if(idiag.gt.0)print*,'ciaread. Reading File = ',aname1
          else
-           print*,'Ciaread. File does not exist',aname1
+           if(idiag.gt.0)print*,'Ciaread. File does not exist',aname1
            stop
          endif
            
@@ -94,7 +97,7 @@ C        this sets up the wavenumber array
             vvk1(i) = (i-1)*dnu1
 22       continue
 
-         print*,'ciaread : New Data read in'
+         if(idiag.gt.0)print*,'ciaread : New Data read in'
 
 C        Set read flag to zero to prevent table being read again
          iread1=0
@@ -114,8 +117,10 @@ C     ----------------------------------------------------------------------
 
       if((vv.gt.vvk1(NUMWN).or.vv.lt.vvk1(1)))then
          if(ivc.ne.1)then
-           print*,'ciaread : wavenumber out of range',vv
-           print*,'Table range : ',vvk1(1),vvk1(NUMWN)
+           if(idiag.gt.0)then
+            print*,'ciaread : wavenumber out of range',vv
+            print*,'Table range : ',vvk1(1),vvk1(NUMWN)
+           endif
            ivc=1
          endif
          return
@@ -123,8 +128,10 @@ C     ----------------------------------------------------------------------
 
       if(temp.gt.tempk1(NUMT))then
          if(it1c.ne.1)then
-           print*,'ciaread: warning temp > MaxT ',temp
-           print*,'Setting to ',tempk1(NUMT)
+           if(idiag.gt.0)then
+            print*,'ciaread: warning temp > MaxT ',temp
+            print*,'Setting to ',tempk1(NUMT)
+           endif
            it1c=1
          endif
          temp1 = tempk1(NUMT)
@@ -134,8 +141,10 @@ C     ----------------------------------------------------------------------
 
       if(temp.lt.tempk1(1))then
          if(it2c.ne.1)then
-           print*,'ciaread: warning temp <  MinT ',temp
-           print*,'Setting to ',tempk1(1)
+           if(idiag.gt.0)then
+            print*,'ciaread: warning temp <  MinT ',temp
+            print*,'Setting to ',tempk1(1)
+           endif
            it2c=1
          endif
          temp1 = tempk1(1)

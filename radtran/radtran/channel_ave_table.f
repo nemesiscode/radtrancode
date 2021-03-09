@@ -76,6 +76,8 @@ C DEL_G: Gauss-Legendre weights for integration.
 
       CHARACTER*100 KTAFIL,OPFILE1,FILFILE
       CHARACTER*1 ANS
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C******************************** CODE *********************************
 
@@ -87,6 +89,7 @@ C program since execution.
 
       CALL system_clock(TIME1)
 
+      idiag=1
       IRECL = ISYS()
 
       CALL PROMPT('Enter input filename : ')

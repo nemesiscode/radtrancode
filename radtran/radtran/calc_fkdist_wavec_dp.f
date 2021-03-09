@@ -70,6 +70,8 @@ C General parameters ...
       REAL GG,SUM
       REAL DEL_G(NGMAX)
       PARAMETER (XMINK=-35.0)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C******************************** CODE *********************************
 
@@ -78,8 +80,8 @@ C     a k-table for wavelength space we need to interpolate onto a grid
 C     of equally spaced wavelengths
 
 1     FORMAT(A)
-      PRINT*,'FKDIST_WAVEC_DP (IWAVE) =',IWAVE
-      print*,'FKDIST_WAVEC_DP (NPOINT) = ',npoint
+      if(idiag.gt.0)print*,'FKDIST_WAVEC_DP (IWAVE) =',IWAVE
+      if(idiag.gt.0)print*,'FKDIST_WAVEC_DP (NPOINT) = ',npoint
 c      print*,'FKDIST_WAVEC_DP (VMIN, DELV) = ',vmin,delv
 
       DO I=1,NPOINT
@@ -148,7 +150,7 @@ C=======================================================================
         ELSE
           YY(I) = DLOG10(OUTPUT(I))
           IF(ISNAN(YY(I)))THEN
-           print*,'NAN',I,OUTPUT(I)
+           if(idiag.gt.0)print*,'NAN',I,OUTPUT(I)
            YY(I)=YMIN
           ENDIF
         ENDIF
@@ -161,8 +163,8 @@ C=======================================================================
       ENDDO
       KMIN = FLOOR(YMIN)
       KMAX = CEILING(YMAX)
-      print*,'FKDIST_WAVEC_DP (KMIN, KMAX):',KMIN,KMAX
-      print*,'FKDIST_WAVEC_DP (YMIN, YMAX):',YMIN,YMAX
+      if(idiag.gt.0)print*,'FKDIST_WAVEC_DP (KMIN, KMAX):',KMIN,KMAX
+      if(idiag.gt.0)print*,'FKDIST_WAVEC_DP (YMIN, YMAX):',YMIN,YMAX
       IF(YMIN.EQ.YMAX)THEN
         DO I=1,NG
           IF(KMIN.EQ.XMINK)THEN
@@ -171,7 +173,9 @@ C=======================================================================
             K_G(I) = 10**KMIN
           ENDIF
         ENDDO
-        print*,'calc_fkdist_wavec_dp - zero spec - returning'
+        if(idiag.gt.0)then
+         print*,'calc_fkdist_wavec_dp - zero spec - returning'
+        endif
         RETURN
       ENDIF
 
@@ -259,7 +263,7 @@ CCCC End debugging
 C      print*,'press a key to continue'
 C      read(5,1)ans
 
-      print*,'CALC_FKDIST_WAVEC_DP called OK'
+      if(idiag.gt.0)print*,'CALC_FKDIST_WAVEC_DP called OK'
 
       RETURN      
 

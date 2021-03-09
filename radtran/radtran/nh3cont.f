@@ -24,12 +24,14 @@ C-----------------------------------------------------------------------
         real  sum1,sum2,wf,dx,x
         character*100 aname,buffer
         common /ammonia/ nread,table
+        integer idiag,iquiet
+        common/diagnostic/idiag,iquiet
 
         if(nread.ne.-999)then
          aname = 'lutzowen.dat'
 	 call datarchive(aname)
          open(12,file=aname,status='old')
-         print*,'Reading Lutz+Owen NH3 data'
+         if(idiag.gt.0)print*,'Reading Lutz+Owen NH3 data'
          read(12,1)buffer
 1        format(a)
          read(12,1)buffer

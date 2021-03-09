@@ -37,7 +37,10 @@ C-----------------------------------------------------------------------------
       INTEGER ISPACE
       LOGICAL FIRST,LOG,ASCOUT,EMISS,MICRON
       LOGICAL BRTEMP
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
+      idiag=1
       BRTEMP=.FALSE.
       EMISS=.TRUE.
       

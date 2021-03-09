@@ -26,6 +26,8 @@ C     These papameters define the contents of the x section file
       parameter (offset=9)
       real wh2ox(nwave),kh2ox(nwave,ntemps),temph2ox(ntemps)
       common /h2oxtable/wh2ox,temph2ox,kh2ox      
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       ipfile = 'uvXsect_H2O_JPL_2011.dat'
 
@@ -34,7 +36,7 @@ C     Define the temperatures of the x section columns
 
 C     Check if the array has been populated
       if(int(wh2ox(1)).ne.120) then
-       print*,'Reading in H2O absorption data'
+       if(idiag.gt.0)print*,'Reading in H2O absorption data'
        
 C*************************************************************
 C No need to edit below this line

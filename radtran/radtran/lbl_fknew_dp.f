@@ -218,6 +218,8 @@ c arrays to pre-tabulate some stuff so speed it up
       integer itest
 c maxlin is read in from lincom.f
       integer line_done(maxlin)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C******************************** CODE *********************************
 
@@ -287,7 +289,7 @@ C      MXWID = SQRT(XPD**2 + XPW**2)
       V0=0.5*(VSTART+VEND)
       XPD = 4.301E-7*V0*SQRT(TEMP/XMASS)
       MXWID = SQRT(XPD**2 + XPW**2)
-      print*,'MXWID=',MXWID
+      if(idiag.gt.0)print*,'MXWID=',MXWID
 
 C Multiply by three so as to have the center point, and one at both VSTART
 C (= VMIN - 0.5*FWHM) and VEND (= VSTART + FWHM).

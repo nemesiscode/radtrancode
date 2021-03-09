@@ -26,6 +26,8 @@ C     These papameters define the contents of the x section file
       parameter (offset=9)
       real wch4x(nwave),kch4x(nwave,ntemps),tempch4x(ntemps)
       common /ch4xtable/wch4x,tempch4x,kch4x      
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       ipfile = 'uvXsect_CH4_ChenWu_2004.dat'
 
@@ -34,7 +36,7 @@ C     Define the temperatures of the x section columns
 
 C     Check if the array has been populated
       if(int(wch4x(1)).ne.120) then
-       print*,'Reading in CH4 absorption data'
+       if(idiag.gt.0)print*,'Reading in CH4 absorption data'
        
 C*************************************************************
 C No need to edit below this line

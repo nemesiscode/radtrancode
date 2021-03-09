@@ -43,6 +43,10 @@ C-----------------------------------------------------------------------------
       INTEGER RPATH(10),APATH(10)
       REAL ALBEDO(10),PI,THETA0,SOLZEN(10)
       PARAMETER(PI=3.1415927,THETA0=0.5*9.30483E-03)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
+      idiag=1
 
       ABSORB=.FALSE.
       BRTEMP=.FALSE.

@@ -79,11 +79,16 @@ C     G_ORD: Gauss-Legendre ordinates for calculating the k-distribution.
 C     K_G: Calculated k-distribution.
 C     DEL_G: Gauss-Legendre weights for integration.
 C     **** all these are now defined by zgauleg.f ***
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
 
 c LNF - Added this to prevent hard-coding
       NGMAX=MAXG
       
       IJLCO=0
+
+      idiag=1
 
       CALL system_clock(count_rate=cr)
       CALL system_clock(count_max=cm)

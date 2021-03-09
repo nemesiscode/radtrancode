@@ -11,6 +11,8 @@ C     ***********************************************************
       PARAMETER(PI=3.1415927)
       DOUBLE PRECISION RODGERS(4,0:7),SUM,Z
       INTEGER DOP_MOD
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
       IF(DOP_MOD.EQ.0)THEN
@@ -26,7 +28,7 @@ C     Combined Doppler width after Rodgers and Williams 1974
        Z=DBLE(ABSCO/(AD*SQRT(PI)))
        IF(Z.LE.0.)THEN
         CALC_DOP_WIDTH=0.
-        print*,'Error. Calc_Dop_Width z.le.0'
+        if(idiag.gt.0)print*,'Error. Calc_Dop_Width z.le.0'
        ELSE
         SUM=0.
         IF(Z.LE.5.)THEN

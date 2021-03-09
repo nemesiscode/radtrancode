@@ -38,8 +38,12 @@ C stored in the same directory as the rest of the code
       REAL TEMP2(MAXK,MAXK),TN(MAXK),TX,X1,X2
       CHARACTER*100 KTAFIL,OPFILE1
       CHARACTER*1 ANS
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C******************************** CODE *********************************
+
+      idiag=1
 
       CALL PROMPT('Enter input filename : ')
       READ(5,23)OPFILE1

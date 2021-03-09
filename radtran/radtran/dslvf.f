@@ -30,7 +30,6 @@ C     **************************************************************
       end if
 
       dslvf=tmp
-C      print*,'dslvf = ',dslvf
       return
 
       end

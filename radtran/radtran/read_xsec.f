@@ -13,11 +13,13 @@ C     ***********************************************************************
       integer i,j,ncont1, iunit
       real dummy,omega(10)
       character*100 xscfil,buffer
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       iunit=19
 
       call file(xscfil,xscfil,'xsc')
-      print*,'Reading_xsec: X-section file : ',xscfil
+      if(idiag.gt.0)print*,'Reading_xsec: X-section file : ',xscfil
 
       open(iunit,file=xscfil,status='old')
 1     format(a)
@@ -61,7 +63,7 @@ c       print*,(xsec(2,j,i),j=1,ncont)
 c      enddo
       
       close(iunit)
-      print*,'Ncont is', ncont
+      if(idiag.gt.0)print*,'Ncont is', ncont
 
 
       return

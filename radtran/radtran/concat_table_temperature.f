@@ -45,8 +45,12 @@ C MAXOUT the maximum number of output points
 
       CHARACTER*100 KTAFIL1,KTAFIL2,OPFILE1,OPFILE2,OPFILE3,OUTFIL
       CHARACTER*1 ANS
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C******************************** CODE *********************************
+
+      idiag=1
 
       CALL PROMPT('Enter input filename (1, cooler T) : ')
       READ(5,23)OPFILE1

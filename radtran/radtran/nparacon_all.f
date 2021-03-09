@@ -86,6 +86,8 @@ C AMAGAT = Number density at STP
 	real alpha(5),dalphadT(5),co2cia, aco2,n2n2cia
         real n2h2cia,an2n2,an2h2
         real qch4, qn2, qco2
+        integer idiag,iquiet
+        common/diagnostic/idiag,iquiet
 C********************************* CODE ********************************
 
 C       the mixing ratios

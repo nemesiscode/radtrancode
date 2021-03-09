@@ -77,6 +77,8 @@ C     G_ORD: Gauss-Legendre ordinates for calculating the k-distribution.
 C     K_G: Calculated k-distribution.
 C     DEL_G: Gauss-Legendre weights for integration.
 C     **** all these are now defined by zgauleg.f ***
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       CALL system_clock(count_rate=cr)
       CALL system_clock(count_max=cm)
@@ -84,6 +86,8 @@ C     **** all these are now defined by zgauleg.f ***
       call system_clock(time1)
 
       IJLCO=0
+
+      idiag=1
 
       PRINT*,'Enter IEXO, IPTF'
       PRINT*,'(IEXO=1 uses temperature dependent line databases'

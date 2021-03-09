@@ -37,7 +37,10 @@ C MAXOUT the maximum number of output points
 
       CHARACTER*100 KTAFIL,OPFILE1,OPFILE2,OUTFIL
       CHARACTER*1 ANS
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 C******************************** CODE *********************************
+      idiag=1
 
       CALL PROMPT('Enter input filename : ')
       READ(5,23)OPFILE1
@@ -94,7 +97,6 @@ C     Assume 4-byte words per record
        DELV = -1.
       ENDIF
 
-      print*,'A'
       WRITE(LUN1,REC=1)IREC01
       WRITE(LUN1,REC=2)NPOINT
       WRITE(LUN1,REC=3)VMIN

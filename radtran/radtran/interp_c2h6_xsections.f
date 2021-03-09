@@ -26,6 +26,8 @@ C     These papameters define the contents of the x section file
       parameter (offset=9)
       real wc2h6x(nwave),kc2h6x(nwave,ntemps),tempc2h6x(ntemps)
       common /c2h6xtable/wc2h6x,tempc2h6x,kc2h6x      
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       ipfile = 'uvXsect_C2H6_Lee_2001.dat'
 
@@ -34,7 +36,7 @@ C     Define the temperatures of the x section columns
 
 C     Check if the array has been populated
       if(int(wc2h6x(1)).ne.120) then
-       print*,'Reading in C2H6 absorption data'
+       if(idiag.gt.0)print*,'Reading in C2H6 absorption data'
        
 C*************************************************************
 C No need to edit below this line

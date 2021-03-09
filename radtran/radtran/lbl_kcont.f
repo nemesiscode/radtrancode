@@ -163,6 +163,8 @@ C Variables needed for the new lineshapes ...
       PARAMETER (PI=3.1415927)
 
       REAL FNH3,FH2
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C******************************** CODE *********************************
 
@@ -205,9 +207,11 @@ C        print*,TEMP,TCALCLCO,TCORS1LCO
       IF(VBOT.LT.0.0)VBOT = 0.0
       RANGE = VTOP - VBOT
       NBIN = INT(RANGE/WING) + 1
-      PRINT*,'LBL_KCONT: NBIN, RANGE, WING = ',NBIN, RANGE, WING
-      PRINT*,'LBL_KCONT: VMIN, VMAX, VBOT, VTOP = ',
+      if(idiag.gt.0)then
+       print*,'LBL_KCONT: NBIN, RANGE, WING = ',NBIN, RANGE, WING
+       print*,'LBL_KCONT: VMIN, VMAX, VBOT, VTOP = ',
      1 VMIN,VMAX,VBOT,VTOP
+      endif
       IF(NBIN.GT.MAXBIN)THEN
         WRITE(*,*)'LBL_KCONT.f :: *ERROR* NBIN > MAXBIN'
         WRITE(*,*)'Stopping program.'
@@ -356,7 +360,7 @@ C     Extra continuum for linedata files that are so large that they
 C     have been stripped of weaker lines.
       IF(IJLCO.GT.0)THEN
        IF(IDGAS.EQ.IDLCO.AND.ISOGAS.EQ.ISOLCO)THEN
-        print*,'Adding LCO for gas : ',IDLCO,ISOLCO
+        if(idiag.gt.0)print*,'Adding LCO for gas : ',IDLCO,ISOLCO
         FNH3=-1.0
         FH2=-1.0
 

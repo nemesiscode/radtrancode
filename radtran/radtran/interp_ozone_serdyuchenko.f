@@ -19,11 +19,15 @@ C     *************************************************************
       real wozone(nozone),kozone(nozone,11),tempozone(11)
       real x,y1,y2,y3,y4
       common /serdozonetable/wozone,tempozone,kozone      
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
 C     Read in O3 table if not already read in before.
       if(int(wozone(1)).ne.213) then
-       print*,'Reading in Serdyuchenko ozone absorption data'
+       if(idiag.gt.0)then
+        print*,'Reading in Serdyuchenko ozone absorption data'
+       endif
        call read_ozone_serdyuchenko(icheck)
       endif
 

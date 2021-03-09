@@ -69,6 +69,8 @@ C	AMAGAT = Number density at STP (1 atm, 273.15 K)
         real alpha(NUMPAIRS),dalphadT(NUMPAIRS),co2cia, aco2,n2n2cia
         real n2h2cia,an2n2,an2h2
         real qhe, qh2, qch4, qn2, qco2
+        integer idiag,iquiet
+        common/diagnostic/idiag,iquiet
 
 C	In IABSORB(5)	1=H2
 C			2=He

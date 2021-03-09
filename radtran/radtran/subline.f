@@ -35,6 +35,8 @@ C     ****************************************************************
       REAL PRESS,TEMP,GETNH3,FNH3,FH2,WY,DPEXP,LNABSCO
       DOUBLE PRECISION VV,VLIN
       CHARACTER*15 LLQ
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C     AD is the Doppler-broadened line width
 C     Y is the Lorentz/collision-broadened line width divided by

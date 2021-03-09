@@ -105,6 +105,8 @@ cc     4           0. /
       CHARACTER*100 OPFILE
       REAL VMIN,FWHM,DELV
       INTEGER NPOINT
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C******************************** CODE *********************************
 
@@ -114,6 +116,8 @@ C program since execution.
       CALL system_clock(count_max=cm)
       rate = REAL(cr)
       call system_clock(time1)
+
+      idiag=1
 
       WRITE(*,*)'Enter wavenumber minumum : '
       READ*,VMIN

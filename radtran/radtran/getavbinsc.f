@@ -38,6 +38,8 @@ C     ***************************************************************
       REAL DELV,V1,V2,FBIN(MBIN),WFWHM,MAXDV,DV,WCEN1
       INTEGER NFILBIN
       REAL WFIL(MBIN), TFIL(MBIN), WAVE, VFIL(MBIN), XFRAC
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C      print*,NPOINT,KWAVE
 C      do i=1,npoint
@@ -69,22 +71,24 @@ C      enddo
        ENDDO
       ENDIF
       
-      print*,'AA',ISHAPE,W1,W2,IWAVE,KWAVE
+      if(idiag.gt.0)print*,'AA',ISHAPE,W1,W2,IWAVE,KWAVE
       CALL TRANSLATE(IWAVE,W1,W2,KWAVE,X1,X2)
-      print*,'W1,W2',W1,W2
-      print*,'X1,X2,DELX',X1,X2,X2-X1  
-      print*,'NPOINT',NPOINT
-      print*,'WAVEIN',(WAVEIN(I),I=1,NPOINT)
+      if(idiag.gt.0)print*,'W1,W2',W1,W2
+      if(idiag.gt.0)print*,'X1,X2,DELX',X1,X2,X2-X1  
+      if(idiag.gt.0)print*,'NPOINT',NPOINT
+      if(idiag.gt.0)print*,'WAVEIN',(WAVEIN(I),I=1,NPOINT)
       CALL FINDLOC(WAVEIN,NPOINT,X1,X2,IS1,IS2)
-      print*,'Intermediate IS1, IS2 = ',IS1,IS2
+      if(idiag.gt.0)print*,'Intermediate IS1, IS2 = ',IS1,IS2
       IS1 = MAX(1,IS1-2)
       IS2 = MIN(NPOINT,IS2+2)
 
-      print*,'IS1,IS2',IS1,IS2       
-      print*,'table wavenumber range : ',WAVEIN(IS1),WAVEIN(IS2)
-      print*,'table wavelength range : ',1e4/WAVEIN(IS2),
+      if(idiag.gt.0)then
+       print*,'IS1,IS2',IS1,IS2       
+       print*,'table wavenumber range : ',WAVEIN(IS1),WAVEIN(IS2)
+       print*,'table wavelength range : ',1e4/WAVEIN(IS2),
      1  1e4/WAVEIN(IS1)
-      print*,'IWAVE,KWAVE',IWAVE,KWAVE
+       print*,'IWAVE,KWAVE',IWAVE,KWAVE
+      endif
       DO 15 I=IS1,IS2 
 
 C      Find offset from centre of averaging function in space
@@ -236,7 +240,9 @@ C       NYQUIST SAMPLED BAND DATA
        ENDIF
 
        IF(WCEN1.GE.WAVEIN(1).AND.WCEN1.LE.WAVEIN(NPOINT))THEN
-        PRINT*,'Find closest point if wavelength in range'
+        if(idiag.gt.0)then
+         print*,'Find closest point if wavelength in range'
+        endif
         MAXDV = WAVEIN(NPOINT)-WAVEIN(1)
         DO 16 I=IS1,IS2 
 
@@ -267,7 +273,7 @@ C      PRINT*,'NAV = ',NAV
       
       SUM=0.0
       DO I=1,NAV
-        PRINT*,I,WAVEIN(IAV(I)),FBIN(I)
+        if(idiag.gt.0)print*,I,WAVEIN(IAV(I)),FBIN(I)
         SUM=SUM+FBIN(I)
       ENDDO
 

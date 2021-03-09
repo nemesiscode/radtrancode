@@ -19,7 +19,7 @@ C     *****************************************************************
           IF(IRAY.EQ.1)THEN
            POLY(IP) = TOTAM*RAYLEIGHJ(FF,PRESS,TEMP)*1E20
           ELSEIF(IRAY.EQ.2)THEN
-           POLY(IP) = TOTAM*RAYLEIGHV(FF,PRESS,TEMP)*1E20
+           POLY(IP) = TOTAM*RAYLEIGHV_IGNATIEV(FF,PRESS,TEMP)*1E20
           ELSEIF(IRAY.EQ.3)THEN
            POLY(IP) = TOTAM*RAYLEIGHA(FF,PRESS,TEMP)*1E20
           ELSE

@@ -40,6 +40,8 @@ C     ***********************************************************************
       integer nx,ny,icalc,iflag
       real phi,ophi,calc_phiret,kk1(my,mx),yn(my),chisq
       double precision aa(mx,mx),dd(mx,my)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 C     -----------------------------------------------------------------------
 
 C      print*,ndata
@@ -105,7 +107,7 @@ C     Calculate initial value of cost function phi.
       phi = calc_phiret(ny,y,yn,sei,nx,xn,xa,sai,chisq)
       ophi = phi
 
-      print*,'Initial phi = ',phi
+      if(idiag.gt.0)print*,'Initial phi = ',phi
 
 C     Assess whether retrieval is likely to be OK
       call assess(nx,ny,kk,sa,se)
@@ -153,11 +155,13 @@ C      Calculate new transmission spectrum from this trial solution
 C      Calculate the cost function for this trial solution.
        phi = calc_phiret(ny,y,yn1,sei,nx,xn1,xa,sai,chisq)
 
-       print*,'alambda, phi, ophi',alambda,phi,ophi
+       if(idiag.gt.0)print*,'alambda, phi, ophi',alambda,phi,ophi
 
 C      Does trial solution fit the data better?
        if(phi.le.ophi)then
-          print*,'Successful iteration. Updating xn,yn and kk'
+          if(idiag.gt.0)then
+           print*,'Successful iteration. Updating xn,yn and kk'
+          endif
           do i=1,nx
            xn(i)=xn1(i)                         ! update xn to new value
           enddo
@@ -174,9 +178,9 @@ C         Now calculate the gain matrix and averaging kernels
 C         Has solution converged?
           tphi = 100.0*(ophi-phi)/ophi
           if(tphi.ge.0.0.and.tphi.le.phlimit.and.alambda.lt.1.0)then
-            print*,'%phi, phlimit : ',tphi,phlimit
-            print*,'Phi has converged'
-            print*,'Terminating retrieval'
+            if(idiag.gt.0)print*,'%phi, phlimit : ',tphi,phlimit
+            if(idiag.gt.0)print*,'Phi has converged'
+            if(idiag.gt.0)print*,'Terminating retrieval'
             GOTO 202
           else
             ophi=phi

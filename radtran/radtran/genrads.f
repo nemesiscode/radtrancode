@@ -333,6 +333,8 @@ C     Correlated-K variables
       REAL PRESSKTA(MAXK),TEMPKTA(MAXK),PIN,TIN,VIN
       INTEGER IRECK(10),NPK,NTK,ULOG
       PARAMETER (ULOG=17)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 C------------------------------------------------------------------------------
 C     GASCON switches
       INCLUDE '../includes/gascom.f'
@@ -678,13 +680,16 @@ C       Read in G-intervals
 
 
       IF(IRAY.GT.0) THEN
-       PRINT*,'Setting Rayleigh scattering odepths on'
+       if(idiag.gt.0)print*,'Setting Rayleigh scattering odepths on'
       ELSE
-       PRINT*,'No Rayleigh scattering optical depths applied' 
+       if(idiag.gt.0)then
+        print*,'No Rayleigh scattering optical depths applied' 
+       endif
       ENDIF
 
-      PRINT*,'INORMAL,FLAGH2P,IRAY = ',INORMAL,FLAGH2P,IRAY
-
+      if(idiag.gt.0)then
+       print*,'INORMAL,FLAGH2P,IRAY = ',INORMAL,FLAGH2P,IRAY
+      endif
 CSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
 
    
@@ -735,7 +740,9 @@ C       overflow)
       VW1 = VMIN + 0.5*(NPOINT-1)*DELV
 
       IF(MXMASS.LE.0)THEN
-       PRINT*,'Warning. No Gases present. Setting MXMASS to 100'
+       if(idiag.gt.0)then
+        print*,'Warning. No Gases present. Setting MXMASS to 100'
+       endif
        MXMASS=100
       END IF
       XPW = 0.1*PRESS(1)*SQRT(296.0/TEMP(1))
@@ -765,12 +772,12 @@ CLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL
          WINGIP=MXWID*3.0
          WINGIP=0.01*INT(100*WINGIP)
          WINGIP=MAX(WINGIP,1.0)
-         PRINT*,'Default setting WING to ',WINGIP
+         if(idiag.gt.0)print*,'Default setting WING to ',WINGIP
        END IF
        IF(VRELIP.EQ.0)THEN
          VRELIP = 20*WINGIP
          VRELIP=0.01*INT(100*VRELIP)
-         PRINT*,'Default setting VREL to ',VRELIP
+         if(idiag.gt.0)print*,'Default setting VREL to ',VRELIP
        ENDIF
       END IF
 
@@ -1029,8 +1036,8 @@ C     setting up matrix of wavenumbers for use in polynomial calculation
 
       DO 13 I=1,NBIN
 C       computing continuum for all except adjacent bins
-        PRINT*,'Continuum bin ',I,' of ',NBIN
-        print*,'FSTLIN,LSTLIN',FSTLIN(I),LSTLIN(I)
+        if(idiag.gt.0)print*,'Continuum bin ',I,' of ',NBIN
+        if(idiag.gt.0)print*,'FSTLIN,LSTLIN',FSTLIN(I),LSTLIN(I)
         DO 15 J=FSTBIN,LSTBIN
           IF(ABS(I-J).LE.1)GOTO 15
 C         for each layer
@@ -1448,8 +1455,8 @@ C       If not converged, double the number of points and do again.
         IF(EMAX.GT.ELMAX)THEN
          NSAMP=NSAMP*2
          IF(NSAMP.GT.MAXINT)THEN
-          PRINT*,'NSAMP > MAXINT',NSAMP,MAXINT
-	  PRINT*,'Stopping now.'
+          if(idiag.gt.0)print*,'NSAMP > MAXINT',NSAMP,MAXINT
+	  if(idiag.gt.0)print*,'Stopping now.'
           GOTO 277
          ENDIF
          DO K=1,NPATH
@@ -1478,7 +1485,7 @@ C      BAND MODELS
        DO 333 I=1,NPOINT
         V=DBLE(VMIN+FLOAT(I-1)*DELV)
         VV=SNGL(V)
-         PRINT*,'BANDCALC: V = ',SNGL(V)
+         if(idiag.gt.0)print*,'BANDCALC: V = ',SNGL(V)
          ASSIGN 2009 TO LABEL
          GOTO 2000
 2009    CONTINUE
@@ -1498,7 +1505,7 @@ C-------------------------------------------------------------------------
        V=DBLE(VMIN+FLOAT(I-1)*DELV)
        VV=SNGL(V)
 
-       PRINT*,'CORKCALC: V = ',SNGL(V)
+       if(idiag.gt.0)print*,'CORKCALC: V = ',SNGL(V)
        DO 433 IGDIST=1,NG
         ASSIGN 2010 TO LABEL
         GOTO 2000

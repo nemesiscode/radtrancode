@@ -3,11 +3,16 @@
       double precision percen
       integer idgas,i
       include '../includes/lcocom.f'
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
       ijlco=1
       open(12,file=lcofil,status='old')
 1     format(a)      
-      print*,'init_lco: reading in extra line continuum data'
-      print*,lcofil
+      if(idiag.gt.0)then
+       print*,'init_lco: reading in extra line continuum data'
+       print*,lcofil
+      endif
       read(12,1)buffer
       write(6,1)buffer
       read(buffer(14:),*)vminlco,vmaxlco
@@ -28,7 +33,7 @@
       write(6,1)buffer
       read(buffer(8:),*)nbinlco
 
-      print*,nbinlco
+      if(idiag.gt.0)print*,nbinlco
 
 C      read(12,1)buffer
 C      write(6,1)buffer

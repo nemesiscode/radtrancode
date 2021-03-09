@@ -62,6 +62,8 @@ C     Other variables
       integer cv,ct,pindex,i,j,k,ii,jj,kk
       integer kpara
       logical fexist
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 C     ----------------------------------------------------------------------
 
 C     define the fixed parameters
@@ -73,20 +75,22 @@ C     define the fixed parameters
       
         inquire(file=aname2,exist=fexist)
         if(fexist)then
-         print*,'fpread_all. Reading: ',aname2
+         if(idiag.gt.0)print*,'fpread_all. Reading: ',aname2
         else
-         print*,'fpread_all. File does not exist : ',aname2
+         if(idiag.gt.0)then
+          print*,'fpread_all. File does not exist : ',aname2
+         endif
         endif
     
         open(12,file=aname2,form='unformatted',status='old')      
-         print*,'FPREAD_ALL. Opening look-up file'
-         print*,'File =',aname2
-         print*,'Tabulated temperatures : '
+         if(idiag.gt.0)print*,'FPREAD_ALL. Opening look-up file'
+         if(idiag.gt.0)print*,'File =',aname2
+         if(idiag.gt.0)print*,'Tabulated temperatures : '
          read(12)tempk2
          do 21 i=1, NUMT
-            print*,i,tempk2(i)
+            if(idiag.gt.0)print*,i,tempk2(i)
 21       continue
-         print*,'Tabulated para-H2 fractions : '
+         if(idiag.gt.0)print*,'Tabulated para-H2 fractions : '
 C        Older para-h2 tables have 12 ortho/para ratios instead of 12
          if(ipara2.eq.12)then
           read(12)fp1
@@ -98,7 +102,7 @@ C        Older para-h2 tables have 12 ortho/para ratios instead of 12
          endif
 
          do 22 i=1, ipara2
-            print*,i,fp(i)
+            if(idiag.gt.0)print*,i,fp(i)
 22       continue
        
          if(ipara2.eq.12)then
@@ -123,7 +127,7 @@ C       3............N2-N2
 C       4............CH4-CH4
 C       5............H2-CH4
 	 
-	 print*,'Reading additional gases:'
+	 if(idiag.gt.0)print*,'Reading additional gases:'
 	 read(12)kcia5
 	 
 	 
@@ -151,7 +155,7 @@ C     initialise the absorption array to be zero in case of failure
 34    continue
  
 
-         print*,'fpread_all : New Data read in'
+         if(idiag.gt.0)print*,'fpread_all : New Data read in'
 
          iread2=0
 
@@ -162,15 +166,15 @@ C     range checking
 C     ----------------------------------------------------------------------
 
       if(vv.gt.vvk2(NUMWN).or.vv.lt.vvk2(1).and.ivk.ne.1)then
-         print*,'fpread_all : wavenumber out of range'
+         if(idiag.gt.0)print*,'fpread_all : wavenumber out of range'
          ivk=1
          return
       end if
 
       if(temp.gt.tempk2(NUMT).and.it1k.ne.1)then
-         print*,'fpread_all: warning temp > MaxT '
-         print*,'Requested Temperature = ',temp
-         print*,'Maxumum temperature = ',tempk2(NUMT)
+         if(idiag.gt.0)print*,'fpread_all: warning temp > MaxT '
+         if(idiag.gt.0)print*,'Requested Temperature = ',temp
+         if(idiag.gt.0)print*,'Maxumum temperature = ',tempk2(NUMT)
          temp1 = tempk2(NUMT)
          it1k=1
       else
@@ -178,8 +182,8 @@ C     ----------------------------------------------------------------------
       end if
 
       if(temp.lt.tempk2(1).and.it2k.ne.1)then
-         print*,'fpread_all: warning temp <  MinT ',temp
-         print*,'Setting to ',tempk2(1)
+         if(idiag.gt.0)print*,'fpread_all: warning temp <  MinT ',temp
+         if(idiag.gt.0)print*,'Setting to ',tempk2(1)
          temp1 = tempk2(1)
          it2k=1
       else

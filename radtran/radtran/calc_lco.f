@@ -41,9 +41,11 @@ C     ****************************************************************
       REAL V1,V2,F,WEIGHT(0:300),SUM
       REAL PRESS,TEMP,FRAC,FNH3,FH2,WY,DPEXP
       CHARACTER*15 LLQ
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
-C      print*,NBIN
+C      if(idiag.gt.0)print*,NBIN
 C      print*,(VBIN(I),I=1,NBIN)
 C      print*,WING,MAXDV,IPROC,IDGAS,TCORDW,
 C     1 TCORS1,TCORS2,PRESS,TEMP,FRAC,FNH3,FH2
@@ -68,26 +70,30 @@ C     Now find LCO table entries covering this range
       J1 = 1 + INT((V1-VLCO(1))/LCOBINSIZE)
       J2 = 1 + INT((V2-VLCO(1))/LCOBINSIZE)
       IF(J1.LT.1)THEN
-       PRINT*,'CALC_LCO wavenumber less than minimum'
-       PRINT*,V1,VLCO(1)
+       if(idiag.gt.0)then
+        PRINT*,'CALC_LCO wavenumber less than minimum'
+        PRINT*,V1,VLCO(1)
+       endif
        J1=1
       ENDIF
       IF(J2.GT.NBINLCO)THEN
-       PRINT*,'CALC_LCO wavenumber greater than maximum'
-       PRINT*,V2,VLCO(NBINLCO)
+       if(idiag.gt.0)then
+        PRINT*,'CALC_LCO wavenumber greater than maximum'
+        PRINT*,V2,VLCO(NBINLCO)
+       endif
        J2=NBINLCO
       ENDIF
 
       NJ=1+J2-J1
 
-      print*,V1,V2
-      print*,J1,J2,NJ
+      if(idiag.gt.0)print*,V1,V2
+      if(idiag.gt.0)print*,J1,J2,NJ
 
 C     Calculate number of LCO steps we need to go either side of 
 C     each LCO wavenumber to calculate wings
       NLCO = INT(MAXDV/LCOBINSIZE)
 
-      print*,'NLCO',NLCO
+      if(idiag.gt.0)print*,'NLCO',NLCO
 
 C     Initialise LCO absorption
       DO I = 1,MLCO    

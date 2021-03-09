@@ -10,12 +10,14 @@ C     *************************************************************
       integer i,k,iread,icheck
       real f,xabs1,xabs2,T
       real bassk(5,1900),xl,temp,nu
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       common /basstable/bassk,iread
 
 C     Read in Bass table if not already read in before.
       if(iread.ne.-1) then
-       print*,'Reading in Bass O3 UV absorption data'
+       if(idiag.gt.0)print*,'Reading in Bass O3 UV absorption data'
        call readbass1(icheck)
       endif
 

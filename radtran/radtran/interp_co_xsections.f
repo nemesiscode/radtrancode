@@ -26,6 +26,8 @@ C     These papameters define the contents of the x section file
       parameter (offset=9)
       real wcox(nwave),kcox(nwave,ntemps),tempcox(ntemps)
       common /coxtable/wcox,tempcox,kcox      
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       ipfile = 'uvXsect_CO_Chan_1993.dat'
 
@@ -34,7 +36,7 @@ C     Define the temperatures of the x section columns
 
 C     Check if the array has been populated
       if(int(wcox(1)).ne.10) then
-       print*,'Reading in CO absorption data'
+       if(idiag.gt.0)print*,'Reading in CO absorption data'
        
 C*************************************************************
 C No need to edit below this line

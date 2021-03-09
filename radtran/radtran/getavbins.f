@@ -31,18 +31,20 @@ C     ***************************************************************
       REAL W1,W2,X1,X2,WAVEIN(MBIN),FWHMIN(MBIN),FRAC(MBIN)
       INTEGER IAV(MBIN)
       REAL DELV,V1,V2,FBIN(MBIN)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
-      print*,'fwhmX',FWHMIN(1),DELV,W1,W2,IWAVE
+      if(idiag.gt.0)print*,'fwhmX',FWHMIN(1),DELV,W1,W2,IWAVE
 
       CALL TRANSLATE(IWAVE,W1,W2,KWAVE,X1,X2)
 
-      print*,'X1,X2',X1,X2  
+      if(idiag.gt.0)print*,'X1,X2',X1,X2  
       CALL FINDLOC(WAVEIN,NPOINT,X1,X2,IS1,IS2)
       IS1 = MAX(1,IS1-2)
       IS2 = MIN(NPOINT,IS2+2)
 
-      print*,'IS1,IS2',IS1,IS2       
+      if(idiag.gt.0)print*,'IS1,IS2',IS1,IS2       
       DO 15 I=IS1,IS2 
 
         V1 = WAVEIN(I)-0.5*FWHMIN(I)  
@@ -145,20 +147,20 @@ C          print*,NAV,FBIN(NAV)
         STOP
       ENDIF
 
-      PRINT*,'NAV = ',NAV
+      if(idiag.gt.0)print*,'NAV = ',NAV
       SUM=0.0
       DO I=1,NAV
 C        PRINT*,I,IAV(I),FBIN(I)
         SUM=SUM+FBIN(I)
       ENDDO
-      PRINT*,'SUM = ',SUM
+      if(idiag.gt.0)print*,'SUM = ',SUM
 
-      print*,NAV
-      print*,(IAV(I),I=1,NAV)
-      print*,(FBIN(I),I=1,NAV)
+      if(idiag.gt.0)print*,NAV
+      if(idiag.gt.0)print*,(IAV(I),I=1,NAV)
+      if(idiag.gt.0)print*,(FBIN(I),I=1,NAV)
 
       IF(SUM.EQ.0.0)THEN
-       PRINT*,'Wavelength not covered'
+       if(idiag.gt.0)print*,'Wavelength not covered'
       ELSE
        IF(ABS(SUM-1.0).GT.0.01)THEN
         PRINT*,'Error in Getavbins - sum of weights does not add to 1.0'

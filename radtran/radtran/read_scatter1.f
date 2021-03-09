@@ -20,9 +20,13 @@ C     *******************************************************************
       character*30 scatfile(maxcon)
       character*100 radfile
       logical unitok, unitop
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       inquire (unit=ulog, exist=unitok, opened=unitop)
-      print*,'read_scatter1 - ulog,unitok,unitop',ulog,unitok,unitop
+      if(idiag.gt.0)then
+       print*,'read_scatter1 - ulog,unitok,unitop',ulog,unitok,unitop
+      endif
       if(unitok .and. .not. unitop)then
        open(unit=ulog,file='read_scatter1.log',status='unknown')
       endif

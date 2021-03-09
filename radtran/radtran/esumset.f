@@ -106,8 +106,8 @@ C     find lower part
 
       yv=0.25*y0/delad
 
-      print*,'knu0,yv,EL,SFB,c1,c2,qrot,P,T,q,SL,BL',knu0,yv,EL,SFB,
-     1		c1,c2,qrot,P,T,q,SL,BL
+C      print*,'knu0,yv,EL,SFB,c1,c2,qrot,P,T,q,SL,BL',knu0,yv,EL,SFB,
+C     1		c1,c2,qrot,P,T,q,SL,BL
 
       CALL ml_lacis(knu0,yv,EL,SFB,qrot,P,T,q,SL,BL)
 

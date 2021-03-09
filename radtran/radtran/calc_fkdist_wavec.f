@@ -68,6 +68,8 @@ C General parameters ...
       REAL GG,SUM
       REAL DEL_G(NGMAX)
       PARAMETER (XMINK=-35.0)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C******************************** CODE *********************************
 
@@ -76,7 +78,7 @@ C     a k-table for wavelength space we need to interpolate onto a grid
 C     of equally spaced wavelengths
 
 1     FORMAT(A)
-      PRINT*,'CALC_FKDIST_WAVEC: IWAVE = ',IWAVE
+      if(idiag.gt.0)print*,'CALC_FKDIST_WAVEC: IWAVE = ',IWAVE
 
       DO I=1,NPOINT
         X(I)=VMIN+(I-1)*DELV
@@ -97,13 +99,13 @@ CCCC End debugging
         X(I)=VMIN+(I-1)*DELV
        ENDDO
        
-       print*,'FKDIST_WAVEC: (NPOINT,DELV)=',NPOINT,DELV
+       if(idiag.gt.0)print*,'FKDIST_WAVEC: (NPOINT,DELV)=',NPOINT,DELV
 
        VMIN1 = 1E4/VMAX
        VMAX1 = 1E4/VMIN
        DELV1 = (VMAX1-VMIN1)/FLOAT(NPOINT-1)
 
-       print*,'FKDIST_WAVEC: (VMIN1,VMAX1,DELV1)=',VMIN1,
+       if(idiag.gt.0)print*,'FKDIST_WAVEC: (VMIN1,VMAX1,DELV1)=',VMIN1,
      1  VMAX1,DELV1
 
        DO I=1,NPOINT
@@ -144,7 +146,7 @@ C=======================================================================
         ELSE
           YY(I) = ALOG10(OUTPUT(I))
           IF(ISNAN(YY(I)))THEN
-           print*,'NAN',I,OUTPUT(I)
+           if(idiag.gt.0)print*,'NAN',I,OUTPUT(I)
            YY(I)=YMIN
           ENDIF
         ENDIF
@@ -160,8 +162,8 @@ c	ENDIF
       ENDDO
       KMIN = FLOOR(YMIN)
       KMAX = CEILING(YMAX)
-      print*,'FKDIST_WAVEC (KMIN, KMAX):',KMIN,KMAX
-      print*,'FKDIST_WAVEC (YMIN, YMAX):',YMIN,YMAX
+      if(idiag.gt.0)print*,'FKDIST_WAVEC (KMIN, KMAX):',KMIN,KMAX
+      if(idiag.gt.0)print*,'FKDIST_WAVEC (YMIN, YMAX):',YMIN,YMAX
       IF(YMIN.EQ.YMAX)THEN
         DO I=1,NG
           IF(KMIN.EQ.XMINK)THEN
@@ -170,7 +172,7 @@ c	ENDIF
             K_G(I) = 10**KMIN
           ENDIF
         ENDDO
-        print*,'calc_fkdist_wavec - zero spec - returning'
+        if(idiag.gt.0)print*,'calc_fkdist_wavec - zero spec - returning'
         RETURN
       ENDIF
 
@@ -258,7 +260,7 @@ CCCC End debugging
 C      print*,'press a key to continue'
 C      read(5,1)ans
 
-      print*,'CALC_FKDIST_WAVEC called OK'
+      if(idiag.gt.0)print*,'CALC_FKDIST_WAVEC called OK'
 
       RETURN      
 

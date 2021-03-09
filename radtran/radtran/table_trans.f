@@ -34,6 +34,8 @@ C     ***************************************************************
       CHARACTER*100 FTMP,XTMP
       CHARACTER*20 HEAD
       CHARACTER*10 BUFFER
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 c ------------------------------------------------------
 c Added by SPH. New variables, please put in a more 
@@ -48,6 +50,8 @@ c ------------------------------------------------------
 
       DATA DEL_G/0.033336, 0.074726, 0.109543, 0.134633, 0.147762,
      1          0.147762, 0.134633, 0.109543, 0.074726, 0.033336/
+
+      idiag=1
 
       CALL PROMPT('Enter name of input band file : ')
       READ(5,1)IPFILE

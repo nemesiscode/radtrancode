@@ -25,6 +25,11 @@ C-----------------------------------------------------------------------------
       CHARACTER Q
       CHARACTER*100 NAME,IPFILE,FILE2
       REAL OUTPUT(MAXPT),ERROR(MAXPT),V
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
+      idiag=1
+
       CALL PROMPT('driving file name? :')
       READ(*,503)OPFILE
 503   FORMAT(A)

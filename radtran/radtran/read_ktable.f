@@ -31,6 +31,8 @@ C     MAXOUT the maximum number of output points
 
       REAL VMIN1,DELV1,FWHM1
       INTEGER NPOINT1
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
       IRECL=ISYS()
@@ -54,7 +56,7 @@ C     MAXOUT the maximum number of output points
        stop
       ENDIF
 
-      PRINT*,'IREC0 = ',IREC0
+      if(idiag.gt.0)PRINT*,'IREC0 = ',IREC0
       IF(IDGAS1.NE.IDGAS)THEN
        PRINT*,'Read_ktable. IDGAS1 <> IDGAS'
        PRINT*,'Table has : ',IDGAS1,ISOGAS1
@@ -113,7 +115,7 @@ C     MAXOUT the maximum number of output points
       N1 = 1 + INT((VMIN-VMIN1)/DELV)
 
       IREC0=IREC0+NP*NT*NG*(N1-1)
-      PRINT*,VMIN,VMIN1,N1,IREC0
+      if(idiag.gt.0)PRINT*,VMIN,VMIN1,N1,IREC0
 
       RETURN
       END

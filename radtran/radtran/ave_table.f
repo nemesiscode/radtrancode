@@ -80,6 +80,8 @@ C DEL_G: Gauss-Legendre weights for integration.
 
       CHARACTER*100 KTAFIL,OPFILE1
       CHARACTER*1 ANS
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       LOGICAL RESORT
 C******************************** CODE *********************************
@@ -90,6 +92,7 @@ C program since execution.
       CALL system_clock(count_max=cm)
       rate = REAL(cr)
 
+      idiag=1
       CALL system_clock(TIME1)
 
       IRECL = ISYS()

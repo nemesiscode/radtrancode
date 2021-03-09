@@ -24,11 +24,13 @@ C     ********************************************************
       logical isnan,ntest
       character*100 ipfile,buffer
       common /e3table/tabtran,tabe3,egrad
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       dtrans=1.0/float(mtab-1)
 
       if(tabtran(mtab).ne.1.0) then
-       print*,'Reading e3 table'
+       if(idiag.gt.0)print*,'Reading e3 table'
        ipfile='e3tab.dat'
        call datarchive(ipfile)
        open(12,file=ipfile,status='old')
@@ -52,9 +54,11 @@ C     ********************************************************
     
       ntest=isnan(xtrans)
       if(xtrans.lt.0.or.ntest)then
-       print*,'e3interp: warning - requested transmission is < 0'
-       print*,'or NAN ',xtrans
-       print*,'Aborting'
+       if(idiag.gt.0)then
+        print*,'e3interp: warning - requested transmission is < 0'
+        print*,'or NAN ',xtrans
+        print*,'Aborting'
+       endif
        e3out = 0.
        de3out = 0.
        return

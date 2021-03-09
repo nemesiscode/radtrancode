@@ -125,6 +125,8 @@ C DEL_G: Gauss-Legendre weights for integration.
 C **** all these are now defined by zgauleg.f ***
 
       CHARACTER*100 KTAFIL
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C******************************** CODE *********************************
 
@@ -138,6 +140,7 @@ C     Set NFIL to -1 to stop calc_fkdist_wavec trying to average over a
 C     filter function
 
       NFIL=-1
+      idiag=1
 
       CALL PROMPT('Enter NG : ')
       READ*,NG

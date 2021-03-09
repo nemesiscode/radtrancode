@@ -22,6 +22,10 @@ C     MAXOUT the maximum number of output points
       REAL TE1,TEMP1(MAXK),PRESS1(MAXK),TABLE(MAXK,MAXK,MAXG)
       REAL G_ORD(MAXG),K_G(MAXG),DEL_G(MAXG)
       REAL VCEN(MAXBIN)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
+      idiag=1
 
       WRITE(*,*)'Enter number of 4-byte words per record.'
       CALL PROMPT('old files = 2, new files = 1 : ')  

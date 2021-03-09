@@ -24,11 +24,15 @@ C     ****************************************************************
       INTEGER IP,IT,K,IS1,IS2,IWAVE,KWAVE,IFORM
       INTEGER I1,IP1,IT1,IAV
       CHARACTER*100 IPFILE
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       DATA G_ORD/0.013047, 0.067468, 0.160295, 0.283302, 0.425563,
      1          0.574437, 0.716698, 0.839705, 0.932532, 0.986953,
      2		0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0./
 
+
+      idiag=1
 
       LUNOUT=30
 

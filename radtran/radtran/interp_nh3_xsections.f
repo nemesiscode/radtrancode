@@ -26,6 +26,8 @@ C     These papameters define the contents of the x section file
       parameter (offset=9)
       real wnh3x(nwave),knh3x(nwave,ntemps),tempnh3x(ntemps)
       common /nh3xtable/wnh3x,tempnh3x,knh3x      
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       ipfile = 'uvXsect_NH3_Liang_2007.dat'
 
@@ -34,7 +36,7 @@ C     Define the temperatures of the x section columns
 
 C     Check if the array has been populated
       if(int(wnh3x(1)).ne.140) then
-       print*,'Reading in NH3 absorption data'
+       if(idiag.gt.0)print*,'Reading in NH3 absorption data'
        
 C*************************************************************
 C No need to edit below this line

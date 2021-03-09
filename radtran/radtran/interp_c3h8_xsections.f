@@ -25,6 +25,8 @@ C     These papameters define the contents of the x section file
       parameter (offset=9)
       real wc3h8x(nwave),kc3h8x(nwave,ntemps),tempc3h8x(ntemps)
       common /c3h8xtable/wc3h8x,tempc3h8x,kc3h8x      
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       ipfile = 'uvXsect_C3H8_Au_1993.dat'
 
@@ -33,7 +35,7 @@ C     Define the temperatures of the x section columns
 
 C     Check if the array has been populated
       if(int(wc3h8x(1)).ne.5) then
-       print*,'Reading in c3h8 absorption data'
+       if(idiag.gt.0)print*,'Reading in c3h8 absorption data'
        
 C*************************************************************
 C No need to edit below this line

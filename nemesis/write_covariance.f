@@ -16,6 +16,8 @@ C     **************************************************************
       real st(mx,mx),kk(my,mx),se(my)
       double precision aa(mx,mx),dd(mx,my)
       character*100 runname
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       call file(runname,runname,'cov')
 

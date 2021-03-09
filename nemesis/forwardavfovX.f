@@ -124,6 +124,8 @@ c  ** variables for solar reflected cloud **
       integer solnpt,iform,iread
 
       common /solardat/iread, iform, stelrad, solwave, solrad,  solnpt
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
 1     format(a)
@@ -168,7 +170,9 @@ C     Initialise arrays
        enddo
       enddo
 
-      print*,'forwardavfovX: jsurf,jalb,jtan,jpre',jsurf,jalb,jtan,jpre
+      if(idiag.gt.0)then
+       print*,'forwardavfovX: jsurf,jalb,jtan,jpre',jsurf,jalb,jtan,jpre
+      endif
       if(jalb.gt.1)then
        print*,'Warning from forwardavfovX'
        print*,'Can not currently do surface albedo retrievals with'
@@ -188,7 +192,7 @@ C     Initialise arrays
 
       if(jsurf.gt.0)then
        tsurf = xn(jsurf)
-       print*,'tsurf = ',tsurf
+       if(idiag.gt.0)print*,'tsurf = ',tsurf
       endif
 
 
@@ -211,8 +215,9 @@ C     mass to units of 1e24 kg.
 
       ioff = 0
       do 100 igeom=1,ngeom
-       print*,'ForwardavfovX. Spectrum ',igeom,' of ',ngeom
-
+       if(idiag.gt.0)then
+        print*,'ForwardavfovX. Spectrum ',igeom,' of ',ngeom
+       endif
        nconv1 = nconv(igeom)
        nwave1 = nwave(igeom)
  
@@ -243,12 +248,8 @@ C     mass to units of 1e24 kg.
          xlon = flon(igeom,iav)   
          xgeom = wgeom(igeom,iav)
 
-C         print*,'TestAv',iav,nav(igeom),xlat,xlon
-C         print*,'TestAv1',sol_ang,emiss_ang,aphi,xgeom
 
-C         print*,'t1',jfrac,xgeom
          if(jfrac.gt.0)then
-C          print*,'test1'
           if(nav(igeom).ne.2)then
            print*,'Error in forwardavfovX'
            print*,'Model 102 only suitable for NAV=2'
@@ -259,7 +260,7 @@ C          print*,'test1'
           else
            xgeom=1.0 - xn(jfrac)
           endif
-          print*,'t2',iav,xgeom
+          if(idiag.gt.0)print*,'t2',iav,xgeom
        
          endif
 
@@ -298,8 +299,10 @@ C        Need to assume order of paths. First path is assumed to be
 C        thermal emission
 
 
-         print*,'ForwardavfovX: Npath,sol_ang,emiss_ang = ',
+         if(idiag.gt.0)then
+          print*,'ForwardavfovX: Npath,sol_ang,emiss_ang = ',
      1 npath,sol_ang,emiss_ang
+         endif
 
          if(icread.ne.1)then
 C         Not an SCR calculation. Assume 1st path is the thermal emission
@@ -315,8 +318,10 @@ C         Not an SCR calculation. Assume 1st path is the thermal emission
            endif
  	   ioff1=nconv1*(ipath-1)+iconv
            yn(ioff+j)=yn(ioff+j)+xgeom*calcout(ioff1)
-           print*,j,xgeom,calcout(ioff1),xgeom*calcout(ioff1),
+           if(idiag.gt.0)then
+            print*,j,xgeom,calcout(ioff1),xgeom*calcout(ioff1),
      1       yn(ioff+j)
+           endif
            if(ipfov)then
              ytmp(j)=calcout(ioff1)
            endif
@@ -327,7 +332,6 @@ C         Not an SCR calculation. Assume 1st path is the thermal emission
      1       (ytmp(j),j=1,nconv1)
           endif
 
-C          print*,'A'
 C         Calculate gradients
           do i=1,nx
 
@@ -340,7 +344,6 @@ C         Calculate gradients
              enddo
              ioff2 = nconv1*nx*(ipath-1)+(i-1)*nconv1 + iconv
              kk(ioff+j,i)=kk(ioff+j,i)+xgeom*gradients(ioff2)
-C             print*,i,j,ioff,ioff2,xgeom,gradients(ioff2),kk(ioff+j,i)
             enddo
            endif           
 
@@ -398,12 +401,11 @@ C          read(5,1)ans
 
 
 
-C          print*,'B'
-  
           if (gasgiant.and.reflecting_atmos) then
-           print*,'ADDING IN REFLECTING ATMOSPHERE CONTRIBUTION'
-           print*,'cloud albedo=',refl_cloud_albedo
-           
+           if(idiag.gt.0)then
+            print*,'ADDING IN REFLECTING ATMOSPHERE CONTRIBUTION'
+            print*,'cloud albedo=',refl_cloud_albedo
+           endif 
 C          Assume this calculation is in path 2.
            ipath = 2
  
@@ -534,7 +536,6 @@ C          Now the gradients
         stop
        endif
 
-C       print*,'C'
        if(jtan.gt.0.or.jpre.gt.0.or.jlogg.gt.0)then
 
         do 113 iextra=1,3
@@ -544,14 +545,14 @@ C       print*,'C'
          if(iextra.eq.3.and.jlogg.lt.1)goto 113
 
          if(iextra.eq.1.and.jpre.gt.0)then
-          print*,'Calculating RoC with tangent pressure'
+          if(idiag.gt.0)print*,'Calculating RoC with tangent pressure'
           pressR = xn(jpre)
           delp = pressR*0.01
           xn(jpre)=pressR+delp
          endif
 
          if(iextra.eq.3.and.jlogg.gt.0)then
-          print*,'Calculating RoC with log(g)'
+          if(idiag.gt.0)print*,'Calculating RoC with log(g)'
           loggR = xn(jlogg)
           dellg = loggR*0.01
           xn(jlogg)=loggR+dellg
@@ -680,8 +681,6 @@ C           Assume change in tangent height pressure of 1km.
        endif
 
 100   continue
-
-C      print*,'Done'
 
       return
 

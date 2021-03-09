@@ -38,6 +38,8 @@ C     Set measurement vector and source vector lengths here.
       integer nprox,nvarx,varidentx(mvar,3),nxx,ivar,ivarx
       real varparamx(mvar,mparam),xnx(mx),varparam(mvar,mparam)
       integer nvar,varident(mvar,3),ikeep,np,icopy,i,j,ioff,nlong
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C     **************************** CODE ********************************
 
@@ -109,8 +111,8 @@ C     **************************** CODE ********************************
           endif
         enddo
 
-        print*,'ivarx',ivarx
-        print*,'icopy',icopy
+        if(idiag.gt.0)print*,'ivarx',ivarx
+        if(idiag.gt.0)print*,'icopy',icopy
 
         if(icopy.gt.0)then
           ivar = ivar+1

@@ -29,6 +29,8 @@ C     Set measurement vector and source vector lengths here.
       integer nx,ny,i,j
       real xn1(mx),xa(mx),y(my),se1(my),yn1(my),yn(my)
       real chisq,phi,kk(my,mx)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       read(37,*)chisq,phi
       read(37,*)(xn1(i),i=1,nx)
@@ -40,7 +42,7 @@ C     Set measurement vector and source vector lengths here.
       do i=1,nx
           read(37,*)(kk(j,i),j=1,ny)
       enddo
-      print*,'readnextiter OK'
+      if(idiag.gt.0)print*,'readnextiter OK'
       return
 
       end

@@ -32,6 +32,8 @@ C     ***********************************************************************
       real xnx(mx),stx(mx,mx),varparamx(mvar,mparam)
       integer varidentx(mvar,3),nvarx,ivarx,nxx
       real xntot(mx),sttot(mx,mx)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       write(lraw,*) ispec,'   ! ispec'
       write(lraw,*)xlat,xlon,' ! Latitude, Longitude'

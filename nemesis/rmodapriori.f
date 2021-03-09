@@ -47,6 +47,9 @@ C     ****************************************************************
       parameter(pi=3.1415927)
       integer varident(mvar,3),ivar,nvar,nlevel,npvar
       character*100 opfile,buffer,ipfile
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
  
       do i=1,nx
         err(i)=sqrt(sx(i,i))
@@ -54,8 +57,8 @@ C     ****************************************************************
 
       ix=0
       do 10 ivar=1,nvar
-          print*,(varident(ivar,i),i=1,3)
-          print*,(varparam(ivar,i),i=1,5)
+          if(idiag.gt.0)print*,(varident(ivar,i),i=1,3)
+          if(idiag.gt.0)print*,(varparam(ivar,i),i=1,5)
           if((varident(ivar,3).eq.0).or.(varident(ivar,3).eq.25))then
 C         ********* continuous profile ************************
             if(varident(ivar,3).eq.25)then
@@ -66,12 +69,12 @@ C         ********* continuous profile ************************
              xfac = sx(ix+1,ix+2)/sqrt(sx(ix+1,ix+1)*sx(ix+2,ix+2))
              clen = 1.0/sqrt(-alog(xfac))
             endif
-            print*,'Assumed correlation = ',clen
+            if(idiag.gt.0)print*,'Assumed correlation = ',clen
             xl = clen*(0.5 + 19.5*ran11(idum))
             xphi = 2*pi*ran11(idum)
-            print*,'xl,xphi = ',xl,xphi
+            if(idiag.gt.0)print*,'xl,xphi = ',xl,xphi
             xamp = ran11(idum)
-            print*,'xl,xphi,xamp = ',xl,xphi,xamp
+            if(idiag.gt.0)print*,'xl,xphi,xamp = ',xl,xphi,xamp
 C            xamp = 2.0*(ran11(idum)-0.5)
             do i=1,np
              dx=xamp*sin(2*pi*i/xl + xphi)*err(ix+i)

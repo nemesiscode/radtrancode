@@ -53,6 +53,8 @@ C     ********************************************************************
       integer icheck
       real y_in(my),yn_in(my),x0_in(mx),x_out(mx)
       real xn_in(mx)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       double precision a(my,my),b(my,my),dd_in(mx,my),c(my,my)
       double precision x1(my,my),aa_in(mx,mx),d(my,my),x2(my,my)

@@ -120,6 +120,8 @@ C     a priori covariance matrix
       integer nlen,il,ip,jl,jp
       real tmpgrid(mparam),findgen(mparam),yout
       real xc1,xc2
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C     Initialise a priori parameters
       do i=1,mx
@@ -150,7 +152,7 @@ C     Pass jrad and jlogg to planrad common block
 1     format(a)
     
       read(27,*)nvar			! Number of variable profiles
-      print*,'Reading in ',nvar,' variables'
+      if(idiag.gt.0)print*,'Reading in ',nvar,' variables'
       if(nvar.gt.mvar) then
        print*,'Readapriori: NVAR can not be greater than MVAR'
        print*,nvar,mvar
@@ -180,7 +182,9 @@ C          parameter must be an atmospheric one.
            if(varident(ivar,3).eq.0)then
 C          ********* continuous profile ************************
              read(27,1)ipfile
-             print*,'reading variable ',ivar,' from ',ipfile
+             if(idiag.gt.0)then
+              print*,'reading variable ',ivar,' from ',ipfile
+             endif
              open(28,file=ipfile,status='old')
              read(28,*)nlevel,clen
              if(nlevel.ne.npro)then
@@ -223,10 +227,7 @@ C              **** vmr, cloud, para-H2 , fcloud, take logs ***
                  print*,'must be on pressure grid '
                  stop
                endif            
-c               print*,'DIAG1',pref(i),pref(j),alog(pref(j))
                delp = log(pref(j))-log(pref(i))
-c               print*,'168: CLEN:',clen
-c               print*,'169: DELP:',delp
                
                arg = abs(delp/clen)
                xfac = exp(-arg)
@@ -251,7 +252,9 @@ C          ********* continuous particles/cm3 profile ************************
              endif
 
              read(27,1)ipfile
-             print*,'reading variable ',ivar,' from ',ipfile
+             if(idiag.gt.0)then
+              print*,'reading variable ',ivar,' from ',ipfile
+             endif
              open(28,file=ipfile,status='old')
              read(28,*)nlevel,clen
              if(nlevel.ne.npro)then
@@ -402,7 +405,9 @@ C             *** vmr, fcloud, para-H2 or cloud, take logs *********
            elseif(varident(ivar,3).eq.5)then
 C           *********** a priori profile is continuous and varies with latitude
              read(27,1)ipfile
-             print*,'reading variable ',ivar,' from ',ipfile
+             if(idiag.gt.0)then
+              print*,'reading variable ',ivar,' from ',ipfile
+             endif
              open(28,file=ipfile,status='old')
              read(28,*)nlevel,nlat,clen
              if(nlevel.ne.npro)then
@@ -1308,7 +1313,9 @@ C             but this is a temporary fix just to get rid of compiler issues
               pref(i)=0
              enddo
              read(27,1)ipfile
-             print*,'reading variable ',ivar,' from ',ipfile
+             if(idiag.gt.0)then
+              print*,'reading variable ',ivar,' from ',ipfile
+             endif
              open(28,file=ipfile,status='old')
 C            np = number of points over which to retrieve profile (as opposed to npro which is total number of points in .prf)
 C            nlay = number of homogeneous layers in .drv file
@@ -1370,10 +1377,7 @@ c             stop
                 print*,'or increase value of MPARAM (arraylen.f)'
                 stop
                endif            
-c               print*,'DIAG1',pref(i),pref(j),alog(pref(j))
                delp = log(varparam(ivar,j+2))-log(varparam(ivar,i+2))
-c               print*,'168: CLEN:',clen
-c               print*,'169: DELP:',delp
                
                arg = abs(delp/clen)
                xfac = exp(-arg)
@@ -1413,7 +1417,9 @@ C               Interpolate homogeneous levels from pressure grid
                 do i=1,nlay
                  call verint(findgen,tmpgrid,np,yout,
      1                        (i-1)*(findgen(np)/float(nlay)))
-                 print*,i,(i-1)*(findgen(np)/float(nlay)),exp(yout)
+                 if(idiag.gt.0)then
+                  print*,i,(i-1)*(findgen(np)/float(nlay)),exp(yout)
+                 endif
                  write(901,*)exp(yout)
                 enddo
                endif
@@ -1508,7 +1514,9 @@ c             *** vmr, cloud, para-H2 , fcloud, take logs ***
            elseif(varident(ivar,3).eq.29)then
 C          ***** multiple continuous profiles at different locations  ********
              read(27,1)ipfile
-             print*,'reading variable ',ivar,' from ',ipfile
+             if(idiag.gt.0)then
+              print*,'reading variable ',ivar,' from ',ipfile
+             endif
              open(28,file=ipfile,status='old')
              read(28,*)nlocation,nlevel,clen
              if(nlevel.ne.npro)then
@@ -1590,8 +1598,10 @@ C             nx=nx+nlevel
            elseif(varident(ivar,3).eq.30)then
 C          ***** inhomogeneous disc model 1  ********
              read(27,1)ipfile
-             print*,'Model 30'
-             print*,'reading variable ',ivar,' from ',ipfile
+             if(idiag.gt.0)then
+              print*,'Model 30'
+              print*,'reading variable ',ivar,' from ',ipfile
+             endif
              open(28,file=ipfile,status='old')
              read(28,1)buffer
              if(buffer(1:2).eq.'Ex')then
@@ -1601,8 +1611,8 @@ C          ***** inhomogeneous disc model 1  ********
               iex=0
               read(buffer,*)nlong,nlevel,clen1,clen2
              endif
-             print*,'iex = ',iex
-             print*,nlong,nlevel,clen1,clen2
+             if(idiag.gt.0)print*,'iex = ',iex
+             if(idiag.gt.0)print*,nlong,nlevel,clen1,clen2
              if(nlevel+2.gt.mparam)then
               print*,'nlevel+2 > mparam',
      1         nlevel+2,mparam
@@ -1702,7 +1712,9 @@ C               **** vmr, cloud, para-H2 , fcloud, take logs ***
            elseif(varident(ivar,3).eq.31)then
 C          ***** inhomogeneous disc model 2  ********
              read(27,1)ipfile
-             print*,'reading variable ',ivar,' from ',ipfile
+             if(idiag.gt.0)then
+              print*,'reading variable ',ivar,' from ',ipfile
+             endif
              open(28,file=ipfile,status='old')
                read(28,1)buffer
                if(buffer(1:2).eq.'Ex')then
@@ -1761,7 +1773,6 @@ C          ***** inhomogeneous disc model 2  ********
                 endif
                         
 409            continue
-C               print*,ix,sx(ix,ix:nx+nlong)
 408           continue
 
 
@@ -1817,13 +1828,15 @@ C             *** vmr, fcloud, para-H2 or cloud, take logs *********
            elseif(varident(ivar,3).eq.33)then
 C          ***** inhomogeneous disc model 1  ********
              read(27,1)ipfile
-             print*,'Model 30'
-             print*,'reading variable ',ivar,' from ',ipfile
+             if(idiag.gt.0)then
+              print*,'Model 30'
+              print*,'reading variable ',ivar,' from ',ipfile
+             endif
              open(28,file=ipfile,status='old')
              read(28,*)nlong,nlevel,clen1,clen2
-             print*,nlong,nlevel,clen1,clen2
+             if(idiag.gt.0)print*,nlong,nlevel,clen1,clen2
              if(nlevel+2.gt.mparam)then
-              print*,'nlevel+2 > mparam',
+              if(idiag.gt.0)print*,'nlevel+2 > mparam',
      1         nlevel+2,mparam
               print*,'Need to reduce nlong,nlevel or increase mparam'
               stop
@@ -1876,20 +1889,16 @@ C               **** vmr, cloud, para-H2 , fcloud, take logs ***
               ip = i-nlevel*int((float(i)-0.5)/float(nlevel))
               il = 1 + int((float(i)-0.5)/float(nlevel))
               ix=nx+i
-C              print*,'ix,il,ip',ix,il,ip
               if(pref(ip).lt.0.0) then
                print*,'Error in readapriori.f. A priori file '
                print*,'must be on pressure grid '
                print*,'Model 30'
                stop
               endif            
-C              print*,'Press = ',pref(ip)
               do 707 j=i+1,nlen
                jp = j-nlevel*int((float(j)-0.5)/float(nlevel))
                jl = 1 + int((float(j)-0.5)/float(nlevel))
                jx=nx+j
-C               print*,'jx,jl,jp',jx,jl,jp
-C               print*,'P(J) = ',pref(jp)
 
                delp = log(pref(jp))-log(pref(ip))
                arg = abs(delp/clen1)
@@ -1901,9 +1910,7 @@ C               print*,'P(J) = ',pref(jp)
                if(dlon.lt.-180) dlon=dlon+360.
                arg1 = abs(dlon/clen2)
 
-C               print*,ix,jx,delp,clen1,arg,flon,flon1,dlon,clen2,arg1
                xfac = exp(-(arg+arg1))
-C               print*,xfac
                if(xfac.ge.SXMINFAC)then  
                  sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
                  sx(jx,ix) = sx(ix,jx)
@@ -1964,8 +1971,10 @@ C            Read in pressure-scaling factor
            elseif(varident(ivar,3).eq.35)then
 C          ***** axisymmetric model continuous  ********
              read(27,1)ipfile
-             print*,'Model 35'
-             print*,'reading variable ',ivar,' from ',ipfile
+             if(idiag.gt.0)then
+              print*,'Model 35'
+              print*,'reading variable ',ivar,' from ',ipfile
+             endif
              open(28,file=ipfile,status='old')
              read(28,1)buffer
              if(buffer(1:2).eq.'Ex')then
@@ -1975,8 +1984,8 @@ C          ***** axisymmetric model continuous  ********
               iex=0
               read(buffer,*)nlat,nlevel,clen1,clen2
              endif
-             print*,'iex = ',iex
-             print*,nlat,nlevel,clen1,clen2
+             if(idiag.gt.0)print*,'iex = ',iex
+             if(idiag.gt.0)print*,nlat,nlevel,clen1,clen2
              if(nlevel+2.gt.mparam)then
               print*,'nlevel+2 > mparam',
      1         nlevel+2,mparam
@@ -1996,7 +2005,6 @@ C          ***** axisymmetric model continuous  ********
      1         (eref(j,i),j=1,nlat)
               endif
               varparam(ivar,ipar)=pref(i)
-C              print*,i,pref(i),ivar,varident(ivar,1)
               ipar=ipar+1
               do 364 j=1,nlat
                ix=nx + (j-1)*nlevel+i
@@ -2038,20 +2046,16 @@ C               **** vmr, cloud, para-H2 , fcloud, take logs ***
               ip = i-nlevel*int((float(i)-0.5)/float(nlevel))
               il = 1 + int((float(i)-0.5)/float(nlevel))
               ix=nx+i
-C              print*,'ix,il,ip',ix,il,ip
               if(pref(ip).lt.0.0) then
                print*,'Error in readapriori.f. A priori file '
                print*,'must be on pressure grid '
                print*,'Model 35'
                stop
               endif            
-C              print*,'Press = ',pref(ip)
               do 466 j=i+1,nlen
                jp = j-nlevel*int((float(j)-0.5)/float(nlevel))
                jl = 1 + int((float(j)-0.5)/float(nlevel))
                jx=nx+j
-C               print*,'jx,jl,jp',jx,jl,jp
-C               print*,'P(J) = ',pref(jp)
 
                delp = log(pref(jp))-log(pref(ip))
                arg = abs(delp/clen1)
@@ -2061,9 +2065,7 @@ C               print*,'P(J) = ',pref(jp)
                dlat = flat1-flat
                arg1 = abs(dlat/clen2)
 
-C               print*,ix,jx,delp,clen1,arg,flon,flon1,dlon,clen2,arg1
                xfac = exp(-(arg+arg1))
-C               print*,xfac
                if(xfac.ge.SXMINFAC)then  
                  sx(ix,jx) = sqrt(sx(ix,ix)*sx(jx,jx))*xfac
                  sx(jx,ix) = sx(ix,jx)
@@ -2078,7 +2080,9 @@ C               print*,xfac
            elseif(varident(ivar,3).eq.36)then
 C          ***** axisymmetric model continuous  ********
              read(27,1)ipfile
-             print*,'reading variable ',ivar,' from ',ipfile
+             if(idiag.gt.0)then
+              print*,'reading variable ',ivar,' from ',ipfile
+             endif
              open(28,file=ipfile,status='old')
                read(28,1)buffer
                if(buffer(1:2).eq.'Ex')then
@@ -2133,7 +2137,6 @@ C          ***** axisymmetric model continuous  ********
                 endif
                         
 469            continue
-C               print*,ix,sx(ix,ix:nx+nlong)
 468           continue
 
 
@@ -2383,8 +2386,10 @@ C          ***** inhomogeneous disc model with Line et al. (2013)
 C          ***** and  Parmentier and Guillot (2014) double grey analytic 
 C          ***** TP profile  ********
              read(27,1)ipfile
-             print*,'Model 44'
-             print*,'reading variable ',ivar,' from ',ipfile
+             if(idiag.gt.0)then
+              print*,'Model 44'
+              print*,'reading variable ',ivar,' from ',ipfile
+             endif
              open(28,file=ipfile,status='old')
              read(28,1)buffer
              if(buffer(1:2).eq.'Ex')then
@@ -2394,8 +2399,8 @@ C          ***** TP profile  ********
               iex=0
               read(buffer,*)nlong,clen2
              endif
-             print*,'iex = ',iex
-             print*,nlong,clen2
+             if(idiag.gt.0)print*,'iex = ',iex
+             if(idiag.gt.0)print*,nlong,clen2
              varparam(ivar,1)=nlong
              ix=nx
              do 803 i=1,5
@@ -2497,7 +2502,7 @@ C           Read in number of points
                stop
              endif
              sx(ix,ix) = (err/alb)**2
-             print*,ix,err,alb,x0(ix),sx(ix,ix)
+             if(idiag.gt.0)print*,ix,err,alb,x0(ix),sx(ix,ix)
             enddo
 
             do i=1,np
@@ -2529,7 +2534,7 @@ C           **** Surface albedo scaling value *******
                stop
             endif
             sx(ix,ix) = (err/alb)**2
-            print*,ix,err,alb,x0(ix),sx(ix,ix)
+            if(idiag.gt.0)print*,ix,err,alb,x0(ix),sx(ix,ix)
 
             nx = nx+1
 
@@ -2551,7 +2556,7 @@ C           Read in number of points, cloud id, and correlation between elements
                stop
              endif
              sx(ix,ix) = (err/xsc)**2
-             print*,ix,err,xsc,x0(ix),sx(ix,ix)
+             if(idiag.gt.0)print*,ix,err,xsc,x0(ix),sx(ix,ix)
             enddo
 
 C           Check the wavelengths are consistent with the .rxs file
@@ -2566,9 +2571,11 @@ C           Check the wavelengths are consistent with the .rxs file
             read(28,*,end=106)(xt(i),i=1,ncont1)
             xy=abs(vi(j)-vtmp(j))
             if(xy.gt.0.01) then 
+             if(idiag.gt.0)then
              print*,'Possible problem in readapriori.f. Model 887'
              print*,'Wavelngth/wavenumb. in .rxs inconsistent with .apr'
              print*,j,vi(j),vtmp(j)
+             endif
             endif
             goto 105
 106         continue
@@ -2635,8 +2642,7 @@ C           **** Radius of planet *******
             jradf = jrad
             radius2 = radius+x0(ix)
 
-C	    print*,jrad,ix,sx(ix,ix),'jm2'
-            print*,'radius2 = ',radius2
+            if(idiag.gt.0)print*,'radius2 = ',radius2
             nx = nx+1
 
            elseif (varident(ivar,1).eq.444)then
@@ -3044,7 +3050,7 @@ C           **** surface ln(g) of planet *******
 
             call readrefiplan(opfile,iplanet,xlat,radius)
             mass2 = 1e-20*10**(x0(ix))*(radius**2)/Grav
-            print*,'mass2 = ',mass2
+            if(idiag.gt.0)print*,'mass2 = ',mass2
             nx = nx+1
 
 
@@ -3599,15 +3605,16 @@ C     the mass using the a priori log(g) AND radius
          mass2 = 1e-20*10**(x0(jlogg))*(radius2**2)/Grav
       endif
 
-      print*,'Total number of variables (nx) : ',nx
+      if(idiag.gt.0)print*,'Total number of variables (nx) : ',nx
 
       close(27)
 
 
       if(lin.eq.2.or.lin.eq.3.or.lin.eq.4)then
-       print*,'Readapriori: previous retrieval being used to
+       if(idiag.gt.0)then
+        print*,'Readapriori: previous retrieval being used to
      1 update apriori'
-
+       endif
        call readraw(lpre,xlatx,xlonx,nprox,nvarx,varidentx,
      1  varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
      2  jfracx,nxx,xnx,sxx)
@@ -3641,7 +3648,7 @@ C     the mass using the a priori log(g) AND radius
          endif
         endif
         if(varidentx(ivarx,1).eq.445)npx=3+int(varparamx(ivarx,1))
-        print*,'ivarx, npx = ',ivarx,npx
+        if(idiag.gt.0)print*,'ivarx, npx = ',ivarx,npx
      
         ioff=0
         do 22 ivar=1,nvar
@@ -3659,7 +3666,7 @@ C     the mass using the a priori log(g) AND radius
           endif
          endif
          if(varident(ivar,1).eq.445)np=3+int(varparam(ivar,1))
-         print*,'ivar, np = ',ivar,np
+         if(idiag.gt.0)print*,'ivar, np = ',ivar,np
 
 
          if(varidentx(ivarx,1).eq.varident(ivar,1))then
@@ -3669,8 +3676,10 @@ C     the mass using the a priori log(g) AND radius
             if(varidentx(ivarx,3).eq.28)then
              if(varparamx(ivarx,1).eq.varparam(ivar,1))then
  
-              print*,'A:Updating variable : ',ivar,' :  ',
+              if(idiag.gt.0)then
+               print*,'A:Updating variable : ',ivar,' :  ',
      1           (varident(ivar,j),j=1,3)
+              endif
               do i=1,np
                x0(ioff+i)=xnx(ioffx+i)
                do j=1,np
@@ -3681,8 +3690,10 @@ C     the mass using the a priori log(g) AND radius
              endif             
             else
 
-             print*,'B:Updating variable : ',ivar,' :  ',
+             if(idiag.gt.0)then
+              print*,'B:Updating variable : ',ivar,' :  ',
      1 		(varident(ivar,j),j=1,3)
+             endif
              do 33 i=1,np
               x0(ioff+i)=xnx(ioffx+i)
               do 34 j=1,np
@@ -3706,25 +3717,21 @@ C     the mass using the a priori log(g) AND radius
 
       endif
 
-C      do i=1,nx
-C       print*,i,x0(i),sqrt(sx(i,i))
-C      enddo
 
-C      stop
 
 C     Write out x-data to temporary .str file for later routines.
       if(lin.eq.3.or.lin.eq.4)then
 
-C       print*,xlatx,nvarx
+C       if(idiag.gt.0)print*,xlatx,nvarx
 C       do i=1,nvarx
-C        print*,(varidentx(i,j),j=1,3)
+C        if(idiag.gt.0)print*,(varidentx(i,j),j=1,3)
 C       enddo
 C       do i=1,nvarx
-C        print*,(varparamx(i,j),j=1,mparam)
+C        if(idiag.gt.0)print*,(varparamx(i,j),j=1,mparam)
 C       enddo
-C       print*,nprox
-C       print*,nxx,(xnx(i),i=1,nxx
-C       print*,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
+C       if(idiag.gt.0)print*,nprox
+C       if(idiag.gt.0)print*,nxx,(xnx(i),i=1,nxx
+C       if(idiag.gt.0)print*,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
 C     2  jfracx
 
        call writextmp(runname,xlatx,xlonx,nvarx,varidentx,

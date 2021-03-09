@@ -90,6 +90,8 @@ C     Solar spectrum variables and flags
       character*100 solfile,solname
       logical solexist
       common/solardat/iread, iform, solradius, solwave, solrad,  solnpt
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
 C     ******************************************************
@@ -101,6 +103,8 @@ C     *******************************************************
 
 C     Read in reference gas information data
       CALL RESERVEGAS
+     
+      idiag=1
 
 C     ----------- Scattering phase function initialisation --------------
       xwave(1)=-1                       ! Reset to force read of hgphase*
@@ -120,7 +124,7 @@ C     New compiler time
 1     FORMAT(a)
       runname = buffer(1:36)
 
-      print*,'checking files'
+      if(idiag.gt.0)print*,'checking files'
 C     Make sure input files are OK
       CALL checkfiles(runname)
 
@@ -130,7 +134,7 @@ C     Make sure input files are OK
        stop
       endif
 
-      print*,'Files OK',gasgiant
+      if(idiag.gt.0)print*,'Files OK',gasgiant
 
 C     Read start, end and step of tables
       CALL readkkhead(runname,vkstart,vkend,vkstep)
@@ -182,7 +186,7 @@ C              propagation of retrieval errors).
 999   continue
       CLOSE(32)
 
-      print*,'iform1 = ',iform1
+      if(idiag.gt.0)print*,'iform1 = ',iform1
       if(iform1.ne.1.and.iform1.ne.3)then
        print*,'Error in input file. Iform can be 1 or 3 for Nemesisdisc'
        stop
@@ -226,7 +230,9 @@ C      if previous retrieval to be considered,
 C      open previous raw retrieval file (copied to .pre)
        lpre=39
        CALL file(runname,runname,'pre')
-       print*,'Nemesis: reading previous retrieval : ',runname
+       if(idiag.gt.0)then
+        print*,'Nemesis: reading previous retrieval : ',runname
+       endif
        open(lpre,file=runname,status='old')
        read(lpre,*)nspecx
        if(nspec+ioff-1.gt.nspecx)then

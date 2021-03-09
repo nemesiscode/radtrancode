@@ -92,6 +92,8 @@ C     ***********************************************************************
       real v1(max_wave),k1(max_wave),vm1,n1(max_wave)
       real nreal(max_wave),minlam
       real srefind(max_wave,2),parm(3),rs(3)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
 
@@ -145,7 +147,9 @@ C      Transmission (solar occultation)
 
 C      Default
        else
-        print*,'Error in writeout - iform not defined. Default=0'
+        if(idiag.gt.0)then
+         print*,'Error in writeout - iform not defined. Default=0'
+        endif
         write(lout,*)'Radiances expressed as nW cm-2 sr-1 cm'
         xfac = 1e9
        endif
@@ -185,7 +189,9 @@ C      Transmission
 
 C      Default format
        else
-        print*,'Error in writeout - iform not defined. Default=0'
+        if(idiag.gt.0)then
+         print*,'Error in writeout - iform not defined. Default=0'
+        endif
         write(lout,*)'Radiances expressed as uW cm-2 sr-1 um-1'
         xfac=1e6
        endif
@@ -193,7 +199,9 @@ C      Default format
       endif
 
 
-      print*,'Writeout: ispace,iform,xfac : ',ispace,iform,xfac
+      if(idiag.gt.0)then
+       print*,'Writeout: ispace,iform,xfac : ',ispace,iform,xfac
+      endif
 
       write(lout,*)
      1  '  i  lambda  R_meas     error   %err  R_fit     Diff%'
@@ -306,8 +314,8 @@ C1000  format(1x,i4,1x,f10.4,1x,e15.8,1x,e15.8,1x,f7.2,1x,e15.8,1x,f9.5)
        if(varident(ivar,3).le.100)then
          np = npvar(varident(ivar,3),npro,varparam(ivar,1))
        endif
-       print*,'D',varident(ivar,3),npro,varparam(ivar,1)
-       print*,'E',np
+       if(idiag.gt.0)print*,'D',varident(ivar,3),npro,varparam(ivar,1)
+       if(idiag.gt.0)print*,'E',np
        if(varident(ivar,1).eq.888)np = int(varparam(ivar,1))
        if(varident(ivar,1).eq.887)np = int(varparam(ivar,1))
        if(varident(ivar,1).eq.444)then
@@ -340,7 +348,7 @@ C1000  format(1x,i4,1x,f10.4,1x,e15.8,1x,e15.8,1x,f7.2,1x,e15.8,1x,f9.5)
 
         iflag = logflag(varident(ivar,1),varident(ivar,3),
      &   varparam(ivar,1),i)
-C        print*,xa1,ea1,xn1,en1,iflag
+C        if(idiag.gt.0)print*,xa1,ea1,xn1,en1,iflag
         if(iflag.eq.1)then
           xa1 = exp(xa1)
           ea1 = xa1*ea1

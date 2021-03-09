@@ -61,6 +61,8 @@ c  ** variables for solar reflected cloud **
       common/celldat/icread,cellngas,cellid,celliso,cellvmr,cellength,
      1  cellpress,celltemp
       INTEGER IPZEN
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       
       CALL FILE(RUNNAME,RUNNAME,'pat')
@@ -130,7 +132,7 @@ C     sol_ang is then the tangent altitude)
        LAYANG = 90.0
       ENDIF       
 
-      print*,'IFLAG',IFLAGSROM,NCLOUD
+      if(idiag.gt.0)print*,'IFLAG',IFLAGSROM,NCLOUD
       IF(IFLAGSROM.GE.222.AND.IFLAGSROM.LE.223)THEN
        WRITE(31,1)'ncomplayer'
       ELSE
@@ -212,8 +214,6 @@ C     sol_ang is then the tangent altitude)
 c  ** if rflfile exists then insert stuff for reflecting path **
       CALL FILE(RUNNAME,rflfile,'rfl')
       inquire(file=rflfile,exist=fexist)
-C      print*,'file=',rflfile
-C      print*,'fexist=',fexist
       if ( fexist ) then
 c	** read in parameters from .rfl file **
          open(67,file=rflfile,status='old')

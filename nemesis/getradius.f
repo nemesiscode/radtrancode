@@ -27,22 +27,24 @@ C     **************************************************************
       INTEGER NVAR,VARIDENT(MVAR,3),IVAR,NXTEMP,NP,NPVAR,NPRO
       INTEGER ICLOUD,J
       REAL VARPARAM(MVAR,MPARAM)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       NXTEMP=0
       X=-1.0
       DO 10 IVAR=1,NVAR
-C       print*,'A',ICLOUD,IVAR,(VARIDENT(IVAR,J),J=1,3)
+C       if(idiag.gt.0)print*,'A',ICLOUD,IVAR,(VARIDENT(IVAR,J),J=1,3)
        IF(VARIDENT(IVAR,1).EQ.444.AND.VARIDENT(IVAR,2).EQ.ICLOUD)THEN
         X=EXP(XN(NXTEMP+1))
-C        print*,'X = ',X
+C        if(idiag.gt.0)print*,'X = ',X
        ENDIF
        IF(VARIDENT(IVAR,1).EQ.445.AND.VARIDENT(IVAR,2).EQ.ICLOUD)THEN
         X=EXP(XN(NXTEMP+1))
-C        print*,'X = ',X
+C        if(idiag.gt.0)print*,'X = ',X
        ENDIF
        IF(VARIDENT(IVAR,1).LE.100)THEN
         NP=NPVAR(VARIDENT(IVAR,3),NPRO,VARPARAM(IVAR,1))
-C        print*,'D',(VARIDENT(IVAR,J),J=1,3),NP
+C        if(idiag.gt.0)print*,'D',(VARIDENT(IVAR,J),J=1,3),NP
        ELSE
         NP=1
         IF(VARIDENT(IVAR,1).EQ.888)NP=INT(VARPARAM(IVAR,1))
@@ -63,7 +65,7 @@ C        print*,'D',(VARIDENT(IVAR,J),J=1,3),NP
         IF(VARIDENT(IVAR,1).EQ.227)NP=7
        ENDIF
 
-C       print*,'B',NP,XN(NXTEMP+1:NXTEMP+NP)
+C       if(idiag.gt.0)print*,'B',NP,XN(NXTEMP+1:NXTEMP+NP)
        NXTEMP=NXTEMP+NP
 
 10    CONTINUE

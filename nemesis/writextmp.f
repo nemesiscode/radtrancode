@@ -33,6 +33,8 @@ C     ************************************************************************
       integer jxsc
       real varparam(mvar,mparam)
       character*100 runname
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       call file(runname,runname,'str')
       open(12,file=runname,status='unknown')

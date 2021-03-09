@@ -35,8 +35,10 @@ C     Set measurement vector and source vector lengths here.
       real sa(mx,mx),saf(mx,mx),xk
       integer i,j,nx,ny,nxf,ix,nset(mx)
       logical ltest
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
-      print*,'Check_kk, requested nx = ',nx
+      if(idiag.gt.0)print*,'Check_kk, requested nx = ',nx
       ix=0
       DO j=1,nx
        ltest=.true.
@@ -45,7 +47,9 @@ C     Set measurement vector and source vector lengths here.
         if(kk(i,j).ne.xk)ltest=.false.
        enddo
        if(ltest)then
-        print*,'Variable : ',j,' has flat weighting function. Discard.'
+        if(idiag.gt.0)then
+         print*,'Variable : ',j,' has flat weighting function. Discard.'
+        endif
        else
         ix=ix+1
         nset(ix)=j
@@ -53,7 +57,7 @@ C     Set measurement vector and source vector lengths here.
       ENDDO
 
       nxf = ix
-      print*,'Check_kk, allowed nxf = ',nxf
+      if(idiag.gt.0)print*,'Check_kk, allowed nxf = ',nxf
 
       if(nxf.gt.0)then
        do i=1,nxf

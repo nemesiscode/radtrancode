@@ -78,6 +78,8 @@ C     ********** Scattering variables **********************
       CHARACTER*100 ANAME
       REAL DNU
       INTEGER IPARA
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C     ******************************************************
 
@@ -85,6 +87,8 @@ C     ******************************************************
 C     *******************************************************
 C     ****************   CODE *******************************
 C     *******************************************************
+     
+      idiag=1
 
 C     Read in reference gas information data
       CALL RESERVEGAS
@@ -105,7 +109,7 @@ C     New compiler time
 1     FORMAT(a)
       runname = buffer(1:36)
 
-      print*,'checking files'
+      if(idiag.gt.0)print*,'checking files'
 C     Make sure input files are OK
       CALL checkfiles(runname)
 
@@ -177,8 +181,8 @@ C      open previous raw retrieval file (copied to .pre)
        open(lpre,file=runname,status='old')
        read(lpre,*)nspecx
        if(nspec.gt.nspecx)then
-        print*,'.pre file does not contain enough'
-        print*,'retrievals'
+        if(idiag.gt.0)print*,'.pre file does not contain enough'
+        if(idiag.gt.0)print*,'retrievals'
         stop
        endif
       endif
@@ -341,7 +345,7 @@ C      therefore need to reseed it to continue to get pseudo-random numbers
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,
      3   jfrac,RADIUS,nx,xn,ny,yn,kk)
       elseif(iscat.eq.1)then 
-       print*,'Calling forwardnogX'
+       if(idiag.gt.0)print*,'Calling forwardnogX'
        CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,

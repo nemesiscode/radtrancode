@@ -72,6 +72,8 @@ C     ************************************************************************
       real wave(max_wave),xsec(max_mode,max_wave,2)
       real srefind(max_wave,2),parm(3),rs(3),vm,nm
       real nimag(max_wave),nreal(max_wave)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       jpre=-1
       
@@ -91,12 +93,16 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
        flagh2p=1
       endif
        
-      print*,'Gsetrad iscat before subprofretg = ',iscat       
+      if(idiag.gt.0)then
+       print*,'Gsetrad iscat before subprofretg = ',iscat       
+      endif
       xflag=0
       call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,xlon,
      1  nvar,varident,varparam,nx,xn,jpre,ncont,flagh2p,xmap,ierr)
 
-      print*,'Gsetrad iscat after subprofretgg = ',iscat
+      if(idiag.gt.0)then
+       print*,'Gsetrad iscat after subprofretgg = ',iscat
+      endif
       hcorrx=0.0
 
       if(lin.eq.1.or.lin.eq.3)then
@@ -108,13 +114,15 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
        call stripvar(nvarx,varidentx,varparamx,nprox,nvar,varident,
      1  varparam,nxx,xnx)
 
-       print*,'gsetradPT - variables to be updated from .pre'
-       print*,'xlatx = ',xlatx
-       print*,'nvarx = ',nvarx
-       do i=1,nvarx
-        print*,'varidentx',(varidentx(i,j),j=1,3)
-        print*,'varparamx',(varparamx(i,j),j=1,mparam)
-       enddo
+       if(idiag.gt.0)then
+        print*,'gsetradPT - variables to be updated from .pre'
+        print*,'xlatx = ',xlatx
+        print*,'nvarx = ',nvarx
+        do i=1,nvarx
+         print*,'varidentx',(varidentx(i,j),j=1,3)
+         print*,'varparamx',(varparamx(i,j),j=1,mparam)
+        enddo
+       endif
 
        xflag=1
        call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,xlon,
@@ -403,7 +411,7 @@ C       *****Calculate cross sections from refindex files****
            rs(2)=0.
            rs(3)=rs(1)
 
-           print*,'Calling modmakephase'
+           if(idiag.gt.0)print*,'Calling modmakephase'
 
            call modmakephase(iwave,imode,inorm,iscat,
      1   parm,rs,srefind,runname,lambda0)
@@ -413,7 +421,7 @@ C           np=2
        endif
       enddo
       
-      print*,'GsetradPT iscat at end =',iscat
+      if(idiag.gt.0)print*,'GsetradPT iscat at end =',iscat
       call gwritepatPT(runname,iscat,nconv,vconv,fwhm,layht,
      2 nlayer,laytyp,layint,flagh2p)
 

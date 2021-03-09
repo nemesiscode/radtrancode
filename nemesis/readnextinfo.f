@@ -25,6 +25,8 @@ C     ****************************************************************
       real sclk,p_lat,p_lon,p_rad,p_alt,sc_rad,p_sol_ang,p_time
       real p_rot,p_latnad,p_lonnad,p_radnad,p_altnad,sc_radnad
       real p_gssep 
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
    
       read(linfo,*) iblock,sclk,ilimb,p_lat,p_lon,p_rad,p_alt,
      1  sc_rad,p_sol_ang,p_time,p_rot,inad,p_latnad,p_lonnad,
@@ -36,9 +38,11 @@ C     ****************************************************************
       satrad = sc_rad
       thetrot = p_rot
 
-      print*,'readnextinfo : lat,long = ',p_lat,p_lon
-      print*,'readnextinfo : radius,satrad,altbore,thetrot : ',
+      if(idiag.gt.0)then
+       print*,'readnextinfo : lat,long = ',p_lat,p_lon
+       print*,'readnextinfo : radius,satrad,altbore,thetrot : ',
      1 marsradius,satrad,altbore,thetrot
+      endif
 
       return
 

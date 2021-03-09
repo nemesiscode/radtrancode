@@ -127,6 +127,8 @@ C     **************************************************************
       real cellength,cellpress,celltemp,cellvmr(maxgas)
       common/celldat/icread,cellngas,cellid,celliso,cellvmr,cellength,
      1  cellpress,celltemp
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
 
@@ -209,7 +211,7 @@ C     Initialise arrays
       ioff2 = 0
 
       do 100 igeom=1,ngeom
-       print*,'ForwardnogX. Spectrum ',igeom,' of ',ngeom
+       if(idiag.gt.0)print*,'ForwardnogX. Spectrum ',igeom,' of ',ngeom
        
        nwave1 = nwave(igeom)
        nconv1 = nconv(igeom)
@@ -256,8 +258,8 @@ C            nf=20
            nf=nf1
          endif
 
-         print*,'Angles : ',sol_ang,emiss_ang,aphi
-         print*,'nf = ',nf
+         if(idiag.gt.0)print*,'Angles : ',sol_ang,emiss_ang,aphi
+         if(idiag.gt.0)print*,'nf = ',nf
          xlat = flat(igeom,iav)
          xlon = flon(igeom,iav)
 
@@ -272,7 +274,7 @@ C            nf=20
 
           ix = ix1-1
 
-          print*,'forwardnogX, ix,nx = ',ix,nx
+          if(idiag.gt.0)print*,'forwardnogX, ix,nx = ',ix,nx
           if(ix.gt.0)then
             xref = xn(ix)
             dx = 0.05*xref
@@ -287,7 +289,7 @@ C            nf=20
             endif                             
             xn(ix)=xn(ix)+dx
           endif
-C          print*,'ix,xref,dx,xn(ix)',ix,xref,dx,xn(ix)
+C          if(idiag.gt.0)print*,'ix,xref,dx,xn(ix)',ix,xref,dx,xn(ix)
           if(jsurf.gt.0)then
            tsurf = xn(jsurf)
           endif
@@ -324,19 +326,19 @@ C        Set up parameters for scattering cirsrad run.
          IMIE1=IMIE
           itype=11			! scloud11wave
 
-          print*,'************** FORWARDNOGX ***********'
-          print*,'******** INORMAL = ',INORMAL
-          print*,'******** ITYPE = ',ITYPE
+          if(idiag.gt.0)print*,'************** FORWARDNOGX ***********'
+          if(idiag.gt.0)print*,'******** INORMAL = ',INORMAL
+          if(idiag.gt.0)print*,'******** ITYPE = ',ITYPE
 
 
 C         Set up all files for a direct cirsrad run
-          print*,'calling gsetrad'
+          if(idiag.gt.0)print*,'calling gsetrad'
           call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,
      1     lowbc,galb,nf,nconvi1,vconvi1,fwhm,ispace,gasgiant,
      2     layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,xlon,
      3     lin,nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,
      4     xmap)
-          print*,'gsetrad called OK'
+          if(idiag.gt.0)print*,'gsetrad called OK'
 
 C         If planet is not a gas giant and observation is not at limb then
 C         we need to read in the surface emissivity spectrum.
@@ -355,10 +357,10 @@ C         Read in emissivity file
 C         Check to see if any temperatures or vmrs have gone
 C         negative and if so abort
           icheck = check_profile(runname)
-          print*,'forwardnogX, icheck = ',icheck
+          if(idiag.gt.0)print*,'forwardnogX, icheck = ',icheck
 C         Check also to see if surface temperature has gone negative
           if(tsurf.lt.0.0)icheck=1   
-          print*,tsurf,icheck
+          if(idiag.gt.0)print*,tsurf,icheck
 
           if(icheck.eq.1)then
            print*,'Profiles have gone awry. Abort, increase brakes and'
@@ -366,13 +368,13 @@ C         Check also to see if surface temperature has gone negative
            return
           endif
           
-          print*,'forwardnogX',runname,runname
+          if(idiag.gt.0)print*,'forwardnogX',runname,runname
 
           call CIRSrtf_wave(runname, dist, inormal, iray,fwhm, ispace,
      1     vwavei1,nwavei1,npath, output, vconvi1, nconvi1, itype,
      2     nem,vem,emissivity,tsurf, calcout)
 
-          print*,'Npath = ',npath
+          if(idiag.gt.0)print*,'Npath = ',npath
 
 C         Unless an SCR calculation, first path is assumed to be thermal emission
 

@@ -5,7 +5,10 @@
       integer npro,i
       real patm(MAXPRO),temp(MAXPRO),xnew(MAXPRO)
       real PD,PT,RHC,RHM,VX,ch4tropvmr,ch4stratvmr
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
+      idiag=1
 
       print*,'Enter input test filename'
       read(5,1)ipfile
@@ -32,5 +35,5 @@
 20    continue
       close(13)
 
-      print*,'Run OK'
+      if(idiag.gt.0)print*,'Run OK'
       end

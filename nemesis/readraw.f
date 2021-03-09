@@ -38,6 +38,8 @@ C     ***********************************************************************
       real xn(mx),st(mx,mx),xlat,xlon,varparam(mvar,mparam)
       integer varident(mvar,3),nvar,ivar,jsurf,ioff,np,jalb,jtan
       integer jpre, jrad, npvar, jlogg, jxsc, jfrac
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       read(lraw,*)ispec
       read(lraw,*)xlat,xlon

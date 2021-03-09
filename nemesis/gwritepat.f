@@ -57,8 +57,11 @@ c  ** variables for solar reflected cloud **
       integer iread,nspt,iform
       real solrad,swave(maxbin),srad(maxbin)
       common /solardat/iread,iform,solrad,swave,srad,nspt
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
-      
+
+      if(idiag.gt.0)print*,'gwritepat: iscat = ',iscat      
       CALL FILE(RUNNAME,RUNNAME,'pat')
 
       OPEN(31,FILE=RUNNAME,STATUS='UNKNOWN')
@@ -108,7 +111,7 @@ c  ** variables for solar reflected cloud **
        WRITE(31,*)' '
       ENDIF
 
-      print*,'AA ISCAT = ',ISCAT
+      if(idiag.gt.0)print*,'AA ISCAT = ',ISCAT
       IF(ISCAT.GT.0)THEN
        TEXT = 'fcloud model fcloud.prf'
        WRITE(31,1)TEXT
@@ -191,8 +194,8 @@ C     sol_ang is then the tangent altitude)
 c  ** if rflfile exists then insert stuff for reflecting path **
       CALL FILE(RUNNAME,rflfile,'rfl')
       inquire(file=rflfile,exist=fexist)
-C      print*,'file=',rflfile
-C      print*,'fexist=',fexist
+C      if(idiag.gt.0)print*,'file=',rflfile
+C      if(idiag.gt.0)print*,'fexist=',fexist
       if ( fexist ) then
 c	** read in parameters from .rfl file **
          open(67,file=rflfile,status='old')

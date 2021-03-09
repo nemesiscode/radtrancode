@@ -111,6 +111,8 @@ C     **************************************************************
       real varparam(mvar,mparam)
       logical gasgiant
       real vem(maxsec),emissivity(maxsec)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
 C     Initialise arrays
@@ -190,9 +192,9 @@ C     Now sort wavelength arrays
       enddo
       if(iswitch.eq.1)goto 41
 
-      print*,'ForwardnogMCS vconv:'
+      if(idiag.gt.0)print*,'ForwardnogMCS vconv:'
       do i=1,nconv1
-       print*,i,vconv1(i)
+       if(idiag.gt.0)print*,i,vconv1(i)
       enddo
 
       call setup(runname,gasgiant,nmu,mu,wtmu,isol,dist,lowbc,
@@ -219,11 +221,13 @@ C     Define tangent height array
         hview(nlayer+1+i)=layht-(0.001+i*delh)       
       enddo
 C     Now calculate viewing angle w.r.t spacecraft
-      print*,'Pre-calc grid'
-      print*,'Radius, satrad, thetrot = ',radius,satrad,thetrot
+      if(idiag.gt.0)then
+       print*,'Pre-calc grid'
+       print*,'Radius, satrad, thetrot = ',radius,satrad,thetrot
+      endif
       do i=1,nview
         thview(i) = asin((RADIUS+hview(i))/SATRAD)
-        print*,i,hview(i),thview(i)
+        if(idiag.gt.0)print*,i,hview(i),thview(i)
       enddo
 
 
@@ -251,7 +255,7 @@ C       emissivity spectrum
 
        ix = ix1-1
 
-       print*,'forwardnogMCS, ix,nx,nx2 = ',ix,nx,nx2
+       if(idiag.gt.0)print*,'forwardnogMCS, ix,nx,nx2 = ',ix,nx,nx2
 
        if(ix.gt.0)then
             xref = xn(ix)
@@ -270,7 +274,7 @@ C       emissivity spectrum
        endif
 
        hcorr = 0.0
-       print*,'Calling intradfield'
+       if(idiag.gt.0)print*,'Calling intradfield'
        CALL intradfield(runname,ispace,xlat,nwave1,vwave1,nconv1,
      1   vconv1,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
      2   jxsc,jtan,jpre,nx,xn)
@@ -281,7 +285,10 @@ C      Modifying internal radiation field.
 C       print*,'Calling mradfield'
 C       call mradfield(fmod)
 
-       print*,'Setting up for interpolation calculations'       
+
+       if(idiag.gt.0)then
+        print*,'Setting up for interpolation calculations'       
+       endif
 C      Set up parameters for scattering cirsrad run.
 
        CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
@@ -297,22 +304,25 @@ C      near-limb observations
      1     gasgiant,layht,topht,nlayer,laytyp,layint,xlat,xlon,lin,
      2     hcorrx,nvar,varident,varparam,nx,xn,jpre,tsurf,xmap)
 
-       print*,'Calculating grid of radiances'
+       if(idiag.gt.0)print*,'Calculating grid of radiances'
 C      Compute suite of limb/near-limb radiances 
           call CIRSrtf_waveS(runname, dist, inormal, iray, fwhm, ispace,
      1     vwave1,nwave1,npath, output, vconv1, nconv1, itype, nem, 
      2     vem, emissivity,tsurf, calcout)
 
-       print*,'Raw cirsrtf_waveS output : '
-       do ipath=1,npath
-        print*,ipath,(calcout(ipath+(j-1)*npath),j=1,nconv1)
-       enddo
+       if(idiag.gt.0)then
+        print*,'Raw cirsrtf_waveS output : '
+        do ipath=1,npath
+         print*,ipath,(calcout(ipath+(j-1)*npath),j=1,nconv1)
+        enddo
+       endif
 
        ioff=0
 
        do 100 igeom=1,ngeom
-        print*,'ForwardnogMCS. Spectrum ',igeom,' of ',ngeom
-       
+        if(idiag.gt.0)then
+         print*,'ForwardnogMCS. Spectrum ',igeom,' of ',ngeom
+        endif
         nwavetmp = nwave(igeom)
         nconvtmp = nconv(igeom)
 
@@ -333,7 +343,7 @@ C         Get B pixel numbers
 C       Compute A pixel numbers
         ipixA = 1 + 21-ipixB
 
-        print*,'ipixA,ipixB : ',ipixA,ipixB
+        if(idiag.gt.0)print*,'ipixA,ipixB : ',ipixA,ipixB
 
         if(nav(igeom).gt.1)then
          print*,'You should not be doing explicit FOV averaging with'
@@ -347,8 +357,8 @@ C       Compute A pixel numbers
         sol_ang = angles(igeom,iav,1)
         emiss_ang = angles(igeom,iav,2)
         aphi = angles(igeom,iav,3)
-        print*,'Iav = ',iav
-        print*,'Angles : ',sol_ang,emiss_ang,aphi
+        if(idiag.gt.0)print*,'Iav = ',iav
+        if(idiag.gt.0)print*,'Angles : ',sol_ang,emiss_ang,aphi
 
         xlat = flat(igeom,iav)
         xlon = flon(igeom,iav)
@@ -356,17 +366,17 @@ C       Compute A pixel numbers
  
 
         if(emiss_ang.lt.0.or.emiss_ang.gt.80)then
-           print*,'Interpolating pre-calculated spectra'
+           if(idiag.gt.0)print*,'Interpolating pre-calculated spectra'
            if(emiss_ang.lt.0)then
              htan = sol_ang+hcorr+hcorrx
            else
              htan = -RADIUS*(1.0-SIN(emiss_ang*dtr))+hcorr+hcorrx
            endif
            caltbore = altbore+hcorr+hcorrx
-           print*,'forwardnogMCS: sol_ang, hcorr, hcorrx',
+           if(idiag.gt.0)print*,'forwardnogMCS: sol_ang, hcorr, hcorrx',
      1       sol_ang, hcorr,hcorrx
-           print*,'htan = ',htan
-           print*,'caltbore = ',caltbore
+           if(idiag.gt.0)print*,'htan = ',htan
+           if(idiag.gt.0)print*,'caltbore = ',caltbore
            thcentre = asin((RADIUS+htan)/SATRAD)
            thbore = asin((RADIUS+caltbore)/SATRAD)
 C          Now run through wavelengths and find right wavelength in
@@ -385,8 +395,10 @@ C          pre-calculated array
             esurf = interpem(nem,vem,emissivity,vv)
             ichan = int(10*(0.001+vv-int(vv)))
 
-            print*,'vv,esurf,ichan,thetrot,thcentre,thbore',
+            if(idiag.gt.0)then
+             print*,'vv,esurf,ichan,thetrot,thcentre,thbore',
      1        vv,esurf,ichan,thetrot,thcentre,thbore
+            endif
 
             if(abs(thetrot).le.1.0) then
               call computeFOVA(iread,ichan,ipixA,ipixB,thcentre,
@@ -412,7 +424,7 @@ C           Interpolate radiances
      2 calcout,nfov,thfov,rfov,radmean)     
 
             if(ix.eq.0)then
-             print*,iconv,vconv1(iconv),ioff,i,radmean
+             if(idiag.gt.0)print*,iconv,vconv1(iconv),ioff,i,radmean
              yn(ioff+i) = radmean
             else
              yn1(ioff+i) = radmean
@@ -462,7 +474,7 @@ C           enddo
              if(vconv(igeom,i).eq.vconv1(j))iconv=j
             enddo
             if(iconv.lt.0)then
-             print*,'forwardnogMCS iconv < 0'
+             if(idiag.gt.0)print*,'forwardnogMCS iconv < 0'
              stop
             endif
            

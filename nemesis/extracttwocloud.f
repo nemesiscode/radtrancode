@@ -24,6 +24,8 @@ C     **************************************************************
       character*100 runname
       integer npro,nvmr
       logical gasgiant
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       call readrefhead(runname,npro,nvmr,gasgiant)
 

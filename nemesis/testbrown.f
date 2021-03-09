@@ -5,6 +5,11 @@
       integer npro,i,atmp(4),height(maxpro)
       real T0,Teff,tau0,n,alpha
       character*100 ipfile,buffer
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
+      idiag=1
+
       print*,'Enter name of .prf file to read in : '
       read(5,1)ipfile
 1     format(a)

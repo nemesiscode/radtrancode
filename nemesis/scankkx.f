@@ -38,6 +38,8 @@ C     Set measurement vector and source vector lengths here.
       integer npro,nvar,varident(mvar,3),ioff,ikeep,np,icopy,i,j
       real varparam(mvar,mparam)
       real kkx(my,mx),kk1(my,mx),stx(mx,mx),st1(mx,mx)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C     **************************** CODE ********************************
 

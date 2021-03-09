@@ -34,6 +34,8 @@ C     **************************************************************************
       REAL xnew(maxpro),a1,a2
       REAL tmp,pch4(maxpro),PM
       real SCH40,SCH41,SCH42
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C     Thermodynamic data extracted from Handbook of Physics and Chemistry and
 C     Kaye and Laby for PRAXIS book. 
@@ -47,13 +49,13 @@ C     SCH4=[10.50377,-1116.966,-4.633456e-03] - need to check this!!
 C      parameter (SCH40=10.50377,SCH41=-1116.966,SCH42=-4.633456e-03)      
 
 
-C      print*,ch4tropvmr,ch4stratvmr,PD,PT,RHC,RHM,VX
+C      if(idiag.gt.0)print*,ch4tropvmr,ch4stratvmr,PD,PT,RHC,RHM,VX
       do i=1,npro
        j = npro-i+1
        pbar(i)=patm(i)*1.013
        lpbar(j)=alog(pbar(i))
        temp1(j)=temp(i)
-C       print*,i,j,pbar(i),lpbar(j),temp1(j)
+C       if(idiag.gt.0)print*,i,j,pbar(i),lpbar(j),temp1(j)
       enddo
 
 
@@ -66,7 +68,7 @@ C     First interpolate the TP profile onto a finer grid
        pfinebar(j) = exp(lp1(i))
        tfine(j)=t1(i)
        ptmp(j)=pfinebar(j)
-C       print*,i,j,pfinebar(j),lp1(i),tfine(j)
+C       if(idiag.gt.0)print*,i,j,pfinebar(j),lp1(i),tfine(j)
 10    continue
 
 C     First find level where CH4 saturates and limit CH4 profile to 100% RH
@@ -93,17 +95,17 @@ C        tmp=SCH40+SCH41/tfine(i)+SCH42*tfine(i)
         if(pfinebar(i).le.PD.and.ideep.lt.0)then
          ideep=i
         endif
-C        print*,'B',i,pfinebar(i),tfine(i),pch4(i),psvp(i),
+C        if(idiag.gt.0)print*,'B',i,pfinebar(i),tfine(i),pch4(i),psvp(i),
 C     &    pch4(i)/pfinebar(i)
 15    continue
 
-C      print*,'Meth. con. lev., press(bar), temp(K) = ',
+C      if(idiag.gt.0)print*,'Meth. con. lev., press(bar), temp(K) = ',
 C     1  icond,pfinebar(icond),tfine(icond)
 
       PC=pfinebar(icond)
 
-C      print*,'ideep, icond, ipause = ',ideep, icond, ipause
-C      print*,pfinebar(ideep),pfinebar(icond),pfinebar(ipause)
+C      if(idiag.gt.0)print*,'ideep, icond, ipause = ',ideep, icond, ipause
+C      if(idiag.gt.0)print*,pfinebar(ideep),pfinebar(icond),pfinebar(ipause)
 
       PM=pfinebar(ipause)
 
@@ -112,7 +114,7 @@ C     Now need to apply Sromovsky relative humidity profile to region between cl
       do 20 i=icond,ipause
         a2=log(PC/pfinebar(i))
         RH=RHM+(RHC-RHM)*(1-a2/a1)
-C        print*,'D',i,a1,a2,RH,pch4(i),psvp(i)*RH
+C        if(idiag.gt.0)print*,'D',i,a1,a2,RH,pch4(i),psvp(i)*RH
         pch4(i)=psvp(i)*RH
 20    continue
       do 30 i=ipause+1,npro1
@@ -123,14 +125,14 @@ C        print*,'D',i,a1,a2,RH,pch4(i),psvp(i)*RH
 30    continue
 
 C      do i=1,npro1
-C        print*,'C',i,pfinebar(i),tfine(i),pch4(i),psvp(i),
+C        if(idiag.gt.0)print*,'C',i,pfinebar(i),tfine(i),pch4(i),psvp(i),
 C     &    pch4(i)/pfinebar(i),pch4(i)/psvp(i)
 C      enddo
 
-C      print*,'A'
+C      if(idiag.gt.0)print*,'A'
       do 35 i=1,npro1
        alpha(i)=pch4(i)/pfinebar(i)
-C       print*,i,pfinebar(i),pch4(i),alpha(i)
+C       if(idiag.gt.0)print*,i,pfinebar(i),pch4(i),alpha(i)
 35    continue
 
 C     Now do descended profile correction
@@ -143,12 +145,12 @@ C     Now do descended profile correction
        a2 = a1**VX
        ptmp(i)= pfinebar(i)*(1 + a2*(PD/PC-1))
        if(ptmp(i).gt.pfinebar(1))ptmp(i)=pfinebar(i)
-C       print*,i,pfinebar(i),alpha(i),a1,a2,ptmp(i)
+C       if(idiag.gt.0)print*,i,pfinebar(i),alpha(i),a1,a2,ptmp(i)
 40    continue
 
 
 C      do i=1,npro1
-C       print*,i,pfinebar(i),ptmp(i),alpha(i)
+C       if(idiag.gt.0)print*,i,pfinebar(i),ptmp(i),alpha(i)
 C      enddo
 
       do 45 i=1,npro1

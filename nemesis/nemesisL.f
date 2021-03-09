@@ -461,8 +461,8 @@ C     New compiler time
       call system_clock(time2)
       tot_time=(time2-time1)/rate
 
-      write(6,*)'Model run OK'
-      WRITE(6,244)tot_time
+      if(idiag.gt.0)write(6,*)'Model run OK'
+      if(idiag.gt.0)write(6,244)tot_time
 244   FORMAT(' Elapsed time (s) = ',F8.1)
 
 

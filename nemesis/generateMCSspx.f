@@ -179,7 +179,7 @@ C      open previous raw retrieval file (copied to .pre)
 C     Open spectra file
       lspec=37
       CALL file(runname,runname,'spx')
-      write(6,1)runname
+      if(idiag.gt.0)write(6,1)runname
       open(lspec,file=runname,status='old')
       linfo=40
       CALL file(runname,runname,'info')
@@ -401,8 +401,8 @@ C     New compiler time
       call system_clock(time2)
       tot_time=(time2-time1)/rate
 
-      write(6,*)'Model run OK'
-      WRITE(6,244)tot_time
+      if(idiag.gt.0)write(6,*)'Model run OK'
+      if(idiag.gt.0)write(6,244)tot_time
 244   FORMAT(' Elapsed time (s) = ',F8.1)
 
 

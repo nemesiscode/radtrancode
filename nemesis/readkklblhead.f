@@ -27,7 +27,7 @@ C     ****************************************************************
 
 
       if(idiag.gt.0)print*,'Reading header information from : '
-      write(6,1)kname
+      if(idiag.gt.0)write(6,1)kname
 
       lun0 = 100
 

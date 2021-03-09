@@ -46,6 +46,8 @@ C (layers, bins, paths, etc.)
       REAL tnco,twave,frac,tico
       COMMON /hgphas/ xwave,xf,xg1,xg2,tnco,twave,frac,tico
       COMMON /imiescat/imie1
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       INCLUDE '../includes/ciacom.f'
       INCLUDE '../includes/gascom.f'
@@ -70,7 +72,8 @@ C
 C-----------------------------------------------------------------------
       jradf=-1
       jloggf=-1
-
+ 
+      idiag=1
 
 C     Read in gas information
       CALL RESERVEGAS

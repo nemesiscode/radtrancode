@@ -82,6 +82,8 @@ C T: K-table temperatures [Kelvin].
       INTEGER IOFF(MAXLAY,4),CT1,CT2
       REAL UT(MAXLAY),VT(MAXLAY),TDUDT(MAXLAY),FWHMK,DELVK
       REAL UT2(MAXLAY),TDUDT2(MAXLAY),DUDT2
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       LOGICAL KLOG,NTEST,ISNAN
 
@@ -182,8 +184,8 @@ C        eps = 0.99*delv
 
         n1 = 1+INT((vwave + eps - vmin)/delv)
         if(n1.lt.1.or.n1.gt.npoint)then
-         print*,'Wavelength/wavenumber is out of range'
-         print*,vwave,vmin,vmin+(npoint-1)*delv
+         if(idiag.gt.0)print*,'Wavelength/wavenumber is out of range'
+         if(idiag.gt.0)print*,vwave,vmin,vmin+(npoint-1)*delv
         endif
 C        vwavex = VMIN + (N1-1)*DELV
 C        XT = ABS(vwave - vwavex)
@@ -281,7 +283,7 @@ C       Now interpolate k-coefficients for conditions in each layer
           ENDIF
           NTEST=ISNAN(KOUT(ILAYER,IGAS))
           IF(NTEST)THEN
-             KOUT(ILAYER,IGAS)=1e-37  
+             KOUT(ILAYER,IGAS)=1e-37
              PRINT*,'Warning, NAN returned by get_klbl.f for gas',igas
              print*,'         VWAVE = ',VWAVE
              print*,'         LAYER,PRESS,TEMP = ',ILAYER,

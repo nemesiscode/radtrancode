@@ -64,6 +64,8 @@ C     Solar spectrum variables and flags
       character*100 solfile,solname
       logical solexist
       common/solardat/iread, iform, solradius, solwave, solrad,  solnpt
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
 C-----------------------------------------------------------------------
@@ -74,6 +76,7 @@ C-----------------------------------------------------------------------
       jradf=-1
       jloggf=-1
 
+      idiag=1
 
 C     Read in gas information
       CALL RESERVEGAS

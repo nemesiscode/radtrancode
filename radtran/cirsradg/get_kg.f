@@ -92,6 +92,8 @@ C T: K-table temperatures [Kelvin].
       INTEGER IOFF(MAXLAY,4),CT1,CT2
       REAL UT(MAXLAY),VT(MAXLAY),TDUDT(MAXLAY),FWHMK,DELVK
       REAL UT2(MAXLAY),TDUDT2(MAXLAY),DUDT2
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       LOGICAL COINC,KLOG,NTEST,ISNAN
 
@@ -368,7 +370,7 @@ C=======================================================================
                 DKDT(I) = DXDT
               ENDIF
               NTEST=ISNAN(K_G(I))
-              IF(NTEST)THEN
+              IF(NTEST.and.idiag.gt.0)THEN
                print*,'NAN in get_kg'
                print*,'Y1,Y2,Y3,Y4',Y1,Y2,Y3,Y4
                print*,'u,v,x',u,v,x
@@ -441,25 +443,29 @@ C	    write(*,*)'After rankk:',(k_g(i),i=1,ng)
           DO I=1,NG
             NTEST=ISNAN(K_G(I))
             IF(NTEST)THEN
-             KOUT(ILAYER,IGAS,I)=1e-37  
+             KOUT(ILAYER,IGAS,I)=1e-37 
+             if(idiag.gt.0)then
              PRINT*,'Warning, NAN returned by get_kg.f for gas',igas
              print*,'         IWAVE,VWAVE = ',IWAVE,VWAVE
              print*,'         LAYER,PRESS,TEMP = ',ILAYER,
      1        PRESS(ILAYER),TEMP(ILAYER)
              print*,'Setting to a very small number'
+             endif
             ELSE
              KOUT(ILAYER,IGAS,I)=K_G(I)
             ENDIF
 
             NTEST=ISNAN(DKDT(I))
             IF(NTEST)THEN
-             DKOUTDT(ILAYER,IGAS,I)=1e-37  
+             DKOUTDT(ILAYER,IGAS,I)=1e-37
+             if(idiag.gt.0)then  
              PRINT*,'Warning, Grad NAN returned by get_kg.f for gas',
      1 igas
              print*,'         IWAVE,VWAVE = ',IWAVE,VWAVE
              print*,'         LAYER,PRESS,TEMP = ',ILAYER,
      1        PRESS(ILAYER),TEMP(ILAYER)
              print*,'Setting to a very small number'
+             endif
             ELSE
              DKOUTDT(ILAYER,IGAS,I)=DKDT(I)
             ENDIF            

@@ -138,6 +138,9 @@ C     Need simple way of passing planetary radius to nemesis
       INCLUDE '../includes/planrad.f'
       common/lbltable/ilbl
 
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
 C     ************************* CODE ***********************
 
 C      PRINT*,'CIRSRTFG_WAVE - DEBUG'
@@ -158,14 +161,14 @@ C       print*,vconv(i)
 C      enddo    
 
 
-      PRINT*,'CIRSRTFG_WAVE - ILBL = ',ILBL
+      if(idiag.gt.0)print*,'CIRSRTFG_WAVE - ILBL = ',ILBL
       IF(ILBL.EQ.2)THEN
          call file(runname,sfile,'sha')
          open(13,file=sfile,status='old')
          READ(13,*)ISHAPE
          close(13)
 
-         print*,'ISHAPE = ',ISHAPE
+         if(idiag.gt.0)print*,'ISHAPE = ',ISHAPE
       ENDIF
 
 C     Copy required FWHM to common block variable
@@ -176,7 +179,9 @@ C     See if file is present forcing FWHM to vary with wavelength/wavenumber
       INQUIRE(FILE=FWHMFILE,EXIST=FWHMEXIST)
 C     If such a file exists then read in the data
       IF(FWHMEXIST)THEN
-         print*,'Reading FWHM information from : ',FWHMFILE
+         if(idiag.gt.0)then
+          print*,'Reading FWHM information from : ',FWHMFILE
+         endif
          OPEN(13,FILE=FWHMFILE,status='old')
           READ(13,*)NFWHM
           DO I=1,NFWHM
@@ -244,7 +249,7 @@ C ... and the xsc files likewise.
 	ENDIF
       ENDIF
 
-      PRINT*,'NPATH = ',NPATH
+      if(idiag.gt.0)print*,'NPATH = ',NPATH
 
 C=======================================================================
 C

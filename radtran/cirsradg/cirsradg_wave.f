@@ -319,6 +319,9 @@ C Common blocks ...
       COMMON /phasesto/ pplsto,pmisto
       COMMON /initial/ first
 
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
 
 C********************************* CODE ********************************
 

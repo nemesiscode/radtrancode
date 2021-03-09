@@ -12,9 +12,7 @@
       
       IF(ALAMDA.LT.0.)THEN
 
-C        print*,'x',x
         call mrqcof(nphase,theta,phase,x,alpha,beta,chisq)
-C        print*,'chisq',chisq
 
         OCHISQ=CHISQ
         ALAMDA=1000.0
@@ -51,9 +49,7 @@ C        if(xt(i).lt.0.01)xt(i)=0.01
        endif
       end do
 
-C      print*,'xt',xt
       call mrqcof(nphase,theta,phase,xt,covar,da,chisq)
-C      print*,'chisq',chisq
 
       IF(CHISQ.LE.OCHISQ)THEN
         ALAMDA=0.9*ALAMDA

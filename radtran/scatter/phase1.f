@@ -104,8 +104,6 @@ C **********************************************************************
 	PRINT*,' PHASE1.f :: Error invalid scattering option.'
 	PRINT*,' PHASE1.f :: Stopping program.'
 	STOP
-cc	print*,' PHASE1:  invalid scattering option'
-cc	call exit
 
 C **********************************************************************
 C ISCAT= 0 : Dipole
@@ -125,8 +123,6 @@ C ISCAT= 2 : Henyey-Greenstein
 	hg12 = 2.0d0-hg11
 	hg21 = 1.0d0-cons(3)*cons(3)
 	hg22 = 2.0d0-hg21
-C        print*,hg11,hg12,hg21,hg22,calpha
-C        print*,cons(1),cons(2),cons(3)
 	p = f1 * hg11 / dsqrt( hg12 - 2.0d0*cons(2)*calpha )**3 +
      1   f2 * hg21 / dsqrt( hg22 - 2.0d0*cons(3)*calpha )**3
 	go to 999
@@ -163,7 +159,6 @@ C This function is assumed properly normalized [by cons(1)], so:
 C **********************************************************************
 C ISCAT= 4 : External phase file
 50      if(vwave.ne.oldvwave)then 
-C         print*,'vwave = ',vwave
          call interp_phase(vwave,ncont)
          oldvwave=vwave
         end if
@@ -171,7 +166,6 @@ C         print*,'vwave = ',vwave
         do i=1,nphas
          pfunc(i)=phas(icont,3,nphas - i + 1)
          xmu(i)=cthet(nphas - i + 1)
-C         print*,i,xmu(i),pfunc(i)
         end do
 
     

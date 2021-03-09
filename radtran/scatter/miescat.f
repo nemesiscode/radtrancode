@@ -72,13 +72,13 @@ C-----------------------------------------------------------------------
       PARAMETER 	(MAXTH=100, MAXMODE=10)
 
       INTEGER	NPHAS, NTHETA, INR, J, N, M, I, K,  NMODE,  MO
-      INTEGER   ISCAT(NMODE)
+      INTEGER   ISCAT(NMODE),IDUMP
       REAL 	XLAM, DSIZE(3,NMODE), RS(3), REFINDX(2), PHAS(NPHAS), 
      1 		THETA(NTHETA), XSCAT, XEXT
 	REAL	R2, RE2,TMAG2, csratio
       DOUBLE PRECISION NQMAX(MAXMODE), RMAX(MAXMODE)
       DOUBLE PRECISION RFR, RFI, RR, ANR, DELR, R1, XX, AA, BB, 
-     1          ALPHA, GAMMA, CC,
+     1          ALPHA, GAMMA, CC,AREA,VOLUME,
      2		KSCAT, KEXT, ANORM, FUNC(4,2*MAXTH), VV, PHAS0(2*MAXTH), 
      3		CQ, X1, DX, QEXT, QSCAT, ELTRMX(4, MAXTH, 2), ANR1,
      4		THETD(MAXTH), PI,PI2,R2DOB, RE2DOB,TMAG2DOB
@@ -88,6 +88,7 @@ C-----------------------------------------------------------------------
 
       PI2 = 1.D0/DSQRT(2.D0*PI)
 
+      IDUMP=0
 
       
 C       PRINT*,'-------------------'
@@ -126,7 +127,6 @@ C	Size integration parameters.
 C
 C-----------------------------------------------------------------------
 
-C       print*,'Miescat RS = ',RS
        R1 = RS(1)
        DELR = RS(3)
        IF (RS(2).LT.RS(1)) THEN
@@ -138,8 +138,6 @@ C       print*,'Miescat RS = ',RS
 		CONT0 = .TRUE. 
        ENDIF
 
-C       print*,'Miescat : ',RS
-C       print*,'Miescat : ',INR
 C-----------------------------------------------------------------------
 C
 C	Compute the peaks of the size distribution.
@@ -181,6 +179,8 @@ C-----------------------------------------------------------------------
 		PHAS0(J) = 0.0
 	ENDDO
 	KSCAT = 0.0
+        AREA = 0.0
+        VOLUME = 0.0
 	KEXT = 0.0
 	ANORM = 0.0
 
@@ -197,7 +197,6 @@ C-----------------------------------------------------------------------
 
 		RR = R1 + (M-1)* DELR
 
-C		print*,M,INR,RR,XX
 C		Use homogeneous sphere scattering model unless otherwise specified
 		if(csratio.eq.-1.0)then
 			XX = 2.0*PI*RR/XLAM
@@ -308,19 +307,26 @@ C-----------------------------------------------------------------------
 		 KSCAT = KSCAT + PI * RR * RR * QSCAT * ANR * VV
 		 KEXT = KEXT + PI * RR * RR * QEXT  * ANR * VV
         	 ANORM = ANORM + ANR * VV
+                 AREA = AREA + PI * RR * RR * ANR * VV
+                 VOLUME = VOLUME + 4.0*PI*RR*RR*RR*ANR*VV/3.0
+                 IF(IDUMP.EQ.1)THEN
+                  print*,RR,ANR,PI*RR*RR,1.3333*PI*RR**3
+                 ENDIF
 		END IF
 	ENDDO
 
 C-----------------------------------------------------------------------
 C
 C	Normalise integrations. Cross sections are returned as cm2.
-C
+C         Volume returned as cm3
 C-----------------------------------------------------------------------
 
 10	CONTINUE
         IF(ANORM.GT.0.0)THEN
          XSCAT = SNGL(KSCAT/ANORM * 1.e-8)
  	 XEXT = SNGL(KEXT/ANORM * 1.e-8)
+         AREA = 1.0E-8*AREA/ANORM
+         VOLUME = 1.0E-12*VOLUME/ANORM
         ELSE
          XSCAT = 0.0
          XEXT = 0.0
@@ -329,6 +335,11 @@ C-----------------------------------------------------------------------
 	DO J = 1, NPHAS
 		PHAS(J) = XLAM * XLAM * sngl(PHAS0(J)/(PI*KSCAT))
 	ENDDO
+
+        IF(IDUMP.EQ.1)THEN
+         print*,'Volume (cm3) = ',VOLUME
+         print*,'area (cm2) = ',AREA
+        ENDIF
 
 	RETURN
 

@@ -110,6 +110,8 @@ C     Common blocks
       COMMON/PHMAT/ PPLPL, PPLMI
       COMMON/NEWPH/PPLN,PMIN,PPLR,PMIR
       COMMON /SCATDUMP/ IDUMP
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
 C--------------------------------------------------------------------------
@@ -140,8 +142,8 @@ C     Find correction for any quadrature errors
        xfac=xfac+sngl(mu1(i)*wt1(i))
       enddo
       xfac=0.5/xfac
-      print*,'xfac = ',xfac
-      print*,'Galb = ',galb
+      if(idiag.gt.0)print*,'xfac = ',xfac
+      if(idiag.gt.0)print*,'Galb = ',galb
 
 C     In case of Lambertian reflection, add extra dummy layer at bottom,
 C     whose transmission matrix = (1-A)*Unit-Matrix. This layer must be
@@ -149,7 +151,7 @@ C     omitted from computation by doubling
 
       IF (LOWBC.EQ.1) LTOT = LTOT+1
       IF (LTOT.GT.MAXSCATLAY) THEN
-       print*, 'ltot ', ltot, ' MAXSCATLAY ', MAXSCATLAY
+       if(idiag.gt.0)print*, 'ltot ', ltot, ' MAXSCATLAY ', MAXSCATLAY
        CALL ABEND(' SCLOUD11FLUX: TOO MANY LAYERS')
       ENDIF
       IF (NMU.GT.MAXMU) THEN
@@ -160,7 +162,7 @@ C     Reset the order of angles:
       DO I=1,NMU
         MU(I) = MU1(NMU+1-I)
         WTMU(I) = WT1(NMU+1-I)
-        print*,'MU',MU(I),WTMU(I)
+        if(idiag.gt.0)print*,'MU',MU(I),WTMU(I)
       ENDDO
 
       PI = 4.0D0*DATAN(1.0D0)
@@ -209,7 +211,6 @@ C       otherwise read in from hgphaseN.dat files
         NORM = 1
 
         DO 900 IC=0,NF
-C         print*,'Calculating matrix from scratch IC = ',IC
          CALL CALC_PMAT6(NF, IC, PPLPL, PPLMI, MU, WTMU,
      1    NMU, ISCAT, CONS8, NCONS, NORM, J1, NCONT, VWAVE, NPHI)
 
@@ -261,14 +262,13 @@ C	  HOMOGENEOUS LAYER L; INSERT INTO ARRAY X(I,J,L).
 C **********************************************************************    
 C
       IPOW0 = 16
-      print*,'LT1,LTOT',LT1,LTOT
+      if(idiag.gt.0)print*,'LT1,LTOT',LT1,LTOT
       DO 2000 L = 1,LT1
         if(idump.ne.0)print*,'L,IGDIST =',L,IGDIST
         TAUT = 1.0D0*TAU(L)
         BC = 1.0D0*BNU(L)
 C        OMEGA = 1.0D0*(1. - EPS(L))
         OMEGA = OMEGAS(L)
-C        print*,'BC',L,BC
         TAUSCAT = TAUT*OMEGA
         TAUR = TAURAY(L)
 
@@ -282,17 +282,17 @@ C       tauscat if IRAY>1, so we need to subtract it first here
         endif
 
         IF(TAUT.LT.0.0)THEN
-         PRINT*,'Error in scloud11flux TAUT < 0. Setting to zero'
-         PRINT*,'L,TAUT,BC,OMEGA'
-         PRINT*,L,TAUT,BC,OMEGA
+         if(idiag.gt.0)then
+          PRINT*,'Error in scloud11flux TAUT < 0. Setting to zero'
+          PRINT*,'L,TAUT,BC,OMEGA'
+          PRINT*,L,TAUT,BC,OMEGA
+         endif
          TAUT = 0.0
         END IF
 
         IF(OMEGA.GT.1.0)THEN
-C         print*,'Omega too big! Reducing to 1.0',OMEGA
          OMEGA = 1.D0
         ELSE IF(OMEGA.LT.0.0)THEN
-C         print*,'Omega too small! Setting to 0.0',OMEGA
          OMEGA = 0.D0
         ENDIF
 
@@ -455,7 +455,6 @@ C	    Fourier decomposition.
             ENDDO
           ENDIF
         ENDDO
-C        print*,'Layer refl (1,1,LTOT): ',RL(1,1,LTOT)
       ENDIF
 
 
@@ -479,26 +478,14 @@ C **********************************************************************
           TTOP(I,J,1) = TL(I,J,1)
         ENDDO
       ENDDO
-C      print*,'RT1 = ',RTOP(1,1,1)
       DO L = 1,LTOT-1
         if(idump.gt.0)print*,'Multiply ',L,' of ',LTOT-1
-C         print*,L,RTOP(1,1,L),RL(1,1,L+1)
         CALL ADDP( RL(1,1,L+1), TL(1,1,L+1), JL(1,1,L+1), ISCL(L+1),
      1   RTOP(1,1,L),TTOP(1,1,L), JTOP(1,1,L), RTOP(1,1,L+1),
      2   TTOP(1,1,L+1),JTOP(1,1,L+1), NMU, MAXMU)
 C         print*,L+1,RTOP(1,1,L+1)
       ENDDO
 
-C      print*,'l,rl(1,1,l),tl(1,1,l),jl(1,1,l)'
-C      do l=1,ltot
-C        print*,L,RL(1,1,L),TL(1,1,L),JL(1,1,L)
-C      enddo
-C      print*,'l,rtop(1,1,l),ttop(1,1,l),jtop(1,1,l)'
-C      do l=1,ltot
-C        print*,l,rtop(1,1,l),ttop(1,1,l),jtop(1,1,l)
-C       write(6,101)l,rtop(1,1,l),ttop(1,1,l),jtop(1,1,l)
-C      enddo
-C      print*,' '
 
 C ***********************************************************************
 C  CALCULATE UPWARD MATRICES FOR COMPOSITE OF L LAYERS FROM BASE OF CLOUD.
@@ -519,19 +506,10 @@ C ***********************************************************************
           TBASE(I,J,1) = TL(I,J,LTOT)
         ENDDO
       ENDDO
-C      print*,'Rbase,Tbase,Jbase',RBASE(1,1,1),TBASE(1,1,1),
-C     1 JBASE(1,1,1)
-C      print*,'R,T,J'
-C      do l=1,ltot
-C       print*,L,RL(1,1,L),TL(1,1,L),JL(1,1,L)
-C      enddo
 
       DO L = 1,LTOT-1
         if(idump.gt.0)print*,'Multiply ',L,' of ',LTOT-1
         K = LTOT-L
-C        print*,RBASE(1,1,L),RL(1,1,K)
-C        print*,TBASE(1,1,L),TL(1,1,K)
-C         print*,L,K,ISCL(K)
         CALL ADDP( RL(1,1,K), TL(1,1,K), JL(1,1,K), ISCL(K),
      1  RBASE(1,1,L), TBASE(1,1,L), JBASE(1,1,L), RBASE(1,1,L+1), 
      2  TBASE(1,1,L+1), JBASE(1,1,L+1), NMU, MAXMU)
@@ -542,15 +520,6 @@ C     2  TBASE(1,1,L+1), JBASE(1,1,L+1), NMU, MAXMU)
 C        print*,rbase(1,1,L+1),tbase(1,1,L+1)
       ENDDO
 
-C      print*,'l,rl(1,1,l),tl(1,1,l),jl(1,1,l)'
-C      do l=1,ltot
-C        print*,L,RL(1,1,L),TL(1,1,L),JL(1,1,L)
-C      enddo
-C      print*,'l,rbase(1,1,l),tbase(1,1,l),jbase(1,1,l)'
-C      do l=1,ltot
-C        print*,l,rbase(1,1,l),tbase(1,1,l),jbase(1,1,l)
-C       write(6,101)l,rbase(1,1,l),tbase(1,1,l),jbase(1,1,l)
-C      enddo
 101   format(i4,3(f12.8))
 
       IF(IC.NE.0)THEN
@@ -572,16 +541,15 @@ C      enddo
       ENDIF
 
       ISOL=1
-      print*,'SOLAR,ZMU0',SOLAR,ZMU0
+      if(idiag.gt.0)print*,'SOLAR,ZMU0',SOLAR,ZMU0
       DO J=1,NMU-1
-C       print*,J,MU(J),ZMU0
        IF(ZMU0.LE.MU(J).AND.ZMU0.GT.MU(J+1))ISOL = J
       END DO
       IF(ZMU0.LE.MU(NMU))ISOL=NMU-1 
       FSOL = SNGL((MU(ISOL)-ZMU0)/(MU(ISOL)-MU(ISOL+1)))
 
-      print*,'ISOL,FSOL=',ISOL,FSOL
-      stop
+      if(idiag.gt.0)print*,'ISOL,FSOL=',ISOL,FSOL
+C      stop
 
       if(idump.gt.0)then
        print*,'isol,fsol',isol,fsol
@@ -598,7 +566,7 @@ C       print*,J,MU(J),ZMU0
 
       DO IMU0=ISOL,ISOL+1
        U0PL(IMU0,1) = SOLAR1/(2.0D0*PI*WTMU(IMU0))
-       IF(IMU0.EQ.ISOL+1)THEN
+       IF(IMU0.EQ.ISOL+1.AND.IDIAG.GT.0)THEN
         print*,'IMU0,SOLAR1,WTMU(IMU0),U0PL',IMU0,SOLAR1,
      1 WTMU(IMU0),U0PL(IMU0,1)
        ENDIF
@@ -607,7 +575,6 @@ C      CALCULATING INTERIOR INTENSITIES FOR CLOUD.
 C         UPL(J,1,L) GOES DOWN OUT OF LAYER L.
 C          UMI(J,1,L) GOES UP OUT OF LAYER L.
 C ****************************************************
-C       print*,'l,k,umi,upl',ISOL,FSOL
 
        DO I=1,NMU
         UMI(I,1,1)=JBASE(I,1,1)
@@ -627,34 +594,22 @@ C       Calculate I(L)+
      1    RBASE(1,1,K), TBASE(1,1,K), JBASE(1,1,K), UPL(1,1,L),
      2    NMU, MAXMU)
 
-C        print*,L,K
-C        print*,rtop(1,1,l),ttop(1,1,l),jtop(1,1,l)
-C        print*,rbase(1,1,k),tbase(1,1,k),jbase(1,1,k)
-C        print*,umi(1,1,l),upl(1,1,l)
        ENDDO
-C       stop
  
 
 C *******************************************************
 C     CALCULATING EXTERIOR INTENSITIES UTPL AND U0MI
 C *******************************************************
-C       print*,'RBASE, U0PL'
-C       write(6,102)RBASE(1,1,LTOT),U0PL(1,1)
 102    format(5(e12.5))
-C       print*,IMU0,mu(imu0),wtmu(imu0),(u0pl(k,1),k=1,nmu)
 
 C      Basically upward radiation at top of atmosphere:
 C      U0MI = U0PL*RBASE(LTOT) + TBASE*UTMI(LTOT) + JBASE(LTOT)
  
        CALL MMUL(1.0D0,RBASE(1,1,LTOT),U0PL,ACOM,NMU,NMU,1,
      1   MAXMU,MAXMU,1)
-C       print*,'TBASE, UTMI'
-C       write(6,102)TBASE(1,1,LTOT),UTMI(1,1)
        CALL MMUL(1.0D0,TBASE(1,1,LTOT),UTMI,BCOM,NMU,NMU,1,
      1   MAXMU,MAXMU,1)
        CALL MADD(1.0D0,ACOM,BCOM,ACOM,NMU,1,MAXMU,1)
-C       print*,'Add'
-C       write(6,102)ACOM(1,1)
        CALL MADD(1.0D0,JBASE(1,1,LTOT),ACOM,U0MI,NMU,1,MAXMU,1)
 
 C      Basically downward radiation at bottom of atmosphere:
@@ -667,8 +622,6 @@ C      UTPL = U0PL*TTOP(NLAY) + RTOP(NLAY)*UTMI + JTOP(NLAY)
        CALL MADD(1.0D0,ACOM,BCOM,ACOM,NMU,1,MAXMU,1)
        CALL MADD(1.0D0,JTOP(1,1,LTOT),ACOM,UTPL(1,1,LT1),
      1  NMU,1,MAXMU,1)
-C       print*,'U0MI,UTPL : '
-C       write(6,102)U0MI(1,1,1),UTPL(1,1,LT1)
 
        DO 302 IMU = 1, NMU
 
@@ -711,16 +664,6 @@ C       write(6,102)U0MI(1,1,1),UTPL(1,1,LT1)
       END DO
 
 1000  CONTINUE
-
-C      print*,'Flux down',LTOT
-C      do i=1,LTOT
-C       print*,i,(uplf(j,i,1),j=1,nmu)
-c      enddo
-C      print*,'Flux up',LTOT
-C      do i=1,LTOT
-C       print*,i,(umif(j,i,1),j=1,nmu)
-C      enddo
-
 
 
       RETURN

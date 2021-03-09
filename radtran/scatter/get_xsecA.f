@@ -14,11 +14,13 @@ C     ***********************************************************************
       integer i,iunit
       real wave(max_wave),xsec(max_mode,max_wave,2)
       character*100 xscfil,buffer
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       iunit=19
 
       call file(xscfil,xscfil,'xsc')
-      print*,'Reading_xsec: X-section file : ',xscfil
+      if(idiag.gt.0)print*,'Reading_xsec: X-section file : ',xscfil
 
       open(iunit,file=xscfil,status='old')
 1     format(a)

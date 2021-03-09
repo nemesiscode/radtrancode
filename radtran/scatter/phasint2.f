@@ -56,8 +56,9 @@ C       PRINT*,'PHASINT2'
        CONST = 1.0
 
        IF (NPHI.LE.NF) THEN 
-        PRINT*,"WARNING: NPHI has been set less than NF, which will"
-        PRINT*,"result in an unphysical oscillitory solution."
+        PRINT*,'WARNING: PHASINT2.F'
+        PRINT*,'NPHI has been set less than NF, which will'
+        PRINT*,'result in an unphysical oscillitory solution.'
         STOP
        ENDIF
 

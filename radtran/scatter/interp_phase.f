@@ -23,6 +23,8 @@ C     ********************************************************************
         parameter (pi=3.1415927)
        	character*512 	buffer
         character*100   ipfile
+        integer idiag,iquiet
+        common/diagnostic/idiag,iquiet
 
 	common/phase/thet,cthet,phas,head,irec1,nphas,maxrec
 	common/interp_phase_initial/first
@@ -30,7 +32,7 @@ C     ********************************************************************
 
  	if (first.ne.1) then
 		first = 1
-		write (*,*) ' Initialising Interp_phase'
+		if(idiag.gt.0)write (*,*) ' Initialising Interp_phase'
       		do i = 1, ncont
 		  iunit = 10+i
                   ipfile='PHASEN.DAT'
@@ -43,10 +45,10 @@ C     ********************************************************************
          	  if(buffer(2:2).eq.'w')then
             		read(buffer(12:512),*)
      1				v0,v1,dv,npoint,nphas
-     			print*,v0,v1,dv,npoint,nphas
+     			if(idiag.gt.0)print*,v0,v1,dv,npoint,nphas
 		  else
             		read(buffer,*)v0,v1,dv,npoint,nphas
-            		print*,v0,v1,dv,npoint,nphas
+            		if(idiag.gt.0)print*,v0,v1,dv,npoint,nphas
 		  endif
 
 C		  irec = irec1(I)
@@ -60,10 +62,6 @@ C		  irec = irec1(I)
 		  do J = 1, npoint
 			irec = irec + 1
 	       		read(iunit,1000,rec=irec) buffer
-C                        print*,buffer
-C			read(buffer,1010) (inhead(I,J,K),
-C     1				K = 1, 3), (inphas(I,J,L),
-C     2				L = 1, nphas)
 
 			read(buffer,*) (inhead(I,J,K), 
      1				K = 1, 3), (inphas(I,J,L),

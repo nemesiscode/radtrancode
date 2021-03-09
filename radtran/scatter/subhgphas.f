@@ -6,7 +6,6 @@
        real xt(3)
        parameter (pi=3.1415927)
 
-C      print*,x
        f = x(1)
        g1 = x(2)
        g2 = x(3)
@@ -35,7 +34,6 @@ C      print*,x
         f = xt(1)
         g1 = xt(2)
         g2 = xt(3)
-C        print*,xt,dx
         do 15 i=1,nphase
          tphase(i) = henyey(alpha(i),f,g1,g2)
 15      continue

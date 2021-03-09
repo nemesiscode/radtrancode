@@ -12,6 +12,8 @@ C ***********************************************************************
      2 PPLPL(MAXMU,MAXMU), PPLMI(MAXMU,MAXMU), CONS8(MAXSCATPAR)
       REAL*8 PTPL(MAXCON,MAXF,MAXMU,MAXMU),PTMI(MAXCON,MAXF,MAXMU,MAXMU)
       REAL*4 VWAVE
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C     Common block PSHARE to store all the fourier components
       COMMON/PSHARE/ PTPL,PTMI
@@ -56,7 +58,7 @@ C       end do
       IF (NORM.EQ.1) THEN
 	CALL HANSEN( IC, PPLPL, PPLMI, MAXMU, WTMU, NMU)
       ELSEIF (NORM.EQ.2) THEN
-	PRINT*,'CALC_PMAT6. NORM=2 Option disabled'
+	if(idiag.gt.0)PRINT*,'CALC_PMAT6. NORM=2 Option disabled'
       ENDIF
 
 

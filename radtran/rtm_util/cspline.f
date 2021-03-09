@@ -32,6 +32,8 @@ C       bins, paths, etc.)
 	REAL		P,QN,UN,SIG
 
 	REAL		X(N),Y(N),Y2(N),U(MAXBIN)
+        integer idiag,iquiet
+        common/diagnostic/idiag,iquiet
 
 C-----------------------------------------------------------------------
 
@@ -65,31 +67,23 @@ C	decomposed factors.
 C
 C-----------------------------------------------------------------------
 
-C        print*,'xx',N,YP1,YPN,U(1),Y2(1)
-C        do i=1,N
-C         print*,'xx',I,X(I),Y(I)
-C        enddo
 
 	DO 11 I=2,N-1
 		SIG=(X(I)-X(I-1))/(X(I+1)-X(I-1))
 		P=SIG*Y2(I-1)+2.
 		Y2(I)=(SIG-1.)/P
 
-C                print*,'xx',SIG,P,Y2(I)
 		IF(X(I-1).EQ.X(I))THEN
 			U(I)= U(I-1)
-C                        print*,'xx - A',I,U(I)
 			GOTO 11
 		ELSEIF(X(I).EQ.X(I+1))THEN
 			U(I)= U(I-1)
-C                        print*,'xx - B',I,U(I)
 			GOTO 11
 		ENDIF
 
 		U(I)=(6.*((Y(I+1)-Y(I))/(X(I+1)-X(I))-(Y(I)-Y(I-1))
      1		/(X(I)-X(I-1)))/(X(I+1)-X(I-1))-SIG*U(I-1))/P
 
-C   		print*,'xx - C',I,U(I)
 11    CONTINUE
 
 C-----------------------------------------------------------------------
@@ -109,7 +103,6 @@ C-----------------------------------------------------------------------
 	ENDIF
 	Y2(N)=(UN-QN*U(N-1))/(QN*Y2(N-1)+1.)
 
-C        print*,'xx',QN,UN,Y2(N)
 C-----------------------------------------------------------------------
 C
 C	The following is the backsubstituition loop of the tridiagonal
@@ -119,13 +112,11 @@ C-----------------------------------------------------------------------
 
 	DO 12 K=N-1,1,-1
 		Y2(K)=Y2(K)*Y2(K+1)+U(K)
-C			print*,'xx',K,Y2(k)
 12	CONTINUE
 
         do i=1,n
-C           print*,'xx',i,y2(i)
-         if(isnan(y2(i)))then
-            print*,'Error in cspline.f - NAN returned.',I
+         if(isnan(y2(i)).and.idiag.gt.0)then
+             print*,'Error in cspline.f - NAN returned.',I
          endif
         enddo
 C-----------------------------------------------------------------------

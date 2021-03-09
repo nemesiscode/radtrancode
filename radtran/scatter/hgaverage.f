@@ -33,8 +33,9 @@ C     ***************************************************************
       real tf(maxcon),tg1(maxcon),tg2(maxcon)
       double precision f,g1,g2,eps(maxscatlay),omega
       real frac,sfrac,taur,tauscat,tau1
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
-C      print*,'hgaverage: ',nlays,ncont
       do 10 j=1,ncont
        call read_hg(vwave,j,ncont,f,g1,g2)
        tf(j)=sngl(f)
@@ -46,14 +47,12 @@ C      print*,'hgaverage: ',nlays,ncont
        f1(j)=0.0
        g11(j)=0.0
        g21(j)=0.0
-C       print*,taus(j),tauray(j),eps(j),(lfrac(k,j),k=1,ncont)
 20    continue
 
       do 100 ilay = 1,nlays
        omega = 1.0 - eps(ilay)
        tauscat = sngl(taus(ilay)*omega)
        taur = tauray(ilay)
-C       print*,ilay,omega,taus(ilay),tauscat,taur
 C      Calling codes now already include Rayleigh optical depth in
 C      tauscat if IRAY>1, so we need to subtract it first here
        tauscat=tauscat-taur
@@ -83,7 +82,6 @@ C      tauscat if IRAY>1, so we need to subtract it first here
        endif
 
        sfrac=sfrac+frac
-C       print*,'frac,sfrac = ',frac,sfrac
 
        if(frac.gt.0)then
         f1(ilay)=f1(ilay)+frac*0.5
@@ -91,7 +89,7 @@ C       print*,'frac,sfrac = ',frac,sfrac
         g21(ilay)=g21(ilay)+frac*(-0.3)
        endif
 
-       if(abs(sfrac-1.0).gt.0.001) then
+       if(abs(sfrac-1.0).gt.0.001.and.idiag.gt.0) then
         print*,'Error in hgaverage sfrac <> 1.0',sfrac
         print*,'Layer = ',ilay
        endif

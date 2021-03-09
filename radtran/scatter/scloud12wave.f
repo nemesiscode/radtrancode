@@ -125,6 +125,8 @@ C     Common blocks
       COMMON/PHMAT/ PPLPL, PPLMI
       COMMON/NEWPH/PPLN,PMIN,PPLR,PMIR
       COMMON /SCATDUMP/ IDUMP
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
 C--------------------------------------------------------------------------
@@ -162,7 +164,6 @@ C     omitted from computation by doubling
       IF (NMU.GT.MAXMU) THEN
         CALL ABEND(' SCLOUD12WAVE: TOO MANY ANGLE POINTS')
       ENDIF
-C      print*,NLAY,LTOT
 
 
 C     Reset the order of angles:
@@ -208,7 +209,6 @@ C     Precalculate phase function arrays if new wavelength
         NPHI = 100
 
         DO 900 IC=0,NF
-C         print*,'Calculating matrix from scratch IC = ',IC
          CALL CALC_PMAT6(NF, IC, PPLPL, PPLMI, MU, WTMU,
      1    NMU, ISCAT, CONS8, NCONS, NORM, J1, NCONT, VWAVE, NPHI)
 
@@ -292,13 +292,6 @@ C       For particles which are part of broken cloud, icloud = 1.
           I1 = I1+1
          ENDIF
 2005    CONTINUE
-C        IF(I1.EQ.0)THEN
-C         PRINT*,'Warning in scloud12wave. You have defined there to be'
-C         print*,'a broken cloud, but have not specified what'
-C         print*,'particle type(s) it is composed of.'
-C         print*,'Level = ',L
-C        stop
-C        ENDIF
 	BC = 1.0D0*BNU(L)
         XF=FCOVER(L)
         if(idump.ne.0)print*,'L, FCOVER',L,XF
@@ -313,8 +306,6 @@ C        ENDIF
         OMEGA=TAUSCAT/TAUT
         OMEGAF=TAUSCATF/TAUTF
 
-C        print*,L,TAUT,OMEGA,BC
-C        print*,L,TAUTF,OMEGAF,BC
 
 
         if(idump.ne.0)then
@@ -323,17 +314,17 @@ C        print*,L,TAUTF,OMEGAF,BC
          print*,TAUTF,TAUSCATF
         endif
         IF(OMEGA.GT.1.0)THEN
-         print*,'Omega too big! Reducing to 1.0',OMEGA
+         if(idiag.gt.0)print*,'Omega too big! Reducing to 1.0',OMEGA
          OMEGA = 1.D0
         ELSE IF(OMEGA.LT.0.0)THEN
-         print*,'Omega too small! Setting to 0.0',OMEGA
+         if(idiag.gt.0)print*,'Omega too small! Setting to 0.0',OMEGA
          OMEGA = 0.D0
         ENDIF
         IF(OMEGAF.GT.1.0)THEN
-         print*,'OmegaF too big! Reducing to 1.0',OMEGAF
+         if(idiag.gt.0)print*,'OmegaF too big! Reducing to 1.0',OMEGAF
          OMEGAF = 1.D0
         ELSE IF(OMEGAF.LT.0.0)THEN
-         print*,'OmegaF too small! Setting to 0.0',OMEGAF
+         if(idiag.gt.0)print*,'OmegaF too small! Setting to 0.0',OMEGAF
          OMEGAF = 0.D0
         ENDIF
 
@@ -652,11 +643,11 @@ C ***********************************************************************
       CALL MADD(1.0D0,JBASE(1,1,LTOT),ACOM,UMI,NMU,1,MAXMU,1)
        
 
-      IF(IGDIST.EQ.1.AND.VWAVE.EQ.200.0)THEN
-       DO IMU=1,NMU
-        print*,IMU,MU(IMU),SNGL(UMI(IMU,1,1))
-       ENDDO
-      ENDIF
+C      IF(IGDIST.EQ.1.AND.VWAVE.EQ.200.0)THEN
+C       DO IMU=1,NMU
+C        print*,IMU,MU(IMU),SNGL(UMI(IMU,1,1))
+C       ENDDO
+C      ENDIF
 
        DO IMU = IEMM,IEMM+1
         ICO=ICO+1
@@ -686,7 +677,6 @@ C ***********************************************************************
       CONV = ABS(100*DRAD/RAD)
 
       IF(CONV.LT.DEFCONV.AND.CONV1.LT.DEFCONV)THEN
-C       PRINT*,'Converged after ',IC,' fourier components'
        GOTO 2001
       ENDIF
 

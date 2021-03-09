@@ -24,6 +24,8 @@ C***********************************************************************
       CHARACTER*128 tname,arcfile
       CHARACTER aname*(*)
       LOGICAL skip,fexist
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       skip = .TRUE.
 
@@ -40,20 +42,22 @@ c  ** if arcfile exists then get tname from that **
          close(67)
             
          call remsp(tname)
-         print*,'datarchive.f: override raddata directory to:'
-         write(6,1)tname
-
+         if(idiag.gt.0)then
+          print*,'datarchive.f: override raddata directory to:'
+          write(6,1)tname
+         endif
       else
 
 c      tname = '/Users/patirwin/radtrancode/trunk/raddata/'
-      tname ='/data/nemesis/hpm5/gitlab/radtrancode/raddata/'
+c      tname ='/data/nemesis/nemesis_git/radtrancode/raddata/'
 c      tname ='/Users/glnat/CIRS/Radtran/radtrancode/raddata/'
 c       tname ='/Users/irwin/gitradtran/radtrancode/raddata/'
 
+       tname ='/network/aopp/oxpln98/plan/irwin/gitradtran/
+     &radtrancode/raddata/'
+
       endif
       
-c      print*,'tname=',tname
-
       j = 1
       DO 10 i=1,L
         IF(skip)THEN

@@ -470,11 +470,6 @@ C-----------------------------------------------------------------------
      6		66667.0,	1.522,		5.897e-01,
      7		71629.0,	1.560,		5.504e-01/
 
-C        do i=1,n
-C               print*,(table(i,j),j=1,3)
-C        enddo
-
-C        print*,(table(n,j),j=1,3)
 
 	if ((nu.lt.table(1,1)).or.(nu.gt.table(n,1))) then
 		write (*,*) ' Wavenumber range exceeded in NH3 lookup'
@@ -953,7 +948,7 @@ C-----------------------------------------------------------------------
 
 	implicit none
 	integer		n
-	parameter	(n=29)
+	parameter	(n=30)
 	integer		I, J, k, m
 	real		lambda, ncr, nci, nu, table(n,3), tmp, frac
 
@@ -988,8 +983,8 @@ C-----------------------------------------------------------------------
      5	7483.0, 1.312, 	5.023e-5,	
      6	8587.0, 1.313, 	4.577e-5,	
      7	8784.0, 1.313, 	1.900e-5,	
-     8 10000.0, 1.313, 	0.000000/
-
+     8 10000.0, 1.313, 	0.000000,
+     9 50000.0, 1.313,  0.000000/
 
 	if ((nu.lt.table(1,1)).or.(nu.gt.table(n,1))) then
 		write (*,*) ' Wavenumber range exceeded in CH4 lookup'
@@ -1029,7 +1024,7 @@ C-----------------------------------------------------------------------
 
 	implicit none
 	integer		n
-	parameter	(n=226)
+	parameter	(n=227)
 	integer		I, J, k, m
 	real		lambda, ncr, nci, nu, table(n,7), tmp, frac
         real		xr(3),xi(3),xp(3),x1,xconc
@@ -1602,12 +1597,12 @@ C       *************************************************************
 
          open(78,file=opfile,status='old')
          read(78,*)nspec
-	 print*, nspec
+C	 print*, nspec
 
          if(nspec.lt.n)then
 
             read(78,*)idspec
-	    print*, idspec
+C	    print*, idspec
 
             do 21 i=1,nspec
                read(78,*)(table(i,j),j=1,3)
@@ -1618,12 +1613,12 @@ C       *************************************************************
             stop
          endif
          
-         print*,'file read OK'
+C         print*,'file read OK'
          ilist=-999
         endif
 
 	
-	print*, table(1,1), table(nspec,1), table (3,3)
+C	print*, table(1,1), table(nspec,1), table (3,3)
 		
 C -----------------------------------------------------------------------
 C	Little loop that checks to see if your data is
@@ -1658,21 +1653,21 @@ C ------------------------------------------------------------------------
 C 	Here it actually calculates the ref. index...
 C -------------------------------------------------------------------------
 
-	print*, table (1,1), table (2,2),nu
-	print*, 'I am before frac'
+C	print*, table (1,1), table (2,2),nu
+C	print*, 'I am before frac'
 
 
         frac = (nu - table(k,1))/(table(k+1,1)-table(k,1))
 
 		
-	print*, 'I am after frac'
+C	print*, 'I am after frac'
 
         ncr = table(k,2) + frac*(table(k+1,2)-table(k,2))
         nci = table(k,3) + frac*(table(k+1,3)-table(k,3))
 
 		
-	print*, 'I am after ncr and nci'
-	print*, ncr,nci
+C	print*, 'I am after ncr and nci'
+C	print*, ncr,nci
 
 	return
 

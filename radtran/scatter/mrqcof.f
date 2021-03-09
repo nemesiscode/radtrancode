@@ -16,12 +16,8 @@
 
       call subhgphas(nphase,theta,x,cphase,kk)
 
-C      print*,nphase
-C      print*,theta
-C      print*,x
       DO 15 I=1,NPHASE
         DY=PHASE(I)-CPHASE(I)
-C        print*,phase(i),cphase(i),kk(i,1),kk(i,2),kk(i,3)
         DO 14 J=1,MX
           WT=KK(I,J)
           DO 13 K=1,J
@@ -37,12 +33,6 @@ C        print*,phase(i),cphase(i),kk(i,1),kk(i,2),kk(i,3)
 16      CONTINUE
 17    CONTINUE
 
-C      print*,'alpha'
-C      print*,(alpha(1,i),i=1,3)
-C      print*,(alpha(2,i),i=1,3)
-C      print*,(alpha(3,i),i=1,3)
-C      print*,'beta'
-C      print*,beta
       
       RETURN
       END

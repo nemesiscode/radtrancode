@@ -37,6 +37,8 @@ C **********************************************************************
       COMMON/AREA2/  CC(MAXMU,MAXMU), MMINV, MU, PI
       COMMON/HOMOG/ TAUT, BC, OMEGA, IPOW0
       COMMON/PHMAT/ PPLPL, PPLMI
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 C
       IF (JDIM.NE.MAXMU) CALL ABEND(' DOUBLE: DIMENSION ERROR')
 
@@ -47,7 +49,7 @@ C
        sum=sum+cc(i,i)
       end do
       dsum = abs(sum - 1.0)
-      if(dsum.gt.0.02)then
+      if(dsum.gt.0.02.and.idiag.gt.0)then
        print*,'Double1: Warning - Sum of weights <> 1.0'
        print*,sum
       endif
@@ -58,10 +60,9 @@ C
          SUM= 0
          DO I=1,NMU
            SUM=SUM+(PPLPL(I,J)+PPLMI(I,J))*CC(I,I)
-C           print*,cc(i,i),pplpl(i,j),pplmi(i,j)
          END DO
          DSUM = ABS(SUM*2.0*PI - 1.0)
-         IF(DSUM.GT.0.02)THEN
+         IF(DSUM.GT.0.02.and.idiag.gt.0)THEN
           PRINT*,'Double1: Warning - Sum of phase function <> 1'
 	  PRINT*,'IC,L  = ',IC,L
           PRINT*,'J,SUM = ',J,SUM*2.0*PI

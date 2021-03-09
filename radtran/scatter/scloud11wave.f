@@ -109,6 +109,8 @@ C     Common blocks
       COMMON/PHMAT/ PPLPL, PPLMI
       COMMON/NEWPH/PPLN,PMIN,PPLR,PMIR
       COMMON /SCATDUMP/ IDUMP
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
 C--------------------------------------------------------------------------
@@ -155,7 +157,7 @@ C     omitted from computation by doubling
 
       IF (LOWBC.EQ.1) LTOT = LTOT+1
       IF (LTOT.GT.MAXSCATLAY) THEN
-        print*, 'ltot ', ltot,' MAXSCATLAY ', MAXSCATLAY
+        if(idiag.gt.0)print*, 'ltot ', ltot,' MAXSCATLAY ', MAXSCATLAY
         CALL ABEND(' SCLOUD11WAVE: TOO MANY LAYERS')
       ENDIF
       IF (NMU.GT.MAXMU) THEN
@@ -280,11 +282,11 @@ C     PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
       
 C     ******* Define convergence (max % change in last two iterations
 C     Set very small now to make sure we never apply this.
-C      DEFCONV=1e-20
+      DEFCONV=1e-20
 
 C     Set convergence to be a little less draconian: 0.0001%
 C     Should be fine for back-scattering conditions.
-      DEFCONV=0.0001
+C      DEFCONV=0.0001
 
 C     Flag for printing out convergence information
       checkconv=.false.
@@ -326,7 +328,6 @@ C        OMEGA = 1.0D0*(1. - EPS(L))
          print*,TAUSCAT,TAUR,TAURAY(L)
         endif
 
-C        print*,'scloud',L,tauscat,taur,tauscat-taur
 C       Calling codes now already include Rayleigh optical depth in 
 C       tauscat if IRAY>0, so we need to subtract it first here
         TAUSCAT = TAUSCAT-TAUR
@@ -344,17 +345,17 @@ C       Add in an error trap to counter single-double subtraction overflows
         endif
 
         IF(TAUT.LT.0.0)THEN
-         PRINT*,'Error in scloud11wave TAUT < 0. Setting to zero'
-         PRINT*,'L,TAUT,BC,OMEGA'
-         PRINT*,L,TAUT,BC,OMEGA
+         IF(IDIAG.GT.0)THEN
+          PRINT*,'Error in scloud11wave TAUT < 0. Setting to zero'
+          PRINT*,'L,TAUT,BC,OMEGA'
+          PRINT*,L,TAUT,BC,OMEGA
+         ENDIF
          TAUT = 0.0
         END IF
 
         IF(OMEGA.GT.1.0)THEN
-C         print*,'Omega too big! Reducing to 1.0',OMEGA
          OMEGA = 1.D0
         ELSE IF(OMEGA.LT.0.0)THEN
-C         print*,'Omega too small! Setting to 0.0',OMEGA
          OMEGA = 0.D0
         ENDIF
 
@@ -469,7 +470,7 @@ C         TAUT = TAUT + TAUR
 
          STEST=ABS(SFRAC-1.D0)
 	 STEST1 = ABS(SFRAC-0.D0)
-         IF(STEST.GT.0.02D0.AND.STEST1.GT.0.02D0)THEN
+         IF(STEST.GT.0.02D0.AND.STEST1.GT.0.02D0.AND.IDIAG.GT.0)THEN
           PRINT*,'Scloud11wave. WARNING.  SUM(FRAC) must = 0 OR 1.'
           print*,sfrac
          END IF
@@ -601,14 +602,12 @@ C ***********************************************************************
        IF(ZMU0.LE.MU(J).AND.ZMU0.GT.MU(J+1))ISOL = J
       END DO
       IF(ZMU0.LE.MU(NMU))ISOL=NMU-1 
-C      print*,'ZMU0, ISOL = ',ZMU0,ISOL 
       
       IEMM=1
       DO J=1,NMU-1
        IF(ZMU.LE.MU(J).AND.ZMU.GT.MU(J+1))IEMM = J
       END DO
       IF(ZMU.LE.MU(NMU))IEMM=NMU-1
-C      print*,'ZMU, IEMM',ZMU, IEMM
 
       FSOL = SNGL((MU(ISOL)-ZMU0)/(MU(ISOL)-MU(ISOL+1)))
       FEMM = SNGL((MU(IEMM)-ZMU)/(MU(IEMM)-MU(IEMM+1)))
@@ -663,14 +662,14 @@ C      print*,'ZMU, IEMM',ZMU, IEMM
 
       RAD=RAD+DRAD
       CONV = ABS(100*DRAD/RAD)
-      if(igdist.eq.1.and.checkconv)then
+      if(igdist.eq.1.and.checkconv.and.idiag.gt.0)then
        print*,'Conv: IMU0,IMU,NF,IC,RAD,DRAD,100*DRAD/RAD',
      1  INT((1-FSOL)*ISOL+FSOL*(ISOL+1)+0.5),
      2  INT((1-FEMM)*IEMM+FEMM*(IEMM+1)+0.5),NF,IC,RAD,DRAD,
      3  100*DRAD/RAD
       endif
 
-      IF(CONV.LT.DEFCONV)THEN
+      IF(CONV.LT.DEFCONV.AND.IDIAG.GT.0)THEN
        PRINT*,'scloud11wave: Converged after ',IC,
      1  ' fourier components'
        GOTO 2001

@@ -61,25 +61,31 @@ C       by read_hg.f
         real xwave(mphas),xf(mcon,mphas),xg1(mcon,mphas)
         real xg2(mcon,mphas),tnco,twave,frac,tico
         common /hgphas/xwave,xf,xg1,xg2,tnco,twave,frac,tico
+        integer idiag,iquiet
+        common/diagnostic/idiag,iquiet
 
 
 	pi = 3.141592654
 	wavetype(1) = 'wavelength'
 	wavetype(2) = 'wavenumber'
 
-        print*,'modmakephase'
-        print*,'iwave,imode,inorm,iscat,lambda0',iwave,imode,
+        if(idiag.gt.0)then
+         print*,'modmakephase'
+         print*,'iwave,imode,inorm,iscat,lambda0',iwave,imode,
      1  inorm,iscat,lambda0
-        print*,'(parm(i),i=1,3)',(parm(i),i=1,3)
-        print*,'(rs(i),i=1,3)',(rs(i),i=1,3)
+         print*,'(parm(i),i=1,3)',(parm(i),i=1,3)
+         print*,'(rs(i),i=1,3)',(rs(i),i=1,3)
+        endif
 
         call get_xsecA(runname,nmode,nwave,wave,xsec)
 
-        print*,'Refindex'
-        print*,'nwave = ',nwave
-        do i=1,nwave
-         print*,wave(i),srefind(i,1),srefind(i,2)
-        enddo
+        if(idiag.gt.0)then
+         print*,'Refindex'
+         print*,'nwave = ',nwave
+         do i=1,nwave
+          print*,wave(i),srefind(i,1),srefind(i,2)
+         enddo
+        endif
 
 	call file (runname,runname,'xsc')
         open (12, file=runname, status='unknown')
@@ -106,8 +112,6 @@ C
 C-----------------------------------------------------------------------
 
  	ilist=0
-
-C                print*,iscat,parm,rs
 
 	outfile = 'PHASEN.DAT'
 	outfile(6:6) = char(imode+48)
@@ -162,7 +166,6 @@ C-----------------------------------------------------------------------
 
 	do J = 1, nwave
 		w = wave(J)
-C                       print*,i,w
 		if (iwave.eq.1) then
 			lambda = w
 		else
@@ -201,6 +204,7 @@ C-----------------------------------------------------------------------
          		end do
 		endif
 		if ((iscat.eq.5).or.(iscat.eq.6)) then
+                       if(idiag.gt.0)then
 			if (iwave.eq.1) then
 				write (*,* ) 
      1					' Wavelength is: ', w
@@ -211,6 +215,7 @@ C-----------------------------------------------------------------------
   			write (*,'('' Give extinction'',
      1  '' cross-section (cm2) and single scattering albedo: '',$)')
 				read (*,*) ext, omega
+                       endif
 		endif
 
 C-----------------------------------------------------------------------
@@ -281,13 +286,11 @@ C-----------------------------------------------------------------------
                    sum=sum+0.5*(phase(k)+phase(k+1))*du
               end do
               sum=sum*2*pi
-C             print*,'modmakephase: 2*pi*Int(pdu) = ',sum
               dsum = abs(sum - 1.0)
-              if(dsum.gt.0.05)then
-                     print*,'modmakephase: WARNING, > 5% off unity'       
+              if(dsum.gt.0.05.and.idiag.gt.0)then
+                     print*,'modmakephase: WARNING, > 5% off unity'
               end if
               if(inorm.eq.1)then
-C                   print*,'Renormalising : '
                      do k=1,nphase
                         phase(k)=phase(k)*1.0/sum
                         phase1(k)=phase1(k)*1.0/sum
@@ -304,11 +307,12 @@ C                   print*,'Renormalising : '
               write(13,1000,rec=irec)buffer
 
 	      goto 667
- 666	      print *, 'WARNING: error occured during write',
+              if(idiag.gt.0)then
+ 666	       print*, 'WARNING: error occured during write',
      &                   ' to buffer. Probably the forward'
-	      print *, 'scattering amplitude exceeded the',
+	       print*, 'scattering amplitude exceeded the',
      &                  ' FORMAT limits due to large particle size.'
-
+              endif
  667	      irec=irec+1
 
 C	      Subfithgm is expecting phase functions normalised

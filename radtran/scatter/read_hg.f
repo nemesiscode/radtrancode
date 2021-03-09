@@ -8,6 +8,8 @@
       double precision f,g1,g2
       integer iunit,ico,i,ncont,icont,nco,j
       character*100 ipfile
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       common /hgphas/xwave,xf,xg1,xg2,tnco,twave,frac,tico
 
@@ -23,7 +25,7 @@
          do 50 i=1,ncont
           ipfile='hgphase*.dat'
           ipfile(8:8)=char(i+48)
-          print*,'Reading : ',ipfile
+          if(idiag.gt.0)print*,'Reading : ',ipfile
           ico = 0
           open(iunit,file=ipfile,status='old')
 10        read(iunit,*,end=99)xw,x,y,z

@@ -105,6 +105,8 @@ C     Common blocks
       COMMON/PHMAT/ PPLPL, PPLMI
       COMMON/PHASESTO/PPLSTO,PMISTO
       COMMON /SCATDUMP/ IDUMP
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
 C--------------------------------------------------------------------------
@@ -173,7 +175,6 @@ C ********************************
 	ENDDO
       ENDDO
 
-C      print*,'SCLOUD8: VWAVE = ',VWAVE
 
       DO 1000 IC=0,NF
 
@@ -190,7 +191,6 @@ C					  at a given wavelength
         NORM=LNORM(J1)
         ISCAT=LISCAT(J1)
 
-C        PRINT*,IC,ISCAT,NORM,NCONS
 
         DO KL=1,NCONS
           CONS8(KL)=LCONS(J1,KL)
@@ -200,7 +200,6 @@ C       type and each illumination/viewing zenith angles and for either
 C	light going through layer (PLPL) or being reflected from it (PLMI)
         CALL CALC_PMAT6(NF, IC, PPLPL, PPLMI, MU, WTMU, 
      1    NMU, ISCAT, CONS8, NCONS, NORM, J1, NCONT, VWAVE, NPHI)
-C	print*,'Calc_pmat6 OK'
 C       Transfer matrices to those for wach scattering particle 
         DO IP = 1,NMU
          DO JP = 1,NMU
@@ -228,9 +227,11 @@ C
 	OMEGA = 1.0D0*(1. - EPS(L))
 
         IF(TAUT.LT.0.0)THEN
-         PRINT*,'Error in scloud8. TAUT < 0. Setting to zero'
-         PRINT*,'L,TAUT,BC,OMEGA'
-         PRINT*,L,TAUT,BC,OMEGA
+         IF(IDIAG.GT.0)THEN
+          PRINT*,'Error in scloud8. TAUT < 0. Setting to zero'
+          PRINT*,'L,TAUT,BC,OMEGA'
+          PRINT*,L,TAUT,BC,OMEGA
+         ENDIF
          TAUT = 0.0
 C         STOP
         END IF
@@ -386,7 +387,6 @@ C ***********************************************************************
       ZMU0 = DCOS(SOL_ANG*PI/180.0)
       ZMU = DCOS(EMISS_ANG*PI/180.0)
 
-C      print*,'ZMU0,ZMU = ',ZMU0,ZMU
       ISOL=-1
       IEMM=-1
       DO J=1,NMU-1
@@ -419,8 +419,6 @@ C      print*,'ZMU0,ZMU = ',ZMU0,ZMU
        FEMM = SNGL((MU(IEMM)-ZMU)/(MU(IEMM)-MU(IEMM+1)))
       ENDIF
 
-C      print*,ISOL,FSOL
-C      print*,IEMM,FEMM
 
       DO J=1,NMU
        U0PL(J,1) = 0.D0
@@ -435,27 +433,12 @@ C      print*,IEMM,FEMM
       DO IMU0=ISOL,ISOL+1
        U0PL(IMU0,1) = SOLAR/(2.0D0*PI*WTMU(IMU0))
 
-C       print*,'ISOL = ',ISOL
-C       print*,'RBASE : '
-C       do i1=1,nmu
-C        print*,(RBASE(i1,j1,LTOT),j1=1,nmu)
-C       enddo
-
-C       print*,'U0PL : '
-C       do i1=1,nmu
-C        print*,U0PL(i1,1)
-C       enddo
 
       CALL MMUL(1.0D0,RBASE(1,1,LTOT),U0PL,ACOM,NMU,NMU,1,MAXMU,MAXMU,1)
       CALL MMUL(1.0D0,TBASE(1,1,LTOT),UTMI,BCOM,NMU,NMU,1,MAXMU,MAXMU,1)
       CALL MADD(1.0D0,ACOM,BCOM,ACOM,NMU,1,MAXMU,1)
       CALL MADD(1.0D0,JBASE(1,1,LTOT),ACOM,UMI,NMU,1,MAXMU,1)
        
-C      IF(IGDIST.EQ.1.AND.VWAVE.EQ.200.0)THEN
-C        DO IMU=1,NMU
-C         print*,IMU,MU(IMU),SNGL(UMI(IMU,1,1))
-C        ENDDO
-C      ENDIF
 
        DO IMU = IEMM,IEMM+1
         ICO=ICO+1

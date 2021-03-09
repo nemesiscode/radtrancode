@@ -1,4 +1,4 @@
-Welcome to the new git repository of the radtrancode project. This project is the development area for the Radtrans and Nemesis codes for radiative transfer calculations and retrievals, written in Oxford.
+Welcome to the new Github repository of the radtrancode project. This project is the development area for the Radtrans and Nemesis codes for radiative transfer calculations and retrievals, originally written in Oxford University.
 
 
 
@@ -6,17 +6,13 @@ If you are new to the system and want to check out the radtrancode repository on
 
 -------------------------
 
-On your system go to the directory where you want to put the radtrancode git repository, i.e.
+On your system go to the directory where you want to put the radtrancode git repository, i.e.,
 
 cd somewhere safe
 
 then type
 
-git clone https://github.com/patirwin123/radtrancode.git if GitHub
-
-or
-
-git clone git@gitlab.physics.ox.ac.uk:planetary/radtrancode.git if GitLab
+git clone https://github.com/patirwin123/radtrancode.git
 
 You should now have the current git repository in your safe directory.
 

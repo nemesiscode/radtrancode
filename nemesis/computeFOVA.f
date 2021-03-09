@@ -11,9 +11,13 @@
       real thcentre,thbore,thetrot,fovcentre(11,9,21)
       character*100 buffer,aname
       common /mcsfov/fovs,fovcentre
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
-      print*,'ComputeFOVA, iread,ichan,ipixA,ipixB,thcentre,thbore'
-      print*, iread,ichan,ipixA,ipixB,thcentre,thbore
+      if(idiag.gt.0)then
+       print*,'ComputeFOVA, iread,ichan,ipixA,ipixB,thcentre,thbore'
+       print*, iread,ichan,ipixA,ipixB,thcentre,thbore
+      endif
       nfov=50
       if(iread.eq.1)then
        aname='MCS_fov_50.dat'
@@ -40,11 +44,11 @@
       endif
 
       if(thetrot.ge.1.0) then
-       print*,'Cant extrapolate rotation'
+       if(idiag.gt.0)print*,'Cant extrapolate rotation'
        jangle=10
        f=1.0
       elseif(thetrot.lt.-1.0) then
-       print*,'Cant extrapolate rotation'
+       if(idiag.gt.0)print*,'Cant extrapolate rotation'
        jangle=1
        f=0.0
       else
@@ -53,7 +57,9 @@
        jangle=jangle+1
       endif
 
-      print*,'computeFOVA thetrot, jangle, f  :',thetrot,jangle,f
+      if(idiag.gt.0)then
+       print*,'computeFOVA thetrot, jangle, f  :',thetrot,jangle,f
+      endif
       fvcen = (1-f)*fovcentre(jangle,ichan,ipix)+
      1  f*fovcentre(jangle+1,ichan,ipix)
 

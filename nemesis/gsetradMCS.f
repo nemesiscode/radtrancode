@@ -69,8 +69,10 @@ C     ************************************************************************
       integer nvarx,varidentx(mvar,3)
       real varparamx(mvar,mparam)
       logical gasgiant
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
-      print*,'gsetradMCS, lin = ',lin
+      if(idiag.gt.0)print*,'gsetradMCS, lin = ',lin
 1     format(a)
 C     Look to see if the CIA file refined has variable para-H2 or not.
       call file(runname,runname,'cia')
@@ -101,13 +103,15 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
        call stripvar(nvarx,varidentx,varparamx,nprox,nvar,varident,
      1  varparam,nxx,xnx)
 
-       print*,'gsetradMCS - variables to be updated from .pre'
-       print*,'xlatx = ',xlatx
-       print*,'nvarx = ',nvarx
-       do i=1,nvarx
-        print*,'varidentx',(varidentx(i,j),j=1,3)
-        print*,'varparamx',(varparamx(i,j),j=1,mparam)
-       enddo
+       if(idiag.gt.0)then
+        print*,'gsetradMCS - variables to be updated from .pre'
+        print*,'xlatx = ',xlatx
+        print*,'nvarx = ',nvarx
+        do i=1,nvarx
+         print*,'varidentx',(varidentx(i,j),j=1,3)
+         print*,'varparamx',(varparamx(i,j),j=1,mparam)
+        enddo
+       endif
 
        xflag=1
        call subprofretg(xflag,runname,ispace,iscat,gasgiant,xlat,xlon,

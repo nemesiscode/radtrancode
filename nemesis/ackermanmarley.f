@@ -38,6 +38,10 @@ C     **************************************************************
       CHARACTER*100 AEFILE,QCFILE,ANAME
       CHARACTER*8 PNAME
       PARAMETER (XLAMBDA = 0.1,KMIN=1e5)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
+
       CALL FILE(IPFILE,IPFILE,'prf')
       OPEN(UNIT=1,FILE=IPFILE,STATUS='OLD')
       MOLWT=-1.
@@ -52,10 +56,10 @@ C     First skip header
       ELSE
         READ(1,*)IPLANET,LATITUDE,NPRO,NVMR
       ENDIF
-C      print*,IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+C      if(idiag.gt.0)print*,IPLANET,LATITUDE,NPRO,NVMR,MOLWT
 
       IF(NPRO.GT.MAXPRO)THEN
-          PRINT*,'Error in subprofretg. NPRO>MAXPRO ',NPRO,MAXPRO
+          if(idiag.gt.0)print*,'Error in subprofretg. NPRO>MAXPRO ',NPRO,MAXPRO
           STOP
       ENDIF
 
@@ -114,7 +118,7 @@ C     Calculate density of atmosphere (g/cm3) and DALR (K/km)
           XMOLWT=XXMOLWT(J)
         ENDIF
         RHO(J) = P(J)*0.1013*XMOLWT/(R*T(J))
-C        print*,P(J),XMOLWT,R,T(J),RHO(J)
+C        if(idiag.gt.0)print*,P(J),XMOLWT,R,T(J),RHO(J)
         CALL NEWGRAV(IPLANET,LATITUDE,H(J),RADIUS,G,PNAME) 
 C       CPSPEC is J K-1 Kg-1
         CPSPEC = CP/(XMOLWT*1e-3)
@@ -146,7 +150,7 @@ C      WS is convective velocity scale in cm s-1
        WS(J) = EDDY(J)/(L*1e5)
 C       WS(J) = 1000.
 C       EDDY(J)=2e8
-C       print*,J,H(J),SCALE(J),RHO(J),L,EDDY(J),LH,X,WS(J)
+C       if(idiag.gt.0)print*,J,H(J),SCALE(J),RHO(J),L,EDDY(J),LH,X,WS(J)
         write(12,*)H(J),P(J),T(J),SCALE(J),RHO(J),L,EDDY(J),WS(J)
 202   CONTINUE
       close(12)
@@ -170,7 +174,7 @@ C     First skip header
       NCONT=0
 
       DO 101 IVMR=1,NVMR
-       PRINT*,'IVMR, IDGAS(IVMR) = ',IVMR, IDGAS(IVMR)
+       if(idiag.gt.0)print*,'IVMR, IDGAS(IVMR) = ',IVMR, IDGAS(IVMR)
 
        DO 99 JGAS=1,NGAS
         IF(GASDATA(JGAS,1).EQ.IDGAS(IVMR))THEN
@@ -187,9 +191,9 @@ C        Constituent may condense. May need to modify mole fraction and cloud
          ICONDENSE=-1
 
          IF(IMODEL.EQ.0)THEN
-           PRINT*,'J, QT(J), QV(J), QC(J)'
+           if(idiag.gt.0)print*,'J, QT(J), QV(J), QC(J)'
          ELSE
-           PRINT*,'J, QT(J), QV(J), QC(J), DELQT'
+           if(idiag.gt.0)print*,'J, QT(J), QV(J), QC(J), DELQT'
          ENDIF
 
          DO 97 J=2,NPRO
@@ -203,7 +207,7 @@ C         Calculate saturated vapour mole fraction
            QC(J)=MAX(0.0,QV(J-1)-QS)
            QT(J)=QV(J)+QC(J)
 
-           print*,J,QT(J),QV(J),QC(J)
+           if(idiag.gt.0)print*,J,QT(J),QV(J),QC(J)
 
           ELSE
 
@@ -213,7 +217,7 @@ C         Calculate saturated vapour mole fraction
            QC(J)=MAX(0.0,QT(J)-QS)
            QV(J)=MIN(QT(J),QS)
 
-           print*,J,QT(J),QV(J),QC(J),DELQT
+           if(idiag.gt.0)print*,J,QT(J),QV(J),QC(J),DELQT
 
           ENDIF
 
@@ -225,18 +229,18 @@ C         Calculate saturated vapour mole fraction
 97       CONTINUE
 
          IF(ICONDENSE.GT.0)THEN
-           print*,'Gas Condenses : ',IVMR
-           print*,'ID,ISO : ',IDGAS(IVMR),ISOGAS(IVMR)
+           if(idiag.gt.0)print*,'Gas Condenses : ',IVMR
+           if(idiag.gt.0)print*,'ID,ISO : ',IDGAS(IVMR),ISOGAS(IVMR)
 C          Adjust vmr of gas in question
-           print*,IVMR,NPRO
+           if(idiag.gt.0)print*,IVMR,NPRO
            DO 95 J=1,NPRO
             VMR(J,IVMR)=QV(J)
-C            print*,J,QV(J)
+C            if(idiag.gt.0)print*,J,QV(J)
 95         CONTINUE
 
 C          Check to see if vmrs should add up to 1.0 If so scale the other
 C          gases
-           print*,'A',AMFORM
+           if(idiag.gt.0)print*,'A',AMFORM
            IF(AMFORM.EQ.1)THEN
             DO I=1,NVMR
              ISCALE(I)=1

@@ -31,6 +31,8 @@ C     ********************************************************
       real dtempconvdx(maxpro,5),dtempdx(maxpro,5)
       real dbetadalpha,dtempradeqmdtau
       integer npro,i,k,iswitch
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C     Initialise gradients
       do i=1,npro
@@ -45,8 +47,8 @@ C     Initialise gradients
 C      p0=1.
 
 
-      print*,'Check T0, Teff, tau0, n, alpha'
-      print*,T0,Teff,tau0,n,alpha
+      if(idiag.gt.0)print*,'Check T0, Teff, tau0, n, alpha'
+      if(idiag.gt.0)print*,T0,Teff,tau0,n,alpha
 
 C     For diatomic molecules Cv (per mole) = 3R/2 + R = 5R/2
 C     Cp = Cv+R = 7R/2
@@ -82,7 +84,7 @@ C     T-profile (tempconv)
        tempconv(i) = T0*(press(i)/p0)**beta
        dtempconvdx(i,4)= dbetadalpha*tempconv(i)*alog(press(i)/p0)
        dtempconvdx(i,5)= tempconv(i)/T0
-C       print*,i,press(i),tau(i),tempradeqm(i),tempconv(i)
+C       if(idiag.gt.0)print*,i,press(i),tau(i),tempradeqm(i),tempconv(i)
       enddo
 
       if(tempradeqm(npro).gt.tempconv(npro))then
@@ -133,7 +135,7 @@ C       Limit dT/dp to not exceed assumed lapse rate
         endif
        endif
        
-C       print*,i,press(i),temp(i)
+C       if(idiag.gt.0)print*,i,press(i),temp(i)
       enddo
 
 

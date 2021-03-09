@@ -23,10 +23,12 @@ C     ************************************************************************
       integer npro,nvmr
       logical gasgiant
       common /srom223/pcut 
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       call readrefhead(runname,npro,nvmr,gasgiant)
 
-	print*, 'extractCB'
+	if(idiag.gt.0)print*, 'extractCB'
 
       ix=1
       do 10 ivar=1,nvar

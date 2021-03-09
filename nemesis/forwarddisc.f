@@ -105,6 +105,8 @@ C     **************************************************************
       logical gasgiant,fexist
       real vem(maxsec),emissivity(maxsec),Grav
       parameter (Grav=6.672E-11)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       
              
@@ -132,7 +134,9 @@ C     Initialise arrays
        enddo
       enddo
 
-      print*,'forwarddisc: jsurf,jalb,jtan,jpre',jsurf,jalb,jtan,jpre
+      if(idiag.gt.0)then
+       print*,'forwarddisc: jsurf,jalb,jtan,jpre',jsurf,jalb,jtan,jpre
+      endif
       if(jalb.gt.0.or.jtan.gt.0.or.jpre.gt.0)then
        print*,'Warning from forwarddisc'
        print*,'jtan, jalb or jpre > 0'
@@ -144,7 +148,7 @@ C     Initialise arrays
 
       if(jsurf.gt.0)then
        tsurf = xn(jsurf)
-       print*,'tsurf = ',tsurf
+       if(idiag.gt.0)print*,'tsurf = ',tsurf
       endif
 
 C     If we're retrieving planet radius then add correction to reference
@@ -166,7 +170,7 @@ C     mass to units of 1e24 kg.
 
       ioff = 0
       do 100 igeom=1,ngeom
-       print*,'Forwarddisc. Spectrum ',igeom,' of ',ngeom
+       if(idiag.gt.0)print*,'Forwarddisc. Spectrum ',igeom,' of ',ngeom
 
        nconv1 = nconv(igeom)
        nwave1 = nwave(igeom)
@@ -317,9 +321,10 @@ C          Model 102 - weighted average of two profiles.
          enddo
 
          if (reflecting_atmos) then
-          print*,'ADDING IN REFLECTING ATMOSPHERE CONTRIBUTION'
-          print*,'cloud albedo=',refl_cloud_albedo
-
+          if(idiag.gt.0)then
+           print*,'ADDING IN REFLECTING ATMOSPHERE CONTRIBUTION'
+           print*,'cloud albedo=',refl_cloud_albedo
+          endif
           ipath = 2
 
           do j=1,nconv1
@@ -374,7 +379,7 @@ C          matrix inversion crashing
        if(jlogg.gt.0)then
 C       Need to calculate RoC of radiance with surface gravity numerically
 
-        print*,'Calculating RoC with log(g)'
+        if(idiag.gt.0)print*,'Calculating RoC with log(g)'
         loggR = xn(jlogg)
         dellg = loggR*0.01
         xn(jlogg)=loggR+dellg
@@ -440,8 +445,10 @@ C        we need to read in the surface emissivity spectrum
 
    
          if (reflecting_atmos) then
-          print*,'ADDING IN REFLECTING ATMOSPHERE CONTRIBUTION'
-          print*,'cloud albedo=',refl_cloud_albedo
+          if(idiag.gt.0)then
+           print*,'ADDING IN REFLECTING ATMOSPHERE CONTRIBUTION'
+           print*,'cloud albedo=',refl_cloud_albedo
+          endif
 
           ipath = 2
 

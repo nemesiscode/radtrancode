@@ -80,6 +80,8 @@ C     ********** Scattering variables **********************
       CHARACTER*100 ANAME
       REAL DNU
       INTEGER IPARA
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C     ******************************************************
 
@@ -91,6 +93,7 @@ C     *******************************************************
 C     Read in reference gas information data
       CALL RESERVEGAS
 
+      idiag=1
 C     ----------- Scattering phase function initialisation --------------
       xwave(1)=-1                       ! Reset to force read of hgphase*
 C                                         files.
@@ -110,17 +113,17 @@ C     New compiler time
 1     FORMAT(a)
       runname = buffer(1:36)
 
-      print*,'checking files'
+      if(idiag.gt.0)print*,'checking files'
 C     Make sure input files are OK
       CALL checkfiles(runname)
 
       CALL readrefhead(runname,npro,nvmr,gasgiant)
       if(npro.gt.maxpro)then
-       print*,'Error in Nemesis. npro > maxpro : ',npro,maxpro
+       print*,'Error in NemesisL. npro > maxpro : ',npro,maxpro
        stop
       endif
 
-      print*,'Files OK'
+      if(idiag.gt.0)print*,'Files OK'
 
       CALL file(runname,runname,'inp')
       OPEN(32,file=runname,status='old')
@@ -135,14 +138,16 @@ C     Also read in whether onion peeling method is to be used ionpeel
       READ(32,*)ispace,iscat,occult,ilbl,inum,ionpeel
 
       if(ilbl.eq.1) then
-       print*,'NemesisL - LBL calculation. Not yet implemented'
+       if(idiag.gt.0)then
+        print*,'NemesisL - LBL calculation. Not yet implemented'
+       endif
       endif
       if(ilbl.eq.0)then
-       print*,'Nemesis - corr-k calculation'
+       if(idiag.gt.0)print*,'NemesisL - corr-k calculation'
        CALL readkkhead(runname,vkstart,vkend,vkstep)
       endif
       if(ilbl.eq.2)then
-       print*,'Nemesis - lbl-table calculation'
+       if(idiag.gt.0)print*,'Nemesis - lbl-table calculation'
        CALL readkklblhead(runname,vkstart,vkend,vkstep)
       endif
 
@@ -159,14 +164,14 @@ C     Read in number of iterations
         inum = 0   !If just using forward model, use fast analytical derivatives
       endif
 
-      if(inum.eq.1)then
+      if(inum.eq.1.and.idiag.gt.0)then
        print*,'NemesisL - gradients from numerical differentiation'
       endif
-      if(inum.eq.0)then
+      if(inum.eq.0.and.idiag.gt.0)then
        print*,'NemesisL - gradients calculated analytically'
       endif
       
-      if(ionpeel.eq.1)then
+      if(ionpeel.eq.1.and.idiag.gt.0)then
       print*,'NemesisL - Onion-peeling method (just one tangent height)'
       endif
  
@@ -202,8 +207,8 @@ C              Useful for sequential retrieval, such as onion-peeling method
 999   continue
       CLOSE(32)
 
-      print*,'iform1 = ',iform1
-      print*,'percbool = ', percbool
+      if(idiag.gt.0)print*,'iform1 = ',iform1
+      if(idiag.gt.0)print*,'percbool = ', percbool
 
       iform=iform1
 
@@ -302,8 +307,10 @@ C     Read in measurement vector, obs. geometry and covariances
      1  fwhm,nconv,vconv,angles,wgeom,flat,flon)
 
       if(ionpeel.eq.1.and.ngeom.gt.1)then
-         print*,'Error in NemesisL - Onion-peeling method flag is set'
-         print*,'but there is more than one geometry in .spx file'
+         if(idiag.gt.0)then
+          print*,'Error in NemesisL - Onion-peeling method flag is set'
+          print*,'but there is more than one geometry in .spx file'
+         endif
       endif
 
 
@@ -325,17 +332,17 @@ C     Add forward errors to measurement covariances
 C      Calculate the tabulated wavelengths of c-k look up tables
        do igeom=1,ngeom
         nconv1 = nconv(igeom)
-        if(igeom.eq.1)print*,nconv1
+        if(igeom.eq.1.and.idiag.gt.0)print*,nconv1
         do j=1,nconv1
          vconv1(j)=vconv(igeom,j)
-         if(igeom.eq.1)print*,vconv1(j)
+         if(igeom.eq.1.and.idiag.gt.0)print*,vconv1(j)
         enddo
         CALL wavesetb(runname,vkstart,vkend,vkstep,nconv1,vconv1,fwhm,
      1   nwave1,vwave1)
-        if(igeom.eq.1)print*,nwave1
+        if(igeom.eq.1.and.idiag.gt.0)print*,nwave1
         do j=1,nwave1
          vwave(igeom,j)=vwave1(j)
-         if(igeom.eq.1)print*,vwave1(j)
+         if(igeom.eq.1.and.idiag.gt.0)print*,vwave1(j)
         enddo
         nwave(igeom)=nwave1
        enddo

@@ -6,6 +6,8 @@
       parameter (mfov=200)
       real thfov(mfov),rfov(mfov),x,f,fvcen,thcentre,thbore,thetrot
       character*100 buffer
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
         ! Set array dimensions
         integer ndet,narr,iy
@@ -21,16 +23,15 @@
         real, allocatable :: Xfov(:,:,:), Hfov(:,:,:)
         integer i
 
-      print*,'ComputeFOVB,ichan,ipixA,ipixB,thcentre,thbore'
-      print*, ichan,ipixA,ipixB,thcentre,thbore
-      print*,'computeFOVB thetrot  :',thetrot
-
+      if(idiag.gt.0)then
+       print*,'ComputeFOVB,ichan,ipixA,ipixB,thcentre,thbore'
+       print*, ichan,ipixA,ipixB,thcentre,thbore
+       print*,'computeFOVB thetrot  :',thetrot
+      endif
 
         ! Call the first step of reading the FOV calibration data, so as to get
         !   the dimensions iv, & ih
         call FOV_ReadIn_Sizes(ndet,narr,iv,ih)
-C        print*, '         iv = ', iv
-C        print*, '         ih = ', ih
 
         ! Now that we have iv & ih, allocate array space for the FOV variables
         allocate( Yfov(iv,ndet,narr), Vfov(iv,ndet,narr) )
@@ -74,11 +75,10 @@ C        print*, '         ih = ', ih
              call verint(tmpx,tmpy,ny,yout(i1),xout(i1))
              thfov(i1)=thbore-xout(i1)
              rfov(i1)=yout(i1)
-C             print*,thfov(i1),xout(i1),rfov(i1)
          enddo
 
          fvcen = thbore-Vdet(ipix,ichan)
-         print*,'thbore, fvcen : ',thbore,fvcen
+         if(idiag.gt.0)print*,'thbore, fvcen : ',thbore,fvcen
 
       return
 

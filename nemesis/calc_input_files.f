@@ -80,6 +80,10 @@ C     **************************************************************
       integer nvar,varident(mvar,3)
       real varparam(mvar,mparam)
       logical gasgiant
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
+
 C     jradf and jloggf are passed via the planrad common block   
       jradf=jrad
       jloggf=jlogg
@@ -116,8 +120,8 @@ C     miniumum zenith angle
            nf=nf1
       endif
 
-      print*,'Angles : ',sol_ang,emiss_ang,aphi
-      print*,'nf = ',nf
+      if(idiag.gt.0)print*,'Angles : ',sol_ang,emiss_ang,aphi
+      if(idiag.gt.0)print*,'nf = ',nf
       xlat = flat(igeom,iav)
       xlon = flon(igeom,iav)
 
@@ -148,19 +152,19 @@ C     mass to units of 1e24 kg.
 
 C     Set up all files for a direct cirsrad run
       if(iscat.eq.5)then
-       print*,'calling gsetradV'
+       if(idiag.gt.0)print*,'calling gsetradV'
        call gsetradV(runname,iscat,nmu,mu,wtmu,isol,dist,
      1 lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
      2 layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,xlon,
      2 lin,nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
-       print*,'gsetradV called OK'
+       if(idiag.gt.0)print*,'gsetradV called OK'
       else
-       print*,'calling gsetrad'
+       if(idiag.gt.0)print*,'calling gsetrad'
        call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,
      1 lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
      2 layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,xlon,
      2 lin,nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
-       print*,'gsetrad called OK'
+       if(idiag.gt.0)print*,'gsetrad called OK'
       endif
 
       return

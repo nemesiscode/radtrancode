@@ -121,6 +121,9 @@ C     Set measurement vector and source vector lengths here.
       double precision dd(mx,my),aa(mx,mx)
 
       real phi,ophi,chisq,xchi,oxchi
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
 C     **************************** CODE ********************************
 
 C     ++++++++++++++++++ Read in extra parameters to test vmr profile +++
@@ -186,7 +189,6 @@ C     Calculate inverse of sa.
       if(icheck.eq.1)then
        print*,'************* WARNING *************'
        print*,'CoreretPT, sa does not invert cleanly'
-C       print*,'Setting to simple diagonal matrix'
        print*,'Aborting...'
        print*,'***********************************'
        stop
@@ -262,21 +264,21 @@ C       readapriori.f. Hence just read in from temporary .str file
        lin0 = 0
        if(iscat.GT.0)then
 	if(iscat.NE.5)then
-	        print*,'Error in coreretPT: Scattering calculations not'
-        	print*,'appropriate!'
+	    print*,'Error in coreretPT: Scattering calculations not'
+            print*,'appropriate!'
        	 stop
 	endif
        endif
        
    
        if(inumeric.eq.0)then
-	print*, 'ForwardPT 1 =', jradx, jrad
+	if(idiag.gt.0)print*, 'ForwardPT 1 =', jradx, jrad
         CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
      1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2   nvarx,varidentx,varparamx,jradx,jloggx,jfracx,radius,nxx,xnx,
      3   ny,ynx,kkx,qfla)
        else
-	print*, 'ForwardnogPT 1 =', jradx, jrad
+	if(idiag.gt.0)print*, 'ForwardnogPT 1 =', jradx, jrad
         CALL forwardnogPT(runname,ispace,fwhm,ngeom,nav,
      1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2   nvarx,varidentx,varparamx,jradx,jloggx,jfracx,radius,nxx,xnx,
@@ -339,22 +341,22 @@ C      Calculate inverse of se
       endif
 
       if(inumeric.eq.0)then
-       print*,'ForwardPT 2'
+       if(idiag.gt.0)print*,'ForwardPT 2'
        CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
      1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jrad,jlogg,jfrac,radius,nx,xn,ny,yn,
      3   kk,qfla)
-	print*, 'jrad,Radius:', jrad,radius
+	if(idiag.gt.0)print*, 'jrad,Radius:', jrad,radius
       else
-       print*,'ForwardnogPT 2'
+       if(idiag.gt.0)print*,'ForwardnogPT 2'
        CALL forwardnogPT(runname,ispace,fwhm,ngeom,nav,
      1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jrad,jlogg,jfrac,radius,nx,xn,ny,yn,
      2   kk,kiter)
-	print*, 'jrad,Radius:', jrad,radius
+	if(idiag.gt.0)print*, 'jrad,Radius:', jrad,radius
       endif
 
-      print*,'Calling calc_gain_matrix'
+      if(idiag.gt.0)print*,'Calling calc_gain_matrix'
 C     Now calculate the gain matrix and averaging kernels
       call calc_gain_matrix(nx,ny,kk,sa,sai,se,sei,dd,aa)
 
@@ -363,7 +365,7 @@ C     Calculate initial value of cost function phi.
       ophi = phi
       oxchi = chisq/float(ny)
 
-      print*,'Calling assess'
+      if(idiag.gt.0)print*,'Calling assess'
 C     Assess whether retrieval is likely to be OK
       call assess(nx,ny,kk,sa,se)
  
@@ -401,11 +403,9 @@ C     vectors xn, yn
          enddo
         endif
 
-        print*,'Calling calcnextxn'
+        if(idiag.gt.0)print*,'Calling calcnextxn'
 C       Now calculate next iterated xn1
-c	print*,xn(1),xa(1),'Miscellaneous-0.1'
         call calcnextxn(nx,ny,xa,xn,y,yn,dd,aa,x_out)
-c        print*,xa(1),xn(1),x_out(1),'Miscellaneous'
 
 145    continue
 C       x_out(nx) is the next iterated value of xn using classical N-L
@@ -414,7 +414,6 @@ C       alambda to stop the new trial vector xn1 being too far from the
 C       last 'best-fit' value xn
         do i=1,nx
          xn1(i) = xn(i) + (x_out(i)-xn(i))/(1.0+alambda)
-c	 print*,xn1(i),xn(i),x_out(i),'Miscellaneous-2'
 
 
 C        Add additional brake for model 102 to stop silly fractions.
@@ -429,14 +428,16 @@ C        Add additional brake for model 102 to stop silly fractions.
 C        Check to see if log numbers have gone out of range
          if(lx(i).eq.1)then
           if(xn1(i).gt.85.or.xn1(i).lt.-85)then
-           print*,'CoreretPT - log(number gone out of range)'
-           print*,'Increasing brake'
+           if(idiag.gt.0)then
+            print*,'CoreretPT - log(number gone out of range)'
+            print*,'Increasing brake'
+           endif
            alambda = alambda*10.0               ! increase Marquardt brake
            if(alambda.gt.1e30)then
             print*,'Death spiral - stopping'
             stop
            endif
-           print*,i,xn(i),xn1(i),exp(xn(i)),alambda
+           if(idiag.gt.0)print*,i,xn(i),xn1(i),exp(xn(i)),alambda
            goto 145
           endif
          endif
@@ -458,15 +459,14 @@ C       Test to see if any vmrs have gone negative.
 C       Calculate test spectrum using trial state vector xn1. 
 C       Put output spectrum into temporary spectrum yn1 with
 C       temporary kernel matrix kk1. Does it improve the fit? 
-c	print*,xn1(1),xn(1),x_out(1),'jm3'
 
         call check_iteration(nvar,varident,varparam,xn,npro,ineg)
         if(ineg.eq.1)then
 C        Temperature gone negative. Increase brakes and try again
          xchi=-1.
          phi=-1.
-         print*,'chisq/ny = ',xchi
-         print*,'it.,al.,ophi.,phi.',
+         if(idiag.gt.0)print*,'chisq/ny = ',xchi
+         if(idiag.gt.0)print*,'it.,al.,ophi.,phi.',
      1    iter,alambda,ophi,phi
          alambda=alambda*10.
          if(alambda.gt.1e10)alambda=1e10
@@ -474,14 +474,14 @@ C        Temperature gone negative. Increase brakes and try again
         endif
 
         if(inumeric.eq.0)then
-         print*,'ForwardPT 3'
+         if(idiag.gt.0)print*,'ForwardPT 3'
          CALL forwardPT(runname,ispace,fwhm,ngeom,nav,
      1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2     lin,nvar,varident,varparam,jrad,jlogg,jfrac,radius,nx,xn1,
      3     ny,yn1,kk1,qfla)
-         print*,ny,(yn1(i),i=1,ny)
+         if(idiag.gt.0)print*,ny,(yn1(i),i=1,ny)
         else
-         print*,'ForwardnogPT 3'
+         if(idiag.gt.0)print*,'ForwardnogPT 3'
          CALL forwardnogPT(runname,ispace,fwhm,ngeom,nav,
      1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2     lin,nvar,varident,varparam,jrad,jlogg,jfrac,radius,nx,xn1,
@@ -492,19 +492,21 @@ C       Calculate the cost function for this trial solution.
         phi = calc_phiret(ny,y,yn1,sei,nx,xn1,xa,sai,chisq)
 
         xchi = chisq/float(ny)
-        print*,'chisq/ny = ',xchi
-        print*,'it.,al.,ophi.,phi.',
+        if(idiag.gt.0)print*,'chisq/ny = ',xchi
+        if(idiag.gt.0)print*,'it.,al.,ophi.,phi.',
      1   iter,alambda,ophi,phi
      
 C       What's %phi between last and this iteration?    
         tphi = 100.0*(ophi-phi)/ophi
         abstphi = abs(tphi)
-        print*,'%phi, abs(%phi) : ',tphi,abstphi
+        if(idiag.gt.0)print*,'%phi, abs(%phi) : ',tphi,abstphi
 
 
 C       Does trial solution fit the data better?
         if(phi.le.ophi)then
-          print*,'Successful iteration. Updating xn,yn and kk'
+          if(idiag.gt.0)then
+           print*,'Successful iteration. Updating xn,yn and kk'
+          endif
           do i=1,nx
            xn(i)=xn1(i)         		! update xn to new value
           enddo
@@ -515,18 +517,20 @@ C       Does trial solution fit the data better?
            enddo
           enddo
 
-          print*,'Calculating new gain matrix and averaging kernels'
+          if(idiag.gt.0)then
+           print*,'Calculating new gain matrix and averaging kernels'
+          endif
 C         Now calculate the gain matrix and averaging kernels
           call calc_gain_matrix(nx,ny,kk,sa,sai,se,sei,dd,aa)
 
-          print*,'calc_gain_matrix OK'
+          if(idiag.gt.0)print*,'calc_gain_matrix OK'
           
 C         Has solution converged?
           
           if(tphi.ge.0.0.and.tphi.le.phlimit.and.alambda.lt.1.0)then
-            print*,'%phi, phlimit : ',tphi,phlimit
-            print*,'Phi has converged'
-            print*,'Terminating retrieval'
+            if(idiag.gt.0)print*,'%phi, phlimit : ',tphi,phlimit
+            if(idiag.gt.0)print*,'Phi has converged'
+            if(idiag.gt.0)print*,'Terminating retrieval'
             GOTO 202                   
           else
             ophi=phi
@@ -544,26 +548,29 @@ C       If lambda is small enough, increase it to decrease abs(tphi) value.
 			else
 C       If lambda is close to 1.0 or greater when condition met, accept that iteration.
 
-			  print*,'Accepting iteration. Updating xn,yn and kk'
-			  do i=1,nx
-			   xn(i)=xn1(i)         		! update xn to new value
-			  enddo
-			  do i=1,ny
-			   yn(i)=yn1(i)				! update yn and kk
-			   do j=1,nx
-				kk(i,j)=kk1(i,j)
-			   enddo
-			  enddo
-				print*,'%phi, phlimit, alambda : ',tphi,phlimit,alambda
-				print*,'Phi has converged under the alternate criteria'
-					if (alambda.ge.1.0) then
-						print*,'In addition, alambda is >= 1.0'
-					endif	
-				print*,'Terminating retrieval'
+         if(idiag.gt.0)then
+          print*,'Accepting iteration. Updating xn,yn and kk'
+         endif
+         do i=1,nx
+	  xn(i)=xn1(i)         		! update xn to new value
+	 enddo
+	 do i=1,ny
+	   yn(i)=yn1(i)				! update yn and kk
+	   do j=1,nx
+	    kk(i,j)=kk1(i,j)
+	   enddo
+         enddo
+	 if(idiag.gt.0)then
+          print*,'%phi, phlimit, alambda : ',tphi,phlimit,alambda
+	  print*,'Phi has converged under the alternate criteria'
+         endif
+	 if (alambda.ge.1.0) then
+		if(idiag.gt.0)print*,'In addition, alambda is >= 1.0'
+	 endif	
+	 if(idiag.gt.0)print*,'Terminating retrieval'
 				GOTO 202 
-			endif														
+	 endif														
 							
-C	     If alternate criterions aren't met either, leave xn and kk alone and try again with more braking
 		else
           alambda = alambda*10.0		! increase Marquardt brake
           if(alambda.gt.1e10)alambda=1e10
@@ -576,7 +583,7 @@ C	     If alternate criterions aren't met either, leave xn and kk alone and try 
          read(83,'(A)')abort
          close(83)
          if(abort.eq.'stop'.or.abort.eq.'STOP')then
-           print*,'Terminating retrieval'
+           if(idiag.gt.0)print*,'Terminating retrieval'
            GOTO 202
          endif
         endif
@@ -595,15 +602,15 @@ C      Write out k-matrix for reference
 
       endif
 
-      print*,'chisq/ny is equal to : ',chisq/float(ny)
-      if(chisq.gt.ny)then
+      if(idiag.gt.0)print*,'chisq/ny is equal to : ',chisq/float(ny)
+      if(chisq.gt.ny.and.idiag.gt.0)then
        print*,'CoreretPT: WARNING'
        print*,'chisq/ny should be less than 1 if correctly retrieved'
       endif
 
-      print*,'Calculating final covariance matrix'
+      if(idiag.gt.0)print*,'Calculating final covariance matrix'
       CALL calc_serr(nx,ny,sa,se,aa,dd,st,sn,sm)
-      print*,'Matrix calculated'
+      if(idiag.gt.0)print*,'Matrix calculated'
 
 
 C     Make sure errors stay as a priori for kiter < 0

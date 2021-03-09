@@ -30,6 +30,8 @@ C     **************************************************************
       INTEGER NVAR,VARIDENT(MVAR,3),IVAR,NXTEMP,NP,NPVAR,NPRO
       INTEGER ICLOUD,J
       REAL VARPARAM(MVAR,MPARAM),XDEEP,HKNEE,XFSH,REFRADIUS
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       NXTEMP=0
       XDEEP=-1.0
@@ -37,7 +39,7 @@ C     **************************************************************
       XFSH=-1.0
 
       DO 10 IVAR=1,NVAR
-C       print*,'A',ICLOUD,IVAR,(VARIDENT(IVAR,J),J=1,3)
+C       if(idiag.gt.0)print*,'A',ICLOUD,IVAR,(VARIDENT(IVAR,J),J=1,3)
        IF(VARIDENT(IVAR,3).EQ.21.AND.-VARIDENT(IVAR,1).EQ.ICLOUD)THEN
         XDEEP=EXP(XN(NXTEMP+1))
         HKNEE=XN(NXTEMP+2)
@@ -46,7 +48,7 @@ C       print*,'A',ICLOUD,IVAR,(VARIDENT(IVAR,J),J=1,3)
        ENDIF
        IF(VARIDENT(IVAR,1).LE.100)THEN
         NP=NPVAR(VARIDENT(IVAR,3),NPRO,VARPARAM(IVAR,1))
-C        print*,'D',(VARIDENT(IVAR,J),J=1,3),NP
+C        if(idiag.gt.0)print*,'D',(VARIDENT(IVAR,J),J=1,3),NP
        ELSE
         NP=1
         IF(VARIDENT(IVAR,1).EQ.888)NP=INT(VARPARAM(IVAR,1))
@@ -67,7 +69,7 @@ C        print*,'D',(VARIDENT(IVAR,J),J=1,3),NP
         IF(VARIDENT(IVAR,1).EQ.227)NP=7
        ENDIF
 
-C       print*,'B',NP,XN(NXTEMP+1:NXTEMP+NP)
+C       if(idiag.gt.0)print*,'B',NP,XN(NXTEMP+1:NXTEMP+NP)
        NXTEMP=NXTEMP+NP
 
 10    CONTINUE

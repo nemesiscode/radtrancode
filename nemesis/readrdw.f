@@ -37,13 +37,15 @@ C     ****************************************************************
         integer nconv(mgeom),nconvfull(mgeom),nconvtmp,nconvi(mgeom)
         integer cindex3,rdwindicesi(mgeom,mconv),maxirank,rankdiff
         real vconvi(mgeom,mconv)
+        integer idiag,iquiet
+        common/diagnostic/idiag,iquiet
 
         counter = 1!position in full wavelength grid
         cindex = 1!position in retrieved reduced grid
         cindex2 = 1!position in .rdw file
         cindex3 = 1!position in wavelength grid containing only wavelengths of irank
 
-        print*,'Reading reduced wavelength grid .rdw'
+        if(idiag.gt.0)print*,'Reading reduced wavelength grid .rdw'
 
 	call file(runname,rdw,'rdw')
         do igeom=1,ngeom
@@ -96,9 +98,11 @@ C     ****************************************************************
          nconvi(igeom)=cindex3-1
 
          if(irank.le.maxirank)then
+          if(idiag.gt.0)then
           print*,'Reduced wavelength grid for igeom=',igeom
           print*,'has number of wavelengths ',nconv(igeom)
           print*,'Selected wavelengths:',vconv(igeom,1:nconv(igeom))
+          endif
          endif
 
          counter=1!reset counters for next geometry

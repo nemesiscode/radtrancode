@@ -74,6 +74,8 @@ C     ********** Scattering variables **********************
       CHARACTER*100 ANAME
       REAL DNU
       INTEGER IPARA
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
 C     ******************************************************
@@ -86,6 +88,7 @@ C     *******************************************************
 C     Read in reference gas information data
       CALL RESERVEGAS
 
+      idiag=1
 C     ----------- Scattering phase function initialisation --------------
       xwave(1)=-1                       ! Reset to force read of hgphase*
 C                                         files.
@@ -105,13 +108,13 @@ C     New compiler time
 1     FORMAT(a)
       runname = buffer(1:36)
 
-      print*,'checking files'
+      if(idiag.gt.0)print*,'checking files'
 C     Make sure input files are OK
       CALL checkfiles(runname)
 
       CALL readrefhead(runname,npro,nvmr,gasgiant)
       if(npro.gt.maxpro)then
-       print*,'Error in Nemesis. npro > maxpro : ',npro,maxpro
+       print*,'Error in NemesisMCS. npro > maxpro : ',npro,maxpro
        stop
       endif
 

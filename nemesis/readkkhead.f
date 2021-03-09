@@ -14,6 +14,8 @@ C     ****************************************************************
       real vcen(MAXBIN)
       real vmin,delv,fwhm,press(MAXK),temp(MAXK),g_ord(MAXG),del_g(MAXG)
       real vkstart,vkend,vkstep,temp2(MAXK,MAXK)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       call file(runname,runname,'kls')
 1     format(a200)
@@ -24,7 +26,7 @@ C     ****************************************************************
       close(12)
 
 
-C      print*,'Reading header information from : '
+C      if(idiag.gt.0)print*,'Reading header information from : '
 C      write(6,1)kname
 
       lun0 = 100

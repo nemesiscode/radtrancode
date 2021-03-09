@@ -23,6 +23,8 @@ C     **************************************************************
       integer npro,nvmr
       logical gasgiant
       common /srom223/pcut
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       call readrefhead(runname,npro,nvmr,gasgiant)
 

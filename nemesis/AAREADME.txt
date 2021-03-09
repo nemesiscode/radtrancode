@@ -40,8 +40,6 @@ NemesisPT	Version of Nemesis for specifically modelling the primary
 		transit spectra of exoplanets.
 		Output units are 100*planet_area/stellar_area
 
-NemesisMC	As Nemesis, but uses a Monte Carlo scattering scheme
-
 In addition there are some programs for generating synthetic spectra for 
 retrieval testing purposes. These are:
 

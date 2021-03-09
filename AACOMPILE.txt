@@ -1,12 +1,8 @@
 Code compilation has been tested on Linux (32 and 64-bit) using the Intel 
 Fortran compiler (currently version 11.1.072), and also on Mac OSX 
 using gfortran (N.B. Guidance on locating gfortran and also f2c for MacOSX is
-given below).
-
-which can be grabbed from somewhere such as fink or from 
-any website when you google gfortran. You'll also need f2c in order for 
-gettime.c to compile. I got a build script from the following website, which 
-worked fine: http://hpc.sourceforge.net/buildf2c). 
+given below), which can be grabbed from somewhere such as fink or from 
+any website when you google gfortran. 
 
 The are three main things to look out for when compiling on different systems.
 a) You need to know that depending on the system and the Fortran 
@@ -71,19 +67,7 @@ Note 2: if you've already compiled the Fortran recipes library, you can
         skip step 2.
 Note 3: on MacOSX, you'll need to install gfortran from somewhere such as fink
 	or from any website when you google gfortran. In the end I just grabbed 
-	a version from a website. You'll also need f2c in order for gettime.c 
-	to compile. I got a build script from the following website, which 
-	worked fine - http://hpc.sourceforge.net/buildf2c
-Note 4: If you're having trouble locating f2c, which is only necessary to 
-        compile and link gettime.c, an alternative approach is the following
-	procedure.
-         1) In your .cshrc file (if you are using csh) add the line:
-             setenv CC "gcc"
-         2) In radtran/rtm_util/gettime.c:
-             comment our the include statement for f2c.h
-Note 5: In general, if you're using gfortran/gcc very useful advice for 
- 	diagnosing problems may be found at:
-	www2.physics.ox.ac.uk/it-services/where-has-g77-gone-to
+	a version from a website. 
 
 N.B. For additional debugging on MacOSX with gfortran try:
 setenv FCFLAGS1 "-O -finit-local-zero -m64 -fcheck=bounds -fcheck=mem -fbacktrace -Wconversion 
@@ -94,3 +78,4 @@ setenv FCFLAGS1_FOVGREG "-O -ffree-form -finit-local-zero -m64 -fcheck=bounds -f
 Pat Irwin	11/5/12
 Brigette Hesman 16/7/12
 Pat Irwin	18/7/12
+Pat Irwin	9/3/21

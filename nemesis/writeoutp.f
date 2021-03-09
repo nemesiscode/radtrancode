@@ -93,6 +93,8 @@ C     ***********************************************************************
       real v1(max_wave),k1(max_wave),vm1,n1(max_wave)
       real nreal(max_wave),minlam
       real srefind(max_wave,2),parm(3),rs(3)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
 1     FORMAT(A)
@@ -176,7 +178,7 @@ C     Spectra is in transmission units
 
           iflag = logflag(varident(ivar,1),varident(ivar,3),
      &     varparam(ivar,1),i)
-          print*,xa1,ea1,xn1,en1,iflag
+          if(idiag.gt.0)print*,xa1,ea1,xn1,en1,iflag
           if(iflag.eq.1)then
             xa1 = exp(xa1)
             ea1 = xa1*ea1

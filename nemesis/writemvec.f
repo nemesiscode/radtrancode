@@ -45,6 +45,8 @@ C     ****************************************************************
       real ref(maxpro),clen
       integer varident(mvar,3),ivar,nvar,nlevel
       character*100 opfile,buffer,ipfile
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
  
       write(ivec,*)nx,'    ! nx'
       write(ivec,*)jsurf,'    ! jsurf'

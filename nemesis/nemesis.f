@@ -83,6 +83,8 @@ C     Solar spectrum variables and flags
       common/solardat/iread, iform, solradius, solwave, solrad,  solnpt
       common/celldat/icread,cellngas,cellid,celliso,cellvmr,cellength,
      1  cellpress,celltemp
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C     ******************************************************
 
@@ -90,6 +92,8 @@ C     ******************************************************
 C     *******************************************************
 C     ****************   CODE *******************************
 C     *******************************************************
+
+      idiag=1
 
 C     Read in reference gas information data
       CALL RESERVEGAS
@@ -113,7 +117,7 @@ C     New compiler time
 1     FORMAT(a)
       runname = buffer(1:36)
 
-      print*,'checking files'
+      if(idiag.gt.0)print*,'checking files'
 C     Make sure input files are OK
       CALL checkfiles(runname)
 
@@ -123,7 +127,7 @@ C     Make sure input files are OK
        stop
       endif
 
-      print*,'Files OK',gasgiant
+      if(idiag.gt.0)print*,'Files OK',gasgiant
 
       CALL file(runname,runname,'inp')
       OPEN(32,file=runname,status='old')
@@ -134,14 +138,14 @@ C     Also read in whether lbl calculation is required (ilbl)
       READ(32,*)ispace,iscat,ilbl
 
       if(ilbl.eq.1) then 
-       print*,'Nemesis - LBL calculation'
+       if(idiag.gt.0)print*,'Nemesis - LBL calculation'
       endif
       if(ilbl.eq.0)then
-       print*,'Nemesis - corr-k calculation'
+       if(idiag.gt.0)print*,'Nemesis - corr-k calculation'
        CALL readkkhead(runname,vkstart,vkend,vkstep)
       endif
       if(ilbl.eq.2)then
-       print*,'Nemesis - lbl-table calculation'
+       if(idiag.gt.0)print*,'Nemesis - lbl-table calculation'
        CALL readkklblhead(runname,vkstart,vkend,vkstep)
       endif
 
@@ -181,8 +185,8 @@ C              propagation of retrieval errors).
       CLOSE(32)
 
 
-      print*,'iform1 = ',iform1
-      print*,'percbool = ', percbool
+      if(idiag.gt.0)print*,'iform1 = ',iform1
+      if(idiag.gt.0)print*,'percbool = ', percbool
 
       if(iform1.eq.2)then
        print*,'Error in input file. Iform can be 0, 1 or 3 for Nemesis'
@@ -233,14 +237,16 @@ C     Open output file
       write(lout,*)nspec,' ! Total number of retrievals'
       write(lraw,*)nspec,' ! Total number of retrievals'
 
-      print*,'lin = ',lin
+      if(idiag.gt.0)print*,'lin = ',lin
 
       if(lin.gt.0)then
 C      if previous retrieval to be considered, 
 C      open previous raw retrieval file (copied to .pre)
        lpre=39
        CALL file(runname,runname,'pre')
-       print*,'Nemesis: reading previous retrieval : ',runname
+       if(idiag.gt.0)then
+        print*,'Nemesis: reading previous retrieval : ',runname
+       endif
        open(lpre,file=runname,status='old')
        read(lpre,*)nspecx
        if(nspec+ioff-1.gt.nspecx)then
@@ -318,7 +324,7 @@ C      Calculate the tabulated wavelengths of c-k look up tables
          vwave(igeom,j)=vwave1(j)
         enddo
         nwave(igeom)=nwave1
-        print*,igeom,nconv1,nwave1
+        if(idiag.gt.0)print*,igeom,nconv1,nwave1
        enddo
       endif
 

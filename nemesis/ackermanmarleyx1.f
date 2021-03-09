@@ -1,6 +1,6 @@
       SUBROUTINE ACKERMANMARLEYX1(IPLANET,LATITUDE,AMFORM,NPROIN,NVMR,
      1 IDGAS,ISOGAS,PIN,TIN,HIN,VMRIN,XMOLIN,NCONT,CONTIN,FLUX,IMODEL,
-     2 FRAIN,JVMR,DENSCOND,RADCOND,MWCOND,X1,X2)
+     2 FRAIN,JVMR,XDEEP,DENSCOND,RADCOND,MWCOND,X1,X2)
 C     **************************************************************   
 C     Subroutine to condense clouds as per the formalism of 
 C     Ackerman and Marley (2001). 
@@ -25,6 +25,7 @@ C				 STEF_BOLTZ*T_eff**4). Assume units of W m-2
 C       IMODEL  INTEGER		Model. 0 = Lewis, 1=Ackerman
 C       FRAIN	REAL		f_rain parameter of Ackerman model
 C       JVMR	INTEGER		Gas IVMR to consider applying this model to
+C	XDEEP	REAL		Deep vmr of gas IVMR
 C       DENSCOND REAL		Density of condensate material (g/cm3)
 C       RADCOND	REAL		Radius of condensate (microns)
 C       MWCOND	REAL		Molecular weight (g) of condensed phase
@@ -44,7 +45,7 @@ C     **************************************************************
       REAL H(MAXPRO),P(MAXPRO),T(MAXPRO),VMR(MAXPRO,MAXGAS)
       REAL CONT(MAXCON,MAXPRO),MOLWT,LATITUDE,R,DTDZ(MAXPRO)
       REAL QCONT(MAXCON,MAXPRO),FLUX,CP,RADIUS,DALR(MAXPRO)
-      REAL CALCMOLWT,XVMR(MAXGAS),GASDATA(20,5),DELH
+      REAL CALCMOLWT,XVMR(MAXGAS),GASDATA(20,5),DELH,XDEEP
       REAL XMOLWT,CPSPEC,EDDY(MAXPRO),PIN(MAXPRO),TIN(MAXPRO)
       REAL HIN(MAXPRO),VMRIN(MAXPRO,MAXGAS),CONTIN(MAXCON,MAXPRO)
       REAL XMOLIN(MAXPRO)
@@ -53,6 +54,7 @@ C     **************************************************************
       REAL WS(MAXPRO),FRAIN,DELQT,QT1,KMIN,X1(MAXPRO),X2(MAXPRO)
       REAL DENSCOND,RADCOND,MWCOND,N(MAXPRO),V,MP,M1,NM,NC
       REAL NAVAGADRO,NP,XMOL(MAXPRO),X1A(MAXPRO),X2A(MAXPRO)
+      REAL CLOUD(MAXPRO),XOD(MAXPRO),XCOL1(MAXPRO),XCOL2(MAXPRO)
       INTEGER K,AMFORM,NPRO,NVMR,I,IERR,NGAS,IPLANET,JVMR
       INTEGER IDGAS(MAXGAS),ISOGAS(MAXGAS),ISCALE(MAXGAS),J
       INTEGER JGAS,IVMR,NCONT,ICONDENSE,IMODEL,NPROIN
@@ -60,7 +62,11 @@ C     **************************************************************
       CHARACTER*100 AEFILE,QCFILE,ANAME
       CHARACTER*8 PNAME
       PARAMETER (XLAMBDA = 0.1,KMIN=1e5,KBOLTZ=1.38064852E-23)
-      PARAMETER (NAVAGADRO=6.022e23)
+      PARAMETER (NAVAGADRO=6.022E23)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
+
 C     RGAS read in from constdef.f, so set R accordingly and in correct
 C     units of J mol-1 K-1
       R=RGAS*0.001
@@ -70,7 +76,8 @@ C     gas with translational and rotational degrees of freedom activated.
 C     CP is J K-1 mol-1
       CP = 4*R
 
-C      print*,'Test ',1.0*0.1013*28.0/(R*273.0)
+
+
 C     Calculate density of atmosphere (g/cm3) and DALR (K/km)
 
 
@@ -83,12 +90,12 @@ C     First interpolate profile on to a grid with step of ~1 km
 
       DELH=(HIN(NPROIN)-HIN(1))/FLOAT(NPRO-1)
 
-      print*,NPROIN,HIN(1),HIN(NPROIN),DELH
-      print*,'NPRO = ',NPRO
+
+      if(idiag.gt.0)print*,'ack',NPROIN,HIN(1),HIN(NPROIN),DELH
+      if(idiag.gt.0)print*,'ack NPRO = ',NPRO
 
       DO 101 J=1,NPRO
        H(J)=HIN(1)+(J-1)*DELH
-       print*,J,H(J)
        CALL VERINT(HIN,PIN,NPROIN,P(J),H(J))
        CALL VERINT(HIN,TIN,NPROIN,T(J),H(J))
        CALL VERINT(HIN,XMOLIN,NPROIN,XMOL(J),H(J))
@@ -104,16 +111,9 @@ C     First interpolate profile on to a grid with step of ~1 km
         ENDDO
         CALL VERINT(HIN,X1,NPROIN,CONT(I,J),H(J))      
        ENDDO
-       print*,J,H(J)
 
 101   CONTINUE
  
-      DO 102 J=1,NPRO
-       print*,H(J),P(J),T(J),(VMR(J,K),K=1,NVMR)
-102   CONTINUE
-      DO 103 J=1,NPRO
-       print*,H(J),P(J),(CONT(K,J),K=1,NCONT)
-103   CONTINUE
 
       DO 201 J=1,NPRO
         XMOLWT=XMOL(J)
@@ -128,7 +128,6 @@ C       DALR is in units of K/km
         DALR(J)=1000.*G/CPSPEC
 C       Compute scale height (km)
         SCALE(J)=R*T(J)/(XMOLWT*G)
-C        print*,J,P(J),T(J),RHO(J),SCALE(J),XMOLWT
 201   CONTINUE
 
 C     Calculate DT_DZ
@@ -137,7 +136,7 @@ C     Calculate DT_DZ
       open(12,file='test.prf',status='unknown')
       write(12,*)NPRO
       write(12,*)'H(km) ,P(atm),T(K),SCALE(km),RHO(g/cm3),L(km),
-     &EDDY(cm2/s),WS(cm/s)'
+     &EDDY(cm2/s),WS(cm/s),W*FRAIN*DELH/EDDY'
 
       DO 202 J=1,NPRO
 C      Calculate eddy diffusion coefficient
@@ -152,10 +151,14 @@ C      EDDY(J) is eddy diffusion coefficient in cm2 s-1
        EDDY(J)=MAX(EDDY(J),KMIN)
 C      WS is convective velocity scale in cm s-1
        WS(J) = EDDY(J)/(L*1e5)
+C       DELH is height of layer in cm
+       IF(J.LT.NPRO)THEN 
+         DELH=1e5*(H(J+1)-H(J))
+       ENDIF
 C       WS(J) = 1000.
 C       EDDY(J)=2e8
-C       print*,J,H(J),SCALE(J),RHO(J),L,EDDY(J),LH,X,WS(J)
-        write(12,*)H(J),P(J),T(J),SCALE(J),RHO(J),L,EDDY(J),WS(J)
+        write(12,*)H(J),P(J),T(J),SCALE(J),RHO(J),L,EDDY(J),WS(J),
+     1   WS(J)*FRAIN*DELH/EDDY(J)
 202   CONTINUE
 
       close(12)
@@ -177,22 +180,27 @@ C     First skip header
       CLOSE(13)
 
 
-C      PRINT*,'JVMR, IDGAS(JVMR), ISOGAS(JVMR) = ',JVMR, IDGAS(JVMR),
-C     1  ISOGAS(JVMR)
-
+      if(idiag.gt.0)then
+       print*,'JVMR, IDGAS(JVMR), ISOGAS(JVMR) = ',JVMR, IDGAS(JVMR),
+     1  ISOGAS(JVMR)
+      endif
 
 C     Volume of condensed particles (m3)
       V = 1.3333*PI*(RADCOND*1e-6)**3
-C      print*,'R,D = ',RADCOND,DENSCOND
-C      print*,'V = ',V
-C     Mass of condensed particle (kg)
-      MP = DENSCOND*V
-C      print*,'MP = ',MP
-C     Mass of one molecule
+      if(idiag.gt.0)print*,'R (micron),D (g/cm3) = ',RADCOND,DENSCOND
+      if(idiag.gt.0)print*,'V (m3) = ',V
+C     Mass of condensed particle (kg) (DENSCOND is g/cm3)
+      MP = 1000*DENSCOND*V
+      if(idiag.gt.0)print*,'MP (kg) = ',MP
+C     Mass of one molecule (kg)
       M1 = 1E-3*MWCOND/NAVAGADRO
 C     Number of molecules per condensed particle
-C      print*,'M1,mwcond,NAVAGADRO',M1,mwcond,NAVAGADRO
+      if(idiag.gt.0)then
+       print*,'M1(kg),mwcond (g),NAVAGADRO',M1,mwcond,NAVAGADRO
+      endif
       NM = MP/M1
+      if(idiag.gt.0)print*,'Number of molecules/particle = ',NM
+
 
       DO 99 JGAS=1,NGAS
         IF(GASDATA(JGAS,1).EQ.IDGAS(JVMR))THEN
@@ -203,23 +211,22 @@ C        Constituent may condense. May need to modify mole fraction and cloud
          D = GASDATA(JGAS,5)
  
        
+         CLOUD(1)=0.
      
-         QV(1)=VMR(1,JVMR)
+C         QV(1)=VMR(1,JVMR)
+         QV(1)=XDEEP*VMR(1,JVMR)
          QC(1)=0.
          QT(1)=QV(1)
 
          X1A(1)=QV(1)
 
-C         IF(IMODEL.EQ.0)THEN
-C           PRINT*,'J, QT(J), QV(J), QC(J)'
-C         ELSE
-C           PRINT*,'J, QT(J), QV(J), QC(J), DELQT'
-C         ENDIF
-
          DO 97 J=2,NPRO
 C         Calculate saturated vapour mole fraction
           SVP=DPEXP(A+B/T(J)+C*T(J)+D*T(J)*T(J))
           QS = SVP/P(J)
+
+C         Calculate DELH in cm
+          DELH = 1e5*(H(J)-H(J-1))
 
           IF(IMODEL.EQ.0)THEN
 
@@ -227,19 +234,13 @@ C         Calculate saturated vapour mole fraction
            QC(J)=MAX(0.0,QV(J-1)-QS)
            QT(J)=QV(J)+QC(J)
 
-C           print*,J,QT(J),QV(J),QC(J)
-
           ELSE
 
-C          Calculate DELH in cm
-           DELH = 1e5*(H(J)-H(J-1))
            DELQT = -DELH*FRAIN*WS(J-1)*QC(J-1)/EDDY(J-1)
            QT(J)=QT(J-1)+DELQT
            QC(J)=MAX(0.0,QT(J)-QS)
            QV(J)=MIN(QT(J),QS)
            QV(J)=MIN(QV(J),QV(J-1))
-
-C           print*,J,QT(J),QV(J),QC(J),DELQT
 
           ENDIF
 
@@ -250,19 +251,35 @@ C         To convert QC into particles per gram we need to do the following:
 
 C         NC is number of condensed molecules per cm3, since N(J) is number density of air (molecule/cm3)
           NC = QC(J)*N(J)
-C          print*,J,QC(J),N(J),NC
 C         NP is number of condensed particles per cm3 since NM is number of molecules per particle
           NP = NC/NM
-C          print*,NM,NP
-C         X2A(J) is number of condensed particles/gram of atmosphere
-          
+
+C         CLOUD is number of condensed particles/cm2
+          CLOUD(J)=NP*DELH
+  
+C         X2A(J) is number of condensed particles/gram of atmosphere          
           X2A(J)=NP/RHO(J)
-C          print*,J,NP,RHO(J),X2A(J)
 97       CONTINUE
 
         ENDIF
 
 99    CONTINUE
+
+      XOD(NPRO)=0.
+      XCOL1(NPRO)=0.
+      XCOL2(NPRO)=0.
+      if(idiag.gt.0)then
+       print*,'I, P(ATM), part./cm2, integ/cm2, cloud g/cm2, vap g/cm2,
+     & deepvap g/cm2'
+      endif   
+      DO I=NPRO-1,1,-1
+       DELH=1E5*(H(I+1)-H(I))
+       XOD(I) = XOD(I+1)+CLOUD(I)
+       XCOL1(I) = XCOL1(I+1)+RHO(I)*QV(I)*DELH		
+       XCOL2(I) = XCOL2(I+1)+RHO(I)*QV(1)*DELH		
+       if(idiag.gt.0)print*,I,P(I),CLOUD(I),XOD(I),XOD(I)*MP*1000.0,
+     &  XCOL1(I),XCOL2(I)
+      ENDDO
 
 C     Interpolate answers back on to original grid
       DO 401 I=1,NPROIN

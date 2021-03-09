@@ -21,6 +21,8 @@ C     ****************************************************************
 	real n,k,l,lnew!,first,second,dlambda
 	integer io, nspec, ispec
 	logical mmexist
+        integer idiag,iquiet
+        common/diagnostic/idiag,iquiet
 
 C	counthead = 1
 
@@ -31,13 +33,12 @@ C	counthead = 1
 56		read(46,1)buffer
 1        	format(a)
          	if(buffer(1:1).eq.'#') goto 56!skip header
-C		print*,l
 		read(46,*)nspec!read no of wavelengths in file
 		read(46,*)ispec!if =1, data in wavelengths, if =0 data in wavenumbers
 57		read(46,*,iostat=io)lnew,n,k
 C2        	format(f4.2,f4.2,ES4.2)
 		if(io.ne.0) then
-			print*,io
+			if(idiag.gt.0)print*,io
 			goto 401!if eof reached, error message
 		endif
 		if(lnew.ne.l) goto 57

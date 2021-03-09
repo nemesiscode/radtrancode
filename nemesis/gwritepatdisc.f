@@ -166,8 +166,6 @@ C     sol_ang is then the tangent altitude)
 c  ** if rflfile exists then insert stuff for reflecting path **
       CALL FILE(RUNNAME,rflfile,'rfl')
       inquire(file=rflfile,exist=fexist)
-C      print*,'file=',rflfile
-C      print*,'fexist=',fexist
       if ( fexist ) then
 c       ** read in parameters from .rfl file **
          open(67,file=rflfile,status='old')

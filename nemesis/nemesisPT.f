@@ -82,6 +82,8 @@ C     Solar spectrum variables and flags
       character*100 solfile,solname
       logical solexist
       common/solardat/iread, iform, solradius, solwave, solrad,  solnpt
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
 C     ******************************************************
@@ -101,6 +103,7 @@ C     ------------ Scattering phase function initialisation -------------
       jradf=-1
       jloggf=-1
 
+      idiag=1
 
 C     New compiler time
       CALL system_clock(count_rate=cr)
@@ -113,13 +116,13 @@ C     New compiler time
 1     FORMAT(a)
       runname = buffer(1:36)
 
-      print*,'checking files'
+      if(idiag.gt.0)print*,'checking files'
 C     Make sure input files are OK
       CALL checkfiles(runname)
 
       CALL readrefhead(runname,npro,nvmr,gasgiant)
       if(npro.gt.maxpro)then
-       print*,'Error in Nemesis. npro > maxpro : ',npro,maxpro
+       print*,'Error in NemesisPT. npro > maxpro : ',npro,maxpro
        stop
       endif
 
@@ -263,10 +266,10 @@ C     Calculate the tabulated wavelengths of c-k look up tables
        enddo
        CALL wavesetb(runname,vkstart,vkend,vkstep,nconv1,vconv1,fwhm,
      1  nwave1,vwave1)
-       print*,nwave1
+       if(idiag.gt.0)print*,nwave1
        do j=1,nwave1
         vwave(igeom,j)=vwave1(j)
-        print*,vwave1(j)
+        if(idiag.gt.0)print*,vwave1(j)
        enddo
        nwave(igeom)=nwave1
       enddo
@@ -325,11 +328,11 @@ C     Simple errors, set to sqrt of diagonal of ST
       enddo
 
 C     write output
-      print*,'Calling writeout'
+      if(idiag.gt.0)print*,'Calling writeout'
       CALL writeout(iform,runname,ispace,lout,ispec,xlat,xlon,npro,
      1 nvar,varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err1,ngeom,
      2 nconv,vconv,gasgiant,jpre,jrad,jlogg,jfrac,iscat,lin)
-      print*,'writeout OK'
+      if(idiag.gt.0)print*,'writeout OK'
 
       CALL writeraw(lraw,ispec,xlat,xlon,npro,nvar,varident,
      1 varparam,nx,xn,st)

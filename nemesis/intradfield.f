@@ -88,6 +88,8 @@ C     **************************************************************
       real vem(maxsec),emissivity(maxsec)
 
       common/intrad/fintrad,fintname
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
 C     jradf and jloggf are passed via the planrad common block
@@ -120,7 +122,7 @@ C     jradf and jloggf are passed via the planrad common block
 
       open(ulog,file=logname,status='unknown')
 
-      print*,'intradfield: gasgiant',gasgiant
+      if(idiag.gt.0)print*,'intradfield: gasgiant',gasgiant
 C     If planet is not a gas giant then we need to read in the surface 
 C      emissivity spectrum
       if(.not.gasgiant)then
@@ -179,15 +181,15 @@ C        nf = int(20*sol_ang/90.0)
         fintname='internal.fld'
         nf=0
        endif
-       print*,'fintrad,fintname',fintrad,fintname
+       if(idiag.gt.0)print*,'fintrad,fintname',fintrad,fintname
 C      Set up all files for a direct cirsrad run
-       print*,'Calling gsetrad - gasgiant = ',gasgiant
+       if(idiag.gt.0)print*,'Calling gsetrad - gasgiant = ',gasgiant
        call gsetrad(intname,iscat,nmu,mu,wtmu,isol,dist,
      1     lowbc,galb,nf,nconv,vconv,fwhm,ispace,gasgiant,
      2     layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
      3     nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
 
-       print*,'Calling cirsrtf_wave'
+       if(idiag.gt.0)print*,'Calling cirsrtf_wave'
        call CIRSrtf_wave(intname, dist, inormal, iray, fwhm, ispace,
      1     vwave,nwave,npath, output, vconv, nconv, itype, nem, vem, 
      2     emissivity, tsurf, calcout)

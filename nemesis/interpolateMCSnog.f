@@ -24,7 +24,6 @@ C     First limb paths
        ioff1=ipath+(iconv-1)*npath
        radview(1+nlayer-i)=calcoutL(ioff1)
        tv1(1+nlayer-i)=thview(i)
-C       print*,'MCS',i,thview(i),radview(1+nlayer-i)
       enddo
 
 C     Then ground intersecting paths
@@ -36,38 +35,21 @@ C     Then ground intersecting paths
        radview(i)=calcoutL(ioff1) + calcoutL(ioff1A)*
      1   planck_wave(ispace,vconv(iconv),tsurf)*esurf
        tv1(i)=thview(i)
-C       print*,ioff1,ioff1A
-C       print*,calcoutL(ioff1),calcoutL(ioff1A)
-C       print*,ispace,vconv(iconv),tsurf,esurf
-C       print*,planck_wave(ispace,vconv(iconv),tsurf)
-C       print*,radview(i)
-C       stop
       enddo
  
-C      print*,'InterpolateMCSnog: Radiance profile to interpolate'
-C      do i=1,nview
-C       print*,tv1(i),radview(i)
-C      enddo     
 
 C     Now convolve with FOV arrays
 
-C      print*,'nfov',nfov
-C      do i=1,nfov
-C       print*,thfov(i),rfov(i)
-C      enddo
       sum1=0.0
       sum2=0.0
       do ifov=1,nfov
        call verint(tv1,radview,nview,radnow,thfov(ifov))
-C       print*,ifov,thfov(ifov),radnow
        sum1 = sum1 + rfov(ifov)*radnow
        sum2 = sum2 + rfov(ifov)
       enddo
 
       radmean = sum1/sum2
 
-      print*,'radmean = ',radmean
-C      stop
 
       return
 

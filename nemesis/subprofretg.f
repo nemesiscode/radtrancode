@@ -137,25 +137,13 @@ C     ***********************************************************************
       REAL XLINE(4,MAXPRO),GLINE(4,MAXPRO,5),DXD1,DXD2,DXD3,DXD4
       REAL LONZ(4),TOUT(MAXPRO)
       INTEGER IX1,IX2,IX3,IX4,ILON
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       CALL RESERVEGAS
 
 C----------------------------------------------------------------------------
 C
-
-C      print*,'Check subprofretg'
-C      print*,XFLAG,IPFILE,ISPACE,ISCAT,GASGIANT,XLAT,XLON,NVAR
-C      do i=1,nvar
-C        print*,(varident(i,j),j=1,3)
-C        print*,(varparam(i,j),j=1,5)
-C      enddo      
-C      print*,nx
-C      do i=1,nx
-C       print*,i,xn(i)
-C      enddo
-C      print*,JPRE,NCONT,FLAGH2P
-
-
 
 C     First zero-fill HREF, PREF, TREF and VMRREF arrays
       do i=1,MAXLAT
@@ -194,11 +182,11 @@ C     First skip header
 1      FORMAT(A)
        IF(XFLAG.EQ.0)THEN
          READ(1,*)NLATREF
-         print*,'NLATREF = ',NLATREF
+         if(idiag.gt.0)print*,'NLATREF = ',NLATREF
          IF(NLATREF.GT.MAXLAT)THEN
-          PRINT*,'MAXLAT in subprofretg is too small. Increase'
-          PRINT*,'and recompile'
-          PRINT*,'MAXLAT, NLATREF = ',MAXLAT,NLATREF
+           print*,'MAXLAT in subprofretg is too small. Increase'
+           print*,'and recompile'
+           print*,'MAXLAT, NLATREF = ',MAXLAT,NLATREF
           STOP
          ENDIF
 
@@ -210,7 +198,7 @@ C     First skip header
           ENDIF
 
           IF(NPRO.GT.MAXPRO)THEN
-           PRINT*,'Error in subprofretg. NPRO>MAXPRO ',NPRO,MAXPRO
+            print*,'Error in subprofretg. NPRO>MAXPRO ',NPRO,MAXPRO
            STOP
           ENDIF
 
@@ -241,33 +229,39 @@ C        Now interpolate to correct latitude
          IF(NLATREF.EQ.1)THEN
           JLAT=1
           FLAT=0.
-          PRINT*,'Snapping to first latitude'
+          if(idiag.gt.0)print*,'Snapping to first latitude'
          ELSE
           KLAT=-1
           DO ILATREF=1,NLATREF
            IF(XLAT.GE.LATREF(ILATREF))KLAT=ILATREF
           ENDDO
           IF(KLAT.LT.1)THEN
-           PRINT*,'Requested latitude is less than range given'
-           PRINT*,'Using lowest latitude available'
-           PRINT*,'Requested : ',XLAT
-           PRINT*,'Lowest available : ',LATREF(1)
+           if(idiag.gt.0)then
+            print*,'Requested latitude is less than range given'
+            print*,'Using lowest latitude available'
+            print*,'Requested : ',XLAT
+            print*,'Lowest available : ',LATREF(1)
+           endif
            JLAT=1
            FLAT=0.
           ELSEIF(KLAT.EQ.NLATREF)THEN
-           PRINT*,'Requested latitude is greater than range given'
-           PRINT*,'Using highest latitude available'
-           PRINT*,'Requested : ',XLAT
-           PRINT*,'Highest available : ',LATREF(NLATREF)
+           if(idiag.gt.0)then
+            print*,'Requested latitude is greater than range given'
+            print*,'Using highest latitude available'
+            print*,'Requested : ',XLAT
+            print*,'Highest available : ',LATREF(NLATREF)
+           endif
            JLAT=NLATREF-1
            FLAT=1.0
           ELSE
            JLAT=KLAT
            FLAT=(XLAT-LATREF(JLAT))/
      &			(LATREF(JLAT+1)-LATREF(JLAT))
-           PRINT*,'JLAT,FLAT',JLAT,FLAT
-           PRINT*,'LATREF(JLAT),LATREF(JLAT+1)',
+           if(idiag.gt.0)then
+            print*,'JLAT,FLAT',JLAT,FLAT
+            print*,'LATREF(JLAT),LATREF(JLAT+1)',
      &		LATREF(JLAT),LATREF(JLAT+1)
+           endif
           ENDIF
          ENDIF
 
@@ -314,9 +308,11 @@ C          STOP
          ELSE
           READ(1,*)IPLANET,LATITUDE,NPRO,NVMR
          ENDIF
-         print*,IPLANET,LATITUDE,NPRO,NVMR,MOLWT
+         if(idiag.gt.0)print*,IPLANET,LATITUDE,NPRO,NVMR,MOLWT
          IF(NPRO.GT.MAXPRO)THEN
-          PRINT*,'Error in subprofretg. NPRO>MAXPRO ',NPRO,MAXPRO
+          if(idiag.gt.0)then
+           print*,'Error in subprofretg. NPRO>MAXPRO ',NPRO,MAXPRO
+          endif
           STOP
          ENDIF
 
@@ -350,13 +346,15 @@ C        Skip header
 
 C      Make sure that vmrs add up to 1 if AMFORM=1
        IF(AMFORM.EQ.1)THEN
-        print*,'XX. ISCALE = ',(ISCALE(J),J=1,NVMR) 
+        if(idiag.gt.0)print*,'XX. ISCALE = ',(ISCALE(J),J=1,NVMR) 
         CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
         
         IF(IERR.EQ.1)THEN
-         print*,'XX. Warning from Adjustvmr: IERR = ',IERR
-         print*,'Warning from subprofretg. VMRS do not add to 1'
-         print*,'Resetting to reference'       
+         if(idiag.gt.0)then
+          print*,'XX. Warning from Adjustvmr: IERR = ',IERR
+          print*,'Warning from subprofretg. VMRS do not add to 1'
+          print*,'Resetting to reference'      
+         endif 
          DO I=1,NPRO
           DO J=1,NVMR
            VMR(I,J)=(1.0-FLAT)*VMRREF(JLAT,I,J)+
@@ -364,13 +362,13 @@ C      Make sure that vmrs add up to 1 if AMFORM=1
           ENDDO
          ENDDO
          CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
-         print*,'XX. IERRX = ',IERR
+         if(idiag.gt.0)print*,'XX. IERRX = ',IERR
         ENDIF
 
         DO 301 I=1,NPRO
          DO K=1,NVMR
           XVMR(K)=VMR(I,K)
-c          print*,I,K,XVMR(K)
+c          if(idiag.gt.0)print*,I,K,XVMR(K)
          ENDDO
          XXMOLWT(I)=CALCMOLWT(NVMR,XVMR,IDGAS,ISOGAS)
 301     CONTINUE
@@ -381,7 +379,7 @@ c      Calculate MOLWT but dont add VMRs to 1 if AMFORM=2
         DO I=1,NPRO
          DO K=1,NVMR
           XVMR(K)=VMR(I,K)
-c          print*,I,K,XVMR(K)
+c          if(idiag.gt.0)print*,I,K,XVMR(K)
          ENDDO
          XXMOLWT(I)=CALCMOLWT(NVMR,XVMR,IDGAS,ISOGAS)
         ENDDO
@@ -422,18 +420,17 @@ C **************** Modify profile via hydrostatic equation ********
         JHYDRO=1
         HTAN = VARPARAM(I,1)
         PTAN = EXP(XN(JPRE))
-C        print*,'subprofretg : htan, ptan = ',htan,ptan
        ENDIF
       ENDDO
       IF(JHYDRO.EQ.0)THEN
        CALL XHYDROSTATH(AMFORM,IPLANET,LATITUDE,NPRO,NVMR,MOLWT,
      1  IDGAS,ISOGAS,H,P,T,VMR,SCALE)
       ELSE
-       print*,'Calling xhydrostatp'
-       print*,'P(1),H(1) = ',P(1),H(1)
+       if(idiag.gt.0)print*,'Calling xhydrostatp'
+       if(idiag.gt.0)print*,'P(1),H(1) = ',P(1),H(1)
        CALL XHYDROSTATP(AMFORM,IPLANET,LATITUDE,NPRO,NVMR,MOLWT,
      1  IDGAS,ISOGAS,H,P,T,VMR,HTAN,PTAN,SCALE)
-       print*,'Mod: P(1),H(1) = ',P(1),H(1)
+       if(idiag.gt.0)print*,'Mod: P(1),H(1) = ',P(1),H(1)
       ENDIF
 
 C     Read in reference AEROSOL profile
@@ -472,7 +469,7 @@ C     See if we need to deal with a variable para-H2 fraction
 
        inquire(file='parah2.ref',exist=fexist)
        if(.not.fexist) then
-        print*,'Error in subprofretg.f - you have a variable para-H2'      
+        print*,'Error in subprofretg.f - you have a variable para-H2' 
         print*,'para-H2 CIA file, but no parah2.ref file'
         stop
        endif
@@ -487,8 +484,8 @@ C      First skip header
        IF(BUFFER(1:1).EQ.'#') GOTO 56
        READ(BUFFER,*)NPRO1
        IF(NPRO1.NE.NPRO)THEN
-          PRINT*,'Error in subprofretg'
-          PRINT*,'Para-H2 profile has wrong number of levels'
+          print*,'Error in subprofretg'
+          print*,'Para-H2 profile has wrong number of levels'
           STOP
        ENDIF
        DO I=1,NPRO
@@ -511,8 +508,8 @@ C      First skip header
        IF(BUFFER(1:1).EQ.'#') GOTO 58
        READ(BUFFER,*)NPRO1,NCONT1
        IF(NPRO1.NE.NPRO)THEN
-          PRINT*,'Error in subprofretg'
-          PRINT*,'fcloud profile has wrong number of levels'
+          print*,'Error in subprofretg'
+          print*,'fcloud profile has wrong number of levels'
           STOP
        ENDIF
        DO I=1,NPRO
@@ -547,16 +544,13 @@ C     First skip header
 
       NXTEMP=0
       DO 1000 IVAR = 1,NVAR
-C       PRINT*,'SUBPROFRETG: IVAR = ',IVAR
        JCONT=-1
        JSPEC=-1
        JVMR=-1
        IPAR=-1
-C       print*,(varident(ivar,j),j=1,3)      
        IF(VARIDENT(IVAR,1).LE.100)THEN
         IF(VARIDENT(IVAR,1).EQ.0)THEN
 C        variable is Temperature
-C         PRINT*,'Temperature'
          DO I=1,NPRO
           XREF(I)=T(I)
          ENDDO
@@ -566,29 +560,26 @@ C         PRINT*,'Temperature'
 C        variable is aerosol amount
          JCONT = -VARIDENT(IVAR,1)
          IF(JCONT.GT.NCONT+2)THEN
-          PRINT*,'Error in subprofretg, JCONT > NCONT+2',JCONT,NCONT+2
+          print*,'Error in subprofretg, JCONT > NCONT+2',JCONT,NCONT+2
           STOP
          ENDIF
 C        Note if JCONT = NCONT+1 then profile contains para-H2 fraction
 C        Note if JCONT = NCONT+2 then profile contains fraction cloud  cover
          IF(JCONT.EQ.NCONT+1)THEN
-C          print*,'para-H2'
           IF(FLAGH2P.EQ.1)THEN
            DO I=1,NPRO
             XREF(I)=PARAH2(I)
            ENDDO
           ELSE
-           PRINT*,'Error in subprofretg, para-H2 fraction declared as'
-           PRINT*,'variable but atmosphere is not Giant Planet.'
+           print*,'Error in subprofretg, para-H2 fraction declared as'
+           print*,'variable but atmosphere is not Giant Planet.'
            STOP
           ENDIF
          ELSEIF(JCONT.EQ.NCONT+2)THEN
-C          print*,'fractional cloud cover'
           DO I=1,NPRO
             XREF(I)=FCLOUD(I)
           ENDDO
          ELSE
-C          print*,'Aerosol : ',JCONT
           DO I=1,NPRO
            XREF(I)=CONT(JCONT,I)
           ENDDO
@@ -601,11 +592,10 @@ C        Must be gas v.m.r., find which one
      1     VARIDENT(IVAR,2).EQ.ISOGAS(IVMR))JVMR = IVMR
          ENDDO
          IF(JVMR.LT.1)THEN
-          PRINT*,'Subprofretg: Gas could not be found',
+          print*,'Subprofretg: Gas could not be found',
      1     VARIDENT(IVAR,1),VARIDENT(IVAR,2)
           STOP
          ENDIF
-C         print*,'Gas : ',IDGAS(JVMR),ISOGAS(JVMR)
 C        Set ISCALE=0 for this gas to prevent vmr being scaled to give a 
 C        total sum or vmrs=1 for AMFORM=1 format profile
          ISCALE(JVMR)=0
@@ -616,13 +606,10 @@ C        total sum or vmrs=1 for AMFORM=1 format profile
 
         ENDIF
 
-C        print*,'VARIDENT : ',VARIDENT(IVAR,1),VARIDENT(IVAR,2),
-C     1    VARIDENT(IVAR,3)
 
 C       Look up number of parameters needed to define this type of profile
         NP = NPVAR(VARIDENT(IVAR,3),NPRO,VARPARAM(IVAR,1))
-C        print*,'IVAR,VARIDENT,NP',IVAR,(VARIDENT(IVAR,I),I=1,3),NP
-        print*,'IPAR = ',IPAR
+        if(idiag.gt.0)print*,'IPAR = ',IPAR
         IF(VARIDENT(IVAR,3).EQ.0)THEN
 C        Model 0. Continuous profile
 C        ***************************************************************
@@ -713,10 +700,10 @@ C        New gradient correction if fsh is held as logs
         ELSEIF(VARIDENT(IVAR,3).EQ.2)THEN
 C        Model 2. Profile is scaled fraction of reference profile
 C        ***************************************************************
-         print*,NXTEMP+1,XN(NXTEMP+1)
+         if(idiag.gt.0)print*,NXTEMP+1,XN(NXTEMP+1)
          DO J = 1,NPRO
           X1(J) = XREF(J)*XN(NXTEMP+1)
-          print*,x1(j)
+          if(idiag.gt.0)print*,x1(j)
           XMAP(NXTEMP+1,IPAR,J)=XREF(J)
          ENDDO
 	
@@ -790,7 +777,7 @@ C        Model 5. Continuous profile, but variable with latitude.
 C        Option is defunct.
 C        ***************************************************************
 
-         PRINT*,'VARIDENT(IVAR,3).EQ.5 - Model no longer supported'
+         print*,'VARIDENT(IVAR,3).EQ.5 - Model no longer supported'
          STOP
 
         ELSEIF(VARIDENT(IVAR,3).EQ.6)THEN
@@ -800,9 +787,9 @@ C        scale height (km)
 C        ***************************************************************
          HKNEE = VARPARAM(IVAR,1)
          IF(VARIDENT(IVAR,1).GE.0)THEN
-          PRINT*,'Warning from SUBPROFRETG. You are using a Venusian'
-          PRINT*,'cloud profile parameterisation for a non-cloud'
-          PRINT*,'variable'         
+          print*,'Warning from SUBPROFRETG. You are using a Venusian'
+          print*,'cloud profile parameterisation for a non-cloud'
+          print*,'variable'         
           STOP 
          ENDIF
 
@@ -897,13 +884,11 @@ C        ***************************************************************
          ENDDO
 
          IF(JFSH.LT.2.OR.JFSH.GT.NPRO-1)THEN
-          PRINT*,'SUBPROFRETG. Must choose pressure level'
-          PRINT*,'within range of profile'
+          print*,'SUBPROFRETG. Must choose pressure level'
+          print*,'within range of profile'
           STOP
          ENDIF
 
-C         print*,'Requested knee pressure : ',PKNEE
-C         print*,'Snapping to : ',P(JFSH)
 
          X1(JFSH)=XDEEP
 
@@ -947,9 +932,9 @@ C        set to zero - a simple cloud in other words!
 C        ***************************************************************
 
          IF(VARIDENT(IVAR,1).GE.0)THEN
-          PRINT*,'Warning from SUBPROFRETG. You are using a'
-          PRINT*,'cloud profile parameterisation for a non-cloud'
-          PRINT*,'variable'         
+          print*,'Warning from SUBPROFRETG. You are using a'
+          print*,'cloud profile parameterisation for a non-cloud'
+          print*,'variable'         
           STOP 
          ENDIF
 
@@ -1058,22 +1043,21 @@ C         post-processing in gsetrad.f
            OD(J)=XDEEP*OD(J)/XOD
            ND(J)=XDEEP*ND(J)/XOD
            Q(J)=XDEEP*Q(J)/XOD
-c           print*, 'Q: ', Q(J), XDEEP, XOD
            IF(Q(J).GT.1e10)Q(J)=1e10
            IF(Q(J).LT.1e-36)Q(J)=1e-36
            NTEST=ISNAN(Q(J))
            IF(NTEST)THEN
-            print*,'Error in subprofretg.f, cloud density is NAN'
-            print*,'Setting to 1e-36'
+            if(idiag.gt.0)then
+             print*,'Error in subprofretg.f, cloud density is NAN'
+             print*,'Setting to 1e-36'
+            endif
 	    Q(J)=1e-36
            ENDIF
 
            IF(ITEST.EQ.1)THEN
             X1(J)=Q(J)
-C            print*,'J,X1(J)',J,X1(J)
            ELSE
             XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
-C            PRINT*,'ITEST,J,XMAP',ITEST,J,Q(J),X1(J),(Q(J)-X1(J))/DX
            ENDIF
 
           ENDDO
@@ -1088,9 +1072,9 @@ C        this model scales the profile to give the requested integrated cloud
 C        optical depth.
 C        ***************************************************************
          IF(VARIDENT(IVAR,1).GE.0)THEN
-          PRINT*,'Warning from SUBPROFRETG. You are using a'
-          PRINT*,'cloud profile parameterisation for a non-cloud'
-          PRINT*,'variable'         
+          print*,'Warning from SUBPROFRETG. You are using a'
+          print*,'cloud profile parameterisation for a non-cloud'
+          print*,'variable'         
           STOP 
          ENDIF
 
@@ -1106,9 +1090,9 @@ C        Calculate gradient numerically as it's just too hard otherwise
           IF(DX.EQ.0.)DX=0.1
 
           IF(ITEST.GT.1)THEN
-C            print*,'ITEST,IPAR,XN,DX = ',ITEST,IPAR,
+C            if(idiag.gt.0)print*,'ITEST,IPAR,XN,DX = ',ITEST,IPAR,
 C     1		XN(NXTEMP+ITEST-1),DX
-C            print*,'XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
+C            if(idiag.gt.0)print*,'XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
           ENDIF
           IF(ITEST.EQ.2)THEN
             XDEEP=EXP(XN(NXTEMP+1)+DX)
@@ -1119,8 +1103,6 @@ C            print*,'XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
           IF(ITEST.EQ.4)THEN
             HKNEE = XN(NXTEMP+3)+DX
           ENDIF
-C          print*,'Mod: ITEST,XDEEP,XFSH,HKNEE',ITEST,XDEEP,
-C     &		XFSH,HKNEE
 
 
 
@@ -1183,7 +1165,6 @@ C           Calculate density of atmosphere  (g/cm3)
             DQDH(J) = DNDH(J)/RHO
            ENDIF
 
-c           print*,'BLAH:',J,H(J), HKNEE, ND(J),JFSH
 
           ENDDO
 
@@ -1200,7 +1181,6 @@ C         Integrate optical thickness
             XOD = (1.-F)*OD(J) + F*OD(J+1)
             JFSH=1
            ENDIF
-c           print*, 'OD F XOD JFSH',OD(J),F,XOD,JFSH,ND(J),ND(J+1)
           ENDDO
 
 C         The following section was found not to be as accurate as
@@ -1217,22 +1197,21 @@ C         post-processing in gsetrad.f
              Q(J) = 0.0
             ENDIF
            ENDIF
-c           print*, 'Q: ', Q(J), XDEEP, XOD
            IF(Q(J).GT.1e10)Q(J)=1e10
            IF(Q(J).LT.1e-36)Q(J)=1e-36
            NTEST=ISNAN(Q(J))
            IF(NTEST)THEN
-            print*,'Error in subprofretg.f, cloud density is NAN'
-            print*,'Setting to 1e-36'
+            if(idiag.gt.0)then
+             print*,'Error in subprofretg.f, cloud density is NAN'
+             print*,'Setting to 1e-36'
+            endif
             Q(J)=1e-36
            ENDIF
 
            IF(ITEST.EQ.1)THEN
             X1(J)=Q(J)
-C            print*,'J,X1(J)',J,X1(J)
            ELSE
             XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
-C            PRINT*,'ITEST,J,XMAP',ITEST,J,Q(J),X1(J),(Q(J)-X1(J))/DX
            ENDIF
 
            DNDH(J)=DNDH(J)*XDEEP/XOD
@@ -1268,8 +1247,10 @@ C        ***************************************************************
 	 ENDDO    
 
          IF(IDAT.EQ.0)THEN
-          print*,'Subprofretg: Gas SVP data cannot be found'
-          print*,IPAR,IDGAS(IPAR)
+          if(idiag.gt.0)then
+           print*,'Subprofretg: Gas SVP data cannot be found'
+           print*,IPAR,IDGAS(IPAR)
+          endif
          ENDIF
 
 C        Find where the gas will condense.
@@ -1430,8 +1411,10 @@ C        ***************************************************************
     
 
          IF(IDAT.EQ.0)THEN
-          print*,'Subprofretg: Gas SVP data cannot be found'
-          print*,IPAR,IDGAS(IPAR)
+          if(idiag.gt.0)then
+           print*,'Subprofretg: Gas SVP data cannot be found'
+           print*,IPAR,IDGAS(IPAR)
+          endif
          ENDIF
 
          IFLA=0
@@ -1562,7 +1545,6 @@ C        ***************************************************************
 
          Y0=HKNEE
 
-C         print*,'Xdeep, hknee, xwid',XDEEP,HKNEE,XWID
 
 C        **** Want to normalise to get optical depth right. ***
 C        ND is the particles per cm3 (but will be rescaled)
@@ -1597,7 +1579,6 @@ C        Q(J)=ND(J)/RHO
 C        Empirical correction to XOD
          XOD = XOD*0.25
 
-C         print*,'XOD = ',XOD
 
 
          DO J=1,NPRO
@@ -1668,7 +1649,6 @@ C        Q(J)=ND(J)/RHO
 C        Empirical correction to XOD
          XOD = XOD*0.25
 
-C         print*,'XOD = ',XOD
 
          DO J=1,NPRO
          
@@ -1718,9 +1698,9 @@ C        ***************************************************************
 211      CONTINUE
 
          IF(JKNEE.LT.1.OR.JKNEE.GT.NPRO-1)THEN
-          PRINT*,'SUBPROFRETG. Must choose pressure level'
-          PRINT*,'within range of profile'
-          PRINT*,'Model = 16'
+          print*,'SUBPROFRETG. Must choose pressure level'
+          print*,'within range of profile'
+          print*,'Model = 16'
           STOP
          ENDIF
 
@@ -1823,13 +1803,10 @@ C        ***************************************************************
          ENDDO
 
          IF(JFSH.LT.2.OR.JFSH.GT.NPRO-1)THEN
-          PRINT*,'SUBPROFRETG. Must choose pressure level'
-          PRINT*,'within range of profile'
+          print*,'SUBPROFRETG. Must choose pressure level'
+          print*,'within range of profile'
           STOP
          ENDIF
-
-C         print*,'Requested knee pressure : ',PKNEE
-C         print*,'Snapping to : ',P(JFSH)
 
          X1(JFSH)=XDEEP
 
@@ -1900,13 +1877,10 @@ C        ***************************************************************
          ENDDO
 
          IF(JFSH.LT.2.OR.JFSH.GT.NPRO-1)THEN
-          PRINT*,'SUBPROFRETG. Must choose pressure level'
-          PRINT*,'within range of profile'
+          print*,'SUBPROFRETG. Must choose pressure level'
+          print*,'within range of profile'
           STOP
          ENDIF
-
-C         print*,'Requested knee pressure : ',PKNEE
-C         print*,'Snapping to : ',P(JFSH)
 
          X1(JFSH)=XDEEP
 
@@ -1942,9 +1916,9 @@ C         print*,'Snapping to : ',P(JFSH)
 C        Model 19. Identical to model 9, but pinches off abudance near tropopause.
 C        ***************************************************************
          IF(VARIDENT(IVAR,1).GE.0)THEN
-          PRINT*,'Warning from SUBPROFRETG. You are using a'
-          PRINT*,'cloud profile parameterisation for a non-cloud'
-          PRINT*,'variable'         
+          print*,'Warning from SUBPROFRETG. You are using a'
+          print*,'cloud profile parameterisation for a non-cloud'
+          print*,'variable'         
           STOP 
          ENDIF
 
@@ -1980,9 +1954,9 @@ C        Calculate gradient numerically as it's just too hard otherwise
           IF(DX.EQ.0.)DX=0.1
 
           IF(ITEST.GT.1)THEN
-C            print*,'ITEST,IPAR,XN,DX = ',ITEST,IPAR,
+C            if(idiag.gt.0)print*,'ITEST,IPAR,XN,DX = ',ITEST,IPAR,
 C     1		XN(NXTEMP+ITEST-1),DX
-C            print*,'XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
+C            if(idiag.gt.0)print*,'XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
           ENDIF
           IF(ITEST.EQ.2)THEN
             XDEEP=EXP(XN(NXTEMP+1)+DX)
@@ -1995,8 +1969,7 @@ C            print*,'XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
           ENDIF
           IF(ITEST.EQ.4)THEN
             HKNEE = XN(NXTEMP+4)+DX
-          ENDIF
-C          print*,'Mod: XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
+          ENDIF 
 
           JFSH=-1
           DO J=NPRO-1,1,-1
@@ -2052,22 +2025,28 @@ C         post-processing in gsetrad.f
            IF(Q(J).LT.1e-36)Q(J)=1e-36
            NTEST=ISNAN(Q(J))
            IF(NTEST)THEN
-            print*,'Error in subprofretg.f, cloud density is NAN'
-            print*,'XDEEP,XOD,HKNEE = ',XDEEP,XOD,HKNEE
+            if(idiag.gt.0)then
+             print*,'Error in subprofretg.f, cloud density is NAN'
+             print*,'XDEEP,XOD,HKNEE = ',XDEEP,XOD,HKNEE
+            endif
             DO JX =1,NPRO
              OD(JX)=XDEEP*OD(JX)/XOD
              ND(JX)=XDEEP*ND(JX)/XOD
              Q(JX)=XDEEP*Q(JX)/XOD
-             print*,'JX,OD,ND,Q = ',JX,OD(JX),ND(JX),Q(JX)
+             if(idiag.gt.0)then
+              print*,'JX,OD,ND,Q = ',JX,OD(JX),ND(JX),Q(JX)
+             endif
              IF(H(JX).LT.HKNEE)THEN
               IF(H(JX+1).GE.HKNEE)THEN
                Q(JX)=Q(JX)*(1.0 - (HKNEE-H(JX))/(H(JX+1)-H(JX)))
               ELSE
                Q(JX) = 0.0
               ENDIF
-              print*,'H(JX),H(JX+1),HKNEE',H(JX),H(JX+1),HKNEE
-              print*,HKNEE-H(JX),H(JX+1)-H(JX)
-              print*,(1.0 - (HKNEE-H(JX))/(H(JX+1)-H(JX)))
+              if(idiag.gt.0)then
+               print*,'H(JX),H(JX+1),HKNEE',H(JX),H(JX+1),HKNEE
+               print*,HKNEE-H(JX),H(JX+1)-H(JX)
+               print*,(1.0 - (HKNEE-H(JX))/(H(JX+1)-H(JX)))
+              endif
              ENDIF
              IF(Q(JX).GT.1e10)Q(JX)=1e10
              IF(Q(JX).LT.1e-36)Q(JX)=1e-36
@@ -2077,10 +2056,8 @@ C         post-processing in gsetrad.f
 
            IF(ITEST.EQ.1)THEN
             X1(J)=Q(J)
-C            print*,'J,X1(J)',J,X1(J)
            ELSE
             XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
-C            PRINT*,'ITEST,J,XMAP',ITEST,J,Q(J),X1(J),(Q(J)-X1(J))/DX
            ENDIF
 
            DNDH(J)=DNDH(J)*XDEEP/XOD
@@ -2153,9 +2130,9 @@ C        this model scales the profile to give the requested integrated cloud
 C        optical depth.
 C        ***************************************************************
          IF(VARIDENT(IVAR,1).GE.0)THEN
-          PRINT*,'Warning from SUBPROFRETG. You are using a'
-          PRINT*,'cloud profile parameterisation for a non-cloud'
-          PRINT*,'variable'         
+          print*,'Warning from SUBPROFRETG. You are using a'
+          print*,'cloud profile parameterisation for a non-cloud'
+          print*,'variable'         
           STOP 
          ENDIF
 
@@ -2169,24 +2146,21 @@ C        Calculate gradient numerically as it's just too hard otherwise
 
 C         Need radius from associated 444/445 particle parameterisation
           ICL=-VARIDENT(IVAR,1)
-C          print*,'ICLOUD = ',ICL
           RPARTICLE = GETRADIUS(ICL,NVAR,VARIDENT,VARPARAM,XN,NPRO)
           IF(RPARTICLE.LT.0)THEN
-           PRINT*,'Particle size cannot be found'
+           print*,'Particle size cannot be found'
            STOP
           ENDIF
           REFRADIUS=VARPARAM(IVAR,2)
           XFSH=XFSH*REFRADIUS/RPARTICLE
 
-C          print*,'Test rparticle,refradius,xfsh,icl = ',
-C     1     RPARTICLE,REFRADIUS,XFSH,ICL
           DX=0.05*XN(NXTEMP+ITEST-1)
           IF(DX.EQ.0.)DX=0.1
 
           IF(ITEST.GT.1)THEN
-C            print*,'ITEST,IPAR,XN,DX = ',ITEST,IPAR,
+C            if(idiag.gt.0)print*,'ITEST,IPAR,XN,DX = ',ITEST,IPAR,
 C     1		XN(NXTEMP+ITEST-1),DX
-C            print*,'XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
+C            if(idiag.gt.0)print*,'XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
           ENDIF
           IF(ITEST.EQ.2)THEN
             XDEEP=EXP(XN(NXTEMP+1)+DX)
@@ -2194,8 +2168,6 @@ C            print*,'XDEEP,XFSH,HKNEE',XDEEP,XFSH,HKNEE
           IF(ITEST.EQ.3)THEN
             HKNEE = XN(NXTEMP+3)+DX
           ENDIF
-C          print*,'Mod: ITEST,XDEEP,XFSH,HKNEE',ITEST,XDEEP,
-C     &		XFSH,HKNEE
 
 
 
@@ -2251,8 +2223,6 @@ C           Calculate density of atmosphere  (g/cm3)
             DQDH(J) = DNDH(J)/RHO
            ENDIF
 
-C           print*,J,H(J),ND(J),Q(J)
-
           ENDDO
 
 
@@ -2267,7 +2237,6 @@ C         Integrate optical thickness
             XOD = (1.-F)*OD(J) + F*OD(J+1)
             JFSH=1
            ENDIF
-C           print*,'h',J,OD(J)
           ENDDO
 
 C         The following section was found not to be as accurate as
@@ -2288,17 +2257,17 @@ C         post-processing in gsetrad.f
            IF(Q(J).LT.1e-36)Q(J)=1e-36
            NTEST=ISNAN(Q(J))
            IF(NTEST)THEN
-            print*,'Error in subprofretg.f, cloud density is NAN'
-            print*,'Setting to 1e-36'
+            if(idiag.gt.0)then
+             print*,'Error in subprofretg.f, cloud density is NAN'
+             print*,'Setting to 1e-36'
+            endif
             Q(J)=1e-36
            ENDIF
 
            IF(ITEST.EQ.1)THEN
             X1(J)=Q(J)
-C            print*,'J,X1(J)',J,X1(J)
            ELSE
             XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
-C            PRINT*,'ITEST,J,XMAP',ITEST,J,Q(J),X1(J),(Q(J)-X1(J))/DX
            ENDIF
 
            DNDH(J)=DNDH(J)*XDEEP/XOD
@@ -2322,7 +2291,6 @@ C        Brown dwarf parameterised temperature profile.
      &	dtempdx)
 
         do J=1,npro
-C         print*,p(J),x1(J)
          do K=1,np
           XMAP(NXTEMP+K,IPAR,J)=dtempdx(J,K)*EXP(XN(NXTEMP+K))
          enddo
@@ -2346,8 +2314,10 @@ C        ***************************************************************
            stop
          ENDIF
          if(xn(nxtemp+2).gt.xn(nxtemp+4)) then
-           print*,'Warning: p1>p2 non-single valued profile.'
-           print*,'       : setting p2=p1'
+           if(idiag.gt.0)then
+            print*,'Warning: p1>p2 non-single valued profile.'
+            print*,'       : setting p2=p1'
+           endif
            xn(nxtemp+4) = xn(nxtemp+2)
          endif
          v1log = xn(nxtemp+1)
@@ -2454,9 +2424,6 @@ C          LP1(J)=LPMIN + DLP*FLOAT(J-1)
 CC         Reverse profile array which by convention goes up in the atmosphere
 C          XP1(1+NP-J)=XN(NXTEMP+J)
 C         ENDDO
-CC         DO J=1,NP
-CC          PRINT*,J,LP1(J),exp(LP1(J)),XP1(J)
-CC         ENDDO
 
          NP = INT(VARPARAM(IVAR,1))
          DO J=1,NP
@@ -2512,11 +2479,10 @@ C        be too inaccurate, but I have left the code here for reference.
 C         DO J=1,NPRO
 C          L1 = ALOG(P(J))          
 C          I = 1+INT((NP-1)*(L1-LPMIN)/(LPMAX-LPMIN))
-C          print*,'A',J,P(J),L1,NP*(L1-LPMIN)/(LPMAX-LPMIN),I
 C          IF(I.LT.1)I=1
 C          IF(I.GE.NP)I=NP-1
 C          XX = (L1-LP1(I))/DLP
-C          print*,'B',J,P(J),L1,I,LP1(I),XX,1.0-XX
+C          if(idiag.gt.0)print*,'B',J,P(J),L1,I,LP1(I),XX,1.0-XX
 C          I1 = NP+1-I
 C          I2 = NP+1-(I+1)
 C          IF(VARIDENT(IVAR,1).EQ.0)THEN
@@ -2629,21 +2595,17 @@ C        ***************************************************************
 
 C        Need to find nearest entry to requested lat/long
          CALL XPROJ(LATITUDE,LONGITUDE,V0)
-C         print*,'sub1',LATITUDE,LONGITUDE,(V0(K),K=1,3)
 
          NLOCATE=INT(VARPARAM(IVAR,1))
-C         print*,'sub2',nlocate
          J=2
          XX = -1000.
          DO I=1,NLOCATE
           LAT1=VARPARAM(IVAR,J)
           LON1=VARPARAM(IVAR,J+1)
           CALL XPROJ(LAT1,LON1,V1)
-C          print*,'sub3',I,LAT1,LON1,(V1(K),K=1,3)
           XP=0.
           DO K=1,3
            XP=XP+V0(K)*V1(K)
-C           print*,'sub3x',K,V0(K),V1(K)
           ENDDO
           IF(XP.GT.XX)THEN
            XX=XP
@@ -2651,13 +2613,11 @@ C           print*,'sub3x',K,V0(K),V1(K)
           ENDIF
           J=J+2 
          ENDDO
-C         print*,'sub4',i1
          DO I=1, NPRO
            J1 = NXTEMP+(I1-1)*NPRO+I
            IF(VARIDENT(IVAR,1).EQ.0)THEN
             X1(I) = XN(J1)
             XMAP(J1,IPAR,I)=1.0
-C            print*,'sub5',J1,XN(J1),I,X1(I)
            ELSE
              IF(XN(J1).GT.-82.8931)THEN
                X1(I) = EXP(XN(J1))
@@ -2681,9 +2641,11 @@ C        ***************************************************************
 C        Need to interpolation in longitude for each vertical level
          NLONG = INT(VARPARAM(IVAR,1)/VARPARAM(IVAR,2)+0.1)
          NLEVEL = INT(VARPARAM(IVAR,2))
-         print*,'Model 30 - nlong,nlevel,np = ',nlong,nlevel,np
-         print*,'Model 30 - latitude,longitude = ',LATITUDE,
+         if(idiag.gt.0)then
+          print*,'Model 30 - nlong,nlevel,np = ',nlong,nlevel,np
+          print*,'Model 30 - latitude,longitude = ',LATITUDE,
      &           LONGITUDE
+         endif
          DLONG=360.0/FLOAT(NLONG)
          LONGITUDE1=LONGITUDE
          IF(LONGITUDE.LT.0.0)LONGITUDE1=LONGITUDE+360.
@@ -2700,7 +2662,7 @@ C        Need to interpolation in longitude for each vertical level
           JLONG=1
          ENDIF
 
-         print*,'LONGITUDE1,ILONG,JLONG,FLONG',
+         if(idiag.gt.0)print*,'LONGITUDE1,ILONG,JLONG,FLONG',
      &    LONGITUDE1,ILONG,JLONG,FLONG
 
          IF(VARIDENT(IVAR,1).EQ.0)THEN
@@ -2769,10 +2731,12 @@ C        Now need to interpolate local NLEVEL profile to NPRO profile
              ILEV=NLEVEL-1
              F = (L1-LP1(ILEV))/(LP1(ILEV+1)-LP1(ILEV))
             ENDIF
-            print*,'Model 30 warning - pressure out of range'
-            print*,'Having to extrapolate'
-            print*,L1,LP1(1),LP1(NLEVEL)
-            print*,ILEV,LP1(ILEV),LP1(ILEV+1),F
+            if(idiag.gt.0)then
+             print*,'Model 30 warning - pressure out of range'
+             print*,'Having to extrapolate'
+             print*,L1,LP1(1),LP1(NLEVEL)
+             print*,ILEV,LP1(ILEV),LP1(ILEV+1),F
+            endif
           ENDIF
 
           XX = (1.0-F)*XP1(ILEV)+F*XP1(ILEV+1)
@@ -2803,10 +2767,11 @@ C        Need to interpolation in longitude
          NLONG = INT(VARPARAM(IVAR,1))
 
 
-         print*,'Model 31 - nlong,np = ',nlong,np
-         print*,'Model 31 - latitude,longitude = ',LATITUDE,
+         if(idiag.gt.0)then
+          print*,'Model 31 - nlong,np = ',nlong,np
+          print*,'Model 31 - latitude,longitude = ',LATITUDE,
      &           LONGITUDE
-
+         endif
          LONGITUDE1=LONGITUDE
          IF(LONGITUDE.LT.0.0)LONGITUDE1=LONGITUDE+360.
          IF(LONGITUDE.GE.360.0)LONGITUDE1=LONGITUDE-360.
@@ -2825,7 +2790,7 @@ C        Need to interpolation in longitude
 
 
 
-         print*,ILONG,JLONG,FLONG,NP
+         if(idiag.gt.0)print*,ILONG,JLONG,FLONG,NP
 
          IF(VARIDENT(IVAR,1).EQ.0)THEN
             DX=2.0
@@ -2847,7 +2812,7 @@ C        Need to interpolation in longitude
 
 C        Set exponent of cos(lat) variation
          XPC=VARPARAM(IVAR,2)
-         print*,'XPC = ',XPC    
+         if(idiag.gt.0)print*,'XPC = ',XPC    
 
 
          YTH = (1.0-FLONG)*YLONG(ILONG)+FLONG*YLONG(JLONG)
@@ -2860,7 +2825,6 @@ C        Set exponent of cos(lat) variation
            X1(J) = XREF(J)*EXP(XS)
            XMAP(NXTEMP+ILONG,IPAR,J)=X1(J)*GRADL(1,ILONG)
            XMAP(NXTEMP+JLONG,IPAR,J)=X1(J)*GRADL(1,JLONG)
-C           print*,ipar,j,xref(j),x1(j)
          ENDDO
 
         ELSEIF(VARIDENT(IVAR,3).EQ.32)THEN
@@ -2871,9 +2835,9 @@ C        set to drop exponentially. Similar model to model 8.
 C        ***************************************************************
 
          IF(VARIDENT(IVAR,1).GE.0)THEN
-          PRINT*,'Warning from SUBPROFRETG. You are using a'
-          PRINT*,'cloud profile parameterisation for a non-cloud'
-          PRINT*,'variable'         
+          print*,'Warning from SUBPROFRETG. You are using a'
+          print*,'cloud profile parameterisation for a non-cloud'
+          print*,'variable'         
           STOP 
          ENDIF
 
@@ -2900,7 +2864,7 @@ C        Calculate gradient numerically as it's just too hard otherwise
 
 
           CALL VERINT(P,H,NPRO,HKNEE,PKNEE)
-          print*,pknee,hknee
+          if(idiag.gt.0)print*,pknee,hknee
 
 C         Start ND,Q,OD at zero
 C 	  N is in units of particles/cm3
@@ -2922,7 +2886,7 @@ C         find levels in atmosphere that span pknee
           ENDDO
  
           IF(JKNEE.LT.0)THEN
-           Print*,'subprofretg: Error in model 32. Stop'
+           print*,'subprofretg: Error in model 32. Stop'
            STOP
           ENDIF          
 
@@ -2961,31 +2925,25 @@ C           Calculate initial particles/gram
 C         Now integrate optical thickness
           OD(NPRO)=ND(NPRO)*SCALE(NPRO)*XFSH*1E5
           JFSH=-1
-C          print*,'OD ',NPRO,JKNEE,OD(NPRO)
           DO J=NPRO-1,1,-1
            IF(J.GT.JKNEE)THEN
              DELH = H(J+1) - H(J)
              XFAC = SCALE(J)*XFSH
-C             print*,ND(J),ND(J+1),(ND(J) - ND(J+1))*XFAC*1E5         
              OD(J)=OD(J+1)+(ND(J) - ND(J+1))*XFAC*1E5
            ELSE
              IF(J.EQ.JKNEE)THEN
               DELH = H(J+1)-HKNEE
               XFAC = 0.5*(SCALE(J)+SCALE(J+1))*XFSH         
               OD(J)=OD(J+1)+(1. - ND(J+1))*XFAC*1E5
-C              print*,ND(J+1),(1 - ND(J+1))*XFAC*1E5         
               DELH = HKNEE-H(J)
               XFAC = XF
               OD(J)=OD(J)+(1. - ND(J))*XFAC*1E5
-C              print*,ND(J),(1 - ND(J))*XFAC*1E5                    
              ELSE
               DELH = H(J+1)-H(J)
               XFAC = XF
               OD(J)=OD(J+1)+(ND(J+1) - ND(J))*XFAC*1E5
-C              print*,ND(J),ND(J+1),(ND(J+1) - ND(J))*XFAC*1E5         
              ENDIF
            ENDIF
-C           print*,'OD ',J,JKNEE,OD(J)
           ENDDO
 
           ODX=OD(1)
@@ -2996,22 +2954,21 @@ C         This is also redone in gsetrad.f to make this totally secure.
            OD(J)=OD(J)*XDEEP/ODX
            ND(J)=ND(J)*XDEEP/ODX
            Q(J)=Q(J)*XDEEP/ODX
-C           print*,XDEEP,OD(J)
            IF(Q(J).GT.1e10)Q(J)=1e10
            IF(Q(J).LT.1e-36)Q(J)=1e-36
            NTEST=ISNAN(Q(J))
            IF(NTEST)THEN
-            print*,'Error in subprofretg.f, cloud density is NAN'
-            print*,'Setting to 1e-36'
+            if(idiag.gt.0)then
+             print*,'Error in subprofretg.f, cloud density is NAN'
+             print*,'Setting to 1e-36'
+            endif
 	    Q(J)=1e-36
            ENDIF
 
            IF(ITEST.EQ.1)THEN
             X1(J)=Q(J)
-C            print*,'J,X1(J)',J,X1(J)
            ELSE
             XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
-C            PRINT*,'ITEST,J,XMAP',ITEST,J,Q(J),X1(J),(Q(J)-X1(J))/DX
            ENDIF
 
           ENDDO
@@ -3025,9 +2982,11 @@ C        ***************************************************************
 C        Need to interpolation in longitude for each vertical level
          NLONG = INT(VARPARAM(IVAR,1)/VARPARAM(IVAR,2)+0.1)
          NLEVEL = INT(VARPARAM(IVAR,2))
-         print*,'Model 33 - nlong,nlevel,np = ',nlong,nlevel,np
-         print*,'Model 33 - latitude,longitude = ',LATITUDE,
+         if(idiag.gt.0)then
+          print*,'Model 33 - nlong,nlevel,np = ',nlong,nlevel,np
+          print*,'Model 33 - latitude,longitude = ',LATITUDE,
      &           LONGITUDE
+         endif
          DLONG=360.0/FLOAT(NLONG)
          LONGITUDE1=LONGITUDE
          IF(LONGITUDE.LT.0.0)LONGITUDE1=LONGITUDE+360.
@@ -3044,7 +3003,7 @@ C        Need to interpolation in longitude for each vertical level
           JLONG=1
          ENDIF
 
-         print*,'LONGITUDE1,ILONG,JLONG,FLONG',
+         if(idiag.gt.0)print*,'LONGITUDE1,ILONG,JLONG,FLONG',
      &    LONGITUDE1,ILONG,JLONG,FLONG
 
          IF(VARIDENT(IVAR,1).EQ.0)THEN
@@ -3054,10 +3013,9 @@ C        Need to interpolation in longitude for each vertical level
          ENDIF
 
 C        Read in pressure grid from varparam
-C        print*,'Model 33 - pressure'
          DO J=1,NLEVEL
           LP1(J)=ALOG(VARPARAM(IVAR,J+2))
-          print*,J,VARPARAM(IVAR,J+2),LP1(J),EXP(LP1(J))
+          if(idiag.gt.0)print*,J,VARPARAM(IVAR,J+2),LP1(J),EXP(LP1(J))
           DO K=1,NP
            GRADL(J,K)=0.
           ENDDO
@@ -3070,8 +3028,6 @@ C        print*,'Model 33 - pressure'
            YLONG(I)=XN(J1)
            SUM=SUM+XN(J1)/FLOAT(NLONG)
           ENDDO
-C          print*,'ylong',(YLONG(I),I=1,NLONG)
-C          print*,SUM
 
           FI = XN(NXTEMP+NLONG*NLEVEL+ILONG)
           FJ = XN(NXTEMP+NLONG*NLEVEL+JLONG)
@@ -3120,10 +3076,12 @@ C        Now need to interpolate local NLEVEL profile to NPRO profile
              ILEV=NLEVEL-1
              F = (L1-LP1(ILEV))/(LP1(ILEV+1)-LP1(ILEV))
             ENDIF
-            print*,'Model 33 warning - pressure out of range'
-            print*,'Having to extrapolate'
-            print*,L1,LP1(1),LP1(NLEVEL)
-            print*,ILEV,LP1(ILEV),LP1(ILEV+1),F
+            if(idiag.gt.0)then
+             print*,'Model 33 warning - pressure out of range'
+             print*,'Having to extrapolate'
+             print*,L1,LP1(1),LP1(NLEVEL)
+             print*,ILEV,LP1(ILEV),LP1(ILEV+1),F
+            endif
           ENDIF
 
           XX = (1.0-F)*XP1(ILEV)+F*XP1(ILEV+1)
@@ -3165,7 +3123,6 @@ C        ***************************************************************
          DO J=NPRO-1,1,-1
           CTAU(J)=CTAU(J+1)+P(J)
           X2(J)=TB*((2.0+XF*CTAU(J))/4.0)**0.25
-C          print*,J,CTAU(J),X2(J)
          ENDDO
 
          U = (2.0+XF*CTAU(NPRO))/4.0
@@ -3178,13 +3135,11 @@ C          print*,J,CTAU(J),X2(J)
          DO J=NPRO-1,1,-1
           DELH = H(J+1)-H(J)
           XLAPSE = (X2(J)-X2(J+1))/DELH
-C          print*,DELH,XLAPSE,SETXLAPSE
           IF(XLAPSE.GT.SETXLAPSE.OR.ILAPSE.EQ.0)THEN
            X1(J)=X1(J+1)+SETXLAPSE*DELH
            ILAPSE=1
            XMAP(NXTEMP+1,IPAR,J)=XMAP(NXTEMP+1,IPAR,J+1)
            XMAP(NXTEMP+2,IPAR,J)=XMAP(NXTEMP+2,IPAR,J+1)            
-C           print*,ILAPSE,XLAPSE,SETXLAPSE
           ELSE
            X1(J)=X2(J)
            U = (2.0+XF*CTAU(J))/4.0
@@ -3202,14 +3157,16 @@ C        ***************************************************************
 C        Need to interpolation in longitude for each vertical level
          NLAT = INT(VARPARAM(IVAR,1)/VARPARAM(IVAR,2)+0.1)
          NLEVEL = INT(VARPARAM(IVAR,2))
-         print*,'Model 35 - nlat,nlevel,np = ',nlat,nlevel,np
-         print*,'Model 35 - latitude,longitude = ',LATITUDE,
+         if(idiag.gt.0)then
+          print*,'Model 35 - nlat,nlevel,np = ',nlat,nlevel,np
+          print*,'Model 35 - latitude,longitude = ',LATITUDE,
      &           LONGITUDE
+         endif
          DLAT=180.0/FLOAT(NLAT-1)
          ILAT=1+INT((90.0+LATITUDE)/DLAT)
          FLAT = (90+LATITUDE - (ILAT-1)*DLAT)/DLAT
          if(flat.gt.1.0)then 
-          print*,'Error: flat > 1.0'
+          if(idiag.gt.0)print*,'Error: flat > 1.0'
           stop
          endif
          IF(ILAT.LT.NLAT)THEN
@@ -3225,10 +3182,9 @@ C        Need to interpolation in longitude for each vertical level
          ENDIF
 
 C        Read in pressure grid from varparam
-C        print*,'Model 35 - pressure'
          DO J=1,NLEVEL
           LP1(J)=ALOG(VARPARAM(IVAR,J+2))
-          print*,J,VARPARAM(IVAR,J+2),LP1(J),EXP(LP1(J))
+          if(idiag.gt.0)print*,J,VARPARAM(IVAR,J+2),LP1(J),EXP(LP1(J))
           DO K=1,NP
            GRADL(J,K)=0.
           ENDDO
@@ -3270,10 +3226,12 @@ C        print*,'Model 35 - pressure'
              ILEV=NLEVEL-1
              F = (L1-LP1(ILEV))/(LP1(ILEV+1)-LP1(ILEV))
             ENDIF
-            print*,'Model 35 warning - pressure out of range'
-            print*,'Having to extrapolate'
-            print*,L1,LP1(1),LP1(NLEVEL)
-            print*,ILEV,LP1(ILEV),LP1(ILEV+1),F
+            if(idiag.gt.0)then
+             print*,'Model 35 warning - pressure out of range'
+             print*,'Having to extrapolate'
+             print*,L1,LP1(1),LP1(NLEVEL)
+             print*,ILEV,LP1(ILEV),LP1(ILEV+1),F
+            endif
           ENDIF
 
           XX = (1.0-F)*XP1(ILEV)+F*XP1(ILEV+1)
@@ -3306,9 +3264,11 @@ C        Need to interpolation in longitude
          NLAT = INT(VARPARAM(IVAR,1))
 
 
-         print*,'Model 36 - nlat,np = ',nlat,np
-         print*,'Model 36 - latitude,longitude = ',LATITUDE,
+         if(idiag.gt.0)then
+          print*,'Model 36 - nlat,np = ',nlat,np
+          print*,'Model 36 - latitude,longitude = ',LATITUDE,
      &           LONGITUDE
+         endif
 
          DLAT=180.0/FLOAT(NLAT-1)
          ILAT=1+INT((90+LATITUDE)/DLAT)
@@ -3413,8 +3373,6 @@ C        New gradient correction if fsh is held as logs
          P2 = VARPARAM(IVAR,2)
          P3 = VARPARAM(IVAR,3)
 
-C         print*,'P1-P3 = ',P1,P2,P3
-C         print*,'XFSH,XFAC : ',XFSH,XFAC
 
          DO J=1,NPRO
           X1(J)=1E-36
@@ -3565,9 +3523,11 @@ C        ***************************************************************
 
 C        Need to interpolation in longitude for each parameter
          NLONG = INT(VARPARAM(IVAR,1))
-         print*,'Model 44 - nlong = ',nlong
-         print*,'Model 44 - latitude,longitude = ',LATITUDE,
+         if(idiag.gt.0)then
+          print*,'Model 44 - nlong = ',nlong
+          print*,'Model 44 - latitude,longitude = ',LATITUDE,
      &           LONGITUDE
+         endif
          DLONG=360.0/FLOAT(NLONG)
          LONGITUDE1=LONGITUDE
          IF(LONGITUDE.LT.0.0)LONGITUDE1=LONGITUDE+360.
@@ -3671,8 +3631,8 @@ C                     afternoon terminators.
 
         ELSE
 
-         PRINT*,'Subprofretg: Model parametrisation code is not defined'
-         PRINT*,(VARIDENT(IVAR,J),J=1,3)
+         print*,'Subprofretg: Model parametrisation code is not defined'
+         print*,(VARIDENT(IVAR,J),J=1,3)
          STOP
 
         ENDIF
@@ -3681,40 +3641,40 @@ C                     afternoon terminators.
 
 C       Must hold non-atmospheric parameter - find which.
         IF(VARIDENT(IVAR,1).EQ.999)THEN
-C         print*,'Surface temperature'
+C         if(idiag.gt.0)print*,'Surface temperature'
 C        no atmospheric mapping
          IPAR = -1
          NP = 1
         ELSEIF(VARIDENT(IVAR,1).EQ.888)THEN
-C         print*,'Surface albedo spectrum'
+C         if(idiag.gt.0)print*,'Surface albedo spectrum'
          IPAR = -1
          NP = INT(VARPARAM(IVAR,1))
         ELSEIF(VARIDENT(IVAR,1).EQ.887)THEN
-C         print*,'Cloud x-section spectrum'
+C         if(idiag.gt.0)print*,'Cloud x-section spectrum'
          IPAR = -1
          NP = INT(VARPARAM(IVAR,1))
         ELSEIF(VARIDENT(IVAR,1).EQ.889)THEN
-C         print*,'Surface albedo spectrum multiplier'
+C         if(idiag.gt.0)print*,'Surface albedo spectrum multiplier'
          IPAR = -1
          NP = 1
         ELSEIF(VARIDENT(IVAR,1).EQ.777)THEN
-C         print*,'Tangent height correction'
+C         if(idiag.gt.0)print*,'Tangent height correction'
          IPAR = -1
          NP = 1
         ELSEIF(VARIDENT(IVAR,1).EQ.666)THEN
-C         print*,'Tangent pressure'
+C         if(idiag.gt.0)print*,'Tangent pressure'
          IPAR = -1
          NP = 1
         ELSEIF(VARIDENT(IVAR,1).EQ.555)THEN
-C         print*,'Radius of Planet'
+C         if(idiag.gt.0)print*,'Radius of Planet'
          IPAR = -1
          NP = 1
         ELSEIF(VARIDENT(IVAR,1).EQ.102)THEN
-C         print*,'Variable profile fraction'
+C         if(idiag.gt.0)print*,'Variable profile fraction'
          IPAR = -1
          NP = 1
         ELSEIF(VARIDENT(IVAR,1).EQ.444.OR.VARIDENT(IVAR,1).EQ.445)THEN
-C         print*,'Variable size and RI'
+C         if(idiag.gt.0)print*,'Variable size and RI'
 C        See if there is an associated IMOD=21 cloud. In which case
 C        modifying the radius will affect the vertical cloud distribution.
          IPAR = -1
@@ -3800,7 +3760,7 @@ C          Integrate optical thickness
              XOD = (1.-F)*OD(J) + F*OD(J+1)
              JFSH=1
             ENDIF
-C            print*,'h',J,OD(J)
+C            if(idiag.gt.0)print*,'h',J,OD(J)
            ENDDO
 
 C          The following section was found not to be as accurate as
@@ -3820,8 +3780,10 @@ C          post-processing in gsetrad.f
             IF(Q(J).LT.1e-36)Q(J)=1e-36
             NTEST=ISNAN(Q(J))
             IF(NTEST)THEN
-             print*,'Error in subprofretg.f, cloud density is NAN'
-             print*,'Setting to 1e-36'
+             if(idiag.gt.0)then
+              print*,'Error in subprofretg.f, cloud density is NAN'
+              print*,'Setting to 1e-36'
+             endif
              Q(J)=1e-36
             ENDIF
 
@@ -3855,8 +3817,8 @@ C		works for MultiNest
          JCONT=1
 		 if(MCMCflag.eq.1)then
            hknee = MCMCtop
-           print*,'Hknee'
-           print*,hknee
+           if(idiag.gt.0)print*,'Hknee'
+           if(idiag.gt.0)print*,hknee
            xdeep = MCMCdeep
            xfsh = MCMCscat
          endif
@@ -3911,8 +3873,8 @@ C            Calculate density of atmosphere  (g/cm3)
 
            ENDDO
 
-           print*,'Q1'
-           print*,Q(1)
+           if(idiag.gt.0)print*,'Q1'
+           if(idiag.gt.0)print*,Q(1)
 C          Integrate optical thickness
            OD(1)=ND(1)*SCALE(1)*1E5
            JFSH=-1
@@ -3924,7 +3886,7 @@ C          Integrate optical thickness
              XOD = (1.-F)*OD(J) + F*OD(J-1)
              JFSH=1
             ENDIF
-C            print*,'h',J,OD(J)
+C            if(idiag.gt.0)print*,'h',J,OD(J)
            ENDDO
 
 C          The following section was found not to be as accurate as
@@ -3944,8 +3906,10 @@ C          post-processing in gsetrad.f
             IF(Q(J).LT.1e-36)Q(J)=1e-36
             NTEST=ISNAN(Q(J))
             IF(NTEST)THEN
-             print*,'Error in subprofretg.f, cloud density is NAN'
-             print*,'Setting Q(J) to 1e-36'
+             if(idiag.gt.0)then
+              print*,'Error in subprofretg.f, cloud density is NAN'
+              print*,'Setting Q(J) to 1e-36'
+             endif
              Q(J)=1e-36
             ENDIF
 
@@ -3956,8 +3920,8 @@ C             XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
 C            ENDIF
 
            ENDDO
-           print*,'Q1 2'
-           print*,Q(1)
+           if(idiag.gt.0)print*,'Q1 2'
+           if(idiag.gt.0)print*,Q(1)
 
 C26       CONTINUE
 
@@ -3973,8 +3937,8 @@ C	works for MultiNest***
          JCONT=1
 		 if(MCMCflag.eq.1)then
            hknee = MCMChknee
-           print*,'Hknee'
-           print*,hknee
+           if(idiag.gt.0)print*,'Hknee'
+           if(idiag.gt.0)print*,hknee
            htop = MCMCtop
            xdeep = MCMCdeep
            xfsh = MCMCscat
@@ -4038,8 +4002,8 @@ C            Calculate density of atmosphere  (g/cm3)
 
            ENDDO
 
-           print*,'Q1'
-           print*,Q(1)
+           if(idiag.gt.0)print*,'Q1'
+           if(idiag.gt.0)print*,Q(1)
 C          Integrate optical thickness
            OD(1)=ND(1)*SCALE(1)*1E5
            JFSH=-1
@@ -4051,13 +4015,12 @@ C             F = (H(J)-HTOP)/DELH
 C             XOD = (1.-F)*OD(J) + F*OD(J-1)
 C             JFSH=1
 C            ENDIF
-C     print*,'h',J,OD(J)
            ENDDO
            XOD=OD(NPRO)
-           print*, 'OD(NPRO) ='
-           print*, OD(NPRO)
-           print*, 'HKNEE, HTOP'
-           print*, HKNEE, HTOP
+           if(idiag.gt.0)print*, 'OD(NPRO) ='
+           if(idiag.gt.0)print*, OD(NPRO)
+           if(idiag.gt.0)print*, 'HKNEE, HTOP'
+           if(idiag.gt.0)print*, HKNEE, HTOP
            
 C          The following section was found not to be as accurate as
 C          desired due to misalignments at boundaries and so needs some 
@@ -4083,8 +4046,10 @@ C            ENDIF
             IF(Q(J).LT.1e-36)Q(J)=1e-36
             NTEST=ISNAN(Q(J))
             IF(NTEST)THEN
-             print*,'Error in subprofretg.f, cloud density is NAN'
-	     print*, 'Setting Q(J) to 1e-36'
+             if(idiag.gt.0)then
+              print*,'Error in subprofretg.f, cloud density is NAN'
+	      print*, 'Setting Q(J) to 1e-36'
+             endif
              Q(J)=1.0e-36
             ENDIF
 C            IF(ITEST.EQ.1)THEN
@@ -4095,8 +4060,8 @@ C            ENDIF
 
           ENDDO
           ENDIF
-           print*,'Q1 2'
-           print*,Q(1)
+           if(idiag.gt.0)print*,'Q1 2'
+           if(idiag.gt.0)print*,Q(1)
 
 C26       CONTINUE
 
@@ -4116,8 +4081,8 @@ C		 Currently only works for MultiNest
          JCONT=1
 		 if(MCMCflag.eq.1)then
            hknee = MCMChknee
-           print*,'Hknee'
-           print*,hknee
+           if(idiag.gt.0)print*,'Hknee'
+           if(idiag.gt.0)print*,hknee
            xdeep = MCMCdeep
            xfsh = MCMCscat
          endif
@@ -4176,8 +4141,8 @@ C            Calculate density of atmosphere  (g/cm3)
 
            ENDDO
 
-           print*,'Q1'
-           print*,Q(1)
+           if(idiag.gt.0)print*,'Q1'
+           if(idiag.gt.0)print*,Q(1)
 C     Integrate optical thickness above knee pressure
            JFSH=-1
            OD(1)=ND(1)*SCALE(1)*1E5
@@ -4197,13 +4162,13 @@ C             F = (H(J)-HTOP)/DELH
 C             XOD = (1.-F)*OD(J) + F*OD(J-1)
 C             JFSH=1
 C            ENDIF
-C     print*,'h',J,OD(J)
+C     if(idiag.gt.0)print*,'h',J,OD(J)
            ENDDO
            XOD=OD(NPRO)
-           print*, 'OD(NPRO) ='
-           print*, OD(NPRO)
-           print*, 'HKNEE'
-           print*, HKNEE
+           if(idiag.gt.0)print*, 'OD(NPRO) ='
+           if(idiag.gt.0)print*, OD(NPRO)
+           if(idiag.gt.0)print*, 'HKNEE'
+           if(idiag.gt.0)print*, HKNEE
            
 C          The following section was found not to be as accurate as
 C          desired due to misalignments at boundaries and so needs some 
@@ -4232,8 +4197,10 @@ C            ENDIF
             IF(Q(J).LT.1.0e-36)Q(J)=1.0e-36
             NTEST=ISNAN(Q(J))
             IF(NTEST)THEN
-             print*,'Error in subprofretg.f, cloud density is NAN'
- 	     print*,'Setting Q(J) to 1e-36'
+             if(idiag.gt.0)then
+              print*,'Error in subprofretg.f, cloud density is NAN'
+ 	      print*,'Setting Q(J) to 1e-36'
+             endif
 	     Q(J)=1.0e-36
             ENDIF
 C            IF(ITEST.EQ.1)THEN
@@ -4244,8 +4211,8 @@ C            ENDIF
 
           ENDDO
 
-           print*,'Q1 2'
-           print*,Q(1)
+           if(idiag.gt.0)print*,'Q1 2'
+           if(idiag.gt.0)print*,Q(1)
 
 C26       CONTINUE
 
@@ -4263,8 +4230,8 @@ C     Still a work in progress - very slow!
               XDEEP = MCMCdeep
               SHAPE = MCMCshape
 
-              print*,'PKNEE, SHAPE, XDEEP'
-              print*,PKNEE,SHAPE,XDEEP
+              if(idiag.gt.0)print*,'PKNEE, SHAPE, XDEEP'
+              if(idiag.gt.0)print*,PKNEE,SHAPE,XDEEP
            ELSE
               print*,'Error: Using Multinest parameterisation'
               print*, 'with normal NEMESIS'  
@@ -4321,13 +4288,13 @@ C            Calculate density of atmosphere  (g/cm3)
              ELSE
               XMOLWT=XXMOLWT(J)
              ENDIF
-              PRINT*,'PJ, XMOLWT'
-              PRINT*,P(J),XMOLWT
+              if(idiag.gt.0)print*,'PJ, XMOLWT'
+              if(idiag.gt.0)print*,P(J),XMOLWT
 C            Calculate density of atmosphere  (g/cm3)
              ND(J)=XDEEP*(LOG(P(J))-LOG(PKNEE))**SHAPE
              RHO = P(J)*0.1013*XMOLWT/(R*T(J))
-             PRINT*,'RHO,ND(J)'
-             PRINT*,RHO,ND(J)
+             if(idiag.gt.0)print*,'RHO,ND(J)'
+             if(idiag.gt.0)print*,RHO,ND(J)
              Q(J)=ND(J)/RHO
            ENDIF
 
@@ -4346,7 +4313,7 @@ C             F = (HKNEE-H(J))/DELH
 C             XOD = (1.-F)*OD(J) + F*OD(J+1)
 C             JFSH=1
 C            ENDIF
-C            print*,'h',J,OD(J)
+C            if(idiag.gt.0)print*,'h',J,OD(J)
 C           ENDDO
 
 C          The following section was found not to be as accurate as
@@ -4366,14 +4333,16 @@ C            ENDIF
             IF(Q(J).LT.1e-36)Q(J)=1e-36
             NTEST=ISNAN(Q(J))
             IF(NTEST)THEN
-             print*,'Error in subprofretg.f, cloud density is NAN'
-	     print*,'Setting Q(J) to 1e-36'
+             if(idiag.gt.0)then
+              print*,'Error in subprofretg.f, cloud density is NAN'
+	      print*,'Setting Q(J) to 1e-36'
+             endif
              Q(J)=1.0e-36
             ENDIF
 
             X1(J)=Q(J)
-            PRINT*,'H(J),X1(J),Q(J)'
-            PRINT*,H(J),X1(J),Q(J)
+            if(idiag.gt.0)print*,'H(J),X1(J),Q(J)'
+            if(idiag.gt.0)print*,H(J),X1(J),Q(J)
             JCONT=1
      
 
@@ -4386,22 +4355,22 @@ C        25       CONTINUE
          NP = 3
          
         ELSEIF(VARIDENT(IVAR,1).EQ.333)THEN
-C         print*,'Surface gravity (log10(g))'
+C         if(idiag.gt.0)print*,'Surface gravity (log10(g))'
          IPAR = -1
          NP = 1
         ELSEIF(VARIDENT(IVAR,1).EQ.222)THEN
-C         print*,'Sromovsky cloud layering'
+C         if(idiag.gt.0)print*,'Sromovsky cloud layering'
          IPAR = -1
          NP = 8
         ELSEIF(VARIDENT(IVAR,1).EQ.223)THEN
-C         print*,'Sromovsky cloud layering with methane'
+C         if(idiag.gt.0)print*,'Sromovsky cloud layering with methane'
          IPAR = -1
          DO I=1,NVMR
            IF(IDGAS(I).EQ.6)IPAR=I
          ENDDO
          IF(IPAR.LT.0)THEN
-           PRINT*,'Error in subprofretg. Model 223 defined, but'
-           PRINT*,'no CH4 in .ref file'
+           print*,'Error in subprofretg. Model 223 defined, but'
+           print*,'no CH4 in .ref file'
            STOP
          ENDIF
          DO I=1,NPRO
@@ -4410,8 +4379,10 @@ C         print*,'Sromovsky cloud layering with methane'
          PCH4 = EXP(XN(NXTEMP+5))/1.013
          XFAC = EXP(XN(NXTEMP+6))
          IF(XFAC.GT.1.0)THEN
-          PRINT*,'Error in subprofretg, model 223. XFAC > 1.'
-          PRINT*,'Limiting to 1.0'
+          if(idiag.gt.0)then
+           print*,'Error in subprofretg, model 223. XFAC > 1.'
+           print*,'Limiting to 1.0'
+          endif
           XFAC=1.
          ENDIF
          XCH4 = X1(1)*XFAC
@@ -4433,19 +4404,19 @@ C        Set PCUT to where CH4 starts reducing in cases where XFAC=1
          ENDDO
          NP = 9
         ELSEIF(VARIDENT(IVAR,1).EQ.224)THEN
-C         print*,'Sromovsky cloud layering with extended UTC'
+C         if(idiag.gt.0)print*,'Sromovsky cloud layering with extended UTC'
          IPAR = -1
          NP = 9
         ELSEIF(VARIDENT(IVAR,1).EQ.225)THEN
-C         print*,'Sromovsky cloud layering with extended UTC, cut-off'
-C         print*,'and variable methane'
+C         if(idiag.gt.0)print*,'Sromovsky cloud layering with extended UTC, cut-off'
+C         if(idiag.gt.0)print*,'and variable methane'
          IPAR = -1
          DO I=1,NVMR
            IF(IDGAS(I).EQ.6)IPAR=I
          ENDDO
          IF(IPAR.LT.0)THEN
-           PRINT*,'Error in subprofretg. Model 225 defined, but'
-           PRINT*,'no CH4 in .ref file'
+           print*,'Error in subprofretg. Model 225 defined, but'
+           print*,'no CH4 in .ref file'
            STOP
          ENDIF
          DO I=1,NPRO
@@ -4454,8 +4425,8 @@ C         print*,'and variable methane'
          PCH4 = EXP(XN(NXTEMP+5))/1.013
          XFAC = EXP(XN(NXTEMP+11))
 C         IF(XFAC.GT.1.0)THEN
-C          PRINT*,'Error in subprofretg, model 223. XFAC > 1.'
-C          PRINT*,'Limiting to 1.0'
+C          if(idiag.gt.0)print*,'Error in subprofretg, model 223. XFAC > 1.'
+C          if(idiag.gt.0)print*,'Limiting to 1.0'
 C          XFAC=1.
 C         ENDIF
 C         XCH4 = X1(1)*XFAC
@@ -4478,34 +4449,33 @@ C         ENDDO
 
          NP = 11
         ELSEIF(VARIDENT(IVAR,1).EQ.226)THEN
-C         print*,'Two cloud layering'
+C         if(idiag.gt.0)print*,'Two cloud layering'
          IPAR = -1
          NP = 8
 
         ELSEIF(VARIDENT(IVAR,1).EQ.227)THEN
-C         print*,'Creme Brulee layering'
+C         if(idiag.gt.0)print*,'Creme Brulee layering'
          IPAR = -1
          NP = 7
 
         ELSEIF(VARIDENT(IVAR,1).EQ.228)THEN
-C         print*,'Creme Brulee layering'
+C         if(idiag.gt.0)print*,'Creme Brulee layering'
          IPAR = -1
          NP = 7
 
         ELSEIF(VARIDENT(IVAR,1).EQ.229)THEN
-C         print*,'Creme Brulee layering'
+C         if(idiag.gt.0)print*,'Creme Brulee layering'
          IPAR = -1
          NP = 7
 
         ELSE
 
-         PRINT*,'SUBPROFRETG: VARTYPE NOT RECOGNISED'
+         print*,'SUBPROFRETG: VARTYPE NOT RECOGNISED'
          STOP
         ENDIF
  
        ENDIF
        
-C       print*,'sub6',IPAR
 
        IF(IPAR.GT.0)THEN
         IF(IPAR.LE.NVMR)THEN
@@ -4575,7 +4545,7 @@ C     First see if a list of gases to be forced to condense exists
 
       IF(VPEXIST)THEN
 
-       PRINT*,'Reading in svp flags from : ',IPFILE
+       if(idiag.gt.0)print*,'Reading in svp flags from : ',IPFILE
        OPEN(12,FILE=IPFILE,STATUS='OLD')
         READ(12,*)NVP
         DO I=1,NVP
@@ -4625,9 +4595,11 @@ C		 Also calculate partial pressure of gas in question PP
 	      
              IF(PP.GT.SVP)THEN
                IF(JSWITCH.EQ.0)THEN
-                 PRINT*,'Subprofretg: gas predicted to condense'
-                 PRINT*,'setting to VMR to SVP x VP / PRESS'
-                 PRINT*,IDGAS(IGAS),ISOGAS(IGAS)
+                 if(idiag.gt.0)then
+                  print*,'Subprofretg: gas predicted to condense'
+                  print*,'setting to VMR to SVP x VP / PRESS'
+                  print*,IDGAS(IGAS),ISOGAS(IGAS)
+                 endif
                ENDIF 
                VMR(J,IGAS)=SVP/P(J)
                JSWITCH=1
@@ -4654,7 +4626,7 @@ c ** allow for presence of a cold trap if condensation occurs anywhere on the pr
 	     IF (JSWITCH.EQ.1) THEN
 	       IF (SVPFLAG(IGAS).EQ.1) THEN
 c		 * don't bother applying a cold trap, use simple condensation only *
-                 print*,IGAS,IDGAS(IGAS)
+                 if(idiag.gt.0)print*,IGAS,IDGAS(IGAS)
 C                *** Extra hack code here for Methane on Neptune
                  IF(IDGAS(IGAS).EQ.6)THEN
                   DO J=1,NPRO
@@ -4699,13 +4671,15 @@ c  ** end of loop around gases **
 C     Now make sure the resulting VMRs add up to 1.0 for an
 C     AMFORM=1 profile
       IF(AMFORM.EQ.1)THEN
-        print*,'ISCALE : ',(ISCALE(J),J=1,NVMR)
+        if(idiag.gt.0)print*,'ISCALE : ',(ISCALE(J),J=1,NVMR)
         CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
-        print*,'IERR  = ',IERR
+        if(idiag.gt.0)print*,'IERR  = ',IERR
 
         IF(IERR.EQ.1)THEN
-         print*,'Warning from subprofretg. VMRS do not add to 1'
-         print*,'Resetting to reference'       
+         if(idiag.gt.0)then
+          print*,'Warning from subprofretg. VMRS do not add to 1'
+          print*,'Resetting to reference'       
+         endif
          DO I=1,NPRO
           DO J=1,NVMR
            VMR(I,J)=(1.0-FLAT)*VMRREF(JLAT,I,J)+
@@ -4713,7 +4687,7 @@ C     AMFORM=1 profile
           ENDDO
          ENDDO
          CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
-         print*,'IERRX  = ',IERR
+         if(idiag.gt.0)print*,'IERRX  = ',IERR
 
         ENDIF
 
@@ -4751,7 +4725,7 @@ C     ************* Write out modified profiles *********
       DO 505 I=1,NPRO
 	  WRITE(2,506)H(I),P(I),T(I),(VMR(I,J),J=1,NVMR)
 506       FORMAT(1X,F13.3,E13.5,F13.4,40(E13.5))
-C          print*,'sub7',I,P(I),T(I)
+C          if(idiag.gt.0)print*,'sub7',I,P(I),T(I)
 505   CONTINUE
 C
 52    CONTINUE
@@ -4759,13 +4733,13 @@ C
 
 
       OPEN(UNIT=2,FILE='aerosol.prf',STATUS='UNKNOWN')
-C      print*,'subprofretg. Writing aerosol.prf'
+C      if(idiag.gt.0)print*,'subprofretg. Writing aerosol.prf'
       BUFFER='# aerosol.prf'   
       WRITE(2,10)BUFFER
       WRITE(2,*)NPRO, NCONT
       DO 41 I=1,NPRO
         WRITE(2,*) H(I),(CONT(J,I),J=1,NCONT)
-C        print*,H(I),(CONT(J,I),J=1,NCONT)
+C        if(idiag.gt.0)print*,H(I),(CONT(J,I),J=1,NCONT)
 41    CONTINUE
       CLOSE(2)
 

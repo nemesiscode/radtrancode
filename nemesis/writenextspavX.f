@@ -52,6 +52,8 @@ C     ****************************************************************
       real xlat,xlon,woff,x,wgeom(mgeom,mav),flat(mgeom,mav),fwhm
       real flon(mgeom,mav),gasdev1,xfac
       integer nconv(mgeom),lspec,ngeom,igeom,nav(mgeom),ioff
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 1     format(a)
 

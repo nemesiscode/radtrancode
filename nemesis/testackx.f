@@ -8,8 +8,12 @@
       real latitude,molwt,H(MAXPRO),P(MAXPRO),T(MAXPRO)
       REAL VMR(MAXPRO,MAXGAS),X,CONT(MAXCON,MAXPRO),flux,frain
       INTEGER IDGAS(MAXGAS),ISOGAS(MAXGAS),I,J,JVMR
-      REAL X1(MAXPRO),X2(MAXPRO),XMOL(MAXPRO),XVMR(MAXGAS)
+      REAL X1(MAXPRO),X2(MAXPRO),XMOL(MAXPRO),XVMR(MAXGAS),XDEEP
       REAL CALCMOLWT,dist,albedo,Fsol,DENSCOND,RADCOND,MWCOND
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
+      idiag=1
       call reservegas
 
       call prompt('Enter name of input prf file : ')
@@ -32,17 +36,19 @@ C     First skip header
       ENDIF
 
       IF(NPRO.GT.MAXPRO)THEN
-          PRINT*,'Error. NPRO>MAXPRO ',NPRO,MAXPRO
-          STOP
+          print*,'Error. NPRO>MAXPRO ',NPRO,MAXPRO
       ENDIF
 
       DO 20 I=1,NVMR
        READ(1,*)IDGAS(I),ISOGAS(I)
-       PRINT*,I,IDGAS(I),ISOGAS(I)
+       if(idiag.gt.0)print*,I,IDGAS(I),ISOGAS(I)
 20    CONTINUE
 
       CALL PROMPT('Enter gas number to apply scheme to (1-NVMR) : ')
       READ*,JVMR
+
+      CALL PROMPT('Enter deep VMR factor : ')
+      READ*,XDEEP
 
 C     Skip header
       READ(1,*)
@@ -84,9 +90,10 @@ C     First skip header
 
       Fsol = albedo*1380/dist**2
 
-      print*,'Incident solar flux (W/m2)  = ',Fsol
-      print*,'Radiative equilibrium outgoing flux (W/m2)  = ',Fsol/4.0
-
+      if(idiag.gt.0)then
+       print*,'Incident solar flux (W/m2)  = ',Fsol
+       print*,'Radiative equilibrium outgoing flux (W/m2)  = ',Fsol/4.0
+      endif
       if(imodel.eq.1) then
        Call prompt('Enter flux (W m-2), frain : ')
        READ(5,*)flux,frain
@@ -98,7 +105,7 @@ C     First skip header
       MWCOND=12.0
 
       CALL ACKERMANMARLEYX1(IPLANET,LATITUDE,AMFORM,NPRO,NVMR,IDGAS,
-     1 ISOGAS,P,T,H,VMR,XMOL,NCONT,CONT,FLUX,IMODEL,FRAIN,JVMR,
+     1 ISOGAS,P,T,H,VMR,XMOL,NCONT,CONT,FLUX,IMODEL,FRAIN,JVMR,XDEEP,
      2 DENSCOND,RADCOND,MWCOND,X1,X2)
 
       open(12,file='testackx.txt',status='unknown')

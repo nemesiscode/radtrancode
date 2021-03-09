@@ -15,18 +15,19 @@
       REAL FLAT,FLON
       CHARACTER*100 ANAME
       COMMON /VSTORE/ NLON1,NLAT1,NPRESS1,VP,VT,VVMR
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
-      print*,'Calling interpvivien'
-      print*,'NLON1 = ',NLON1
-C      print*,'XLAT,XLON = ',XLAT,XLON
+      if(idiag.gt.0)print*,'Calling interpvivien'
+      if(idiag.gt.0)print*,'NLON1 = ',NLON1
          
       IF(NLON1.NE.64)THEN
        ANAME='process_vivien_mod.txt'
        OPEN(12,FILE=ANAME,STATUS='OLD')
         READ(12,*)NLON1,NLAT1
         IF(NLON.NE.NLON1)THEN
-         PRINT*,'Error in interpvivien.f'
+         print*,'Error in interpvivien.f'
          PRINT*,'NLON1 <> NLON',NLON1,NLON
          STOP
         ENDIF
@@ -128,10 +129,6 @@ C        Xlon must be in range VLON(NLON) to 360.
         STOP
       ENDIF
 
-C      PRINT*,'JLAT,FLAT = ',JLAT,FLAT
-C      PRINT*,'VLAT(JLAT),VLAT(JLAT+1),XLAT',VLAT(JLAT),VLAT(JLAT+1),XLAT
-C      PRINT*,'JLON1,JLON2,FLON',JLON1,JLON2,FLON
-C      PRINT*,'VLON(JLON1),VLON(JLON2),XLON',VLON(JLON1),VLON(JLON2),XLON
 
       DO I=1,NPRESS
        VY1(I)=VT(JLON1,JLAT,I)

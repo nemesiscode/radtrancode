@@ -136,6 +136,9 @@ C     **************************************************************
 
 C     Arrays
       real vfwhm(mfwhm),xfwhm(mfwhm)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
 
 C     jradf and jloggf are passed via the planrad common block   
       jradf=jrad
@@ -145,29 +148,29 @@ C     jradf and jloggf are passed via the planrad common block
       nfwhm=0
 
 
-C      print*,'-----------------'
-C      print*,runname
-C      print*,ispace,iscat,fwhm,ngeom
-C      print*,(nav(i),i=1,ngeom)
+C      if(idiag.gt.0)print*,'-----------------'
+C      if(idiag.gt.0)print*,runname
+C      if(idiag.gt.0)print*,ispace,iscat,fwhm,ngeom
+C      if(idiag.gt.0)print*,(nav(i),i=1,ngeom)
 C      do j=1,ngeom
-C       print*,(wgeom(j,i),i=1,nav(j))
-C       print*,(flat(j,i),i=1,nav(j))
+C       if(idiag.gt.0)print*,(wgeom(j,i),i=1,nav(j))
+C       if(idiag.gt.0)print*,(flat(j,i),i=1,nav(j))
 C       do i=1,nav(j)
-C        print*,j,i,(angles(j,i,k),k=1,3)  
+C        if(idiag.gt.0)print*,j,i,(angles(j,i,k),k=1,3)  
 C       enddo
 C      enddo
 C      do j=1,ngeom
-C       print*,nwave(j),(vwave(j,i),i=1,nwave(j))
-C       print*,nconv(j),(vconv(j,i),i=1,nconv(j))
+C       if(idiag.gt.0)print*,nwave(j),(vwave(j,i),i=1,nwave(j))
+C       if(idiag.gt.0)print*,nconv(j),(vconv(j,i),i=1,nconv(j))
 C      enddo
-C      print*,gasgiant,lin,nvar
+C      if(idiag.gt.0)print*,gasgiant,lin,nvar
 C      do i=1,nvar
-C       print*,(varident(i,j),j=1,3)
-C       print*,(varparam(i,j),j=1,mparam)
+C       if(idiag.gt.0)print*,(varident(i,j),j=1,3)
+C       if(idiag.gt.0)print*,(varparam(i,j),j=1,mparam)
 C      enddo
-C      print*,jsurf,jalb,jtan,jpre
-C      print*,nx,ny
-C      print*,(xn(i),i=1,nx)
+C      if(idiag.gt.0)print*,jsurf,jalb,jtan,jpre
+C      if(idiag.gt.0)print*,nx,ny
+C      if(idiag.gt.0)print*,(xn(i),i=1,nx)
 
 
 
@@ -220,8 +223,8 @@ C     Initialise arrays
       aphi = angles(1,1,3)         
       nf = 0
 
-C      print*,'Angles : ',sol_ang,emiss_ang,aphi
-C      print*,'nf = ',nf
+C      if(idiag.gt.0)print*,'Angles : ',sol_ang,emiss_ang,aphi
+C      if(idiag.gt.0)print*,'nf = ',nf
       xlat = flat(1,1)
       xlon = flon(1,1)
       xgeom = wgeom(1,1)
@@ -241,14 +244,14 @@ C      print*,'nf = ',nf
 
          ix = ix1-1
 
-         print*,'forwardnogXVenus, ix,nx = ',ix,nx
+         if(idiag.gt.0)print*,'forwardnogXVenus, ix,nx = ',ix,nx
          if(ix.gt.0)then
             xref = xn(ix)
             dx = 0.05*xref
             if(dx.eq.0)dx = 0.1
             xn(ix)=xn(ix)+dx
          endif
-         print*,'ix,xref,dx,xn(ix)',ix,xref,dx,xn(ix)
+         if(idiag.gt.0)print*,'ix,xref,dx,xn(ix)',ix,xref,dx,xn(ix)
          if(jsurf.gt.0)then
            tsurf = xn(jsurf)
          endif
@@ -256,7 +259,7 @@ C      print*,'nf = ',nf
 C        Check to see if this variable is unconstrained enough to bother
 C        calculating its gradient.
          if(ix.gt.0.and.ifix(ix).eq.1)then
-           print*,'Fix ',ix,xref
+           if(idiag.gt.0)print*,'Fix ',ix,xref
            xn(ix)=xref
            goto 110
          endif
@@ -286,19 +289,20 @@ C        Set up parameters for scattering cirsrad run.
          IMIE1=IMIE
           itype=11			! scloud11wave
 
-          print*,'************** FORWARDNOGXVenus ***********'
-          print*,'******** INORMAL = ',INORMAL
-          print*,'******** ITYPE = ',ITYPE
-
+          if(idiag.gt.0)then
+           print*,'************** FORWARDNOGXVenus ***********'
+           print*,'******** INORMAL = ',INORMAL
+           print*,'******** ITYPE = ',ITYPE
+          endif
 
 C         Set up all files for a direct cirsrad run
-          print*,'calling gsetradV'
+          if(idiag.gt.0)print*,'calling gsetradV'
           call gsetradV(runname,iscat,nmu,mu,wtmu,isol,dist,
      1     lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
      2     layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,xlon,
      3     lin,nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,
      4     xmap)
-          print*,'gsetradV called OK'
+          if(idiag.gt.0)print*,'gsetradV called OK'
 
 C         If planet is not a gas giant and observation is not at limb then
 C         we need to read in the surface emissivity spectrum.
@@ -317,18 +321,20 @@ C         Read in emissivity file
 C         Check to see if any temperatures or vmrs have gone
 C         negative and if so abort
           icheck = check_profile(runname)
-          print*,'forwardnogXVenus, icheck = ',icheck
+          if(idiag.gt.0)print*,'forwardnogXVenus, icheck = ',icheck
 C         Check also to see if surface temperature has gone negative
           if(tsurf.lt.0.0)icheck=1   
-          print*,tsurf,icheck
+          if(idiag.gt.0)print*,tsurf,icheck
 
           if(icheck.eq.1)then
+           if(idiag.gt.0)then
            print*,'Profiles have gone awry. Abort, increase brakes and'
            print*,'try again'
+           endif
            return
           endif
           
-          print*,'forwardnogXVenus ',runname
+          if(idiag.gt.0)print*,'forwardnogXVenus ',runname
 
           call CIRSrtf_wave(runname, dist, inormal, iray,fwhm, ispace,
      1     vwave1,nwave1,npath, output, vconv1, nconv1, itype,
@@ -386,7 +392,7 @@ C         to the requested heights in the .spx file.
 
           do 111 igeom=1,ngeom
            hnow = angles(igeom,1,2)
-           print*,'igeom, hnow = ',igeom,hnow
+           if(idiag.gt.0)print*,'igeom, hnow = ',igeom,hnow
 
            do j=1,nwave1
             yy(j)=venera1(j,igeom)

@@ -1,4 +1,4 @@
-      PROGRAM generatespx
+      PROGRAM generatespxL
 C     $Id:
 C     ******************************************************************
 C
@@ -77,6 +77,8 @@ C     ********** Scattering variables **********************
       CHARACTER*100 ANAME
       REAL DNU
       INTEGER IPARA
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C     ******************************************************
 
@@ -84,6 +86,8 @@ C     ******************************************************
 C     *******************************************************
 C     ****************   CODE *******************************
 C     *******************************************************
+
+      idiag=1
 
 C     Read in reference gas information data
       CALL RESERVEGAS
@@ -104,7 +108,7 @@ C     New compiler time
 1     FORMAT(a)
       runname = buffer(1:36)
 
-      print*,'checking files'
+      if(idiag.gt.0)print*,'checking files'
 C     Make sure input files are OK
       CALL checkfiles(runname)
 
@@ -129,14 +133,16 @@ C     Also read in whether scattering is required (iscat)
       inum=0
 
       if(ilbl.eq.1) then
-       print*,'NemesisL - LBL calculation. Not yet implemented'
+       if(idiag.gt.0)then
+        print*,'NemesisL - LBL calculation. Not yet implemented'
+       endif
       endif
       if(ilbl.eq.0)then
-       print*,'NemesisL - corr-k calculation'
+       if(idiag.gt.0)print*,'NemesisL - corr-k calculation'
        CALL readkkhead(runname,vkstart,vkend,vkstep)
       endif
       if(ilbl.eq.2)then
-       print*,'NemesisL - lbl-table calculation'
+       if(idiag.gt.0)print*,'NemesisL - lbl-table calculation'
        CALL readkklblhead(runname,vkstart,vkend,vkstep)
       endif
 

@@ -57,6 +57,8 @@ c  ** variables for solar reflected cloud **
       integer iread,nspt,iform
       real solrad,swave(maxbin),srad(maxbin)
       common /solardat/iread,iform,solrad,swave,srad,nspt
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       
       CALL FILE(RUNNAME,RUNNAME,'pat')
@@ -64,7 +66,7 @@ c  ** variables for solar reflected cloud **
       OPEN(31,FILE=RUNNAME,STATUS='UNKNOWN')
 
 
-      print*,'gwritepatV: iscat=',iscat
+      if(idiag.gt.0)print*,'gwritepatV: iscat=',iscat
       WRITE(31,1)' '
       TEXT='interval'
       WRITE(31,1)TEXT
@@ -110,7 +112,7 @@ c  ** variables for solar reflected cloud **
        WRITE(31,*)' '
       ENDIF
 
-      print*,'AA ISCAT = ',ISCAT
+      if(idiag.gt.0)print*,'AA ISCAT = ',ISCAT
       IF(ISCAT.GT.0)THEN
        TEXT = 'fcloud model fcloud.prf'
        WRITE(31,1)TEXT

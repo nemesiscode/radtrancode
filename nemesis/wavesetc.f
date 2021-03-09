@@ -46,6 +46,8 @@ c      real :: save(savemax),vfil(maxfil),fil(maxfil)
 
       logical flag
       character*100 runname,runname1
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 C     *******************************************************************
 
 C     If k-tables are tabulated on an irregular wavelength grid OR have
@@ -53,11 +55,6 @@ C     have been calculated with a built-in instrument function then
 C     just set the calculation wavelengths to be the convolution wavelengths
 
 
-C      print*,'vconv'
-C      print*,nconv
-C      do i=1,nconv
-C       print*,i,vconv(i)
-C      enddo
 
 
       allocate (save(savemax),STAT=status)
@@ -83,7 +80,7 @@ C      enddo
 
 
         call file(runname,runname1,'fil')
-        print*,'Reading : ',runname1
+        if(idiag.gt.0)print*,'Reading : ',runname1
         open(12,file=runname1,status='old')
          read(12,*)nconv1
          if(nconv.ne.nconv1)then
@@ -114,9 +111,11 @@ C      enddo
             v1 = vkstart + (j1-1)*vkstep
             v2 = vkstart + (j2-1)*vkstep
             if(v1.lt.vkstart.or.v2.gt.vkend)then
-              print*,'Warning from wavesetc'
-              print*,'Channel wavelengths not covered by ktables'
-              print*,'v1,v2,vkstart,vkend',v1,v2,vkstart,vkend
+              if(idiag.gt.0)then
+               print*,'Warning from wavesetc'
+               print*,'Channel wavelengths not covered by ktables'
+               print*,'v1,v2,vkstart,vkend',v1,v2,vkstart,vkend
+              endif
             endif
 
             do jj=j1,j2
@@ -153,9 +152,11 @@ C      enddo
           v1 = vkstart + (j1-1)*vkstep
           v2 = vkstart + (j2-1)*vkstep
           if(v1.lt.vkstart.or.v2.gt.vkend)then
-              print*,'Warning from wavesetc'
-              print*,'Channel wavelengths not covered by ktables'
-              print*,'v1,v2,vkstart,vkend',v1,v2,vkstart,vkend
+              if(idiag.gt.0)then
+               print*,'Warning from wavesetc'
+               print*,'Channel wavelengths not covered by ktables'
+               print*,'v1,v2,vkstart,vkend',v1,v2,vkstart,vkend
+              endif
           endif
 
           do j=j1,j2
@@ -190,14 +191,16 @@ C     sort calculation wavelengths into order
        vwave(i)=save(i)
       enddo
 
-C      print*,'nco = ',nco
+C      if(idiag.gt.0)print*,'nco = ',nco
 C     Now weed out repeated wavelengths
       vwave(1)=save(1)
       ico=1
       xdiff = 0.9*vkstep
       if(xdiff.gt.0)then
-      print*,'Weeding out repeated wavelengths. vkstep = ',
+      if(idiag.gt.0)then
+       print*,'Weeding out repeated wavelengths. vkstep = ',
      &		vkstep
+      endif
       do 446 i=2,nco
        test = abs(save(i)-vwave(ico))
        if(test.ge.xdiff)then
@@ -216,11 +219,7 @@ C     Now weed out repeated wavelengths
 
       deallocate(save)
 
-C      print*,'nwave = ',nwave
-C      do i=1,nwave
-C       print*,i,vwave(i)
-C      enddo
 
-      print*,'wavesetc: nwave = ',nwave
+      if(idiag.gt.0)print*,'wavesetc: nwave = ',nwave
       return
       end

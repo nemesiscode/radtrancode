@@ -88,12 +88,17 @@ C     ******* xlat Mod Variables (see code for info) *******
       integer xlat_lmb_cnt
       real emiss_ang
       real xlat_lmb, xlat_lmb_store
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
 C     ******************************************************
 
 
 C     *******************************************************
 C     ****************   CODE *******************************
 C     *******************************************************
+
+      idiag=1
 
 C     ----------- Scattering phase function initialisation --------------
       xwave(1)=-1                       ! Reset to force read of hgphase*
@@ -111,7 +116,7 @@ C     New compiler time
 1     FORMAT(a)
       runname = buffer(1:36)
 
-      print*,'checking files'
+      if(idiag.gt.0)print*,'checking files'
 C     Make sure input files are OK
       CALL checkfiles(runname)
 
@@ -233,7 +238,7 @@ C     in order
      1 nconvT,vconvT)
 
 C     Read in forward modelling errors
-      print*, 'ename: (', ename, ')' 
+      if(idiag.gt.0)print*, 'ename: (', ename, ')' 
       call forwarderr(ename,ngeom,nconv,vconv,woff,rerr)
 
       CALL FILE(runname,runname,'cia')
@@ -363,9 +368,11 @@ C     Mod to make sure XLAT is set to LMB value (also checks all LMB values the 
          endif
          xlat_lmb_store=xlat_lmb
          xlat_lmb_cnt=xlat_lmb_cnt+1
-         print*,'iav, emiss_ang = ', iav, emiss_ang
-         print*,'xlat_lmb_cnt = ',xlat_lmb_cnt
-         print*,'xlat_lmb, xlat_lmb_store = ',xlat_lmb,xlat_lmb_store
+         if(idiag.gt.0)then
+          print*,'iav, emiss_ang = ', iav, emiss_ang
+          print*,'xlat_lmb_cnt = ',xlat_lmb_cnt
+          print*,'xlat_lmb, xlat_lmb_store = ',xlat_lmb,xlat_lmb_store
+         endif
         endif
        enddo
       enddo

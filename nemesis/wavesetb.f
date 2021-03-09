@@ -33,6 +33,8 @@ C     ******************************************************************
       real fil(1000)
       logical flag,wasp
       character*100 runname
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 C     *******************************************************************
 
 C     Set wasp=.true. to enable hybrid k-tables for wasp-43b analysis
@@ -43,10 +45,10 @@ C     have been calculated with a built-in instrument function then
 C     just set the calculation wavelengths to be the convolution wavelengths
 
       if(wasp)then
-       print*,'vconv'
-       print*,nconv
+       if(idiag.gt.0)print*,'vconv'
+       if(idiag.gt.0)print*,nconv
        do i=1,nconv
-        print*,i,vconv(i)
+        if(idiag.gt.0)print*,i,vconv(i)
        enddo
       endif
       if(vkstep.lt.0.or.fwhm.eq.0)then
@@ -58,7 +60,7 @@ C     just set the calculation wavelengths to be the convolution wavelengths
        ico = 0
        if(fwhm.lt.0.0)then
         call file(runname,runname,'fil')
-        print*,'Reading filter file : ',runname
+        if(idiag.gt.0)print*,'Reading filter file : ',runname
         open(12,file=runname,status='old')
          read(12,*)nconv1
          if(nconv.ne.nconv1)then
@@ -71,7 +73,7 @@ C     just set the calculation wavelengths to be the convolution wavelengths
          do 442 k=1,nconv1
           read(12,*)vcentral
           read(12,*)nsub
-          if(wasp) print*,'vcen,nsub',vcentral,nsub
+          if(wasp.and.idiag.gt.0)print*,'vcen,nsub',vcentral,nsub
           if(nsub.gt.1000)then
            print*,'Error in wavesetb: vfil array not big enough'
            print*,nsub
@@ -82,7 +84,7 @@ C     just set the calculation wavelengths to be the convolution wavelengths
           enddo
 
           do 443 i=1,nconv
-c           print*,vcentral,vconv(i)
+c           if(idiag.gt.0)print*,vcentral,vconv(i)
 cc           dv = 100.0*abs(vcentral-vconv(i))/vconv(i)
            dv = abs(vcentral-vconv(i))
 
@@ -92,9 +94,11 @@ cc           dv = 100.0*abs(vcentral-vconv(i))/vconv(i)
             v1 = vkstart + (j1-1)*vkstep
             v2 = vkstart + (j2-1)*vkstep
             if(v1.lt.vkstart.or.v2.gt.vkend)then
-              print*,'Warning from wavesetb'
-              print*,'Channel wavelengths not covered by ktables'
-              print*,'v1,v2,vkstart,vkend',v1,v2,vkstart,vkend
+              if(idiag.gt.0)then
+               print*,'Warning from wavesetb'
+               print*,'Channel wavelengths not covered by ktables'
+               print*,'v1,v2,vkstart,vkend',v1,v2,vkstart,vkend
+              endif
             endif
 
             do jj=j1,j2
@@ -135,7 +139,7 @@ cc           dv = 100.0*abs(vcentral-vconv(i))/vconv(i)
 C      hybrid k-tables for WASP-43b tests
         ico=0
         call file(runname,runname,'fil')
-        print*,'Reading filter file : ',runname
+        if(idiag.gt.0)print*,'Reading filter file : ',runname
         open(12,file=runname,status='old')
          read(12,*)nconv1
          if(nconv.ne.nconv1)then
@@ -148,7 +152,7 @@ C      hybrid k-tables for WASP-43b tests
          do 543 k=1,nconv1
           read(12,*)vcentral
           read(12,*)nsub
-          print*,'vcen,nsub',vcentral,nsub
+          if(idiag.gt.0)print*,'vcen,nsub',vcentral,nsub
           if(nsub.gt.1000)then
            print*,'Error in wavesetb: vfil array not big enough'
            print*,nsub
@@ -181,13 +185,13 @@ C     sort calculation wavelengths into order
        vwave(i)=save(i)
       enddo
 
-C      print*,'nco = ',nco
+C      if(idiag.gt.0)print*,'nco = ',nco
 C     Now weed out repeated wavelengths
       vwave(1)=save(1)
       ico=1
       xdiff = 0.9*vkstep
       if(xdiff.gt.0)then
-C      print*,'Weeding out repeated wavelengths. vkstep = ',
+C      if(idiag.gt.0)print*,'Weeding out repeated wavelengths. vkstep = ',
 C     &		vkstep
       do 446 i=2,nco
        test = abs(save(i)-vwave(ico))
@@ -200,19 +204,19 @@ C     &		vkstep
           stop
          endif
          vwave(ico)=save(i)
-C         print*,'ico,vwave',ico,vwave(ico)
+C         if(idiag.gt.0)print*,'ico,vwave',ico,vwave(ico)
        end if
 446   continue
       nwave=ico
       endif
 
       if(wasp)then
-       print*,'nwave = ',nwave
+       if(idiag.gt.0)print*,'nwave = ',nwave
        do i=1,nwave
-        print*,i,vwave(i)
+        if(idiag.gt.0)print*,i,vwave(i)
        enddo
       endif
 
-      print*,'wavesetb: nwave = ',nwave
+      if(idiag.gt.0)print*,'wavesetb: nwave = ',nwave
       return
       end

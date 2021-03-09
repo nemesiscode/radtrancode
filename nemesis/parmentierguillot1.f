@@ -45,6 +45,8 @@ C     **************************************************************
       REAL DZ2DTAU,DZ2DGA,DXDALPHA,DXDBETA,DXDTAU
       REAL DXDKIR,DXDG1,DXDG2
       CHARACTER*8 PNAME
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
       TIRR=BETA*SQRT(0.5*RSTAR/SDIST)*TSTAR
@@ -58,10 +60,10 @@ C     Calc gravity at bottom of atmosphere (decide later if need at 1 bar, etc)
       CALL NEWGRAV(IPLANET,LATITUDE,HIN(1),RADIUS,G,PNAME)
 
 
-C      print*,'G = (m s-2)',G
+C      if(idiag.gt.0)print*,'G = (m s-2)',G
 C     Test gravity: log(g)(cm s-2)=3.341
 C      G1 = (10**3.341)/100.0
-C      print*,'G1 = ',G1
+C      if(idiag.gt.0)print*,'G1 = ',G1
 C      G=G1
 
       DO I=1,NPRO

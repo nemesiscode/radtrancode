@@ -127,9 +127,11 @@ C     ************************************************************************
       integer ncblaycloud(mcloud)
 
       real csx,nrealshell(max_wave),nimagshell(max_wave),nmshell
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
      
-      print*,'gsetrad, lin = ',lin
+      if(idiag.gt.0)print*,'gsetrad, lin = ',lin
 
 C     Look to see if the CIA file refined has variable para-H2 or not.
       call file(runname,runname,'cia')
@@ -210,9 +212,9 @@ C        ********* reset surface albedo spectrum  **********
          if(buffer(1:1).eq.'#')goto 54
          read(buffer,*)nalb1
          if(nalb1.ne.nalb)then
-          print*,'Error in gsetrad nalbx <> nalb1'
-          print*,nalb,nalb1
-          print*,'file : ',runname
+          if(idiag.gt.0)print*,'Error in gsetrad nalbx <> nalb1'
+          if(idiag.gt.0)print*,nalb,nalb1
+          if(idiag.gt.0)print*,'file : ',runname
          endif
 
          do i=1,nalb
@@ -266,7 +268,9 @@ C         Stop emissivity going negative
         if(varidentx(ivarx,1).eq.777)then
 C       ************ reset tangent heights   ***********
          if(emiss_ang.gt.0)then
-          print*,'Can not do tangent ht correction for non-limb case'
+          if(idiag.gt.0)then
+           print*,'Can not do tangent ht correction for non-limb case'
+          endif
          else 
           sol_ang = sol_ang+xnx(jtanx)
          endif
@@ -289,7 +293,7 @@ C       ***************** Surface temperature correction ***********
 
       do ivar=1,nvar
 
-       print*,'gsetrad - ',ivar,varident(ivar,1)
+       if(idiag.gt.0)print*,'gsetrad - ',ivar,varident(ivar,1)
 
 
        if(varident(ivar,1).eq.887)then
@@ -303,9 +307,9 @@ C        ********* Adjust cloud cross-section spectrum  **********
          if(buffer(1:1).eq.'#')goto 52
          read(buffer,*)ncont1
          if(ncont1.ne.ncont)then
-          print*,'Error in gsetrad ncont1 <> ncont'
-          print*,ncont1,ncont
-          print*,'file : ',runname
+          if(idiag.gt.0)print*,'Error in gsetrad ncont1 <> ncont'
+          if(idiag.gt.0)print*,ncont1,ncont
+          if(idiag.gt.0)print*,'file : ',runname
          endif
 
          do i=1,nxsc
@@ -337,9 +341,9 @@ C       ********* surface albedo spectrum retrieval **********
         if(buffer(1:1).eq.'#')goto 55
         read(buffer,*)nalb1
         if(nalb1.ne.nalb)then
-         print*,'Error in gsetrad nalb <> nalb1'
-         print*,nalb,nalb1
-         print*,'file : ',runname
+         if(idiag.gt.0)print*,'Error in gsetrad nalb <> nalb1'
+         if(idiag.gt.0)print*,nalb,nalb1
+         if(idiag.gt.0)print*,'file : ',runname
         endif
 
         do i=1,nalb
@@ -390,7 +394,9 @@ C        Stop emissivity going negative
        if(varident(ivar,1).eq.777)then
 C      ***************** Tangent height correction ***********
         if(emiss_ang.gt.0)then
-         print*,'Can not do tangent ht correction for non-limb case'
+         if(idiag.gt.0)then
+          print*,'Can not do tangent ht correction for non-limb case'
+         endif
         else
          sol_ang = sol_ang+xn(jtan)
         endif
@@ -420,15 +426,17 @@ C      Make sure laytyp and nlayer consistent for varident(ivar,3)=25 model
         if(iflagtest.eq.227)then!flag if creme brulee model
          cbflag=.true.
          iflagcb=iflagtest
-         print*,'iflagtest = ',iflagtest
+         if(idiag.gt.0)print*,'iflagtest = ',iflagtest
         endif
        endif
 
       enddo
 
 C     See if Sromovsky cloud layer model is specified.
-      print*,'gsetrad - iflagcloud,iflagsrom = ',iflagcloud,iflagsrom
-      print*,'gsetrad - cbflag, iflagcb = ',cbflag,iflagcb
+      if(idiag.gt.0)then
+       print*,'gsetrad - iflagcloud,iflagsrom = ',iflagcloud,iflagsrom
+       print*,'gsetrad - cbflag, iflagcb = ',cbflag,iflagcb
+      endif
 
       if(iflagcloud)then
 
@@ -442,7 +450,7 @@ C     See if Sromovsky cloud layer model is specified.
      2    cfsh)
         endif 
         
-       print*,'Calling gwritepatsrom - ncloud = ',ncloud
+       if(idiag.gt.0)print*,'Calling gwritepatsrom - ncloud = ',ncloud
        call gwritepatsrom(runname,gasgiant,iscat,sol_ang,
      1  emiss_ang,nconv,vconv,fwhm,layht,nlayer,
      2  laytyp,layint,flagh2p,ncloud,cpbot,cptop,nlaycloud,
@@ -453,7 +461,7 @@ C     See if Sromovsky cloud layer model is specified.
      1    varparam,xn,ncloud,cbpbot,cbptop,ncblaycloud,cbodepth,
      2    cbfsh)
           
-       print*,'Calling gwritepatcb'
+       if(idiag.gt.0)print*,'Calling gwritepatcb'
        call gwritepatcb(runname,gasgiant,iscat,sol_ang,
      1  emiss_ang,nconv,vconv,fwhm,layht,nlayer,
      2  laytyp,layint,flagh2p,ncloud,cbpbot,cbptop,ncblaycloud,
@@ -507,7 +515,7 @@ C     Compute the drv file to get the aerosol optical depths
         nx1=0
 
         do ivar=1,nvar
-         print*,'ivar = ',ivar
+         if(idiag.gt.0)print*,'ivar = ',ivar
          if(varident(ivar,1).le.100)then
 
           if(varident(ivar,3).eq.9.or.varident(ivar,3).eq.21.
@@ -515,7 +523,7 @@ C     Compute the drv file to get the aerosol optical depths
               icont=abs(varident(ivar,1))
               od1=exp(xn(nx1+1))
               xscal(icont)=xod(icont)/od1
-              print*,'scaledust',icont,xod(icont),od1
+              if(idiag.gt.0)print*,'scaledust',icont,xod(icont),od1
               do j=1,NN
                dust(icont,j)=dust(icont,j)/xscal(icont)
               enddo
@@ -533,9 +541,10 @@ C     Compute the drv file to get the aerosol optical depths
               icont=abs(varident(ivar,1))
               od1=exp(xn(nx1+1))
               xscal(icont)=xod(icont)/od1
-              print*,'gsetrad - icont,od1,xscal(icont) = ',icont,
+              if(idiag.gt.0)then
+               print*,'gsetrad - icont,od1,xscal(icont) = ',icont,
      1          od1,xscal(icont)
-
+              endif
               do j=1,NN
                dust(icont,j)=dust(icont,j)/xscal(icont)
               enddo
@@ -554,7 +563,7 @@ C     Compute the drv file to get the aerosol optical depths
            else
             np = 3
            endif
-C           print*,'xxz1',ivar,varparam(ivar,2),np
+C           if(idiag.gt.0)print*,'xxz1',ivar,varparam(ivar,2),np
           endif
           if(varident(ivar,1).eq.445)np = 3+2*int(varparam(ivar,1))
           if(varident(ivar,1).eq.222)np = 8
@@ -568,19 +577,19 @@ C           print*,'xxz1',ivar,varparam(ivar,2),np
 
          nx1=nx1+np
 
-C         print*,'xxy',nx1,np
+C         if(idiag.gt.0)print*,'xxy',nx1,np
 
         enddo
 
 
-        print*,'Writing out scale aerosol'
+        if(idiag.gt.0)print*,'Writing out scale aerosol'
         open(12,file='aerosol.prf',status='unknown')
          BUFFER='# simple.prf'
          WRITE(12,1)BUFFER     
          WRITE(12,*)NN,NDUST
          DO 106 J=1,NN
            WRITE(12,*)DUSTH(J),(DUST(I,J),I=1,NDUST)
-C           print*,DUSTH(J),(DUST(I,J),I=1,NDUST)
+C           if(idiag.gt.0)print*,DUSTH(J),(DUST(I,J),I=1,NDUST)
 106      CONTINUE
         close(12)
 
@@ -617,7 +626,7 @@ C       check that rescaling has happened correctly
 
            r0 = exp(xn(nx1+1))
            v0 = exp(xn(nx1+2))
-           print*,varident(ivar,1),' r0,v0 = ',r0,v0
+           if(idiag.gt.0)print*,varident(ivar,1),' r0,v0 = ',r0,v0
            if(varident(ivar,1).eq.445)then
             csx = exp(xn(nx1+3))
             nmshell = varparam(ivar,6)
@@ -635,8 +644,10 @@ C       check that rescaling has happened correctly
 
 C          np1 should now match nwave
            if(np1.ne.nwave)then
-             print*,'Warning from gsetrad.f, nwave in refindex file is'
-             print*,'different from that in .xsc file.'
+             if(idiag.gt.0)then
+              print*,'Warning from gsetrad.f, nwave in refindex file is'
+              print*,'different from that in .xsc file.'
+             endif
            endif
            do i=1,nwave
             if(varident(ivar,1).eq.444)then
@@ -645,7 +656,7 @@ C          np1 should now match nwave
               nimagshell(i) = 0.0
              else
               nimag(i)=exp(xn(nx1+3))
-C              print*,'xxy',nx1,nx1+3,exp(xn(nx1+3))
+C              if(idiag.gt.0)print*,'xxy',nx1,nx1+3,exp(xn(nx1+3))
               nimagshell(i) = 0.0
              endif
             else
@@ -662,14 +673,14 @@ C              print*,'xxy',nx1,nx1+3,exp(xn(nx1+3))
               nimagshell(i) = exp(xn(nx1+3+np1)) 
              endif
             endif
-C            print*,'xx',i,nimag(i)
+C            if(idiag.gt.0)print*,'xx',i,nimag(i)
            enddo
 
-C           print*,'xx',varident(ivar,1),varident(ivar,2)
+C           if(idiag.gt.0)print*,'xx',varident(ivar,1),varident(ivar,2)
            if(varparam(ivar,2).gt.0.0.or.
      &        varident(ivar,1).eq.446)then
 C           Compute nreal from KK
-C            print*,'xx kramer'
+C            if(idiag.gt.0)print*,'xx kramer'
             if(ispace.eq.0)then
 C            nimag in wavenumber space, can transfer directly
              do i=1,nwave
@@ -697,7 +708,7 @@ C           Set nr to be constant across range
             do i=1,nwave
              n1(i)=nm
              n2(i)=nmshell
-C             print*,'xx mod',i,n1(i)
+C             if(idiag.gt.0)print*,'xx mod',i,n1(i)
             enddo
            endif
            
@@ -738,7 +749,7 @@ C          Find minimum wavelength
      1                  nrealshell(i),nimagshell(i)
 	    else
              write(12,*)wave(i),nreal(i),nimag(i)
-C             print*,'xx',wave(i),nreal(i),nimag(i)
+C             if(idiag.gt.0)print*,'xx',wave(i),nreal(i),nimag(i)
 	    endif
            enddo
            close(12)
@@ -768,7 +779,7 @@ C             print*,'xx',wave(i),nreal(i),nimag(i)
        endif
 
        nx1=nx1+np
-C       print*,'xxz',ivar,nx1,np,nx1
+C       if(idiag.gt.0)print*,'xxz',ivar,nx1,np,nx1
 
       enddo
 

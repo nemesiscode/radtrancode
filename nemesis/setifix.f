@@ -36,10 +36,12 @@ C     ***************************************************************
       real xa1,ea1,ferr,minferr
 C     Set minimum fractional error to fix variable.
       parameter (minferr = 1e-6)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
             
       nxtemp=0
-      print*,'Calling setifix'
+      if(idiag.gt.0)print*,'Calling setifix'
       do 299 ivar=1,nvar
        np=1
        if(varident(ivar,1).le.100)then
@@ -91,7 +93,7 @@ C     Set minimum fractional error to fix variable.
 299   continue
 
       do j=1,nxtemp
-       print*,'j,ifix(j) : ',j,ifix(j)
+       if(idiag.gt.0)print*,'j,ifix(j) : ',j,ifix(j)
       enddo
 
       return

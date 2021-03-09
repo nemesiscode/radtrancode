@@ -18,6 +18,8 @@ C     **************************************************************
       implicit none
       integer imod,np,npro,nlong
       real vpar1
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       np=1
       if(imod.le.44)then
@@ -54,7 +56,9 @@ C     **************************************************************
         if(imod.eq.32)np = 3
         if(imod.eq.33)then
           nlong=16
-          print*,'npvar - model 33: assuming nlong = ',nlong
+          if(idiag.gt.0)then
+           print*,'npvar - model 33: assuming nlong = ',nlong
+          endif
           np = int(vpar1)+nlong
         endif
         if(imod.eq.34)np = 2
@@ -66,7 +70,7 @@ C     **************************************************************
         if(imod.eq.43)np = 5
         if(imod.eq.44)np = 5*int(vpar1)
       else
-       print*,'npvar:  Model parameterisation not defined = ',imod
+        print*,'npvar:  Model parameterisation not defined = ',imod
       endif
 
       npvar=np

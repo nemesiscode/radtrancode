@@ -55,6 +55,8 @@ C Z0: distance of the start of the path from the centre of the planet.
       INTEGER I,J,K,L,M,NPATH1
       REAL S0,S1,STMP,XIFC(MAXCON,MAXPRO),HTAN,F
       LOGICAL DEF,SURFACE
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C Path file format is atm followed by optional keywords. keyword are:
 C         limb             followed by bottom layer to use
@@ -259,8 +261,10 @@ C      has been defined at the top of the atmosphere
        Z0=RADIUS+BASEH(NLAY)+DELH(NLAY)
 C      Calculate tangent altitude of ray at lowest point
        HTAN=Z0*SIN(ANGLE*DTR)-RADIUS
-       PRINT*,'Near-limb path does not reach bottom layer'
-       PRINT*,'Tangent altitude, radius is : ',HTAN,HTAN+RADIUS
+       if(idiag.gt.0)then
+        print*,'Near-limb path does not reach bottom layer'
+        print*,'Tangent altitude, radius is : ',HTAN,HTAN+RADIUS
+       endif
        IF(HTAN.LE.BASEH(BOTLAY))THEN
 C      Calculate zenith angle at bottom of lowest layer
         ANGLE=(1./DTR)*ASIN(Z0*SIN(DTR*ANGLE)/(RADIUS+BASEH(BOTLAY)))
@@ -277,7 +281,9 @@ C       to computed tangent height.
          F=(HTAN-BASEH(BOTLAY))/(BASEH(BOTLAY+1)-BASEH(BOTLAY))
          IF(F.GT.0.5)BOTLAY=BOTLAY+1
         ENDIF
-        print*,'botlay',botlay,baseh(botlay),baseh(botlay+1)
+        if(idiag.gt.0)then
+         print*,'botlay',botlay,baseh(botlay),baseh(botlay+1)
+        endif
        ENDIF
       ENDIF
 
@@ -285,8 +291,6 @@ C       to computed tangent height.
       COSA=COS(DTR*ANGLE)
       Z0=RADIUS+BASEH(BOTLAY)
 
-C      print*,'ATMG Check: LIMB,RADIUS,ANGLE,SIN2A,COSA,Z0'
-C      print*,'ATMG Check: ',LIMB,RADIUS,ANGLE,SIN2A,COSA,Z0
 
 C--------------------------------------------------------------
 C
@@ -308,7 +312,7 @@ C--------------------------------------------------------------
           WRITE(*,*)' NUSE, MAXINC: ',NUSE,MAXINC
           STOP
         ENDIF
-        print*,NLAY,BOTLAY,FSTLAY,NUSE
+        if(idiag.gt.0)print*,NLAY,BOTLAY,FSTLAY,NUSE
         DO 111 I=1,NUSE
           IF(I.LE.NUSE/2)THEN
             LOCLAY(I)=NLAY-I+1
@@ -381,12 +385,13 @@ C Elsewhere in the Radtran suite layers are numbered from the bottom of
 C the atmosphere up (ie bottom layer is layer number 1), but here the
 C layers are numbered from the top down (ie top layer is layer number 1)
 C Therefore a warning should be printed to alert the user.
+        if(idiag.gt.0)then
         WRITE(*,*)' NOTE: The layers in this program are numbered from'
         WRITE(*,*)' the top down (ie the layer closest to the'
         WRITE(*,*)' spacecraft is layer 1). This is contrary to the'
         WRITE(*,*)' convention used elsewhere in the Radtran suite,'
         WRITE(*,*)' where the deepest layer is known as layer 1.'
-
+        endif
         NCG=1
 C If calculating a weighting function or thermal emission, need layers
 C from each point in the atmosphere
@@ -448,8 +453,10 @@ C Initialising the variables for this CG layer
             BASEH(NLAYER)=BASEH(USELAY(K))
             BASEP(NLAYER)=BASEP(USELAY(K))
           ENDIF
-          WRITE(*,*)' ATMG.f :: Creating CG layer ',NLAYER
-          WRITE(*,*)' by adding atmospheric layers 1 to ',K
+          if(idiag.gt.0)then
+           WRITE(*,*)' ATMG.f :: Creating CG layer ',NLAYER
+           WRITE(*,*)' by adding atmospheric layers 1 to ',K
+          endif
           DO 201 J=1,K
 C i.e. including layers from the observer (layer 1) to layer K
             L=USELAY(J)
@@ -484,8 +491,10 @@ C i.e. including layers from the observer (layer 1) to layer K
               PP(NLAYER,ATMGAS(I))=
      1        PP(NLAYER,ATMGAS(I))/AMOUNT(NLAYER,ATMGAS(I))
             ELSE
+              if(idiag.gt.0)then
               WRITE(*,*)' ATMG.f :: Warning: ...'
               WRITE(*,*)' ATMG.f :: AMOUNT(',NLAYER,ATMGAS(I),')=0.0'
+              endif
             ENDIF
 203       CONTINUE
 310     CONTINUE
@@ -503,7 +512,6 @@ C a thermal integration outside genlbl
       IF(WF)IPATH=NUSE
       IF(THERM.AND.BROAD)IPATH=NUSE
       DO 29 J=1,IPATH
-cc        WRITE(*,*)' ATMG.f :: j, ipath: ',J,IPATH
         NPATH=NPATH+1
         IF(NPATH.GT.MAXPAT)THEN
           WRITE(*,*)' ATMG.f :: Error: NPATH > MAXPAT'

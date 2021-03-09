@@ -18,6 +18,8 @@ C     ****************************************************************
       REAL XVMR(MAXGAS),XMOLWT,CALCMOLWT,SH,ATDEPTH,ATDEPTH1
       REAL XDEPTH
       CHARACTER*8 PNAME
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
 C     **************** Code **************
@@ -52,7 +54,7 @@ C     First find level closest to zero altitude
 
       ENDDO
 
-      print*,'XhydrostatH: JZERO = ',JZERO
+      if(idiag.gt.0)print*,'XhydrostatH: JZERO = ',JZERO
 
       IF(JZERO.GT.1.AND.JZERO.LT.NPRO)THEN
        H(JZERO)= 0.0

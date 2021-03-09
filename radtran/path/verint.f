@@ -45,13 +45,6 @@ C
       if(X(I-1).eq.X(I))then YOUT=Y(I)
       if (isnan(YOUT)) then
        YOUT=Y(I)
-C       print*,"XIN,XI,XI-1,YI-1,YI",XIN,X(I),X(I-1),Y(I-1),Y(I)
-C       print*,'YOUT is not a number!'
-C       print*,'I = ',I
-C       do I=1,N
-C        print*,I,X(I),Y(I)
-C       enddo
-C       stop
       end if
 
       RETURN

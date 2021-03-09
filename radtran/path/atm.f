@@ -58,6 +58,8 @@ C     Z0 = the distance of the start of the path from the centre of the planet
       LOGICAL DEF,SURFACE
       INTEGER I,J,K,L,M,NPATH1
       REAL S0,S1,STMP,XIFC(MAXCON,MAXPRO)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 C--------------------------------------------------------------
 C      path file format is atm followed by optional keywords. keyword are:
 C         limb             followed by bottom layer to use
@@ -273,13 +275,19 @@ C      has been defined at the 0km level
 C      Compute zenith angle of ray at bottom of bottom layer, assuming it
 C      has been defined at the top of the atmosphere
        Z0=RADIUS+BASEH(NLAY)+DELH(NLAY)
-       print*,'NLAY,BASEH(NLAY)+DELH(NLAY)',BASEH(NLAY),DELH(NLAY)
+       if(idiag.gt.0)then
+        print*,'NLAY,BASEH(NLAY)+DELH(NLAY)',BASEH(NLAY),DELH(NLAY)
+       endif
 C      Calculate tangent altitude of ray at lowest point
-       print*,'ANGLE,DTR,SIN(ANGLE)=',ANGLE,DTR,SIN(ANGLE*DTR)
-       print*,'Z0, RADIUS = ',Z0,RADIUS
+       if(idiag.gt.0)then
+        print*,'ANGLE,DTR,SIN(ANGLE)=',ANGLE,DTR,SIN(ANGLE*DTR)
+        print*,'Z0, RADIUS = ',Z0,RADIUS
+       endif
        HTAN=Z0*SIN(ANGLE*DTR)-RADIUS
-       PRINT*,'Near-limb path - RADIUS=',RADIUS
-       PRINT*,'Tangent altitude, tangent radius is : ',HTAN,HTAN+RADIUS
+       if(idiag.gt.0)then
+        print*,'Near-limb path - RADIUS=',RADIUS
+        print*,'Tangent altitude, tangent radius is : ',HTAN,HTAN+RADIUS
+       endif
        IF(HTAN.LE.BASEH(BOTLAY))THEN
 C      Calculate zenith angle at bottom of lowest layer
         ANGLE=(1./DTR)*ASIN(Z0*SIN(DTR*ANGLE)/(RADIUS+BASEH(BOTLAY)))
@@ -296,7 +304,9 @@ C       to computed tangent height.
          F=(HTAN-BASEH(BOTLAY))/(BASEH(BOTLAY+1)-BASEH(BOTLAY))
          IF(F.GT.0.5)BOTLAY=BOTLAY+1
         ENDIF
-        print*,'botlay',botlay,baseh(botlay),baseh(botlay+1)
+        if(idiag.gt.0)then
+         print*,'botlay',botlay,baseh(botlay),baseh(botlay+1)
+        endif
        ENDIF
       ENDIF
 
@@ -304,8 +314,6 @@ C       to computed tangent height.
       COSA=COS(DTR*ANGLE)
       Z0=RADIUS+BASEH(BOTLAY)
 
-C      print*,'ATM Check: LIMB,ANGLE,SIN2A,COSA,Z0'
-C      print*,'ATM Check: ',LIMB,ANGLE,SIN2A,COSA,Z0
 
 
 C     now calculating atmospheric paths
@@ -387,7 +395,7 @@ C     from the bottom of the atmosphere up (ie bottom layer
 C     is layer number 1), but here the layers are numbered 
 C     from the top down (ie top layer is layer number 1)
 C     Therefore a warning should be printed to alert the user.
-        WRITE(*,2051)
+      if(idiag.gt.0)WRITE(*,2051)
  2051   FORMAT('Note: The layers in this program are numbered from
      & the top down,'/'ie the layer closest to the spacecraft is
      & layer 1. This is'/'contrary to the convention used elsewhere in
@@ -453,7 +461,7 @@ C       initialising the variables for this CG layer
           BASEH(NLAYER)=BASEH(USELAY(K))
           BASEP(NLAYER)=BASEP(USELAY(K))
           END IF
-        WRITE(*,205)NLAYER,K
+        if(idiag.gt.0)WRITE(*,205)NLAYER,K
 205     FORMAT(' creating CG layer:',I3,
      1  ' by adding atmospheric layers 1 to',I3)
         DO 201 J=1,K
@@ -489,7 +497,9 @@ C       i.e. including layers from the observer (layer 1) to layer K
           PP(NLAYER,ATMGAS(I))=
      1    PP(NLAYER,ATMGAS(I))/AMOUNT(NLAYER,ATMGAS(I))
          ELSE
-          Print*,'atm.f: WARNING. AMOUNT(',NLAYER,ATMGAS(I),') = 0.0'
+          if(idiag.gt.0)then
+           print*,'atm.f: WARNING. AMOUNT(',NLAYER,ATMGAS(I),') = 0.0'
+          endif
          END IF
 203     CONTINUE
 310     CONTINUE
@@ -505,7 +515,6 @@ C     a thermal integration outside genlbl
       IF(UPFLUX)IPATH=NUSE
       IF(NETFLUX.AND.(.NOT.SCATTER))IPATH=NUSE
       DO 29 J=1,IPATH
-C      WRITE(*,207)J
 207   FORMAT(' path',I3)
       NPATH=NPATH+1
       IF(NPATH.GT.MAXPAT)THEN
@@ -579,10 +588,9 @@ C       Assumes int. rad. field calc.
         IMOD(NPATH)=23  
       ENDIF
       IF(NEARLIMB)IMOD(NPATH)=23
-C      print*,'SINGLE,SPHSINGLE',SINGLE,SPHSINGLE
       IF(SINGLE)IMOD(NPATH)=16
       IF(SPHSINGLE)IMOD(NPATH)=28
-      print*,NPATH,IMOD(NPATH)
+      if(idiag.gt.0)print*,NPATH,IMOD(NPATH)
       IF(CG)THEN
         IF(IMOD(NPATH).GE.2.AND.IMOD(NPATH).LE.3)
      1    IMOD(NPATH)=IMOD(NPATH)+8

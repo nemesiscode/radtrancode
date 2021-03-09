@@ -58,6 +58,8 @@ C     DUDS = DU/DS = the number of molecules per cm2 per km along the path
       REAL CLBOTH(10),CLTOPH(10)
       INTEGER NCLAY(10)
       REAL A,B,C,D1,CDUM(10)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 C--------------------------------------------------------------
 C
 C     setting defaults for the layer parameters defined in laycom.f
@@ -66,7 +68,6 @@ C     setting defaults for the layer parameters defined in laycom.f
       LAYHT=H(1)
       LAYANG=0.
       NLAY=20
-C      print*,'NEWLAYER. NLAYER = ',nlayer
 C     looking for keywords in file
 2     READ(2,1,END=3)TEXT
 1     FORMAT(A)
@@ -91,7 +92,7 @@ C        computing the cloud heights of each layer
          CALL VERINT(P,H,NPRO,CLBOTH(J),CLBOTP(J))
          CALL VERINT(P,H,NPRO,CLTOPH(J),CLTOPP(J))
 
-         print*,'Cloud heights : ',CLBOTH(J),CLTOPH(J)
+         if(idiag.gt.0)print*,'Cloud heights : ',CLBOTH(J),CLTOPH(J)
 	 NCLAY(J)=INT(C)
 	 FSH(J)=D1
 157     CONTINUE
@@ -130,10 +131,8 @@ C
 C
 C     computing the bases of each layer
       CALL VERINT(H,P,NPRO,PBOT,LAYHT)
-C      print*,PBOT
       SMAX=SQRT((RADIUS+H(NPRO))**2-(SIN2A*(Z0)**2))
      1-COSA*(Z0)
-C      print*,SMAX
 C     Assume LAYTYP=2. splitting by equal height
       DO I=1,MAXCON
        DO J=1,MAXLAY
@@ -148,7 +147,6 @@ C     Assume LAYTYP=2. splitting by equal height
       DO 1005 K = 1,NCLOUD-1
         CDELH = (CLTOPH(K)-CLBOTH(K))/NCLAY(K)
         SH = -(CLTOPH(K)-CLBOTH(K))/LOG(CLTOPP(K)/CLBOTP(K))
-	print*,'SH=',SH
         DO 655 J=1,NCLAY(K)
           I=I+1
           BASEH(I)=CLBOTH(K) + FLOAT(J-1)*CDELH
@@ -161,14 +159,15 @@ C        Look to see if there is a gap between the layers
            BASEH(I)=CLTOPH(K) + FLOAT(J-1)*(CLBOTH(K+1)-CLTOPH(K))/NLAYG
 666       CONTINUE
          ELSE
-          print*,'Skipping gas layers between clouds ',K,' and ',
+          if(idiag.gt.0)then
+           print*,'Skipping gas layers between clouds ',K,' and ',
      &      K+1
+          endif
          ENDIF
 1005    CONTINUE
         CDELH = (CLTOPH(NCLOUD)-CLBOTH(NCLOUD))/NCLAY(NCLOUD)
         SH = -(CLTOPH(NCLOUD)-CLBOTH(NCLOUD))/
      &		LOG(CLTOPP(NCLOUD)/CLBOTP(NCLOUD))
-	print*,'SH=',SH
         DO 667 J=1,NCLAY(NCLOUD)
           I=I+1
           BASEH(I)=CLBOTH(NCLOUD) + FLOAT(J-1)*CDELH
@@ -180,7 +179,7 @@ C        Look to see if there is a gap between the layers
      &    FLOAT(J-1)*(H(NPRO)-CLTOPH(NCLOUD))/NLAYTOP
 668     CONTINUE
       NLAY=I
-      print*,'complayer. NLAY = ',NLAY
+      if(idiag.gt.0)print*,'complayer. NLAY = ',NLAY
       DO J=1,NCLOUD
        CDUM(J)=0.0
       ENDDO
@@ -189,7 +188,7 @@ C        Look to see if there is a gap between the layers
         CDUM(J)=CDUM(J)+CONT(J,I)
        ENDDO
       ENDDO
-      PRINT*,'Cloud ODs : ',(CDUM(J),J=1,NCLOUD)
+      if(idiag.gt.0)PRINT*,'Cloud ODs : ',(CDUM(J),J=1,NCLOUD)
       
       DO I=1,NLAY
        DO J=1,NCLOUD
@@ -199,7 +198,6 @@ C        Look to see if there is a gap between the layers
 
       DO 200 I=1,NLAY-1
       DELH(I)=BASEH(I+1)-BASEH(I)
-C      print*,baseh(i),delh(i)
 200   CONTINUE
       DELH(NLAY)=H(NPRO)-BASEH(NLAY)
 
@@ -207,7 +205,6 @@ C
 C     computing details of each layer
       DO 110 L=1,NLAY
       I=L+NLAYER
-C       print*,L,I
 C     find the pressure and temperature associated with the base of this layer
       CALL VERINT(H,P,NPRO,BASEP(I),BASEH(I))
       CALL VERINT(H,T,NPRO,BASET(I),BASEH(I))

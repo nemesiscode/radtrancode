@@ -74,6 +74,8 @@ C DUDS: Number of molecules per cm2 per km along the path
 
       CHARACTER*(*) TEXT
       CHARACTER*100 HEADER
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 C********************************* CODE ********************************
 
 C Setting defaults for the layer parameters defined in laycom.f
@@ -87,7 +89,7 @@ C     If radius is being retrieved then we need to use this radius when
 C     calculating the layers 
       if(jradf.gt.0)radius=radius2
 
-      print*,'radius layer=',radius
+      if(idiag.gt.0)print*,'radius layer=',radius
 
 C Looking for keywords in file
 2     READ(2,1,END=3)TEXT
@@ -103,9 +105,11 @@ C Looking for keywords in file
       ELSE IF(TEXT(1:5).EQ.'LAYHT')THEN
         READ(TEXT(6:),*)LAYHT
         IF(LAYHT.LT.H(1))THEN
-         PRINT*,'Warning from layerg.f'
-         PRINT*,'LAYHT < H(1)'
-         PRINT*,'Resetting LAYHT = H(1)'
+         if(idiag.gt.0)then
+          PRINT*,'Warning from layerg.f'
+          PRINT*,'LAYHT < H(1)'
+          PRINT*,'Resetting LAYHT = H(1)'
+         endif
          LAYHT=H(1)
         ENDIF
       ELSE IF(TEXT(1:6).EQ.'LAYINT')THEN
@@ -130,18 +134,17 @@ C Looking for keywords in file
         STOP
       ENDIF
 
-      IF(NLAY.GT.NPRO)THEN
+      IF(NLAY.GT.NPRO.AND.IDIAG.GT.0)THEN
        PRINT*,'WARNING: layerg.f: NLAY > NPRO',NLAY,NPRO 
        PRINT*,'Code may possibly be unstable.'
       ENDIF
 
-      IF(LAYHT.LT.H(1))THEN
+      IF(LAYHT.LT.H(1).AND.IDIAG.GT.0)THEN
         PRINT*,'**** WARNING: LAYERG ******'
         PRINT*,'LAYHT < H(1)',LAYHT,H(1)
         PRINT*,'***************************'
       ENDIF
       
-C      print*,'nlay = ',nlay
 
 C Simpsons rule weights
       DO 130 I=1,NINT
@@ -154,7 +157,6 @@ C Simpsons rule weights
       SIN2A = SIN(DTR*LAYANG)**2
       COSA = COS(DTR*LAYANG)
       Z0 = RADIUS + LAYHT
-C            print*,'layer radius = ',radius
 
 C Computing the bases of each layer
       CALL VERINT(H,P,NPRO,PBOT,LAYHT)
@@ -179,10 +181,10 @@ C Splitting by equal log pressure
 
       ELSE IF(LAYTYP.EQ.2)THEN
 C Splitting by equal height
-        print*,npro,h(npro),layht,nlay
+        if(idiag.gt.0)print*,npro,h(npro),layht,nlay
         DO 104 I=1,NLAY
           BASEH(I) = LAYHT + FLOAT(I-1)*(H(NPRO) - LAYHT)/FLOAT(NLAY)
-          print*,i,baseh(i)
+          if(idiag.gt.0)print*,i,baseh(i)
 104     CONTINUE
 
       ELSE IF(LAYTYP.EQ.3)THEN
@@ -326,13 +328,10 @@ C         Pat Irwin   2/4/07
              XMOLWT=MOLWT
           ELSE
             DO J=1,NVMR
-C             print*,'J, I, VMR =',J,I,VMR(I,J)
              XVMR(J)=VMR(I,J)
             ENDDO
-C            print*,'NVMR,XVMR,ID,ISO',NVMR,XVMR,ID,ISO
             XMOLWT=CALCMOLWT(NVMR,XVMR,ID,ISO)
           ENDIF
-C          print*,'AMFORM,XMOLWT',AMFORM,XMOLWT
 
           DO 127 J=1,NCONT
             CONT(J,I) = CONT(J,I)*TOTAM(I)*XMOLWT/AVOGAD
@@ -389,13 +388,10 @@ C Calculating the number of molecules per km per cm2
               XMOLWT=MOLWT
             ELSE
               DO J=1,NVMR
-C                print*,'J, I, VMR =',J,I,VMR(I,J)
                XVMR(J)=VMR(I,J)
-C               print*,'NVMR,XVMR,ID,ISO',NVMR,XVMR,ID,ISO
               ENDDO
               XMOLWT=CALCMOLWT(NVMR,XVMR,ID,ISO)
             ENDIF
-C            print*,'AMFORM,XMOLWT',AMFORM,XMOLWT
 
             DO 124 J=1,NCONT
               XIFC(J,I)=XIFC(J,I)+XICNOW(J)*DUDS*W(K)
@@ -415,7 +411,6 @@ C            print*,'AMFORM,XMOLWT',AMFORM,XMOLWT
             DAM(I,JJ) = DAM(I,JJ) + (1 - F)*DUDS*W(K)
             DAM(I,JJ+1) = DAM(I,JJ+1) + F*DUDS*W(K)
 120       CONTINUE
-C			print*,'MOLWT,AVOGAD=',XMOLWT,AVOGAD
           TEMP(I) = TEMP(I)/TOTAM(I)
           PRESS(I) = PRESS(I)/TOTAM(I)
           HFP(I) = HFP(I)/TOTAM(I)
@@ -436,7 +431,6 @@ C			print*,'MOLWT,AVOGAD=',XMOLWT,AVOGAD
           DO 145 J=1,NCONT
             IFC(J,I)=INT(XIFC(J,I)/TOTAM(I)+0.5)
             CONT(J,I) = CONT(J,I)*DELS/3.0
-C            print*,'CONT(J,I)2=',CONT(J,I)
 145       CONTINUE
           DO JJ=1,NPRO
             DCO(I,JJ) = DCO(I,JJ)*DELS/3.0
@@ -466,7 +460,6 @@ C-----------------------------------------------------------------------
 
         DO 139 J=1,NCONT
           CONT(J,I) = CONT(J,I)/LAYSF(I)
-C         print*,'CONT(J,I)3=',CONT(J,I)
 139     CONTINUE
         DO JJ=1,NPRO
           DCO(I,JJ) = DCO(I,JJ)/LAYSF(I)
@@ -523,16 +516,20 @@ C	Similarly TOTAM(I) is the number of molecules per cm2 for each
 C	layer in the vertical path.
 C
 C-----------------------------------------------------------------------
-      WRITE(*,*)' LAYERG.f :: Number of dust types: ',NCONT
+      if(idiag.gt.0)then
+       WRITE(*,*)' LAYERG.f :: Number of dust types: ',NCONT
+      endif
       IF(NCONT.GT.0)THEN
         DO J=1,NCONT
-          WRITE(*,*)' LAYERG.f :: Dust type = ',J
+          if(idiag.gt.0)WRITE(*,*)' LAYERG.f :: Dust type = ',J
           SUM = 0.0
           DO L=1,NLAY
             I = L + NLAYER
             SUM = SUM + CONT(J,I)
           ENDDO
-          WRITE(*,*)' LAYERG.f :: Total number/cm2 for path= ',SUM
+          if(idiag.gt.0)then
+           WRITE(*,*)' LAYERG.f :: Total number/cm2 for path= ',SUM
+          endif
         ENDDO
       ENDIF
 

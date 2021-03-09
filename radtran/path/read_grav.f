@@ -71,10 +71,6 @@ C      Convert radius to units of cm
        xgm=MCMCmass*Grav*1e24*1e6
       endif
       if(mass2.gt.0.0.and.jloggf.gt.0)then
-C       print*,'read_grav: updating mass with mass2 from planrad'
-C       print*,'common block'
-C       print*,'Old mass = ',plan_mass(iplanet)/(Grav*1e24*1e6)
-C       print*,'New mass = ',mass2
         xgm = mass2*Grav*1e24*1e6
       else
         mass2 = plan_mass(iplanet)/(Grav*1e24*1e6)
@@ -89,10 +85,6 @@ C       print*,'New mass = ',mass2
        xradius=MCMCrad*1e5
       endif
       if(radius2.gt.0.0.and.jradf.gt.0)then
-C       print*,'read_grav: updating radius with radius2 from planrad'
-C       print*,'common block'
-C       print*,'Old radius = ',xradius/1e5
-C       print*,'New radius = ',radius2
        xradius=radius2*1e5
       else
        radius2=xradius/1e5

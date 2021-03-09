@@ -32,7 +32,6 @@ C     ************************************************************
       ENDDO
 
       IF(RECALC)THEN
-C       print*,'cubint. Calculating new derivatives'
        YP1 = 0.0
        YPN = 0.0
        CALL CSPLINE(XA,YA,N,YP1,YPN,Y2)
@@ -42,7 +41,6 @@ C       print*,'cubint. Calculating new derivatives'
         Y2H(I) = Y2(I)
        ENDDO
       ELSE
-C       print*,'Using stored derivatives'
        DO I=1,N
         Y2(I) = Y2H(I)
        ENDDO

@@ -63,6 +63,8 @@ C     DTDS = DT/DS = the dust optical depth per km
       INTEGER I,J,K,k1,L,LAYINT
       REAL HEIGHT,VMR1,X,DELS,stmp,XICNOW(MAXCON),XIFC(MAXCON,MAXPAT)
       REAL XMOLWT,CALCMOLWT,XVMR(MAXGAS)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 C--------------------------------------------------------------
 C
 C     setting defaults for the layer parameters defined in laycom.f
@@ -90,8 +92,10 @@ C     looking for keywords in file
        ELSE IF(TEXT(1:5).EQ.'LAYHT')THEN
         READ(TEXT(6:),*)LAYHT
         IF(LAYHT.LT.H(1))THEN
-         PRINT*,'Warning from layer.f'
-         PRINT*,'LAYHT < H(1). Resetting LAYHT'
+         if(idiag.gt.0)then
+          PRINT*,'Warning from layer.f'
+          PRINT*,'LAYHT < H(1). Resetting LAYHT'
+         endif
          LAYHT=H(1)
         ENDIF
        ELSE IF(TEXT(1:6).EQ.'LAYINT')THEN
@@ -115,7 +119,7 @@ C
        PRINT*,'Error in layer.f NLAY > MAXLAY',NLAY,MAXLAY
        STOP
       ENDIF
-      IF(NLAY.GT.NPRO)THEN
+      IF(NLAY.GT.NPRO.AND.IDIAG.GT.0)THEN
        PRINT*,'WARNING: layer.f: NLAY > NPRO',NLAY,NPRO
        PRINT*,'Code may possibly be unstable.'
       ENDIF
@@ -131,7 +135,6 @@ C
       COSA=COS(DTR*LAYANG)
       Z0=RADIUS+LAYHT
 
-c      print*,'layer radius = ',radius
 C
 C     computing the bases of each layer
       CALL VERINT(H,P,NPRO,PBOT,LAYHT)
@@ -157,10 +160,10 @@ C        CALL CUBINT(P,H,NPRO,PNOW,BASEH(I))
 103     CONTINUE
        ELSE IF(LAYTYP.EQ.2)THEN
 C       splitting by equal height
-        print*,'LAYER',npro,layht,h(npro),nlay
+        if(idiag.gt.0)print*,'LAYER',npro,layht,h(npro),nlay
         DO 104 I=1,NLAY
         BASEH(I)=LAYHT+FLOAT(I-1)*(H(NPRO)-LAYHT)/FLOAT(NLAY)
-        print*,i,baseh(i)
+        if(idiag.gt.0)print*,i,baseh(i)
 104     CONTINUE
        ELSE IF(LAYTYP.EQ.3)THEN
 C       splitting by equal distance
@@ -184,10 +187,17 @@ C        Overwrite NLAY
        ELSE IF(LAYTYP.EQ.5)THEN
 C       splitting by reading in set of base heights.
         OPEN(12,FILE='height.lay',STATUS='old')
+         if(idiag.gt.0)print*,'Reading in height.lay'
 C        Read in one line of header
          READ(12,1)HEADER
 C        Overwrite NLAY
          READ(12,*)NLAY
+         if(idiag.gt.0)print*,'NLAY = ',NLAY
+         IF(NLAY.LT.1)THEN
+          print*,'Error in height.lay - NLAY not defined'
+          print*,'Did you forget to include a header line?'
+          stop
+         ENDIF
          DO 107 I=1,NLAY
           READ(12,*)BASEH(I)
 107      CONTINUE
@@ -265,7 +275,6 @@ C        CALL CUBINT(H,T,NPRO,HEIGHT,TEMP(I))
          ENDDO
          CALL VERINT(H,TMP,NPRO,XOUT,HEIGHT)
          IFC(J,I)=INT(XOUT+0.5)
-C         print*,'direct',J,I,IFC(J,I)
         ENDDO
 
         DUDS=MODBOLTZ*PRESS(I)/TEMP(I)
@@ -275,7 +284,6 @@ C         print*,'direct',J,I,IFC(J,I)
              XMOLWT=MOLWT
         ELSE
             DO J=1,NVMR
-C             print*,'J VMR =',J,VMR(1,J)
              XVMR(J)=VMR(I,J)
             ENDDO
             XMOLWT=CALCMOLWT(NVMR,XVMR,ID,ISO)
@@ -316,24 +324,15 @@ C       calculating the number of molecules per km per cm2
         DUDS=MODBOLTZ*PNOW/TNOW
         TOTAM(I)=TOTAM(I)+DUDS*W(K)
         TEMP(I)=TEMP(I)+TNOW*DUDS*W(K)
-C        if (i.eq.1.and.k.eq.1) then
-C           write (*, *) 's = ', s, '  s0 = ', s0
-C           write (*, *) 'dels = ', dels
-C           write (*, *) 'cosa = ', cosa, '  sin2a = ', sin2a
-C           write (*, *) 'z0 = ', z0
-C        end if
         PRESS(I)=PRESS(I)+PNOW*DUDS*W(K)
         HFP(I)=HFP(I)+FPNOW*DUDS*W(K)
         HFC(I)=HFC(I)+FCNOW*DUDS*W(K)
 
-C        print*,'amform = ',amform
         IF(AMFORM.EQ.0)THEN
              XMOLWT=MOLWT
         ELSE
             DO J=1,NVMR
-C             print*,'J VMR =',J,VMR(1,J)
              XVMR(J)=VMR(I,J)
-C             print*,J,XVMR(J),ID(J),ISO(J)
             ENDDO
             XMOLWT=CALCMOLWT(NVMR,XVMR,ID,ISO)
         ENDIF
@@ -364,7 +363,6 @@ C             print*,J,XVMR(J),ID(J),ISO(J)
         DO 145 J=1,NCONT
          IFC(J,I)=INT(XIFC(J,I)/TOTAM(I)+0.5)
          CONT(J,I)=CONT(J,I)*DELS/3
-C         print*,'CG, J,I,',J,I,IFC(J,I)
 145     CONTINUE
         TOTAM(I)=TOTAM(I)*DELS/3.
        ELSE
@@ -431,19 +429,19 @@ C
 C      Similarly TOTAM(I) is the number of molecules per cm2 for each layer
 C      in the vertical path. 
 
-      PRINT*,'Number of dust types = ',NCONT
+      if(idiag.gt.0)then
+       PRINT*,'Number of dust types = ',NCONT
+       PRINT*,'NLAY = ',NLAY
+      endif
       IF(NCONT.GT.0)THEN
-C       PRINT*,' '
-C       PRINT*,'Number of dust particles / cm2 for each layer : '
-C       PRINT*,'(Vertical path)'
        DO J=1,NCONT
-        PRINT*,'Dust type = ',J
+        if(idiag.gt.0)PRINT*,'Dust type = ',J
         SUM=0.
         DO L=1,NLAY
          I=L+NLAYER
          SUM=SUM+CONT(J,I)
         END DO
-        PRINT*,'Total number/cm2 for vertical path = ',SUM
+        if(idiag.gt.0)PRINT*,'Total number/cm2 for vertical path = ',SUM
        END DO
       END IF
 

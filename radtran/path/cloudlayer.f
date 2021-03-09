@@ -63,6 +63,8 @@ C     DUDS = DU/DS = the number of molecules per cm2 per km along the path
       REAL TFINE(MFINE),HFINE(MFINE),PFINE(MFINE),CTEMP(MFINE)
       REAL CDENS(7,MFINE),LNP,XP,DZ,SCALEH,SH
       REAL CLH(7),CSH(7),COD(7),LP(MAXPRO),CNOW(7)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
              
 C--------------------------------------------------------------
 C
@@ -117,8 +119,6 @@ C
       COSA=COS(DTR*LAYANG)
       Z0=RADIUS+LAYHT
 
-      print*,'npro = ',npro
-
 C
 C     computing the bases of each layer
       CALL VERINT(H,P,NPRO,PBOT,LAYHT)
@@ -126,7 +126,7 @@ C     computing the bases of each layer
       SMAX=SQRT((RADIUS+H(NPRO))**2-(SIN2A*(Z0)**2))
      1-COSA*(Z0)
 C     Assume LAYTYP=1. splitting by equal log pressure
-      print*,'CLOUDLAYER: MAXCON = ',MAXCON
+      if(idiag.gt.0)print*,'CLOUDLAYER: MAXCON = ',MAXCON
       DO I=1,MAXCON
        DO J=1,MAXLAY
         CONT(I,J)=0
@@ -234,7 +234,6 @@ C
 C     computing details of each layer
       DO 110 L=1,NLAY
       I=L+NLAYER
-C       print*,L,I
 C     find the temperature associated with the base of this layer
       CALL VERINT(H,T,NPRO,BASET(I),BASEH(I))
 C     and the distance from the begining of the path and the ratio of the
@@ -279,7 +278,6 @@ C       just using the values at the centre of the layer
          ENDIF
         END DO
 
-C        print*,I,HEIGHT,(CONT(K,I),K=1,7)
 
         DUDS=MODBOLTZ*PRESS(I)/TEMP(I)
         TOTAM(I)=DUDS*(S1-S0)
@@ -349,13 +347,13 @@ C     now scaling all the amounts back to a vertical path
 110   CONTINUE
       
 
-      print*,'Normalising cloud opacities'
+      if(idiag.gt.0)print*,'Normalising cloud opacities'
       DO K=1,7
        SUM=0.0
        DO I=1,NLAY
         SUM=SUM+CONT(K,I)
        ENDDO
-       print*,K,COD(K),SUM
+       if(idiag.gt.0)print*,K,COD(K),SUM
        DO I=1,NLAY
         CONT(K,I)=CONT(K,I)*COD(K)/SUM
        ENDDO

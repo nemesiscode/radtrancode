@@ -58,6 +58,8 @@ C     DUDS = DU/DS = the number of molecules per cm2 per km along the path
       REAL CDENS1(10,10),CDENS2(10,10)
       INTEGER NCLAY(10)
       REAL A,B,C
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 C--------------------------------------------------------------
 C
 C     setting defaults for the layer parameters defined in laycom.f
@@ -66,7 +68,6 @@ C     setting defaults for the layer parameters defined in laycom.f
       LAYHT=H(1)
       LAYANG=0.
       NLAY=20
-C      print*,'NEWLAYER. NLAYER = ',nlayer
 C     looking for keywords in file
 2     READ(2,1,END=3)TEXT
 1     FORMAT(A)
@@ -125,12 +126,10 @@ C
 C
 C     computing the bases of each layer
       CALL VERINT(H,P,NPRO,PBOT,LAYHT)
-C      print*,PBOT
       SMAX=SQRT((RADIUS+H(NPRO))**2-(SIN2A*(Z0)**2))
      1-COSA*(Z0)
-C      print*,SMAX
 C     Assume LAYTYP=2. splitting by equal height
-      print*,'MEWLAYER: MAXCON = ',MAXCON
+C      print*,'MEWLAYER: MAXCON = ',MAXCON
       DO I=1,MAXCON
        DO J=1,MAXLAY
         CONT(I,J)=0
@@ -178,7 +177,6 @@ C
 C     computing details of each layer
       DO 110 L=1,NLAY
       I=L+NLAYER
-C       print*,L,I
 C     find the pressure and temperature associated with the base of this layer
       CALL VERINT(H,P,NPRO,BASEP(I),BASEH(I))
       CALL VERINT(H,T,NPRO,BASET(I),BASEH(I))

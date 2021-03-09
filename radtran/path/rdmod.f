@@ -52,6 +52,8 @@ C XFMIN: How close the VMRs must add to 1.0 to pass inspection for AMFORM=1
 C PNAME: Planetary name.
       CHARACTER*100 buffer,ipfile
 C IPFILE: Input filename.
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C********************************* CODE ********************************
 
@@ -66,13 +68,13 @@ C Reading in in vertical profiles produced by profile.f
 
       CALL file(ipfile,ipfile,'prf')
 
-      WRITE(*,*)' RDMOD.f :: reading model: ',ipfile
+      if(idiag.gt.0)WRITE(*,*)' RDMOD.f :: reading model: ',ipfile
       OPEN(UNIT=ilun,FILE=ipfile,STATUS='OLD')
 C First skip the header (if any)
 54    READ(ILUN,1)BUFFER
       IF(BUFFER(1:1).EQ.'#') GOTO 54
       READ(BUFFER,*)AMFORM
-      print*,'RDMOD: AMFORM = ',AMFORM
+      if(idiag.gt.0)print*,'RDMOD: AMFORM = ',AMFORM
       IF(AMFORM.EQ.0)THEN
         READ(ILUN,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
       ELSE
@@ -84,11 +86,11 @@ C First skip the header (if any)
        Print*,'Profile has too many gases. Either reduce or recompile'
        print*,'NVMR = ',NVMR
        print*,'MAXGAS = ',MAXGAS
+       stop
       ENDIF
 
       DO 20 i=1,nvmr
         READ(ilun,*)id(i),iso(i)
-C        print*,id(i),iso(i)
 20    CONTINUE
 
       READ(ilun,*)
@@ -139,7 +141,9 @@ C        print*,id(i),iso(i)
         END DO
         FRAC = ABS(FRAC-1.0)
         IF(FRAC.GT.XFMIN)THEN
-         PRINT*,'Error in RDMOD.F. VMRs do not add up to 1.0'
+         if(idiag.gt.0)then
+          PRINT*,'Error in RDMOD.F. VMRs do not add up to 1.0'
+         endif
         ENDIF
 48     CONTINUE
       ENDIF

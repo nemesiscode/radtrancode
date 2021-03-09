@@ -37,6 +37,8 @@ C     miscellaneous variables used in code
       CHARACTER*100 IPFILE,BUFFER
       INTEGER I,J,K
       REAL TD1,TMP(500)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 C--------------------------------------------------------------
 C
 C     reading in in vertical profiles produced by profile.for
@@ -75,8 +77,10 @@ C     now sorting
        STOP
       END IF
       IF(FCLOUDH(I).GT.FCLOUDH(I+1))THEN
-       print*,'rfpmod: reordering'
-       print*,I,FCLOUDH(I),FCLOUDH(I+1)
+       if(idiag.gt.0)then
+        print*,'rfpmod: reordering'
+        print*,I,FCLOUDH(I),FCLOUDH(I+1)
+       endif
        TD1=FCLOUDH(I+1)
        FPH2H(I+1)=FCLOUDH(I)
        FCLOUDH(I)=TD1

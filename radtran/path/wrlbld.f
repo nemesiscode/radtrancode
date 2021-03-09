@@ -29,6 +29,9 @@ C------------------------------------------------------------------------------
       INCLUDE '../includes/laycom.f'
 C     local variables (used only in this subroutine)
       INTEGER I,J,K
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
 C
       IF(NLAYER.EQ.0)THEN
         CALL WTEXT('no layers defined - nothing written')
@@ -44,7 +47,7 @@ C     checking to see if there are any unused layers and removing if reqested
       DO 102 J=1,NPATH
       IF(IMOD(J).EQ.8)GOTO 102
       IF(IMOD(J).EQ.21)THEN
-       IF(CLRLAY)THEN
+       IF(CLRLAY.AND.IDIAG.GT.0)THEN
         print*,'Must not clear layers for scattering limb calculation'
         print*,'Setting to NOCLRLAY'
        ENDIF

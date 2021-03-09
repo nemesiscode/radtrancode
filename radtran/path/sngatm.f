@@ -43,6 +43,8 @@ C     MODBOLTZA = KBOLTZ/1.013 (where KBOLTZ = 1.381E-23) and multiplied
 C     by 10. Then AMOUNT*MODBOLTZA*T(K)/P(ATM) gives path length in cm.
 
       CHARACTER*100 IPFILE
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 C--------------------------------------------------------------
 C     note that TEXT(1:6) must contain "SNGATM"
       TEXT(1:6)='      '
@@ -78,7 +80,7 @@ C       reading data from separate file
       IF(THERM)IMOD(NPATH)=11
       NLAYER=NLAYER+1
       READ(LUNIT,*)INCGAS,PRESS(NLAYER),TEMP(NLAYER)
-      WRITE(*,101)PRESS(NLAYER),TEMP(NLAYER),INCGAS
+      if(idiag.gt.0)WRITE(*,101)PRESS(NLAYER),TEMP(NLAYER),INCGAS
 101   FORMAT(' reading single atmospheric path. P=',E12.5,', T=',F6.1,I3,
      1'gases')
       AMTOT=0.
@@ -97,8 +99,10 @@ C       in Km
         AMIP1 = AMIP*MODBOLTZA*TEMP(NLAYER)/PRESS(NLAYER)
 	DELH(NLAYER) = AMIP1/(VMRIP*1e5)		! Path length in km
         IF(DELH(NLAYER).GT.99999.9) THEN
+         if(idiag.gt.0)then
          print*,'Layer Height too large in sngatm : ',DELH(NLAYER)
          print*,'Capping to 99999.9'
+         endif
          DELH(NLAYER)=99999.9
         ENDIF
       END IF

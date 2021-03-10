@@ -48,7 +48,11 @@ c  ** if arcfile exists then get tname from that **
       else
 
 c      tname = '/Users/patirwin/radtrancode/trunk/raddata/'
+<<<<<<< HEAD
 c      tname ='/data/nemesis/nemesis_git/radtrancode/raddata/'
+=======
+      tname ='/scratch/nemesis/lnf2/radtrancode/raddata/'
+>>>>>>> f9f904a4cb8c67d201fe025e2c99d910d1571631
 c      tname ='/Users/glnat/CIRS/Radtran/radtrancode/raddata/'
 c       tname ='/Users/irwin/gitradtran/radtrancode/raddata/'
 

@@ -34,6 +34,8 @@ C     TO THE CIA SPECTRA
       COMMON /BB/ OMEG,RSI,RSIGG,ALFA,SCAL,NSOL                         
       DIMENSION FREQ(601), ABSCOEF(601), ALFATOT(601)                   
       DIMENSION RSI(201), RSIGG(201), TT(2), SS(1), OMEG(201), AIG(201) 
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
       Y(X,A,B,C)=A*DEXP((C*X+B)*X)                                      
 
       slit = slit1
@@ -46,9 +48,11 @@ C      calculated for each SLIT value.
 C      see BOUND32 and BOUND54 subroutines - C.A.N. )
 
       if (slit .lt. 0.50) then
-         print*, 'n2h2_s: Warning'
-         print*, 'Slit width approaches minimum grid scale of'
-         print*, 'integration: 0.12 cm-1 for bound54 transitions.'
+         if(idiag.gt.0)then
+          print*, 'n2h2_s: Warning'
+          print*, 'Slit width approaches minimum grid scale of'
+          print*, 'integration: 0.12 cm-1 for bound54 transitions.'
+         endif
       end if
 
 c	NOTE: Take care that all b-b intensities are larger than zero
@@ -65,8 +69,8 @@ C save the value of nf
       FNUMAX=FNUMIN+DFLOAT(NF-1)*DNU
 
       if (temp .lt. 45 .or. temp .gt. 300) then
-         print*, 'n2h2_s: Warning'
-         print*, 'Temperature should be 45 < T < 300 K'
+         if(idiag.gt.0)print*, 'n2h2_s: Warning'
+         if(idiag.gt.0)print*, 'Temperature should be 45 < T < 300 K'
       end if
 
       CALL PARTSUM5 (TEMP)                                               
@@ -698,22 +702,25 @@ C     WNRMAX  - THE FREQUENCY RANGE OF B-B CONTRIBUTION
 C     SLIT- THE HALFWIDTH OF THE SPECTRAL PROFILE CONVOLUTED WITH       
 C     B-B SPECTRUM, IN [CM-1].                                          
 C                                                                       
-      WNRMAX = 16.66 + SLIT 
-C      WNRMAX = 20.64           (old line - replaced to allow general SLIT)
+C      WNRMAX = 16.66 + SLIT 
+C     (old line - replaced to allow general SLIT)
+      WNRMAX = 20.64           
 c	This is an estimated range of frequencies (from 0 to WNRMAX)
 c	from the line center, in cm-1, where bound-bound intensities matter
 c	at the given slit width. The number 16.66 is the maximum delta-E
 C       from Table 10 of the paper from which this code derives.
 C                                                          C.A.N. 27-1-97
 
-      NSRI = 200
-C      NSRI=129                               (old version)
+C      NSRI = 200
+C     (old version)
+      NSRI=129
 C       This is the number of integration points. The maximum is 200,
 C       may as well take the max. However, this means that DX now
 C       varies (used to be fixed)
 
-      DX = WNRMAX / NSRI
-C      DX=WNRMAX /DFLOAT(NSRI)         (old version)       
+C      DX = WNRMAX / NSRI
+C     (old version)       
+      DX=WNRMAX /DFLOAT(NSRI)
 C       This is the resolution of the integration grid (see subroutine
 C       PROFILE). C.A.N.
 

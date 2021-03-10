@@ -44,8 +44,10 @@ C 6............N2-CH4
 C 7............N2-N2
 C 8............CH4-CH4
 C 9............H2-CH4
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
-
+      idiag=1
 
       print*,'Program CIATABLE - calculates pressure-induced'
       print*,'                   absorption co-efficients.'
@@ -129,10 +131,13 @@ C this loop for equilibrium and normal ortho:para H2
              fnumax=13000.
              call h2h2_v2s(normal,temp,fnumin,fnumax,dnu,nf,f,alf)
              print*,'h2h2_v2 OK'
+             print*,'nf = ',nf
              do i=1,nf
                 j=1 + int(f(i)/dnu)
                 kcia(igas,itemp,j)=kcia(igas,itemp,j)+sngl(alf(i))
+                print*,f(i),j,alf(i)
              end do
+             stop
 
              if (normal .eq. 0) then
                 igas = 2
@@ -168,12 +173,13 @@ C =========================== N2 - H2 ===========================
           fnumin=0
           fnumax = 1500
           nf = 0
-          call n2h2_s(temp,fnumin,fnumax,dnu,nf,f,alf,slit)
-          print*,'n2h2 OK'
-          do i=1,nf
-             j=1 + int(f(i)/dnu)
-             kcia(igas,itemp,j)=kcia(igas,itemp,j)+sngl(alf(i))
-          end do
+C          print*,'Calling n2h2_s. slit = ',slit
+C          call n2h2_s(temp,fnumin,fnumax,dnu,nf,f,alf,slit)
+C          print*,'n2h2 OK'
+C          do i=1,nf
+C             j=1 + int(f(i)/dnu)
+C             kcia(igas,itemp,j)=kcia(igas,itemp,j)+sngl(alf(i))
+C          end do
 
 C =========================== N2 - CH4 ===========================
  256      igas = 6

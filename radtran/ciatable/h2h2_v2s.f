@@ -131,6 +131,8 @@ c      nvib_F - upper state, nvib_I - lower state
         data ((fit(17,i,j),j=0,3),i=1,6) /24*0.0/
 
         data ((fit(18,i,j),j=0,3),i=1,6) /24*0.0/
+        integer idiag,iquiet
+        common/diagnostic/idiag,iquiet
 
         temp=temp1
         ntype=ntype1
@@ -143,8 +145,8 @@ c this is needed otherwise they are not reset after a normal calculation
 
 
        if(temp.lt.20.d0 .or. temp.gt.500.d0) then
-        print*,'h2h2_v2s: Warning'
-        print*,'Temperature should be 20 < T < 500'
+        if(idiag.gt.0)print*,'h2h2_v2s: Warning'
+        if(idiag.gt.0)print*,'Temperature should be 20 < T < 500'
        endif
 
       
@@ -218,6 +220,7 @@ C       print*,TTA,TAU1
 c       * * * * ** * * * * * * * * * * ** * * * * * * * * * * ** * * * * *
 
        do 198 l=1,list
+        if(idiag.gt.0)print*,n,l,ABSCOEF(l)
         if (n.eq.15) ABSCOEF(l)=ABSCOEF(l)/2
         alfatot(0,l)=alfatot(0,l)+ABSCOEF(l)*2
         alfatot(n,l)=ABSCOEF(l)*2
@@ -844,6 +847,7 @@ CZ  ** Changed for scaling  Feb. 3, 1994 ****************
      &          -0.014,-0.033,0.0,-0.285/
 
       x=R-6.0
+      if(i.ge.1.and.i.le.18)then
       betap=( (B01(i)*DEXP(A1(i)*X+B1(i)*X**2)+BN1(i)/R**N(i))*
      &         j1*(j1+1)
      &      + (B02(i)*DEXP(A2(i)*X+B2(i)*X**2)+BN2(i)/R**N(i))*
@@ -853,6 +857,7 @@ CZ  ** Changed for scaling  Feb. 3, 1994 ****************
      &      + (B04(i)*DEXP(A4(i)*X+B4(i)*X**2)+BN4(i)/R**N(i))*
      &         j2p*(j2p+1)  )*debye
       beta_1=(B0(i)*DEXP(A(i)*X+B(i)*X**2)+BN(i)/R**N(i))*debye
+      endif
       if (kk.eq.1) beta_1=beta_1+betap
       RETURN
 

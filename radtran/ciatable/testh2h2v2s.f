@@ -2,6 +2,11 @@
       implicit double precision (a-h,o-z)
       dimension f(601),alf(601),xout(3,601)
       integer normal
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
+
+      idiag=1
  
       fnumin=7000.
       fnumax=13000.

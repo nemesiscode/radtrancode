@@ -52,11 +52,13 @@ c
       data bn2 /1.98957d0/
       data bch4 /5.24d0/  
       data boltzk/1.38054d-16   /
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 	
 C Check for temperature range
       if(temp.lt.70.d0 .or. temp.gt.300.d0)  then
-         print*, 'n2ch4_s: Warning'
-         print*, 'Temperature should be 70 < T 300 K'
+         if(idiag.gt.0)print*, 'n2ch4_s: Warning'
+         if(idiag.gt.0)print*, 'Temperature should be 70 < T 300 K'
       endif
 
 

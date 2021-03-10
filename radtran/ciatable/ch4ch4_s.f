@@ -75,6 +75,9 @@ C
       DIMENSION FREQ(601), ABSCOEF(601), ALFATOT(601)                   
       DATA OMEGA0,DELOM/2.599,0.0071/                                   
       DATA PHI,DELPHI/-8.19,0.033/                                      
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
       Y(X,A,B,C)=A*DEXP((C*X+B)*X)                                      
 
       NF=INT((FNUMAX-FNUMIN)/DNU+0.5)+1                                 
@@ -84,8 +87,8 @@ C save the value of nf
       FNUMAX=FNUMIN+FLOAT(NF-1)*DNU                                     
 
       if (temp .lt. 50 .or. temp .gt. 300) then
-         print*, 'ch4ch4_s: Warning'
-         print*, 'Temperature should be 50 < T < 300 K'
+         if(idiag.gt.0)print*, 'ch4ch4_s: Warning'
+         if(idiag.gt.0)print*, 'Temperature should be 50 < T < 300 K'
       end if
 
       CALL PARTSUM8 (TEMP)                                               

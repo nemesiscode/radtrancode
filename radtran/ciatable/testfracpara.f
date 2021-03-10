@@ -3,6 +3,10 @@
       REAL CALCFRACPARA,F,X,TMOD(11)
       REAL OUTPUT1(6,11),OUTPUT2(6,11)
       DOUBLE PRECISION TEMP      
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
+      idiag=1
 
       F=0.25
       DO I=1,11

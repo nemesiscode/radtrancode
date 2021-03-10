@@ -66,6 +66,9 @@ C
       COMMON /H2PARTB/ Q,WH2(2),B0,D0,JRANGE1,NORMAL
       COMMON /RESULT1/ NF
       common /result2/ FREQ(601),ABSCOEF(601)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
       Y(X,A,B,C,D)=A*DEXP(B*X + C*X*X + D*X*X*X)
 C
 
@@ -81,8 +84,8 @@ c this is needed otherwise they are not resetted after a normal calculation
       NF1=NF
       IF (NF.GT.601) NF=601
       if(temp.le.40.d0 .or. temp.gt.3000.d0) then
-       print*,'h2he_v0s: Warning'
-       print*,'Temperature should be 40 < T < 3000'
+       if(idiag.gt.0)print*,'h2he_v0s: Warning'
+       if(idiag.gt.0)print*,'Temperature should be 40 < T < 3000'
       end if
 
       CALL PARTSUM3 (TEMP)

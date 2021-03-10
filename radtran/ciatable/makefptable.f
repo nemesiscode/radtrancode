@@ -23,7 +23,10 @@ C variable declarations
 
 C k is the master-table of absorption co-efficients
       character*100 opfile
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
+      idiag=1
 
       print*,'Program FPARATABLE - calculates pressure-induced'
       print*,'                   absorption co-efficients.'

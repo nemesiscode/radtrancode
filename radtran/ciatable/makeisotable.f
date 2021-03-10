@@ -50,7 +50,10 @@ C 6............N2-CH4
 C 7............N2-N2
 C 8............CH4-CH4
 C 9............H2-CH4
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
+      idiag=1
 
 
       print*,'Program ISOTABLE - calculates pressure-induced'

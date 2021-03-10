@@ -88,6 +88,8 @@ c        PARAMETER NF = 601 ! determines max. # of points;
 c       Adjust NF in all subroutines the same; take dimension of the
 c       arrays equal to number of needed frequency points;
 c
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 
 C     NTYPE=0 for equilibrium hydrogen; NTYPE=1 for normal H2
@@ -134,8 +136,10 @@ c initialise the weights for H2
 c this is needed otherwise they are not reset after a normal calculation
       
 	if ( (temp. lt. 20.) .or. (temp.gt.300.)) then
-          print*,'h2h2_v1s: Warning'
-	  print*,'Temperatures should be in range 20 < T < 300'
+          if(idiag.gt.0)then
+           print*,'h2h2_v1s: Warning'
+	   print*,'Temperatures should be in range 20 < T < 300'
+          endif
         end if
 
 C	CALCULATE OMEGA_0

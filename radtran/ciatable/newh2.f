@@ -60,19 +60,21 @@ C     h2part use to be auxil(5)
       common /h2part2/ jrange1,NORMAL      
       COMMON /RESULT1/ NF
       common /result2/ FREQ(601),ABSCOEF(601)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
       Y(X,A,B,C)=A*DEXP((C*X+B)*X)
 C
       NORMAL=NORM
 
       IF(TEMP.LT.40.OR.TEMP.GT.300)THEN
-       PRINT*,'h2h2_s: Warning this is a new routine'
-       PRINT*,'Temperature should be 40 < T < 300'
+       if(idiag.gt.0)print*,'h2h2_s: Warning this is a new routine'
+       if(idiag.gt.0)print*,'Temperature should be 40 < T < 300'
       END IF
 
       NF=INT((FNUMAX-FNUMIN)/DNU+0.5)+1
       IF (NF.GT.601) NF=601
       NF1=NF
-      print*, temp,fnumax,fnumin,nf,dnu
+      if(idiag.gt.0)print*, temp,fnumax,fnumin,nf,dnu
         CALL PARTSUM (TEMP)
 C
 C     THE H2-H2 SPECTRA
@@ -97,7 +99,9 @@ C	sum of 2023+0223:
 	write(*,*)x,S,E,T1,t2,T3,T4
       CALL  ADDSPEC (S,E,T1,T2,T3,T4,TEMP,0,1,0,2,2,3,0,0,1.)
       do 1000 i=1,nf
- 1000    print*,'quadrupole',i,freq(i),abscoef(i), alfatot(i)
+ 1000    if(idiag.gt.0)then
+          print*,'quadrupole',i,freq(i),abscoef(i), alfatot(i)
+         endif
 	do 111 i=1, nf
 111	alfatot(i) = alfatot(i) + abscoef(i)
 
@@ -111,7 +115,9 @@ C     PARAMETERS FOR 4045 AND 0445 (PURE HEXADECAPOLE) COMPONENTS
 	write(*,*)x,S,E,T1,t2,T3,T4
       CALL ADDSPEC(S,E,T1,T2,T3,T4,TEMP,0,1,4,0,4,5,0,0,1.)
       do 2000 i=1,nf
- 2000    print*,'hexadecapole',i,freq(i),abscoef(i),alfatot(i)
+ 2000    if(idiag.gt.0)then
+          print*,'hexadecapole',i,freq(i),abscoef(i),alfatot(i)
+         endif
 	do 211 i=1, nf
 211	alfatot(i) = alfatot(i) + abscoef(i)
 
@@ -125,7 +131,9 @@ C     PARAMETERS FOR 0221 AND 2021 (PURE OVERLAP) COMPONENTS
 	write(*,*)x,S,E,T1,t2,T3,T4
       CALL  ADDSPEC(S,E,T1,T2,T3,T4,TEMP,0,1,0,2,2,1,0,0,1.)
       do 3000 i=1,nf
- 3000    print*,'overlap',i,freq(i),abscoef(i),alfatot(i)
+ 3000    if(idiag.gt.0)then
+          print*,'overlap',i,freq(i),abscoef(i),alfatot(i)
+         endif
 	do 311 i=1, nf
 311	alfatot(i) = alfatot(i) + abscoef(i)
 C
@@ -139,7 +147,9 @@ C     PARAMETERS FOR 2233 QUADRUPOLE INDUCED DOUBLE TRANSITIONS
 	write(*,*)x,S,E,T1,t2,T3,T4
       CALL ADDSPEC(S,E,T1,T2,T3,T4,TEMP,0,1,2,2,3,3,0,0,1.)
       do 4000 i=1,nf
- 4000    print*,'double t',i,freq(i),abscoef(i),alfatot(i)
+ 4000    if(idiag.gt.0)then
+          print*,'double t',i,freq(i),abscoef(i),alfatot(i)
+         endif
 	do 411 i=1, nf
 411	alfatot(i) = alfatot(i) + abscoef(i)
 160	format( f7.1, e12.4)
@@ -195,13 +205,13 @@ C
       LIST=NF
 C
 C     ROTATIONAL SPECTRUM FOR THE DETAILED LISTING   *******************
-      print*,'tau1',tau1
-      print*,'tau2',tau2
-      print*,'tau5',tau5
-      print*,'tau6',tau6
-      print*,'lambdas',lambda1,lambda2,lambda
-      print*,'lval go ep',lvalue,go,ep
-      print*,'temp',temp
+      if(idiag.gt.0)print*,'tau1',tau1
+      if(idiag.gt.0)print*,'tau2',tau2
+      if(idiag.gt.0)print*,'tau5',tau5
+      if(idiag.gt.0)print*,'tau6',tau6
+      if(idiag.gt.0)print*,'lambdas',lambda1,lambda2,lambda
+      if(idiag.gt.0)print*,'lval go ep',lvalue,go,ep
+      if(idiag.gt.0)print*,'temp',temp
 
 C
       IF ((LAMBDA1.LT.0).AND.(LAMBDA2.LT.0)) GO TO 60

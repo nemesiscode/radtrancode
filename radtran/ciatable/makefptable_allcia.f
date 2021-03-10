@@ -26,7 +26,10 @@ C k is the master-table of absorption co-efficients
 
       dimension f(601),alf(601), temps(NUMT)
       double precision temps,temp
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
+      idiag=1
 
       print*,'Program MAKEFPTABLE_ALLCIA - calculates pressure-induced '
       print*,'        absorption co-efficients for ortho/para H2-H2 and'

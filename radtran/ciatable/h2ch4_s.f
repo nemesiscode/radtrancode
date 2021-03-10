@@ -34,6 +34,8 @@ C
       COMMON/CHPART/Q1,WCH4(2),B01,D01,JRANG2
       DIMENSION FREQ(601),ABCOEF(601),ALFTOT(601)
       DIMENSION TT(2),SS(1)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       Y(X,A,B,C)=A*DEXP((C*X+B)*X)
 
@@ -53,15 +55,17 @@ C integration points, if the slit is too narrow then its
 C convolution may be unresolved. The minimum grid point spacing
 C for this code is 0.16, therefore give adequate warning
       if (slit .lt. 0.5) then
-         print*,'ch4ch4_s: Warning'
-         print*,'slit size ', slit, ' approaches minimum grid',
+         if(idiag.gt.0)then
+          print*,'ch4ch4_s: Warning'
+          print*,'slit size ', slit, ' approaches minimum grid',
      &        'point spacing = 0.16 cm-1'
+         endif
       end if
 
 C check the temperature range too
       if (temp .lt. 50.0 .or. temp .gt. 300.0) then
-         print*, 'ch4ch4_s: Warning'
-         print*, 'Temperature should be 50 < T < 300 K'
+         if(idiag.gt.0)print*, 'ch4ch4_s: Warning'
+         if(idiag.gt.0)print*, 'Temperature should be 50 < T < 300 K'
       end if         
 
 C        THIS PROGRAM GENERATES THE H2-CH4, FREE-FREE AND

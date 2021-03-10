@@ -40,6 +40,8 @@ C
 
       DATA LIKE,NVIB1,NVIB2 / 0, 1, 0/
       DATA FMAX / 3500.d0/
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
  
 c       Data for "01" term from fitting the Q.M. lineshapes
  
@@ -111,8 +113,8 @@ C       ===============================================================
       dfreq=dfreq1
 
       if(temp.lt.18.or.temp.gt.7000)then
-       print*,'h2he_v1s: Warning'
-       print*,'Temperature should be  18 < T < 7000'
+       if(idiag.gt.0)print*,'h2he_v1s: Warning'
+       if(idiag.gt.0)print*,'Temperature should be  18 < T < 7000'
       end if
 
       NF = 1 + INT((FREQMAX-FREQLO)/DFREQ)

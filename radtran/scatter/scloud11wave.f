@@ -669,9 +669,11 @@ C ***********************************************************************
      3  100*DRAD/RAD
       endif
 
-      IF(CONV.LT.DEFCONV.AND.IDIAG.GT.0)THEN
-       PRINT*,'scloud11wave: Converged after ',IC,
+      IF(CONV.LT.DEFCONV)THEN
+       if(idiag.gt.0)then
+        PRINT*,'scloud11wave: Converged after ',IC,
      1  ' fourier components'
+       endif
        GOTO 2001
       ENDIF
 

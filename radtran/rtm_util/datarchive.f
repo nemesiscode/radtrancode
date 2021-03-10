@@ -19,7 +19,6 @@ C				raddata archives.
 C***********************************************************************
 
       IMPLICIT NONE
-
       INTEGER i,j,L
       CHARACTER*128 tname,arcfile
       CHARACTER aname*(*)

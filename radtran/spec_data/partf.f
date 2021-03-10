@@ -88,6 +88,8 @@ C
       PARAMETER (T0=296.,T02=T0*T0,T03=T0*T02)
 C
       REAL PARTT0,PTMP
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       IF(IPTF.EQ.0) THEN
        IF(ISO.GT.0)THEN
@@ -122,8 +124,10 @@ C     1   TEMP*( DBQTC(J,ID) + TEMP*DBQTD(J,ID) ) ) )
       ELSE
 
        IF(IREADEXTRA.NE.-1)THEN
-        PRINT*,'Extra partition functions database has not been'
-        PRINT*,'initialised. Initialise here'
+        if(idiag.gt.0)then
+         PRINT*,'Extra partition functions database has not been'
+         PRINT*,'initialised. Initialise here'
+        endif
         CALL INIT_PARTF
        ENDIF
 

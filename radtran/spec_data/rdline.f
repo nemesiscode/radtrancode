@@ -31,6 +31,8 @@ C ../includes/dbcom.f stores the linedata base variables (e.g. RELABU).
       DOUBLE PRECISION CC
       PARAMETER (CC=10.)
       COMMON /OVERFLOW/IPOW,IPOW1
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C******************************** CODE *********************************
 
@@ -250,8 +252,8 @@ C bases include many very weak lines
        if(EXP.LE.(-14))then
         LNSTR= LNSTR*CC**(EXP+47)
        elseif(EXP.LT.(-14).AND.EXP.GE.(-20))THEN
-        print*, 'Note: LNSTR EXP = ', EXP
-        print*, 'Possibly suspect!'
+        if(idiag.gt.0)print*, 'Note: LNSTR EXP = ', EXP
+        if(idiag.gt.0)print*, 'Possibly suspect!'
         LNSTR= LNSTR*CC**(EXP+47)
        else
         LNSTR=0
@@ -300,9 +302,9 @@ C      DO 13 I=1,DBRECL,20
 C        WRITE(*,*)I,'!',BUFFER(I:I+19),'@'
 C13    CONTINUE
 
-      print*,LNID,LNISO,LNWAVE,LNSTR,EXP
-      print*,LNEINA,EXP1,LNWIDA,LNWIDS
-      print*,LNLSE,LNTDEP,LNPSH
+      if(idiag.gt.0)print*,LNID,LNISO,LNWAVE,LNSTR,EXP
+      if(idiag.gt.0)print*,LNEINA,EXP1,LNWIDA,LNWIDS
+      if(idiag.gt.0)print*,LNLSE,LNTDEP,LNPSH
 
 C End of debugging lines
 

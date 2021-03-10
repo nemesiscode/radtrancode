@@ -76,6 +76,8 @@ C ../includes/dbcom.f stores the line database variables (e.g. RELABU).
       CHARACTER*256 BUFFER
       LOGICAL WARNTD
       PARAMETER (FH2=0.865)
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
       REAL TINW(MAXDGAS)
       DATA (TINW(J),J=1,42)/0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,
@@ -91,7 +93,7 @@ C******************************** CODE *********************************
 
 C     Assume line database file is already open.
 
-      print*,'loadbuffer: FSTREC=',FSTREC
+      if(idiag.gt.0)print*,'loadbuffer: FSTREC=',FSTREC
 
 C      print*,'VMIN,VMAX = ',VMIN,VMAX
 C      print*,'MAXLIN,MAXBIN,IB = ',MAXLIN,MAXBIN,IB
@@ -104,7 +106,7 @@ C      print*,'VBOT,WING = ',VBOT,WING
       IREC=FSTREC-1
       LINE=0
 
-      print*,'IREC,LINE = ',IREC,LINE
+      if(idiag.gt.0)print*,'IREC,LINE = ',IREC,LINE
     
       DO I=1,MAXBIN
        FSTLIN(IB,I)=-1
@@ -212,6 +214,7 @@ C NOTE: SBLIN is the correction to air broadening so that zero is valid
 
             IF(LNWIDA1.GT.1.E-20)THEN
 C            Composite 'Oxford'-ExoMOL format, which lists H2, He and Self-broadening.
+C	     FH2 set as a parameter above. Edit as required. 
              ALIN(IB,LINE) = FH2*LNWIDA + (1.0-FH2)*LNWIDA1
              SBLIN(IB,LINE) = ALIN(IB,LINE) - LNWIDS            
              TDW(IB,LINE) = FH2*LNTDEP + (1-FH2)*LNTDEP1
@@ -224,7 +227,7 @@ C            Composite 'Oxford'-ExoMOL format, which lists H2, He and Self-broad
              LLQ(IB,LINE)(10:15)='      '
             ENDIF
             IF(LINE.EQ.MAXLIN)THEN
-              print*,'Reached end of buffer'
+              if(idiag.gt.0)print*,'Reached end of buffer'
               NLINR=MAXLIN
               NXTREC=IREC+1
               GOTO 101
@@ -249,11 +252,13 @@ C            Composite 'Oxford'-ExoMOL format, which lists H2, He and Self-broad
         ENDIF
        ENDIF
       ENDDO
-      print*,'IB,NLINR,NXTREC,FIRSTBIN,LASTBIN',IB,NLINR,NXTREC,
+      if(idiag.gt.0)then
+       print*,'IB,NLINR,NXTREC,FIRSTBIN,LASTBIN',IB,NLINR,NXTREC,
      1 FIRSTBIN(IB),LASTBIN(IB)
+      endif
       NBINY = 1+LASTBIN(IB)-FIRSTBIN(IB)
       IF(FIRSTBIN(IB).GT.0)THEN
-       print*,'Bins covered = ',NBINY
+       if(idiag.gt.0)print*,'Bins covered = ',NBINY
        IF(NBINY.LT.3)THEN
         print*,'Error in loadbuffer.f -'
         print*,'Line buffers should cover more than 2 wing bins.'
@@ -263,7 +268,7 @@ C            Composite 'Oxford'-ExoMOL format, which lists H2, He and Self-broad
        ENDIF
       ENDIF
 
-      print*,'loadbuffer end'
+      if(idiag.gt.0)print*,'loadbuffer end'
 
       RETURN
 

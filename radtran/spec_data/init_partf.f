@@ -9,6 +9,9 @@ C
 C     ****************************************************************
       character*100 partfil,buffer
       include '../includes/partfcom.f'
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
 
       partfil='partfextra.dat'
       call datarchive(partfil)
@@ -22,7 +25,7 @@ C     ****************************************************************
        print*,NPARTEXTRA,MPARTEXTRA
        stop
       endif
-      print*,'NPARTEXTRA = ',NPARTEXTRA
+      if(idiag.gt.0)print*,'NPARTEXTRA = ',NPARTEXTRA
       do 20 i=1,NPARTEXTRA
        read(12,*)IDEXTRA(i),ISOEXTRA(i)
 20    continue

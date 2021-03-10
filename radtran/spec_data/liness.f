@@ -73,6 +73,8 @@ C ../includes/dbcom.f stores the line database variables (e.g. RELABU).
       DOUBLE PRECISION SLIN(MAXLIN)
       CHARACTER*15 LLQ(MAXLIN)
       CHARACTER*256 BUFFER
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C******************************** CODE *********************************
 
@@ -99,7 +101,7 @@ C First open database .key file
 C       CALL PROMPT('Oxford-ExoMOL format - enter fH2 : ')
 C       READ*,FH2
         FH2 = 0.865
-        print*,'FH2 = ',FH2
+        if(idiag.gt.0)print*,'FH2 = ',FH2
       ENDIF
 
       CALL FNDWAV(VMIN)

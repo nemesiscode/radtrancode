@@ -166,6 +166,7 @@ C Read in spectral parameters ...
 
       CALL PROMPT('Enter ID,ISO to put in header : ')
       READ(5,*)IDF,ISOF
+      WRITE(4,*)'ID, ISO = ',IDF,ISOF
 
       OPEN(DBLUN,FILE=DBFILE,STATUS='OLD')
 

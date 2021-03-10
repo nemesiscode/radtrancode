@@ -62,20 +62,22 @@ C
            SUM=SUM+(PPLPL(I,J)+PPLMI(I,J))*CC(I,I)
          END DO
          DSUM = ABS(SUM*2.0*PI - 1.0)
-         IF(DSUM.GT.0.02.and.idiag.gt.0)THEN
-          PRINT*,'Double1: Warning - Sum of phase function <> 1'
-	  PRINT*,'IC,L  = ',IC,L
-          PRINT*,'J,SUM = ',J,SUM*2.0*PI
-          PRINT*,'PPLPL'
-          DO I=1,NMU
-           PRINT*,(PPLPL(I,K),K=1,NMU)
-          ENDDO
-          PRINT*,'PPLMI'
-          DO I=1,NMU
-           PRINT*,(PPLMI(I,K),K=1,NMU)
-          ENDDO
+         IF(DSUM.GT.0.02)THEN
+          if(idiag.gt.0)then
+           PRINT*,'Double1: Warning - Sum of phase function <> 1'
+ 	  PRINT*,'IC,L  = ',IC,L
+           PRINT*,'J,SUM = ',J,SUM*2.0*PI
+           PRINT*,'PPLPL'
+           DO I=1,NMU
+            PRINT*,(PPLPL(I,K),K=1,NMU)
+           ENDDO
+           PRINT*,'PPLMI'
+           DO I=1,NMU
+            PRINT*,(PPLMI(I,K),K=1,NMU)
+           ENDDO
 
-          PRINT*,'Doing a brutal renormalisation'
+           PRINT*,'Doing a brutal renormalisation'
+          endif
 
           XFAC=1./(2.0*PI*SUM)
           DO I=1,NMU

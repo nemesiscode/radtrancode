@@ -3,7 +3,9 @@ C     $Id: cut_table.f,v 1.1 2011-06-17 15:25:43 irwin Exp $
 C***********************************************************************
 C_TITL:	CUT_TABLE.f
 C
-C_DESC: Changes gas ID of a k-table
+C_DESC: Allows user to changes gas ID of a k-table and also DELV and FWHM
+C       NB. For a channel k-table do not change DELV to be > 0.
+C       NB. For a continuous k-table do not change DELV to be <=0
 C
 C_ARGS:	See the definitions below.
 C

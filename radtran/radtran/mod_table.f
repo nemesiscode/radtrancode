@@ -1,7 +1,7 @@
       PROGRAM MOD_TABLE
-C     $Id: cut_table.f,v 1.1 2011-06-17 15:25:43 irwin Exp $
+C     $Id:
 C***********************************************************************
-C_TITL:	CUT_TABLE.f
+C_TITL:	MOD_TABLE.f
 C
 C_DESC: Allows user to changes gas ID of a k-table and also DELV and FWHM
 C       NB. For a channel k-table do not change DELV to be > 0.

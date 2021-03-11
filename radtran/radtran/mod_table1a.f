@@ -1,9 +1,9 @@
       PROGRAM MOD_TABLE1A
 C     $Id:
 C***********************************************************************
-C_TITL:	CUT_TABLE.f
+C_TITL:	MOD_TABLE1A.f
 C
-C_DESC: Changes k-table from channel to continuous
+C_DESC: Allows change of DELV and FWHM for a channel k-table. 
 C
 C_ARGS:	See the definitions below.
 C

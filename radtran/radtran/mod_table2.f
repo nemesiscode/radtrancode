@@ -1,9 +1,9 @@
       PROGRAM MOD_TABLE2
-C     $Id: cut_table.f,v 1.1 2011-06-17 15:25:43 irwin Exp $
+C     $Id:
 C***********************************************************************
-C_TITL:	CUT_TABLE.f
+C_TITL:	MOD_TABLE2.f
 C
-C_DESC: Changes k-table from channel to continuous
+C_DESC: Allows all k-table absorptions to be multiplied by an input value.
 C
 C_ARGS:	See the definitions below.
 C

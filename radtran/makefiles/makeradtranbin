@@ -33,8 +33,3 @@ make bin
 cd $RADSRC/cirsradg
 make clean
 make bin
-
-cd $RADSRC/monteck
-make clean
-make bin
-

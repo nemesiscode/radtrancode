@@ -61,7 +61,7 @@ C TK@ Temperature values in k-tables.
       REAL g_ord(maxg),delg(maxg)
 C G_ORD: g-ordinates.
 C DELG: g-weights.
-      REAL xmink(maxbin,maxgas),delk(maxbin,maxgas),DX
+      REAL xmink(maxbin,maxgas),delk(maxbin,maxgas),DX,DXX
       REAL frack(maxbin,maxgas)
 C XMINK: Beginning wavenumber in table.
 C DELK: Wavenumber step of evaluation points.
@@ -105,8 +105,9 @@ C
 C	Open appropriate Correlated K files and compare. 
 C
 C-----------------------------------------------------------------------
-      WRITE(*,*)' READ_KLIST.f :: Number of k-files = ',nkl
-
+      if(idiag.gt.0)then
+       WRITE(*,*)' READ_KLIST.f :: Number of k-files = ',nkl
+      endif
       DO i=1,nkl
         unit(i) = 100 + i
 C        WRITE(*,1035)KTAFIL(i)
@@ -271,7 +272,7 @@ C      xnorm=.false.
 C              IF DELV in ktables = 0, then find the nearest entry
 C              at a wavelength less than or equal to that requested
                if(delx(j).eq.0.and.xnorm)then
-C                print*,ipo,xcenk(ipo),vwave(k)                
+C                print*,ipo,xcenk(ipo),vwave(k),dx,MAXDX1                
                 IF(dx.lt.MAXDX1.and.XCENK(ipo).le.vwave(k))THEN
                   imatch=1
                   iflag(k,i) = 1
@@ -280,8 +281,8 @@ C                print*,ipo,xcenk(ipo),vwave(k)
                   delk(k,i) = delx(j)
                   ireck(k,i) = irec(j)+npk*abs(ntk)*ngk*(ipo-1)
                   if(ipo.lt.npoint)then
-                     dx = xcenk(ipo+1)-xcenk(ipo)
-                     frack(k,i) = 1.0 - (vwave(k)-XCENK(ipo))/dx
+                     dxx = xcenk(ipo+1)-xcenk(ipo)
+                     frack(k,i) = 1.0 - (vwave(k)-XCENK(ipo))/dxx
                   else
                      frack(k,i) = 1.
                   endif
@@ -290,10 +291,10 @@ C     1			delx(j),frack(k,i)
                   MAXDX1=dx
                 ENDIF
                else
-C              IF DELV in ktables < 0, then find the nearest entry
-C              and 'snap' the calculation to this wavelength.
+C               IF DELV in ktables < 0, then find the nearest entry
+C                and 'snap' the calculation to this wavelength.
 C                print*,'Snap'
-                IF(dx.lt.MAXDX1)THEN
+                 IF(dx.lt.MAXDX1)THEN
                   imatch=1
                   jpo=ipo
 C                  print*,k,ipo
@@ -304,10 +305,12 @@ C                  print*,k,ipo
                   ireck(k,i) = irec(j)+npk*abs(ntk)*ngk*(ipo-1)
                   frack(k,i) = 1.
                   MAXDX1=dx
-                ENDIF
+                 ENDIF
                endif
               ENDDO
 
+C              print*,'test',i,k,vwave(k),ipo,ireck(k,i),frack(k,i)
+C              print*,irec(j),npk,ntk,ngk
               IF(imatch.eq.0)THEN
                   print*,'Warning - read_klist. Match not found'
                   print*,'For wavelength : ',k,vwave(k)

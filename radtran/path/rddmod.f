@@ -45,6 +45,8 @@ C ILUN: File unit used for openning files.
       CHARACTER*(*) text
       CHARACTER*100 buffer,ipfile
 C IPFILE: Input filename.
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C********************************* CODE ********************************
 
@@ -55,13 +57,15 @@ C Reading in in vertical profiles produced by dust_profile.f
       CALL remsp(ipfile)
       CALL locase(ipfile) 
       CALL file(ipfile,ipfile,'prf')
-      WRITE(*,*)' RDDMOD.f :: reading dust-model: ',ipfile
+      if(idiag.gt.0)WRITE(*,*)' RDDMOD.f :: reading dust-model: ',ipfile
       OPEN(UNIT=ilun,FILE=ipfile,STATUS='OLD')
 C First skip header (if any)
 54    READ(ILUN,1)BUFFER
       IF(BUFFER(1:1).EQ.'#') GOTO 54
       READ(BUFFER,*)NN,NDUST
-      WRITE(*,*)' RDDMOD.f :: dust-model has ',ndust,' aerosol types'
+      if(idiag.gt.0)then
+       WRITE(*,*)' RDDMOD.f :: dust-model has ',ndust,' aerosol types'
+      endif
       NCONT = NDUST
       
       DO 105 J=1,NN

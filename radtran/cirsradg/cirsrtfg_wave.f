@@ -201,20 +201,28 @@ C Read the ktables or lbltables
 
       IF(ILBL.EQ.0)THEN
          CALL file (opfile, klist, 'kls')
-         WRITE(*,1050)klist
+         if(idiag.gt.0)then
+          WRITE(*,1050)klist
 
-         WRITE(*,*)'     CALLING read_klist'
+          WRITE(*,*)'     CALLING read_klist'
+         endif
          CALL read_klist (klist, ngas, idgas, isogas, nwave, vwave, nkl)
-         WRITE(*,*)'     read_klist COMPLETE'
-         WRITE(*,*)' '
+         if(idiag.gt.0)then
+          WRITE(*,*)'     read_klist COMPLETE'
+          WRITE(*,*)' '
+         endif
       ELSE
          CALL file (opfile, klist, 'lls')
-         WRITE(*,1050)klist
+         if(idiag.gt.0)then
+          WRITE(*,1050)klist
 
-         WRITE(*,*)'     CALLING read_klbllist'
+          WRITE(*,*)'     CALLING read_klbllist'
+         endif
          CALL read_klbllist (klist, ngas, idgas, isogas, nwave, vwave)
-         WRITE(*,*)'     read_klist COMPLETE'
-         WRITE(*,*)' '
+         if(idiag.gt.0)then
+          WRITE(*,*)'     read_klist COMPLETE'
+          WRITE(*,*)' '
+         endif
       ENDIF
 
 
@@ -305,6 +313,7 @@ C Assess for which parameters a dr/dx value is actually needed
       ENDIF
 
 C Determine the % complete ...
+
       WRITE(*,*)' '
       WRITE(*,*)' Waiting for CIRSradg_wave etal to complete ...'
       xcomp = 0.0

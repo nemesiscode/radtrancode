@@ -13,7 +13,7 @@ C_HIST:
 C***********************************************************************
 
       INTEGER MAXDGAS,MAXISO
-      PARAMETER (MAXDGAS=100,MAXISO=20)
+      PARAMETER (MAXDGAS=150,MAXISO=20)
 
       INTEGER*8 DBSIZ
       INTEGER DBRECL,DBFORM,LOCID(MAXDGAS)

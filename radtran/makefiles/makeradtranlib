@@ -46,8 +46,3 @@ cd $RADSRC/matrices
 make clean
 touch *
 make lib
-
-cd $RADSRC/monteck
-make clean
-touch *
-make lib

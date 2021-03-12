@@ -116,6 +116,8 @@ C PROFFILE: Atmospheric profile filename.
 C AEROFILE: Dust/Aerosol profile filename.
 
       LOGICAL OK,DEF,BIT,REFL
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C********************************* CODE ********************************
 
@@ -191,15 +193,19 @@ C Skipping blank lines.
         endif
         READ(2,*)iconv,wing,vrel
         interv = .TRUE.
-        WRITE(*,*)' '
-        WRITE(*,*)' SUBPATHG.f :: iconv = ', iconv
-        WRITE(*,*)' SUBPATHG.f :: vmin = ',vmin,', vmax = ',vmax
-        WRITE(*,*)' SUBPATHG.f :: delv = ',delv,', fwhm = ',fwhm
-        WRITE(*,*)' SUBPATHG.f :: wing = ',wing,', vrel = ',vrel
-        IF (iconv.EQ.0) WRITE(*,*)' iconv = 0 ==> infinite resolution.'
+        if(idiag.gt.0)then
+         WRITE(*,*)' '
+         WRITE(*,*)' SUBPATHG.f :: iconv = ', iconv
+         WRITE(*,*)' SUBPATHG.f :: vmin = ',vmin,', vmax = ',vmax
+         WRITE(*,*)' SUBPATHG.f :: delv = ',delv,', fwhm = ',fwhm
+         WRITE(*,*)' SUBPATHG.f :: wing = ',wing,', vrel = ',vrel
+         IF (iconv.EQ.0) WRITE(*,*)' iconv = 0 ==> infinite resolution.'
+        endif
       ELSE IF (text(1:9).EQ.'SPEC DATA') THEN
         linkey(1:) = text(10:)
-        WRITE(*,*)' SUBPATHG.f :: reading spectral data from: ',linkey
+        if(idiag.gt.0)then
+         WRITE(*,*)' SUBPATHG.f :: reading spectral data from: ',linkey
+        endif
         lined = .TRUE.
       ELSE IF (text(1:7).EQ.'PROCESS') THEN
         READ(text(8:),*)i,j,k

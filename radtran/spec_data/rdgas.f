@@ -30,6 +30,8 @@ C--------------------------------------------------------------
 C--------------------------------------------------------------
       INTEGER I,J,K,L
       CHARACTER*100 BUFFER
+
+
       OPEN(UNIT=DBLUN,FILE=GASFIL,STATUS='OLD')
 
 C     Skip past header : 
@@ -58,5 +60,6 @@ C      WRITE(*,*)DBQTA(K,I),DBQTB(K,I),DBQTC(K,I),DBQTD(K,I)
 C      WRITE(*,40)L
 40    FORMAT(I3,' gases recognised by software')
       CLOSE(DBLUN)
+
       RETURN
       END

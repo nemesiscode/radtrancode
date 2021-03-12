@@ -94,17 +94,14 @@ C     ****************   CODE *******************************
 C     *******************************************************
 
       idiag=1
-
 C     Read in reference gas information data
       CALL RESERVEGAS
-
 C     ----------- Scattering phase function initialisation --------------
       xwave(1)=-1                       ! Reset to force read of hgphase*
 C                                         files.
 C     ------------ Scattering phase function initialisation -------------
       jradf=-1
       jloggf=-1
-
 
 C     New compiler time
       CALL system_clock(count_rate=cr)

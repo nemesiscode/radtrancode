@@ -177,15 +177,19 @@ C Skipping blank lines
         if(idiag.gt.0)print*,'NPOINT = ',NPOINT
         READ(2,*)ICONV,WING,VREL
         INTERV = .TRUE.
-        WRITE(*,*)' '
-        WRITE(*,*)' ICONV = ', ICONV
-        WRITE(*,*)' VMIN = ',VMIN,', VMAX = ',VMAX
-        WRITE(*,*)' DELV = ',DELV,', FWHM = ',FWHM
-        WRITE(*,*)' WING = ',WING,', VREL = ',VREL
-        IF (ICONV.EQ.0) WRITE(*,*)'ICONV = 0 ==> infinite resolution.'
+        if(idiag.gt.0)then
+         WRITE(*,*)' '
+         WRITE(*,*)' ICONV = ', ICONV
+         WRITE(*,*)' VMIN = ',VMIN,', VMAX = ',VMAX
+         WRITE(*,*)' DELV = ',DELV,', FWHM = ',FWHM
+         WRITE(*,*)' WING = ',WING,', VREL = ',VREL
+         IF (ICONV.EQ.0) WRITE(*,*)'ICONV = 0 ==> infinite resolution.'
+        endif
       ELSE IF (TEXT(1:9).EQ.'SPEC DATA') THEN
         LINKEY(1:) = TEXT1(10:)
-        WRITE(*,*)' SUBPATH.f :: reading spectral data from: ',linkey
+        if(idiag.gt.0)then
+         WRITE(*,*)' SUBPATH.f :: reading spectral data from: ',linkey
+        endif
 	LINED = .TRUE.
       ELSE IF (TEXT(1:7).EQ.'PROCESS') THEN
         READ (TEXT(8:),*) I, J, K

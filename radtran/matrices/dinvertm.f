@@ -44,6 +44,8 @@ C     INDX: Index of the row permutation done within LUDCMP.f.
       DOUBLE PRECISION D,B(IDIM,1),A1(IDIM,IDIM),DX,P(IDIM),X(IDIM)
       DOUBLE PRECISION B1(IDIM),DXMAX,AINV1(IDIM,IDIM)
       LOGICAL NTEST,ISNAN
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 
 C******************************** CODE *********************************
 
@@ -63,7 +65,7 @@ C******************************** CODE *********************************
       ENDIF
 
       IF(JMOD.EQ.0)THEN
-          print*,'dinvertm : LU decomposition'
+          if(idiag.gt.0)print*,'dinvertm : LU decomposition'
 C         LU - DECOMPOSITION
 C         transfer input array and set up an identity matrix.
           DO 20 J=1,NDIM
@@ -91,7 +93,7 @@ C         AINV(1,J) is the address of the jth column of AINV.
 
       ELSEIF(JMOD.EQ.1)THEN
           
-          print*,'dinvertm: Gaussian elimination'
+          if(idiag.gt.0)print*,'dinvertm: Gaussian elimination'
 C         transfer input array and set up an identity matrix.
           DO 21 J=1,NDIM
            DO 31 I=1,NDIM
@@ -111,7 +113,7 @@ C         transfer input array and set up an identity matrix.
 
       ELSE
 C         CHOLESKY DECOMPOSITION
-          print*,'dinvertm: Cholesky decomposition'
+          if(idiag.gt.0)print*,'dinvertm: Cholesky decomposition'
 C         transfer input array and to upper triangle of A1 and set up 
 C         an identity matrix.
           DO 25 J=1,NDIM
@@ -168,11 +170,11 @@ C     Checking inversion is OK
 80    CONTINUE
 
       IF(ICHECK.EQ.0) THEN
-        PRINT*,'dinvertm.f: Matrix inversion OK'
+        if(idiag.gt.0)print*,'dinvertm.f: Matrix inversion OK'
       ELSE
-        PRINT*,'dinvertm.f: Matrix not inverted well'
-        PRINT*,'DXMAX,TINY',DXMAX,TINY
-        PRINT*,'JMOD : ',JMOD
+        if(idiag.gt.0)print*,'dinvertm.f: Matrix not inverted well'
+        if(idiag.gt.0)print*,'DXMAX,TINY',DXMAX,TINY
+        if(idiag.gt.0)print*,'JMOD : ',JMOD
       ENDIF
 
       RETURN

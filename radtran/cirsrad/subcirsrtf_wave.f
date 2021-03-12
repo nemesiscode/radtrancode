@@ -140,7 +140,7 @@ C
 C-----------------------------------------------------------------------
 
      	NOUT=NPATH*NWAVE
-        WRITE(*,*)'NPATH,NWAVE,NOUT = ',NPATH,NWAVE,NOUT
+        if(idiag.gt.0)WRITE(*,*)'NPATH,NWAVE,NOUT = ',NPATH,NWAVE,NOUT
 
       	IF (NOUT.GT.MAXOUT3) THEN
                 PRINT*,'MAXOUT3 = ',MAXOUT3
@@ -156,20 +156,28 @@ C-----------------------------------------------------------------------
 
         IF(ILBL.EQ.0)THEN
   	 CALL file (opfile, klist, 'kls')
-	 WRITE(*,1050)klist
+         if(idiag.gt.0)then
+ 	  WRITE(*,1050)klist
 
-	 WRITE(*,*)'     CALLING read_klist'
+	  WRITE(*,*)'     CALLING read_klist'
+         endif
 	 CALL read_klist (klist, ngas, idgas, isogas, nwave, vwave,nkl)
-	 WRITE(*,*)'     read_klist COMPLETE'
-	 WRITE(*,*)' '
+         if(idiag.gt.0)then
+ 	  WRITE(*,*)'     read_klist COMPLETE'
+ 	  WRITE(*,*)' '
+         endif
         ELSE
   	 CALL file (opfile, klist, 'lls')
-	 WRITE(*,1050)klist
+         if(idiag.gt.0)then
+  	  WRITE(*,1050)klist
 
-	 WRITE(*,*)'     CALLING read_klbllist'
+	  WRITE(*,*)'     CALLING read_klbllist'
+         endif
 	 CALL read_klbllist (klist, ngas, idgas, isogas, nwave, vwave)
-	 WRITE(*,*)'     read_klist COMPLETE'
-	 WRITE(*,*)' '
+         if(idiag.gt.0)then
+ 	  WRITE(*,*)'     read_klist COMPLETE'
+	  WRITE(*,*)' '
+         endif
         ENDIF
 C-----------------------------------------------------------------------
 C
@@ -185,9 +193,9 @@ C-----------------------------------------------------------------------
 
 	IF (fscatter) THEN
 		CALL file(opfile, radfile, 'sca')
-		WRITE(*,*)'     CALLING get_scatter'
+		if(idiag.gt.0)WRITE(*,*)'     CALLING get_scatter'
 		CALL get_scatter(radfile,ncont)
-		WRITE(*,*)'     get_scatter COMPLETE'
+		if(idiag.gt.0)WRITE(*,*)'     get_scatter COMPLETE'
 	ENDIF
 
 C-----------------------------------------------------------------------
@@ -200,11 +208,13 @@ C-----------------------------------------------------------------------
 	IF (ncont.gt.0) fdust= .true.
 	IF (fdust) THEN
 		CALL file(opfile, xscfil, 'xsc')
-		WRITE(*,*)'Subcirsrtf_wave: CALLING get_xsec. ncont = ', ncont
+		if(idiag.gt.0)then
+          WRITE(*,*)'Subcirsrtf_wave: CALLING get_xsec. ncont = ', ncont
+                endif
 		CALL get_xsec(xscfil, ncont)
-		WRITE(*,*)'Subcirsrtf_wave: get_xsec COMPLETE'
-c		WRITE(*,*)' '
-		
+		if(idiag.gt.0)then
+                 WRITE(*,*)'Subcirsrtf_wave: get_xsec COMPLETE'
+                endif		
 	ENDIF
  
 C-----------------------------------------------------------------------
@@ -235,8 +245,7 @@ C          need the current height profile
      3    idgas, isogas,emtemp,iphi,nem,vem,emissivity,tsurf,
      4    flagh2p,hfp,flagc, hfc, ifc, basep, baseh, RADIUS1,
      5    radextra,output)
-	WRITE(*,*)'Subcirsrtf_wave: cirsrad_wave COMPLETE'
-c	WRITE(*,*)' '
+	if(idiag.gt.0)WRITE(*,*)'Subcirsrtf_wave: cirsrad_wave COMPLETE'
 
 C-----------------------------------------------------------------------
 C
@@ -244,10 +253,10 @@ C	Wrap up.
 C
 C-----------------------------------------------------------------------
 
-	WRITE(*,*)'     CALLING close_scat'
+C	WRITE(*,*)'     CALLING close_scat'
 	CALL close_scat(ncont)
-	WRITE(*,*)'     close_scat COMPLETE'
-	WRITE(*,*)' '
+C	WRITE(*,*)'     close_scat COMPLETE'
+C	WRITE(*,*)' '
 
 C-----------------------------------------------------------------------
 C

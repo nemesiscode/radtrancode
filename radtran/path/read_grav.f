@@ -76,6 +76,9 @@ C       Convert radius to units of cm
       endif
 
       xgm = plan_mass(iplanet)
+      if(MCMCflag.eq.1)then
+       xgm=MCMCmass*Grav*1e24*1e6
+      endif
       if(mass2.gt.0.0.and.jloggf.gt.0)then
         xgm = mass2*Grav*1e24*1e6
       else
@@ -87,6 +90,9 @@ C       Convert radius to units of cm
        xcoeff(j)=Jcoeff(j,iplanet)
 30    continue
       xradius=aradius(iplanet)
+      if(MCMCflag.eq.1)then
+       xradius=MCMCrad*1e5
+      endif
       if(radius2.gt.0.0.and.jradf.gt.0)then
        xradius=radius2*1e5
       else

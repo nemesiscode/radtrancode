@@ -120,10 +120,12 @@ C       DelV, DelH, NPoint, FWHM, Wing, VRel, and KEYFIL.
 C
 C-----------------------------------------------------------------------
 
-	CALL file (opfile, drvfil, 'drv')
-	OPEN (UNIT= 1, FILE= DRVFIL, STATUS= 'OLD')
-	CALL RDLBLD
-	CLOSE(1)
+        if(iquiet.eq.0)then
+ 	 CALL file (opfile, drvfil, 'drv')
+	 OPEN (UNIT= 1, FILE= DRVFIL, STATUS= 'OLD')
+	 CALL RDLBLD
+	 CLOSE(1)
+        endif
 
 C-----------------------------------------------------------------------
 C

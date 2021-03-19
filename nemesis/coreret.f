@@ -523,13 +523,15 @@ C        if(idiag.gt.0)print*,'forwardnogX OK, jpre = ',jpre
        endif
       endif
 
-199   open(12,file='kk.dat',status='unknown')
-      write(12,*)nx,ny
-      do i=1,ny
-       write(12,*)(kk(i,j),j=1,nx)
-      enddo
-      close(12)
-
+199   continue
+      if(idiag.gt.0)then
+       open(12,file='kk.dat',status='unknown')
+       write(12,*)nx,ny
+       do i=1,ny
+        write(12,*)(kk(i,j),j=1,nx)
+       enddo
+       close(12)
+      endif
 
 C     Now calculate the gain matrix and averaging kernels
       call calc_gain_matrix(nx,ny,kk,sa,sai,se,sei,dd,aa)
@@ -543,7 +545,7 @@ c      write(*,*)ophi,oxchi
 C     Assess whether retrieval is likely to be OK
       call assess(nx,ny,kk,sa,se)
  
-      if(ica.eq.1)then       ! Open and write only for single spec ret.
+      if(ica.eq.1.and.idiag.gt.0)then       ! Open and write only for single spec ret.
        inquire(file=itname, number=tmpvarint)!check that .itr file hasn't already been opened before opening it
        if(tmpvarint.ne.37)then
         call file(runname,itname,'itr')

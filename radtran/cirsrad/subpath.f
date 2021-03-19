@@ -389,9 +389,10 @@ C cell paths
         OK = .FALSE.
       ENDIF
       IF (OK) THEN
-        CALL WRLBLD
+        if(iquiet.eq.0)CALL WRLBLD
       ELSE
         WRITE(*,*)' SUBPATH.f :: no driver file (.drv) written.'
+        STOP
       ENDIF
 
       CLOSE(UNIT=2)

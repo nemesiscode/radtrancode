@@ -325,13 +325,14 @@ C      Calculate inverse of se
 
       endif
 
-      open(12,file='kk.dat',status='unknown')
-      write(12,*)nx,ny
-      do i=1,ny
-       write(12,*)(kk(i,j),j=1,nx)
-      enddo
-      close(12)
-
+      if(idiag.gt.0)then
+       open(12,file='kk.dat',status='unknown')
+       write(12,*)nx,ny
+       do i=1,ny
+        write(12,*)(kk(i,j),j=1,nx)
+       enddo
+       close(12)
+      endif
 
 C     Now calculate the gain matrix and averaging kernels
       call calc_gain_matrix(nx,ny,kk,sa,sai,se,sei,dd,aa)

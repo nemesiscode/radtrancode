@@ -394,10 +394,11 @@ C cell paths.
         OK = .FALSE.
       ENDIF
       IF (OK) THEN
-C Write driver file (.drv)
-	CALL WRLBLD
+C       Write driver file (.drv)
+	if(iquiet.eq.0)CALL WRLBLD
       ELSE
 	WRITE(*,*)' SUBPATHG.f :: no driver file (.drv) written.'
+        STOP
       ENDIF
 
       CLOSE(UNIT=2)

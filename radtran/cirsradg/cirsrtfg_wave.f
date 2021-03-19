@@ -200,7 +200,7 @@ C	  MOLWTX = XXMOLWT
 C Read the ktables or lbltables
 
       IF(ILBL.EQ.0)THEN
-         CALL file (opfile, klist, 'kls')
+         CALL file (runname, klist, 'kls')
          if(idiag.gt.0)then
           WRITE(*,1050)klist
 
@@ -212,7 +212,7 @@ C Read the ktables or lbltables
           WRITE(*,*)' '
          endif
       ELSE
-         CALL file (opfile, klist, 'lls')
+         CALL file (runname, klist, 'lls')
          if(idiag.gt.0)then
           WRITE(*,1050)klist
 
@@ -314,8 +314,10 @@ C Assess for which parameters a dr/dx value is actually needed
 
 C Determine the % complete ...
 
-      WRITE(*,*)' '
-      WRITE(*,*)' Waiting for CIRSradg_wave etal to complete ...'
+      if(idiag.gt.0)then
+       WRITE(*,*)' '
+       WRITE(*,*)' Waiting for CIRSradg_wave etal to complete ...'
+      endif
       xcomp = 0.0
 
 
@@ -341,7 +343,7 @@ C Allocating variables
           xref = 0.0
         endif
         IF(xref.GE.xcomp)THEN
-          WRITE(*,*)' Percent Complete = ',xcomp
+          if(idiag.gt.0)WRITE(*,*)' Percent Complete = ',xcomp
           xcomp = xcomp + 10.0
         ENDIF
 

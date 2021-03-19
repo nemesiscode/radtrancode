@@ -93,8 +93,11 @@ C     *******************************************************
 C     ****************   CODE *******************************
 C     *******************************************************
 
-      idiag=1
+C     Set idiag to 1 for standard print statements. Set to zero to suppress
+      idiag=1		
+C     Set iquiet to 1 to reduce writing to intermdiate meta files (such as .drv)
       iquiet=0
+
 C     Read in reference gas information data
       CALL RESERVEGAS
 C     ----------- Scattering phase function initialisation --------------
@@ -360,14 +363,14 @@ C     set up a priori of x and its covariance
       ENDDO 
 
       idump=0  ! flag for diagnostic print dumps
+      ica=0
 
-      if(nspec.eq.1)then
+      if(nspec.eq.1.and.idiag.gt.0)then
         ica = 1		! 1 = single retrieval
       else
         ica = 0		! 0 = multiple retrievals
       endif
 
-      ica=0
 
       CALL FILE(runname,runname,'cia')
 

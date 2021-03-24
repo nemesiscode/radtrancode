@@ -1,0 +1,16 @@
+      REAL FUNCTION JWIDS(WCOEFF,JMAX,KMAX,JL,KL)
+      REAL WCOEFF(5)
+      INTEGER JMAX,JL,J,K,KL,KMAX
+
+      J=JL
+      IF(J.GT.JMAX)J=JMAX
+      K=KL
+      IF(K.GT.JMAX)K=KMAX
+
+
+      JWIDS = WCOEFF(1) + WCOEFF(2)*J + WCOEFF(3)*K +
+     & WCOEFF(4)*J*J + WCOEFF(5)*J*K
+
+      RETURN
+
+      END

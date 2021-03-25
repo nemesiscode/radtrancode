@@ -3629,6 +3629,23 @@ C                     afternoon terminators.
           XMAP(NXTEMP+5,IPAR,J)=GRADTOUT(J,5)
          ENDDO
 
+        ELSEIF(VARIDENT(IVAR,3).EQ.45)THEN
+C        Model 39. Irwin CH4 model generalised to have all elements variable
+C        ***************************************************************
+         XC1 = EXP(XN(NXTEMP+1))
+         RH = EXP(XN(NXTEMP+2))
+         XC2 = EXP(XN(NXTEMP+3))
+
+         
+         CALL modifych4irwin(npro,P,T,xc1,xc2,RH,xch4new,xch4newgrad)
+
+C        Need to update to return gradients of other variables at some point.
+
+         DO J=1,NPRO
+          X1(J)=xch4new(J)
+          XMAP(NXTEMP+1,IPAR,J)=X1(J)*xch4newgrad(J)
+         ENDDO
+
         ELSE
 
          print*,'Subprofretg: Model parametrisation code is not defined'

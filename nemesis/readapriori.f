@@ -2462,6 +2462,47 @@ C          ***** TP profile  ********
 
              nx=nx+nlen
 
+           elseif(varident(ivar,3).eq.45)then
+C          ***** irwin neptune methane profile, but all variable  ********
+C            Read in deep ch4 vmr
+             ix = nx+1
+             read(27,*)xfac,err
+             if(xfac.gt.0.0)then
+               x0(ix)=alog(xfac)
+               lx(ix)=1
+             else
+               print*,'Error in readpriori - xfac must be > 0'
+               stop
+             endif
+             err = err/xfac
+             sx(ix,ix) = err**2
+C            Read in intermediate relative humidity
+             ix = nx+2
+             read(27,*)xfac,err
+             if(xfac.gt.0.0)then
+               x0(ix)=alog(xfac)
+               lx(ix)=1
+             else
+               print*,'Error in readpriori - xfac must be > 0'
+               stop
+             endif
+             err = err/xfac
+             sx(ix,ix) = err**2
+C            Read in stratosphheric ch4 vmr
+             ix = nx+3
+             read(27,*)xfac,err
+             if(xfac.gt.0.0)then
+               x0(ix)=alog(xfac)
+               lx(ix)=1
+             else
+               print*,'Error in readpriori - xfac must be > 0'
+               stop
+             endif
+             err = err/xfac
+             sx(ix,ix) = err**2
+
+             nx = nx+3
+
            else         
             print*,'vartype profile parametrisation not recognised'
             stop

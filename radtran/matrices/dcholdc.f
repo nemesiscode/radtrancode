@@ -68,15 +68,21 @@ C     Transfer to read-only array in case of abort.
           if(i.eq.j)then
             if(sum.le.0.)then
              print*,'dcholdc failed. Matrix A is not positive-definite'
-             open(12,file='dcholdc.dat',status='unknown')
-              write(12,*)ndim
-              do k=1,ndim
-               write(12,*)(a1(i,k),l=1,ndim)
-              enddo
-             close(12)
-             stop
+             print*,'Continuing anyway, rather than aborting'
+
+C             open(12,file='dcholdc.dat',status='unknown')
+C              write(12,*)ndim
+C              do k=1,ndim
+C               write(12,*)(a1(i,k),l=1,ndim)
+C              enddo
+C             close(12)
+C             stop
+
+C             temporarily set p(i) to 1.0
+              p(i)=1.0
+            else
+              p(i)=sqrt(sum)
             endif		
-            p(i)=sqrt(sum)
           else
             a(j,i)=sum/p(i)
           endif

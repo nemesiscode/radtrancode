@@ -105,9 +105,9 @@ C ../includes/dbcom.f stores the line database variables .
 
 
       LOGICAL WSBTAB,CO2TAB,H2OTAB,SCOFLD,WEDAD,BEZARD,BERGH,PMIRR
-      LOGICAL H2HePH3J,H2HePH3S,BERGC
+      LOGICAL H2HePH3J,H2HePH3S,BERGC,H2HeCH4
       COMMON /EDLOG/WSBTAB,CO2TAB,H2OTAB,SCOFLD,WEDAD,BEZARD,BERGH,
-     $   BERGC,PMIRR,H2HePH3J,H2HePH3S
+     $   BERGC,PMIRR,H2HePH3J,H2HePH3S,H2HeCH4
 
 C******************************** CODE *********************************
 
@@ -489,6 +489,25 @@ C Modify CH4 foreign broadening parameters
             TNWIDA=0.07
             TNTDEP= 0.6
            ENDIF
+         ENDIF
+      ENDIF
+
+
+C=======================================================================
+C
+C	H2HeCH4=TRUE means to set linewidths and temperature exponents as 
+C       suggested for hydrogen-broadening of methane from ExoMOL
+C
+C	TNWIDA (also known as "LNWIDA") is the air-broadened halfwidth
+C	HWHM [cm-1/atm] at 296K.
+C	TNTDEP (also known as "LNTDEP") is the coefficient of
+C	temperature dependence of HWHM.
+C=======================================================================
+      IF(H2HeCH4)THEN
+         IF(LOCID(TNID).EQ.6)THEN
+C Modify CH4 foreign broadening parameters. Assumes H2/He = 0.845/0.155
+           TNWIDA = 0.062*0.845 + 0.035*0.155
+           TNTDEP = 0.5*0.845 + 0.3*0.155
          ENDIF
       ENDIF
       

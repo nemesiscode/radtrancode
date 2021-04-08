@@ -88,7 +88,7 @@ C     ***********************************************************************
       REAL dtempdx(MAXPRO,5),T0,Teff,alpha,ntemp,tau0
       REAL XP1(MAXPRO),LP1(MAXPRO),XP2(MAXPRO),GRAD1
       REAL LPMIN,LPMAX,DLP,XPS(MAXPRO),XP2S(MAXPRO)
-      REAL CTAU(MAXPRO),SETXLAPSE,XLAPSE,U,XF,TB
+      REAL CTAU(MAXPRO),SETXLAPSE,XLAPSE,U,XF,TB,XCORR
       DOUBLE PRECISION Q(MAXPRO),OD(MAXPRO),ND(MAXPRO),XOD
       INTEGER ISCALE(MAXGAS),NPVAR,MAXLAT,ILAPSE
       INTEGER NLATREF,ILATREF,JLAT,KLAT,ICUT,JX,JLEV,ILEV
@@ -132,7 +132,8 @@ C     ***********************************************************************
       REAL XLDEEP,XLHIGH,HVS,dlogp,XPC
       COMMON /SROM223/PCUT
       REAL XC1,XC2,RH,SLOPE,xch4new(maxpro),xch4newgrad(maxpro)
-      REAL PD,RHC,RHM,VX,PT,FLUX,FRAIN,IMODEL
+      REAL PD,RHC,RHM,VX,PT,FLUX,FRAIN
+      INTEGER IMODEL
       REAL ALPHAP,BETAP,KIRP,GAMMAV1,GAMMAV2,TSTAR,RSTAR,SDIST
       REAL XLINE(4,MAXPRO),GLINE(4,MAXPRO,5),DXD1,DXD2,DXD3,DXD4
       REAL LONZ(4),TOUT(MAXPRO)
@@ -3452,20 +3453,19 @@ C         Calculating gradients from the Sromovsky model is too hard so set to z
         ELSEIF(VARIDENT(IVAR,3).EQ.42)THEN
 C        Model 42. Ackerman and Marley model
 C        ***************************************************************
-         FLUX = EXP(XN(NXTEMP+1))
-         FRAIN = EXP(XN(NXTEMP+2))
+         XDEEP = EXP(XN(NXTEMP+1))
+         FLUX = EXP(XN(NXTEMP+2))
+         FRAIN = EXP(XN(NXTEMP+3))
       
          IMODEL = INT(VARPARAM(IVAR,1))
          JSPEC = INT(VARPARAM(IVAR,2))
          DENSCOND = VARPARAM(IVAR,3)
          RADCOND = VARPARAM(IVAR,4)
          MWCOND = VARPARAM(IVAR,5)
-         
-         IF(AMFORM.EQ.1)THEN
-          DO I=1,NPRO
-           XXMOLWT(I)=MOLWT
-          ENDDO
-         ENDIF
+         XCORR = VARPARAM(IVAR,6)
+
+C         print*,'VARPARAM',(VARPARAM(IVAR,I),I=1,6)
+C         print*,IMODEL,JSPEC,DENSCOND,RADCOND,MWCOND,XCORR
 
          JVMR=-1
          DO I=1,NVMR
@@ -3475,18 +3475,35 @@ C        ***************************************************************
           ENDIF
          ENDDO
 
+         IF(JVMR.LT.0)THEN
+          print*,'Error in subprofretg.f for Model=42'
+          print*,'Condensing gas not present'
+          stop
+         ENDIF
+
+C         print*,IPLANET,LATITUDE,AMFORM,NPRO,NVMR
+C         print*,(IDGAS(J),J=1,NVMR)
+C         print*,(ISOGAS(J),J=1,NVMR)
+C         DO I=1,NPRO
+C          print*,P(I),T(I),H(I),XXMOLWT(I),(VMR(I,J),J=1,NVMR)
+C         ENDDO
+
          CALL ACKERMANMARLEYX1(IPLANET,LATITUDE,AMFORM,NPRO,NVMR,
      1    IDGAS,ISOGAS,P,T,H,VMR,XXMOLWT,NCONT,CONT,FLUX,IMODEL,
-     2    FRAIN,JVMR,DENSCOND,RADCOND,MWCOND,X1,X2)
+     2    FRAIN,JVMR,XDEEP,DENSCOND,RADCOND,MWCOND,X1,X2)
 
 C        X1 is set directly by subroutine
 C        X2 is associated specific density profile for condensate
 C         type JSPEC. This is assigned to the aerosol.prf file later
+C         We also need to correct this for the extinction x-section at the 
+C         a reverence wavelength as the x-section for other particle types
+C         will normally have been normalised.
         
          DO J=1,NPRO
 C         Calculating gradients from the Ackerman and Marley  model is too 
 C         hard so set to zero
           XMAP(NXTEMP+1,IPAR,J)=0.0
+          X2(J)=X2(J)*XCORR
          ENDDO
 
         ELSEIF(VARIDENT(IVAR,3).EQ.43)THEN

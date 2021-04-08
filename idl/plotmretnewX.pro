@@ -47,6 +47,8 @@ readaerprfhead,aername,ncont
 ; ******* Read in .apr file to get a priori measurement vector *******
 readapriori,apname,npro,nvar,varident,varparam,nx,xa,erra,walb
 
+i31=0
+
 openr,1,retname
 
  nspec = 1
@@ -56,6 +58,7 @@ openr,1,retname
 
  print,'There are ',nspec,' retrievals in total'
  print,'Enter the number you want to inspect (1-nspec)'
+ iplot = 0
  read,iplot
  
  for ip = 0,iplot-1 do begin
@@ -90,6 +93,7 @@ openr,1,retname
      itype = varident(ivar,2)
      print,'itype = ',itype
      case itype of
+     -1: np = npro
       0: np = npro
       1: np = 2
       2: np = 1
@@ -111,21 +115,36 @@ openr,1,retname
       19: np = 4
       20: np = 2
       21: np = 2
+      22: np = 5
+      25: np = long(varparam(ivar,0))
+      29: np = 2*npro
+      30: np = long(varparam(ivar,0))
+      31: np = long(varparam(ivar,0))
+      32: np = 3
+      37: np = 1
+      38: np = 1
+      39: np = 1
+      40: np = 2
+      41: np = 5
+      42: np = 3
+      45: np = 3
+      102: np = 1
       222: np = 8
       223: np = 9
       224: np = 9
       225: np = 11
       226: np = 8
       333: np = 1
-      444: np = 2 + varparam(ivar,0)
+      444: np = 2 + long(varparam(ivar,0))
       555: np = 1
-      888: np = varparam(ivar,0)
-      887: np = varparam(ivar,0)
+      888: np = long(varparam(ivar,0))
+      887: np = long(varparam(ivar,0))
       889: np = 1
       999: np = 1
       777: np = 1
       666: np = 1
      endcase
+     if(itype eq 444 and varparam(ivar,1) lt 0) then np = 3
      print,'np = ',np
      xdat1 = fltarr(6,np)
      readf,1,xdat1
@@ -218,13 +237,17 @@ if(irefl eq 1) then begin
    endif
    openr,1,ipfile
    head=''
-   for i=1,4 do readf,1,head
+   for i=1,4 do begin
+    readf,1,head
+    print,head
+   endfor
    solx=fltarr(2,9000)
    t1=fltarr(2)
    A=''
    i1=-1
    while ~ eof(1) do begin
     readf,1,A
+    print,A
     reads,A,t1
     i1=i1+1
     print,i1,t1
@@ -300,6 +323,8 @@ y2=max([spec+err,specf])
 y1=0
 
 print,'y1,y2 = ',y1,y2
+print,'Enter new y1,y2'
+read,y1,y2
 
 print,'chi/n = ',total(((spec-specf)/err)^2)/float(ny)
 
@@ -391,10 +416,10 @@ if(irefl eq 1) then begin
 endif
 yname = 'Difference'
 
-;y2=max([specf-spec,err],/NAN)
-;y1=min([specf-spec,-err],/NAN)
-y2=20*median(abs([specf-spec,err]))
-y1=-y2
+y2=max([specf-spec,err],/NAN)
+y1=min([specf-spec,-err],/NAN)
+;y2=20*median(abs([specf-spec,err]))
+;y1=-y2
 plot,wkeep,specf-spec,xtitle=xname,$
 ytitle=yname,xrange=xr,yrange=[y1,y2],xstyle=1
 oplot,wkeep,err,linestyle=1
@@ -426,7 +451,7 @@ if(ips ne 0) then device,/close
 
 
 iprof=0
-for ivar=0,nvar-1 do if(varident(ivar,2) eq 0) then iprof=iprof+1
+for ivar=0,nvar-1 do if(varident(ivar,2) le 0) then iprof=iprof+1
 
 print,'Enter vertical pressure range to plot retrieved profiles over'
 yr = fltarr(2)
@@ -462,6 +487,7 @@ for ivar=0,nvar-1 do begin
   print,'varident = ',varident(ivar,*)
 
   case itype of
+     -1: np = npro
       0: np = npro
       1: np = 2
       2: np = 1
@@ -480,6 +506,16 @@ for ivar=0,nvar-1 do begin
       19: np = 4
       20: np = 2
       21: np = 2
+      22: np = 5
+      30: np = long(varparam(ivar,0))
+      31: np = long(varparam(ivar,0))
+      32: np = 3
+      37: np = 1
+      38: np = 1
+      39: np = 1
+      40: np = 2
+      41: np = 5
+      42: np = 3
       222: np = 8
       223: np = 9
       224: np = 9
@@ -497,7 +533,7 @@ for ivar=0,nvar-1 do begin
   endcase
   jgas=-1
 
-  if(itype eq 0) then begin
+  if(itype le 0) then begin
      xn = fltarr(np)
      xa = fltarr(np)
      errn = xn
@@ -514,7 +550,7 @@ for ivar=0,nvar-1 do begin
 ;    molwt is kg/mol
      rho(*)=molwt*press*100./(8.31*temp)
 
-     if(varident(ivar,0) eq 0) then begin
+     if(varident(ivar,0) le 0) then begin
       plot_io,xn,press,yrange=yr,$
       ytitle='Pressure (bar)',xtitle='Temperature (K)',$
       title='Temperature'
@@ -558,15 +594,17 @@ for ivar=0,nvar-1 do begin
         title=tname,xtitle='Abundance'
       endif else begin
         if(n eq 0) then begin
-         a1=min([exp(alog(xn)-errn/xn),exp(alog(xa)-erra/xa)])
-         a2=max([exp(alog(xn)+errn/xn),exp(alog(xa)+erra/xa)])
+         ikp = where(press le yr(0) and press ge yr(1),nkp)
+         a1=min([exp(alog(xn(ikp))-errn(ikp)/xn(ikp)),exp(alog(xa(ikp))-erra(ikp)/xa(ikp))])
+         a2=max([exp(alog(xn(ikp))+errn(ikp)/xn(ikp)),exp(alog(xa(ikp))+erra(ikp)/xa(ikp))])
          xr=[a1,a2]
-;         xrange=[1e-10,1]
+;         xr=[1e-7,0.01]
          plot_oo,xn,press,yrange=yr,xrange=xr,$
          ytitle='Pressure (bar)',$
          title=tname,xtitle='Abundance'
         endif else begin
-         b = max([exp(alog(xn)+errn/xn),exp(alog(xa)+erra/xa)])
+         ikp = where(press le yr(0) and press ge yr(1),nkp)
+         b = max([exp(alog(xn(ikp))+errn(ikp)/xn(ikp)),exp(alog(xa(ikp))+erra(ikp)/xa(ikp))])
 ;         b = 1e5
          plot_io,xn,press,yrange=yr,$
          ytitle='Pressure (bar)',xrange=[0,b],$
@@ -745,6 +783,126 @@ for ivar=0,nvar-1 do begin
    endelse
 
   endelse
+
+  if(itype eq 30) then begin
+   nlevel = long(varparam(ivar,1))  
+   nlong = np/nlevel
+   long = 360.*findgen(nlong+1)/float(nlong)
+
+   xn = fltarr(np)
+   xa = fltarr(np)
+   errn = xn
+   erra = xa
+   xa(*)=xdat(0,istart:(istart+np-1))
+   erra(*)=xdat(1,istart:(istart+np-1))
+   xn(*)=xdat(2,istart:(istart+np-1))
+   errn(*)=xdat(3,istart:(istart+np-1))
+ 
+   p1 = fltarr(nlevel)
+   p1(*)=varparam(ivar,2:2+nlevel-1)
+
+   xall = fltarr(nlong+1,nlevel)
+   ximprove = xall
+   for ilong = 0,nlong-1 do for ilevel = 0,nlevel-1 do begin
+    k = ilong*nlevel+ilevel
+    xall(ilong,ilevel)=xn(k)
+    ximprove(ilong,ilevel)=1. - errn(k)/erra(k)
+   endfor
+   xall(nlong,*)=xall(0,*)
+   window,3
+   !p.multi=[0,1,2]
+
+   contour,xall,long,p1,xtitle='Longitude',ytitle='pressure',$
+    xstyle=1,/follow,/ylog,yrange=[max(p1),min(p1)],nlevel=10,title='Xn'
+
+   contour,ximprove,long,p1,xtitle='Longitude',ytitle='pressure',$
+    xstyle=1,/follow,/ylog,yrange=[max(p1),min(p1)],nlevel=10,$
+    title='Improvement factor'
+
+   print,'Enter pressure level to  contour plot : '
+   px = 1.0
+   read,px
+
+   ikeep = where(px gt p1)
+   ilev=ikeep(0)
+
+   print,'ilev,plev = ',ilev,p1(ilev)
+
+   nlat=7
+   lat = -90. + 30.*findgen(nlat)
+   tmap = fltarr(nlong+1,7)
+   xlong = fltarr(nlong)
+   for ilong = 0,nlong-1 do xlong(ilong) = xn(ilong*nlevel+ilev)
+   sum=total(xlong)/float(nlong)
+   for ilong=0,nlong-1 do begin
+    for ilat=0,nlat-1 do begin
+     tmap(ilong,ilat)=sum+(xlong(ilong)-sum)*cos(lat(ilat)*!pi/180.)
+    endfor
+   endfor
+   tmap(nlong,*)=tmap(0,*)
+
+   window,4
+   !p.multi=0
+   contour,tmap,long,lat,yrange=[-90,90.],xrange=[0,360.],$
+    xstyle=1,ystyle=1,nlevel=10,/follow
+   wset,1
+   !p.multi=[0,nplotx,nploty]
+  endif
+
+  if(itype eq 31) then begin
+   nlong = long(varparam(ivar,0))  
+   long = 360.*findgen(nlong+1)/float(nlong)
+
+   xn = fltarr(np)
+   xa = fltarr(np)
+   errn = xn
+   erra = xa
+   xa(*)=xdat(0,istart:(istart+np-1))
+   erra(*)=xdat(1,istart:(istart+np-1))
+   xn(*)=xdat(2,istart:(istart+np-1))
+   errn(*)=xdat(3,istart:(istart+np-1))
+ 
+   xall = fltarr(nlong+1)
+   exalln = xall
+   exalla = xall
+  
+   xall(0:nlong-1)=xn(*)
+   xall(nlong)=xn(0)
+   exalln(0:nlong-1)=errn(*)
+   exalln(nlong)=errn(0)
+   exalla(0:nlong-1)=erra(*)
+   exalla(nlong)=erra(0)
+
+   f = fltarr(nlong+1)
+   fa = f
+   fa(*)=1.0
+
+   vref = [1e-5,9.9e-8,1e-5,1e-5]
+   idref = [1,2,5,6]
+
+   if(i31 eq 0) then begin
+     window,3
+     !p.multi=0
+     plot_io,long,xall*vref(i31),xrange=[0,360],xstyle=1,yrange=[1e-10,1],$
+      ystyle=1
+   endif
+
+   oplot,long,xall*vref(i31),linestyle=0
+
+   f(*)=exalln/xall
+
+   f1 = sqrt(1.0/(1.0/f^2 - 1/fa^2))
+   oplot,long,xall*vref(i31)*(1.0+f1),linestyle=1
+   oplot,long,xall*vref(i31)/(1.0+f1),linestyle=1
+   print,'Gas ID = ',idref(i31)
+
+   ans=''
+   read,ans
+
+   i31=i31+1
+
+  endif
+
 
   if(itype eq 444) then begin
 

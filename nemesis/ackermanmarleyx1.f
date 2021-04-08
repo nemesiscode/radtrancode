@@ -66,6 +66,12 @@ C     **************************************************************
       integer idiag,iquiet
       common/diagnostic/idiag,iquiet
 
+C      print*,IPLANET,LATITUDE,AMFORM,NPROIN,NVMR
+C      print*,(IDGAS(J),J=1,NVMR)
+C      print*,(ISOGAS(J),J=1,NVMR)
+C      DO I=1,NPROIN
+C        print*,PIN(I),TIN(I),HIN(I),XMOLIN(I),(VMRIN(I,J),J=1,NVMR)
+C      ENDDO
 
 C     RGAS read in from constdef.f, so set R accordingly and in correct
 C     units of J mol-1 K-1
@@ -99,6 +105,7 @@ C     First interpolate profile on to a grid with step of ~1 km
        CALL VERINT(HIN,PIN,NPROIN,P(J),H(J))
        CALL VERINT(HIN,TIN,NPROIN,T(J),H(J))
        CALL VERINT(HIN,XMOLIN,NPROIN,XMOL(J),H(J))
+C       print*,J,P(J),T(J),XMOL(J)
        DO I=1,NVMR
         DO K=1,NPROIN
          X1(K)=VMRIN(K,I)
@@ -133,10 +140,12 @@ C       Compute scale height (km)
 C     Calculate DT_DZ
       CALL FIRSTDERIV(T,-H,NPRO,DTDZ)
 
-      open(12,file='test.prf',status='unknown')
-      write(12,*)NPRO
-      write(12,*)'H(km) ,P(atm),T(K),SCALE(km),RHO(g/cm3),L(km),
+      if(idiag.gt.0)then
+       open(12,file='test.prf',status='unknown')
+       write(12,*)NPRO
+       write(12,*)'H(km) ,P(atm),T(K),SCALE(km),RHO(g/cm3),L(km),
      &EDDY(cm2/s),WS(cm/s),W*FRAIN*DELH/EDDY'
+      endif
 
       DO 202 J=1,NPRO
 C      Calculate eddy diffusion coefficient
@@ -157,11 +166,13 @@ C       DELH is height of layer in cm
        ENDIF
 C       WS(J) = 1000.
 C       EDDY(J)=2e8
-        write(12,*)H(J),P(J),T(J),SCALE(J),RHO(J),L,EDDY(J),WS(J),
-     1   WS(J)*FRAIN*DELH/EDDY(J)
+        if(idiag.gt.0)then
+         write(12,*)H(J),P(J),T(J),SCALE(J),RHO(J),L,EDDY(J),WS(J),
+     1    WS(J)*FRAIN*DELH/EDDY(J)
+        endif
 202   CONTINUE
 
-      close(12)
+      if(idiag.gt.0)close(12)
 
 1     FORMAT(A)
       ANAME='SVP.dat'
@@ -204,7 +215,7 @@ C     Number of molecules per condensed particle
 
       DO 99 JGAS=1,NGAS
         IF(GASDATA(JGAS,1).EQ.IDGAS(JVMR))THEN
-C        Constituent may condense. May need to modify mole fraction and cloud
+C        Target constituent will condense. Need to modify mole fraction and cloud
          A = GASDATA(JGAS,2)
          B = GASDATA(JGAS,3)
          C = GASDATA(JGAS,4)
@@ -213,8 +224,7 @@ C        Constituent may condense. May need to modify mole fraction and cloud
        
          CLOUD(1)=0.
      
-C         QV(1)=VMR(1,JVMR)
-         QV(1)=XDEEP*VMR(1,JVMR)
+         QV(1)=XDEEP
          QC(1)=0.
          QT(1)=QV(1)
 

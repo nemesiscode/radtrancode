@@ -84,7 +84,7 @@ C     **************************** CODE ********************************
          if(varidentx(ivarx,3).eq.39)np = 1
          if(varidentx(ivarx,3).eq.40)np = 2
          if(varidentx(ivarx,3).eq.41)np = 5
-         if(varidentx(ivarx,3).eq.42)np = 2
+         if(varidentx(ivarx,3).eq.42)np = 3
          if(varidentx(ivarx,3).eq.43)np = 5
          if(varidentx(ivarx,3).eq.44)np = 5*int(varparamx(ivarx,1))
          if(varidentx(ivarx,3).eq.45)np = 3

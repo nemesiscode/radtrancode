@@ -66,7 +66,7 @@ C     **************************************************************
         if(imod.eq.36)np = int(vpar1)
         if(imod.eq.40)np = 2
         if(imod.eq.41)np = 5
-        if(imod.eq.42)np = 2
+        if(imod.eq.42)np = 3
         if(imod.eq.43)np = 5
         if(imod.eq.44)np = 5*int(vpar1)
         if(imod.eq.45)np = 3

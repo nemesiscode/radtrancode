@@ -305,7 +305,7 @@ C1000  format(1x,i4,1x,f10.4,1x,e15.8,1x,e15.8,1x,f7.2,1x,e15.8,1x,f9.5)
        write(lout,*)(varident(ivar,j),j=1,3)
        if(varident(ivar,3).eq.25)then
         write(lout,*)(varparam(ivar,j),j=1,mparam)
-       elseif(varident(ivar,1).eq.445)then
+       elseif(varident(ivar,1).eq.445.or.varident(ivar,1).eq.42)then
         write(lout,*)(varparam(ivar,j),j=1,6)
        else
         write(lout,*)(varparam(ivar,j),j=1,5)

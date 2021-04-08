@@ -37,6 +37,8 @@ C     miscellaneous variables used in code
       CHARACTER*100 IPFILE,BUFFER
       INTEGER I,J,K
       REAL TD1
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
 C--------------------------------------------------------------
 C
 C     reading in in vertical profiles produced by profile.for
@@ -48,7 +50,9 @@ C
       CALL REMSP(IPFILE)
       CALL LOCASE(IPFILE)
       CALL FILE(IPFILE,IPFILE,'prf')
-      WRITE(*,*)' RFPMOD.f :: reading paraH2-model: ',ipfile
+      if(idiag.gt.0)then
+       WRITE(*,*)' RFPMOD.f :: reading paraH2-model: ',ipfile
+      endif
       OPEN(UNIT=1,FILE=IPFILE,STATUS='OLD')
 54    READ(1,1)BUFFER
       IF(BUFFER(1:1).EQ.'#') GOTO 54

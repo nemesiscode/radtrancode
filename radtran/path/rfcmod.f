@@ -50,7 +50,9 @@ C
       CALL REMSP(IPFILE)
       CALL LOCASE(IPFILE)
       CALL FILE(IPFILE,IPFILE,'prf')
-      WRITE(*,*)' RFCMOD.f :: reading fcover-model: ',ipfile
+      if(idiag.gt.0)then
+       WRITE(*,*)' RFCMOD.f :: reading fcover-model: ',ipfile
+      endif
       OPEN(UNIT=1,FILE=IPFILE,STATUS='OLD')
 54    READ(1,1)BUFFER
       IF(BUFFER(1:1).EQ.'#') GOTO 54

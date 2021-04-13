@@ -144,7 +144,7 @@ C     Calculate DT_DZ
        open(12,file='test.prf',status='unknown')
        write(12,*)NPRO
        write(12,*)'H(km) ,P(atm),T(K),SCALE(km),RHO(g/cm3),L(km),
-     &EDDY(cm2/s),WS(cm/s),W*FRAIN*DELH/EDDY'
+     &EDDY(cm2/s),WS(cm/s),WS*FRAIN*DELH/EDDY'
       endif
 
       DO 202 J=1,NPRO

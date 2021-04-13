@@ -41,13 +41,13 @@ C     First skip header
 
       DO 20 I=1,NVMR
        READ(1,*)IDGAS(I),ISOGAS(I)
-       if(idiag.gt.0)print*,I,IDGAS(I),ISOGAS(I)
+       print*,I,IDGAS(I),ISOGAS(I)
 20    CONTINUE
 
       CALL PROMPT('Enter gas number to apply scheme to (1-NVMR) : ')
       READ*,JVMR
 
-      CALL PROMPT('Enter deep VMR factor : ')
+      CALL PROMPT('Enter deep VMR (formerly used to be factor) : ')
       READ*,XDEEP
 
 C     Skip header
@@ -90,19 +90,25 @@ C     First skip header
 
       Fsol = albedo*1380/dist**2
 
-      if(idiag.gt.0)then
-       print*,'Incident solar flux (W/m2)  = ',Fsol
-       print*,'Radiative equilibrium outgoing flux (W/m2)  = ',Fsol/4.0
-      endif
+      print*,'Incident solar flux (W/m2)  = ',Fsol
+      print*,'Radiative equilibrium outgoing flux (W/m2)  = ',Fsol/4.0
       if(imodel.eq.1) then
        Call prompt('Enter flux (W m-2), frain : ')
        READ(5,*)flux,frain
       endif
 
 
-      DENSCOND=1.0
-      RADCOND=0.1
-      MWCOND=12.0
+      Call prompt('Enter density of condensate (g/cm3) : ')
+      READ(5,*)DENSCOND
+      Call prompt('Enter radius of condensate (micron) : ')
+      READ(5,*)RADCOND
+      Call prompt('Enter molecular weight of condensate (g) : ')
+      READ(5,*)MWCOND
+
+      
+C      DENSCOND=1.0
+C      RADCOND=0.1
+C      MWCOND=12.0
 
       CALL ACKERMANMARLEYX1(IPLANET,LATITUDE,AMFORM,NPRO,NVMR,IDGAS,
      1 ISOGAS,P,T,H,VMR,XMOL,NCONT,CONT,FLUX,IMODEL,FRAIN,JVMR,XDEEP,

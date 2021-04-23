@@ -273,29 +273,29 @@ C       to 1/2pi
 C
 C-----------------------------------------------------------------------
 
-	 do K = 1, nphase
-		phase1(K)=phase(k)
-	 	phase(K) = 0.25 * phase(K)/pi
-	 enddo
+	      do K = 1, nphase
+		 phase1(K)=phase(k)
+	 	 phase(K) = 0.25 * phase(K)/pi
+	      enddo
 
 
-         sum=0
-         do k=1,nphase-1
-              du = cos(theta(k)*pi/180.0) - 
-     &                        cos(theta(k+1)*pi/180.0)
-                   sum=sum+0.5*(phase(k)+phase(k+1))*du
-              end do
-              sum=sum*2*pi
-              dsum = abs(sum - 1.0)
-              if(dsum.gt.0.05.and.idiag.gt.0)then
-                     print*,'modmakephase: WARNING, > 5% off unity'
-              end if
-              if(inorm.eq.1)then
-                     do k=1,nphase
-                        phase(k)=phase(k)*1.0/sum
-                        phase1(k)=phase1(k)*1.0/sum
-                     end do
-              endif
+C             sum=0
+C             do k=1,nphase-1
+C                du = cos(theta(k)*pi/180.0) - 
+C     &                        cos(theta(k+1)*pi/180.0)
+C                   sum=sum+0.5*(phase(k)+phase(k+1))*du
+C             end do
+C             sum=sum*2*pi
+C             dsum = abs(sum - 1.0)
+C             if(dsum.gt.0.05.and.idiag.gt.0)then
+C                     print*,'modmakephase: WARNING, > 5% off unity'
+C             end if
+C             if(inorm.eq.1)then
+C               do k=1,nphase
+C                        phase(k)=phase(k)*1.0/sum
+C                        phase1(k)=phase1(k)*1.0/sum
+C               end do
+C             endif
 
               if(phase(1).ge.10000.0)then
  	        write (buffer,1095,ERR=666) 
@@ -307,12 +307,13 @@ C-----------------------------------------------------------------------
               write(13,1000,rec=irec)buffer
 
 	      goto 667
-              if(idiag.gt.0)then
- 666	       print*, 'WARNING: error occured during write',
+ 666	      print*, 'WARNING: error occured during write',
      &                   ' to buffer. Probably the forward'
-	       print*, 'scattering amplitude exceeded the',
+	      print*, 'scattering amplitude exceeded the',
      &                  ' FORMAT limits due to large particle size.'
-              endif
+              stop
+
+
  667	      irec=irec+1
 
 C	      Subfithgm is expecting phase functions normalised
@@ -329,7 +330,7 @@ C	      phase.
 
 	enddo
 
-C       Since the hgphase file has bee updated we need to make sure that
+C       Since the hgphase file has been updated we need to make sure that
 C       read_hg.f reads it in again, by setting xwave(1) < 0.
         xwave(1)=-1.
 

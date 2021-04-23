@@ -108,8 +108,10 @@ C     ************************************************************************
       real stx(mx,mx),xdnu,xtest
       real xmapx(maxv,maxgas+2+maxcon,maxpro)
       integer jpara,jfracx
-      character*100 runname,buffer,aname
-
+      character*100 runname,buffer,aname,rdw
+      logical miebool
+      integer pvar,mievar(max_mode)
+      real xiscatmie(max_mode),xnormmie(max_mode)
       integer ivar,i,j,nalb,nalb1
       real alb(maxsec),valb(maxsec)
       integer nvarx,varidentx(mvar,3),ivarx,iflagsrom,iflagtest,iflagcb
@@ -601,6 +603,19 @@ C       check that rescaling has happened correctly
       nx1=0
       CALL readrefhead(runname,npro,nvmr,gasgiant)
 
+      pvar=-1
+      call file(runname,rdw,'mie')
+      inquire(file=rdw,exist=miebool)
+      if(miebool)then
+       open(12,file=rdw,status='old')
+       read(12,*)pvar
+       do i=1,pvar
+        read(12,*)mievar(i),xiscatmie(i),xnormmie(i)
+       enddo
+       close(12)
+      endif
+
+
       do ivar=1,nvar
 
        np=1
@@ -734,6 +749,14 @@ C             if(idiag.gt.0)print*,'xx mod',i,n1(i)
 
            inorm=1
            iscatmie=1
+
+           do i=1,pvar
+            if(mievar(i).eq.imode)then
+             inorm=xnormmie(i)
+             iscatmie=xiscatmie(i)
+            endif
+           enddo
+
 C          Find minimum wavelength
            if(ispace.eq.0)then
             minlam=1e4/wave(nwave)
@@ -756,7 +779,11 @@ C             if(idiag.gt.0)print*,'xx',wave(i),nreal(i),nimag(i)
 
            parm(1)=r0
            parm(2)=v0
-           parm(3)=(1. - 3 * parm(2))/parm(2)
+           if(iscatmie.eq.0)then
+            parm(3)=(1. - 3 * parm(2))/parm(2)
+           else
+            parm(3)=0.0
+           endif
 
            rs(1)=0.015*minlam
            rs(2)=0.

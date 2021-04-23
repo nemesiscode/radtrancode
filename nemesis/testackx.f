@@ -10,6 +10,7 @@
       INTEGER IDGAS(MAXGAS),ISOGAS(MAXGAS),I,J,JVMR
       REAL X1(MAXPRO),X2(MAXPRO),XMOL(MAXPRO),XVMR(MAXGAS),XDEEP
       REAL CALCMOLWT,dist,albedo,Fsol,DENSCOND,RADCOND,MWCOND
+      REAL QC(MAXPRO)
       integer idiag,iquiet
       common/diagnostic/idiag,iquiet
 
@@ -112,13 +113,14 @@ C      MWCOND=12.0
 
       CALL ACKERMANMARLEYX1(IPLANET,LATITUDE,AMFORM,NPRO,NVMR,IDGAS,
      1 ISOGAS,P,T,H,VMR,XMOL,NCONT,CONT,FLUX,IMODEL,FRAIN,JVMR,XDEEP,
-     2 DENSCOND,RADCOND,MWCOND,X1,X2)
+     2 DENSCOND,RADCOND,MWCOND,X1,X2,QC)
 
       open(12,file='testackx.txt',status='unknown')
       write(12,*)NPRO
       write(12,*)flux,imodel,frain,jvmr
       do i=1,npro
-       write(12,*)h(i),p(i),t(i),x1(i),x2(i)
+       print*,I,QC(I)
+       write(12,*)h(i),p(i),t(i),x1(i),x2(i),QC(i)
       enddo
       close(12)
       end

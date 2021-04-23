@@ -1,6 +1,6 @@
       SUBROUTINE ACKERMANMARLEYX1(IPLANET,LATITUDE,AMFORM,NPROIN,NVMR,
      1 IDGAS,ISOGAS,PIN,TIN,HIN,VMRIN,XMOLIN,NCONT,CONTIN,FLUX,IMODEL,
-     2 FRAIN,JVMR,XDEEP,DENSCOND,RADCOND,MWCOND,X1,X2)
+     2 FRAIN,JVMR,XDEEP,DENSCOND,RADCOND,MWCOND,X1,X2,QCOUT)
 C     **************************************************************   
 C     Subroutine to condense clouds as per the formalism of 
 C     Ackerman and Marley (2001). 
@@ -33,6 +33,7 @@ C
 C     Output variables
 C	X1(MAXPRO)	REAL	Output vmr profile
 C	X2(MAXPRO)	REAL	Output cloud density profile
+C	QCOUT(MAXPRO)	REAL	Condensed mole fraction profile
 C
 C     	Pat Irwin	4/1/16	Original
 C	Pat Irwin	15/1/20	Revised to apply to one gas only.	
@@ -48,13 +49,15 @@ C     **************************************************************
       REAL CALCMOLWT,XVMR(MAXGAS),GASDATA(20,5),DELH,XDEEP
       REAL XMOLWT,CPSPEC,EDDY(MAXPRO),PIN(MAXPRO),TIN(MAXPRO)
       REAL HIN(MAXPRO),VMRIN(MAXPRO,MAXGAS),CONTIN(MAXCON,MAXPRO)
-      REAL XMOLIN(MAXPRO)
+      REAL XMOLIN(MAXPRO),QCOUT(MAXPRO)
       REAL A,B,C,D,SVP,QS,DPEXP,SCALE(MAXPRO),G,X,L,LH
       REAL QV(MAXPRO),QT(MAXPRO),QC(MAXPRO),RHO(MAXPRO),XLAMBDA,KBOLTZ
       REAL WS(MAXPRO),FRAIN,DELQT,QT1,KMIN,X1(MAXPRO),X2(MAXPRO)
       REAL DENSCOND,RADCOND,MWCOND,N(MAXPRO),V,MP,M1,NM,NC
       REAL NAVAGADRO,NP,XMOL(MAXPRO),X1A(MAXPRO),X2A(MAXPRO)
       REAL CLOUD(MAXPRO),XOD(MAXPRO),XCOL1(MAXPRO),XCOL2(MAXPRO)
+      REAL AA,BB,AREA,VOLUME
+      INTEGER IDIST
       INTEGER K,AMFORM,NPRO,NVMR,I,IERR,NGAS,IPLANET,JVMR
       INTEGER IDGAS(MAXGAS),ISOGAS(MAXGAS),ISCALE(MAXGAS),J
       INTEGER JGAS,IVMR,NCONT,ICONDENSE,IMODEL,NPROIN
@@ -178,9 +181,6 @@ C       EDDY(J)=2e8
       ANAME='SVP.dat'
       CALL DATARCHIVE(ANAME)
       OPEN(13,FILE=ANAME,STATUS='OLD')
-C      WRITE(*,*)' '
-C      WRITE(*,*)'ackermanmarleyx1: reading saturated-vapour-pressure'
-C      WRITE(*,*)'  data from ',ANAME
 C     First skip header
 57    READ(13,1)BUFFER
       IF(BUFFER(1:1).EQ.'#')GOTO 57
@@ -196,19 +196,32 @@ C     First skip header
      1  ISOGAS(JVMR)
       endif
 
-C     Volume of condensed particles (m3)
-      V = 1.3333*PI*(RADCOND*1e-6)**3
+C      CALL PROMPT('Enter IDIST,AA,BB : ')
+C      READ*,IDIST,AA,BB
+
+C      print*,IDIST,AA,BB
+C      CALL SIZEDIST(IDIST,AA,BB,AREA,VOLUME)
+C      print*,area,volume
+
+C     Volume of condensed particles (cm3)
+      V = 1.3333*PI*(RADCOND*1e-4)**3
+C      V = VOLUME
+
       if(idiag.gt.0)print*,'R (micron),D (g/cm3) = ',RADCOND,DENSCOND
-      if(idiag.gt.0)print*,'V (m3) = ',V
-C     Mass of condensed particle (kg) (DENSCOND is g/cm3)
-      MP = 1000*DENSCOND*V
-      if(idiag.gt.0)print*,'MP (kg) = ',MP
-C     Mass of one molecule (kg)
-      M1 = 1E-3*MWCOND/NAVAGADRO
-C     Number of molecules per condensed particle
+      if(idiag.gt.0)print*,'V (cm3) = ',V
+      if(idiag.gt.0)print*,'old V (cm3) = ',1.3333*PI*(RADCOND*1e-4)**3
+
+C     Mass of condensed particle (g) (DENSCOND is g/cm3)
+      MP = DENSCOND*V
+      if(idiag.gt.0)print*,'MP (g) = ',MP
+
+C     Mass of one molecule (g)
+      M1 = MWCOND/NAVAGADRO
       if(idiag.gt.0)then
-       print*,'M1(kg),mwcond (g),NAVAGADRO',M1,mwcond,NAVAGADRO
+       print*,'M1(g),mwcond (g),NAVAGADRO',M1,mwcond,NAVAGADRO
       endif
+
+C     Number of molecules per condensed particle
       NM = MP/M1
       if(idiag.gt.0)print*,'Number of molecules/particle = ',NM
 
@@ -254,21 +267,25 @@ C         Calculate DELH in cm
 
           ENDIF
 
+C         X1A(J) is mole fraction of gas remaining
           X1A(J)=QV(J)
+
 C         So QV is mole fraction of gas remaining and QC is equivalent mole 
 C         fraction of condensed gas, QT is equivalent mole fraction of gas and condensate remaining . 
 C         To convert QC into particles per gram we need to do the following:
 
 C         NC is number of condensed molecules per cm3, since N(J) is number density of air (molecule/cm3)
           NC = QC(J)*N(J)
+
 C         NP is number of condensed particles per cm3 since NM is number of molecules per particle
           NP = NC/NM
 
-C         CLOUD is number of condensed particles/cm2
+C         CLOUD is number of condensed particles/cm2 in layer
           CLOUD(J)=NP*DELH
   
 C         X2A(J) is number of condensed particles/gram of atmosphere          
           X2A(J)=NP/RHO(J)
+
 97       CONTINUE
 
         ENDIF
@@ -295,6 +312,7 @@ C     Interpolate answers back on to original grid
       DO 401 I=1,NPROIN
        CALL VERINT(H,X1A,NPRO,X1(I),HIN(I))
        CALL VERINT(H,X2A,NPRO,X2(I),HIN(I))
+       CALL VERINT(H,QC,NPRO,QCOUT(I),HIN(I))
 401   CONTINUE
 
 
@@ -323,3 +341,79 @@ C     Interpolate answers back on to original grid
       RETURN
 
       END
+
+
+      SUBROUTINE SIZEDIST(IDIST,AA,BB,AREA,VOLUME)
+C     ************************************************************
+C     Computes size distribution and returns mean area and volume of
+C     particles
+C
+C     Input variables:
+C	IDIST	INTEGER	Distribution: 0=Gamma, 1=log-normal
+C	AA	REAL	Mean radius (micron)
+C	BB	REAL 	Variance
+C
+C     Returned variables:
+C	AREA	REAL	Mean area per particle (m2)
+C	VOLUME  REAL	Mean volume per particle (m3)
+C     ************************************************************
+      IMPLICIT NONE
+      INTEGER IDIST,NINT,I
+      REAL AA,BB,AREA,VOLUME,XNORM,PI
+      PARAMETER (NINT=1000,PI=3.1415927)
+      DOUBLE PRECISION R(NINT),R1,R2,DR,RX,N(NINT),NMAX,WT(NINT),F
+
+C     Find necessary integration limits
+      R1 = DBLE(AA/2.0)
+      R2 = DBLE(AA*2.0)
+
+103   NMAX=0.0
+      DO I=1,NINT
+       RX=R1+(R2-R1)*DBLE(I-1)/DBLE(NINT-1)
+       R(I)=RX
+       IF(IDIST.EQ.0)THEN
+        N(I)=(RX**((1.0-3*BB)/BB))* EXP(-RX/(AA*BB))
+       ELSE
+        N(I)=(1.0/RX)*EXP(-(LOG(RX)-LOG(AA))**2/(2*BB**2))
+       ENDIF
+       IF(N(I).GT.NMAX)NMAX=N(I)
+      ENDDO
+
+      IF(N(1).GT.0.01*NMAX)THEN
+       R1=R1/3.0
+       GOTO 103
+      ENDIF
+      IF(N(NINT).GT.0.001*NMAX)THEN
+       R2=R2*2.0
+       GOTO 103
+      ENDIF
+
+      DO I=1,NINT
+       WT(I)=1.0
+      ENDDO
+      WT(1)=0.5
+      WT(NINT)=0.5
+      DR=(R2-R1)/FLOAT(NINT-1)
+
+      XNORM=0.0
+      AREA=0.0
+      VOLUME=0.0
+
+      DO I=1,NINT
+       F=WT(I)*N(I)*DR
+       XNORM=XNORM+SNGL(F)
+       AREA=AREA+SNGL(PI*(R(I)**2)*F)
+       VOLUME=VOLUME+SNGL((4.0*PI/3.0)*(R(I)**3)*F)
+      ENDDO
+
+      AREA=AREA/XNORM
+      VOLUME=VOLUME/XNORM
+   
+      AREA=AREA*1E-12
+      VOLUME=VOLUME*1E-18
+
+      RETURN
+
+      END
+
+

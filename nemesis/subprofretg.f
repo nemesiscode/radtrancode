@@ -85,7 +85,7 @@ C     ***********************************************************************
       REAL PKNEE,HKNEE,XDEEP,XFSH,PARAH2(MAXPRO),XH,XKEEP,X2(MAXPRO)
       REAL RHO,F,DQDX(MAXPRO),DX,PLIM,XFACP,CWID,PTROP, NEWF
       REAL DNDH(MAXPRO),DQDH(MAXPRO),FCLOUD(MAXPRO),HTOP,PTOP
-      REAL dtempdx(MAXPRO,5),T0,Teff,alpha,ntemp,tau0
+      REAL dtempdx(MAXPRO,5),T0,Teff,alpha,ntemp,tau0,QC(MAXPRO)
       REAL XP1(MAXPRO),LP1(MAXPRO),XP2(MAXPRO),GRAD1
       REAL LPMIN,LPMAX,DLP,XPS(MAXPRO),XP2S(MAXPRO)
       REAL CTAU(MAXPRO),SETXLAPSE,XLAPSE,U,XF,TB,XCORR
@@ -2888,6 +2888,8 @@ C         find levels in atmosphere that span pknee
  
           IF(JKNEE.LT.0)THEN
            print*,'subprofretg: Error in model 32. Stop'
+           print*,'IVAR,XDEEP,XFSH,PKNEE'
+           print*,IVAR,XDEEP,XFSH,PKNEE
            STOP
           ENDIF          
 
@@ -3490,7 +3492,7 @@ C         ENDDO
 
          CALL ACKERMANMARLEYX1(IPLANET,LATITUDE,AMFORM,NPRO,NVMR,
      1    IDGAS,ISOGAS,P,T,H,VMR,XXMOLWT,NCONT,CONT,FLUX,IMODEL,
-     2    FRAIN,JVMR,XDEEP,DENSCOND,RADCOND,MWCOND,X1,X2)
+     2    FRAIN,JVMR,XDEEP,DENSCOND,RADCOND,MWCOND,X1,X2,QC)
 
 C        X1 is set directly by subroutine
 C        X2 is associated specific density profile for condensate

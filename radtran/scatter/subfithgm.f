@@ -16,6 +16,7 @@ C     ******************************************************************
       REAL VCONV(MY),Y(MY),SEI(MY,MY),ALPHA(MX,MX),BETA(MX),
      1 CHISQ,YMOD,SIG2I,DY,WT,KK(MY,MX),CPHASE(MY),COVAR(MX,MX),
      2 ALAMDA,OCHISQ
+      real lphase(max_thet)
 
 
 
@@ -30,11 +31,21 @@ C     ******************************************************************
       nover=1000
       nc = 0
       ochisq = 0.0
+      do i=1,nphase
+       lphase(i)=alog(phase(i))
+      enddo
       do 1000 itemp=1,nover
 
-         call mrqmin(nphase,theta,phase,x,covar,alpha,beta,chisq,
+C        fit phase function in linear space
+C         call mrqmin(nphase,theta,phase,x,covar,alpha,beta,chisq,
+C     1ochisq,alamda)
+
+C        fit phase function in log space
+         call mrqminl(nphase,theta,lphase,x,covar,alpha,beta,chisq,
      1ochisq,alamda)
          
+
+          print*,itemp,x,ochisq,alamda
          
           if(chisq.eq.ochisq)then
             nc=nc+1

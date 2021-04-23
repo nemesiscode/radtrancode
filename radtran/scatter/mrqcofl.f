@@ -1,5 +1,5 @@
-      subroutine mrqcof(nphase,theta,phase,x,alpha,beta,chisq)
-C     Fit phase function with henyey-greenstein parameters in linear space
+      subroutine mrqcofl(nphase,theta,phase,x,alpha,beta,chisq)
+C     Fit phase function with henyey-greenstein parameters in log space
 
       integer max_thet,nphase,mx,i,j,MY
       parameter (max_thet=100,mx=3,MY=100)
@@ -16,6 +16,14 @@ C     Fit phase function with henyey-greenstein parameters in linear space
       CHISQ=0.
 
       call subhgphas(nphase,theta,x,cphase,kk)
+
+C     Convert phase function and gradients to log space
+      do i=1,nphase
+       do k=1,mx
+        kk(i,k)=kk(i,k)/cphase(i)
+       enddo
+       cphase(i)=alog(cphase(i))
+      enddo
 
       DO 15 I=1,NPHASE
         DY=PHASE(I)-CPHASE(I)

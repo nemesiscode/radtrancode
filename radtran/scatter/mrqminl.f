@@ -1,6 +1,6 @@
-      subroutine mrqmin(nphase,theta,phase,x,covar,alpha,beta,chisq,
+      subroutine mrqminl(nphase,theta,phase,x,covar,alpha,beta,chisq,
      1ochisq,alamda)
-C     Fit phase function with henyey-greenstein parameters in linear space
+C     Fit phase function with henyey-greenstein parameters in log space
 
       implicit none
       integer max_thet,nphase,mx,i,j,k,MY
@@ -13,7 +13,7 @@ C     Fit phase function with henyey-greenstein parameters in linear space
       
       IF(ALAMDA.LT.0.)THEN
 
-        call mrqcof(nphase,theta,phase,x,alpha,beta,chisq)
+        call mrqcofl(nphase,theta,phase,x,alpha,beta,chisq)
 
         OCHISQ=CHISQ
         ALAMDA=1000.0
@@ -47,11 +47,11 @@ C        if(xt(i).lt.0.01)xt(i)=0.01
        else if(i.eq.3)then
         if(xt(i).lt.-0.98)xt(i)=-0.98
 C        if(xt(i).gt.0.0)xt(i)=0.0
-        if(xt(i).gt.-0.2)xt(i)=-0.2
+        if(xt(i).gt.-0.1)xt(i)=-0.1
        endif
       end do
 
-      call mrqcof(nphase,theta,phase,xt,covar,da,chisq)
+      call mrqcofl(nphase,theta,phase,xt,covar,da,chisq)
 
       IF(CHISQ.LE.OCHISQ)THEN
         ALAMDA=0.9*ALAMDA

@@ -37,6 +37,8 @@ F_SOURCES = \
 	miescat.f \
 	mrqmin.f \
 	mrqcof.f \
+	mrqminl.f \
+	mrqcofl.f \
 	phase1.f \
 	phasint2.f \
 	rayleigha.f \
@@ -84,7 +86,7 @@ lib $(LIBRARY): $(LIBCODE)
 
 $(LIBRARY)(%.o): %.f $(INCLUDES)
 	$(FC) $(FCFLAGS) -c $<
-	ar rv $(LIBRARY) $*.o
+	ar rvU $(LIBRARY) $*.o
 	ranlib $(LIBRARY)
 	-rm $*.o
 
@@ -93,7 +95,9 @@ bin :    \
 	Normxsc \
         Readphase \
 	Testray \
-	Test_pmat6
+	Test_pmat6 \
+	Convert_phase_list \
+	Testsubfithg
 
 Makephase : makephase.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Makephase makephase.f $(LIBRARY) \
@@ -111,6 +115,14 @@ Testray : testray.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Testray testray.f $(LIBRARY) \
 	$(LIB)/rtm_util.a $(FRECIPES)
 
+Convert_phase_list : convert_phase_list.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Convert_phase_list convert_phase_list.f $(LIBRARY) \
+	$(LIB)/rtm_util.a $(FRECIPES)
+
 Test_pmat6 : test_pmat6.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Test_pmat6 test_pmat6.f $(LIBRARY) \
+	$(LIB)/path.a $(LIB)/rtm_util.a $(FRECIPES)
+
+Testsubfithg : testsubfithg.f $(LIBRARY)
+	$(FC) $(FCFLAGS) -o $(BIN)/Testsubfithg testsubfithg.f $(LIBRARY) \
 	$(LIB)/path.a $(LIB)/rtm_util.a $(FRECIPES)

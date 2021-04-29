@@ -43,7 +43,7 @@ git config --global user.email “firstname.lastname@...  “
 ```
 
 Also, if you want to change the default git editor from “vi” or “vim” type something like:
-git config --global core.editor “pico"
+`git config --global core.editor “pico"`
 
 Finally, if you want the system to give you colour-coded git status messages (which do look quite pretty) type:
 

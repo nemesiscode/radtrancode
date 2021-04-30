@@ -30,7 +30,8 @@ F_SOURCES = \
 	read_yam.f \
 	write_band.f \
 	add_line_buff.f \
-	read_line_buff.f
+	read_line_buff.f \
+	jwids.f
 
 INCDIR = ../includes
 #INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/bincoms.f $(INCDIR)/dbcom.f \
@@ -57,7 +58,7 @@ lib $(LIBRARY): $(LIBCODE)
 
 $(LIBRARY)(%.o): %.f $(INCLUDES)
 	$(FC) $(FCFLAGS) -c $<
-	ar rv $(LIBRARY) $*.o
+	ar rvU $(LIBRARY) $*.o
 	ranlib $(LIBRARY)
 	-rm $*.o
 

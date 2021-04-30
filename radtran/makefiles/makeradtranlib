@@ -4,45 +4,45 @@ echo 'Compiling libraries...'
 
 cd $RADSRC/rtm_util
 make clean
-touch *
+touch *.f
 make lib
 
 cd $RADSRC/spec_data
 make clean
-touch *
+touch *.f
 make lib
 
 cd $RADSRC/path
 make clean
-touch *
+touch *.f
 make lib
 
 cd $RADSRC/scatter
 make clean
-touch *
+touch *.f
 make lib
 
 cd $RADSRC/radtran
 make clean
-touch *
+touch *.f
 make lib
 
 cd $RADSRC/ciatable
 make clean
-touch *
+touch *.f
 make lib
 
 cd $RADSRC/cirsrad
 make clean
-touch *
+touch *.f
 make lib
 
 cd $RADSRC/cirsradg
 make clean
-touch *
+touch *.f
 make lib
 
 cd $RADSRC/matrices
 make clean
-touch *
+touch *.f
 make lib

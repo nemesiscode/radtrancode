@@ -58,11 +58,7 @@ lib $(LIBRARY): $(LIBCODE)
 
 $(LIBRARY)(%.o): %.f $(INCLUDES)
 	$(FC) $(FCFLAGS) -c $<
-<<<<<<< HEAD
 	ar $(ARCHIVE_FLAGS) $(LIBRARY) $*.o
-=======
-	ar rvU $(LIBRARY) $*.o
->>>>>>> e0c3e77c0a44b335b1a35456d665c3c7cb6d32d1
 	ranlib $(LIBRARY)
 	-rm $*.o
 

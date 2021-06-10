@@ -108,10 +108,10 @@ C     looking for keywords in file
         END IF
       GOTO 2
 3     CONTINUE
-C      WRITE(*,42)NLAY,LAYHT,LAYANG
+      WRITE(*,42)NLAY,LAYHT,LAYANG
 42    FORMAT(' computing',I4,' layers from height',F7.1,
      1' at',F7.3,' degrees from nadir')
-C      WRITE(*,43)LAYTYP,LAYINT
+      WRITE(*,43)LAYTYP,LAYINT
 43    FORMAT(' layer type =',I3,'   integration over layer type =',I3)
 C
 
@@ -179,8 +179,13 @@ C        Read in one line of header
          READ(12,1)HEADER
 C        Overwrite NLAY
          READ(12,*)NLAY
+         if(idiag.gt.0)print*,'NLAY = ',NLAY
+         IF(NLAY.LT.1)THEN
+          print*,'Error in height.lay - NLAY not defined'
+          print*,'Did you forget to include a header line?'
+          stop
+         ENDIF
          DO 106 I=1,NLAY
-          READ(12,*)PNOW
           CALL VERINT(P,H,NPRO,BASEH(I),PNOW)
 106      CONTINUE
         CLOSE(12)

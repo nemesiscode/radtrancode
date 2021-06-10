@@ -91,21 +91,22 @@ C     **************************************************************
       integer nwave(mgeom),ix,ix1,iav,nwave1,iptf,jrad,j1
       real vwave(mgeom,mwave),interpem,RADIUS
       real calcout(maxout3),fwhm,planck_wave,output(maxout3)
-      real gradients(maxout4),pi
+      real gradients(maxout4),pi,dtr
+      real xmu,xI0,xI1,xk
       parameter (pi=3.1415927)
       integer check_profile,icheck,imie,imie1,jlogg,ifix(mx)
       integer nx,nconv(mgeom),npath,ioff1,ioff2,nconv1,jfrac
       real vconv(mgeom,mconv),wgeom(mgeom,mav),flat(mgeom,mav)
       real layht,tsurf,esurf,angles(mgeom,mav,3),flon(mgeom,mav)
       real xn(mx),yn(my),kk(my,mx),ytmp(my),ystore(my)
-      real vconv1(mconv),vwave1(mwave),xlon
+      real vconv1(mconv),vwave1(mwave),xlon,ysav(mx,my)
       integer ny,jsurf,jalb,jtan,jpre,nem,nav(mgeom)
       integer nphi,ipath,iconv,k,jxsc
       integer nmu,isol,lowbc,nf,nf1,nx2,kiter
       real dist,galb,sol_ang,emiss_ang,z_ang,aphi,vv
       double precision mu(maxmu),wtmu(maxmu)
       character*100 runname,logname
-      real xmap(maxv,maxgas+2+maxcon,maxpro)
+      real xmap(maxv,maxgas+2+maxcon,maxpro),lineav
       common /imiescat/imie1
 
       integer nvar,varident(mvar,3)
@@ -167,7 +168,7 @@ C      if(idiag.gt.0)print*,(xn(i),i=1,nx)
       call setup(runname,gasgiant,nmu,mu,wtmu,isol,dist,lowbc,
      1 galb,nf1,nphi,layht,tsurf,nlayer,laytyp,layint)
 
-
+      print*,'88 laytyp = ',laytyp
 
       call file(runname,logname,'log')
 
@@ -212,7 +213,10 @@ C     Initialise arrays
          sol_ang = angles(igeom,iav,1)
          emiss_ang = angles(igeom,iav,2)
          aphi = angles(igeom,iav,3)
-         
+
+         dtr = pi/180.0
+         xmu = cos(emiss_ang*dtr)
+
          if(sol_ang.lt.emiss_ang) then
            z_ang = sol_ang
          else
@@ -281,10 +285,6 @@ C           Special fix for retrieval test
             endif                             
             xn(ix)=xn(ix)+dx
           endif
-C         Nasty Toledo hack
-C          if(ix.ge.11.and.ix.le.191)then
-C           xn(ix+183)=xn(ix)
-C          endif
 
           if(idiag.gt.0)print*,'ix,xref,dx,xn(ix)',ix,xref,dx,xn(ix)
           if(jsurf.gt.0)then
@@ -379,6 +379,7 @@ C          if(idiag.gt.0)print*,'Npath, ix = ',npath,ix
 C          if(idiag.gt.0)print*,'Transferring calculation'
 C         Unless an SCR calculation, first path is assumed to be thermal emission
 
+          print*,'ICREAD = ',icread
           if(icread.ne.1)then       
            ipath=1
            do j=1,nconv1
@@ -392,17 +393,37 @@ C         Unless an SCR calculation, first path is assumed to be thermal emissio
              endif
              ioff1 = ipath + (iconv-1)*npath
              ytmp(ioff+j)=calcout(ioff1)
+             if(iav.eq.1)ysav(ix+1,ioff+j)=ytmp(ioff+j)
            enddo
 
            if(ix.eq.0)then
             do j=1,nconv1 
-             yn(ioff+j)=yn(ioff+j)+xgeom*ytmp(ioff+j)
-             ystore(ioff+j)=ytmp(ioff+j)
+             if(nav(igeom).eq.2.and.iav.eq.2.and.xgeom.lt.0.0)then
+C             Need to do minnaert line-average calculation
+C             First find k_minnaert
+              xI0 = ysav(ix+1,ioff+j)	! extract previous radiance calc at mu=1
+              xI1 = ytmp(ioff+j)
+              xk = 0.5*(1.0+log(xI1/xI0)/log(xmu))
+              yn(ioff+j)=lineav(xI0,xk)
+             else
+              yn(ioff+j)=yn(ioff+j)+xgeom*ytmp(ioff+j)
+              ystore(ioff+j)=ytmp(ioff+j)
+             endif
             enddo
            else
             do j=1,nconv1
-             kk(ioff+j,ix)=kk(ioff+j,ix)+xgeom*
+             if(nav(igeom).eq.2.and.iav.eq.2.and.xgeom.lt.0.0)then
+C             Need to do line average calculation
+C             First find k_minnaert
+              xI0 = ysav(ix+1,ioff+j)	! extract previous radiance calc at mu=1
+              xI1 = ytmp(ioff+j)
+              xk = 0.5*(1.0+log(xI1/xI0)/log(xmu))
+              ystore(ioff+j)=lineav(xI0,xk)
+              kk(ioff+j,ix)=(ystore(ioff+j)-yn(ioff+j))/dx
+             else             
+              kk(ioff+j,ix)=kk(ioff+j,ix)+xgeom*
      1                      (ytmp(ioff+j) - ystore(ioff+j))/dx  
+             endif
             enddo 
             xn(ix)=xref
             if(ix.eq.jlogg)then
@@ -447,12 +468,6 @@ C         Unless an SCR calculation, first path is assumed to be thermal emissio
      1                      (ytmp(ioff+j1) - ystore(ioff+j1))/dx  
             enddo 
             xn(ix)=xref
-
-
-C           Nasty Toledo hack
-C            if(ix.ge.11.and.ix.le.191)then
-C             xn(ix+183)=xref
-C            endif
 
 
            endif

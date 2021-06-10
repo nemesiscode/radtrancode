@@ -37,9 +37,16 @@ C **********************************************************************
       COMMON/AREA2/  CC(MAXMU,MAXMU), MMINV, MU, PI
       COMMON/HOMOG/ TAUT, BC, OMEGA, IPOW0
       COMMON/PHMAT/ PPLPL, PPLMI
-      integer idiag,iquiet
+      integer idiag,iquiet,IRAMAN,NRAMAN
       common/diagnostic/idiag,iquiet
 C
+      LOGICAL RAMAN
+      REAL DENS(MAXSCATLAY),FPRAMAN(MAXSCATLAY)
+      REAL JRAMAN(1000,MAXSCATLAY),VRAM0,VRAMST,VTMP
+      REAL H2ABUND(MAXSCATLAY),KWT
+      COMMON/RAMAN/RAMAN,DENS,JRAMAN,VRAM0,VRAMST,NRAMAN,FPRAMAN,
+     1 H2ABUND,IRAMAN,KWT
+
       IF (JDIM.NE.MAXMU) CALL ABEND(' DOUBLE: DIMENSION ERROR')
 
 
@@ -136,10 +143,11 @@ C      print*,'TAUT,IPOW0 = ',TAUT,IPOW0
       NN=INT(DLOG(TAUT)/DLOG(2.0D0))+IPOW0
 
       IF(NN.GE.1)THEN
-       TAU0 = TAUT/(2.0D0**NN)
+       XFAC=1.0/(2.0D0**NN)
       ELSE
-       TAU0 = TAUT
+       XFAC=1.0
       ENDIF
+      TAU0 = TAUT*XFAC
 
 C      PRINT*,'TAU0, NN',TAU0,NN
 
@@ -148,10 +156,22 @@ C     COMPUTATION OF R, T AND J FOR INITIAL LAYER (SINGLE SCATTERING)
 C **********************************************************************
       CALL MADD(-TAU0,E,GPLPL,TINIT,NMU,NMU,MAXMU,MAXMU)
       CALL MMUL(TAU0,E,GPLMI,RINIT,NMU,NMU,NMU,MAXMU,MAXMU,MAXMU)
-      DO 80 J=1,NMU
-	J1(J,1)=(1.0D0-OMEGA)*BC*TAU0*MMINV(J,J)
-   80 ENDDO
-
+      DO J=1,NMU
+       J1(J,1)=0.0
+      ENDDO
+      IF(IC.EQ.0)THEN
+       DO 80 J=1,NMU
+C       If Raman scattering is on, add radiation scattered from shorter 
+C       wavelengths here. Raman-scattered radiation is assumed to be isotropic 
+C       and so is added in the same way as thermal emission.
+        IF(RAMAN)THEN
+         J1(J,1)=(1.0D0-OMEGA)*BC*TAU0*MMINV(J,J)+
+     1     XFAC*JRAMAN(IRAMAN,L)*MMINV(J,J)
+        ELSE
+ 	 J1(J,1)=(1.0D0-OMEGA)*BC*TAU0*MMINV(J,J)
+        ENDIF
+   80  ENDDO
+      ENDIF
 C      print*,'Tinit' 
 C      DO I=1,NMU
 C       print*,(TINIT(I,J),J=1,NMU)

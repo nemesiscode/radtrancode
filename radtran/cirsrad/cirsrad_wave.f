@@ -119,6 +119,7 @@ C		Passed variables
      6		eoutput(npath,nwave)
         REAL    vem(MAXSEC),emissivity(MAXSEC),interpem
         REAL	xmu,dtr,xt1,radextra
+        DOUBLE PRECISION TEMPX
         INTEGER ifc(limcont,nlayer),nem,j0,jnh3,jch4,jh2,jhe,ILBL
 
 	REAL	XCOM,XNEXT,FPARA,vv,XRAY,RAYLEIGHJ,RAYLEIGHA,RAYLEIGHV
@@ -198,7 +199,8 @@ C		Internal variables
         REAL	fdown(maxlay,maxg),fwhmk,
      1          delvk,tauray(maxlay),f1(maxlay),g11(maxlay),
      2          g21(maxlay),taur(maxlay) 
-	REAL ftop(maxg)
+	REAL ftop(maxg),LAMBDA,tauram
+        DOUBLE PRECISION SPEC,SPECS0,SPECS1,SPECQ
 	DOUBLE PRECISION	tr, trold, taud, dtmp1, dtmp2, dpi, 
      1          dphase, calpha, dmuinc, dmuemiss, draddeg, dinc, demiss,
      2          tausun
@@ -242,18 +244,46 @@ C       Solar reference spectrum common block
         common/intrad/fintrad,fintname
         common/interp_phase_initial/first
 
+        REAL JRAMAN(1000,MAXSCATLAY),VRAM0,VRAMST
+        REAL DENS(MAXSCATLAY),FPRAMAN(MAXSCATLAY),KWT
+        REAL CALCPARA
+        LOGICAL RAMAN
+        REAL FMEAN(MAXSCATLAY),H2ABUND(MAXSCATLAY)
+        INTEGER IRAMAN,NRAMAN
+        COMMON/RAMAN/RAMAN,DENS,JRAMAN,VRAM0,VRAMST,NRAMAN,FPRAMAN,
+     1 H2ABUND,IRAMAN,KWT
+
+        
+
 	PARAMETER	(tsun=5900.,theta0=4.65241e-3, pi=3.141593,
      1			error=5.e-5,LUNIS=61,infr=62,infrt=63) 
         integer idiag,iquiet
         common/diagnostic/idiag,iquiet
-
 C-----------------------------------------------------------------------
 C
 C	Check input parameters for possible problems.
 C
 C-----------------------------------------------------------------------
 
+1       format(a)
 
+        IF(IRAY.GT.4)THEN
+         RAMAN=.TRUE.
+        ELSE
+        RAMAN=.FALSE.
+        ENDIF
+
+C       If RAMAN, set up and initialise source function array.
+        IF(RAMAN)THEN
+         VRAM0=0.2
+         VRAMST=0.001
+         NRAMAN=601
+         DO I=1,NRAMAN
+          DO J=1,MAXSCATLAY
+           JRAMAN(I,J)=0.0
+          ENDDO
+         ENDDO
+        ENDIF
 
 	if (nwave.gt.maxbin) then
 		write (*,*) ' CIRSRAD_WAVE: Too many bins'
@@ -910,6 +940,7 @@ C               Calculate single-scattering contribution
                	tauray(J)=0.0
 	ENDIF
 
+        
 
 C       ### renormalise f(J) to be tau-averaged phase function
         if(tauray(J)+tauscat(J).gt.0)then
@@ -1011,6 +1042,9 @@ C-----------------------------------------------------------------------
 
 C                print*,'NG = ',NG
 		DO Ig = 1, ng
+
+   			IF(RAMAN)KWT=DELG(IG)
+
 			DO J = 1, nlayer
 				tautmp(J) = taucon(J) + kl_g(Ig,J) 
      1					* utotl(J)
@@ -1225,16 +1259,58 @@ C     1                  ' creating output'
      1			   emtemp(J,Ipath))
                         endif
 			bnu(J) = bb(J,Ipath)
+
+
+C     If Raman scattering required, compute scattering x-section at this 
+C     wavelength. Since Raman scattering re-appears at longer wavelengths the
+C     Raman x-section is considered as just an absorption at this wavelength.
+C     When doing a calculation, scloud11wave.f calls the routine ramanjsource.f
+C     to compute this additional source function which is added to the source 
+C     function array JRAMAN.
+                        IF(RAMAN)THEN
+
+C                        Set local para-H2 fraction
+                         IF(INORMAL.EQ.0)THEN
+                          TEMPX=DBLE(TEMP(layinc(J,Ipath)))
+                          FPRAMAN(J)=CALCPARA(TEMPX)
+                         ELSE
+                          FPRAMAN(J)=0.25
+                         ENDIF
+C                        Find number density of H2 molecules in this layer
+                         H2ABUND(J)=0.0
+                         do igas=1,ngas
+                          if(idgas(igas).eq.39)then
+                           H2ABUND(J)=AMOUNT(layinc(J,Ipath),igas)
+                          endif
+                         enddo
+C                        Do simple density for now and ignore 
+C			 changes in molecular wt and temperature
+                         DENS(J)=BASEP(layinc(J,Ipath))
+
+                         LAMBDA=1E4/VV
+                         CALL RAMANXSEC(LAMBDA,SPECS0,SPECS1,SPECQ)
+                         SPEC=FPRAMAN(J)*SPECS0+(1-FPRAMAN(J))*SPECS1
+                         SPEC=SPEC+SPECQ
+
+                         tauram = SNGL(SPEC*H2ABUND(J))
+                         taus(j)=taus(j)+tauram
+C			 print*,J,FPRAMAN(J),H2ABUND(J),DENS(J),tauram
+                         
+                        ELSE
+                         tauram=0.0
+                        ENDIF
+
+
 			IF(TAUSCAT(layinc(J,Ipath)).GT.0.0) THEN
-				dtmp1 = dble(tauscat(layinc(J,Ipath)))
-				dtmp2 = dble(tautmp(layinc(J,Ipath)))
-                                omegas(J)=dtmp1/dtmp2
-				eps(J) = 1.0d00 - omegas(J)
+			 dtmp1 = dble(tauscat(layinc(J,Ipath)))
+			 dtmp2 = dble(tautmp(layinc(J,Ipath))+tauram)
+                         omegas(J)=dtmp1/dtmp2
+			 eps(J) = 1.0d00 - omegas(J)
 		        ELSE
   				EPS(J)=1.0
          			omegaS(J)=0.
          		END IF
-
+                 
 
 			fcover(J) = HFC(layinc(J,Ipath))
                         do k=1,ncont
@@ -1242,9 +1318,6 @@ C     1                  ' creating output'
                         enddo
 		enddo
 
-
-C                         bb(J,Ipath)=planck_wave(ispace,x,
-C     1                          emtemp(J,Ipath))
 
                
 C               If tsurf > 0, then code assumes bottom layer is at the
@@ -1312,11 +1385,13 @@ C                        print*,'iray = ',iray
 
 C                        print*,'galb1,solar,emiss_ang',galb1,solar,
 C     1  emiss_ang
+
       		  	call scloud11wave(rad1, sol_ang, emiss_ang,
      1                          aphi, radg, solar, lowbc, galb1, iray,
      2				mu1, wt1, nmu,   
      3				nf, Ig, x, vv, eps, omegas,bnu, taus, 
      4				taur,nlays, ncont,lfrac)
+
 C                        if(taur(1).gt.10000.0)print*,'taurB',
 C     1 (taur(j),j=1,nlays)
 
@@ -2382,6 +2457,7 @@ C			WRITE(*,1020)XCOM
 			XNEXT = XNEXT+10.0
 		ENDIF
 
+
 	ENDDO
 
 C-----------------------------------------------------------------------
@@ -2407,6 +2483,17 @@ C-----------------------------------------------------------------------
         if(ivenera.eq.1)then
          close(infr)
         endif
+
+
+        IF(RAMAN)THEN
+         OPEN(12,FILE='jraman.txt',status='unknown')
+          WRITE(12,*)VRAM0,VRAMST,NRAMAN,NLAYER
+          do i=1,NRAMAN
+           write(12,*)(JRAMAN(I,J),J=1,NLAYER)
+          enddo
+         CLOSE(12)
+        ENDIF
+
 
 	RETURN
 

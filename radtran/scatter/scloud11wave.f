@@ -95,11 +95,23 @@ C     ***********************************************************************
      2  BC,OMEGA,FRAC,SFRAC
       DOUBLE PRECISION STEST,GALB,ZMU0,ZMU,TEX, TAUSCAT, TAUR, TAU1, 
      1 STEST1
+      DOUBLE PRECISION RTOP(MAXMU,MAXMU,MAXSCATLAY),
+     1 UPL(MAXMU,1,MAXSCATLAY),JTOP(MAXMU,1,MAXSCATLAY),
+     2 UTPL(MAXMU,1,MAXSCATLAY),TTOP(MAXMU,MAXMU,MAXSCATLAY),
+     3 U0MI(MAXMU,1,MAXSCATLAY)
+      REAL UMIF(MAXMU,MAXSCATLAY),UPLF(MAXMU,MAXSCATLAY)
+      REAL FPL,FMI,IRAD(MAXSCATLAY),F1,F2
 
       REAL SOL_ANG,EMISS_ANG,CONV,DEFCONV
       REAL YX(4),T,U,FEMM,FSOL,XFAC
       INTEGER ICO,ISOL,IEMM,ISCL(MAXSCATLAY)
 
+      LOGICAL RAMAN
+      REAL DENS(MAXSCATLAY),FPRAMAN(MAXSCATLAY)
+      REAL JRAMAN(1000,MAXSCATLAY),VRAM0,VRAMST
+      REAL LDENS1,LDENS2,SUM1,SUM2,LD,FF,XD,FMEAN(MAXSCATLAY)
+      REAL H2ABUND(MAXSCATLAY),KWT
+      INTEGER IRAMAN,ILAY,NRAMAN
 C     Common blocks
       COMMON/UNIT/ E
       COMMON/AREA1/CCINV,MM
@@ -111,9 +123,12 @@ C     Common blocks
       COMMON /SCATDUMP/ IDUMP
       integer idiag,iquiet
       common/diagnostic/idiag,iquiet
-
+      COMMON/RAMAN/RAMAN,DENS,JRAMAN,VRAM0,VRAMST,NRAMAN,FPRAMAN,
+     1 H2ABUND,IRAMAN,KWT
 
 C--------------------------------------------------------------------------
+
+1     FORMAT(A)
 
 C     Define additional debugging 'reporting variable', lrep
 C      lrep=.true.
@@ -140,6 +155,14 @@ C      lrep=.true.
       end do
       endif
 
+      IF(RAMAN)THEN
+C      If Raman scattering turned on, find location in Raman scattered
+C      source function array, JRAMAN, of any scattered radiation to add to 
+C      the scattered radiation at this wavelength. 
+C      Raman-scattered light is assumed to be isotropic and is added to 
+C      the calculation via double1.f as an additional emission term.
+       IRAMAN=1+INT((1E4/VV-VRAM0)/VRAMST)
+      ENDIF
 
 C     Find correction for any quadrature errors
       xfac=0.
@@ -525,9 +548,7 @@ C       P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P
          if(idump.gt.0.or.lrep)print*,'cloud layer ',l,iscl(l)
 C         OMEGA=0.3
  	 CALL DOUBLE1(IC,L,RL(1,1,L),TL(1,1,L),JL(1,1,L),NMU,MAXMU)
-
         END IF
-
 
 2000  CONTINUE
 
@@ -675,6 +696,200 @@ C ***********************************************************************
      1  ' fourier components'
        endif
        GOTO 2001
+      ENDIF
+
+C     For azimuthal case and RAMAN scattering compute internal radiances
+      IF(IC.EQ.0.AND.RAMAN)THEN
+
+C       print*,'Calculating Raman source'
+
+
+C **********************************************************************
+C  CALCULATE DOWNWARD MATRICES FOR COMPOSITE OF L LAYERS FROM TOP OF CLOUD.
+C        XTOP(I,J,L) IS THE X MATRIX FOR THE TOP L LAYERS OF CLOUD.
+C  NOTE THAT R21 = R12 & T21 = T12 VALID FOR THE HOMOGENEOUS LAYER BEING ADD$
+C  BUT NOT FOR THE INHOMOGENEOUS RESULTING "TOP" LAYER.
+C
+C  i.e. XTOP(I,J,L) is the effective reflectivity, transmission and emission
+C  of the top L layers of the atmosphere (i.e. layers 1-L)
+C  Specifically
+C    RTOP(I,J,L) is RL0
+C    TTOP(I,J,L) is T0L
+C    JTOP(J,1,L) is JP0L
+C **********************************************************************
+      DO J = 1,NMU
+        JTOP(J,1,1) = JL(J,1,1)
+        DO I = 1,NMU
+          RTOP(I,J,1) = RL(I,J,1)
+          TTOP(I,J,1) = TL(I,J,1)
+        ENDDO
+      ENDDO
+      DO L = 1,LTOT-1
+        if(idump.gt.0)print*,'Multiply ',L,' of ',LTOT-1
+        CALL ADDP( RL(1,1,L+1), TL(1,1,L+1), JL(1,1,L+1), ISCL(L+1),
+     1   RTOP(1,1,L),TTOP(1,1,L), JTOP(1,1,L), RTOP(1,1,L+1),
+     2   TTOP(1,1,L+1),JTOP(1,1,L+1), NMU, MAXMU)
+      ENDDO
+
+C ***********************************************************************
+C  CALCULATE UPWARD MATRICES FOR COMPOSITE OF L LAYERS FROM BASE OF CLOUD.
+C    XBASE(I,J,L) IS THE X MATRIX FOR THE BOTTOM L LAYERS OF THE CLOUD.
+C  AS FOR "TOP", R01 = R10 & T01 = T10 IS VALID FOR LAYER BEING ADDED ONLY.
+C
+C  i.e. XBASE(I,J,L) is the effective reflectivity, transmission and emission
+C  of the bottom L layers of the atmosphere (i.e. layers LTOT-L+1 to LTOT)
+C  Specifically (M = LTOT)
+C    RBASE(I,J,L) is RLM
+C    TBASE(I,J,L) is TML
+C    JBASE(J,1,L) is JMLM
+C ***********************************************************************
+      DO J = 1,NMU
+        JBASE(J,1,1) = JL(J,1,LTOT)
+        DO I = 1,NMU
+          RBASE(I,J,1) = RL(I,J,LTOT)
+          TBASE(I,J,1) = TL(I,J,LTOT)
+        ENDDO
+      ENDDO
+
+      DO L = 1,LTOT-1
+        if(idump.gt.0)print*,'Multiply ',L,' of ',LTOT-1
+        K = LTOT-L
+        CALL ADDP( RL(1,1,K), TL(1,1,K), JL(1,1,K), ISCL(K),
+     1  RBASE(1,1,L), TBASE(1,1,L), JBASE(1,1,L), RBASE(1,1,L+1),
+     2  TBASE(1,1,L+1), JBASE(1,1,L+1), NMU, MAXMU)
+      ENDDO
+
+
+C ****************************************************
+C      CALCULATING INTERIOR INTENSITIES
+C         UPL(J,1,L) GOES DOWN OUT OF LAYER L.
+C          UMI(J,1,L) GOES UP OUT OF LAYER L.
+C ****************************************************
+
+C      Assume solar zenith angle is aligned with one of the quadrature zenith angles
+       DO I=1,NMU
+        U0PL(I,1)=0.0
+       ENDDO
+       U0PL(ISOL,1) = SOLAR1/(2.0D0*PI*WTMU(ISOL))
+ 
+       DO I=1,NMU
+        UMI(I,1,1)=JBASE(I,1,1)
+       ENDDO
+       DO L = 1,LTOT-1
+        K = LTOT-L
+C       Calculate I(L+1)-
+        CALL IUP( RTOP(1,1,L), TTOP(1,1,L), JTOP(1,1,L),
+     1    RBASE(1,1,K), TBASE(1,1,K), JBASE(1,1,K), UMI(1,1,L+1),
+     2    NMU, MAXMU)
+
+C       Calculate I(L)+
+        CALL IDOWN( RTOP(1,1,L), TTOP(1,1,L), JTOP(1,1,L),
+     1    RBASE(1,1,K), TBASE(1,1,K), JBASE(1,1,K), UPL(1,1,L),
+     2    NMU, MAXMU)
+
+       ENDDO
+
+
+C *******************************************************
+C     CALCULATING EXTERIOR INTENSITIES UTPL AND U0MI
+C *******************************************************
+
+C      Basically upward radiation at top of atmosphere:
+C      U0MI = U0PL*RBASE(LTOT) + TBASE*UTMI(LTOT) + JBASE(LTOT)
+
+       CALL MMUL(1.0D0,RBASE(1,1,LTOT),U0PL,ACOM,NMU,NMU,1,
+     1   MAXMU,MAXMU,1)
+       CALL MMUL(1.0D0,TBASE(1,1,LTOT),UTMI,BCOM,NMU,NMU,1,
+     1   MAXMU,MAXMU,1)
+       CALL MADD(1.0D0,ACOM,BCOM,ACOM,NMU,1,MAXMU,1)
+       CALL MADD(1.0D0,JBASE(1,1,LTOT),ACOM,U0MI,NMU,1,MAXMU,1)
+
+C      Basically downward radiation at bottom of atmosphere:
+C      UTPL = U0PL*TTOP(NLAY) + RTOP(NLAY)*UTMI + JTOP(NLAY)
+
+       CALL MMUL(1.0D0,TTOP(1,1,LT1),U0PL,ACOM,NMU,NMU,1,
+     1  MAXMU,MAXMU,1)
+       CALL MMUL(1.0D0,RTOP(1,1,LT1),UTMI,BCOM,NMU,NMU,1,
+     1  MAXMU,MAXMU,1)
+       CALL MADD(1.0D0,ACOM,BCOM,ACOM,NMU,1,MAXMU,1)
+       CALL MADD(1.0D0,JTOP(1,1,LTOT),ACOM,UTPL(1,1,LT1),
+     1  NMU,1,MAXMU,1)
+
+       DO 302 IMU = 1, NMU
+C       Keep order of the zenith angles in the arrays
+C       such that they go from large to small mu, opposite to way listed in the
+C       <runname>.sca files
+        DO 301 L=1,LT1
+          IF(L.NE.LT1)THEN
+            UPLF(IMU,L)=SNGL(UPL(IMU,1,L))
+          ELSE
+            UPLF(IMU,L)=SNGL(UTPL(IMU,1,L))
+          ENDIF
+          IF(L.NE.1)THEN
+            UMIF(IMU,L)=SNGL(UMI(IMU,1,L))
+          ELSE
+            UMIF(IMU,L)=SNGL(U0MI(IMU,1,L))
+          ENDIF
+301     CONTINUE
+
+302    CONTINUE
+
+
+C      Now compute total irradiance at each level in atmosphere 
+C      by integrating over solid angle at each point in atmosphere.
+C      Remember that UPLF is radiance DOWN out of layer L and UMIF is
+C      radiance UP out of layer L. 2*PI term of azimuth integration is 
+C      already included fluxes computed and so we don't need to add anything
+C      here. 
+
+       DO 303 I=1,LT1
+        IF(I.EQ.1)THEN
+         FPL = SNGL(U0PL(ISOL,1)*2*PI*WTMU(ISOL))
+        ELSE 
+         FPL=0.0
+         DO IMU=1,NMU
+C          FPL=FPL+UPLF(IMU,I-1)*SNGL(WTMU(IMU)*2*PI)
+          FPL=FPL+UPLF(IMU,I-1)*SNGL(WTMU(IMU))
+         ENDDO
+        ENDIF       
+        FMI = 0.0
+        DO IMU=1,NMU
+C         FMI=FMI+UMIF(IMU,I)*SNGL(WTMU(IMU)*2*PI)
+         FMI=FMI+UMIF(IMU,I)*SNGL(WTMU(IMU))
+        ENDDO
+C       Integ
+C        IRAD(I)=(FMI+FPL)/(4*PI)
+        IRAD(I)=(FMI+FPL)
+C        print*,'flux ',I,FPL,FMI,IRAD(I)
+303    CONTINUE
+
+C      Now find mass-weighted values of irradiance
+       DO 304 ILAY=1,LT1
+        IF(ILAY.EQ.1)then
+         LDENS1=ALOG(0.001*DENS(1))
+         F1=0.0
+        ELSE
+         LDENS1=ALOG(DENS(ILAY-1))
+         F1=IRAD(ILAY-1)
+        ENDIF
+        LDENS2=ALOG(DENS(ILAY))
+        F2=IRAD(ILAY)
+        SUM1=0.0
+        SUM2=0.0
+        DO J=1,50
+         LD = LDENS1 + (J-1)*(LDENS2-LDENS1)/49.0
+         FF = F1 + (J-1)*(F2-F1)/49.0
+         XD = EXP(LD)
+         SUM1=SUM1+XD
+         SUM2=SUM2+XD*FF
+        ENDDO
+        FMEAN(ILAY)=SUM2/SUM1
+304    CONTINUE
+
+C      Calculate RAMAN x-section and add to source array, JRAMAN, which
+C      is held in a COMMON block.
+       CALL RAMANJSOURCE(VV,LT1,FMEAN)
+
       ENDIF
 
 1000  CONTINUE

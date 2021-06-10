@@ -107,7 +107,8 @@ F_SOURCES = \
 	modifych4kark.f \
 	modifych4irwin.f \
 	modifych4sromovsky.f \
-	parmentierguillot1.f
+	parmentierguillot1.f \
+	lineav.f
 
 INCDIR = ../../radtran/includes
 INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/lincom.f $(INCDIR)/pathcom.f \
@@ -165,7 +166,8 @@ Nemesis: nemesis.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Nemesis nemesis.f $(LIBRARY) \
 	$(LIB)/cirsradg.a $(LIB)/cirsrad.a $(LIB)/radtran.a \
 	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a \
-	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) 
+	$(LIB)/spec_data.a $(LIB)/ciatable.a \
+	$(LIB)/rtm_util.a $(FRECIPES) 
 
 NemesisPT: nemesisPT.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/NemesisPT nemesisPT.f $(LIBRARY) \

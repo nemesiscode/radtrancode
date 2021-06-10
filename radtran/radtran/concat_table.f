@@ -259,7 +259,7 @@ C******************************** CODE *********************************
       ENDIF
 
       IREC0=11 + 2*NG1 + 2 + NP1 + NT1 + 2
-      IF(DELV1.LT.0)THEN
+      IF(DELV1.LE.0)THEN
         IREC0=IREC0+NPOINT
       ENDIF
       IREC=11
@@ -314,7 +314,7 @@ C******************************** CODE *********************************
 
       I=1
       WRITE(*,*)'Wavelengths/wavenumbers'
-      IF(DELV1.LT.0.0)THEN
+      IF(DELV1.LE.0.0)THEN
        DO 303 J=I1,I2
         WRITE(LUN0,REC=IREC)VCEN1(J)
         print*,I,VCEN1(J)

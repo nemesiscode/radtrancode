@@ -45,7 +45,7 @@ C        fit phase function in log space
      1ochisq,alamda)
          
 
-          print*,itemp,x,ochisq,alamda
+C          print*,itemp,x,ochisq,alamda
          
           if(chisq.eq.ochisq)then
             nc=nc+1

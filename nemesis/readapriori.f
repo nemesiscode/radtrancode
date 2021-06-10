@@ -1329,6 +1329,7 @@ C            nlay = number of homogeneous layers in .drv file
              endif
              do i=1,np
               read(28,*)pknee,xdeep,edeep!pressure, aerosol density, error
+              pref(i)=pknee
               ix = i+nx
 C             For vmrs and cloud density always hold the log. 
 C             Avoids instabilities arising from greatly different profiles 
@@ -2529,8 +2530,108 @@ C            Read in stratosphheric ch4 vmr
 
              nx = nx+3
 
+           elseif (varident(ivar,3).eq.46)then
+C            ** profile held as twin peak OD, altitude and FWHM (km) (Gaussian) **
+C            Read in xdeep, pknee, xwid
+
+             read(27,*)xdeep,edeep
+             read(27,*)hknee,eknee
+             read(27,*)xwid,ewid
+
+             ix = nx+1
+             if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+             else
+               print*,'Error in readapriori. xdeep must be > 0.0'
+               stop
+             endif
+
+             err = edeep/xdeep
+             sx(ix,ix)=err**2
+
+             ix = nx+2
+             x0(ix) = hknee
+             sx(ix,ix) = eknee**2
+
+             ix = nx+3
+             x0(ix) = alog(xwid)
+             lx(ix)=1
+
+             sx(ix,ix) = (ewid/xwid)**2
+
+
+C            Read in xdeep, pknee, xwid for 2nd component
+
+             read(27,*)xdeep,edeep
+             read(27,*)hknee,eknee
+             read(27,*)xwid,ewid
+
+             ix = nx+4
+             if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+             else
+               print*,'Error in readapriori. xdeep must be > 0.0'
+               stop
+             endif
+
+             err = edeep/xdeep
+             sx(ix,ix)=err**2
+
+             ix = nx+5
+             x0(ix) = hknee
+             sx(ix,ix) = eknee**2
+
+             ix = nx+6
+             x0(ix) = alog(xwid)
+             lx(ix)=1
+
+             sx(ix,ix) = (ewid/xwid)**2
+
+             nx = nx+6
+
+
+           elseif (varident(ivar,3).eq.47)then
+C            ** profile held as peak OD, pressure and FWHM (log P) (Gaussian) **
+C            Read in xdeep, pknee, xwid
+
+             read(27,*)xdeep,edeep
+             read(27,*)pknee,eknee
+             read(27,*)xwid,ewid
+
+
+             ix = nx+1
+             if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+             else
+               print*,'Error in readapriori. xdeep must be > 0.0'
+               stop
+             endif
+
+
+             err = edeep/xdeep
+             sx(ix,ix)=err**2
+
+             ix = nx+2
+             x0(ix) = alog(pknee)
+             lx(ix)=1
+
+             sx(ix,ix) = (eknee/pknee)**2
+
+             ix = nx+3
+             x0(ix) = alog(xwid)
+             lx(ix)=1
+
+             sx(ix,ix) = (ewid/xwid)**2
+
+             nx = nx+3
+
            else         
             print*,'vartype profile parametrisation not recognised'
+            print*,'ivar, varident(ivar,*)'
+            print*,ivar,(varident(ivar,i),i=1,3)
             stop
            endif
 

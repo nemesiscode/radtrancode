@@ -88,6 +88,8 @@ C     **************************** CODE ********************************
          if(varidentx(ivarx,3).eq.43)np = 5
          if(varidentx(ivarx,3).eq.44)np = 5*int(varparamx(ivarx,1))
          if(varidentx(ivarx,3).eq.45)np = 3
+         if(varidentx(ivarx,3).eq.46)np = 6
+         if(varidentx(ivarx,3).eq.47)np = 3
         else
          if(varidentx(ivarx,1).eq.102)np = 1
          if(varidentx(ivarx,1).eq.555)np = 1

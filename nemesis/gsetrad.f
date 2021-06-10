@@ -86,7 +86,7 @@ C     ************************************************************************
       real, intent(out) :: xmap(maxv,maxgas+2+maxcon,maxpro)
 
 
-      integer max_mode, max_wave,iwave,imode
+      integer max_mode, max_wave,iwave,imode,i1
       parameter (max_mode = 10)
       parameter (max_wave = 1000)
 
@@ -100,7 +100,7 @@ C     ************************************************************************
       integer iprfcheck,check_profile,nmode,inorm
       real xod(maxcon),xscal(maxcon),cwid,pmeth
       real minlam,lambda0
-      integer flagh2p
+      integer flagh2p,nstep
       integer jsurfx,jalbx,jxscx,jtanx,jprex,nprox,icheck,icont
       integer jradx,npvar,jloggx,npro,nvmr,ierr,ierrx,nxsc
       real x,y
@@ -126,7 +126,7 @@ C     ************************************************************************
       real cpbot(mcloud),cptop(mcloud),codepth(mcloud),cfsh(mcloud)
       integer nlaycloud(mcloud)
       real cbpbot(mcloud),cbptop(mcloud),cbodepth(mcloud),cbfsh(mcloud)
-      integer ncblaycloud(mcloud)
+      integer ncblaycloud(mcloud),tmp(4)
 
       real csx,nrealshell(max_wave),nimagshell(max_wave),nmshell
       integer idiag,iquiet
@@ -486,6 +486,7 @@ C     See if Sromovsky cloud layer model is specified.
        if(varident(ivar,3).eq.9.or.varident(ivar,3).eq.10)icheck=1
        if(varident(ivar,3).eq.14.or.varident(ivar,3).eq.15)icheck=1
        if(varident(ivar,3).eq.8.or.varident(ivar,3).eq.32)icheck=1
+       if(varident(ivar,3).eq.46.or.varident(ivar,3).eq.47)icheck=1
       enddo
 
 
@@ -514,6 +515,7 @@ C     Compute the drv file to get the aerosol optical depths
 105      CONTINUE
         close(12)
 
+
         nx1=0
 
         do ivar=1,nvar
@@ -539,7 +541,8 @@ C     Compute the drv file to get the aerosol optical depths
                dust(icont,j)=dust(icont,j)/xscal(icont)
               enddo
           endif
-          if(varident(ivar,3).eq.14.or.varident(ivar,3).eq.15)then
+          if(varident(ivar,3).eq.14.or.varident(ivar,3).eq.15.
+     & or.varident(ivar,3).eq.47)then
               icont=abs(varident(ivar,1))
               od1=exp(xn(nx1+1))
               xscal(icont)=xod(icont)/od1
@@ -549,6 +552,18 @@ C     Compute the drv file to get the aerosol optical depths
               endif
               do j=1,NN
                dust(icont,j)=dust(icont,j)/xscal(icont)
+              enddo
+          endif
+          if(varident(ivar,3).eq.46)then
+              icont=abs(varident(ivar,1))
+              od1=exp(xn(nx1+1))+exp(xn(nx1+4))
+              xscal(icont)=xod(icont)/od1
+              if(idiag.gt.0)then
+               print*,'gsetrad - icont,od1,xscal(icont) = ',icont,
+     1          od1,xscal(icont)
+              endif
+              do j=1,NN
+                dust(icont,j)=dust(icont,j)/xscal(icont)
               enddo
           endif
 
@@ -789,9 +804,17 @@ C             if(idiag.gt.0)print*,'xx',wave(i),nreal(i),nimag(i)
            rs(2)=0.
            rs(3)=rs(1)
 
-           call modmakephase(iwave,imode,inorm,iscatmie,
+           if(imode.gt.0)then
+            call modmakephase(iwave,imode,inorm,iscatmie,
      1   parm,rs,srefind,runname,lambda0,csx,
      2   nrealshell,nimagshell)
+           else
+            do i1=1,3
+             call modmakephase(iwave,i1,inorm,iscatmie,
+     1   parm,rs,srefind,runname,lambda0,csx,
+     2   nrealshell,nimagshell)
+            enddo
+           endif
 
            if(varident(ivar,1).eq.445)then
             np=3+(2*np1)

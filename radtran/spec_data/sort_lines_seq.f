@@ -32,7 +32,7 @@ C     open existing sequential access database
       CALL PROMPT('Enter name of sequential-access data base:')
       READ(*,1)KEYFIL
 1     FORMAT(A)
-      OPEN(DBLUN,FILE=KEYFIL,STATUS='OLD',READONLY)
+      OPEN(DBLUN,FILE=KEYFIL,STATUS='OLD',ACTION='READ')
 
       CALL PROMPT('Enter name of output file:')
       READ(*,1)OPNAME

@@ -44,7 +44,7 @@ C TIME: Temporary variable returned by GETTIME containing the system time.
 C TIME1: System time at the beginning of program execution.
 C TIME2: System time at the end of program execution.
 
-      REAL VSTART,VEND,DELVSF
+      REAL VSTART,VEND,DELVSF,DELX
 C VSTART: Beginning of spectral range wavenumber [cm-1].
 C VEND: End of spectral range wavenumber [cm-1].
 C DELVSF: DELV scale factor. Used to avoid non-integer DO loops.
@@ -124,7 +124,14 @@ C program since execution.
 
       WRITE(*,*)'Enter FWHM, DELV and NPOINT : '
       READ*,FWHM,DELV,NPOINT
-      VMAX = VMIN + (NPOINT - 1)*DELV
+
+      IF(DELV.EQ.0)THEN
+       Print*,'Enter separation of wavelengths : '
+       read*,DELX
+       VMAX = VMIN + (NPOINT - 1)*DELX
+      ELSE
+       VMAX = VMIN + (NPOINT - 1)*DELV
+      ENDIF
       WRITE(*,*)' VMIN --> VMAX by DELV: ',VMIN,VMAX,DELV
 
       WRITE(*,*)'Enter gas ID,ISO,IPROC : '
@@ -166,6 +173,9 @@ C program since execution.
       OPEN(UNIT=LUN0,FILE=KTAFIL,STATUS='UNKNOWN',ACCESS='DIRECT',
      1 RECL=IRECL)
       IREC0 = 11 + 2*NG + 2 + NP + NT + 2
+
+      IF(DELV.LE.0)IREC0=IREC0+NPOINT
+
       WRITE(LUN0,REC=1)IREC0
       WRITE(LUN0,REC=2)NPOINT
       WRITE(LUN0,REC=3)VMIN
@@ -194,6 +204,13 @@ C program since execution.
         WRITE(LUN0,REC=IREC)TEMP1(J)
         IREC = IREC + 1
 302   CONTINUE
+      IF(DELV.LE.0.0)THEN
+       DO 303 J=1,NPOINT
+        WRITE(LUN0,REC=IREC)VMIN+(J-1)*DELX
+        PRINT*,J,VMIN+(J-1)*DELX
+        IREC=IREC+1
+303    CONTINUE
+      ENDIF
 
 
       IREC = IREC0

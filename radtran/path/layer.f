@@ -186,6 +186,7 @@ C        Overwrite NLAY
           stop
          ENDIF
          DO 106 I=1,NLAY
+          READ(12,*)PNOW
           CALL VERINT(P,H,NPRO,BASEH(I),PNOW)
 106      CONTINUE
         CLOSE(12)

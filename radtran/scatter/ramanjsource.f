@@ -58,7 +58,9 @@ C     1 - S0 transition
        DO 100 I=1,NLAY
         FPARA=FPRAMAN(I)
         spec = fpara*SPECS0
-        SIG = FMEAN(I)*H2ABUND(I)*spec/4*PI
+C       Multiply by abundance and flux and then divide by PI to convert to
+C       pseudo planck function to add back in at later stage.
+        SIG = FMEAN(I)*H2ABUND(I)*spec/PI
 C       photons re-radiated at lower frequency, so energy is lower (photons conserved)
         SIG=(VV-DNU)*SIG/VV
 C       Assume triangular ILS so average J over target bin and one either side.
@@ -81,7 +83,9 @@ C     1 - S1 transition
        DO 101 I=1,NLAY       
         FPARA=FPRAMAN(I)
         spec = (1-fpara)*SPECS1
-        SIG = FMEAN(I)*H2ABUND(I)*spec/4*PI
+C       Multiply by abundance and flux and then divide by PI to convert to
+C       pseudo planck function to add back in at later stage.
+        SIG = FMEAN(I)*H2ABUND(I)*spec/PI
 C       photons re-radiated at lower frequency, so energy is lower (photons conserved)
         SIG=(VV-DNU)*SIG/VV
 C       Assume triangular ILS so average J over target bin and one either side.
@@ -103,7 +107,9 @@ C     1 - 'Q' transitions
       IF(ILAMBDA.GE.1.AND.ILAMBDA.LE.NRAMAN)THEN
        DO 102 I=1,NLAY
         spec = SPECQ
-        SIG = FMEAN(I)*H2ABUND(I)*spec/4*PI
+C       Multiply by abundance and flux and then divide by PI to convert to
+C       pseudo planck function to add back in at later stage.
+        SIG = FMEAN(I)*H2ABUND(I)*spec/PI
 C       photons re-radiated at lower frequency, so energy is lower (photons conserved)
         SIG=(VV-DNU)*SIG/VV
 C       Assume triangular ILS so average J over target bin and one either side.

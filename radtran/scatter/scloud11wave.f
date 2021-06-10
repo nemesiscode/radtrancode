@@ -777,9 +777,9 @@ C      Assume solar zenith angle is aligned with one of the quadrature zenith an
        ENDDO
        DO L = 1,LTOT-1
         K = LTOT-L
-C       Calculate I(L+1)-
+C       Calculate I(L)-
         CALL IUP( RTOP(1,1,L), TTOP(1,1,L), JTOP(1,1,L),
-     1    RBASE(1,1,K), TBASE(1,1,K), JBASE(1,1,K), UMI(1,1,L+1),
+     1    RBASE(1,1,K), TBASE(1,1,K), JBASE(1,1,K), UMI(1,1,L),
      2    NMU, MAXMU)
 
 C       Calculate I(L)+
@@ -789,6 +789,16 @@ C       Calculate I(L)+
 
        ENDDO
 
+C       print*,ISOL,SOLAR1,U0PL(ISOL,1)*WTMU(ISOL)
+       do L=1,LTOT-1
+        SUM1=0.0
+        SUM2=0.0
+        DO IMU=1,NMU
+         SUM1=SUM1+SNGL(UPL(IMU,1,L)*WTMU(IMU))
+         SUM2=SUM2+SNGL(UMI(IMU,1,L)*WTMU(IMU))
+        ENDDO
+C        print*,'aa',L,SUM1,SUM2,SUM1+SUM2
+       enddo
 
 C *******************************************************
 C     CALCULATING EXTERIOR INTENSITIES UTPL AND U0MI
@@ -844,30 +854,25 @@ C      here.
 
        DO 303 I=1,LT1
         IF(I.EQ.1)THEN
-         FPL = SNGL(U0PL(ISOL,1)*2*PI*WTMU(ISOL))
+         FPL = SNGL(U0PL(ISOL,1)*WTMU(ISOL))
         ELSE 
          FPL=0.0
          DO IMU=1,NMU
-C          FPL=FPL+UPLF(IMU,I-1)*SNGL(WTMU(IMU)*2*PI)
           FPL=FPL+UPLF(IMU,I-1)*SNGL(WTMU(IMU))
          ENDDO
         ENDIF       
         FMI = 0.0
         DO IMU=1,NMU
-C         FMI=FMI+UMIF(IMU,I)*SNGL(WTMU(IMU)*2*PI)
          FMI=FMI+UMIF(IMU,I)*SNGL(WTMU(IMU))
         ENDDO
-C       Integ
-C        IRAD(I)=(FMI+FPL)/(4*PI)
         IRAD(I)=(FMI+FPL)
-C        print*,'flux ',I,FPL,FMI,IRAD(I)
 303    CONTINUE
 
 C      Now find mass-weighted values of irradiance
        DO 304 ILAY=1,LT1
         IF(ILAY.EQ.1)then
          LDENS1=ALOG(0.001*DENS(1))
-         F1=0.0
+         F1=SNGL(U0PL(ISOL,1)*2*PI*WTMU(ISOL))
         ELSE
          LDENS1=ALOG(DENS(ILAY-1))
          F1=IRAD(ILAY-1)

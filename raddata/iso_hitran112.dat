@@ -1,0 +1,82 @@
+# TITL:	iso_hitran112.dat
+# 
+# This file lists the gas IDs contained in the line data file, and the 
+# corresponding Radtran Gas ID.
+#
+# Each line also contains the Local ID of the isotopes listed in the
+# associated gas_info*.dat file. I.e. isotope 2 of CO2 is, according to 
+# radtran 636 which is also listed as 2 in the Hitran96 database. If an
+# isotope is missing, a zero is put in that place.
+#
+# Pat Irwin     18/9/00
+#
+# Nick Teanby   14/1/04
+# Updated for the HITRAN2K release, changed: 1(h20), 19(ocs), 27(c2h6), 36(h2s)
+#                                   added:   32 (c2h4)
+# Nick Teanby   5/1/05
+# Updated for the HITRAN04K release, changed: 19(ocs), 32 (c2h4)
+# 
+# Nick Teanby   12/10/05
+# added made up IDs for gases not in hitran to allow conversion of geisa
+# data into hitran format
+# 
+# Nick Teanby   19/4/06
+# added made up IDs for c6h6
+# Nick Teanby   12/3/07
+# added made up IDs for ch3cn (50)
+# Fletcher 30/06/2010 Added HCP (52) and CS (53)
+# Irwin 23/04/2010 Updated to iso_hi08.dat
+# Fletcher 11/06/2021 CH3 based on Sinclair+2020
+#  DBID Rad_ID Isotopes........
+
+     1    1    1    2    3    4    5
+     2    2    1    2    3    4    5    6    7    8    0
+     3    3    1    2    3    4    5
+     4    4    1    2    3    4    5
+     5    5    1    2    3    4    5    6
+     6    6    1    2    3
+     7    7    1    2    3
+     8    8    1    2    3
+     9    9    1    2
+    10   10    1
+    11   11    1    2
+    12   12    1
+    13   13    1    2    3
+    14   14    1
+    15   15    1    2
+    16   16    1    2
+    17   17    1
+    18   18    1    2
+    19   19    1    2    3    5    4    0    0    0
+    20   20    1    2    3
+    21   21    1    2
+    22   22    1
+    23   23    1    2    3
+    24   24    1    2
+    25   25    1
+    26   26    1    2
+    27   27    1    0
+    28   28    1
+    29   37    1
+    30   38    1
+    31   36    1    3    2
+    32   35    1
+    33   44    1
+    34   45    1
+    35   43    1    2
+    36   46    1 
+    38   32    1    2
+    39   47    1
+    40   29    1
+    41   42    1
+    42   34    1
+    43   30    1
+    44   31    1
+    45   33    1
+    46   41    1
+    47   48    1    2
+    48   49    1
+    49   50    1
+    52   53    1
+    53   54    1
+    94   94    1

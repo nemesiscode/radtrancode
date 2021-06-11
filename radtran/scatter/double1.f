@@ -164,7 +164,7 @@ C **********************************************************************
 C       If Raman scattering is on, add radiation scattered from shorter 
 C       wavelengths here. Raman-scattered radiation is assumed to be isotropic 
 C       and so is added in the same way as thermal emission.
-        IF(RAMAN)THEN
+        IF(RAMAN.AND.(IRAMAN.GE.1).AND.(IRAMAN.LE.NRAMAN))THEN
          J1(J,1)=(1.0D0-OMEGA)*BC*TAU0*MMINV(J,J)+
      1     XFAC*JRAMAN(IRAMAN,L)*MMINV(J,J)
         ELSE

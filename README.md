@@ -66,8 +66,10 @@ git push origin <branchname>
 ```
 Remember to check the ``ISYS`` variable for your specific compilation (check the AACOMPILE
 instructions).  It is also helpful to add the following to your BASHRC/CSHRC file:
+
 ``
 export RADREPO=/PATH-TO/radtrancode/
 ``
-...as this will prevent you having to update the `dataarchive.f' code every time to point
-to your `raddata' directory.
+
+...as this will prevent you having to update the `dataarchive.f` code every time to point
+to your `raddata` directory.

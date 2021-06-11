@@ -1,4 +1,4 @@
-npoint=121
+npoint=151
 k = findgen(npoint)/100.
 
 Imeanline=k

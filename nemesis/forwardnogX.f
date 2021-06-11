@@ -99,7 +99,7 @@ C     **************************************************************
       real vconv(mgeom,mconv),wgeom(mgeom,mav),flat(mgeom,mav)
       real layht,tsurf,esurf,angles(mgeom,mav,3),flon(mgeom,mav)
       real xn(mx),yn(my),kk(my,mx),ytmp(my),ystore(my)
-      real vconv1(mconv),vwave1(mwave),xlon,ysav(mx,my)
+      real vconv1(mconv),vwave1(mwave),xlon,ysav(mx,2*my)
       integer ny,jsurf,jalb,jtan,jpre,nem,nav(mgeom)
       integer nphi,ipath,iconv,k,jxsc
       integer nmu,isol,lowbc,nf,nf1,nx2,kiter
@@ -403,8 +403,13 @@ C             Need to do minnaert line-average calculation
 C             First find k_minnaert
               xI0 = ysav(ix+1,ioff+j)	! extract previous radiance calc at mu=1
               xI1 = ytmp(ioff+j)
-              xk = 0.5*(1.0+log(xI1/xI0)/log(xmu))
+              if(xI0.gt.0.0.and.xI1.gt.0)then
+               xk = 0.5*(1.0+log(xI1/xI0)/log(xmu))
+              else
+               xk=0.5
+              endif
               yn(ioff+j)=lineav(xI0,xk)
+              print*,ix,ioff,ix+1,ioff+j
              else
               yn(ioff+j)=yn(ioff+j)+xgeom*ytmp(ioff+j)
               ystore(ioff+j)=ytmp(ioff+j)
@@ -417,7 +422,11 @@ C             Need to do line average calculation
 C             First find k_minnaert
               xI0 = ysav(ix+1,ioff+j)	! extract previous radiance calc at mu=1
               xI1 = ytmp(ioff+j)
-              xk = 0.5*(1.0+log(xI1/xI0)/log(xmu))
+              if(xI0.gt.0.0.and.xI1.gt.0)then
+               xk = 0.5*(1.0+log(xI1/xI0)/log(xmu))
+              else
+               xk=0.5
+              endif
               ystore(ioff+j)=lineav(xI0,xk)
               kk(ioff+j,ix)=(ystore(ioff+j)-yn(ioff+j))/dx
              else             

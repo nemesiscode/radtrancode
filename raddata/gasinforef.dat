@@ -139,6 +139,7 @@
 #                       molecular weights.
 #       PGJI            12.Jan.21 Addition of multiple gases for later addition
 #                       from ExoMOL
+#       LNF            11/06/2021 Updated CH3 based in Sinclair+2020
 
  ------------------------------------------------
   1                 gas identifier
@@ -888,8 +889,8 @@
  94                 gas identifier
  CH3
   1
-  1 1.00000   15.03422  (211)  isotope id, relative abun, mass #
-     -0.44219E+02 +0.58047E+01 +0.50145E-01 -0.37316E-04
+  1 1.00000   15.03422  (219)  isotope id, relative abun, mass #
+     +2.60944e-02 -9.52710e-04 +9.32760e-06 -1.10246e-08
 ------------------------------------------------
  95                 gas identifier
  CH3F

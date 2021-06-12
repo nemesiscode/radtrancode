@@ -160,7 +160,7 @@ NemesisX: nemesis.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/NemesisX nemesis.f $(LIBRARY) \
 	$(LIB)/cirsradg.a $(LIB)/cirsrad.a $(LIB)/radtran.a \
 	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a \
-	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) 
+	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(LIB)/ciatable.a $(FRECIPES) 
 
 Nemesis: nemesis.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Nemesis nemesis.f $(LIBRARY) \
@@ -174,7 +174,7 @@ NemesisPT: nemesisPT.f $(LIBRARY)
 	$(LIB)/cirsradg.a $(LIB)/cirsrad.a \
 	$(LIB)/scatter.a  $(LIB)/path.a $(LIB)/radtran.a \
 	$(LIB)/matrices.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
-	$(FRECIPES) 
+	$(LIB)/ciatable.a $(FRECIPES) 
 
 Nemesisdisc: nemesisdisc.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Nemesisdisc nemesisdisc.f $(LIBRARY) \
@@ -187,7 +187,8 @@ NemesisL: nemesisL.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/NemesisL nemesisL.f $(LIBRARY) \
 	$(LIB)/cirsradg.a $(LIB)/cirsrad.a \
 	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a \
-	$(LIB)/radtran.a $(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) 
+	$(LIB)/radtran.a $(LIB)/spec_data.a \
+	$(LIB)/ciatable.a $(LIB)/rtm_util.a $(FRECIPES) 
 
 NemesisMCS: nemesisMCS.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/NemesisMCS nemesisMCS.f $(LIBRARY) \
@@ -201,14 +202,14 @@ Generatespx: generatespx.f $(LIBRARY)
 	$(LIB)/cirsradg.a $(LIB)/cirsrad.a \
 	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/radtran.a \
 	$(LIB)/matrices.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
-	$(FRECIPES)
+	$(LIB)/ciatable.a $(FRECIPES)
 
 GeneratespxL: generatespxL.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/GeneratespxL generatespxL.f $(LIBRARY) \
         $(LIB)/cirsradg.a $(LIB)/cirsrad.a \
         $(LIB)/scatter.a $(LIB)/path.a $(LIB)/radtran.a \
         $(LIB)/matrices.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
-        $(FRECIPES)
+        $(LIB)/ciatable.a $(FRECIPES)
 
 PTresults: ptresults.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/PTresults ptresults.f $(LIBRARY) \
@@ -222,7 +223,7 @@ GenerateMCSspx: generateMCSspx.f $(LIBRARY)
 	$(LIB)/cirsradg.a $(LIB)/cirsrad.a \
 	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/radtran.a \
 	$(LIB)/matrices.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
-	$(LIB)/lgregfov.a $(FRECIPES)
+	$(LIB)/ciatable.a $(LIB)/lgregfov.a $(FRECIPES)
 
 Convertitertomre: convertitertomre.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Convertitertomre convertitertomre.f \

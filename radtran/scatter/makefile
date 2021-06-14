@@ -45,9 +45,7 @@ F_SOURCES = \
 	rayleighj.f \
 	rayleighls.f \
 	ramanh2.f \
-	ramanjsource.f \
 	raman_wallace_srom.f \
-	ramanxsec.f \
 	calc_raman.f \
 	rayleighv.f \
 	rayleighv_ignatiev.f \
@@ -62,7 +60,9 @@ F_SOURCES = \
 	scloud11flux.f \
 	scloud11fluxA.f \
 	subfithgm.f \
-	modmakephase.f
+	modmakephase.f \
+	ramanxsec.f \
+	ramanjsource.f
 
 INCDIR = ../includes
 #INCLUDES = $(INCDIR)/pathcom.f $(INCDIR)/arrdef.f

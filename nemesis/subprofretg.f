@@ -2435,7 +2435,42 @@ C         Reverse profile array which by convention goes up in the atmosphere
          ENDDO
 
 C        Fit a cubic spline to the points
-         CALL CSPLINE(LP1,XP1,NP,1e30,1e30,XP2)
+C         CALL CSPLINE(LP1,XP1,NP,1e30,1e30,XP2)
+
+C        Fit a cubic spline to the points, dealing with discontinuities where necessary
+         k=0
+         DO J=2,NP-1
+          IF(ABS(xp1(j+1)-xp1(j))/ABS(lp1(j+1)-lp1(j)).GT.10)THEN
+           k=j!mark location of discontinuity
+          ENDIF
+          IF(k.gt.0)EXIT
+         ENDDO
+         IF(k.gt.0)THEN
+          CALL CSPLINE(LP1(1:k),XP1(1:k),k,1e30,1e30,XP2(1:k))
+          CALL CSPLINE(LP1(k+1:np),XP1(k+1:np),np-k,1e30,
+     1                  1e30,XP2(k+1:np))
+C         Use a tanh approximation at the discontinuity to calculate the 2nd derivative (see model 27)
+          HVS = 20
+          dlogp = LP1(k) - ((LP1(k)+LP1(k+1))/2)
+          XP2(k)=HVS*(XP1(k)-XP1(k+1))*tanh(HVS*dlogp)*
+     1           (1/cosh(HVS*dlogp)**2)
+          dlogp = LP1(k+1) - ((LP1(k)+LP1(k+1))/2)
+          XP2(k+1)=HVS*(XP1(k)-XP1(k+1))*tanh(HVS*dlogp)*
+     1           (1/cosh(HVS*dlogp)**2)
+         ELSE
+          CALL CSPLINE(LP1,XP1,NP,1e30,1e30,XP2)
+         ENDIF
+
+        
+C        If straight line, set second derivatives to 0
+         IF(ABS(EXP(XP1(2))-EXP(XP1(1))).LT.1e-36)XP2(1)=0
+         IF(ABS(EXP(XP1(NP))-EXP(XP1(NP-1))).LT.1e-36)XP2(NP)=0
+         DO J=2,NP-1
+          IF(ABS(EXP(XP1(J))-EXP(XP1(J-1))).LT.1e-36)THEN
+           IF(ABS(EXP(XP1(J))-EXP(XP1(J+1))).LT.1e-36)XP2(J)=0
+          ENDIF
+         ENDDO
+
 
          DO J=1,NPRO
           L1 = ALOG(P(J))

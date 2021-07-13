@@ -16,7 +16,8 @@ C
 C     Output variable
 C	n(npoints)	real	Real part of RI spectrum
 C
-C     Pat Irwin		24/2/14
+C     Pat Irwin		24/2/14	Original
+C			13/7/21 Revised and debugged
 C
 C     ***********************************************************
       implicit none     
@@ -24,16 +25,10 @@ C     ***********************************************************
       real pi,sum,dv
       parameter (mpoint=1000,pi=3.1415927)
       real vi(mpoint),k(mpoint),n(mpoint),vm,nm
-      real va(mpoint),na(mpoint),ka(mpoint)
-      real v1,v2,km,alpha,beta,v,y(mpoint),delta
-   
-C     ###########################################
-C     Boundary Info of k data
-C     ###########################################     
-    
-C     Initially set boundary to be the same as the lower and 
-C     upper wavenumber limits required.
-C     PGJI - may need to tweak this.
+      real va(mpoint),na(mpoint),ka(mpoint),d1,d2
+      real km,alpha,beta,v,y(mpoint),delta
+      logical irev   
+
 
       if(vi(1).gt.vi(npoints))then
 C      Wavenumbers and spectra in reverse order
@@ -41,36 +36,29 @@ C      Wavenumbers and spectra in reverse order
         va(i)=vi(npoints+1-i)
         ka(i)=k(npoints+1-i)
        enddo
+       irev=.true.
       else
        do i=1,npoints
         va(i)=vi(i)
         ka(i)=k(i)
        enddo
+       irev=.false.
       endif
- 
-      v1=va(1)
-      v2=va(npoints)
+
+C      do i=1,npoints
+C       print*,i,va(i),ka(i)
+C      enddo 
 
 C     find km at vm
       call verint(va,ka,npoints,km,vm)
 
-C     ###########################################
-C     Other required Parameter Definitions
-C     ###########################################    
-    
-      alpha=0.0
-      beta=0.0
-      v=0.0
-      do i=1,npoints
-       y(i)=0.0
-      enddo
+C      print*,'vm,nm,km',vm,nm,km
 
 C     ###########################################
 C     Integration
 C     ###########################################     
     
-        
-            
+                    
       do 100 i=1, npoints
     
 C       sets the value of v to increment wavenumbers and presets Sum to 0
@@ -85,22 +73,17 @@ C          calculates the value of the
 C          potential singularity
            alpha=((va(j))**2)-(v**2)
            beta=(va(j)**2)-(vm**2)
-                
-                
-                
+C           print*,'alpha,beta',alpha,beta
 C          if alpha isn't 0 (i.e va ne v) 
 C          then K-K is evaluated for each wavenumber
 
            if (alpha.ne.0.and.beta.ne.0.) then
-                                        
-                y(j)=(((k(j)*va(j))-(k(i)*va(i)))/alpha)-
-     1     (((k(j)*va(j))-(km*vm))/(((va(j))**2)-(vm**2)))
-                    
+            d1 = ka(j)*va(j)-ka(i)*va(i)
+            d2 = ka(j)*va(j)-km*vm
+            y(j)=d1/alpha-d2/beta                        
+C            print*,j,i,ka(j),ka(i),va(j),va(i),d1,d2,y(j)
            endif
                               
-C          if alpha is 0 then K-K isn't evaluated at that point
-           If (alpha.eq.0.or.beta.eq.0.)y(j)=0.0
-
 200     continue
             
             
@@ -114,10 +97,10 @@ C       (where N eq total no. of points)
         enddo
                         
         na(i)=nm+(2./pi)*Sum
-            
+C        print*,i,na(i)    
 100   continue      
 
-      if(vi(1).gt.vi(npoints))then
+      if(irev)then
 C      reverse back output spectrum
        do i=1,npoints
         n(i)=na(npoints+1-i)  

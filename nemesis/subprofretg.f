@@ -104,7 +104,7 @@ C     ***********************************************************************
       INTEGER NPRO,NPRO1,NVMR,JZERO,IV,IP,IVAR,JCONT,JVMR
       INTEGER IDGAS(MAXGAS),ISOGAS(MAXGAS),IPAR,JPAR,IVMR,NP
       INTEGER IDAT,JFSH,JHYDRO,ICOND,JFSH1
-      REAL HTAN,PTAN,R,REFRADIUS,XCOL
+      REAL HTAN,PTAN,R,REFRADIUS,XCOL,ETOP
       REAL GASDATA(20,5),XVMR(MAXGAS),XMOLWT,XXMOLWT(MAXPRO)
       REAL CALCMOLWT,XRHO(MAXPRO)
       REAL RADCOND,DENSCOND,MWCOND
@@ -129,7 +129,7 @@ C     ***********************************************************************
       REAL VP(MAXGAS),VP1,XS,GRADL(MAXPRO,MX)
       REAL GRADLINE(MAXPRO,MAXPRO)
       INTEGER SVPFLAG(MAXGAS),SVPFLAG1,NLONG,NTHETA,N1,N2
-      INTEGER NVP,ISWITCH(MAXGAS),IP1,IP2,JKNEE,NLEVEL
+      INTEGER NVP,ISWITCH(MAXGAS),IP1,IP2,JKNEE,NLEVEL,JTOP
       REAL XLDEEP,XLHIGH,HVS,dlogp,XPC
       COMMON /SROM223/PCUT
       REAL XC1,XC2,RH,SLOPE,xch4new(maxpro),xch4newgrad(maxpro)
@@ -3847,6 +3847,185 @@ C        Empirical correction to XOD
 
 C        *** This renormalisation is pretty accurate, but not quite accurate
 C        *** enough and so it gets updated in gsetrad.f
+
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.48)THEN
+C        ***************************************************************
+C        Model 32. Profile is represented by a value at a variable pressure level
+C        plus a fractional scale height, plus top pressure. Below the knee pressure 
+C        and above ptop the profile is 
+C        set to drop exponentially. Similar model to model 32.
+C        ***************************************************************
+
+         IF(VARIDENT(IVAR,1).GE.0)THEN
+          print*,'Warning from SUBPROFRETG. You are using a'
+          print*,'cloud profile parameterisation for a non-cloud'
+          print*,'variable'         
+          STOP 
+         ENDIF
+
+C        Calculate gradient numerically as it's just too hard otherwise
+         DO 208 ITEST=1,5
+
+
+          XDEEP = EXP(XN(NXTEMP+1))
+          XFSH  = EXP(XN(NXTEMP+2))
+          PKNEE = EXP(XN(NXTEMP+3))
+          PTOP = EXP(XN(NXTEMP+4))
+
+          DX=0.05*XN(NXTEMP+ITEST-1)
+          IF(DX.EQ.0.)DX=0.1
+
+          IF(ITEST.EQ.2)THEN
+            XDEEP=EXP(XN(NXTEMP+1)+DX)
+          ENDIF
+          IF(ITEST.EQ.3)THEN
+            XFSH  = EXP(XN(NXTEMP+2)+DX)
+          ENDIF
+          IF(ITEST.EQ.4)THEN
+            PKNEE = EXP(XN(NXTEMP+3)+DX)
+          ENDIF
+          IF(ITEST.EQ.5)THEN
+            PTOP = EXP(XN(NXTEMP+3)+DX)
+          ENDIF
+
+
+          CALL VERINT(P,H,NPRO,HKNEE,PKNEE)
+          CALL VERINT(P,H,NPRO,HTOP,PTOP)
+          if(idiag.gt.0)print*,pknee,hknee
+
+C         Start ND,Q,OD at zero
+C 	  N is in units of particles/cm3
+C         OD is in units of particles/cm2 = particles/cm3 x length(cm)
+C         Q is specific density = particles/gram = (particles/cm3) / (g/cm3)
+          DO J=1,NPRO
+           ND(J)=0.
+           OD(J)=0
+           Q(J)=0.
+          ENDDO
+
+          JKNEE=-1
+          XF=1.
+C         find levels in atmosphere that span pknee
+          DO J=1,NPRO-1
+           IF(P(J).GE.PKNEE.AND.P(J+1).LT.PKNEE)THEN
+            JKNEE=J
+           ENDIF
+          ENDDO
+ 
+          IF(JKNEE.LT.0)THEN
+           print*,'subprofretg: Error in model 48. Stop'
+           print*,'IVAR,XDEEP,XFSH,PKNEE'
+           print*,IVAR,XDEEP,XFSH,PKNEE
+           STOP
+          ENDIF          
+
+          JTOP=-1
+C         find levels in atmosphere that span ptop
+          DO J=1,NPRO-1
+           IF(P(J).GE.PTOP.AND.P(J+1).LT.PTOP)THEN
+            JTOP=J
+           ENDIF
+          ENDDO
+ 
+          IF(JTOP.LT.0)THEN
+           print*,'subprofretg: Error in model 48. Stop'
+           print*,'IVAR,XDEEP,XFSH,PKNEE,PTOP'
+           print*,IVAR,XDEEP,XFSH,PKNEE,PTOP
+           STOP
+          ENDIF          
+
+          DELH=H(JKNEE+1)-HKNEE
+          XFAC=0.5*(SCALE(JKNEE)+SCALE(JKNEE+1))*XFSH
+          ND(JKNEE+1)=DPEXP(-DELH/XFAC)
+
+          DELH = HKNEE-H(JKNEE)
+          XFAC=XF
+          ND(JKNEE)=DPEXP(-DELH/XFAC)
+         
+          DO J=JKNEE+2,JTOP
+           DELH = H(J)-H(J-1)
+           XFAC = SCALE(J)*XFSH
+           ND(J) = ND(J-1)*DPEXP(-DELH/XFAC)
+          ENDDO
+
+          DO J=JTOP+1,NPRO
+           DELH = H(J)-H(JTOP)
+           XFAC = XF
+           ND(J) = ND(J-1)*DPEXP(-DELH/XFAC)
+          ENDDO
+          
+          DO J=1,JKNEE-1
+           DELH = H(JKNEE)-H(J)
+           XFAC = XF
+           ND(J) = DPEXP(-DELH/XFAC)
+          ENDDO
+
+          DO J=1,NPRO
+            IF(AMFORM.EQ.0)THEN
+             XMOLWT=MOLWT
+            ELSE
+             XMOLWT=XXMOLWT(J)
+            ENDIF
+C           Calculate density of atmosphere  (g/cm3)
+            RHO = (0.1013*XMOLWT/R)*(P(J)/T(J))
+C           Calculate initial particles/gram
+            Q(J)=ND(J)/RHO
+          ENDDO
+
+C         Now integrate optical thickness
+          OD(NPRO)=ND(NPRO)*SCALE(NPRO)*XFSH*1E5
+          JFSH=-1
+          DO J=NPRO-1,1,-1
+           IF(J.GT.JKNEE)THEN
+             DELH = H(J+1) - H(J)
+             XFAC = SCALE(J)*XFSH
+             OD(J)=OD(J+1)+(ND(J) - ND(J+1))*XFAC*1E5
+           ELSE
+             IF(J.EQ.JKNEE)THEN
+              DELH = H(J+1)-HKNEE
+              XFAC = 0.5*(SCALE(J)+SCALE(J+1))*XFSH         
+              OD(J)=OD(J+1)+(1. - ND(J+1))*XFAC*1E5
+              DELH = HKNEE-H(J)
+              XFAC = XF
+              OD(J)=OD(J)+(1. - ND(J))*XFAC*1E5
+             ELSE
+              DELH = H(J+1)-H(J)
+              XFAC = XF
+              OD(J)=OD(J+1)+(ND(J+1) - ND(J))*XFAC*1E5
+             ENDIF
+           ENDIF
+          ENDDO
+
+          ODX=OD(1)
+
+C         Now normalise specific density profile.
+C         This is also redone in gsetrad.f to make this totally secure.
+          DO J=1,NPRO
+           OD(J)=OD(J)*XDEEP/ODX
+           ND(J)=ND(J)*XDEEP/ODX
+           Q(J)=Q(J)*XDEEP/ODX
+           IF(Q(J).GT.1e10)Q(J)=1e10
+           IF(Q(J).LT.1e-36)Q(J)=1e-36
+           NTEST=ISNAN(Q(J))
+           IF(NTEST)THEN
+            if(idiag.gt.0)then
+             print*,'Error in subprofretg.f, cloud density is NAN'
+             print*,'Setting to 1e-36'
+            endif
+	    Q(J)=1e-36
+           ENDIF
+
+           IF(ITEST.EQ.1)THEN
+            X1(J)=Q(J)
+           ELSE
+            XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
+           ENDIF
+
+          ENDDO
+
+208       CONTINUE
+
 
         ELSE
 

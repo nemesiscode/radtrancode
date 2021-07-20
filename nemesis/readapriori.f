@@ -88,7 +88,7 @@ C     ****************************************************************
       real xsec(max_mode,max_wave,2),wave(max_wave)
       real err,err1,ref1,pref(maxpro),xcol
       real eref(maxlat,maxpro),reflat(maxlat),htan,htop,etop
-      real dhsphere(maxpro,mlong),hfrac(mlong),efrac
+      real dhsphere(maxpro,mlong),hfrac(mlong),efrac,ptop
       real delp,xfac,pknee,eknee,edeep,xdeep,xlatx,xlonx,pshld
       real xstep,estep,efsh,xfsh,flat,hknee,pre,flat1,dlat
       real ref(maxlat,maxpro),clen,SXMINFAC,arg,valb,alb,refp,errp
@@ -2627,6 +2627,67 @@ C            Read in xdeep, pknee, xwid
              sx(ix,ix) = (ewid/xwid)**2
 
              nx = nx+3
+
+           elseif (varident(ivar,3).eq.48)then
+C            ******** profile held as value at a VARIABLE base pressure,
+C            ******** VARIABLE top pressure,
+C            ******** plus a fractional scale height. Below the base
+C            ******** pressure and above the top the profile is set to 
+C            drop off exponentially
+C            Read in xdeep,fsh,pknee
+             read(27,*)pknee,eknee
+             read(27,*)ptop,etop
+             read(27,*)xdeep,edeep
+             read(27,*)xfsh,efsh
+             ix = nx+1
+             if(varident(ivar,1).eq.0)then
+C             *** temperature, leave alone ********
+              x0(ix)=xdeep
+              err = edeep
+             else
+C             *** vmr, fcloud, para-H2 or cloud, take logs *********
+              if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+              else
+                print*,'Error in readapriori. xdeep must be > 0.0'
+                stop
+              endif
+              err = edeep/xdeep
+             endif
+             sx(ix,ix)=err**2
+             ix = nx+2
+
+             if(xfsh.gt.0.0)then
+               x0(ix) = alog(xfsh)
+               lx(ix)=1
+             else
+               print*,'Error in readapriori - xfsh must be > 0'
+               stop
+             endif
+             sx(ix,ix) = (efsh/xfsh)**2
+
+             ix = nx+3
+             if(pknee.gt.0)then
+                x0(ix)=alog(pknee)
+                lx(ix)=1
+             else
+                print*,'Error in readapriori - pknee must be > 0'
+                stop
+             endif
+             sx(ix,ix) = (eknee/pknee)**2
+
+             ix = nx+4
+             if(ptop.gt.0)then
+                x0(ix)=alog(ptop)
+                lx(ix)=1
+             else
+                print*,'Error in readapriori - ptop must be > 0'
+                stop
+             endif
+             sx(ix,ix) = (etop/ptop)**2
+
+             nx = nx+4
 
            else         
             print*,'vartype profile parametrisation not recognised'

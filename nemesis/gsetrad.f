@@ -794,7 +794,7 @@ C             if(idiag.gt.0)print*,'xx',wave(i),nreal(i),nimag(i)
 
            parm(1)=r0
            parm(2)=v0
-           if(iscatmie.eq.0)then
+           if(iscatmie.eq.1)then
             parm(3)=(1. - 3 * parm(2))/parm(2)
            else
             parm(3)=0.0
@@ -809,7 +809,9 @@ C             if(idiag.gt.0)print*,'xx',wave(i),nreal(i),nimag(i)
      1   parm,rs,srefind,runname,lambda0,csx,
      2   nrealshell,nimagshell)
            else
-            do i1=1,3
+C           Code hack to apply same scattering propeties to all modes
+C           from 1 to -(imode)
+            do i1=1,-imode
              call modmakephase(iwave,i1,inorm,iscatmie,
      1   parm,rs,srefind,runname,lambda0,csx,
      2   nrealshell,nimagshell)

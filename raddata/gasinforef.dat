@@ -124,6 +124,7 @@
 #                       and new gases CH2CCH2, C4N2, C5H5N, C4H4N2, 
 #                                     C7H8, C8H6, C5H5CN
 #                       and updated C3H8 partition function to 25 modes.
+#                       LNF: C3H8 crashed ktables, rolled back to HITRAN version.
 #       PGJI            26.Oct.15  Data for TiO and VO came from Jaemin Lee
 #                       and no-one knows from where! For TiO in particular
 #                       there were 5 isotopes with the same properties and the
@@ -140,7 +141,8 @@
 #       PGJI            12.Jan.21 Addition of multiple gases for later addition
 #                       from ExoMOL
 #       LNF            11/06/2021 Updated CH3 based in Sinclair+2020
-
+#       LNF            11/08/2021 Updated H2 and HD relative abundances and PF
+#                      coefficients to match HITRAN2016.
  ------------------------------------------------
   1                 gas identifier
  H2O   
@@ -474,7 +476,7 @@
  C3H8  
   1                 number of isotopes
   1 1.0000000   44.0000   (211)  isotope id, relative abun, mass #
-     -8.86492e-02  2.21492e-03 -6.74559e-06  5.12411e-08
+     -3.96318e-02 +1.80309e-03 +5.30025e-06 +3.22088e-09
 ------------------------------------------------
  35                 gas identifier
  HCOOH 
@@ -507,10 +509,10 @@
  39                 gas identifier
  H2
   2                 number of isotopes
-  1 0.9999550    2.0160   ( 11)  isotope id, relative abun, mass #
-     +0.00000E+00 +1.00000E+00 +0.00000E+00 +0.00000E+00
-  2 0.0000450    3.0240   ( 12)  isotope id, relative abun, mass #
-     +0.00000E+00 +1.00000E+00 +0.00000E+00 +0.00000E+00
+  1 0.999688    2.01565   ( 11)  isotope id, relative abun, mass #
+      -0.60051628 0.036785234 -4.5184961e-05 5.1695738e-08
+  2 0.0003114   3.021825   ( 12)  isotope id, relative abun, mass #
+      2.9545318  0.083311320 4.3539607e-05 -6.0095052e-08
  ------------------------------------------------
  40                 gas identifier
  He

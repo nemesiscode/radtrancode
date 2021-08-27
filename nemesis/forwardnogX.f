@@ -168,8 +168,6 @@ C      if(idiag.gt.0)print*,(xn(i),i=1,nx)
       call setup(runname,gasgiant,nmu,mu,wtmu,isol,dist,lowbc,
      1 galb,nf1,nphi,layht,tsurf,nlayer,laytyp,layint)
 
-      print*,'88 laytyp = ',laytyp
-
       call file(runname,logname,'log')
 
       open(ulog,file=logname,status='unknown')
@@ -266,7 +264,8 @@ C            nf=20
 
           ix = ix1-1
 
-          if(idiag.gt.0)print*,'forwardnogX, ix,nx = ',ix,nx
+C          if(idiag.gt.0)print*,'forwardnogX, ix,nx = ',ix,nx
+          print*,'forwardnogX, ix,nx = ',ix,nx
           if(ix.gt.0)then
             xref = xn(ix)
             dx = 0.05*xref
@@ -379,7 +378,7 @@ C          if(idiag.gt.0)print*,'Npath, ix = ',npath,ix
 C          if(idiag.gt.0)print*,'Transferring calculation'
 C         Unless an SCR calculation, first path is assumed to be thermal emission
 
-          print*,'ICREAD = ',icread
+          if(idiag.gt.0)print*,'ICREAD = ',icread
           if(icread.ne.1)then       
            ipath=1
            do j=1,nconv1
@@ -409,7 +408,7 @@ C             First find k_minnaert
                xk=0.5
               endif
               yn(ioff+j)=lineav(xI0,xk)
-              print*,ix,ioff,ix+1,ioff+j
+              if(idiag.gt.0)print*,ix,ioff,ix+1,ioff+j
              else
               yn(ioff+j)=yn(ioff+j)+xgeom*ytmp(ioff+j)
               ystore(ioff+j)=ytmp(ioff+j)

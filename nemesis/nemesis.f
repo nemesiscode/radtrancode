@@ -94,7 +94,7 @@ C     ****************   CODE *******************************
 C     *******************************************************
 
 C     Set idiag to 1 for standard print statements. Set to zero to suppress
-      idiag=1		
+      idiag=0
 C     Set iquiet to 1 to reduce writing to intermdiate meta files (such as .drv)
       iquiet=0
 
@@ -365,7 +365,7 @@ C     set up a priori of x and its covariance
       idump=0  ! flag for diagnostic print dumps
       ica=0
 
-      if(nspec.eq.1.and.idiag.gt.0)then
+      if(nspec.eq.1)then
         ica = 1		! 1 = single retrieval
       else
         ica = 0		! 0 = multiple retrievals

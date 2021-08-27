@@ -84,7 +84,8 @@ C     Set molar heat capacity at constant pressure (ideal gas) for a polyatomic
 C     gas with translational and rotational degrees of freedom activated.
 C     CP is J K-1 mol-1
       CP = 4*R
-
+C     Reset for what we actually see at most levels of Uranus atmosphere
+      CP = 2.5*R
 
 
 C     Calculate density of atmosphere (g/cm3) and DALR (K/km)
@@ -153,13 +154,17 @@ C     Calculate DT_DZ
       DO 202 J=1,NPRO
 C      Calculate eddy diffusion coefficient
 C      Compute x = R*F/mu*rho*Cp. Since Cp is ideal this simplifies to
-C      F/(rho*4). Factor of 1e3 below converts g/cm3 to kg/m3
+C      F/(rho*4). Factor of 1e3 below converts g/cm3 to kg/m3. Units of
+C      X will then be then m3 s-3 (assuming F is W m-2)
        X = FLUX/(RHO(J)*1e3*CP/R)
        LH = MAX(XLAMBDA,DTDZ(J)/DALR(J))
 C      L is mixing length in km
        L=LH*SCALE(J)
-C      EDDY(J) is eddy diffusion coefficient in cm2 s-1
-       EDDY(J)=1e4*(1e3*SCALE(J)/3.0)*(LH**1.33333)*(X**0.333333)
+C      EDDY(J) is eddy diffusion coefficient in m2 s-1. Factor of 1e3
+C      converts SCALE from km to m.
+       EDDY(J)=(1e3*SCALE(J)/3.0)*(LH**1.33333)*(X**0.333333)
+C      Convert eddy to cm2 s-1
+       EDDY(J)=EDDY(J)*1e4
        EDDY(J)=MAX(EDDY(J),KMIN)
 C      WS is convective velocity scale in cm s-1
        WS(J) = EDDY(J)/(L*1e5)

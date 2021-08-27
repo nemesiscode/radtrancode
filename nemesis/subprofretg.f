@@ -3886,13 +3886,17 @@ C        Calculate gradient numerically as it's just too hard otherwise
             PKNEE = EXP(XN(NXTEMP+3)+DX)
           ENDIF
           IF(ITEST.EQ.5)THEN
-            PTOP = EXP(XN(NXTEMP+3)+DX)
+            PTOP = EXP(XN(NXTEMP+4)+DX)
           ENDIF
 
 
           CALL VERINT(P,H,NPRO,HKNEE,PKNEE)
           CALL VERINT(P,H,NPRO,HTOP,PTOP)
           if(idiag.gt.0)print*,pknee,hknee
+
+
+C          print*,'ptop,htop = ',ptop,htop
+C          print*,'pknee,hknee = ',pknee,hknee
 
 C         Start ND,Q,OD at zero
 C 	  N is in units of particles/cm3
@@ -3905,7 +3909,6 @@ C         Q is specific density = particles/gram = (particles/cm3) / (g/cm3)
           ENDDO
 
           JKNEE=-1
-          XF=1.
 C         find levels in atmosphere that span pknee
           DO J=1,NPRO-1
            IF(P(J).GE.PKNEE.AND.P(J+1).LT.PKNEE)THEN
@@ -3935,13 +3938,21 @@ C         find levels in atmosphere that span ptop
            STOP
           ENDIF          
 
+
+C          print*,JKNEE,JTOP
+
           DELH=H(JKNEE+1)-HKNEE
-          XFAC=0.5*(SCALE(JKNEE)+SCALE(JKNEE+1))*XFSH
+          XFAC=SCALE(JKNEE)*XFSH
           ND(JKNEE+1)=DPEXP(-DELH/XFAC)
 
           DELH = HKNEE-H(JKNEE)
-          XFAC=XF
+          XFAC=0.05*SCALE(JKNEE)
           ND(JKNEE)=DPEXP(-DELH/XFAC)
+           
+          DO J=1,JKNEE-1
+           DELH = H(JKNEE)-H(J)
+           ND(J) = DPEXP(-DELH/XFAC)
+          ENDDO
          
           DO J=JKNEE+2,JTOP
            DELH = H(J)-H(J-1)
@@ -3949,17 +3960,17 @@ C         find levels in atmosphere that span ptop
            ND(J) = ND(J-1)*DPEXP(-DELH/XFAC)
           ENDDO
 
+          XFAC=0.05*SCALE(JTOP)
+
           DO J=JTOP+1,NPRO
-           DELH = H(J)-H(JTOP)
-           XFAC = XF
-           ND(J) = ND(J-1)*DPEXP(-DELH/XFAC)
+           DELH = H(J)-HTOP
+           ND(J) = ND(JTOP)*DPEXP(-DELH/XFAC)
           ENDDO
-          
-          DO J=1,JKNEE-1
-           DELH = H(JKNEE)-H(J)
-           XFAC = XF
-           ND(J) = DPEXP(-DELH/XFAC)
-          ENDDO
+
+
+C          DO J=1,NPRO
+C           print*,J,H(J),P(I),ND(J)
+C          ENDDO          
 
           DO J=1,NPRO
             IF(AMFORM.EQ.0)THEN

@@ -108,10 +108,10 @@ C     looking for keywords in file
         END IF
       GOTO 2
 3     CONTINUE
-      WRITE(*,42)NLAY,LAYHT,LAYANG
+      if(idiag.gt.0)WRITE(*,42)NLAY,LAYHT,LAYANG
 42    FORMAT(' computing',I4,' layers from height',F7.1,
      1' at',F7.3,' degrees from nadir')
-      WRITE(*,43)LAYTYP,LAYINT
+      if(idiag.gt.0)WRITE(*,43)LAYTYP,LAYINT
 43    FORMAT(' layer type =',I3,'   integration over layer type =',I3)
 C
 

@@ -545,14 +545,14 @@ c      write(*,*)ophi,oxchi
 C     Assess whether retrieval is likely to be OK
       call assess(nx,ny,kk,sa,se)
  
-      if(ica.eq.1.and.idiag.gt.0)then       ! Open and write only for single spec ret.
+      if(ica.eq.1)then       ! Open and write only for single spec ret.
        inquire(file=itname, number=tmpvarint)!check that .itr file hasn't already been opened before opening it
-       if(tmpvarint.ne.37)then
+       if(tmpvarint.ne.40)then
         call file(runname,itname,'itr')
-        open(37,file=itname,status='unknown')
-        write(37,*)'' 
+        open(40,file=itname,status='unknown')
+        write(40,*)'' 
        else
-        write(37,*)'###'
+        write(40,*)'###'
        endif
       endif
 
@@ -574,17 +574,17 @@ C     vectors xn, yn
       do 401 iter = iterred, kiter
 
         if(ica.eq.1)then
-         write(37,*)''
-         write(37,*)nx,ny,kiter
-         write(37,*)chisq,phi
-         write(37,*)(xn1(i),i=1,nx)
-         write(37,*)(xa(i),i=1,nx)
-         write(37,*)(y(i),i=1,ny)
-         write(37,*)(se1(i),i=1,ny)
-         write(37,*)(yn1(i),i=1,ny)
-         write(37,*)(yn(i),i=1,ny)
+         write(40,*)''
+         write(40,*)nx,ny,kiter
+         write(40,*)chisq,phi
+         write(40,*)(xn1(i),i=1,nx)
+         write(40,*)(xa(i),i=1,nx)
+         write(40,*)(y(i),i=1,ny)
+         write(40,*)(se1(i),i=1,ny)
+         write(40,*)(yn1(i),i=1,ny)
+         write(40,*)(yn(i),i=1,ny)
          do i=1,nx
-          write(37,*)(kk(j,i),j=1,ny)
+          write(40,*)(kk(j,i),j=1,ny)
          enddo
         endif
 
@@ -913,14 +913,14 @@ C       Calculate the cost function for this trial solution.
         phi = calc_phiret(ny,y,yn1,sei,nx,xn1,xa,sai,chisq)
 
         xchi = chisq/float(ny)
-        if(idiag.gt.0)print*,'chisq/ny = ',xchi
-        if(idiag.gt.0)print*,'it.,al.,ophi.,phi.',
+        print*,'chisq/ny = ',xchi
+        print*,'it.,al.,ophi.,phi.',
      1   iter,alambda,ophi,phi
 
 C       What's %phi between last and this iteration?    
         tphi = 100.0*(ophi-phi)/ophi
         abstphi = abs(tphi)
-        if(idiag.gt.0)print*,'%phi, abs(%phi) : ',tphi,abstphi
+        print*,'%phi, abs(%phi) : ',tphi,abstphi
 
         if(redwavbool.eqv..true.)then!reduce phlimit in first few iterations of reduced wavelength scheme using a fudge factor to waste less time
          phfac=float(nconv(1))/float(nconvfull(1))
@@ -976,6 +976,7 @@ C           Has solution converged?
 C       If phi > ophi, accept new xn and kk only if current solution 
 C       would converge under one of the alternate criterions:
 
+            if(idiag.gt.0)print*,'Looking at alternative conv.'
 C           If alambda is small enough, increase it to decrease abs(tphi) value. 						
             if (alambda.lt.0.1) then        ! don't allow lambda to increase beyond 1.0
 	       alambda = alambda*10.0		! increase Marquardt brake further
@@ -1163,7 +1164,7 @@ C
 
       endif
 
-202   if(ica.eq.1)close(37)
+202   if(ica.eq.1)close(40)
 
       if(ica.eq.1)then
 C      Write out k-matrix for reference
@@ -1172,7 +1173,7 @@ C      Write out k-matrix for reference
        write(52)kk
        CLOSE(52)
 
-       close(37)
+       close(40)
 
       endif
 
@@ -1192,13 +1193,10 @@ C	Make sure input and output spectral errors are consistent when ending run
 	enddo
       endif
 
-C      if(idiag.gt.0)print*,'chisq/ny is equal to : ',chisq/float(ny)
-      if(idiag.gt.0)print*,'chisq/ny is equal to : ',oxchi
+      print*,'chisq/ny is equal to : ',oxchi
       if(chisq.gt.ny)then
-       if(idiag.gt.0)then
         print*,'Coreret: WARNING'
         print*,'chisq/ny should be less than 1 if correctly retrieved'
-       endif
       endif
 
       if(idiag.gt.0)print*,'Calculating final covariance matrix'

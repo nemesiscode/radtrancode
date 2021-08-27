@@ -2485,14 +2485,14 @@ C-----------------------------------------------------------------------
         endif
 
 
-        IF(RAMAN)THEN
-         OPEN(12,FILE='jraman.txt',status='unknown')
-          WRITE(12,*)VRAM0,VRAMST,NRAMAN,NLAYER
-          do i=1,NRAMAN
-           write(12,*)(JRAMAN(I,J),J=1,NLAYER)
-          enddo
-         CLOSE(12)
-        ENDIF
+C        IF(RAMAN)THEN
+C         OPEN(12,FILE='jraman.txt',status='unknown')
+C          WRITE(12,*)VRAM0,VRAMST,NRAMAN,NLAYER
+C          do i=1,NRAMAN
+C           write(12,*)(JRAMAN(I,J),J=1,NLAYER)
+C          enddo
+C         CLOSE(12)
+C        ENDIF
 
 
 	RETURN

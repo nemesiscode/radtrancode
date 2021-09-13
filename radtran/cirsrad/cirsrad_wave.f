@@ -183,6 +183,12 @@ C		Internal variables
      1		frac(maxlay,maxgas), qh_he(maxlay), dist1,
      2		x, taucon(maxlay)
         REAL    taugas(maxlay), tauscat(maxlay), p, t
+        REAL    cumgas(maxlay),cumray(maxlay),cumcloud(maxlay),
+     1          cummol(maxlay),polomeg(maxlay),sumcloud(maxlay)
+        double precision fhen,g1,g2
+        REAL    g,fray,x1,thrad,sumpol,x2,dpol,drad,deltaipol
+        REAL    d1,d2
+        LOGICAL	SROMPOL
         REAL    taugasc(maxlay),xp
         REAL    tau, tau2, asec(maxsec), bsec(maxsec),
      1          tausc(maxcon), taus(maxlay),
@@ -252,9 +258,6 @@ C       Solar reference spectrum common block
         INTEGER IRAMAN,NRAMAN
         COMMON/RAMAN/RAMAN,DENS,JRAMAN,VRAM0,VRAMST,NRAMAN,FPRAMAN,
      1 H2ABUND,IRAMAN,KWT
-
-        
-
 	PARAMETER	(tsun=5900.,theta0=4.65241e-3, pi=3.141593,
      1			error=5.e-5,LUNIS=61,infr=62,infrt=63) 
         integer idiag,iquiet
@@ -270,8 +273,16 @@ C-----------------------------------------------------------------------
         IF(IRAY.GT.4)THEN
          RAMAN=.TRUE.
         ELSE
-        RAMAN=.FALSE.
+         RAMAN=.FALSE.
         ENDIF
+    
+        IF(IRAY.GT.5)THEN
+         SROMPOL=.TRUE.
+        ELSE
+         SROMPOL=.FALSE.
+        ENDIF
+      
+        print*,'RAMAN, SROMPOL = ',RAMAN,SROMPOL
 
 C       If RAMAN, set up and initialise source function array.
         IF(RAMAN)THEN
@@ -1090,7 +1101,7 @@ C-----------------------------------------------------------------------
 
 		taus(J) = tautmp(layinc(J,ipath)) * scale(J,ipath)
 		taur(J) = tauray(layinc(J,ipath)) * scale(J,ipath)
-
+             
 
 C               New arrays for scloud12wave. taucl holds the extinction
 C		optical depth of each cloud type. taucs holds the 
@@ -1106,6 +1117,8 @@ C		Rayleigh scattering).
 C               Subtract Rayleigh scattering
                 taug(J)=taug(J)-taur(J)
 
+
+                
                 if(single)then
                   fint(j)=f(layinc(J,ipath))
 		endif
@@ -1114,6 +1127,58 @@ C               Subtract Rayleigh scattering
 			lfrac(K,J) = frcscat(K,layinc(J,ipath)) 
 		ENDDO
 				ENDDO
+
+ 
+                if(SROMPOL)then
+
+                 do j=1,nlays
+                  sumcloud(j)=0.0
+                 enddo
+
+                 do k=1,ncont
+                  call read_hg(x,k,ncont,fhen,g1,g2)
+C                  Need to decide whether this component should be treated as
+C                  Rayleigh scattering 
+C                  call raycomponent(fhen,g1,g2,fray)
+                  fray=0.0
+C                  Need effective asymmetry of phase function    
+                  g = sngl(fhen*g1+(1-fhen)*g2)
+
+                  do j=1,nlays
+                   taur(j)=taur(j)+fray*taucl(k,j)
+
+               sumcloud(j)=sumcloud(j)+(1-fray)*taucl(k,j)*(1.0-g)
+C                   print*,k,j,(1-fray)*taucl(k,j)*(1.0-g),
+C     & taucl(k,j),(1.0-g),sumcloud(j)
+                  enddo
+                 enddo
+
+                 do j=1,nlays
+                  if(j.eq.1)then
+                   cumray(j)=taur(j)
+                   cumgas(j)=taug(j)                   
+                   cumcloud(j)=sumcloud(j)                   
+                  else
+                   cumray(j) = cumray(j-1)+taur(j)                   
+                   cumgas(j) = cumgas(j-1)+taug(j)                   
+                   cumcloud(j) = cumcloud(j-1)+sumcloud(j)                   
+                  endif
+                  cummol(j)=cumray(j)+cumgas(j)
+                 enddo
+                 do j=1,nlays
+                  if(j.eq.1)then
+                   polomeg(j)=cumray(j)/cummol(j)
+                  else
+                   polomeg(j)=(cumray(j)-cumray(j-1))/
+     1			(cummol(j)-cummol(j-1))
+                   if(cummol(j).eq.cummol(j-1))then
+                    polomeg(j)=0.0
+                   endif
+                  endif
+C                  print*,j,cumray(j),cummol(j),polomeg(j),cumcloud(j)
+                 enddo
+                endif
+
 
 C        print*,'!! imod,ipath = ',imod,ipath
 	
@@ -1392,12 +1457,40 @@ C     1  emiss_ang
      3				nf, Ig, x, vv, eps, omegas,bnu, taus, 
      4				taur,nlays, ncont,lfrac)
 
-C                        if(taur(1).gt.10000.0)print*,'taurB',
-C     1 (taur(j),j=1,nlays)
-
-
 
  		  	corkout(Ipath,Ig) = xfac*rad1
+
+
+                        if(SROMPOL)then
+                         dtr=3.1415927/180.0
+                         x1 = 1/cos(sol_ang*dtr)+1/cos(emiss_ang*dtr)
+                         thrad=emiss_ang*dtr
+                         sumpol=0.0
+                         do j=1,nlays
+                          x2 = exp(-cumcloud(j)*x1)
+                          if(j.eq.1)then
+                           dpol=deltaipol(thrad,polomeg(j),cummol(j))
+                          else
+                           d1 = deltaipol(thrad,polomeg(j),cummol(j))
+                           d2 = deltaipol(thrad,polomeg(j),cummol(j-1))
+                           dpol = d1-d2
+                          endif
+                          sumpol=sumpol+x2*dpol
+
+                          if(isnan(sumpol))then
+                           print*,'Error in sromovsky polarisation'
+                           stop
+                          endif
+                         enddo
+                         
+                         drad=sumpol*solar/3.1415927
+C                         print*,solar,drad
+                         corkout(Ipath,Ig)=corkout(Ipath,Ig)+xfac*drad
+
+C                         stop
+
+                        endif
+
 
 
                 ELSEIF (itype.EQ.12) THEN

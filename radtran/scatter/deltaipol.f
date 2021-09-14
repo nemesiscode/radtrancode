@@ -125,7 +125,7 @@ C      ****************************************
         fomega = omega**3 
        else
         y = abs((alog10(1.0-omega)))**1.789
-        fomega = 0.882*(1-exp(-y/0.458))
+        fomega = 0.881838*(1-exp(-y/0.458))
        endif 
 
        return

@@ -62,7 +62,8 @@ F_SOURCES = \
 	subfithgm.f \
 	modmakephase.f \
 	ramanxsec.f \
-	ramanjsource.f
+	ramanjsource.f \
+	deltaipol.f
 
 INCDIR = ../includes
 #INCLUDES = $(INCDIR)/pathcom.f $(INCDIR)/arrdef.f
@@ -128,3 +129,4 @@ Test_pmat6 : test_pmat6.f $(LIBRARY)
 Testsubfithg : testsubfithg.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Testsubfithg testsubfithg.f $(LIBRARY) \
 	$(LIB)/path.a $(LIB)/rtm_util.a $(FRECIPES)
+

@@ -10,7 +10,7 @@ C	FMEAN(NLAY) REAL	density-weight sphere-integrated flux
 C				for each layer (W cm-2 micron-1)
 C    
 C     Output variable
-C	None returned, but Ramin-scattered light added to source function
+C	None returned, but Raman-scattered light added to source function
 C       matrix JRAMAN(1000,MAXSCATLAY) at longer wavelengths, held in a
 C       COMMON block, which is later added to the thermal emission 
 C       source function by double1.f.
@@ -47,7 +47,7 @@ C     See Sromovsky (2005)
 
       CALL RAMANXSEC(LAMBDA0,SPECS0,SPECS1,SPECQ)
 
-C     Go three the three possible scattered terms to add
+C     Go through the three possible scattered terms to add
 
 C     1 - S0 transition
       DNU = DNUS0

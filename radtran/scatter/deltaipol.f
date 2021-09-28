@@ -68,7 +68,8 @@ C      ****************************************
        else
         y1=1.0
        endif
-C       wf=1.01
+C       wf=1.01	       Eq.A4 of Sromovsky 2005 uses this constant of 1.01
+C		       However, Larry now recommends this be multiplied by 0.85
        wf=1.01*0.85
        y2 = (1-exp(-(tau**wf)/0.493))**(2.0/wf)
 

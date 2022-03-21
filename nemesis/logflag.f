@@ -126,6 +126,8 @@ C       Variable is not temperature  - may need to take exponent
       if(ivar.eq.555)iflag=0	! Planet radius
       if(ivar.eq.333)iflag=0	! Planet surface gravity
       if(ivar.eq.444)iflag=1	! Particle size and ref. index
+      if(ivar.eq.446)iflag=1	! Particle size and ref. index
+      if(ivar.eq.446.and.ip.eq.3)iflag=0	! fraction
       if(ivar.eq.445)iflag=1	! Particle size and ref. index (coated sphere)
       if(ivar.eq.443)then
          if(ip.eq.1)iflag=1     ! Log scaling factor

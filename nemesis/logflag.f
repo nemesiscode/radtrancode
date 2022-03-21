@@ -80,7 +80,7 @@ C       Variable is not temperature  - may need to take exponent
       if(imod.eq.19.and.ip.eq.2)iflag=1 ! log fsh - var. knee
       if(imod.eq.9.and.ip.eq.4)iflag=1 ! log cwid - var knee
       if(imod.eq.34.and.ip.eq.2)iflag=1 ! OD scalar
-      if(imod.ge.12.or.imod.le.13.or.imod.eq.47)then 
+      if((imod.ge.12.and.imod.le.13).or.imod.eq.47)then 
           if(ip.eq.1)iflag=1 	       ! Gaussian/Lorentz cloud
           if(ip.eq.2)iflag=1 
           if(ip.eq.3)iflag=1 

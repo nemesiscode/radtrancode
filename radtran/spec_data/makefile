@@ -58,7 +58,7 @@ lib $(LIBRARY): $(LIBCODE)
 
 $(LIBRARY)(%.o): %.f $(INCLUDES)
 	$(FC) $(FCFLAGS) -c $<
-	ar rvU $(LIBRARY) $*.o
+	ar rv $(LIBRARY) $*.o
 	ranlib $(LIBRARY)
 	-rm $*.o
 

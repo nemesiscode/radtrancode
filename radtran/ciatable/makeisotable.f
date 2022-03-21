@@ -238,7 +238,7 @@ c with Borysows original and ouput doesn't contain spikes. NT 23/6/04
       open(12,file=opfile,form='unformatted',status='unknown')
 
       write(12) temps
-      write(12) k
+      write(12) kcia
       close(12)
 
       end

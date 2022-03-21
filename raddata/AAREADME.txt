@@ -22,6 +22,7 @@ Borysowsub.tab			50-410K		dnu=10. (extended to < 1 micron)
 GlennBorysow.tab		50-410K		dnu=10.
 isotest.tab			70-310K         dnu=1.
 isotest_lowt.tab		57.5-285.5K	dnu=1.
+isotest_lowert.tab		40-280K		dnu=1.
 glenniso.tab			70-310K         dnu=1.
 xborysowx.tab			50-170K         dnu=10 (Only for < 1 micron, reprocessed from Borysow codes)
 xborysow410x.tab		50-410K         dnu=10 (Only for < 1 micron, reprocessed from Borysow codes)

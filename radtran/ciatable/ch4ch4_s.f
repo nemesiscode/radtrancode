@@ -1,4 +1,4 @@
-      BLOCK DATA INPUT                                                  
+      BLOCK DATA INPUTCH4CH4                                                  
 c
 c	Clean F77 version of an old CYBER program
 c	Runs on VAX ( tested 17-NOV-1988) OK

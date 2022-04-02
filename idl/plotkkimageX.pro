@@ -6,7 +6,7 @@
 ;
 ; ********************************************************************
 mx = 401
-my = 1024
+my = 2048
 filename=' '
 print,'Enter name of kk.out file : '
 ;filename='kk.out'
@@ -117,9 +117,11 @@ close,1
 
 tref  = fltarr(npro)
 pref  = fltarr(npro)
+href  = fltarr(npro)
 
 tref = tmp(2,*)
 pref = tmp(1,*)
+href = tmp(0,*)
 
 filename = strcompress(string(runname,'.apr'),/remove_all)
 openr,1,filename
@@ -149,10 +151,12 @@ for ivar=0,nvar-1 do begin
  if(vartmp(2) eq 1)then for i=0,2 do readf,1,head
  if(vartmp(2) eq 2)then readf,1,head
  if(vartmp(2) eq 3)then readf,1,head
+ if(vartmp(2) eq 39)then readf,1,head
  if(vartmp(2) eq 9)then for i=1,3 do readf,1,head
  if(vartmp(2) eq 10)then for i=1,3 do readf,1,head
  if(vartmp(0) eq 555)then readf,1,head
  if(vartmp(0) eq 999)then readf,1,head
+ if(vartmp(0) eq 444)then readf,1,head
 
 endfor
 close,1
@@ -160,22 +164,42 @@ close,1
 
 press = fltarr(npro)
 press(*)=1.013*pref(0,*)
+height=press
+height(*)=href(*)
 
-ioff=0
-print,'Enter pressure range (max,min) : '
-pmin = 0.0
-pmax = 0.0
-read,pmax,pmin
-lp1 = alog(pmin)
-lp2 = alog(pmax)
+print,'Plot against pressure (0) or height (1)?'
+iheight=0
+read,iheight
 
-nl = 500
-lpref = lp1+(lp2-lp1)*findgen(nl)/float(nl-1)
-lpress = alog(reverse(press))
+if(iheight eq 1) then begin
+ print,'Enter height range (km) : '
+ hmin=0.0
+ hmax=0.0
+ read,hmin,hmax
+
+ nl=500
+ height1 = hmin+(hmax-hmin)*findgen(nl)/float(nl-1)
+
+endif else begin
+ ioff=0
+ print,'Enter pressure range (max,min) : '
+ pmin = 0.0
+ pmax = 0.0
+ read,pmax,pmin
+ lp1 = alog(pmin)
+ lp2 = alog(pmax)
+
+ nl = 500
+ lpref = lp1+(lp2-lp1)*findgen(nl)/float(nl-1)
+ lpress = alog(reverse(press))
+
+endelse
 
 dv = vconv(1)-vconv(0)
-vmin = vconv(0)
-vmax = vconv(nconv-1)
+;vmin = vconv(0)
+;vmax = vconv(nconv-1)
+vmin = a
+vmax = b
 nout = 1+long((vmax-vmin)/dv)
 bb = fltarr(nout,nl)
 
@@ -222,33 +246,48 @@ for ivar = 0,nvar-1 do begin
  if(vartyp eq 2) then np = 1
  if(vartyp eq 3) then np = 1
  if(vartyp eq 9) then np = 3
+ if(vartyp eq 32) then np = 3
+ if(vartyp eq 39) then np = 1
+ if(vartyp eq 48) then np = 4
  if(vartyp eq 555) then np = 1
 
 
- ikeep = where(vconv ge a and vconv le b) 
+ ikeep = where(vconv ge a and vconv le b, nconv1) 
 
- aa = fltarr(nconv,npro)
+ aa = fltarr(nconv1,npro)
+ bb = fltarr(nconv1,nl)
+
  aa(*)=0.0
  if(vartyp eq 0) then begin
   for igeom=0,ngeom-1 do begin
-   for i=0,nconv-1 do begin
-    aa(i,*)=aa(i,*)+kk(igeom*nconv+i,ioff:(ioff+npro-1))
+   for i=0,nconv1-1 do begin
+    j=ikeep(i)
+    aa(i,*)=aa(i,*)+kk(igeom*nconv+j,ioff:(ioff+npro-1))
    endfor
   endfor
 
   bb(*)=0.0
   ap = fltarr(npro)
 
-  icut = where(lpref le lpress(0) or lpref ge lpress(npro-1),count)
-  for i=0,nconv-1 do begin
-   j = long((vconv(i)-vmin)/dv)
-   ap(*)=aa(i,*)
-   a1 = reverse(ap)
-   b1 = interpol(a1,lpress,lpref)
-   if(count gt 0) then b1(icut)=0.0
-   bp = reverse(b1)
-   bb(j,*)=bp(*)
-  endfor
+  if(iheight eq 0) then begin
+   icut = where(lpref le lpress(0) or lpref ge lpress(npro-1),count)
+   for i=0,nconv1-1 do begin
+    ap(*)=aa(i,*)
+    a1 = reverse(ap)
+    b1 = interpol(a1,lpress,lpref)
+    if(count gt 0) then b1(icut)=0.0
+    bp = reverse(b1)
+    bb(i,*)=bp(*)
+   endfor
+  endif else begin
+   icut = where(height le height1(0) or height ge height1(npro-1),count)
+   for i=0,nconv1-1 do begin
+    ap(*)=aa(i,*)
+    bp = interpol(ap,height,height1)
+    if(count gt 0) then bp(icut)=0.0
+    bb(i,*)=bp(*)
+   endfor
+  endelse
 
   print,'Enter title: '
   tname=''
@@ -258,8 +297,37 @@ for ivar = 0,nvar-1 do begin
   iwave=0
   read,iwave
 
-  imagekkbar,bb,tname,iplotx,nplotx,iploty,nploty,$
+  print,'Normalise dR/dx to same peak at all wavelengths?'
+  ans=''
+  read,ans
+  if(strupcase(ans) eq 'Y') then begin
+   aa= max(bb)
+   print,aa
+   for i=0,nconv1-1 do begin
+    a1=max(bb(i,*))
+    print,a1,aa,aa/a1
+    bb(i,*)=bb(i,*)*aa/a1
+   endfor
+  endif
+
+  print,'Plot divide by radiance?'
+  ans=''
+  read,ans
+  if(strupcase(ans) eq 'Y') then begin
+   for i=0,nconv1-1 do begin
+    if(yn(i) gt 0.0) then bb(i,*)=bb(i,*)/yn(i)
+   endfor
+  endif
+
+
+
+  if(iheight eq 1) then begin
+   imagekkbarx,bb,tname,iplotx,nplotx,iploty,nploty,$
+   hmin,hmax,vmin,vmax,ips,ict,iwave
+  endif else begin
+   imagekkbar,bb,tname,iplotx,nplotx,iploty,nploty,$
    pmin,pmax,vmin,vmax,ips,ict,iwave
+  endelse
 
   iplotx = iplotx+1
   if(iplotx gt nplotx) then begin

@@ -139,6 +139,13 @@ c  ** calc g_ord and del_g **
        DELV=-1.0
       ENDIF
 
+      IF(NPOINT.GT.MPOINT)THEN
+       PRINT*,'NPOINT > MPOINT'
+       PRINT*,NPOINT,MPOINT
+       PRINT*,'Reduce NPOINT or increase MPOINT and recompile'
+       STOP
+      ENDIF
+
       CALL PROMPT('Square bins (0), or non-square(1) : ')
       READ*,SQBIN
 

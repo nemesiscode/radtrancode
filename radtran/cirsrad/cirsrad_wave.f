@@ -108,7 +108,7 @@ C		Passed variables
 	INTEGER	nlayer, npath, ngas, limlay, limcont, nwave, 
      1		nlayin(npath), incdim, layinc(incdim, npath), 
      2          idgas(ngas), isogas(ngas), imod(npath),igas,
-     3 		infr,infrt,ish,irayx,ivenera
+     3 		infr,infrt,ish,irayx,ivenera,inetflux
 
 	REAL	press(nlayer), temp(nlayer), pp(limlay,ngas), 
      1		amount(limlay,ngas), vwave(nwave), cont(limcont,nlayer), 
@@ -204,8 +204,9 @@ C		Internal variables
         integer icloud(maxcon,maxlay)
         REAL	fdown(maxlay,maxg),fwhmk,
      1          delvk,tauray(maxlay),f1(maxlay),g11(maxlay),
-     2          g21(maxlay),taur(maxlay) 
-	REAL ftop(maxg),LAMBDA,tauram
+     2          g21(maxlay),taur(maxlay)
+        REAL    tfdown(maxlay),tfup(maxlay)
+	REAL    ftop(maxg),LAMBDA,tauram
         DOUBLE PRECISION SPEC,SPECS0,SPECS1,SPECQ
 	DOUBLE PRECISION	tr, trold, taud, dtmp1, dtmp2, dpi, 
      1          dphase, calpha, dmuinc, dmuemiss, draddeg, dinc, demiss,
@@ -538,9 +539,11 @@ C       Look to see if there is a scattering net-flux calculation. If so
 C       open output file for internal radiation field output. 
         ish=0
         ivenera=0
+        inetflux=0
         do ipath=1,npath
 C         if(imod(ipath).eq.24)ish=1
-         if(imod(ipath).eq.24)ivenera=1
+C         if(imod(ipath).eq.24)ivenera=1
+         if(imod(ipath).eq.24)inetflux=1
         enddo
         if(idiag.gt.0)print*,'ish = ',ish
         if(ish.eq.1)then
@@ -566,6 +569,16 @@ C         if(imod(ipath).eq.24)ish=1
         if(ivenera.eq.1)then
          if(idiag.gt.0)print*,'opening venera.dat'
          open(infr,file='venera.dat',status='unknown')
+         write(infr,*)nlayer
+         write(infr,*)nwave
+         write(infr,*)(vwave(i),i=1,nwave)
+         write(infr,*)(basep(i),i=1,nlayer)
+         write(infr,*)(baseh(i),i=1,nlayer)
+        endif     
+
+        if(inetflux.eq.1)then
+         if(idiag.gt.0)print*,'opening venera.dat'
+         open(infr,file='netflux.dat',status='unknown')
          write(infr,*)nlayer
          write(infr,*)nwave
          write(infr,*)(vwave(i),i=1,nwave)
@@ -1877,8 +1890,9 @@ C               emission from ground.
 
 	ELSEIF (imod(ipath).EQ.24) THEN
 
-cc		WRITE(*,*) 'CIRSRAD_WAVE: Imod= 24 =Net flux calculation,',
-cc     1        ' multiple scattering'. Creating output'
+		WRITE(*,*) 'CIRSRAD_WAVE: Imod= 24 =Net flux calculation,',
+     1        ' multiple scattering - Creating output'
+                print*,ipath,npath
 
                 if(Ipath.eq.Npath)then
 
@@ -2038,9 +2052,17 @@ C		   scattering case, including thermal emission and sunlight
      1                ig,umif,uplf,fup,fdown,ftop)                    
 
 
-
-                  do Jpath=1,Ipath
+                  do Jpath=1,nlays
   	           corkout(Jpath,Ig) = fup(Jpath,Ig) - fdown(Jpath,Ig)
+                   if(ig.eq.1)then
+                      tfdown(Jpath)=delg(ig)*fdown(Jpath,Ig)
+                      tfup(Jpath)=delg(ig)*fup(Jpath,Ig)
+                   else
+                      tfdown(Jpath)=tfdown(Jpath)+
+     1                  delg(ig)*fdown(Jpath,Ig)
+                      tfup(Jpath)=tfup(Jpath)+
+     1                  delg(ig)*fup(Jpath,Ig)
+                   endif
                   enddo
 
                 endif
@@ -2502,6 +2524,16 @@ C                Array order is such that imu=nmu is downwards.
                  enddo
                 endif
 
+                if(inetflux.eq.1)then
+C                For venera-like output write out downwards vertical radiance
+C                Array order is such that imu=nmu is downwards.
+                 write(infr,*)x,solar,radground,galb1
+                 do ilays=1,nlays
+                  write(infr,*)tfup(ilays),tfdown(ilays),
+     1             tfup(ilays)-tfdown(ilays)
+                 enddo
+                endif
+
                 if(ish.eq.1)then
                  write(infr,*)solar
                  write(infr,*)radground
@@ -2574,6 +2606,10 @@ C-----------------------------------------------------------------------
         endif
 
         if(ivenera.eq.1)then
+         close(infr)
+        endif
+
+        if(inetflux.eq.1)then
          close(infr)
         endif
 

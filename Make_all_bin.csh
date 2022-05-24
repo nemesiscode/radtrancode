@@ -8,7 +8,7 @@
 
 cd radtran
   cd radtran
-    foreach p ( Aground Calc_fnktablec Pl_spec Radtrans Read_table )
+    foreach p ( Aground Calc_fnktablec Pl_spec Radtrans Read_table Read_lbltable )
       echo "---------------------------------------------"
       echo "---------------------------------------------"
       echo "-- $p "

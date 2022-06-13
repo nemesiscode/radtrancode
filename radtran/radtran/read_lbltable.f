@@ -31,6 +31,7 @@ C stored in the same directory as the rest of the code
       REAL U,U2,Y1,Y2,Y3,Y4,VV,PMAX,PMIN,TMAX,TMIN,X
       REAL V,KABS
       INTEGER NP,NT,N1
+      INTEGER IERR,NERR
 
       INTEGER IREC,IREC0,CT2
       REAL P1,T1,PRESS1(MAXK),TEMP1(MAXK),VCEN(MAXBIN)
@@ -44,6 +45,7 @@ C stored in the same directory as the rest of the code
 C******************************** CODE *********************************
 
       idiag=1
+      NERR=0
 
       CALL PROMPT('Enter input filename : ')
       READ(5,23)OPFILE1
@@ -272,6 +274,7 @@ C            print*,j,k,irec,table(j,k)
       ELSE
   
        OPEN(12,FILE='read_lbltable_wv.dat',status='unknown')
+       OPEN(13,FILE='read_lbltable_wk.dat',status='unknown')
         WRITE(12,*)NPOINT
         IF(DELV.GT.0.0)THEN
          DO I = 1,NPOINT
@@ -342,19 +345,26 @@ C            print*,j,k,irec,table(j,k)
          IREC = IREC0 + NP*ABS(NT)*(I - 1)
          DO 21 J=1,NP
           DO 31 K=1,ABS(NT)
-            READ(LUN0,REC=IREC)TABLE(J,K)
+            READ(LUN0,REC=IREC,IOSTAT=IERR)TABLE(J,K)
+            IF (IERR.LT.0) THEN
+              TABLE(J,K)=0.0
+              NERR = NERR + 1
+            ENDIF
             IREC = IREC + 1
 31        CONTINUE
 21       CONTINUE
 
          WRITE(12,*)VCEN(I),TABLE(CP,CT)
+         WRITE(13,*)VCEN(I),TABLE(CP,CT)
 
         ENDDO
 
        CLOSE(12)
+       CLOSE(13)
 
       ENDIF
 
+	PRINT*,'TOTAL READ ERRORS, NERR=',NERR
  
       END
 C***********************************************************************

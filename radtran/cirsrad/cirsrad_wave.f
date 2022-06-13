@@ -752,90 +752,140 @@ C	X-section, phase function, and solar radiance divided by 4pi.
 C
 C-----------------------------------------------------------------------
 
-			DO K = 1, ncont
-			 tausc(K) = 0.
-			 IF (cont(K,J).GT.0.) THEN
-			   IF (nsec.EQ.1) THEN
-				tau = cont(K,J) * xsec(1,K,1)
-				tau2 = cont(K,J) * xsec(2,K,1)
-			   ELSE
-				DO L = 1, nsec
-				 asec(L) = xsec(1,K,L)
-				 bsec(L) = xsec(2,K,L)
-				 asec2(L) = xsec2(1,K,L)
-				 bsec2(L) = xsec2(2,K,L)
-				ENDDO
+       DO K = 1, ncont
+	 tausc(K) = 0.
+	 IF (cont(K,J).GT.0.) THEN
+	   IF (nsec.EQ.1) THEN
+	     tau = cont(K,J) * xsec(1,K,1)
+	     tau2 = cont(K,J) * xsec(2,K,1)
+           ELSE
+	    DO L = 1, nsec
+	      asec(L) = xsec(1,K,L)
+	      bsec(L) = xsec(2,K,L)
+	      asec2(L) = xsec2(1,K,L)
+	      bsec2(L) = xsec2(2,K,L)
+C              if(j.eq.5)then
+C               print*,L,vsec(L),asec(L),bsec(L),asec2(L),bsec2(L)
+C              endif
+	    ENDDO
 
-				CALL csplint (vsec, asec, asec2, 
-     1					nsec, x, tau)
-				CALL csplint (vsec, bsec, bsec2,
-     1					nsec, x, tau2)
+	    CALL csplint (vsec, asec, asec2,nsec, x, tau)
+	    CALL csplint (vsec, bsec, bsec2,nsec, x, tau2)
 
-			if(tau.lt.0.or.isnan(asec2(1)))then
-C             			 print*,'tau lt 0: Particle type ',K
-C                                 print*,nsec,vsec(1),vsec(nsec)
-C                                 print*,nsec,asec(1),asec(nsec)
-C                                 print*,x,tau
-C                                 print*,'Do linear interpolation'
-                                 jf=-1
-                                 do l=1,nsec-1
-                         if(x.ge.vsec(l).and.x.lt.vsec(l+1))then
-                          xf = (x-vsec(l))/(vsec(l+1)-vsec(l))
-                          tau = (1.0-xf)*asec(l)+xf*asec(l+1)
-                          jf=l
-                         endif
-                                 enddo
-                                 if(x.le.vsec(1))tau=asec(1)
-                                 if(x.ge.vsec(nsec))tau=asec(nsec)
-C                                 print*,'new tau ',tau
-C				 if(jf.gt.0)then
-C                                  print*,jf,vsec(jf),vsec(jf+1),xf
-C                                  print*,asec(jf),asec(jf+1)
-C                                 endif
-                                endif
+C            if(j.eq.5)print*,'x = ',x
+C            if(j.eq.5)print*,j,k,tau,tau2
 
+            if(tau.lt.tau2)then
+C              if(j.eq.5)then
+C               print*,'tau lt tau2: Particle type ',K
+C               print*,'Do linear interpolation'
+C              endif
+              jf=-1
+              do l=1,nsec-1
+                if(x.ge.vsec(l).and.x.lt.vsec(l+1))then
+                   xf = (x-vsec(l))/(vsec(l+1)-vsec(l))
+                   tau = (1.0-xf)*asec(l)+xf*asec(l+1)
+                   tau2 = (1.0-xf)*bsec(l)+xf*bsec(l+1)
+                   jf=l
+                endif
+              enddo
+              if(x.le.vsec(1))then
+               tau=asec(1)
+               tau2=bsec(1)
+              endif
+              if(x.ge.vsec(nsec))then
+               tau=asec(nsec)
+               tau2=bsec(nsec)
+              endif
+C              if(j.eq.5)then
+C                print*,'new tau,tau2 ',tau,tau2
+C                if(jf.gt.0)then
+C                  print*,jf,vsec(jf),vsec(jf+1),xf
+C                  print*,asec(jf),asec(jf+1)
+C                  print*,bsec(jf),bsec(jf+1)
+C                endif               
+C              endif
+            endif
 
-			if(tau2.lt.0.or.isnan(bsec2(1)))then
-C              			  print*,'tau2 lt 0: Particle type ',K
-C                                 print*,nsec,vsec(1),vsec(nsec)
-C                                 print*,nsec,bsec(1),bsec(nsec)
-C                                 print*,x,tau2
-C                                 print*,'Do linear interpolation'
-                                 jf=-1
-                                 do l=1,nsec-1
-                         if(x.ge.vsec(l).and.x.lt.vsec(l+1))then
-                          xf = (x-vsec(l))/(vsec(l+1)-vsec(l))
-                          tau2 = (1.0-xf)*bsec(l)+xf*bsec(l+1)
-                          jf=l
-                         endif
-                                 enddo
-                                 if(x.le.vsec(1))tau2=bsec(1)
-                                 if(x.ge.vsec(nsec))tau2=bsec(nsec)
-C                                 print*,'new tau2 ',tau2
-C				 if(jf.gt.0)then
-C				  print*,jf,vsec(jf),vsec(jf+1),xf
-C				  print*,bsec(jf),bsec(jf+1)
-C				 endif
-                                endif
+	    if(tau.lt.0.or.isnan(asec2(1)))then
+C              if(j.eq.5)then
+C               print*,'tau lt 0: Particle type ',K
+C               print*,nsec,vsec(1),vsec(nsec)
+C               print*,nsec,asec(1),asec(nsec)
+C               print*,x,tau
+C               print*,'Do linear interpolation'
+C              endif
+              jf=-1
+              do l=1,nsec-1
+                if(x.ge.vsec(l).and.x.lt.vsec(l+1))then
+                   xf = (x-vsec(l))/(vsec(l+1)-vsec(l))
+                   tau = (1.0-xf)*asec(l)+xf*asec(l+1)
+                   jf=l
+                endif
+              enddo
+              if(x.le.vsec(1))tau=asec(1)
+              if(x.ge.vsec(nsec))tau=asec(nsec)
+C              if(j.eq.5)then
+C                print*,'new tau ',tau
+C                if(jf.gt.0)then
+C                  print*,jf,vsec(jf),vsec(jf+1),xf
+C                  print*,asec(jf),asec(jf+1)
+C                endif               
+C              endif
+ 
+            endif
 
-                                if(cont(K,J).lt.0.and.idiag.gt.0)then
-                                 print*,'CONT,K,J',cont(k,j),k,j
-                                endif
+	    if(tau2.lt.0.or.isnan(bsec2(1)))then
+C                if(j.eq.5)then
+C                 print*,'tau2 lt 0: Particle type ',K
+C                 print*,nsec,vsec(1),vsec(nsec)
+C                 print*,nsec,bsec(1),bsec(nsec)
+C                 print*,x,tau2
+C                 print*,'Do linear interpolation'
+C                endif 
+                jf=-1
+                do l=1,nsec-1
+                  if(x.ge.vsec(l).and.x.lt.vsec(l+1))then
+                     xf = (x-vsec(l))/(vsec(l+1)-vsec(l))
+                     tau2 = (1.0-xf)*bsec(l)+xf*bsec(l+1)
+                     jf=l
+                  endif
+                enddo
 
-				tau = tau * cont(K,J)
-				tau2 = tau2 * cont(K,J)
+                if(x.le.vsec(1))tau2=bsec(1)
+                if(x.ge.vsec(nsec))tau2=bsec(nsec)
+C                 if(j.eq.5)then
+C                  print*,'new tau2 ',tau2
+C 		   if(jf.gt.0)then
+C 		    print*,jf,vsec(jf),vsec(jf+1),xf
+C 		    print*,bsec(jf),bsec(jf+1)
+C 	           endif
+C                 endif
+            endif
 
-			   ENDIF	
-			   taucon(J) = taucon(J) + tau
-			   tauscat(J) = tauscat(J) + tau2
-                           taucloud(K,J) = tau
-                           tauclscat(K,J) = tau2   
-			   tausc(K) = tau2
-C                          ##### f(J) is average phase function ######
-  			   f(J) = f(J)+phase(K)*tau2
+            if(cont(K,J).lt.0.and.idiag.gt.0)then
+               print*,'CONT,K,J',cont(k,j),k,j
+            endif
 
-			 ENDIF
-			ENDDO
+C            if(j.eq.5)print*,tau,tau2,cont(K,J)
+	    tau = tau * cont(K,J)
+            tau2 = tau2 * cont(K,J)
+
+	   ENDIF	
+C           if(j.eq.5)print*,taucon(j),tauscat(j)
+	   taucon(J) = taucon(J) + tau
+	   tauscat(J) = tauscat(J) + tau2
+           taucloud(K,J) = tau
+           tauclscat(K,J) = tau2   
+	   tausc(K) = tau2
+C           if(j.eq.5)then
+C              print*,j,k,taucon(j),tau,tauscat(j),tau2
+C           endif
+C          ##### f(J) is average phase function ######
+  	   f(J) = f(J)+phase(K)*tau2
+
+         ENDIF
+       ENDDO
 			intscat = intscat + tauscat(J)
 			pastint = intscat
 
@@ -955,6 +1005,9 @@ C               Set vv to the current WAVENUMBER
  		 taucon(J)= taucon(J) + AvgCONTMP
                  taugasc(J)= taugasc(J) + AvgCONTMP
                  tauscat(J)=tauscat(J) + AvgCONTMP
+C                 if(j.eq.5)then
+C                  print*,J,taucon(j),taugasc(j),tauscat(j)
+C                 endif
 	        endif
 
 C               Calculate single-scattering contribution
@@ -1384,6 +1437,9 @@ C			 print*,J,FPRAMAN(J),H2ABUND(J),DENS(J),tauram
 			 dtmp2 = dble(tautmp(layinc(J,Ipath))+tauram)
                          omegas(J)=dtmp1/dtmp2
 			 eps(J) = 1.0d00 - omegas(J)
+C                         print*,'XX',tauscat(layinc(J,Ipath)),
+C     1  tautmp(layinc(J,Ipath)),tauram,dtmp1,dtmp2,
+C     2  J,omegas(J),eps(J)
 		        ELSE
   				EPS(J)=1.0
          			omegaS(J)=0.
@@ -1443,6 +1499,7 @@ C               matrix inversion crashing
 
                 IF (itype.EQ.11) THEN
 
+C                if(IG.eq.10)then
 C                        WRITE (*,*) '     CALLING scloud11wave'
 C                        WRITE (*,*)'IRAY,INORMAL = ',IRAY,INORMAL
 C                        print*,sol_ang,solar
@@ -1454,7 +1511,6 @@ C                        print*,(mu1(j),j=1,nmu)
 C                        print*,(wt1(j),j=1,nmu)
 C                        if(taur(1).gt.10000.0)print*,'taurA',
 C     1  (taur(j),j=1,nlays)
-
 C                        do j=1,nlays
 C                         print*,j,eps(j),bnu(j),taus(j),taur(j),
 C     1                           taus(j)-taur(j)
@@ -1464,6 +1520,7 @@ C                        print*,'iray = ',iray
 C                        print*,'galb1,solar,emiss_ang',galb1,solar,
 C     1  emiss_ang
 
+C                 endif
       		  	call scloud11wave(rad1, sol_ang, emiss_ang,
      1                          aphi, radg, solar, lowbc, galb1, iray,
      2				mu1, wt1, nmu,   
@@ -1471,6 +1528,9 @@ C     1  emiss_ang
      4				taur,nlays, ncont,lfrac)
 
 
+C                        if(IG.eq.10) then
+C                         print*,'Ipath,Ig,xfac,rad1',Ipath,Ig,xfac,rad1
+C                        endif
  		  	corkout(Ipath,Ig) = xfac*rad1
 
 

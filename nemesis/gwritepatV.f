@@ -26,7 +26,7 @@ C	FLAGH2P		integer		Equals 1 if para-H2 is variable
 C
 C     Pat Irwin	29/7/96		Original
 C     Pat Irwin 17/10/03	Tidied for Nemesis
-C
+C     Shubham K         14/06/22  Added ISCAT = 6 option
 C     *******************************************************************
 
       IMPLICIT NONE
@@ -148,8 +148,11 @@ c  ** variables for solar reflected cloud **
       E1 = 0.0
       WRITE(31,4)TEXT,E1,LAYBOT,IPZEN
 4     FORMAT(A6,F7.2,I4,I4)
-    
-      IF(ISCAT.EQ.5)THEN
+
+!     Added ISCAT = 6 option in gwritepatV
+
+      IF(ISCAT.EQ.5.OR.ISCAT.EQ.6)THEN
+       if(idiag.gt.0)print*,'Added ISCAT = 6 option in calc_input_files'        
         WRITE(31,1)'notherm'
         WRITE(31,1)'scatter'
         WRITE(31,1)'netflux'

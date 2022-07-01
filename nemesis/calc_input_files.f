@@ -47,7 +47,7 @@ C     Output variables
 C       None.
 C
 C     Pat Irwin	22/9/16		Original
-C
+C     Shubham K         14/06/22  Added ISCAT = 6 option in calc_input_files
 C     **************************************************************
 
       implicit none
@@ -151,7 +151,9 @@ C     mass to units of 1e24 kg.
 
 
 C     Set up all files for a direct cirsrad run
-      if(iscat.eq.5)then
+!     Shubham K: Added ISCAT = 6 option in calc_input_files
+      if(iscat.eq.5.or.iscat.eq.6)then
+       if(idiag.gt.0)print*,'Added ISCAT = 6 option in calc_input_files'      
        if(idiag.gt.0)print*,'calling gsetradV'
        call gsetradV(runname,iscat,nmu,mu,wtmu,isol,dist,
      1 lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,

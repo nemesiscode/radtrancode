@@ -390,8 +390,10 @@ C      Calc. gradient of all elements of xnx matrix.
      2    nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
      3    jradx,jloggx,jfracx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,
      4	  iprfcheck)
-       elseif(iscat.eq.5)then
+       elseif(iscat.eq.5.or.iscat.eq.6)then
+!     Added ISCAT = 6 option in coreret
          if(idiag.gt.0)then
+          print*,'Added ISCAT = 6 option in coreret'
           print*,'Calling forwardnogXVenus - A1. iscat = ',iscat
          endif
          CALL forwardnogXVenus(runname,ispace,iscat,fwhm,ngeom,nav,
@@ -509,8 +511,10 @@ C        if(idiag.gt.0)print*,'forwardnogX OK, jpre = ',jpre
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
      3   jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
         if(idiag.gt.0)print*,'B - OK'
-       elseif(iscat.eq.5) then
+       elseif(iscat.eq.5.or.iscat.eq.6) then
+!     Added ISCAT = 6 option in coreret      
         if(idiag.gt.0)then
+          print*,'Added ISCAT = 6 option coreret'
           print*,'Calling forwardnogXVenus - B1, iscat = ',iscat
         endif
         CALL forwardnogXVenus(runname,ispace,iscat,fwhm,ngeom,nav,
@@ -888,7 +892,8 @@ C       temporary kernel matrix kk1. Does it improve the fit?
      1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
      3     jlogg,jfrac,RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter,iprfcheck)
-         elseif(iscat.eq.5)then
+         elseif(iscat.eq.5.or.iscat.eq.6)then
+!     Added ISCAT = 6 option in coreret
          if(idiag.gt.0)print*,'Calling forwardnogXVenus - C'
           CALL forwardnogXVenus(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,

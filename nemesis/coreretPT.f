@@ -144,7 +144,8 @@ C     Look to see if the CIA file refined has variable para-H2 or not.
 C     Set up qfla, flag to read in reduced q-ext if iscat=5
 
       qfla = .FALSE.
-      if (iscat.EQ.5) qfla = .TRUE.
+      if (iscat.EQ.5.OR.iscat.EQ.6) qfla = .TRUE.
+!     Added ISCAT = 6 option in coreretPT
 
 C     Read in number of aerosol types from the aerosol.ref file
       OPEN(UNIT=1,FILE='aerosol.ref',STATUS='OLD')
@@ -263,7 +264,8 @@ C       readapriori.f. Hence just read in from temporary .str file
 
        lin0 = 0
        if(iscat.GT.0)then
-	if(iscat.NE.5)then
+	if(iscat.NE.5.AND.iscat.NE.6)then
+!     Added ISCAT = 6 option in coreretPT
 	    print*,'Error in coreretPT: Scattering calculations not'
             print*,'appropriate!'
        	 stop

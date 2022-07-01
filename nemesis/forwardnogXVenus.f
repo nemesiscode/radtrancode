@@ -75,7 +75,7 @@ C     Pat Irwin	4/4/01		Original
 C     Pat Irwin 17/10/03	Tidied for Nemesis
 C     Pat Irwin 28/10/03	Modified from forward.f for testing 
 C				   purposes
-C
+C     Shubham K         14/06/22  Added ISCAT = 6 option
 C     **************************************************************
 
       implicit none
@@ -128,8 +128,11 @@ C     **************************************************************
       integer nlayv,nwave1v
       real vwavev(mconv),basepv(maxlay),basehv(maxlay)
       real solarv(mconv),radgroundv(mconv),galbv(mconv)
-      real venera(mconv,maxlay),xx,trad(maxlay),hnow
-      real venera1(mconv,maxlay)
+      real xx,trad(maxlay),hnow
+      real venera1(mconv,maxlay), venera2(mconv,maxlay)
+!      real venera(mconv,maxlay),
+      real veneraup(mconv,maxlay), veneradn(mconv,maxlay)
+      integer ngeomh
       integer mfwhm,nfwhm
       parameter (mfwhm=1000)
       logical fwhmexist
@@ -137,6 +140,7 @@ C     **************************************************************
 C     Arrays
       real vfwhm(mfwhm),xfwhm(mfwhm)
       integer idiag,iquiet
+      real temprd1, temprd2, temprd3, temprd4
       common/diagnostic/idiag,iquiet
 
 
@@ -355,12 +359,25 @@ C          Note that order of spectra in venera.dat is in reverse direction
 C          Correct here.
            do 100 j=1,nwave1v
             read(12,*)xx,solarv(j),radgroundv(j),galbv(j)
-            read(12,*)(venera(j,i),i=nlayv,1,-1)
+            read(12,*)(veneradn(j,i),i=nlayv,1,-1)
+!          reading upward radiances            
+            read(12,*) temprd1, temprd2, temprd3, temprd4
+            if(idiag.gt.0)then
+             print*, nwave1v,j
+             print*, temprd1, temprd2, temprd3, temprd4
+            endif
+            read(12,*)(veneraup(j,i),i=nlayv,1,-1)
 100        continue
+
+	   
+!           do 107 j=1,nwave1v
+!            
+!107        continue
+
 222       close(12)
 
-
-
+!         _________________________ ISCAT = 5 _________________________
+          if(ISCAT.EQ.5)then
 C         Now need to interpolate internal radiances in the venera.dat file 
 C         to the requested heights in the .spx file.
 
@@ -385,8 +402,8 @@ C         to the requested heights in the .spx file.
             endif
 
             do j=1,nwave1v
-              venera1(j,igeom)=(1.0-f)*venera(j,k) + 
-     &          f*venera(j,k+1)
+              venera1(j,igeom)=(1.0-f)*veneradn(j,k) + 
+     &          f*veneradn(j,k+1)
             enddo
           enddo
 
@@ -417,7 +434,102 @@ C          Smooth as required
            ioff=ioff+nconv1
 111       continue
 
+          endif
+!         _________________________ ISCAT = 5 _________________________
 
+!     Shubham K: Added ISCAT = 6 option
+!         _________________________ ISCAT = 6 _________________________
+          if(ISCAT.EQ.6)then
+C          Now need to interpolate internal radiances in the venera.dat file 
+C          to the requested heights in the .spx file.
+
+          ipath=1
+          ioff=0
+     	  ngeomh = ngeom/2
+          do igeom=1, ngeomh
+            hnow = angles(igeom,1,2)
+            do i=1,nlayv-1
+             if(hnow.ge.basehv(i).and.hnow.lt.basehv(i+1))then
+              k=i
+              f = (hnow-basehv(i))/(basehv(i+1)-basehv(i))
+             endif
+            enddo
+            if(hnow.lt.basehv(1))then
+              k=1
+              f=0.0
+            endif
+            if(hnow.ge.basehv(nlayv))then
+              k=nlayv-1
+              f=(hnow-basehv(k))/(basehv(k+1)-basehv(k))
+            endif
+
+            do j=1,nwave1v
+              venera1(j,igeom)=(1.0-f)*veneradn(j,k) + 
+     &          f*veneradn(j,k+1)
+!          modification for upward radiances
+              venera2(j,igeom)=(1.0-f)*veneraup(j,k) + 
+     &          f*veneraup(j,k+1)
+     
+            enddo
+          enddo
+
+          do 169 igeom=1,ngeomh
+           hnow = angles(igeom,1,2)
+           if(idiag.gt.0)print*,'igeom, hnow = ',igeom,hnow
+
+           do j=1,nwave1
+            yy(j)=venera1(j,igeom)
+           enddo
+
+C          Smooth as required
+           call cirsconv(runname,fwhm,nwave1,vwave1,yy,nconv1,
+     & vconv1,yout,FWHMEXIST,NFWHM,VFWHM,XFWHM)
+           do j=1,nconv1
+            ytmp(ioff+j)=yout(j)
+           enddo
+ 
+           if(ix.eq.0)then
+            do j=1,nconv1
+             yn(ioff+j)=ytmp(ioff+j)
+            enddo
+           else
+            do j=1,nconv1
+             kk(ioff+j,ix)= (ytmp(ioff+j)-yn(ioff+j))/dx
+            enddo
+           endif
+           ioff=ioff+nconv1
+169       continue
+
+          do 134 igeom= 1,ngeomh
+           hnow = angles(igeom,1,2)
+           if(idiag.gt.0)print*,'igeom, hnow = ',igeom,hnow
+
+           do j=1,nwave1
+            yy(j)=venera2(j,igeom)
+           enddo
+
+C          Smooth as required
+           call cirsconv(runname,fwhm,nwave1,vwave1,yy,nconv1,
+     & vconv1,yout,FWHMEXIST,NFWHM,VFWHM,XFWHM)
+           do j=1,nconv1
+            ytmp(ioff+j)=yout(j)
+           enddo
+ 
+           if(ix.eq.0)then
+            do j=1,nconv1
+             yn(ioff+j)=ytmp(ioff+j)
+            enddo
+           else
+            do j=1,nconv1
+             kk(ioff+j,ix)= (ytmp(ioff+j)-yn(ioff+j))/dx
+            enddo
+           endif
+           ioff=ioff+nconv1
+134       continue
+
+          endif
+!         _________________________ ISCAT = 6 _________________________
+          
           if(ix.gt.0)xn(ix)=xref
           
 110   continue

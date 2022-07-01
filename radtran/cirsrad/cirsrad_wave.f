@@ -2500,6 +2500,11 @@ C                Array order is such that imu=nmu is downwards.
                  do ilays=1,nlays
                   write(infr,*)gplf(nmu,ilays,ic)
                  enddo
+!  add following lines to print the upward radiation in venera.dat file
+                 write(infr,*) 0. , 0. , 0. , 0.
+                 do ilays=1,nlays
+                  write(infr,*)gmif(nmu,ilays,ic)
+                 enddo
                 endif
 
                 if(ish.eq.1)then

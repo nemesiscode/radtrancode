@@ -34,6 +34,7 @@ C MAXOUT the maximum number of output points
       INTEGER IREC,IREC0,I1,I2,J1,J2
       REAL P1,T1,PRESS1(MAXK),TEMP1(MAXK),VCEN1(MAXBIN)
       REAL P2,T2,PRESS2(MAXK),TEMP2(MAXK),VCEN2(MAXBIN)
+      REAL PTEMP1(MAXK,MAXK),PTEMP2(MAXK,MAXK)
       REAL VCEN(MAXBIN),VEXPECT
       REAL G_ORD1(MAXG),K_G1(MAXG),DEL_G1(MAXG)
       REAL G_ORD2(MAXG),K_G2(MAXG),DEL_G2(MAXG)
@@ -196,8 +197,8 @@ C******************************** CODE *********************************
         IREC = IREC + 1
 311   CONTINUE
 
-
-      DO 312 J=1,NT1
+      IF(NT1.GT.0)THEN
+       DO 312 J=1,NT1
         READ(LUN1,REC=IREC)TEMP1(J)
         READ(LUN2,REC=IREC)TEMP2(J)
         IF(TEMP1(J).NE.TEMP2(J))THEN
@@ -209,7 +210,26 @@ C******************************** CODE *********************************
          ENDIF
         ENDIF 
         IREC = IREC + 1
-312   CONTINUE
+312    CONTINUE
+      ELSE
+       DO I=1,NP1
+        DO J=1,ABS(NT1)
+         READ(LUN1,REC=IREC)PTEMP1(I,J)
+         READ(LUN2,REC=IREC)PTEMP2(I,J)
+C         print*,I,J,PTEMP1(I,J),PTEMP2(I,J)
+         IF(PTEMP1(I,J).NE.PTEMP2(I,J))THEN
+          PRINT*,'PTEMP1(I,J) <> PTEMP2(I,J)',PTEMP1(I,J),PTEMP2(I,J)
+          PRINT*,'Continue (Y/N)?'
+          READ(5,23)ANS
+          IF(ANS.NE.'Y'.AND.ANS.NE.'y')THEN
+           STOP
+          ENDIF
+         ENDIF 
+         IREC = IREC + 1
+        ENDDO
+       ENDDO
+      ENDIF
+
 
       IREC1=IREC
       IREC2=IREC
@@ -258,7 +278,12 @@ C******************************** CODE *********************************
        VMIN = VCEN1(I1)
       ENDIF
 
-      IREC0=11 + 2*NG1 + 2 + NP1 + NT1 + 2
+      IF(NT1.LT.0)THEN
+       IREC0=11 + 2*NG1 + 2 + NP1 + NP1*ABS(NT1) + 2
+      ELSE
+       IREC0=11 + 2*NG1 + 2 + NP1 + NT1 + 2
+      ENDIF
+
       IF(DELV1.LE.0)THEN
         IREC0=IREC0+NPOINT
       ENDIF
@@ -306,11 +331,20 @@ C******************************** CODE *********************************
 301   CONTINUE
 
       WRITE(*,*)'Temperatures : '
-      DO 302 J=1,NT1
-        print*,J,temp1(J)
-        WRITE(LUN0,REC=IREC)TEMP1(J)
-        IREC = IREC + 1
-302   CONTINUE
+      IF(NT1.GT.0)THEN
+       DO 302 J=1,NT1
+         print*,J,temp1(J)
+         WRITE(LUN0,REC=IREC)TEMP1(J)
+         IREC = IREC + 1
+302    CONTINUE
+      ELSE
+       DO I=1,NP1
+        DO J=1,ABS(NT1)
+         WRITE(LUN0,REC=IREC)PTEMP1(I,J)
+         IREC = IREC + 1
+        ENDDO
+       ENDDO
+      ENDIF
 
       I=1
       WRITE(*,*)'Wavelengths/wavenumbers'
@@ -339,11 +373,11 @@ C******************************** CODE *********************************
       ENDIF
 
       IREC = IREC0
-      IREC1 = IREC01+(I1-1)*NP1*NT1*NG1
+      IREC1 = IREC01+(I1-1)*NP1*ABS(NT1)*NG1
 
       DO 297 I=I1,I2
        DO 20 J=1,NP1
-         DO 30 K=1,NT1
+         DO 30 K=1,ABS(NT1)
            DO 40 LOOP=1,NG1
              READ(LUN1,REC=IREC1)TABLE(J,K,LOOP)
              IREC1 = IREC1 + 1
@@ -356,11 +390,11 @@ C******************************** CODE *********************************
 20     CONTINUE
 297   CONTINUE
 
-      IREC2 = IREC02+(J1-1)*NP2*NT2*NG2
+      IREC2 = IREC02+(J1-1)*NP2*ABS(NT2)*NG2
 
       DO 298 I=J1,J2
        DO 21 J=1,NP2
-         DO 31 K=1,NT2
+         DO 31 K=1,ABS(NT2)
            DO 41 LOOP=1,NG2
              READ(LUN2,REC=IREC2)TABLE(J,K,LOOP)
              IREC2 = IREC2 + 1

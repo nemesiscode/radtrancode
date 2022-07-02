@@ -110,6 +110,12 @@ C     **** all these are now defined by zgauleg.f ***
       VMAX=VMIN + (NPOINT-1)*DELV
       PRINT*,' XMIN -> XMAX by DELX: ',VMIN,VMAX,DELV
 
+      IF(NPOINT.GT.MPOINT)THEN 
+       print*,'NPOINT exceeds MPOINT',NPOINT,MPOINT
+       print*,'Increase MPOINT and recompile'
+       stop
+      ENDIF
+
       VMIN1=VMIN
       VMAX1=VMAX
       IF(IWAVE.EQ.0)THEN

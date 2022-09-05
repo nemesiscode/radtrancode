@@ -75,7 +75,14 @@ setenv FCFLAGS1 "-O -finit-local-zero -m64 -fcheck=bounds -fcheck=mem -fbacktrac
 setenv FCFLAGS1_FOVGREG "-O -ffree-form -finit-local-zero -m64 -fcheck=bounds -fcheck=mem -fbacktrace 
 -Wconversion -mcmodel=medium"
 
+Note: a new 'feature' has emerged when trying to compile on more recent versions of OSX. The cause is still
+a bit mysterious, but it seems that something has changed in Xcode and so the libraries are not being properly linked.
+
+A temporary workaround is to add the following string at the end of each executable compile statement in your makefiles:
+-L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib
+
 Pat Irwin	11/5/12
 Brigette Hesman 16/7/12
 Pat Irwin	18/7/12
 Pat Irwin	9/3/21
+Pat Irwin 	5/9/22

@@ -17,7 +17,7 @@ C	outfile	character*100	Name of associated .xsc file
 C	lambda0	real	normalising extinction x-section wavelength 
 C				(-ve to disable)
 C     Output variables
-C	None
+C	NUMFLAG	logical	TRUE if the Mie scattering calculation has overflowed.
 C
 C     Modified from Makephase. Pat Irwin.  20/2/14
 C
@@ -47,6 +47,7 @@ C
 	character*100 	runname,outfile,hgfile
 	character*512 	buffer
 
+        logical NUMFLAG
 	real csratio,nrealshell(mx),nimagshell(mx)
       
 
@@ -186,7 +187,7 @@ C-----------------------------------------------------------------------
      1				refind, theta, 
      2				ntheta, scat, ext, phase, 
      3			        nphase,csratio,nrealshell(J),
-     4				nimagshell(J))
+     4				nimagshell(J),NUMFLAG)
 			omega = scat/ext
 
 		end if

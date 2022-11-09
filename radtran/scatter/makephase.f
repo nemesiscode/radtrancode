@@ -82,8 +82,9 @@ C-----------------------------------------------------------------------
 	character*10	wavetype(2)
 	character*100 	outfile,hgfile
 	character*512 	buffer
-      
 
+        logical NUMFLAG      
+        COMMON/MIEFLAG/NUMFLAG
         integer         ilist, nspec, idspec
         real          table(5000,3)
         common /store/ ilist,nspec,idspec,table

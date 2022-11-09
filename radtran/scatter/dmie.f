@@ -45,12 +45,13 @@ C-----------------------------------------------------------------------
       SUBROUTINE DMIE(X,RFR,RFI,THETD,JX,QEXT,QSCAT,CTBRQS,ELTRMX)
 
       IMPLICIT NONE
-      INTEGER JX,JJ,J,N,M,I,NMX1,NMX2,NN,K,IR,L
+      INTEGER JX,JJ,J,N,M,I,NMX1,NMX2,NN,K,IR,L,NCAP
+      PARAMETER (NCAP=30000)
       DOUBLE PRECISION RFR,RFI,LAMBDA,AJX,R(400),ANR(400),DELR,
      1 QEXT,QSCAT,CTBRQS,X,
      2 ELTRMX(4,100,2),THETD(100),RX,TAA(2),TAB(2),TB(2),TC(2),
      3 TD(2),TE(2),PI(3,100),TAU(3,100),CSTHT(100),SI2THT(100),T(5)
-      COMPLEX*16 WM1,FNA,FNB,TC1,TC2,WFN1,WFN2,ACAP(30000),
+      COMPLEX*16 WM1,FNA,FNB,TC1,TC2,WFN1,WFN2,ACAP(NCAP),
      1 FNAP,FNBP,RF,RRF,RRFX
       EQUIVALENCE (WFN1,TAA(1)),(WFN2,TAB(1)),(FNA,TB(1)),(FNB,TC(1)),
      1(FNAP,TD(1)),(FNBP,TE(1))
@@ -62,9 +63,11 @@ C-----------------------------------------------------------------------
       T(1)=(X*X)*(RFR*RFR+RFI*RFI)
       T(1)=SQRT(T(1))
       NMX1=INT(1.1*T(1))
-      IF(NMX1.LE.14999) GOTO 21
-      WRITE(6,8)
+
+      IF(NMX1.LE.NCAP-1) GOTO 21
+C      WRITE(6,8)
     8 FORMAT(1X,'THE UPPER LIMIT FOR ACAP IS NOT ENOUGH')
+    9 FORMAT(1X,'THE OTHER LIMIT FOR ACAP IS NOT ENOUGH')
       QEXT=-1
       RETURN
    21 NMX2=INT(T(1))
@@ -200,9 +203,10 @@ C      PRINT*,'FNB',FNB
       FNAP=FNA
       FNBP=FNB
       IF(N.LE.NMX2)GOTO 65
-      WRITE(6,8)
+C      WRITE(6,9)
       QEXT=-1
       RETURN
+
   100 DO 130 J=1,JX
         DO 120 K=1,2
           DO 115 I=1,4

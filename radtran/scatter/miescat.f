@@ -82,14 +82,15 @@ C-----------------------------------------------------------------------
      2		KSCAT, KEXT, ANORM, FUNC(4,2*MAXTH), VV, PHAS0(2*MAXTH), 
      3		CQ, X1, DX, QEXT, QSCAT, ELTRMX(4, MAXTH, 2), ANR1,
      4		THETD(MAXTH), PI,PI2,R2DOB, RE2DOB,TMAG2DOB
-      LOGICAL CONT, CONT0
-
+      LOGICAL CONT, CONT0,NUMFLAG
+      
       PARAMETER (PI = 3.1415926535897932D0)
+      COMMON /MIEFLAG/NUMFLAG
 
       PI2 = 1.D0/DSQRT(2.D0*PI)
 
       IDUMP=0
-
+      NUMFLAG=.FALSE.
       
 C       PRINT*,'-------------------'
 C       PRINT*,XLAM, (ISCAT(I),I=1,NMODE)
@@ -214,6 +215,9 @@ C		Use coated sphere scattering model if Maltmieser explicitly specified
      1				 THETD, NTHETA, QEXT, QSCAT,
      2				 CQ, ELTRMX, R2DOB, RFR, RFI, XX)
 		endif
+
+C               Note if there has been an overflow in the Mie calculation.
+                IF(QEXT.LT.0.0)NUMFLAG=.TRUE.
 
 		DO J = 1, NTHETA		! THETA <,= 90
 			DO I = 1,4

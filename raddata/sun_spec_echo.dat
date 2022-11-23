@@ -1,4 +1,5 @@
-# Sun for EChO resolution
+# Sun for EChO resolution. Smoothed version of Kurucz93 solar model from https://archive.stsci.edu/hlsps/reference-atlases/cdbs/grid/k93models/standards/
+# Wavelength (microns)    Spectral Luminosity (W micron-1)
 1
 695500.0
 0.4	4.04302E+26

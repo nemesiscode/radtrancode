@@ -95,6 +95,7 @@ C******************************** CODE *********************************
         F1=FSTLIN(IB,IBIN)
         L1=LSTLIN(IB,IBIN)
         B1=LASTBIN(IB)
+
         IF(IBIN.EQ.JBIN.AND.IBX.EQ.1.AND.B1.LT.IBIN.
      1     AND.NLINE(IB).EQ.MAXLIN) THEN
 C        We have now run past the end of buffer 1 and need to read in a 
@@ -145,7 +146,7 @@ C         Ignore lines more than MAXDV widths away
               print*,'TDW, TDWS, LLQ, DOUBV = ',
      4       TDW(IB,LINE),TDWS(IB,LINE),LLQ(IB,LINE),DOUBV(IB,LINE)
               print*,'FNH3, FH2 = ',FNH3,FH2
-               
+              
               STOP
             ENDIF
             XK=XK+CONVAL
@@ -174,7 +175,8 @@ C     Now add on the line wing continuum contribution
 
       NANTEST=ISNAN(XK)
       IF(NANTEST)THEN
-       PRINT*,'CALC_FINE: XK is NAN'       
+       PRINT*,'CALC_FINE: XK is NAN'
+       STOP
       ENDIF
       RETURN
 

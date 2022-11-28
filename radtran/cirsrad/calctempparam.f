@@ -72,6 +72,16 @@ C     Check isotopes included in model for each gas and set mass for doppler
 C     width calculation
        XMASS = GETMASS(IDGAS(I),ISOGAS(I))
        DO 16 J=1,NLAYER
+       IF(TEMP(J).LE.0.0)THEN
+        print*,'Temperatures have gone le 0.0!'
+        print*,'Stopping in calctempparam.f'
+        stop
+       ENDIF
+       IF(PRESS(J).LE.0.0)THEN
+        print*,'Pressures have gone le 0.0!'
+        print*,'Stopping in calctempparam.f'
+        stop
+       ENDIF
 C      Calculate temperature tempendance parameters for the gas lines
 C      (Note: TCORS1 includes factor of 1.E-47 for scaling of stored line
 C       strengths. Scaling is applied in two stages to avoid numerical

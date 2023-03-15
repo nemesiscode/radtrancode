@@ -542,8 +542,8 @@ C       open output file for internal radiation field output.
         inetflux=0
         do ipath=1,npath
 C         if(imod(ipath).eq.24)ish=1
-C         if(imod(ipath).eq.24)ivenera=1
-         if(imod(ipath).eq.24)inetflux=1
+         if(imod(ipath).eq.24)ivenera=1
+C         if(imod(ipath).eq.24)inetflux=1
         enddo
         if(idiag.gt.0)print*,'ish = ',ish
         if(ish.eq.1)then
@@ -577,7 +577,7 @@ C         if(imod(ipath).eq.24)ivenera=1
         endif     
 
         if(inetflux.eq.1)then
-         if(idiag.gt.0)print*,'opening venera.dat'
+         if(idiag.gt.0)print*,'opening netflux.dat'
          open(infr,file='netflux.dat',status='unknown')
          write(infr,*)nlayer
          write(infr,*)nwave
@@ -776,10 +776,14 @@ C            if(j.eq.5)print*,'x = ',x
 C            if(j.eq.5)print*,j,k,tau,tau2
 
             if(tau.lt.tau2)then
+C              if tau < tau2 then cubic spline interpolation has gone wrong. Do linear 
+C              interpolation instead.
+
 C              if(j.eq.5)then
 C               print*,'tau lt tau2: Particle type ',K
 C               print*,'Do linear interpolation'
 C              endif
+
               jf=-1
               do l=1,nsec-1
                 if(x.ge.vsec(l).and.x.lt.vsec(l+1))then
@@ -797,6 +801,7 @@ C              endif
                tau=asec(nsec)
                tau2=bsec(nsec)
               endif
+
 C              if(j.eq.5)then
 C                print*,'new tau,tau2 ',tau,tau2
 C                if(jf.gt.0)then
@@ -805,6 +810,7 @@ C                  print*,asec(jf),asec(jf+1)
 C                  print*,bsec(jf),bsec(jf+1)
 C                endif               
 C              endif
+
             endif
 
 	    if(tau.lt.0.or.isnan(asec2(1)))then
@@ -1381,8 +1387,10 @@ C          model 14 SCR wideband transmission
 
 	ELSEIF (imod(ipath).EQ.15) THEN
 
-C           WRITE(*,*) 'CIRSRAD_WAVE: Imod= 15 =Multiple Scattering, ',
-C     1                  ' creating output'
+           if(idiag.eq.1) then 
+       WRITE(*,*) 'CIRSRAD_WAVE: Imod= 15 =Multiple Scattering, ',
+     1 ' creating output'
+           endif
 
 		do J = 1, nlays
 			if(Ig.eq.1)then
@@ -1516,10 +1524,10 @@ C                         print*,j,eps(j),bnu(j),taus(j),taur(j),
 C     1                           taus(j)-taur(j)
 C                        enddo
 C                        print*,'iray = ',iray
-
+C
 C                        print*,'galb1,solar,emiss_ang',galb1,solar,
 C     1  emiss_ang
-
+C
 C                 endif
       		  	call scloud11wave(rad1, sol_ang, emiss_ang,
      1                          aphi, radg, solar, lowbc, galb1, iray,
@@ -1950,9 +1958,10 @@ C               emission from ground.
 
 	ELSEIF (imod(ipath).EQ.24) THEN
 
+	       if(idiag.eq.1)then
 		WRITE(*,*) 'CIRSRAD_WAVE: Imod= 24 =Net flux calculation,',
      1        ' multiple scattering - Creating output'
-                print*,ipath,npath
+               endif
 
                 if(Ipath.eq.Npath)then
 
@@ -2101,7 +2110,7 @@ C		   scattering case, including thermal emission and sunlight
                       gplf(imu,ilays,ic)=gplf(imu,ilays,ic)+
      1                  delg(ig)*uplf(imu,ilays,ic)
                       gmif(imu,ilays,ic)=gmif(imu,ilays,ic)+
-     1                  delg(ig)*umif(imu,ilays,ic)
+     1                  delg(ig)*umif(imu,ilays,ic) 
                      endif
                     enddo
                    enddo
@@ -2575,7 +2584,8 @@ C     1				output(Ipath,I)
 		ENDDO
  
                 if(ivenera.eq.1)then
-C                For venera-like output write out downwards vertical radiance
+C                For venera-like output write out downwards and upwards 
+C                vertical radiance.
 C                Array order is such that imu=nmu is downwards.
                  write(infr,*)x,solar,radground,galb1
                  ic=1
@@ -2590,12 +2600,12 @@ C                Array order is such that imu=nmu is downwards.
                 endif
 
                 if(inetflux.eq.1)then
-C                For venera-like output write out downwards vertical radiance
-C                Array order is such that imu=nmu is downwards.
+C                For netflux-like output write out upwards and downwards 
+C                vertical radiance and difference.
                  write(infr,*)x,solar,radground,galb1
                  do ilays=1,nlays
-                  write(infr,*)tfup(ilays),tfdown(ilays),
-     1             tfup(ilays)-tfdown(ilays)
+                   write(infr,*)tfup(ilays),tfdown(ilays),
+     1       tfdown(ilays)-tfdown(ilays)
                  enddo
                 endif
 

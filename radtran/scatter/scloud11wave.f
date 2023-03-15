@@ -555,17 +555,16 @@ C         OMEGA=0.3
 C  SPECIAL MATRICES FOR LAMBERTIAN REFLECTION AT BOTTOM:
       IF (LOWBC.EQ.1) THEN
 	DO J=1,NMU
-C	  JL(J,1,LTOT) = 0.D0
 	  JL(J,1,LTOT) = (1.0-GALB)*RADG(NMU+1-J)
           IF(IC.EQ.0)THEN
  	   DO I=1,NMU
+C           Transmission of surface layer set to zero following
+C           Plass et al.,1973.
 	    TL(I,J,LTOT) = 0.D0
 	    RL(I,J,LTOT) = 2.0D0*GALB*MU(J)*WTMU(J)  !Sum of MU*WTMU = 0.5
 C           Make any necessary quadrature correction.
             RL(I,J,LTOT) = RL(I,J,LTOT)*XFAC
-
 	   ENDDO
-C	   TL(J,J,LTOT) = 1.D0-GALB
 	  ELSE
  	   DO I=1,NMU
 	    TL(I,J,LTOT) = 0.0D0

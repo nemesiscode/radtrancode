@@ -431,11 +431,11 @@ C  SPECIAL MATRICES FOR LAMBERTIAN REFLECTION AT BOTTOM:
       IF (LOWBC.EQ.1) THEN
         DO J=1,NMU
           JL(J,1,LTOT) = (1.0-GALB)*RADG(NMU+1-J)
-C          JL(J,1,LTOT) = 0.
           IF(IC.EQ.0)THEN
             DO I=1,NMU
+C            Transmission of bottom ground layer should be set
+C            to zero (Plass et al., 1973)
              TL(I,J,LTOT) = 0.D0
-C            TL(J,J,LTOT) = 1.D0-GALB
              RL(I,J,LTOT) = 2.0D0*GALB*MU(J)*WTMU(J)  !Sum of MU*WTMU
 C                                                           = 0.5
 C            Correct for fact that Sum of MU*WTMU is not quite 0.5
@@ -510,10 +510,6 @@ C ***********************************************************************
      1  RBASE(1,1,L), TBASE(1,1,L), JBASE(1,1,L), RBASE(1,1,L+1), 
      2  TBASE(1,1,L+1), JBASE(1,1,L+1), NMU, MAXMU)
 
-C        CALL ADDP( RBASE(1,1,L), TBASE(1,1,L), JBASE(1,1,L), ISCL(K),
-C     1  RL(1,1,K), TL(1,1,K), JL(1,1,K), RBASE(1,1,L+1), 
-C     2  TBASE(1,1,L+1), JBASE(1,1,L+1), NMU, MAXMU)
-C        print*,rbase(1,1,L+1),tbase(1,1,L+1)
       ENDDO
 
 101   format(i4,3(f12.8))
@@ -559,7 +555,6 @@ C        print*,rbase(1,1,L+1),tbase(1,1,L+1)
        END IF
       END DO  
 
-      
       U0PL(ISOL,1) = SOLAR1/(2.0D0*PI*WTMU(ISOL))
 
 C ****************************************************
@@ -577,9 +572,6 @@ C       Calculate I(L+1)-
         CALL IUP( RTOP(1,1,L), TTOP(1,1,L), JTOP(1,1,L),
      1    RBASE(1,1,K), TBASE(1,1,K), JBASE(1,1,K), UMI(1,1,L+1),
      2    NMU, MAXMU)
-C        CALL IUP( RTOP(1,1,L), TTOP(1,1,L), JTOP(1,1,L),
-C     1    RBASE(1,1,K), TBASE(1,1,K), JBASE(1,1,K), UMI(1,1,L),
-C     2    NMU, MAXMU)
 
 C       Calculate I(L)+
         CALL IDOWN( RTOP(1,1,L), TTOP(1,1,L), JTOP(1,1,L),
@@ -587,8 +579,6 @@ C       Calculate I(L)+
      2    NMU, MAXMU)
 
       ENDDO
-C       stop
- 
 
 C *******************************************************
 C     CALCULATING EXTERIOR INTENSITIES UTPL AND U0MI
@@ -621,17 +611,20 @@ C       Reverse the order of the zenith angles in the final arrays
 C       again such that they go from small to large mu as listed in the 
 C       <runname>.sca files
         JMU  = NMU+1-IMU
-        DO 301 L=1,LT1
-          IF(L.NE.LT1)THEN
+        DO 301 L=1,LTOT
+
+          IF(L.NE.LTOT)THEN
             UPLF(JMU,L,IC+1)=SNGL(UPL(IMU,1,L))
           ELSE
             UPLF(JMU,L,IC+1)=SNGL(UTPL(IMU,1,L))
           ENDIF
+
           IF(L.NE.1)THEN
             UMIF(JMU,L,IC+1)=SNGL(UMI(IMU,1,L))
           ELSE
             UMIF(JMU,L,IC+1)=SNGL(U0MI(IMU,1,L))
           ENDIF
+
 301     CONTINUE
 
 302   CONTINUE

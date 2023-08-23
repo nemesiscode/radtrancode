@@ -100,8 +100,8 @@ Files based on Fletcher et al. 2018 wirh dimer absorption (use this for CIA>5 mi
 
 ***EXPERIMENTAL***
 2023: Significant update to H2-H2 and H2-He CIA:
-* H2-H2 rototranslational spectrum and dimers identical to dimers*tab files (0-2400 cm-1, Fletcher+2018).  RT spectra smoothly connected to original Borysow calculations > 2400 cm-1.
-* H2-He rototranslational spectrum from new Gustaffson calculations (0-4000 cm-1) 
+* H2-H2 rototranslational spectrum and dimers identical to dimers*tab files (0-2400 cm-1, Fletcher+2018; 2500-4000 cm-1 in 2023).  
+* H2-He rototranslational spectrum from new Gustaffson calculations in 2023 (0-4000 cm-1) 
 * H2-H2 rotovibrational fundamental based on `H2H2model` from Borysow, all equilibrium para-H2.
 * H2-H2 1st overtone from Zheng & Borysow (1995) `H2H2model02`, all equilibrium para-H2
 * H2-H2 2nd overtone from Borysow+1999, `H2H2model03`, all equilibrium para-H2.
@@ -110,10 +110,10 @@ Files based on Fletcher et al. 2018 wirh dimer absorption (use this for CIA>5 mi
 * Work in progress:  [1] ortho/para discrimination for RV fundamental; [2] H2H2 RT extension 2400-4000 cm-1.
 
 Four flavours:
-* gustafssonRT_borysowRV_40-280K_dnu10.0.tab	40-280 K	dnu=10 cm-1	npara=24,df=0.03
-* gustafssonRT_borysowRV_40-280K_dnu4.0.tab	40-280 K	dnu=4 cm-1	npara=24,df=0.03
-* gustafssonRT_borysowRV_40-280K_dnu2.0.tab	40-280 K	dnu=2 cm-1	npara=24,df=0.03
-* gustafssonRT_borysowRV_40-280K_dnu1.0.tab	40-280 K	dnu=1 cm-1	npara=24,df=0.03
+* gustafssonRT_borysowRV_40-280K_dnu10.0.tab 	0-15000 cm-1	40-280 K	dnu=10 cm-1	npara=24,df=0.03
+* gustafssonRT_borysowRV_40-280K_dnu4.0.tab	0-6000 cm-1	40-280 K	dnu=4 cm-1	npara=24,df=0.03
+* gustafssonRT_borysowRV_40-280K_dnu2.0.tab	0-3000 cm-1	40-280 K	dnu=2 cm-1	npara=24,df=0.03
+* gustafssonRT_borysowRV_40-280K_dnu1.0.tab	0-1500 cm-1	40-280 K	dnu=1 cm-1	npara=24,df=0.03
 
 First file is a recommended replacement for `borysow_2020_170.tab` and `NewBorysow.tab.`
 

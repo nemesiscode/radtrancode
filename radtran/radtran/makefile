@@ -32,6 +32,7 @@ F_SOURCES = \
 	n2h2cia.f \
 	calc_mlk2_k.f \
 	calc_nlte.f \
+	calc_nlte_t.f \
 	calc_pcoeff.f \
 	calc_gvk_k.f \
 	nciacon.f \
@@ -86,6 +87,7 @@ F_SOURCES = \
 	planckg.f \
 	planck_wave.f \
 	planckg_wave.f \
+	invplanck_wave.f \
 	rdlbld.f \
 	readdustod.f \
 	read_ktable.f \

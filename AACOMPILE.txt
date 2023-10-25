@@ -25,6 +25,7 @@ setenv BIN /Users/username/bin
 setenv OBJ /Users/username/obj
 setenv LIB /Users/username/lib 
 setenv RADSRC /Users/username/radtrancode/radtran
+setenv RADREPO /Users/username/radtrancode
 
 You also need to make sure that the stack size is unlimited by adding the 
 following line to your .cshrc file:
@@ -47,11 +48,29 @@ setenv FCFLAGS1 "-O2 -w90 -w95 -cm -w -zero"
 setenv FCFLAGS1_FOVGREG "-O -w90 -w95 -FR -cm -w"
 setenv STATIC_FLAG ""
 
-For MacOSX add the following:    
+For MacOSX with gfortran add the following:    
 setenv FCOMP "gfortran"
 setenv FCFLAGS1 ""
 setenv FCFLAGS1_FOVGREG "-ffree-form"
 setenv STATIC_FLAG ""
+
+For MacOSX with intel fortran compiler (in zsh format) add this to .zshrc
+#ifort from: https://www.intel.com/content/www/us/en/developer/articles/tool/oneapi-standalone-components.html#fortran
+# version 2023.2.0 Mac OX version (96Mb) installed on 18/10/23 and worked fine
+# NB. if compiler complains about "ld warning no platform load command found in..."
+# then add -ld_classic to flags
+export FCOMP="ifort"
+export STATIC_FLAG=""
+export FCFLAGS1="-O -zero -mmacosx-version-min=12.7 -ld_classic"
+export FCFLAGS1_FOVGREG="-O -free -zero -mmacosx-version-min=12.7 -ld_classic"
+export CC="gcc"
+export CCFLAGS="" 
+# if not set already then add these too
+export RADSRC=<YOUR_DIR>/radtrancode/radtran
+export BIN=<YOUR_DIR>/bin/OSX64
+export OBJ=<YOUR_DIR>/obj/OSX64
+export LIB=<YOUR_DIR>/lib/OSX64
+export RADREPO=<YOUR_DIR>/radtrancode
 
 
 To compile the whole code you need to follow the procedure (from the main 

@@ -20,7 +20,7 @@ C					file otherwise
 C	 iuvscat 	integer 	Include additional UV opacity (Henrik Melin)
 C
 C	Output variables passed via a common block
-C      inlte_flag 	integer	Type of ntle approximation to use (0=none)
+C      inlte_flag real		Type of ntle approximation to use (0=none)
 C					see radtran/radtran/calc_nlte_t for details
 C
 C     ********************************************************************
@@ -32,7 +32,7 @@ C
 C     ********************************************************************
       character*(*) runname
       integer inormal,iray,ih2o,ich4,io3,iptf,imie,inh3,iuvscat
-      integer inlte_flag
+      real inlte_flag
       common/list_of_flags/inlte_flag
 
       call file(runname,runname,'fla')

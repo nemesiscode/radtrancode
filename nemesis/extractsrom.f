@@ -48,6 +48,13 @@ C       Skip to right point in xn array
           np = 3
          endif
         endif
+        if(varident(ivar,1).eq.446)then
+         if(varparam(ivar,2).gt.0.0)then
+          np = 3+int(varparam(ivar,1))
+         else
+          np = 5
+         endif
+        endif
         if(varident(ivar,1).eq.445)np = 3+(2*int(varparam(ivar,1)))
         if(varident(ivar,1).eq.223)np = 8
         if(varident(ivar,1).eq.223)np = 9

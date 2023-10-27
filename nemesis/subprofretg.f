@@ -93,6 +93,7 @@ C     ***********************************************************************
       DOUBLE PRECISION Q(MAXPRO),OD(MAXPRO),ND(MAXPRO),XOD
       INTEGER ISCALE(MAXGAS),NPVAR,MAXLAT,ILAPSE
       INTEGER NLATREF,ILATREF,JLAT,KLAT,ICUT,JX,JLEV,ILEV
+      INTEGER ISO1,IGAS1,JGAS
       PARAMETER (MAXLAT=20)
       REAL HREF(MAXLAT,MAXPRO),TREF(MAXLAT,MAXPRO),FLAT
       REAL PREF(MAXLAT,MAXPRO),VMRREF(MAXLAT,MAXPRO,MAXGAS)
@@ -3456,9 +3457,16 @@ C        ***************************************************************
          XC2 = VARPARAM(IVAR,1)
          RH = VARPARAM(IVAR,2)
 
-         
-         CALL modifych4irwin(npro,P,T,xc1,xc2,RH,xch4new,xch4newgrad)
-        
+         if(varident(ivar,1).eq.6)then
+          CALL modifych4irwin(npro,P,T,xc1,xc2,RH,xch4new,xch4newgrad)
+         elseif(varident(ivar,1).eq.11)then 
+          CALL modifynh3irwin(npro,P,T,xc1,xc2,RH,xch4new,xch4newgrad)
+         else
+          print*,'Error in subprofretg. Model 39 not setup for gas:'
+          print*,varident(ivar,1)
+          stop
+         endif
+      
          DO J=1,NPRO
           X1(J)=xch4new(J)
           XMAP(NXTEMP+1,IPAR,J)=X1(J)*xch4newgrad(J)
@@ -4102,6 +4110,40 @@ C         This is also redone in gsetrad.f to make this totally secure.
 
 208       CONTINUE
 
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.49)THEN
+C        ***************************************************************
+C        Model 49. Profile is multiple of another profile
+C        ***************************************************************
+
+         IGAS1=INT(VARPARAM(IVAR,1))
+         ISO1=INT(VARPARAM(IVAR,2))
+
+         jgas=-1
+         do I=1,ngas
+          if(igas1.eq.idgas(i).and.iso1.eq.isogas(i))jgas=i
+         enddo
+         if(jgas.le.0)then
+          print*,'Error in subprofretg, model 49'
+          print*,'Cannot find matching gas profile'
+          print*,IGAS1,ISO1
+          do i=1,ngas
+           print*,idgas(i),isogas(i)
+          enddo
+          stop
+         endif
+
+         XDEEP = EXP(XN(NXTEMP+1))
+C         print*,nx
+C         print*,(XN(I),I=1,NX)
+C         print*,NXTEMP+1
+C         print*,'XX: IGAS1,ISO1,JGAS,XDEEP',IGAS1,ISO1,JGAS,XDEEP
+ 
+         DO J=1,NPRO
+          X1(J)=XDEEP*VMR(J,JGAS)
+C          print*,VMR(J,JGAS),X1(J)
+          XMAP(NXTEMP+1,IPAR,J)=X1(J)
+         ENDDO
 
         ELSE
 

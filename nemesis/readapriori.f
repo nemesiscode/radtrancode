@@ -95,13 +95,13 @@ C     ****************************************************************
       real xknee,xrh,erh,xcdeep,ecdeep,radius,Grav,plim
       real xcwid,ecwid,ptrop,refradius,xsc,ascat,escat,shape,eshape
       real clen1,clen2,press1,press2,clen3
-      integer nlong,ilong,ipar
+      integer nlong,ilong,ipar,k1,k2
       parameter (Grav=6.672E-11)
 C     SXMINFAC is minimum off-diagonal factor allowed in the
 C     a priori covariance matrix
       parameter (SXMINFAC = 0.001)
       real varparamx(mvar,mparam),xnx(mx),sxx(mx,mx),xdiff
-      integer ivar,nlevel,jsurfx,icont
+      integer ivar,nlevel,jsurfx,icont,j446
       integer jalbx,jtanx,jprex,jradx,jlat,ilat,nlat
       integer nprox,nvarx,varidentx(mvar,3),ioffx,ivarx
       integer npx,ioff,icond,npvar,jloggx,iplanet,jxscx,jlev
@@ -109,7 +109,7 @@ C     a priori covariance matrix
       integer nxx,nsec,ncont1,nlay,tmp,iex
       real xwid,ewid,y,y0,lambda0,vi(mx),vtmp(mx),xt(mx)
       real r0,er0,dr,edr,vm,nm,nmshell,nimag,delv,xy,v0
-      real xldeep,eldeep,xlhigh,elhigh,arg1
+      real xldeep,eldeep,xlhigh,elhigh,arg1,nimag1
       real v1,v1err,v2,v2err,p1,p1err,p2,p2err,p3
       real tau0,ntemp,teff,alpha,T0,xf,exf
       real etau0,entemp,eteff,ealpha,eT0
@@ -122,6 +122,7 @@ C     a priori covariance matrix
       real xc1,xc2
       integer idiag,iquiet
       common/diagnostic/idiag,iquiet
+      common/model446/j446
 
 C     Initialise a priori parameters
       do i=1,mx
@@ -139,6 +140,7 @@ C     Initialise a priori parameters
       jrad = -1
       jlogg = -1
       jfrac = -1
+      j446 = -1
       runname=opfile
 
 C     Pass jrad and jlogg to planrad common block
@@ -2689,7 +2691,27 @@ C             *** vmr, fcloud, para-H2 or cloud, take logs *********
 
              nx = nx+4
 
+
+           elseif (varident(ivar,3).eq.49)then
+C            * profile is a multiple of the gas profile of
+C            *another gas. Used for things like CH4 isotopologues
+C            * where, for example CH3D is a fixed factor of the CH4
+C            * profile, which is a variable and varies with height.
+C            Read in ID,ISO of gas profile to multiply.
+             read(27,*)k1,k2
+             read(27,*)xdeep,edeep
+             ix = nx+1
+             x0(ix)=alog(xdeep)
+             lx(ix)=1
+             err = edeep/xdeep
+             sx(ix,ix)=err**2
+             varparam(ivar,1)=k1
+             varparam(ivar,2)=k2
+
+             nx=nx+1
+
            else         
+
             print*,'vartype profile parametrisation not recognised'
             print*,'ivar, varident(ivar,*)'
             print*,ivar,(varident(ivar,i),i=1,3)
@@ -2970,6 +2992,134 @@ C                xfac = exp(-arg*arg)
               nx = nx + 3
 
              endif
+
+
+
+           elseif (varident(ivar,1).eq.446)then
+C            ** Variable cloud particle size distribution and composition
+             read(27,1)rifile
+
+             open(28,file=rifile,status='old')
+C              Read mean radius and error
+               read(28,*)r0,er0
+               ix=nx+1
+
+               if(MCMCflag.eq.1)then
+                r0 = MCMCpr
+                er0 = 1.0e-7*r0
+               endif
+
+               x0(ix)=alog(r0)
+               sx(ix,ix)=(er0/r0)**2
+               lx(ix)=1
+C              Read radius variance and error
+               read(28,*)dr,edr
+
+               if(MCMCflag.eq.1)then
+                dr = MCMCpvar
+                edr = 1.0e-7*dr
+               endif
+
+               ix=nx+2
+               x0(ix)=alog(dr)
+               sx(ix,ix)=(edr/dr)**2
+               lx(ix)=1
+
+C              Read number of wavelengths and correlation length (wavelength/
+C				wavenumbers)
+               read(28,*)np,clen
+               varparam(ivar,1)=np
+
+
+               call get_xsecA(opfile,nmode,nwave,wave,xsec)
+               if(np.ne.nwave)then
+       print*,'Error in readapriori.f. Number of wavelengths in ref.'
+       print*,'index file does not match number of wavelengths in'
+       print*,'xsc file. Wavelengths in these two files should match'
+                print*,rifile,np
+                print*,opfile,nwave
+                stop
+               endif
+
+               varparam(ivar,2)=clen
+
+C              read reference wavelength and nr at that wavelength
+               read(28,*)vm,nm
+               if(MCMCflag.eq.1)then
+                nm = MCMCreal
+               endif
+               varparam(ivar,3)=vm
+               varparam(ivar,4)=nm
+
+C              read x-section normalising wavelength (-1 to not normalise)
+               read(28,*)lambda0
+               varparam(ivar,5)=lambda0
+C              read fraction and error
+               read(28,*)dr,edr
+               ix=nx+3
+               j446=ix
+               x0(ix)=dr
+               sx(ix,ix)=edr**2
+               do i=1,np             
+                read(28,*)vi(i),nimag,err,nimag1,err1
+                if(MCMCflag.eq.1)then
+                 nimag = MCMCimag(i)
+                 err = 0.1*nimag
+                endif
+                ix=nx+3+i
+                if(i.eq.1.or.clen.gt.0.0)then
+                 x0(ix)=alog(nimag)
+                 sx(ix,ix)=(err/nimag)**2
+                 lx(ix)=1
+                endif
+                if(clen.gt.0) then
+                 ix=nx+3+np+i
+                 x0(ix)=alog(nimag1)
+                 sx(ix,ix)=(err1/nimag1)**2
+                 lx(ix)=1
+                else
+                 if(i.eq.1)then
+                  ix=nx+4+i
+                  x0(ix)=alog(nimag1)
+                  sx(ix,ix)=(err1/nimag1)**2
+                  lx(ix)=1
+                 endif
+                endif               
+               enddo
+             close(28)
+             do i=1,2*np+3
+              ix=nx+i
+             enddo
+
+             if(clen.gt.0.0)then
+              do i=1,np
+               do j=i+1,np
+                delv = vi(i)-vi(j)
+                arg = abs(delv/clen)
+                xfac = exp(-arg)
+C                xfac = exp(-arg*arg)
+                if(xfac.ge.SXMINFAC)then  
+
+                 sx(nx+3+i,nx+3+j)=
+     &  sqrt(sx(nx+3+i,nx+3+i)*sx(nx+3+j,nx+3+j))*xfac
+                 sx(nx+3+j,nx+3+i)=sx(nx+3+i,nx+3+j)
+
+                 sx(nx+3+np+i,nx+3+np+j)=
+     &  sqrt(sx(nx+3+np+i,nx+3+np+i)*sx(nx+3+np+j,nx+3+np+j))*xfac
+                 sx(nx+3+np+j,nx+3+np+i)=sx(nx+3+np+i,nx+3+np+j)
+                endif
+               enddo
+              enddo
+
+              nx = nx+3+2*np
+
+             else
+
+              nx = nx + 5
+
+             endif
+
+
 
            elseif (varident(ivar,1).eq.445)then
 C            ** Variable cloud particle size distribution and composition using Maltmieser coated sphere model **

@@ -48,20 +48,30 @@ C     **************************** CODE ********************************
       ioff = 0
       ivar=0
       do ivarx = 1,nvarx
-        np=-1
+        np=1
         if(varidentx(ivarx,1).le.100)then
          if(varidentx(ivarx,3).eq.0)np = nprox
          if(varidentx(ivarx,3).eq.1)np = 2
          if(varidentx(ivarx,3).eq.2)np = 1
          if(varidentx(ivarx,3).eq.3)np = 1
          if(varidentx(ivarx,3).eq.4)np = 3
+         if(varidentx(ivarx,3).eq.7)np = 2
          if(varidentx(ivarx,3).eq.8)np = 3
          if(varidentx(ivarx,3).eq.9)np = 3
          if(varidentx(ivarx,3).eq.7)np = 2
+         if(varidentx(ivarx,3).eq.10)np = 4
+         if(varidentx(ivarx,3).eq.11)np = 2
+         if(varidentx(ivarx,3).eq.12)np = 3
+         if(varidentx(ivarx,3).eq.13)np = 3
+         if(varidentx(ivarx,3).eq.14)np = 3
+         if(varidentx(ivarx,3).eq.15)np = 3
+         if(varidentx(ivarx,3).eq.16)np = 4
          if(varidentx(ivarx,3).eq.17)np = 2
          if(varidentx(ivarx,3).eq.18)np = 2
          if(varidentx(ivarx,3).eq.19)np = 4
          if(varidentx(ivarx,3).eq.20)np = 2
+         if(varidentx(ivarx,3).eq.21)np = 2
+         if(varidentx(ivarx,3).eq.22)np = 5
          if(varidentx(ivarx,3).eq.23)np = 4
          if(varidentx(ivarx,3).eq.24)np = 3
          if(varidentx(ivarx,3).eq.25)np = int(varparamx(ivarx,1))
@@ -91,6 +101,7 @@ C     **************************** CODE ********************************
          if(varidentx(ivarx,3).eq.46)np = 6
          if(varidentx(ivarx,3).eq.47)np = 3
          if(varidentx(ivarx,3).eq.48)np = 4
+         if(varidentx(ivarx,3).eq.49)np = 1
         else
          if(varidentx(ivarx,1).eq.102)np = 1
          if(varidentx(ivarx,1).eq.555)np = 1

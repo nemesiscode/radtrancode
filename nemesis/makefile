@@ -106,6 +106,7 @@ F_SOURCES = \
 	interpvivien.f \
 	modifych4kark.f \
 	modifych4irwin.f \
+	modifynh3irwin.f \
 	modifych4sromovsky.f \
 	parmentierguillot1.f \
 	lineav.f

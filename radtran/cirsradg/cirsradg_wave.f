@@ -177,7 +177,10 @@ C Definition of input and output variables ...
       REAL output(maxpat),doutputdq(maxpat,maxlay,maxgas+2+maxcon)
       REAL rad1,xfac,RADIUS1,p1,p2
 
-
+c NTLE stuff
+	real Tnlte
+	integer inlte_flag
+	
 C Definition of general variables ...
       INTEGER i,j,k,l,ipath,ig,iray,ipath1,lstcel,ipath2
       INTEGER k1,nlays,nparam,ILBL
@@ -321,6 +324,7 @@ C Common blocks ...
 
       integer idiag,iquiet
       common/diagnostic/idiag,iquiet
+      common/list_of_flags/inlte_flag
 
 
 C********************************* CODE ********************************
@@ -925,10 +929,17 @@ C           matrix inversion crashing
 
             DO J=1,nlays
               IF(ig.EQ.1)THEN
-                 bb(j,ipath) = planck_wave(ispace,vwave,
-     1					emtemp(j,ipath))
-                 dbdt(j,ipath) = planckg_wave(ispace,vwave,
-     1					emtemp(j,ipath))
+                 call calc_nlte_t(emtemp(j,ipath),
+     1               press(layinc(j,ipath)),
+     1               vwave,iwave,inlte_flag,Tnlte)
+c                    bb(j,ipath) = planck_wave(ispace,vwave,
+c     1					emtemp(j,ipath))
+c                    dbdt(j,ipath) = planckg_wave(ispace,vwave,
+c     1					emtemp(j,ipath))
+                 bb(j,ipath) = planck_wave(ispace,vwave,Tnlte)
+                 dbdt(j,ipath) = planckg_wave(ispace,vwave,Tnlte)
+c                 write(*,*),vwave,j,press(layinc(j,ipath)),
+c     1                      emtemp(j,ipath),Tnlte
               ENDIF
 
               tlayer = dexp(-dble(taus(j)))
@@ -1141,11 +1152,16 @@ C           matrix inversion crashing
 
             DO J=1,nlays
               IF(ig.EQ.1)THEN
-                 bb(j,ipath) = planck_wave(ispace,vwave,
-     1					emtemp(j,ipath))
-                 dbdt(j,ipath) = planckg_wave(ispace,vwave,
-     1					emtemp(j,ipath))
-                 bsurf=planck_wave(ispace,vwave,Tsurf)
+                 call calc_nlte_t(emtemp(j,ipath),
+     1               press(layinc(j,ipath)),
+     1               vwave,iwave,inlte_flag,Tnlte)
+c                    bb(j,ipath) = planck_wave(ispace,vwave,
+c     1					emtemp(j,ipath))
+c                    dbdt(j,ipath) = planckg_wave(ispace,vwave,
+c     1					emtemp(j,ipath))
+                 bb(j,ipath) = planck_wave(ispace,vwave,Tnlte)
+                 dbdt(j,ipath) = planckg_wave(ispace,vwave,Tnlte)
+                 bsurf = planck_wave(ispace,vwave,Tsurf)
               ENDIF
 
               tlayer = dexp(-dble(taus(j)))

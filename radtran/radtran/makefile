@@ -182,6 +182,9 @@ bin :   \
 	Read_table \
 	Read_lbltable \
 	Concat_table \
+	Concat_lbl_table \
+	Combi_ktable \
+	Combi_ktable1 \
 	Concat_table_temperature \
 	Cut_table \
 	Mod_table \
@@ -301,6 +304,21 @@ Read_lbltable : read_lbltable.f $(LIBRARY) $(LIB)/spec_data.a
 
 Concat_table : concat_table.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Concat_table concat_table.f \
+	$(LIBRARY) $(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
+	$(LIB)/scatter.a $(LIB)/path.a
+
+Concat_lbl_table : concat_lbl_table.f $(LIBRARY) $(LIB)/spec_data.a
+	$(FC) $(FCFLAGS) -o $(BIN)/Concat_lbl_table concat_lbl_table.f \
+	$(LIBRARY) $(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
+	$(LIB)/scatter.a $(LIB)/path.a
+
+Combi_ktable : combi_ktable.f $(LIBRARY) $(LIB)/spec_data.a
+	$(FC) $(FCFLAGS) -o $(BIN)/Combi_ktable combi_ktable.f \
+	$(LIBRARY) $(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
+	$(LIB)/scatter.a $(LIB)/path.a
+
+Combi_ktable1 : combi_ktable1.f $(LIBRARY) $(LIB)/spec_data.a
+	$(FC) $(FCFLAGS) -o $(BIN)/Combi_ktable1 combi_ktable1.f \
 	$(LIBRARY) $(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
 	$(LIB)/scatter.a $(LIB)/path.a
 

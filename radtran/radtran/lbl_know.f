@@ -1,10 +1,10 @@
-      SUBROUTINE LBL_KNOW(IWAVE,VMIN,DELV,NPOINT,PRESS,TEMP,IDGAS,
+      SUBROUTINE LBL_KNOW(IWAVE0,VMIN,DELV,NPOINT,PRESS,TEMP,IDGAS,
      1 ISOGAS,IPROC,IP,IT,FRAC,MAXDV,IPTF,OUTPUT)
 C***********************************************************************
 C_TITL:	LBL_KNOW.f
 C
 C_ARGS:	Input variables:
-C	IWAVE		INTEGER	Wavespace of final k-table (0=wavelength,
+C	IWAVE0		INTEGER	Wavespace of final k-table (0=wavelength,
 C							    1=wavenumber)
 C	VMIN		REAL	Wavenumber of beginning of range.
 C	DELV		REAL	Wavenumber step
@@ -89,7 +89,7 @@ C***************************** VARIABLES *******************************
       IMPLICIT NONE
 
 C Definition of input parameters ...
-      INTEGER IDGAS,ISOGAS,IPROC,IP,IT,IWAVE
+      INTEGER IDGAS,ISOGAS,IPROC,IP,IT,IWAVE0,IWAVE
       REAL PRESS,TEMP,MAXDV,FRAC,FPOINT
 
 
@@ -199,6 +199,7 @@ C******************************** CODE *********************************
 C Checking isotope included in model and setting mass for doppler width
 C calculation
       XMASS=GETMASS(IDGAS,ISOGAS)
+      IWAVE=IWAVE0
 
 1     FORMAT(A)
 
@@ -222,6 +223,8 @@ c     pretabulate some line calculation parameters
          line_done(itest) = 0
       enddo
 
+C      print*,'NBIN,VBIN',NBIN,(VBIN(I),I=1,NBIN)
+
       do i=1,npoint
         XX = DBLE(VMIN) + DBLE(I - 1)*DBLE(DELV)
 C       Set current wavenumber        
@@ -232,9 +235,11 @@ C       Set current wavenumber
         ENDIF
         VR=SNGL(V)
 
+C        print*,'VBIN(1),WING,VR = ',VBIN(1),WING,VR
         CURBIN = INT((VR - VBIN(1))/WING) + 1
         IBIN1 = CURBIN - 1
         IBIN2 = CURBIN + 1
+C        print*,CURBIN,IBIN1,IBIN2
         IF(IBIN1.LT.1)IBIN1 = 1
         IF(IBIN2.GT.NBIN)IBIN2 = NBIN
 
@@ -275,10 +280,12 @@ C       Set current wavenumber
          V=XX
         ENDIF
         VR=SNGL(V)
+C        print*,I,NPOINT,IWAVE,XX,V,VR
         ASSIGN 2001 TO LABEL
         GOTO 2000
 
 2001    CONTINUE
+C        print*,'Back. IWAVE = ',IWAVE
 
 103   CONTINUE
 
@@ -311,7 +318,7 @@ C coefficients held in CONTINK.
         TAUTMP = TAUTMP + CONTINK(ISUM,IP,IT,CURBIN)*VTMP
         VTMP = VTMP*VTMP
 51    CONTINUE
-C      print*,'v,tautmp = ',v,tautmp
+C      print*,'v,tautmp,curbin = ',v,tautmp,curbin
 
 C The text within the IF statement below should probably be kept
 C commented-out unless you are specifically debugging for errors. I make
@@ -348,10 +355,12 @@ C=======================================================================
         WRITE(*,*)'Resetting according to ...'
         WRITE(*,*)'  IF (IBIN1.LT.1) IBIN1 = 1'
         WRITE(*,*)'  IF (IBIN2.GT.NBIN) IBIN2 = NBIN',NBIN
+        stop
       ENDIF
       IF(IBIN1.LT.1)IBIN1 = 1
       IF(IBIN2.GT.NBIN)IBIN2 = NBIN
 
+C      print*,IBIN1,IBIN2,FSTLIN(JBIN),LSTLIN(JBIN)
       DO 507 JBIN=IBIN1,IBIN2
 
 C Compute absorption coefficient for normal incidence
@@ -378,6 +387,7 @@ C          STOP
            TAUTMP=0.0
         ENDIF
 507   CONTINUE
+C      print*,TAUTMP,IWAVE
 
 C Now scaling for each path
       OUTPUT(I) = TAUTMP

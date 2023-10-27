@@ -141,27 +141,37 @@ C-----------------------------------------------------------------------
         ENDIF
 
 
+C        open(12,file='test.out',status='unknown')
+C        write(12,*)nwave
         DO I= 1, npath
            DO J= 1, nwave
               K= I+(J-1)*npath
               y(J)= output(K)
+C              write(12,*)vwave(j),y(J)
            ENDDO
 
            if(ilbl.eq.0)then
             CALL cirsconv(opfile,fwhm, nwave, vwave, y, nconv, 
      1      vconv,yout,FWHMEXIST,NFWHM,VFWHM,XFWHM)
            else
-            CALL lblconv1(opfile,fwhm,ishape, nwave, vwave, y, nconv,
+C           Simple integrator - no frills
+C            CALL lblconv1(opfile,fwhm,ishape, nwave, vwave, y, nconv,
+C     1      vconv,yout,FWHMEXIST,NFWHM,VFWHM,XFWHM)
+C           Trapezium rule integrator
+            CALL lblconv2(opfile,fwhm,ishape, nwave, vwave, y, nconv,
      1      vconv,yout,FWHMEXIST,NFWHM,VFWHM,XFWHM)
            endif
 
+C           write(12,*)nconv
            DO J= 1, nconv
               K= I+(J-1)*npath
               convout(K)= yout(J)
+C              write(12,*)vconv(j),yout(j)
            ENDDO
 
         ENDDO
- 
+C        close(12) 
+
         deallocate(y,yout)
 
 	RETURN

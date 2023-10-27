@@ -297,6 +297,13 @@ C      therefore need to reseed it to continue to get pseudo-random numbers
            np = 3
           endif
          endif
+         if(varident(ivar,1).eq.446)then
+          if(varparam(ivar,2).gt.0.0)then
+           np = 3+2*int(varparam(ivar,1))
+          else
+           np = 5
+          endif
+         endif
          if(varident(ivar,1).eq.445)np = 3+int(varparam(ivar,1))
          if(varident(ivar,1).eq.222)np = 8
          if(varident(ivar,1).eq.223)np = 9
@@ -319,6 +326,13 @@ C      therefore need to reseed it to continue to get pseudo-random numbers
              npx = 2+int(varparamx(ivarx,1))
             else
              npx = 3
+            endif
+           endif
+           if(varidentx(ivarx,1).eq.446)then
+            if(varparamx(ivarx,2).gt.0.0)then
+             npx = 3+2*int(varparamx(ivarx,1))
+            else
+             npx = 5
             endif
            endif
            if(varidentx(ivarx,1).eq.445)npx = 3+int(varparamx(ivarx,1))

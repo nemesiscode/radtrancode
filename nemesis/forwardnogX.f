@@ -111,7 +111,7 @@ C     **************************************************************
 
       integer nvar,varident(mvar,3)
       real varparam(mvar,mparam)
-      logical gasgiant
+      logical gasgiant,NUMFLAG
       real vem(maxsec),emissivity(maxsec)
 
       real stelrad,solwave(maxbin),solrad(maxbin)
@@ -125,7 +125,7 @@ C     **************************************************************
      1  cellpress,celltemp
       integer idiag,iquiet
       common/diagnostic/idiag,iquiet
-
+      common/mieflag/NUMFLAG
 
 
 C     jradf and jloggf are passed via the planrad common block   
@@ -293,7 +293,7 @@ C           Special fix for retrieval test
 C         Check to see if this variable is unconstrained enough to bother
 C         calculating its gradient.
           if(ix.gt.0.and.ifix(ix).eq.1)then
-           if(idiag.gt.0)print*,'Fix ',ix,xref
+C           if(idiag.gt.0)print*,'Fix ',ix,xref
            xn(ix)=xref
            goto 111
           endif
@@ -337,6 +337,11 @@ C         Set up all files for a direct cirsrad run
      4     xmap)
           if(idiag.gt.0)print*,'gsetrad called OK'
 
+C         See if Mie-scat calculation overflowed. If so, flag as bad iteration.
+          IF(NUMFLAG)THEN
+           print*,'forwardnogx: NUMFLAG error'
+           icheck=1
+          ENDIF
 C         If planet is not a gas giant and observation is not at limb then
 C         we need to read in the surface emissivity spectrum.
 C

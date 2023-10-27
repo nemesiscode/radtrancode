@@ -104,6 +104,13 @@ C       READ*,FH2
         if(idiag.gt.0)print*,'FH2 = ',FH2
       ENDIF
 
+      IF(DBRECL.EQ.65)THEN
+C       CALL PROMPT('Oxford-ExoMOL format2 - enter fH2 : ')
+C       READ*,FH2
+        FH2 = 0.865
+        if(idiag.gt.0)print*,'FH2 = ',FH2
+      ENDIF
+
       CALL FNDWAV(VMIN)
       MINREC= DBREC
       VLIM= VMIN + DELV
@@ -151,7 +158,7 @@ C NOTE: SBLIN is the correction to air broadening so that zero is valid
             ELSE
               SBLIN(LINE)= 0.0
             ENDIF
-
+ 
             IF(LNWIDA1.GT.1E-20)THEN
              ALIN(LINE)=FH2*LNWIDA + (1.0-FH2)*LNWIDA1
              SBLIN(LINE) = ALIN(LINE) - LNWIDS

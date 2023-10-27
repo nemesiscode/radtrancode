@@ -91,7 +91,7 @@ C     ************************************************************************
       parameter (max_wave = 1000)
 
       integer ncont1,xflag,nwave,np,np1
-      real xlatx,xlonx,wave(max_wave)
+      real xlatx,xlonx,wave(max_wave),frac
       real xsec(max_mode,max_wave,2),nimag(max_wave)
       real nreal(max_wave),r0,v0,clen,k2(max_wave)
       real srefind(max_wave,2),parm(3),rs(3),vm,nm
@@ -541,6 +541,14 @@ C     Compute the drv file to get the aerosol optical depths
            endif
 C           if(idiag.gt.0)print*,'xxz1',ivar,varparam(ivar,2),np
           endif
+          if(varident(ivar,1).eq.446)then           
+           if(varparam(ivar,2).gt.0.0)then
+            np = 3+2*int(varparam(ivar,1))
+           else
+            np = 5
+           endif
+C           if(idiag.gt.0)print*,'xxz1',ivar,varparam(ivar,2),np
+          endif
           if(varident(ivar,1).eq.445)np = 3+2*int(varparam(ivar,1))
           if(varident(ivar,1).eq.222)np = 8
           if(varident(ivar,1).eq.223)np = 9
@@ -593,7 +601,8 @@ C       check that rescaling has happened correctly
        if(varident(ivar,1).eq.227)np = 7
           
 
-       if(varident(ivar,1).eq.444.or.varident(ivar,1).eq.445)then
+       if(varident(ivar,1).eq.444.or.varident(ivar,1).eq.445.
+     & or.varident(ivar,1).eq.446)then
 
            iwave=ispace
            if(iwave.eq.0)iwave=2
@@ -649,12 +658,24 @@ C              if(idiag.gt.0)print*,'xxy',nx1,nx1+3,exp(xn(nx1+3))
               nimagshell(i) = exp(xn(nx1+3+np1)) 
              endif
             endif
+            if(varident(ivar,1).eq.446)then
+             frac=xn(nx1+3)
+             if(varparam(ivar,2).gt.0.0)then
+              nimag(i)=exp((1-frac)*xn(nx1+3+i)+frac*xn(nx1+3+nwave+i))
+              nimagshell(i) = 0.0
+             else
+              nimag(i)=exp((1-frac)*xn(nx1+4)+frac*xn(nx1+5))
+C              if(idiag.gt.0)print*,'xxy',nx1,nx1+3,exp(xn(nx1+3))
+              nimagshell(i) = 0.0
+             endif
+            endif
+
 C            if(idiag.gt.0)print*,'xx',i,nimag(i)
            enddo
 
 C           if(idiag.gt.0)print*,'xx',varident(ivar,1),varident(ivar,2)
            if(varparam(ivar,2).gt.0.0.or.
-     &        varident(ivar,1).eq.446)then
+     &        varident(ivar,1).eq.447)then
 C           Compute nreal from KK
 C            if(idiag.gt.0)print*,'xx kramer'
             if(ispace.eq.0)then

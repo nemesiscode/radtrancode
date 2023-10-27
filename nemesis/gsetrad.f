@@ -91,7 +91,7 @@ C     ************************************************************************
       parameter (max_wave = 1000)
 
       integer ncont1,xflag,nwave,np,np1
-      real xlatx,xlonx,wave(max_wave)
+      real xlatx,xlonx,wave(max_wave),frac
       real xsec(max_mode,max_wave,2),nimag(max_wave)
       real nreal(max_wave),r0,v0,clen,k2(max_wave)
       real srefind(max_wave,2),parm(3),rs(3),vm,nm
@@ -131,7 +131,6 @@ C     ************************************************************************
       real csx,nrealshell(max_wave),nimagshell(max_wave),nmshell
       integer idiag,iquiet
       common/diagnostic/idiag,iquiet
-
      
       if(idiag.gt.0)print*,'gsetrad, lin = ',lin
 
@@ -537,6 +536,8 @@ C     Compute the drv file to get the aerosol optical depths
               od1=exp(xn(nx1+3))
               xscal(icont)=xod(icont)/od1
 
+C              print*,'gsetrad',icont,od1,xod(icont),xscal(icont)
+
               do j=1,NN
                dust(icont,j)=dust(icont,j)/xscal(icont)
               enddo
@@ -579,6 +580,14 @@ C     Compute the drv file to get the aerosol optical depths
             np = 2+int(varparam(ivar,1))
            else
             np = 3
+           endif
+C           if(idiag.gt.0)print*,'xxz1',ivar,varparam(ivar,2),np
+          endif
+          if(varident(ivar,1).eq.446)then           
+           if(varparam(ivar,2).gt.0.0)then
+            np = 3+2*int(varparam(ivar,1))
+           else
+            np = 5
            endif
 C           if(idiag.gt.0)print*,'xxz1',ivar,varparam(ivar,2),np
           endif
@@ -647,7 +656,8 @@ C       check that rescaling has happened correctly
        if(varident(ivar,1).eq.227)np = 7
           
 
-       if(varident(ivar,1).eq.444.or.varident(ivar,1).eq.445)then
+       if(varident(ivar,1).eq.444.or.varident(ivar,1).eq.445.
+     & or.varident(ivar,1).eq.446)then
 
            iwave=ispace
            if(iwave.eq.0)iwave=2
@@ -669,7 +679,6 @@ C       check that rescaling has happened correctly
            vm = varparam(ivar,3)
            nm = varparam(ivar,4)
            lambda0 = varparam(ivar,5)
-
            call get_xsecA(runname,nmode,nwave,wave,xsec)
 
 C          np1 should now match nwave
@@ -703,12 +712,24 @@ C              if(idiag.gt.0)print*,'xxy',nx1,nx1+3,exp(xn(nx1+3))
               nimagshell(i) = exp(xn(nx1+3+np1)) 
              endif
             endif
-C            if(idiag.gt.0)print*,'xx',i,nimag(i)
+            if(varident(ivar,1).eq.446)then
+             frac=xn(nx1+3)
+             if(varparam(ivar,2).gt.0.0)then
+              nimag(i)=exp((1.0-frac)*xn(nx1+3+i)+
+     &           frac*xn(nx1+3+np1+i))
+              nimagshell(i) = 0.0
+             else
+              nimag(i)=exp((1.0-frac)*xn(nx1+4)+frac*xn(nx1+5))
+C              if(idiag.gt.0)print*,'xxy',nx1,nx1+3,exp(xn(nx1+3))
+              nimagshell(i) = 0.0
+             endif
+            endif            
+            if(idiag.gt.0)print*,'xx nimag',i,nimag(i)
            enddo
 
 C           if(idiag.gt.0)print*,'xx',varident(ivar,1),varident(ivar,2)
            if(varparam(ivar,2).gt.0.0.or.
-     &        varident(ivar,1).eq.446)then
+     &        varident(ivar,1).eq.447)then
 C           Compute nreal from KK
 C            if(idiag.gt.0)print*,'xx kramer'
             if(ispace.eq.0)then
@@ -822,9 +843,17 @@ C           from 1 to -(imode)
             np=3+(2*np1)
            else
             if(varparam(ivar,2).gt.0.0)then
-             np=2+np1
+             if(varident(ivar,1).eq.444)then
+              np=2+np1
+             else
+              np=3+2*np1
+             endif
             else
-             np=3
+             if(varident(ivar,1).eq.444)then
+              np=3
+             else
+              np=5
+             endif
             endif
            endif
 

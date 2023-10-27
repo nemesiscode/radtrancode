@@ -60,6 +60,13 @@ C        if(idiag.gt.0)print*,'D',(VARIDENT(IVAR,J),J=1,3),NP
           np = 3
          endif
         endif
+        if(varident(ivar,1).eq.446)then
+         if(varparam(ivar,2).gt.0.0)then
+          np = 3+2*int(varparam(ivar,1))
+         else
+          np = 5
+         endif
+        endif
         IF(VARIDENT(IVAR,1).EQ.445)NP=3+(2*INT(VARPARAM(IVAR,1)))
         IF(VARIDENT(IVAR,1).EQ.222)NP=8
         IF(VARIDENT(IVAR,1).EQ.223)NP=9

@@ -7,13 +7,13 @@ C     Subroutine to add the diffuse reflection, transmission and reflection
 C     matrices for two adjacent atmospheric layers
 C
 C     Input variables:
-C	R1(JDIM,JDIM)	DOUBLE	Diffuse reflection operator for 1st layer
-C	T1(JDIM,JDIM)	DOUBLE	Diffuse transmission operator for 1st layer
-C	J1(JDIM,1)	DOUBLE	Diffuse source function for 1st layer
+C	R1(JDIM,JDIM)	DOUBLE	Diffuse reflection operator for 2nd layer
+C	T1(JDIM,JDIM)	DOUBLE	Diffuse transmission operator for 2nd layer
+C	J1(JDIM,1)	DOUBLE	Diffuse source function for 2nd layer
 C	ISCAT1		INTEGER Flag to indicate if 2nd layer is scattering
-C	RSUB(JDIM,JDIM)	DOUBLE	Diffuse reflection operator for 2nd layer
-C	TSUB(JDIM,JDIM)	DOUBLE	Diffuse transmission operator for 2nd layer
-C	JSUB(JDIM,1)	DOUBLE	Diffuse source function for 2nd layer
+C	RSUB(JDIM,JDIM)	DOUBLE	Diffuse reflection operator for existing layer
+C	TSUB(JDIM,JDIM)	DOUBLE	Diffuse transmission operator for existing layer
+C	JSUB(JDIM,1)	DOUBLE	Diffuse source function for existing layer
 C	JDIM		INTEGER	Array size
 C	NMU		INTEGER	Number of elements used
 C
@@ -39,6 +39,7 @@ C---------------------------------------------------------------------
      1 RSUB(JDIM,JDIM), TSUB(JDIM,JDIM), JSUB(JDIM,1), 
      2 RANS(JDIM,JDIM), TANS(JDIM,JDIM), JANS(JDIM,1)
       INTEGER ISCAT1
+
 C
       IF (JDIM.NE.MAXMU) CALL ABEND(' ADD: DIMENSION ERROR')
 C     Subroutine solves Eq. 7b,8b,9b of Plass et al. (1973) 
@@ -99,7 +100,7 @@ C       2nd layer is non-scattering
          TANS(I,J) = TSUB(I,J)*TA
          RANS(I,J) = RSUB(I,J)*TA*TB
         END DO
-        JANS(I,1) = J1(I,1) + TA*JCOM(I,1)
+        JANS(I,1) = J1(I,1) + TA*JANS(I,1)
        END DO
 
       ENDIF

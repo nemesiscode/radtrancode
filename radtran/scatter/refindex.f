@@ -1044,17 +1044,22 @@ C-----------------------------------------------------------------------
         enddo        
         close(55)
 
+        
 
 	if ((lambda.lt.table(1,1)).or.(lambda.gt.table(n,1))) then
 		write (*,*) ' Wavelength range exceeded in H2SO4 lookup'
 		write (*,*) ' lambda: ', lambda, ' Limits: ', 
      1			table(1,1), ' to', table(n,1)
-		stop
+C		stop
 	endif
 
-	call locate (table, n, lambda, k)
-
-        frac = (lambda - table(k,1))/(table(k+1,1)-table(k,1))
+        if(lambda.lt.table(1,1))then
+         k=1
+         frac=0.0
+        else
+         call locate (table, n, lambda, k)
+         frac = (lambda - table(k,1))/(table(k+1,1)-table(k,1))
+        endif
        
         do i=1,3
           j=2+2*(i-1)

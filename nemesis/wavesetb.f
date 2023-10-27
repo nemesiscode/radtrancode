@@ -59,6 +59,11 @@ C     just set the calculation wavelengths to be the convolution wavelengths
       else      
        ico = 0
        if(fwhm.lt.0.0)then
+        if(vkstep.eq.0) then
+         print*,'Cannot use k-tables with vkstep=0 in '
+         print*,'conjunction with .fil files'
+         stop
+        endif
         call file(runname,runname,'fil')
         if(idiag.gt.0)print*,'Reading filter file : ',runname
         open(12,file=runname,status='old')
@@ -84,15 +89,15 @@ C     just set the calculation wavelengths to be the convolution wavelengths
           enddo
 
           do 443 i=1,nconv
-c           if(idiag.gt.0)print*,vcentral,vconv(i)
-cc           dv = 100.0*abs(vcentral-vconv(i))/vconv(i)
            dv = abs(vcentral-vconv(i))
+           if(idiag.gt.0)print*,vcentral,vconv(i),dv
 
            if(dv.lt.0.00001)then
             j1=((vfil(1)-vkstart)/vkstep)-1
             j2=((vfil(nsub)-vkstart)/vkstep)+1
             v1 = vkstart + (j1-1)*vkstep
             v2 = vkstart + (j2-1)*vkstep
+            if(idiag.gt.0)print*,j1,j2,v1,v2
             if(v1.lt.vkstart.or.v2.gt.vkend)then
               if(idiag.gt.0)then
                print*,'Warning from wavesetb'
@@ -100,6 +105,7 @@ cc           dv = 100.0*abs(vcentral-vconv(i))/vconv(i)
                print*,'v1,v2,vkstart,vkend',v1,v2,vkstart,vkend
               endif
             endif
+            if(j1.lt.1) j1=1
 
             do jj=j1,j2
              ico=ico+1
@@ -185,14 +191,15 @@ C     sort calculation wavelengths into order
        vwave(i)=save(i)
       enddo
 
-C      if(idiag.gt.0)print*,'nco = ',nco
+      if(idiag.gt.0)print*,'nco = ',nco
 C     Now weed out repeated wavelengths
       vwave(1)=save(1)
       ico=1
       xdiff = 0.9*vkstep
       if(xdiff.gt.0)then
-C      if(idiag.gt.0)print*,'Weeding out repeated wavelengths. vkstep = ',
-C     &		vkstep
+      if(idiag.gt.0)then
+        print*,'Weeding out repeated wavelengths. vkstep = ',vkstep
+      endif
       do 446 i=2,nco
        test = abs(save(i)-vwave(ico))
        if(test.ge.xdiff)then
@@ -204,7 +211,7 @@ C     &		vkstep
           stop
          endif
          vwave(ico)=save(i)
-C         if(idiag.gt.0)print*,'ico,vwave',ico,vwave(ico)
+         if(idiag.gt.0)print*,'ico,vwave',ico,vwave(ico)
        end if
 446   continue
       nwave=ico
@@ -216,6 +223,11 @@ C         if(idiag.gt.0)print*,'ico,vwave',ico,vwave(ico)
         if(idiag.gt.0)print*,i,vwave(i)
        enddo
       endif
+
+      if(idiag.gt.0)print*,'nwave = ',nwave
+      do i=1,nwave
+        if(idiag.gt.0)print*,i,vwave(i)
+      enddo
 
       if(idiag.gt.0)print*,'wavesetb: nwave = ',nwave
       return

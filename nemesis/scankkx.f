@@ -79,6 +79,13 @@ C     **************************** CODE ********************************
            np = 3
           endif
          endif
+         if(varidentx(ivarx,1).eq.446)then
+          if(varparamx(ivarx,2).gt.0.0)then
+           np = 3+2*int(varparamx(ivarx,1))
+          else
+           np = 5
+          endif
+         endif
          if(varidentx(ivarx,1).eq.445)then
           np = 3+(2*int(varparamx(ivarx,1)))
          endif

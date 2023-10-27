@@ -61,6 +61,7 @@ C       Variable is not temperature  - may need to take exponent
       if(imod.eq.43)iflag=1 ! double grey parameterised T-profile
       if(imod.eq.44)iflag=1 ! inhomogenous disc double grey parameterised T-profile
       if(imod.eq.45)iflag=1 ! inhomogenous disc double grey parameterised T-profile
+      if(imod.eq.49)iflag=1 ! profile multiplier
       if(imod.eq.1.and.ip.eq.2)iflag=1 ! log fsh - fixed knee
       if(imod.eq.20.and.ip.eq.2)iflag=1 ! log fsh - fixed knee
       if(imod.eq.4.and.ip.eq.2)iflag=1 ! log fsh - var. knee

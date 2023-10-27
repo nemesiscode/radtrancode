@@ -71,12 +71,6 @@ C-----------------------------------------------------------------------------
 
       REAL P1,TE1,TEMP1(MAXK),PRESS1(MAXK),VCEN(MPOINT)
       REAL TEMP2(MAXK,MAXK),OUTPUT(MPOINT)
-      REAL TABLE(MAXK,MAXK,MAXG)
-      REAL G_ORD(MAXG),K_G(MAXG),DEL_G(MAXG),ERRK(MAXG)
-C     G_ORD: Gauss-Legendre ordinates for calculating the k-distribution.
-C     K_G: Calculated k-distribution.
-C     DEL_G: Gauss-Legendre weights for integration.
-C     **** all these are now defined by zgauleg.f ***
       integer idiag,iquiet
       common/diagnostic/idiag,iquiet
 
@@ -130,20 +124,31 @@ C     **** all these are now defined by zgauleg.f ***
       CALL PROMPT('Enter WING,VREL : ')
       READ*,WING,VREL
 
+      PRINT*,'Entering NP < 0 activates new user-selected'
+      PRINT*,'pressures'
       CALL PROMPT('Enter number of pressure points ( < 20 ) : ')
       READ*,NP
-      CALL PROMPT('Enter log(pmin), log(pmax) : ')
-      READ*,PMIN,PMAX
-      IF(NP.GT.1)THEN
-       DP=(PMAX-PMIN)/(NP-1)
+      IF(NP.GT.0)THEN
+       CALL PROMPT('Enter log(pmin), log(pmax) : ')
+       READ*,PMIN,PMAX
+       IF(NP.GT.1)THEN
+        DP=(PMAX-PMIN)/(NP-1)
+       ELSE
+        DP=0.
+       ENDIF
+       DO 5 J=1,NP
+         X=PMIN + (J-1)*DP
+         PRESS1(J)=EXP(X)
+         PRINT*,J,press1(J)
+5      CONTINUE
       ELSE
-       DP=0.
+       PRINT*,'Enter required pressures (lowest first)'
+       NP=ABS(NP)
+       DO J=1,NP
+        READ*,PRESS1(J)
+        print*,J,PRESS1(J)
+       ENDDO
       ENDIF
-      DO 5 J=1,NP
-        X=PMIN + (J-1)*DP
-        PRESS1(J)=EXP(X)
-        PRINT*,J,press1(J)
-5     CONTINUE
 
       PRINT*,'Entering NT < 0 activates new pressure-dependent'
       PRINT*,'temperatures'
@@ -167,7 +172,8 @@ C     **** all these are now defined by zgauleg.f ***
          PRINT*,'Pressure level = ',I,PRESS1(I)
          CALL PROMPT('Enter Tmin, Tmax : ')
          READ*,TMIN,TMAX
-         DT=(TMAX-TMIN)/(ABS(NT)-1)
+         DT=0.0
+         IF(ABS(NT).GT.1)DT=(TMAX-TMIN)/(ABS(NT)-1)
          DO 8 J=1,ABS(NT)
           TEMP2(I,J)=TMIN+(J-1)*DT
 8        CONTINUE

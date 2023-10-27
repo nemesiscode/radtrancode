@@ -6,6 +6,7 @@ C			SUBROUTINE LBLCONV1
 C
 C	Convolves input spectrum (vwave, y) with a bin of width
 C	fwhm to produce an output spectrum (vconv, yout).
+C       Operates on a single path.
 C
 C-----------------------------------------------------------------------
 

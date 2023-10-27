@@ -38,6 +38,10 @@ C       if(idiag.gt.0)print*,'A',ICLOUD,IVAR,(VARIDENT(IVAR,J),J=1,3)
         X=EXP(XN(NXTEMP+1))
 C        if(idiag.gt.0)print*,'X = ',X
        ENDIF
+       IF(VARIDENT(IVAR,1).EQ.446.AND.VARIDENT(IVAR,2).EQ.ICLOUD)THEN
+        X=EXP(XN(NXTEMP+1))
+C        if(idiag.gt.0)print*,'X = ',X
+       ENDIF
        IF(VARIDENT(IVAR,1).EQ.445.AND.VARIDENT(IVAR,2).EQ.ICLOUD)THEN
         X=EXP(XN(NXTEMP+1))
 C        if(idiag.gt.0)print*,'X = ',X
@@ -54,6 +58,13 @@ C        if(idiag.gt.0)print*,'D',(VARIDENT(IVAR,J),J=1,3),NP
           np = 2+int(varparam(ivar,1))
          else
           np = 3
+         endif
+        endif
+        if(varident(ivar,1).eq.446)then
+         if(varparam(ivar,2).gt.0.0)then
+          np = 3+2*int(varparam(ivar,1))
+         else
+          np = 5
          endif
         endif
         IF(VARIDENT(IVAR,1).EQ.445)NP=3+(2*INT(VARPARAM(IVAR,1)))

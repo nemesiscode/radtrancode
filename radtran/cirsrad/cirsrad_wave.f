@@ -2117,8 +2117,8 @@ C		   scattering case, including thermal emission and sunlight
                   enddo
 
 
-                  call streamflux(nlays,nmu,mu1,wt1,radg,galb1,
-     1                ig,umif,uplf,fup,fdown,ftop)                    
+                  call streamflux(nlays,nmu,mu1,wt1,radg,lowbc,
+     1                galb1,ig,umif,uplf,fup,fdown,ftop)                    
 
 
                   do Jpath=1,nlays
@@ -2195,8 +2195,8 @@ C                 upwelling radiation field to local temperature.
      2               vv, eps, omegas, bnu, taus, taur, 
      3               nlays, ncont, lfrac, umif, uplf)
 
-                  call streamflux(nlays,nmu,mu1,wt1,radg,galb1,
-     1                ig,umif,uplf,fup,fdown,ftop)                    
+                  call streamflux(nlays,nmu,mu1,wt1,radg,lowbc,
+     1                galb1,ig,umif,uplf,fup,fdown,ftop)                    
 
 
                   do Jpath=1,Ipath
@@ -2284,8 +2284,8 @@ C               matrix inversion crashing
      2               vv, eps, omegas, bnu, taus, taur, 
      3               nlays, ncont, lfrac, umif, uplf)
 
-                call streamflux(nlays,nmu,mu1,wt1,radg,galb1,
-     1                ig,umif,uplf,fup,fdown,ftop)                    
+                call streamflux(nlays,nmu,mu1,wt1,radg,lowbc,
+     1                galb1,ig,umif,uplf,fup,fdown,ftop)                    
 
  		corkout(Ipath,Ig) = xfac*ftop(ig)
 
@@ -2368,8 +2368,8 @@ C               matrix inversion crashing
      2               vv, eps, omegas, bnu, taus, taur, 
      3               nlays, ncont, lfrac, umif, uplf)
 
-                call streamflux(nlays,nmu,mu1,wt1,radg,galb1,
-     1                ig,umif,uplf,fup,fdown,ftop)                    
+                call streamflux(nlays,nmu,mu1,wt1,radg,lowbc,
+     1               galb1,ig,umif,uplf,fup,fdown,ftop)                    
 
  		corkout(Ipath,Ig) = xfac*fdown(1,ig)
 
@@ -2605,7 +2605,7 @@ C                vertical radiance and difference.
                  write(infr,*)x,solar,radground,galb1
                  do ilays=1,nlays
                    write(infr,*)tfup(ilays),tfdown(ilays),
-     1       tfdown(ilays)-tfdown(ilays)
+     1       tfup(ilays)-tfdown(ilays)
                  enddo
                 endif
 

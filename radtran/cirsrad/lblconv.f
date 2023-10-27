@@ -47,7 +47,7 @@ c  ** instrument function (should be defined if ishape=5) **
 C        print*,'LBLCONV --> FWHM = ',FWHM
 
 
-	  IF((ishape.eq.5).and.FINSTEXIST)then
+	IF((ishape.eq.5).and.FINSTEXIST)then
 c  **     apply an instrument function read from .fin file in 
 c  **	    lblrtf_wave.f. If a .fin file doesn't exist then ignore
 c  **	    this block and move to next option
@@ -60,6 +60,8 @@ C        vwave, delv are in wavenumbers
          if(ispace.eq.1)then
           delx=1e4*sngl(delv/(vwave*vwave))
          endif
+
+C         print*,'delv,delx = ',delv,delx
 
          DO J=1,NCONV
 
@@ -94,25 +96,26 @@ c	    convert to wavelength if ispace=1
             call verint(vinst,finst,ninst,F1,xoff)
           ENDIF
           IF(F2.LT.0.0)THEN
-            if(idiag.gt.0)then
-             print*,'F2 gone slightly negative. Fixing at 0.',F2
-            endif
+C            if(idiag.gt.0)then
+C             print*,'F2 gone slightly negative. Fixing at 0.',F2
+C            endif
             F2=0.0
           ENDIF
           IF(F1.LT.0.0)THEN
-            if(idiag.gt.0)then
-             print*,'F1 gone slightly negative. Fixing at 0.',F1
-            endif
+C            if(idiag.gt.0)then
+C             print*,'F1 gone slightly negative. Fixing at 0.',F1
+C            endif
             F1=0.0
           ENDIF
 
           IF(F1.GT.0.0.OR.F2.GT.0.0)THEN 
 C           print*,J,V1,VWAVE1,VWAVE,V2,F1,F2
            DO I=1,NPATH
-C            print*,I,Y(I,1),Y(I,2),0.5*(F1*Y(I,1)+F2*Y(I,2))*DELX
-C            print*,0.5*(F1+F2)*DELX
             YOUT(I,J)=YOUT(I,J)+0.5*(F1*Y(I,1)+F2*Y(I,2))*DELX
             YNOR(I,J)=YNOR(I,J)+0.5*(F1+F2)*DELX
+C            print*,'BB'
+C            print*,I,Y(I,1),Y(I,2),0.5*(F1*Y(I,1)+F2*Y(I,2))*DELX
+C            print*,0.5*(F1+F2)*DELX
 C            print*,J,YOUT(I,J),YNOR(I,J)
            ENDDO
           ENDIF
@@ -121,7 +124,7 @@ C            print*,J,YOUT(I,J),YNOR(I,J)
         
         ELSEIF(fwhm.gt.0.0)THEN
 
-C         print*,vwave,delv,fwhm,npath
+C         print*,'EE',vwave,delv,fwhm,npath,ishape,ispace
 C         print*,runname
 C         print*,nconv,(vconv(j),j=1,nconv)
 C         do i=1,npath
@@ -137,7 +140,7 @@ C        vwave, delv are in wavenumbers
           delx=1e4*sngl(delv/(vwave*vwave))
          endif
 
-C         print*,vwave,vwave1,delv,delx
+C         print*,'CC',vwave,vwave1,delv,delx
 
 C        Set total width of Hamming/Hanning function window in terms of
 C        numbers of FWHMs for ISHAPE=3 and ISHAPE=4
@@ -149,7 +152,6 @@ C        numbers of FWHMs for ISHAPE=3 and ISHAPE=4
           if(fwhmexist)then
              call verint(vfwhm,xfwhm,nfwhm,yfwhm,sngl(vconv(j)))
           endif
-C          print*,'J,VCONV(J),YFWHM',J,VCONV(J),YFWHM
 C         Find limits of instrument width in wavenumbers
           IF(ISHAPE.EQ.0)THEN
            V1=VCONV(J)-0.5*YFWHM
@@ -199,15 +201,15 @@ C          Triangular Instrument Shape
             ENDIF
            ENDIF           
            IF(F2.LT.0.0)THEN
-            if(idiag.gt.0)then
-             print*,'F2 gone slightly negative. Fixing at 0.',F2
-            endif
+C            if(idiag.gt.0)then
+C             print*,'F2 gone slightly negative. Fixing at 0.',F2
+C            endif
             F2=0.0
            ENDIF
            IF(F1.LT.0.0)THEN
-            if(idiag.gt.0)then
-             print*,'F1 gone slightly negative. Fixing at 0.',F1
-            endif
+C            if(idiag.gt.0)then
+C             print*,'F1 gone slightly negative. Fixing at 0.',F1
+C            endif
             F1=0.0
            ENDIF
 
@@ -279,13 +281,9 @@ C          Hanning Instrument Shape
           ENDIF
 
           IF(F1.GT.0.0.OR.F2.GT.0.0)THEN 
-C           print*,J,V1,VWAVE1,VWAVE,V2,F1,F2
            DO I=1,NPATH
-C            print*,I,Y(I,1),Y(I,2),0.5*(F1*Y(I,1)+F2*Y(I,2))*DELX
-C            print*,0.5*(F1+F2)*DELX
             YOUT(I,J)=YOUT(I,J)+0.5*(F1*Y(I,1)+F2*Y(I,2))*DELX
             YNOR(I,J)=YNOR(I,J)+0.5*(F1+F2)*DELX
-C            print*,J,YOUT(I,J),YNOR(I,J)
            ENDDO
           ENDIF
          ENDDO

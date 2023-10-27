@@ -129,7 +129,8 @@ C      print*,'VBOT,WING = ',VBOT,WING
       ENDDO
 111   IREC=IREC+1
 
-C      print*,'IREC = ',irec
+      print*,'IREC = ',irec
+      IF(IREC.GT.DBSIZ)GOTO 102
 
       READ(DBLUN,110,REC=IREC)BUFFER(1:DBRECL)
 110   FORMAT(A)
@@ -238,6 +239,8 @@ C	     FH2 set as a parameter above. Edit as required.
          GOTO 111
 
       ENDIF
+
+102   CONTINUE
 
       NLINR=LINE
       NXTREC=IREC

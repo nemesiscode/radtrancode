@@ -29,10 +29,11 @@ C     ****************************************************************
       
       REAL HUMLIC,GVOICO2,CHICO2,BURCHCO2,BURCHCO2_NORM
       REAL BAILLYNH3,HARTMANNCH4,HARTMANNCH4A,HARTMANNCH4B
-      REAL ABSCO,X,Y,AD,TRATIO,DOUBV,GAMMA,VVWEISS
+      REAL ABSCO,X,Y,AD,TRATIO,DOUBV,GAMMA,VVWEISS,HIRTZIG
+      REAL HARTMANN_R
       REAL ALIN,SBLIN,ELIN,TDW,TDWS,TCORDW,TCORS1,TCORS2
       REAL NH2,NHE,YPH3_H2,YPH3_HE,YPH3,PI,DV,TSTIM,TS1,TS2
-      REAL PRESS,TEMP,GETNH3,FNH3,FH2,WY,DPEXP,LNABSCO
+      REAL PRESS,TEMP,GETNH3,FNH3,FH2,WY,DPEXP,LNABSCO,HIRTZIG_B
       DOUBLE PRECISION VV,VLIN
       CHARACTER*15 LLQ
       integer idiag,iquiet
@@ -49,6 +50,7 @@ C     YPH3_H2, YPH3_HE are the temperature-dependent halfwidths for PH3 due
 C      to H2 and He collision-broadening.
 C     YPH3 is the combined (added) temperature-dependent halfwidths for PH3
 C      due to H2 and He collision-broadening.
+ 
 
       PARAMETER (BURCHCO2_NORM = 1.006956255,PI=3.1415927)
 C     BURCHCO2_NORM = ratio of area under voigt / area under burch lineshape
@@ -188,6 +190,13 @@ C 		 in hydrogen atmosphere
      1                   HARTMANNCH4A(ABS(X),Y,ABS(DV))/AD
 
 
+c       write(*,*) 'ABSCO'
+c       write(*,*) ABSCO
+c       write(*,*) 'AD'
+c       write(*,*) AD
+c       write(*,*) 'Hartmannch4a'
+c       write(*,*) HARTMANNCH4A(ABS(X),Y,ABS(DV))
+c       stop
       ELSE IF(IPROC.EQ.9)THEN
 C      IPROC=9:: Hartmann sub-lorentzian lineshape for methane modified
 C      for Titan by C. de Bergh
@@ -203,7 +212,55 @@ C      for Titan by C. de Bergh
 
        SUBLINE = ABSCO*
      1                   HARTMANNCH4(ABS(X),Y,ABS(DV))/AD
+
+      ELSE IF(IPROC.EQ.17)THEN
+C      IPROC=9:: HIRTZIG sub-lorentzian lineshape for methane modified
+C      for Titan
+       IF(IDGAS.NE.6)THEN
+        WRITE(*,*)' SUBLINE.f :: Can_t use the'
+        WRITE(*,*)' derived only for CH4.'
+        WRITE(*,*)' IDGAS = ',IDGAS
+        WRITE(*,*)' '
+        WRITE(*,*)' Stopping program.'
+        STOP
+       ENDIF
+
+       SUBLINE = ABSCO*
+     1                   HIRTZIG(ABS(X),Y,ABS(DV))/AD
        
+
+      ELSE IF(IPROC.EQ.19)THEN
+C      IPROC=9:: HIRTZIG_B sub-lorentzian lineshape for methane modified
+C      for Titan
+       IF(IDGAS.NE.6)THEN
+        WRITE(*,*)' SUBLINE.f :: Can_t use the'
+        WRITE(*,*)' derived only for CH4.'
+        WRITE(*,*)' IDGAS = ',IDGAS
+        WRITE(*,*)' '
+        WRITE(*,*)' Stopping program.'
+        STOP
+       ENDIF
+
+       SUBLINE = ABSCO*
+     1                   HIRTZIG_B(ABS(X),Y,ABS(DV))/AD
+
+      ELSE IF(IPROC.EQ.20)THEN
+C      IPROC=20:: Hartmann sub-lorentzian lineshape for methane modified
+C      for sharper drop in testing by M. Roman
+       IF(IDGAS.NE.6)THEN
+        WRITE(*,*)' SUBLINE.f :: Can_t use the'
+        WRITE(*,*)' derived only for CH4.'
+        WRITE(*,*)' IDGAS = ',IDGAS
+        WRITE(*,*)' '
+        WRITE(*,*)' Stopping program.'
+        STOP
+       ENDIF
+
+       SUBLINE = ABSCO*
+     1                   HARTMANN_R(ABS(X),Y,ABS(DV))/AD
+
+
+
 
       ELSEIF(IPROC.EQ.81)THEN
 C      IPROC=81:: Burch CO2 sub-lorentzian line shape (renormalised)

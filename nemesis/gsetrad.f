@@ -486,6 +486,7 @@ C     See if Sromovsky cloud layer model is specified.
        if(varident(ivar,3).eq.14.or.varident(ivar,3).eq.15)icheck=1
        if(varident(ivar,3).eq.8.or.varident(ivar,3).eq.32)icheck=1
        if(varident(ivar,3).eq.46.or.varident(ivar,3).eq.47)icheck=1
+       if(varident(ivar,3).eq.50)icheck=1
       enddo
 
 
@@ -495,7 +496,6 @@ C     running subpath
 
 C     Compute the drv file to get the aerosol optical depths
       if(icheck.eq.1.and.iprfcheck.eq.0) then
-
         call subpath(runname)
 
         call readdustod(runname,ncont1,xod)
@@ -543,7 +543,7 @@ C              print*,'gsetrad',icont,od1,xod(icont),xscal(icont)
               enddo
           endif
           if(varident(ivar,3).eq.14.or.varident(ivar,3).eq.15.
-     & or.varident(ivar,3).eq.47)then
+     & or.varident(ivar,3).eq.47.or.varident(ivar,3).eq.50)then
               icont=abs(varident(ivar,1))
               od1=exp(xn(nx1+1))
               xscal(icont)=xod(icont)/od1

@@ -4145,6 +4145,77 @@ C          print*,VMR(J,JGAS),X1(J)
           XMAP(NXTEMP+1,IPAR,J)=X1(J)
          ENDDO
 
+        ELSEIF(VARIDENT(IVAR,3).EQ.50)THEN
+C        Model 13. Profile is represented a Gaussian with a specified optical
+C        thickness centred at a variable pressure level plus a variable FWHM (log press) in 
+C        height.
+C        FHWM is also folded into total opacity, but this gets renormalised
+C        by gsetrad.f anyway.
+C        ***************************************************************
+
+         XDEEP = EXP(XN(NXTEMP+1))
+         PKNEE = EXP(XN(NXTEMP+2))
+         XWID  = EXP(XN(NXTEMP+3))
+
+
+         Y0=ALOG(PKNEE)
+
+
+C        **** Want to normalise to get optical depth right. ***
+C        ND is the particles per cm3 (but will be rescaled)
+C        OD is in units of particles/cm2 = particles/cm3 x length(cm)
+C        OD(J)=ND(J)*SCALE(J)*1E5
+C        Q is specific density = particles/gram = particles/cm3 x g/cm3
+C        Q(J)=ND(J)/RHO         
+         
+         XOD=0.
+         DO J=1,NPRO
+
+          IF(AMFORM.EQ.0)THEN
+           XMOLWT=MOLWT
+          ELSE
+           XMOLWT=XXMOLWT(J)
+          ENDIF
+
+          RHO = (0.1013*XMOLWT/R)*(P(J)/T(J))
+
+          Y=ALOG(P(J))          
+          XX = (Y-Y0)**2 + XWID**2
+
+          Q(J)=XDEEP*(XWID**2)/XX
+          ND(J) = Q(J)*RHO 
+          OD(J) = ND(J)*SCALE(J)*1e5
+
+          XOD=XOD+OD(J)
+   
+          X1(J)=Q(J)
+
+         ENDDO
+
+C        Empirical correction to XOD
+         XOD = XOD*0.25
+
+         DO J=1,NPRO
+
+          X1(J)=Q(J)*XDEEP/XOD
+
+          Y=ALOG(P(J))          
+          XX = (Y-Y0)**2 + XWID**2
+          
+          IF(VARIDENT(IVAR,1).EQ.0)THEN
+            XMAP(NXTEMP+1,IPAR,J)=X1(J)/XDEEP
+          ELSE
+            XMAP(NXTEMP+1,IPAR,J)=X1(J)
+          ENDIF
+
+          XMAP(NXTEMP+2,IPAR,J)=Y0*XDEEP*2.*(Y-Y0)*(XWID**2)/XX**2
+          XMAP(NXTEMP+3,IPAR,J)=XWID*2*XDEEP*XWID*(XX - XWID**2)/XX**2
+
+         ENDDO
+
+C        *** This renormalisation is pretty accurate, but not quite accurate
+C        *** enough and so it gets updated in gsetrad.f
+
         ELSE
 
          print*,'Subprofretg: Model parametrisation code is not defined'
@@ -4152,6 +4223,7 @@ C          print*,VMR(J,JGAS),X1(J)
          STOP
 
         ENDIF
+
 
        ELSE
 
@@ -5278,7 +5350,7 @@ C      if(idiag.gt.0)print*,'subprofretg. Writing aerosol.prf'
       WRITE(2,*)NPRO, NCONT
       DO 41 I=1,NPRO
         WRITE(2,*) H(I),(CONT(J,I),J=1,NCONT)
-C        if(idiag.gt.0)print*,H(I),(CONT(J,I),J=1,NCONT)
+        if(idiag.gt.0)print*,H(I),(CONT(J,I),J=1,NCONT)
 41    CONTINUE
       CLOSE(2)
 

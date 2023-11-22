@@ -19,6 +19,9 @@ F_SOURCES = \
 	hartmannch4.f \
 	hartmannch4A.f \
 	hartmannch4B.f \
+	hartmann_r.f\
+        hirtzig.f \
+        hirtzig_b.f \
 	calc_esum2.f \
 	init_lco.f \
 	calc_lco.f \

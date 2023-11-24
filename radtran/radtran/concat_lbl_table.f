@@ -32,7 +32,7 @@ C MAXOUT the maximum number of output points
 
       INTEGER PINDEX,CP,CT,LOOP
 
-      INTEGER IREC,IREC0,I1,I2,J1,J2
+      INTEGER IREC,IREC0,I1,I2,J1,J2,XK
       REAL P1,T1,PRESS1(MAXK),TEMP1(MAXK)
       REAL P2,T2,PRESS2(MAXK),TEMP2(MAXK)
       REAL PTEMP1(MAXK,MAXK),PTEMP2(MAXK,MAXK)
@@ -57,7 +57,7 @@ C******************************** CODE *********************************
 
       CALL PROMPT('Enter output filename : ')
       READ(5,23)OPFILE3
-      CALL FILE(OPFILE3,OUTFIL,'kta')
+      CALL FILE(OPFILE3,OUTFIL,'lta')
 
 
       IRECL1 = ISYS()
@@ -161,7 +161,6 @@ C******************************** CODE *********************************
         DO J=1,ABS(NT1)
          READ(LUN1,REC=IREC)PTEMP1(I,J)
          READ(LUN2,REC=IREC)PTEMP2(I,J)
-C         print*,I,J,PTEMP1(I,J),PTEMP2(I,J)
          IF(PTEMP1(I,J).NE.PTEMP2(I,J))THEN
           PRINT*,'PTEMP1(I,J) <> PTEMP2(I,J)',PTEMP1(I,J),PTEMP2(I,J)
           PRINT*,'Continue (Y/N)?'
@@ -241,6 +240,7 @@ C         print*,I,J,PTEMP1(I,J),PTEMP2(I,J)
       ELSE
        DO I=1,NP1
         DO J=1,ABS(NT1)
+         print*,I,J,PTEMP1(I,J)
          WRITE(LUN0,REC=IREC)PTEMP1(I,J)
          IREC = IREC + 1
         ENDDO
@@ -249,29 +249,28 @@ C         print*,I,J,PTEMP1(I,J),PTEMP2(I,J)
 
       WRITE(*,*)'Wavelengths/wavenumbers'
       DO 403 J=I1,I2
-        print*,I,VMIN1+(J-1)*DELV1
+        print*,J,VMIN1+(J-1)*DELV1
 403   CONTINUE
       DO 503 J=J1,J2
-        print*,I,VMIN2+(J-1)*DELV2
+        print*,J,VMIN2+(J-1)*DELV2
 503   CONTINUE           
 
-      N1=ABS(NT)
-
-      IREC=IREC0
+      N1=ABS(NT1)
 
       DO 30 K=1,N1
        DO 20 J=1,NP1
         DO 297 I=I1,I2
            IREC1=IREC01 + (I-1)*NP1*N1+(J-1)*N1+K-1
+           IREC=IREC0 + (I-I1)*NP1*N1+(J-1)*N1+K-1
            READ(LUN1,REC=IREC1)XK
            WRITE(LUN0,REC=IREC)XK
-           IREC = IREC + 1
 297     CONTINUE
+        INEXT=1+I2-I1
         DO 298 I=J1,J2
            IREC2=IREC02 + (I-1)*NP1*N1+(J-1)*N1+K-1
+           IREC=IREC0 + (INEXT+I-J1)*NP1*N1+(J-1)*N1+K-1
            READ(LUN2,REC=IREC2)XK
            WRITE(LUN0,REC=IREC)XK
-           IREC = IREC + 1
 298     CONTINUE
 20     CONTINUE
 30    CONTINUE

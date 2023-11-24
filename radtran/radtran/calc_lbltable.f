@@ -63,7 +63,7 @@ C-----------------------------------------------------------------------------
       real tot_time
       real rate
       integer c1,c2,cr,time1,time2,cm
-      CHARACTER*100 KTAFIL,OPFILE1,LCOFIL
+      CHARACTER*200 KTAFIL,OPFILE1,LCOFIL
       CHARACTER*1 ANS
       LOGICAL FEXIST
       REAL KNU0,DELAD,Y0,EL

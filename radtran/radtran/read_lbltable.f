@@ -37,7 +37,7 @@ C stored in the same directory as the rest of the code
       REAL P1,T1,PRESS1(MAXK),TEMP1(MAXK),VCEN(MAXBIN)
       REAL TABLE(MAXK,MAXK)
       REAL TEMP2(MAXK,MAXK),TN(MAXK),TX,X1,X2
-      CHARACTER*100 KTAFIL,OPFILE1
+      CHARACTER*200 KTAFIL,OPFILE1
       CHARACTER*1 ANS
       integer idiag,iquiet
       common/diagnostic/idiag,iquiet

@@ -99,7 +99,7 @@ Files based on Fletcher et al. 2018 wirh dimer absorption (use this for CIA>5 mi
 * dimers_ff_fb_bb_dnu0.01.tab	40-280K, dnu=0.01, npara=24, df=0.03
 
 ***EXPERIMENTAL***
-2023: Significant update to H2-H2 and H2-He CIA:
+2023 June: Significant update to H2-H2 and H2-He CIA:
 * H2-H2 rototranslational spectrum and dimers identical to dimers*tab files (0-2400 cm-1, Fletcher+2018; 2500-4000 cm-1 in 2023).  
 * H2-He rototranslational spectrum from new Gustaffson calculations in 2023 (0-4000 cm-1) 
 * H2-H2 rotovibrational fundamental based on `H2H2model` from Borysow, all equilibrium para-H2.
@@ -107,7 +107,7 @@ Files based on Fletcher et al. 2018 wirh dimer absorption (use this for CIA>5 mi
 * H2-H2 2nd overtone from Borysow+1999, `H2H2model03`, all equilibrium para-H2.
 * H2-He rotovibrational fundamental band and overtones from `H2He_all_transY` from Borysow+1989, all equilibrium para-H2.
 * Note RV fundamentals and overtones have suspicious 'steps' removed from original Borysow codes.
-* Work in progress:  [1] ortho/para discrimination for RV fundamental; [2] H2H2 RT extension 2400-4000 cm-1.
+* Work in progress:  ortho/para discrimination for RV fundamental.
 
 Four flavours:
 * gustafssonRT_borysowRV_40-280K_dnu10.0.tab 	0-15000 cm-1	40-280 K	dnu=10 cm-1	npara=24,df=0.03
@@ -116,6 +116,13 @@ Four flavours:
 * gustafssonRT_borysowRV_40-280K_dnu1.0.tab	0-1500 cm-1	40-280 K	dnu=1 cm-1	npara=24,df=0.03
 
 First file is a recommended replacement for `borysow_2020_170.tab` and `NewBorysow.tab.`
+
+2023 November:  Ortho/Para discrimination for H2-H2 from Gustaffson:
+* For flavours of mgRT_mgRVH2H2_abRVH2He_40-280K_dnu**.tab
+* These are identical to the gustafssonRT_borysowRV_40-280K_dnu**.tab files above, with one exception:  the RV fundamental of H2-H2 
+near 4162 cm-1 now has ortho-para discrimination, based upon a new version of A. Borysow's code created by M. Gustaffson `H2H2.lowT.0-1MGfp.f`
+* Still to do:  ortho/para discrimination for H2-He RV fundamental.
+
 
 
 

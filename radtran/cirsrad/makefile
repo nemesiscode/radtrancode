@@ -12,6 +12,7 @@ F_SOURCES = \
 	cirsconv.f \
 	lblconv.f \
 	lblconv1.f \
+	lblconv2.f \
 	cirsrad_wave.f \
 	cirsrad_waveS.f \
 	cirsrtf.f \

@@ -114,7 +114,7 @@ C     a priori covariance matrix
       real tau0,ntemp,teff,alpha,T0,xf,exf
       real etau0,entemp,eteff,ealpha,eT0
       real csx,cserr,nimagshell,errshell,flon
-      real flon1,dlon,dlong,xpc,xlapse
+      real flon1,dlon,dlong,xpc,xlapse,ywid,eywid
       logical filexist
       integer i1,j1,nlocation,ilocation
       integer nlen,il,ip,jl,jp
@@ -2595,7 +2595,7 @@ C            Read in xdeep, pknee, xwid for 2nd component
 
 
            elseif (varident(ivar,3).eq.47)then
-C            ** profile held as peak OD, pressure and FWHM (log P) (Gaussian) **
+C            ** profile held as integrated OD, peak pressure and FWHM (log P) (Gaussian) **
 C            Read in xdeep, pknee, xwid
 
              read(27,*)xdeep,edeep
@@ -2745,6 +2745,49 @@ C            Read in xdeep, pknee, xwid
              sx(ix,ix) = (ewid/xwid)**2
 
              nx = nx+3
+
+           elseif (varident(ivar,3).eq.51)then
+C            ** profile held as integrated OD, top pressure, width (logp) and FWHM (log P) (Gaussian) **
+C            Read in xdeep, pknee, xwid
+
+             read(27,*)xdeep,edeep
+             read(27,*)pknee,eknee
+             read(27,*)ywid,eywid
+             read(27,*)xwid,ewid
+
+
+             ix = nx+1
+             if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+             else
+               print*,'Error in readapriori. xdeep must be > 0.0'
+               stop
+             endif
+
+
+             err = edeep/xdeep
+             sx(ix,ix)=err**2
+
+             ix = nx+2
+             x0(ix) = alog(pknee)
+             lx(ix)=1
+
+             sx(ix,ix) = (eknee/pknee)**2
+
+             ix = nx+3
+             x0(ix) = alog(ywid)
+             lx(ix)=1
+
+             sx(ix,ix) = (eywid/ywid)**2
+
+             ix = nx+4
+             x0(ix) = alog(xwid)
+             lx(ix)=1
+
+             sx(ix,ix) = (ewid/xwid)**2
+
+             nx = nx+4
 
            else         
 

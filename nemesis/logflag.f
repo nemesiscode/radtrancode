@@ -86,6 +86,7 @@ C       Variable is not temperature  - may need to take exponent
           if(ip.eq.2)iflag=1 
           if(ip.eq.3)iflag=1 
       endif
+      if(imod.eq.51)iflag=1		! modified gaussian. All variables log.
       if(imod.ge.14.and.imod.le.15)then 
           if(ip.eq.1)iflag=1 	       ! Gaussian/Lorentz cloud
           if(ip.eq.3)iflag=1 

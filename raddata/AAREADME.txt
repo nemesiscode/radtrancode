@@ -117,11 +117,16 @@ Four flavours:
 
 First file is a recommended replacement for `borysow_2020_170.tab` and `NewBorysow.tab.`
 
-2023 November:  Ortho/Para discrimination for H2-H2 from Gustaffson:
-* For flavours of mgRT_mgRVH2H2_abRVH2He_40-280K_dnu**.tab
+2023 November:  Ortho/Para discrimination for H2-H2 RV fundamental from Gustaffson:
+* Four flavours of mgRT_mgRVH2H2_abRVH2He_40-280K_dnu**.tab
 * These are identical to the gustafssonRT_borysowRV_40-280K_dnu**.tab files above, with one exception:  the RV fundamental of H2-H2 
 near 4162 cm-1 now has ortho-para discrimination, based upon a new version of A. Borysow's code created by M. Gustaffson `H2H2.lowT.0-1MGfp.f`
-* Still to do:  ortho/para discrimination for H2-He RV fundamental.
+
+2023 December:  Ortho/Para discrimination for H2-He RV fundamental from Gustaffson:
+* Four flavours of mgRT_mgRV_40-280K_dnu**.tab
+* These are identical to the mgRT_mgRVH2H2_abRVH2He_40-280K_dnu**.tab files above but now have new estimates of the H2-He RV absorption
+between 2000-8000 cm-1, with ortho/para discrimination.  Hot bands and overtones are added based on Borysow's original code.
+
 
 
 

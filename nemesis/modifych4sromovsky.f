@@ -5,8 +5,8 @@ C     Subroutine set methane profile to descended methane profile of Sromovsky e
 C 
 C     Input variables:
 C	npro		integer	Number of levels in profile
-C	patm(npro)	REAL	Pressure of atmosphere (atm)
-C	temp(npro)	REAL	Pressure of atmosphere (atm)
+C	patm(npro)	REAL	Pressure grid of atmosphere (atm)
+C	temp(npro)	REAL	Temperature grid of atmosphere (atm)
 C	ch4tropvmr	REAL	Required limiting tropospheric VMR
 C	ch4stratvmr	REAL	Required limiting stratospheric VMR
 C	PD		REAL	Deep pressure (bar)

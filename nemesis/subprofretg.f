@@ -104,7 +104,7 @@ C     ***********************************************************************
       INTEGER ICLOUD(MAXCON,MAXPRO),NCONT1,JSPEC,IFLA,I1,I2
       INTEGER NPRO,NPRO1,NVMR,JZERO,IV,IP,IVAR,JCONT,JVMR
       INTEGER IDGAS(MAXGAS),ISOGAS(MAXGAS),IPAR,JPAR,IVMR,NP
-      INTEGER IDAT,JFSH,JHYDRO,ICOND,JFSH1
+      INTEGER IDAT,JFSH,JHYDRO,ICOND,JFSH1,JCONT1
       REAL HTAN,PTAN,R,REFRADIUS,XCOL,ETOP
       REAL GASDATA(20,5),XVMR(MAXGAS),XMOLWT,XXMOLWT(MAXPRO)
       REAL CALCMOLWT,XRHO(MAXPRO)
@@ -127,7 +127,7 @@ C     ***********************************************************************
       REAL YLONG(MLON),YLAT(MLAT)
       REAL XWID,Y,Y0,XX,L1,THETA(MTHET),GRADTMP(MAXPRO,MX)
       LOGICAL FEXIST,VPEXIST,NTEST,ISNAN,FVIVIEN
-      REAL VP(MAXGAS),VP1,XS,GRADL(MAXPRO,MX)
+      REAL VP(MAXGAS),VP1,XS,GRADL(MAXPRO,MX),YWID
       REAL GRADLINE(MAXPRO,MAXPRO)
       INTEGER SVPFLAG(MAXGAS),SVPFLAG1,NLONG,NTHETA,N1,N2
       INTEGER NVP,ISWITCH(MAXGAS),IP1,IP2,JKNEE,NLEVEL,JTOP
@@ -4120,18 +4120,31 @@ C        ***************************************************************
          ISO1=INT(VARPARAM(IVAR,2))
 
          jgas=-1
-         do I=1,ngas
-          if(igas1.eq.idgas(i).and.iso1.eq.isogas(i))jgas=i
-         enddo
-         if(jgas.le.0)then
-          print*,'Error in subprofretg, model 49'
-          print*,'Cannot find matching gas profile'
-          print*,IGAS1,ISO1
-          do i=1,ngas
-           print*,idgas(i),isogas(i)
+         if(IGAS1.lt.0)then
+          jcont1=abs(igas1)
+          if(jcont1.gt.ncont) then
+           print*,'Error in subprofretg, model 49'
+           print*,'Cannot find matching cloud continuum profile'
+           print*,'IGAS1,ISO1 = ',IGAS1,ISO1
+           print*,'jcont1,ncont = ',jcont1,ncont
+           stop
+          endif
+         else
+          jcont1=-1
+          do I=1,ngas
+           if(igas1.eq.idgas(i).and.iso1.eq.isogas(i))jgas=i
           enddo
-          stop
+          if(jgas.le.0)then
+           print*,'Error in subprofretg, model 49'
+           print*,'Cannot find matching gas profile'
+           print*,'IGAS1,ISO1 = ',IGAS1,ISO1
+           do i=1,ngas
+            print*,idgas(i),isogas(i)
+           enddo
+           stop
+          endif
          endif
+
 
          XDEEP = EXP(XN(NXTEMP+1))
 C         print*,nx
@@ -4140,7 +4153,11 @@ C         print*,NXTEMP+1
 C         print*,'XX: IGAS1,ISO1,JGAS,XDEEP',IGAS1,ISO1,JGAS,XDEEP
  
          DO J=1,NPRO
-          X1(J)=XDEEP*VMR(J,JGAS)
+          IF(JCONT1.LT.0)THEN
+           X1(J)=XDEEP*VMR(J,JGAS)
+          ELSE
+           X1(J)=XDEEP*CONT(JCONT1,J)
+          ENDIF
 C          print*,VMR(J,JGAS),X1(J)
           XMAP(NXTEMP+1,IPAR,J)=X1(J)
          ENDDO
@@ -4216,6 +4233,94 @@ C        Empirical correction to XOD
 C        *** This renormalisation is pretty accurate, but not quite accurate
 C        *** enough and so it gets updated in gsetrad.f
 
+        ELSEIF(VARIDENT(IVAR,3).EQ.51)THEN
+C        Model 14. Profile is represented a modified Gaussian with a specified optical
+C        thickness, an upper pressure level, width of cloud (log press) and then width of Gaussian 
+C        tail off of cloud above and below.
+C        FHWM is also folded into total opacity, but this gets renormalised
+C        by gsetrad.f anyway.
+C        ***************************************************************
+
+         XDEEP = EXP(XN(NXTEMP+1))
+         PKNEE = EXP(XN(NXTEMP+2))
+         YWID  = EXP(XN(NXTEMP+3))
+         XWID  = EXP(XN(NXTEMP+4))
+
+
+         Y0=ALOG(PKNEE)
+         Y1=Y0+YWID
+
+C        **** Want to normalise to get optical depth right. ***
+C        ND is the particles per cm3 (but will be rescaled)
+C        OD is in units of particles/cm2 = particles/cm3 x length(cm)
+C        OD(J)=ND(J)*SCALE(J)*1E5
+C        Q is specific density = particles/gram = particles/cm3 x g/cm3
+C        Q(J)=ND(J)/RHO         
+         
+         XOD=0.
+         DO J=1,NPRO
+
+          IF(AMFORM.EQ.0)THEN
+           XMOLWT=MOLWT
+          ELSE
+           XMOLWT=XXMOLWT(J)
+          ENDIF
+
+          RHO = (0.1013*XMOLWT/R)*(P(J)/T(J))
+
+          Y=ALOG(P(J))          
+
+          IF(Y.LT.Y0)THEN
+           Q(J) = 1./(XWID*SQRT(PI))*EXP(-((Y-Y0)/XWID)**2)
+          ELSE
+           IF(Y.GE.Y0.AND.Y.LE.Y1)THEN
+            Q(J) = 1./(XWID*SQRT(PI))
+           ELSE
+            Q(J) = 1./(XWID*SQRT(PI))*EXP(-((Y-Y1)/XWID)**2)
+           ENDIF
+          ENDIF
+
+          ND(J) = Q(J)*RHO 
+          OD(J) = ND(J)*SCALE(J)*1e5
+
+          XOD=XOD+OD(J)
+   
+          X1(J)=Q(J)
+
+         ENDDO
+
+C        Empirical correction to XOD
+         XOD = XOD*0.25
+
+         DO J=1,NPRO
+
+          X1(J)=Q(J)*XDEEP/XOD
+
+          Y=ALOG(P(J))          
+          
+          IF(VARIDENT(IVAR,1).EQ.0)THEN
+            XMAP(NXTEMP+1,IPAR,J)=X1(J)/XDEEP
+          ELSE
+            XMAP(NXTEMP+1,IPAR,J)=X1(J)
+          ENDIF
+
+C         Incomplete XMAP. Have not yet folded in new model.
+C         Not a priority as this is for scattering calculations
+C         anyway, where XMAP is unused. PGJI 8/12/23
+
+          XMAP(NXTEMP+2,IPAR,J)=2.*(Y-Y0)*X1(J)/XWID**2
+          XMAP(NXTEMP+3,IPAR,J)=-2.0*((Y-Y0)**2)*X1(J)/XWID**3
+
+          XMAP(NXTEMP+2,IPAR,J)=Y0*2.*(Y-Y0)*X1(J)/XWID**2
+          XMAP(NXTEMP+3,IPAR,J)=-2.0*((Y-Y0)**2)*X1(J)/XWID**2
+     &             -  X1(J)/XWID
+
+         ENDDO
+
+C        *** This renormalisation is pretty accurate, but not quite accurate
+C        *** enough and so it gets updated in gsetrad.f
+
+
         ELSE
 
          print*,'Subprofretg: Model parametrisation code is not defined'
@@ -4223,7 +4328,6 @@ C        *** enough and so it gets updated in gsetrad.f
          STOP
 
         ENDIF
-
 
        ELSE
 

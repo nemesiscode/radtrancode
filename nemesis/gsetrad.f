@@ -102,7 +102,7 @@ C     ************************************************************************
       real minlam,lambda0
       integer flagh2p,nstep
       integer jsurfx,jalbx,jxscx,jtanx,jprex,nprox,icheck,icont
-      integer jradx,npvar,jloggx,npro,nvmr,ierr,ierrx,nxsc
+      integer jradx,npvar,jloggx,npro,nvmr,ierr,ierrx,nxsc,jcont
       real x,y
       real xnx(mx)
       real stx(mx,mx),xdnu,xtest
@@ -486,7 +486,8 @@ C     See if Sromovsky cloud layer model is specified.
        if(varident(ivar,3).eq.14.or.varident(ivar,3).eq.15)icheck=1
        if(varident(ivar,3).eq.8.or.varident(ivar,3).eq.32)icheck=1
        if(varident(ivar,3).eq.46.or.varident(ivar,3).eq.47)icheck=1
-       if(varident(ivar,3).eq.50)icheck=1
+       if(varident(ivar,1).lt.0.and.varident(ivar,3).eq.49)icheck=1
+       if(varident(ivar,3).eq.50.or.varident(ivar,3).eq.51)icheck=1
       enddo
 
 
@@ -543,7 +544,8 @@ C              print*,'gsetrad',icont,od1,xod(icont),xscal(icont)
               enddo
           endif
           if(varident(ivar,3).eq.14.or.varident(ivar,3).eq.15.
-     & or.varident(ivar,3).eq.47.or.varident(ivar,3).eq.50)then
+     & or.varident(ivar,3).eq.47.or.varident(ivar,3).eq.50.
+     & or.varident(ivar,3).eq.51)then
               icont=abs(varident(ivar,1))
               od1=exp(xn(nx1+1))
               xscal(icont)=xod(icont)/od1
@@ -567,7 +569,13 @@ C              print*,'gsetrad',icont,od1,xod(icont),xscal(icont)
                 dust(icont,j)=dust(icont,j)/xscal(icont)
               enddo
           endif
-
+          if(varident(ivar,3).eq.49)then
+           icont=abs(varident(ivar,1))
+           jcont=abs(int(varparam(ivar,1)))
+           do j=1,NN
+            dust(icont,j)=dust(icont,j)/xscal(jcont)
+           enddo
+          endif
           np = npvar(varident(ivar,3),NN,varparam(ivar,1))
 
          else

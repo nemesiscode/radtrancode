@@ -34,8 +34,8 @@ F_SOURCES = \
 	jwids.f
 
 INCDIR = ../includes
-#INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/bincoms.f $(INCDIR)/dbcom.f \
-#	$(INCDIR)/lincom.f $(INCDIR)/pathcom.f $(INCDIR)/arrdef.f
+INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/dbcom.f \
+	$(INCDIR)/lincom.f $(INCDIR)/pathcom.f $(INCDIR)/arrdef.f
 
 OBJ = $(F_SOURCES:.f=.o)
 LIBRARY = $(LIB)/spec_data.a

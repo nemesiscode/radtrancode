@@ -111,9 +111,9 @@ F_SOURCES = \
 	parmentierguillot1.f \
 	lineav.f
 
-INCDIR = ../../radtran/includes
+INCDIR = $(RADSRC)/includes
 INCLUDES = $(INCDIR)/bincom.f $(INCDIR)/lincom.f $(INCDIR)/pathcom.f \
-           $(INCDIR)/parcom.f $(INCDIR)/dbcom.f $(INCDIR)/bincoms.f \
+           $(INCDIR)/parcom.f $(INCDIR)/dbcom.f \
            $(INCDIR)/arrdef.f $(INCDIR)/ciacom.f arraylen.f
 
 OBJ= $(F_SOURCES:.f=.o)

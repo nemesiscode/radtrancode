@@ -20,8 +20,8 @@ F_SOURCES = \
 	hartmannch4A.f \
 	hartmannch4B.f \
 	hartmann_r.f\
-        hirtzig.f \
-        hirtzig_b.f \
+    hirtzig.f \
+    hirtzig_b.f \
 	calc_esum2.f \
 	init_lco.f \
 	calc_lco.f \
@@ -135,11 +135,16 @@ F_SOURCES = \
 	hmin_ff.f \
 	hmin_bf.f
 
-
 INCDIR = ../includes
-INCLUDES = $(INCDIR)/arrdef.f $(INCDIR)/bincom.f $(INCDIR)/bincoms.f \
-	$(INCDIR)/dbcom.f $(INCDIR)/ciacom.f \
-	$(INCDIR)/lincom.f $(INCDIR)/parcom.f $(INCDIR)/pathcom.f
+INCLUDES = \
+	$(INCDIR)/arrdef.f \
+	$(INCDIR)/bincom.f \
+	$(INCDIR)/dbcom.f \
+	$(INCDIR)/ciacom.f \
+	$(INCDIR)/laycom.f \
+	$(INCDIR)/pathcom.f \
+	$(INCDIR)/lincom.f \
+	$(INCDIR)/parcom.f
 
 OBJ = $(F_SOURCES:.f=.o)
 LIBRARY = $(LIB)/radtran.a
@@ -165,7 +170,6 @@ $(LIBRARY)(%.o): %.f $(INCLUDES)
 	ar rv $(LIBRARY) $*.o
 	ranlib $(LIBRARY)
 	-rm $*.o
-
 
 bin :   \
 	Aground \
@@ -377,4 +381,3 @@ Table_trans : table_trans.f $(LIBRARY) $(LIB)/spec_data.a
 	$(FC) $(FCFLAGS) -o $(BIN)/Table_trans table_trans.f $(LIBRARY) \
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(FRECIPES) \
 	$(LIB)/scatter.a $(LIB)/path.a
-

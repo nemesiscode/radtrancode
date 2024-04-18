@@ -24,7 +24,8 @@ F_SOURCES = \
 	dinvmarq.f \
 	dmult_vec.f
 
-INCLUDES = arraycom.f $(INCDIR)/arrdef.f
+INCDIR = ../includes
+INCLUDES = $(INCDIR)/arrdef.f
 
 OBJ= $(F_SOURCES:.f=.o)
 LIBRARY = $(LIB)/matrices.a

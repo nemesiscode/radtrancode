@@ -8,7 +8,7 @@ The are three main things to look out for when compiling on different systems.
 a) You need to know that depending on the system and the Fortran 
 compiler, the record length, ISYS,which is set in radtran/rtm_util/isys.f 
 needs to be set to either 1 or 4.
-For gfortran on MacOSX you need ISYS=4. 
+For gfortran on MacOSX and Linux you need ISYS=4. 
 For Intel Fortran compiler on Linux, you typically need ISYS=1, although 
 some versions of the ifc need ISYS=4. 
 If you don't know, pick either ISYS=1 or ISYS=4 and see if the code works.
@@ -47,6 +47,13 @@ setenv FCOMP "ifc"
 setenv FCFLAGS1 "-O2 -w90 -w95 -cm -w -zero"
 setenv FCFLAGS1_FOVGREG "-O -w90 -w95 -FR -cm -w"
 setenv STATIC_FLAG ""
+
+For Linux-32 and GFORTRAN add the following:
+	export FCOMP="gfortran"
+	export STATIC_FLAG="-fallow-argument-mismatch -fallow-invalid-boz"
+	export FCFLAGS1_FOVGREG="-ffree-form -fallow-argument-mismatch -fallow-invalid-boz"
+	# For improved error tracing, turn these on:
+	export FCFLAGS1="-g -fcheck=all -mcmodel=large"
 
 For MacOSX with gfortran add the following:    
 setenv FCOMP "gfortran"

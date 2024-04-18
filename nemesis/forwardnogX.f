@@ -259,7 +259,6 @@ C            nf=20
            nx2 = 1
          endif
 
-
          do 111 ix1=1,nx2
 
           ix = ix1-1
@@ -285,17 +284,19 @@ C           Special fix for retrieval test
             xn(ix)=xn(ix)+dx
           endif
 
-          if(idiag.gt.0)print*,'ix,xref,dx,xn(ix)',ix,xref,dx,xn(ix)
+c         if(idiag.gt.0)print*,'ix,xref,dx,xn(ix)',ix,xref,dx,xn(ix)
           if(jsurf.gt.0)then
            tsurf = xn(jsurf)
           endif
 
 C         Check to see if this variable is unconstrained enough to bother
 C         calculating its gradient.
-          if(ix.gt.0.and.ifix(ix).eq.1)then
-C           if(idiag.gt.0)print*,'Fix ',ix,xref
-           xn(ix)=xref
-           goto 111
+          if(ix.gt.0)then
+            if(ifix(ix).eq.1)then
+              if(idiag.gt.0)print*,'Fix ',ix,xref
+              xn(ix)=xref
+              goto 111
+            endif
           endif
 
 C        If we're retrieving planet radius then add correction to reference

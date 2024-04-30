@@ -83,7 +83,7 @@ C     ***********************************************************************
       REAL H(MAXPRO),P(MAXPRO),T(MAXPRO),VMR(MAXPRO,MAXGAS)
       REAL CONT(MAXCON,MAXPRO),X,XREF(MAXPRO),X1(MAXPRO)
       REAL PKNEE,HKNEE,XDEEP,XFSH,PARAH2(MAXPRO),XH,XKEEP,X2(MAXPRO)
-      REAL HKNEE1,XDEEP1,XWID1,XT(MAXPRO),XTC(MAXPRO)
+      REAL HKNEE1,XDEEP1,XWID1,XT(MAXPRO),XTC(MAXPRO),XWIDX
       REAL RHO,F,DQDX(MAXPRO),DX,PLIM,XFACP,CWID,PTROP, NEWF
       REAL DNDH(MAXPRO),DQDH(MAXPRO),FCLOUD(MAXPRO),HTOP,PTOP
       REAL dtempdx(MAXPRO,5),T0,Teff,alpha,ntemp,tau0,QC(MAXPRO)
@@ -138,8 +138,8 @@ C     ***********************************************************************
       INTEGER IMODEL
       REAL ALPHAP,BETAP,KIRP,GAMMAV1,GAMMAV2,TSTAR,RSTAR,SDIST
       REAL XLINE(4,MAXPRO),GLINE(4,MAXPRO,5),DXD1,DXD2,DXD3,DXD4
-      REAL LONZ(4),TOUT(MAXPRO)
-      INTEGER IX1,IX2,IX3,IX4,ILON
+      REAL LONZ(4),TOUT(MAXPRO),PHAZE,YHAZE,WHAZE
+      INTEGER IX1,IX2,IX3,IX4,ILON,KHAZE
       integer idiag,iquiet
       common/diagnostic/idiag,iquiet
 
@@ -3758,14 +3758,21 @@ C                     afternoon terminators.
          ENDDO
 
         ELSEIF(VARIDENT(IVAR,3).EQ.45)THEN
-C        Model 39. Irwin CH4 model generalised to have all elements variable
+C        Model 45. Irwin CH4 model generalised to have all elements variable
 C        ***************************************************************
          XC1 = EXP(XN(NXTEMP+1))
          RH = EXP(XN(NXTEMP+2))
          XC2 = EXP(XN(NXTEMP+3))
 
-         
-         CALL modifych4irwin(npro,P,T,xc1,xc2,RH,xch4new,xch4newgrad)
+         if(varident(ivar,1).eq.6)then
+          CALL modifych4irwin(npro,P,T,xc1,xc2,RH,xch4new,xch4newgrad)
+         elseif(varident(ivar,1).eq.11)then 
+          CALL modifynh3irwin(npro,P,T,xc1,xc2,RH,xch4new,xch4newgrad)
+         else
+          print*,'Error in subprofretg. Model 45 not setup for gas:'
+          print*,varident(ivar,1)
+          stop
+         endif
 
 C        Need to update to return gradients of other variables at some point.
 
@@ -3887,11 +3894,14 @@ C        Q(J)=ND(J)/RHO
           Q(J) = 1./(XWID*SQRT(PI))*EXP(-((Y-Y0)/XWID)**2)
           ND(J) = Q(J)*RHO 
           OD(J) = ND(J)*SCALE(J)*1e5
+          IF(ISNAN(OD(J)))OD(J)=1e-36
+          IF(OD(J).LT.1e-36)OD(J)=1e-36
+          IF(ISNAN(Q(J)))Q(J)=1e-36
+          IF(Q(J).LT.1e-36)Q(J)=1e-36
 
           XOD=XOD+OD(J)
    
           X1(J)=Q(J)
-
          ENDDO
 
 C        Empirical correction to XOD
@@ -3900,6 +3910,8 @@ C        Empirical correction to XOD
          DO J=1,NPRO
 
           X1(J)=Q(J)*XDEEP/XOD
+          IF(ISNAN(X1(J)))X1(J)=1e-36
+          IF(X1(J).LT.1e-36)X1(J)=1e-36
 
           Y=ALOG(P(J))          
           
@@ -4319,6 +4331,120 @@ C         anyway, where XMAP is unused. PGJI 8/12/23
 
 C        *** This renormalisation is pretty accurate, but not quite accurate
 C        *** enough and so it gets updated in gsetrad.f
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.52)THEN
+C        Model 52. Profile is represented a Gaussian with a specified optical
+C        thickness centred at a variable pressure level plus a variable FWHM (log press) in 
+C        log pressure above and fixed FWHM below
+C        FHWM is also folded into total opacity, but this gets renormalised
+C        by gsetrad.f anyway.
+C        ***************************************************************
+
+         XDEEP = EXP(XN(NXTEMP+1))
+         PKNEE = EXP(XN(NXTEMP+2))
+         XWID  = EXP(XN(NXTEMP+3))
+         XWID1  = EXP(XN(NXTEMP+4))
+
+         PHAZE = VARPARAM(IVAR,1)
+         WHAZE = VARPARAM(IVAR,2)
+
+         Y0=ALOG(PKNEE)
+         YHAZE=ALOG(PHAZE)
+
+         K=-1
+         KHAZE=-1
+
+C         print*,PKNEE,PHAZE
+         DO J=1,NPRO-1
+          IF(P(J).GE.PKNEE.AND.P(J+1).LT.PKNEE)K=J 
+          IF(P(J).GE.PHAZE.AND.P(J+1).LT.PHAZE)KHAZE=J 
+C          print*,J,P(J),K,KHAZE
+         ENDDO
+
+C         print*,'K, KHAZE = ',K,KHAZE
+C         print*,'XWID,XWID1,WHAZE = ',XWID,XWID1,WHAZE
+         IF(K.LT.0)THEN
+          print*,'subprofretg error in model 52. Cannot find KNEE'
+          STOP
+         ENDIF
+
+C        **** Want to normalise to get optical depth right. ***
+C        ND is the particles per cm3 (but will be rescaled)
+C        OD is in units of particles/cm2 = particles/cm3 x length(cm)
+C        OD(J)=ND(J)*SCALE(J)*1E5
+C        Q is specific density = particles/gram = particles/cm3 x g/cm3
+C        Q(J)=ND(J)/RHO         
+         
+         XOD=0.
+         DO J=1,NPRO
+
+          IF(J.LE.K)THEN
+           XWIDX=XWID1
+          ELSE
+           XWIDX=XWID
+          ENDIF
+
+          IF(AMFORM.EQ.0)THEN
+           XMOLWT=MOLWT
+          ELSE
+           XMOLWT=XXMOLWT(J)
+          ENDIF
+
+          RHO = (0.1013*XMOLWT/R)*(P(J)/T(J))
+
+          Y=ALOG(P(J))          
+
+C          Q(J) = EXP(-((Y-Y0)/XWIDX)**2)/(XWIDX*SQRT(PI))
+          Q(J) = EXP(-((Y-Y0)/XWIDX)**2)
+          XFAC=(1-EXP(-((Y-YHAZE)/WHAZE)**2))
+          IF(J.GT.KHAZE)XFAC=0.0
+          Q(J) = Q(J)*XFAC
+
+C          print*,J,P(J),XWIDX,K,KHAZE,Y,Y0,YHAZE,abs((Y-Y0)/XWIDX),
+C     & XFAC,SNGL(Q(J))
+
+          ND(J) = Q(J)*RHO 
+          OD(J) = ND(J)*SCALE(J)*1e5
+
+          XOD=XOD+OD(J)
+   
+          X1(J)=Q(J)
+
+         ENDDO
+
+C        Empirical correction to XOD
+         XOD = XOD*0.25
+
+         DO J=1,NPRO
+
+          X1(J)=Q(J)*XDEEP/XOD
+
+          Y=ALOG(P(J))          
+          
+          IF(X1(J).LT.1E-36)X1(J)=1E-36
+
+          IF(VARIDENT(IVAR,1).EQ.0)THEN
+            XMAP(NXTEMP+1,IPAR,J)=X1(J)/XDEEP
+          ELSE
+            XMAP(NXTEMP+1,IPAR,J)=X1(J)
+          ENDIF
+
+C         This section is not correct, but this model only ever used for
+C         scattering cases, where the derivatives are calculated numerically.
+C         ***********************************************************************
+          XMAP(NXTEMP+2,IPAR,J)=2.*(Y-Y0)*X1(J)/XWID**2
+          XMAP(NXTEMP+3,IPAR,J)=-2.0*((Y-Y0)**2)*X1(J)/XWID**3
+
+          XMAP(NXTEMP+2,IPAR,J)=Y0*2.*(Y-Y0)*X1(J)/XWID**2
+          XMAP(NXTEMP+3,IPAR,J)=-2.0*((Y-Y0)**2)*X1(J)/XWID**2
+     &             -  X1(J)/XWID
+C         ***********************************************************************
+
+         ENDDO
+
+C        *** This renormalisation is pretty accurate, but not quite accurate
+C        *** enough and so it gets updated in gsetrad.f
+
 
 
         ELSE

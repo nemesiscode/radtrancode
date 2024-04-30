@@ -104,6 +104,7 @@ C     **************************** CODE ********************************
          if(varidentx(ivarx,3).eq.49)np = 1
          if(varidentx(ivarx,3).eq.50)np = 3
          if(varidentx(ivarx,3).eq.51)np = 4
+         if(varidentx(ivarx,3).eq.52)np = 4
         else
          if(varidentx(ivarx,1).eq.102)np = 1
          if(varidentx(ivarx,1).eq.555)np = 1

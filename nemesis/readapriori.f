@@ -108,11 +108,12 @@ C     a priori covariance matrix
       character*100 opfile,buffer,ipfile,runname,rifile,xscfil
       integer nxx,nsec,ncont1,nlay,tmp,iex
       real xwid,ewid,y,y0,lambda0,vi(mx),vtmp(mx),xt(mx)
+      real xwid1,ewid1
       real r0,er0,dr,edr,vm,nm,nmshell,nimag,delv,xy,v0
       real xldeep,eldeep,xlhigh,elhigh,arg1,nimag1
       real v1,v1err,v2,v2err,p1,p1err,p2,p2err,p3
       real tau0,ntemp,teff,alpha,T0,xf,exf
-      real etau0,entemp,eteff,ealpha,eT0
+      real etau0,entemp,eteff,ealpha,eT0,xwidbase
       real csx,cserr,nimagshell,errshell,flon
       real flon1,dlon,dlong,xpc,xlapse,ywid,eywid
       logical filexist
@@ -2786,6 +2787,52 @@ C            Read in xdeep, pknee, xwid
              lx(ix)=1
 
              sx(ix,ix) = (ewid/xwid)**2
+
+             nx = nx+4
+
+           elseif (varident(ivar,3).eq.52)then
+C            ** profile held as integrated OD, peak pressure and FWHM (log P) (Gaussian) **
+C            ** but with different gaussian below peak and also a fixed cut at lower
+C            ** pressures (based on model 47). Built for Jupiter to differentiate between
+C            ** main haze and overlying haze at ~0.2 atm
+C            Read in xdeep, pknee, xwid
+
+             read(27,*)xdeep,edeep
+             read(27,*)pknee,eknee
+             read(27,*)xwid,ewid
+             read(27,*)xwid1,ewid1
+             read(27,*)varparam(ivar,1),varparam(ivar,2)
+             
+             ix = nx+1
+             if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+             else
+               print*,'Error in readapriori. xdeep must be > 0.0'
+               stop
+             endif
+
+
+             err = edeep/xdeep
+             sx(ix,ix)=err**2
+
+             ix = nx+2
+             x0(ix) = alog(pknee)
+             lx(ix)=1
+
+             sx(ix,ix) = (eknee/pknee)**2
+
+             ix = nx+3
+             x0(ix) = alog(xwid)
+             lx(ix)=1
+
+             sx(ix,ix) = (ewid/xwid)**2
+
+             ix = nx+4
+             x0(ix) = alog(xwid1)
+             lx(ix)=1
+
+             sx(ix,ix) = (ewid1/xwid1)**2
 
              nx = nx+4
 

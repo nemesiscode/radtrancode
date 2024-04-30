@@ -31,8 +31,8 @@ C       RADCOND	REAL		Radius of condensate (microns)
 C       MWCOND	REAL		Molecular weight (g) of condensed phase
 C
 C     Output variables
-C	X1(MAXPRO)	REAL	Output vmr profile
-C	X2(MAXPRO)	REAL	Output cloud density profile
+C	X1(MAXPRO)	REAL	Output vmr profile (mole fraction)
+C	X2(MAXPRO)	REAL	Output cloud density profile (particles/gram)
 C	QCOUT(MAXPRO)	REAL	Condensed mole fraction profile
 C
 C     	Pat Irwin	4/1/16	Original

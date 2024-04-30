@@ -137,7 +137,6 @@ C this loop for equilibrium and normal ortho:para H2
                 kcia(igas,itemp,j)=kcia(igas,itemp,j)+sngl(alf(i))
                 print*,f(i),j,alf(i)
              end do
-             stop
 
              if (normal .eq. 0) then
                 igas = 2

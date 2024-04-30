@@ -51,7 +51,9 @@ C     First find level closest to zero altitude
        ENDIF
 
        SCALE(I)=R*T(I)/(XMOLWT*G)
-
+       if(idiag.gt.0)then
+         print*,i,T(i),R,XMOLWT,G,SCALE(I)
+       endif
       ENDDO
 
       if(idiag.gt.0)print*,'XhydrostatH: JZERO = ',JZERO
@@ -73,6 +75,10 @@ C     First find level closest to zero altitude
       ATDEPTH1=H(NPRO)-H(1)
    
       XDEPTH = 100*ABS((ATDEPTH1-ATDEPTH)/ATDEPTH)
+      if(idiag.gt.0)then
+       print*,H(1),H(NPRO)
+       print*,ATDEPTH,ATDEPTH1,XDEPTH
+      endif
       IF(XDEPTH.GT.1.0)THEN
         GOTO 999
       ENDIF

@@ -157,7 +157,7 @@ C		Scattering variables
         REAL 	solara
         REAL    bnuS(maxlay),fcover(maxscatlay),xsolar
         REAL    umif(maxmu,maxscatlay,maxf),sum
-        REAL    uplf(maxmu,maxscatlay,maxf)	
+        REAL    uplf(maxmu,maxscatlay,maxf),fcoverx(maxscatlay)	
         REAL    gmif(maxmu,maxscatlay,maxf)
         REAL    gplf(maxmu,maxscatlay,maxf)	
         REAL    gmifa(maxmu,maxscatlay)
@@ -165,7 +165,7 @@ C		Scattering variables
         REAL    gmifc(maxmu,maxscatlay)
         REAL    gplfc(maxmu,maxscatlay)	
         REAL    gmifb(maxmu,maxscatlay,maxf)
-        REAL    gplfb(maxmu,maxscatlay,maxf)	
+        REAL    gplfb(maxmu,maxscatlay,maxf),xrad1,xrad2
         REAL    umift(maxmu,maxmu,maxscatlay,maxf)
         REAL    uplft(maxmu,maxmu,maxscatlay,maxf)	
         DOUBLE PRECISION mu1(maxmu), wt1(maxmu), galb, galb1, 
@@ -201,7 +201,8 @@ C		Internal variables
      5          tmp2, taug(maxlay),ssfac
         REAL    taucloud(maxcon,maxlay),tauclscat(maxcon,maxlay)
         REAL    taucl(maxcon,maxlay),taucs(maxcon,maxlay)
-        integer icloud(maxcon,maxlay)
+        REAL    tauclx(maxcon,maxlay),taucsx(maxcon,maxlay)
+        integer icloud(maxcon,maxlay),icloudx(maxcon,maxlay)
         REAL	fdown(maxlay,maxg),fwhmk,
      1          delvk,tauray(maxlay),f1(maxlay),g11(maxlay),
      2          g21(maxlay),taur(maxlay)
@@ -1536,9 +1537,6 @@ C                 endif
      4				taur,nlays, ncont,lfrac)
 
 
-C                        if(IG.eq.10) then
-C                         print*,'Ipath,Ig,xfac,rad1',Ipath,Ig,xfac,rad1
-C                        endif
  		  	corkout(Ipath,Ig) = xfac*rad1
 
 
@@ -1588,7 +1586,7 @@ C                        print*,'lowbc,galb1',lowbc,galb1
                          stop
                         endif
 
-		  	call scloud12wave(rad1, sol_ang, emiss_ang, aphi, 
+		  	call scloud12wavex(rad1, sol_ang, emiss_ang, aphi, 
      1				radg, solar, lowbc, galb1, iray,
      2				mu1, wt1, nmu,   
      3				nf, Ig, x, vv, bnu, taucl, taucs,
@@ -1630,6 +1628,113 @@ C                        print*,'lowbc,galb1',lowbc,galb1
 
  		     corkout(Ipath,Ig) = umif(1,1,1)
 
+                ELSEIF (itype.EQ.14) THEN
+C                  Calculate separate outputs for broken cloud and hazes and then combine
+C                  radiances at end to simulate broken clouds that are correlated with height.
+
+C                  Assume fractional cover same at all altitudes
+                   xf=fcover(1)
+
+C                  First calculate flux in cloudy regions. Can use scloud11wave for this as that
+C                  sums everything anyway.
+      		  	call scloud11wave(rad1, sol_ang, emiss_ang,
+     1                          aphi, radg, solar, lowbc, galb1, iray,
+     2				mu1, wt1, nmu,   
+     3				nf, Ig, x, vv, eps, omegas,bnu, taus, 
+     4				taur,nlays, ncont,lfrac)
+                        xrad1 = xfac*rad1
+                        if(SROMPOL)then
+                         dtr=3.1415927/180.0
+                         x1 = 1/cos(sol_ang*dtr)+1/cos(emiss_ang*dtr)
+                         thrad=emiss_ang*dtr
+                         sumpol=0.0
+                         do j=1,nlays
+                          x2 = exp(-cumcloud(j)*x1)
+                          if(j.eq.1)then
+                           dpol=deltaipol(thrad,polomeg(j),cummol(j))
+                          else
+                           d1 = deltaipol(thrad,polomeg(j),cummol(j))
+                           d2 = deltaipol(thrad,polomeg(j),cummol(j-1))
+                           dpol = d1-d2
+                          endif
+                          sumpol=sumpol+x2*dpol
+                          if(isnan(sumpol))then
+                           print*,'Error in sromovsky polarisation'
+                           stop
+                          endif
+                         enddo
+                         drad=sumpol*solar/3.1415927
+                         xrad1=xrad1+xfac*drad
+                        endif
+
+
+C                  Now calculate flux in 'clear'  regions
+C                  Use scloud12wavex here and adjust the input to just compute the hazy bits 
+                        do icont=1,ncont
+                         if(icloud(icont,1).eq.0) then
+                          do k=1,nlayer
+                           taucsx(icont,k)=taucs(icont,k)
+                           tauclx(icont,k)=taucl(icont,k)
+                          enddo
+                         else
+                          do k=1,nlayer
+                           taucsx(icont,k)=0.0
+                           tauclx(icont,k)=0.0
+                          enddo
+                         endif
+                         do k=1,nlayer
+                          icloudx(icont,k)=0
+                         enddo
+                        enddo
+
+                        do k=1,nlayer
+                         fcoverx(k)=0.0
+                        enddo
+
+C                        print*,taucs(1,25),taucs(2,25),taucl(1,25),
+C     & taucl(2,25),icloud(1,25),icloud(2,25),fcover(25)
+C                        print*,taucsx(1,25),taucsx(2,25),tauclx(1,25),
+C     & tauclx(2,25),icloudx(1,25),icloudx(2,25),fcoverx(25)
+
+		  	call scloud12wavex(rad1, sol_ang, emiss_ang, aphi, 
+     1				radg, solar, lowbc, galb1, iray,
+     2				mu1, wt1, nmu,   
+     3				nf, Ig, x, vv, bnu, tauclx, taucsx,
+     4                          icloudx, fcoverx, taug, taur, nlays, 
+     5                          ncont)
+                        xrad2 = xfac*rad1
+                        if(SROMPOL)then
+                         dtr=3.1415927/180.0
+                         x1 = 1/cos(sol_ang*dtr)+1/cos(emiss_ang*dtr)
+                         thrad=emiss_ang*dtr
+                         sumpol=0.0
+                         do j=1,nlays
+                          x2 = exp(-cumcloud(j)*x1)
+                          if(j.eq.1)then
+                           dpol=deltaipol(thrad,polomeg(j),cummol(j))
+                          else
+                           d1 = deltaipol(thrad,polomeg(j),cummol(j))
+                           d2 = deltaipol(thrad,polomeg(j),cummol(j-1))
+                           dpol = d1-d2
+                          endif
+                          sumpol=sumpol+x2*dpol
+                          if(isnan(sumpol))then
+                           print*,'Error in sromovsky polarisation'
+                           stop
+                          endif
+                         enddo
+                         drad=sumpol*solar/3.1415927
+                         xrad2=xrad2+xfac*drad
+                        endif
+
+ 		  	corkout(Ipath,Ig) = xf*xrad1 + (1-xf)*xrad2
+
+C                        print*,'xf,r1,r2, total',xf,xrad1,xrad2,
+C     &  corkout(Ipath,Ig)
+C                        print*,'FLAGC = ',FLAGC
+C                        stop
+
+ 
                 ELSE
 
 			WRITE (*,*) ' Scattering ITYPE =',itype,

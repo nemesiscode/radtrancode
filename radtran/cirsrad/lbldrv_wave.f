@@ -109,7 +109,7 @@ C-----------------------------------------------------------------------
       jradf=-1
       jloggf=-1
 
-      idiag=1
+      idiag=0
 
       CALL system_clock(count_rate=cr)
       CALL system_clock(count_max=cm)

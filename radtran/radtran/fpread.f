@@ -126,6 +126,8 @@ C        initialise the absorption array to be zero in case of failure
          do 24 i=1, IPARA2
             absh2(i) = 0.0
             abshe(i) = 0.0
+   	    dah2dt(i)=0.0
+	    dahedt(i)=0.0
  24      continue
 
          if(idiag.gt.0)print*,'fpread : New Data read in'
@@ -141,6 +143,12 @@ C     ----------------------------------------------------------------------
       if(vv.gt.vvk2(NUMWN).or.vv.lt.vvk2(1).and.ivk.ne.1)then
          if(idiag.gt.0)print*,'fpread : wavenumber out of range'
          ivk=1
+         do i=1,npara
+          absh2(i)=0.0
+          abshe(i)=0.0
+ 	  dah2dt(i)=0.0
+	  dahedt(i)=0.0
+         enddo
          return
       end if
 

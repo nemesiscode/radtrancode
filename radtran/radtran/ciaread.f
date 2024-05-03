@@ -121,6 +121,10 @@ C     ----------------------------------------------------------------------
             print*,'ciaread : wavenumber out of range',vv
             print*,'Table range : ',vvk1(1),vvk1(NUMWN)
            endif
+           do i=1, NUMPAIRS
+            abs(i) = 0.0
+            dabsdT(i)=0.0
+           enddo
            ivc=1
          endif
          return

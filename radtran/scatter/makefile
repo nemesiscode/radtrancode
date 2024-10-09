@@ -9,6 +9,7 @@ FCFLAGS = $(FCFLAGS1) $(STATIC_FLAG)
 FRECIPES = $(LIB)/libfrecipes.a
 
 F_SOURCES = \
+	scloud12wavex.f \
 	abend.f \
 	add.f \
 	addp.f \

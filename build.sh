@@ -1,5 +1,16 @@
 #!/usr/bin/env bash
 
+# TODO:
+# * Add command line arguments for inputs
+#   - INSTALL_DEST
+#   - REPO_DIR
+#   - FCOMP
+#   - DEBUG_EXEC
+#   - LOG_FILES
+#   - ISYS
+# * Remove C compiler information, it is not used anywhere
+#
+
 # Use strict mode
 set -o nounset -o pipefail -o errexit
 
@@ -27,9 +38,9 @@ get_dir() {
 
 # Constants
 
-TRUE=1
-FALSE=0
-DEBUG_EXEC=$FALSE
+TRUE=0
+FALSE=1
+DEBUG_EXEC=$TRUE
 
 
 # Variables
@@ -63,6 +74,7 @@ ISYS=4
 # Compiler selection and options
 
 ## C compiler
+# NOTE: This is not used and can be removed
 CC="gcc"
 CFLAGS=""
 
@@ -189,19 +201,6 @@ for MISSING_FILE in "${!MISSING_FILE_LOCATIONS[@]}"; do
 done
 
 
-
-
-#RADTRAN_SCATTER_MAKEFILE="${REPO_DIR}/radtran/scatter/makefile"
-#if ! grep -q 'scloud12wavex.f' ${RADTRAN_SCATTER_MAKEFILE}; then
-#	echo "Fixing problem where '${REPO_DIR}/radtran/scatter/scloud12wavex.f' is not included in library 'scatter.a'"
-#	sed -i -r -e 's/\bscloud12wave.f\b/scloud12wave.f \\\n\tscloud12wavex.f/g' ${RADTRAN_SCATTER_MAKEFILE}
-#fi
-#
-#RADTRAN_RADTRAN_MAKEFILE="${REPO_DIR}/radtran/radtran/makefile"
-#if ! grep -q 'getmass.f' ${RADTRAN_RADTRAN_MAKEFILE}; then
-#	echo "Fixing problem where '${REPO_DIR}/radtran/scatter/scloud12wavex.f' is not included in library 'scatter.a'"
-#	sed -i -r -e 's/\bscloud12wave.f\b/scloud12wave.f \\\n\tscloud12wavex.f/g' ${RADTRAN_RADTRAN_MAKEFILE}
-#fi
 
 # Set ISYS value
 echo "Setting ISYS=${ISYS} in '${ISYS_FILE}'"

@@ -99,7 +99,7 @@ C	sum of 2023+0223:
       T2=Y(X,3.803d-13,-.4048d0,-.0091d0)
       T3=Y(X,1.0922d-12,-.4810d0,-.0127d0)
       T4=Y(X,5.174d-12,-.9841d0,0.0483d0)
-      CALL ADDSPEC (S,E,T1,T2,T3,T4,TEMP,0,1,0,2,2,3,0,0,1.)
+      CALL ADDSPEC (S,E,T1,T2,T3,T4,TEMP,0,1,0,2,2,3,0,0,1.D0)
 	do 111 i=1, nf
 111	alfatot(i) = alfatot(i) + abscoef(i)
 
@@ -110,7 +110,7 @@ C     PARAMETERS FOR 4045 AND 0445 (PURE HEXADECAPOLE) COMPONENTS
       T2=Y(X,2.743d-13,-.3566d0,-.0140d0)
       T3=Y(X,4.171d-13,-.5223d0,0.0097d0)
       T4=Y(X,2.2725d-12,-1.1056d0,0.0139d0)
-      CALL ADDSPEC(S,E,T1,T2,T3,T4,TEMP,0,1,4,0,4,5,0,0,1.)
+      CALL ADDSPEC(S,E,T1,T2,T3,T4,TEMP,0,1,4,0,4,5,0,0,1.D0)
 	do 211 i=1, nf
 211	alfatot(i) = alfatot(i) + abscoef(i)
 
@@ -121,7 +121,7 @@ C     PARAMETERS FOR 0221 AND 2021 (PURE OVERLAP) COMPONENTS
       T2=Y(X,4.839d-13,-.5158d0,0.0075d0)
       T3=Y(X,4.550d-13,-.5507d0,0.0095d0)
       T4=Y(X,2.045d-12,-.5266d0,-.0240d0)
-      CALL  ADDSPEC(S,E,T1,T2,T3,T4,TEMP,0,1,0,2,2,1,0,0,1.)
+      CALL  ADDSPEC(S,E,T1,T2,T3,T4,TEMP,0,1,0,2,2,1,0,0,1.D0)
 	do 311 i=1, nf
 311	alfatot(i) = alfatot(i) + abscoef(i)
 C
@@ -132,7 +132,7 @@ C     PARAMETERS FOR 2233 QUADRUPOLE INDUCED DOUBLE TRANSITIONS
       T2=Y(X,4.016d-13,-.3802d0,-.0134d0)
       T3=Y(X,1.0752d-12,-.4617d0,-.0085d0)
       T4=Y(X,1.1405d-11,-1.2991d0,0.0729d0)
-      CALL ADDSPEC(S,E,T1,T2,T3,T4,TEMP,0,1,2,2,3,3,0,0,1.)
+      CALL ADDSPEC(S,E,T1,T2,T3,T4,TEMP,0,1,2,2,3,3,0,0,1.D0)
 	do 411 i=1, nf
 411	alfatot(i) = alfatot(i) + abscoef(i)
 160	format( f7.1, e12.4)

@@ -25,7 +25,7 @@ F_SOURCES = \
       h2ch4_s.f \
       h2ch4_sub.f \
       h2h2_v0s.f \
-#      h2h2_v1s.f \
+      h2h2_v1s.f \
       h2h2_v2s.f \
       h2he_v0s.f \
       h2he_v1s.f \

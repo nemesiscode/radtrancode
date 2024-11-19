@@ -507,19 +507,21 @@ c
       implicit double precision (a-h,o-z)
 c
       DIMENSION PHI(N),PHI2(N),OMEGA(N)
+c  ** need to dimension F and GP are compiler complains about rank mismatch
+      DIMENSION F(2),GP(1)
       TFAC=0.
-      F=FREQ
-      IF(F)10,20,20
-10    F=ABS(F)
-      TFAC=(-RTEMP*F)
-20    IF(F.LE.OMEGA(N))GOTO 30
-      SPECFCT7=EXP(-(PHI(N-1)-PHI(N))*(F-OMEGA(N))/
+      F(1)=FREQ
+      IF(F(1))10,20,20
+10    F(1)=ABS(F(1))
+      TFAC=(-RTEMP*F(1))
+20    IF(F(1).LE.OMEGA(N))GOTO 30
+      SPECFCT7=EXP(-(PHI(N-1)-PHI(N))*(F(1)-OMEGA(N))/
      $(OMEGA(N)-OMEGA(N-1))+PHI(N)+TFAC)*(1.d-80)
 cx    SPECFCT7=dexp(-(PHI(N-1)-PHI(N))*(F-OMEGA(N))/
 cx   $(OMEGA(N)-OMEGA(N-1))+PHI(N)+TFAC)
       RETURN
 30    CALL IXPOLAT7(N,1,0,1.d-6,OMEGA,PHI,F,GP,SI,NR,PHI2)
-      SPECFCT7=EXP(TFAC+GP)*(1.d-80)
+      SPECFCT7=EXP(TFAC+GP(1))*(1.d-80)
 cx    SPECFCT7=dexp(TFAC+GP)
       RETURN
       END

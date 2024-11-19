@@ -507,7 +507,7 @@ c
       implicit double precision (a-h,o-z)
 c
       DIMENSION PHI(N),PHI2(N),OMEGA(N)
-c  ** need to dimension F and GP are compiler complains about rank mismatch
+c  ** need to dimension F and GP or compiler complains about rank mismatch
       DIMENSION F(2),GP(1)
       TFAC=0.
       F(1)=FREQ

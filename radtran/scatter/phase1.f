@@ -45,6 +45,15 @@ C	14oct02	PDP	Removed references to "exit" as the command is not
 C			supported under the Intel FORTRAN Compilter
 C			framework. Left the old code commented out just in
 C			case "CALL EXIT" is not equivalent to "STOP".
+c     20nov24     NAT: added options that can be commented out
+c                 for MAXCON/MAXSCATPAR=4,14 (kept the 10 version too)
+c                 Not satisfying to have this hard wired but I doubt it
+c                 Needs to be changed regularly.
+c                 NB MAXCON & MAXSCATPAR are set in includes/arrdef.f
+c                 and must be the same. If they are changed there are
+c                 Hardwired bits in scatter/phase1.f and nemesis/mod_scatter.f
+c                 that also need changing. Currently 10,14 have options that 
+c                 can be commented/uncommented as needed. 10 is default/original
 C
 C **********************************************************************
 
@@ -77,6 +86,7 @@ C Coefficients & scale factors of Legendre polynomials P(n-1): (1st index
 C of JCOEF is power of MU, second is N=0,1,2,...,MAXSCATPAR. Note that a
 C polynomial of even N has only even powers, and odd N has only odd
 C powers.)
+C Version for maxscatpar=10
 	integer jcoef(maxscatpar/2,maxscatpar)/
      1 1, 4*0,
      2 1, 4*0,
@@ -85,11 +95,29 @@ C powers.)
      5 3, -30, 35, 2*0,
      6 15, -70, 63, 2*0,
      7 -5, 105, -315, 231, 0, 
-     8 -35, 315, -693, 429, 0, 
-     9 35, -1260, 6930, -12012, 6435, 
-     1 315, -4620, 18018, -25740, 12155/
+     8 -35, 315, -693, 429, 0,                                     ! caution, Needs checking
+     9 35, -1260, 6930, -12012, 6435,                              ! caution, Needs checking
+     1 315, -4620, 18018, -25740, 12155/                           ! caution, Needs checking
 C Each scale factors is for polynomial 2i-1 & 2i:
 	integer jdiv(maxscatpar/2)/ 1, 2, 8, 16, 128/
+C Version for maxscatpar=14 (NB P_7+ coefs differ from those in the original maxscatpar=10 case)
+c	integer*8 jcoef(maxscatpar/2,maxscatpar)/
+c     & 1, 6*0,                                                    ! 1 P_0
+c     & 1, 6*0,                                                    ! 2 P_1
+c     & -1, 3, 5*0,                                                ! 3 P_2
+c     & -3, 5, 5*0,                                                ! 4 P_3
+c     & 3, -30, 35, 4*0,                                           ! 5 P_4
+c     & 15, -70, 63, 4*0,                                          ! 6 P_5
+c     & -5, 105, -315, 231, 3*0,                                   ! 7 P_6
+c     & -70, 525, -1050, 643, 3*0,                                 ! 8 P_7 caution, Needs checking
+c     & 35, -1260, 7350, -12005, 6435, 2*0,                        ! 9 P_8
+c     & 630,-7350,20349,-25740,12155, 2*0,                         ! 10 P_9
+c     & -945,9450,-37800,95040,-109395,46189, 0,                   ! 11 P_10
+c     & -2310,30690,-138297,253995,-230230,88179, 0,               ! 12 P_11
+c     & 945,-122850,705432,-1753500,2556555,-2023785,676039,       ! 13 P_12
+c     & 8190,-918390,3097200,-6122325,7000185,-4433210,1307535/    ! 14 P_13
+C Each scale factors is for polynomial 2i-1 & 2i:
+c	integer*8 jdiv(maxscatpar/2)/ 1, 2, 8, 16, 128, 256, 512/
 
 
 C **********************************************************************

@@ -25,13 +25,17 @@ C     MAXLAY: maximum number of layers allowed.
 C     MAXPAT: maximum number of paths allowed.
 C     MAXGAS: maximum number of gases allowed.
 C     MAXCON: maximum number of aerosol types
+c       NB: MAXCON must equal MAXSCATPAR. These cannot be set to arbitrary values.
+c       They are hard coded into nemesis/mod_scatter.f and scatter/phase1.f
+c       Only 10 and 14 are currently defined. 10 is default/original. If you want 14
+c       then need to also edit mod_scatter.f and phase1.f (comment/uncomment some lines)
 C     MAXSEC: Maximum number of x-section wavelengths
 C     MAXBIN: maximum number of bins allowed.
 C     MAXG: maximum number of g-ordinates/weights allowed.
 C     MAXRANK: Max size of arrays for overlapping gas k-distributions.
 C     MAXK: maximum number of T/P-ordinates in k-tables
 C     MAXMU: maximum number zenith angles for scattering calc.
-C     MAXCON2: MAXSCATPAR: Maximum number of parameters defining phase function
+C     MAXCON: MAXSCATPAR: Maximum number of parameters defining phase function
 C     MAXSCATLAY: maximum number of layers for scattering calc.
 C     MAXPHAS: Maximum number of phase angles in phase function
 C     MAXOUT: maximum number of points output allowed (#1).

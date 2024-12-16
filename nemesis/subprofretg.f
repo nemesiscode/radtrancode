@@ -969,7 +969,8 @@ C        Calculate gradient numerically as it's just too hard otherwise
           XFSH  = EXP(XN(NXTEMP+2))
           PKNEE = EXP(XN(NXTEMP+3))
 
-          DX=0.05*XN(NXTEMP+ITEST-1)
+c          DX=0.05*XN(NXTEMP+ITEST-1) - changed 16/12/2024 LNF
+          DX=0.05*XN(NXTEMP+ITEST)
           IF(DX.EQ.0.)DX=0.1
 
           IF(ITEST.EQ.2)THEN
@@ -1109,7 +1110,8 @@ C        Calculate gradient numerically as it's just too hard otherwise
           XFSH  = EXP(XN(NXTEMP+2))
           HKNEE = XN(NXTEMP+3)
 
-          DX=0.05*XN(NXTEMP+ITEST-1)
+c          DX=0.05*XN(NXTEMP+ITEST-1) - changed 16/12/2024 LNF
+          DX=0.05*XN(NXTEMP+ITEST)
           IF(DX.EQ.0.)DX=0.1
 
           IF(ITEST.GT.1)THEN
@@ -2018,7 +2020,8 @@ C        Calculate gradient numerically as it's just too hard otherwise
           HKNEE = XN(NXTEMP+3)
           CWID = XN(NXTEMP+4)
 
-          DX=0.05*XN(NXTEMP+ITEST-1)
+c          DX=0.05*XN(NXTEMP+ITEST-1) - changed 16/12/2024 LNF
+          DX=0.05*XN(NXTEMP+ITEST)
           IF(DX.EQ.0.)DX=0.1
 
           IF(ITEST.GT.1)THEN
@@ -2222,7 +2225,9 @@ C         Need radius from associated 444/445 particle parameterisation
           REFRADIUS=VARPARAM(IVAR,2)
           XFSH=XFSH*REFRADIUS/RPARTICLE
 
-          DX=0.05*XN(NXTEMP+ITEST-1)
+c          DX=0.05*XN(NXTEMP+ITEST-1) - changed 16/12/2024 LNF
+          DX=0.05*XN(NXTEMP+ITEST)
+
           IF(DX.EQ.0.)DX=0.1
 
           IF(ITEST.GT.1)THEN
@@ -2952,7 +2957,9 @@ C        Calculate gradient numerically as it's just too hard otherwise
           XFSH  = EXP(XN(NXTEMP+2))
           PKNEE = EXP(XN(NXTEMP+3))
 
-          DX=0.05*XN(NXTEMP+ITEST-1)
+c          DX=0.05*XN(NXTEMP+ITEST-1) - changed 16/12/2024 LNF
+          DX=0.05*XN(NXTEMP+ITEST)
+
           IF(DX.EQ.0.)DX=0.1
 
           IF(ITEST.EQ.2)THEN
@@ -3958,7 +3965,9 @@ C        Calculate gradient numerically as it's just too hard otherwise
           PKNEE = EXP(XN(NXTEMP+3))
           PTOP = EXP(XN(NXTEMP+4))
 
-          DX=0.05*XN(NXTEMP+ITEST-1)
+c          DX=0.05*XN(NXTEMP+ITEST-1) - changed 16/12/2024 LNF
+          DX=0.05*XN(NXTEMP+ITEST)
+
           IF(DX.EQ.0.)DX=0.1
 
           IF(ITEST.EQ.2)THEN
@@ -4509,7 +4518,8 @@ C        modifying the radius will affect the vertical cloud distribution.
 C         Calculate gradient numerically as it's just too hard otherwise
           DO 25 ITEST=1,2
 
-           DX=0.05*XN(NXTEMP+ITEST-1)
+c          DX=0.05*XN(NXTEMP+ITEST-1) - changed 16/12/2024 LNF
+           DX=0.05*XN(NXTEMP+ITEST)
            IF(DX.EQ.0.)DX=0.1
 
            IF(ITEST.EQ.2)THEN
@@ -4655,7 +4665,8 @@ C		works for MultiNest
 C         Calculate gradient numerically as it's just too hard otherwise
 C	       DO 26 ITEST=1,2
 
-           DX=0.05*XN(NXTEMP+ITEST-1)
+c          DX=0.05*XN(NXTEMP+ITEST-1) - changed 16/12/2024 LNF
+           DX=0.05*XN(NXTEMP+ITEST)
            IF(DX.EQ.0.)DX=0.1
 
 C          Start ND,Q,OD at zero
@@ -4776,7 +4787,8 @@ C	works for MultiNest***
 C         Calculate gradient numerically as it's just too hard otherwise
 C	       DO 26 ITEST=1,2
 
-           DX=0.05*XN(NXTEMP+ITEST-1)
+c          DX=0.05*XN(NXTEMP+ITEST-1) - changed 16/12/2024 LNF
+           DX=0.05*XN(NXTEMP+ITEST)
            IF(DX.EQ.0.)DX=0.1
 
 C          Start ND,Q,OD at zero
@@ -4919,7 +4931,8 @@ C		 Currently only works for MultiNest
 C         Calculate gradient numerically as it's just too hard otherwise
 C	       DO 26 ITEST=1,2
 
-           DX=0.05*XN(NXTEMP+ITEST-1)
+c          DX=0.05*XN(NXTEMP+ITEST-1) - changed 16/12/2024 LNF
+           DX=0.05*XN(NXTEMP+ITEST)
            IF(DX.EQ.0.)DX=0.1
 
 C          Start ND,Q,OD at zero
@@ -5074,8 +5087,8 @@ C          XFSH=XFSHREF*REFRADIUS/RPARTICLE
 C         Calculate gradient numerically as it's just too hard otherwise
 C          DO 25 ITEST=1,2
 
-
-           DX=0.05*XN(NXTEMP+ITEST-1)
+c          DX=0.05*XN(NXTEMP+ITEST-1) - changed 16/12/2024 LNF
+           DX=0.05*XN(NXTEMP+ITEST)
            IF(DX.EQ.0.)DX=0.1
 C
 C           IF(ITEST.EQ.2)THEN

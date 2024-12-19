@@ -21,6 +21,15 @@ C	aphi  		real	Azimuth angle
 C    
 C     Pat Irwin 4/4/01		Original
 C     Pat Irwin 17/10/03	Tidied for Nemesis
+c     20nov24     NAT: added options that can be commented out
+c                 for MAXCON/MAXSCATPAR=4,14 (kept the 10 version too)
+c                 Not satisfying to have this hard wired but I doubt it
+c                 Needs to be changed regularly.
+c                 NB MAXCON & MAXSCATPAR are set in includes/arrdef.f
+c                 and must be the same. If they are changed there are
+c                 Hardwired bits in scatter/phase1.f and nemesis/mod_scatter.f
+c                 that also need changing. Currently 10,14 have options that 
+c                 can be commented/uncommented as needed. 10 is default/original
 C
 C     *******************************************************************
       implicit none
@@ -36,13 +45,22 @@ C     *******************************************************************
       character*100 radfile
       common /imiescat/imie
 
+c ** version for MAXCON=10
       data scatfile0/'hgphase1.dat','hgphase2.dat','hgphase3.dat',
-     1	'hgphase4.dat','hgphase5.dat','hgphase6.dat','hgphase7.dat',
-     2  'hgphase8.dat','hgphase9.dat','hgphase10.dat'/
-
+     &	'hgphase4.dat','hgphase5.dat','hgphase6.dat','hgphase7.dat',
+     &  'hgphase8.dat','hgphase9.dat','hgphase10.dat'/
       data scatfile1/'PHASE1.DAT','PHASE2.DAT','PHASE3.DAT',
-     1 'PHASE4.DAT','PHASE5.DAT','PHASE6.DAT','PHASE7.DAT',
-     2 'PHASE8.DAT','PHASE9.DAT','PHASE10.DAT'/
+     & 'PHASE4.DAT','PHASE5.DAT','PHASE6.DAT','PHASE7.DAT',
+     & 'PHASE8.DAT','PHASE9.DAT','PHASE10.DAT'/
+c ** version for MAXCON=14
+c      data scatfile0/'hgphase1.dat','hgphase2.dat','hgphase3.dat',
+c     &	'hgphase4.dat','hgphase5.dat','hgphase6.dat','hgphase7.dat',
+c     &  'hgphase8.dat','hgphase9.dat','hgphase10.dat','hgphase11.dat',
+c     &  'hgphase12.dat','hgphase13.dat','hgphase14.dat'/
+c      data scatfile1/'PHASE1.DAT','PHASE2.DAT','PHASE3.DAT',
+c     & 'PHASE4.DAT','PHASE5.DAT','PHASE6.DAT','PHASE7.DAT',
+c     & 'PHASE8.DAT','PHASE9.DAT','PHASE10.DAT','PHASE11.DAT',
+c     & 'PHASE12.DAT','PHASE13.DAT','PHASE14.DAT'/
 
 1     format(a)
 3     format(1X,a30)

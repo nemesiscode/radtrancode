@@ -57,6 +57,7 @@ F_SOURCES = \
 	scloud8.f \
 	scloud11wave.f \
 	scloud12wave.f \
+	scloud12wavex.f \
 	scloud11flux.f \
 	scloud11fluxA.f \
 	subfithgm.f \
@@ -89,7 +90,7 @@ lib $(LIBRARY): $(LIBCODE)
 
 $(LIBRARY)(%.o): %.f $(INCLUDES)
 	$(FC) $(FCFLAGS) -c $<
-	ar rvU $(LIBRARY) $*.o
+	ar rv $(LIBRARY) $*.o
 	ranlib $(LIBRARY)
 	-rm $*.o
 

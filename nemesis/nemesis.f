@@ -94,7 +94,7 @@ C     ****************   CODE *******************************
 C     *******************************************************
 
 C     Set idiag to 1 for standard print statements. Set to zero to suppress
-      idiag=0
+      idiag=1
 C     Set iquiet to 1 to reduce writing to intermdiate meta files (such as .drv)
       iquiet=0
 

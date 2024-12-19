@@ -691,18 +691,21 @@ C
       IMPLICIT double precision (A-H,O-Z)
 C
       DIMENSION PHI(N),PHI2(N),OMEGA(N)
+c **  replaced F and GP with F(1) and GP(1) through this function
+c **  or compiler complains about Rank-1 scalar mismatch
+      DIMENSION F(1),GP(1)
 C
       TFAC=0.D0
-      F=FREQ
-      IF (F) 10,20,20
- 10   F=DABS(F)
-      TFAC=(-RTEMP*F)
- 20   IF (F.LT.OMEGA(N)) GO TO 30
-      SPCFCT=DEXP(-(PHI(N-1)-PHI(N))*(F-OMEGA(N))/
+      F(1)=FREQ
+      IF (F(1)) 10,20,20
+ 10   F(1)=DABS(F(1))
+      TFAC=(-RTEMP*F(1))
+ 20   IF (F(1).LT.OMEGA(N)) GO TO 30
+      SPCFCT=DEXP(-(PHI(N-1)-PHI(N))*(F(1)-OMEGA(N))/
      $ (OMEGA(N)-OMEGA(N-1))+PHI(N)+TFAC)
       RETURN
  30   CALL IXPOLT(N,1,0,1.D-6,OMEGA,PHI,F,GP,SI,NR,PHI2)
-      SPCFCT=DEXP(TFAC+GP)
+      SPCFCT=DEXP(TFAC+GP(1))
       RETURN
       END
 

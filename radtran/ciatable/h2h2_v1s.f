@@ -720,6 +720,7 @@ C	WORKS WITH "DOUBLE" POTENTIAL FUNCTIONS
 
 	IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 	CHARACTER*10 LGAS, LABEL, NOTE(2)
+	CHARACTER*11 labeta
 
         COMMON /COMUNIC/ NOTE,LGAS,LABEL,FFMP,EPSP(2),RMN(2),
      1  LVALUE
@@ -733,8 +734,10 @@ C     LGAS - 10 CHARACTER DESCRIPTION OF SYSTEM
 
 	if (ifirst.eq.1) go to 222
 	go to 333
-222      BBB=BETACOM(0.D0)		! call BETA_JJ.for
-      VVV=VACOMUN(0.D0)			! call VA(R,k)
+cc222      BBB=BETACOM(0.D0)		! call BETA_JJ.for (Argument not needed - crashes compiler)
+222      BBB=BETACOM	! call BETA_JJ.for
+cc      VVV=VACOMUN(0.D0)			! call VA(R,k) (Argument not needed - crashes compiler)
+      VVV=VACOMUN			! call VA(R,k)
       RM(1)=RMN(1)/ANGAU
       EPS(1)=EPSP(1)
       RM(2)=RMN(2)/ANGAU

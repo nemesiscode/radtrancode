@@ -136,7 +136,7 @@ lib $(LIBRARY): $(LIBCODE)
 
 $(LIBRARY)(%.o): %.f $(INCLUDES)
 	$(FC) $(FCFLAGS) -c $<
-	ar rvU $(LIBRARY) $*.o       
+	ar rv $(LIBRARY) $*.o       
 	ranlib $(LIBRARY)
 	-rm $*.o
 
@@ -157,25 +157,31 @@ bin :   \
 	Testbrown \
 	Testsrom
 
+# NOTE: 
+# When adding libraries, dependency order should be respected.
+# Otherwise compilation fails when using `gfotran` with "-fcheck=all".
+# E.G. path.a(calcmolwt.o) requires radtran.a(getmass.o), so
+# path.a should be linked BEFORE radtran.a.
+
 NemesisX: nemesis.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/NemesisX nemesis.f $(LIBRARY) \
-	$(LIB)/cirsradg.a $(LIB)/cirsrad.a $(LIB)/radtran.a \
-	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a \
+	$(LIB)/cirsradg.a $(LIB)/cirsrad.a $(LIB)/scatter.a \
+	$(LIB)/path.a  $(LIB)/radtran.a $(LIB)/matrices.a \
 	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(LIB)/ciatable.a $(FRECIPES) 
 
 Nemesis: nemesis.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Nemesis nemesis.f $(LIBRARY) \
-	$(LIB)/cirsradg.a $(LIB)/cirsrad.a $(LIB)/radtran.a \
-	$(LIB)/scatter.a $(LIB)/path.a $(LIB)/matrices.a \
+	$(LIB)/cirsradg.a $(LIB)/cirsrad.a $(LIB)/scatter.a \
+	$(LIB)/path.a $(LIB)/radtran.a $(LIB)/matrices.a \
 	$(LIB)/spec_data.a $(LIB)/ciatable.a \
-	$(LIB)/rtm_util.a $(FRECIPES) 
+	$(LIB)/rtm_util.a  $(FRECIPES) 
 
 NemesisPT: nemesisPT.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/NemesisPT nemesisPT.f $(LIBRARY) \
-	$(LIB)/cirsradg.a $(LIB)/cirsrad.a \
-	$(LIB)/scatter.a  $(LIB)/path.a $(LIB)/radtran.a \
-	$(LIB)/matrices.a $(LIB)/spec_data.a $(LIB)/rtm_util.a \
-	$(LIB)/ciatable.a $(FRECIPES) 
+	$(LIB)/cirsradg.a $(LIB)/cirsrad.a $(LIB)/scatter.a  \
+	$(LIB)/path.a $(LIB)/radtran.a $(LIB)/matrices.a \
+	$(LIB)/spec_data.a $(LIB)/rtm_util.a $(LIB)/ciatable.a \
+	$(FRECIPES) 
 
 Nemesisdisc: nemesisdisc.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Nemesisdisc nemesisdisc.f $(LIBRARY) \

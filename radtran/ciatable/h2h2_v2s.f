@@ -673,7 +673,8 @@ c       choosing YMAXX here:
         FMP=2.0*1.67265D-27
         F2=HBAR*HBAR/(12.*FMP*T*T*ANGAU**2*1.D-20)
         h=0.05
-        bb=betacom1(0.0,0)
+cc        bb=betacom1(0.0,0)    # Argument not needed - crashes compiler
+        bb=betacom1
         g0=0.0d0
         g1=0.0d0
         do 100 i=60,220

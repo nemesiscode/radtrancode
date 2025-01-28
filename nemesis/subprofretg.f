@@ -4003,6 +4003,8 @@ C         Q is specific density = particles/gram = (particles/cm3) / (g/cm3)
           ENDDO
 
           JKNEE=-1
+c         Added XF=1 as it appeared to be missing comp. mod 32
+          XF=1 
 C         find levels in atmosphere that span pknee
           DO J=1,NPRO-1
            IF(P(J).GE.PKNEE.AND.P(J+1).LT.PKNEE)THEN

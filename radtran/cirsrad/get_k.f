@@ -154,7 +154,7 @@ c          print*,'Wavelength/waveumber = ',VWAVE
          IF(delv.gt.0.0)then
           tmp = VMIN + N1*DELV	! Calculate wavelength in table below
 C				  current wavelength
-          frac = (vwave-tmp)/delv
+          frac = abs(real(dble(vwave)-dble(tmp)))
           if(frac.lt.eps)then
 C          delv > 0 and requested wavenumber close enough to tabulated to
 C          be considered coincident (and thus need to interrogate k-table once
@@ -309,7 +309,7 @@ C           print*,'Wavenumber coincides with tabulated value'
                         IF(Y2.LT.1E-37)Y2=1E-37
                         IF(Y3.LT.1E-37)Y3=1E-37
                         IF(Y4.LT.1E-37)Y4=1E-37
-                        Y1=LOG(Y2)
+                        Y1=LOG(Y1)
                         Y2=LOG(Y2)
                         Y3=LOG(Y3)
                         Y4=LOG(Y4)

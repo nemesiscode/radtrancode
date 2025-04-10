@@ -498,7 +498,6 @@ C        if(idiag.gt.0)print*,'forwardavfovX OK, jpre = ',jpre
 
 C        if(idiag.gt.0)print*,'forwardnogX OK, jpre = ',jpre
 
-
        elseif(iscat.eq.2)then
 
         if(idiag.gt.0)print*,'Calling intradfield - B',gasgiant
@@ -1059,6 +1058,7 @@ C       perform the last 2 iterations using the highest-ranked grid
        
 401   continue       
 
+
 C     If using the reduced wavelength scheme
 201   if(redwavbool.eqv..true.)then
 
@@ -1180,6 +1180,11 @@ C      Write out k-matrix for reference
 
        close(40)
 
+C       open(13,file='test2.out',status='unknown')
+C       do i=1,404
+C        write(13,*),y(i),yn(i)
+C       enddo
+C       close(13)
       endif
 
       if(redwavbool.eqv..true.)then

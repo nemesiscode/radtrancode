@@ -487,7 +487,8 @@ C     See if Sromovsky cloud layer model is specified.
        if(varident(ivar,3).eq.8.or.varident(ivar,3).eq.32)icheck=1
        if(varident(ivar,3).eq.46.or.varident(ivar,3).eq.47)icheck=1
        if(varident(ivar,1).lt.0.and.varident(ivar,3).eq.49)icheck=1
-       if(varident(ivar,3).eq.50.or.varident(ivar,3).eq.51)icheck=1
+       if(varident(ivar,3).ge.50.and.varident(ivar,3).le.52)icheck=1
+       if(varident(ivar,3).eq.54)icheck=1
       enddo
 
 
@@ -545,7 +546,8 @@ C              print*,'gsetrad',icont,od1,xod(icont),xscal(icont)
           endif
           if(varident(ivar,3).eq.14.or.varident(ivar,3).eq.15.
      & or.varident(ivar,3).eq.47.or.varident(ivar,3).eq.50.
-     & or.varident(ivar,3).eq.51)then
+     & or.varident(ivar,3).eq.51.or.varident(ivar,3).eq.52.
+     & or.varident(ivar,3).eq.54)then
               icont=abs(varident(ivar,1))
               od1=exp(xn(nx1+1))
               xscal(icont)=xod(icont)/od1

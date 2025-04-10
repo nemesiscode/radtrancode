@@ -81,6 +81,7 @@ C     ***********************************************************************
 
       REAL XN(MX),DPEXP,DELH,XFAC,DXFAC,XTMP,SUM,PMIN,XSTEP
       REAL H(MAXPRO),P(MAXPRO),T(MAXPRO),VMR(MAXPRO,MAXGAS)
+      REAL PMIN1,XMIN1
       REAL CONT(MAXCON,MAXPRO),X,XREF(MAXPRO),X1(MAXPRO)
       REAL PKNEE,HKNEE,XDEEP,XFSH,PARAH2(MAXPRO),XH,XKEEP,X2(MAXPRO)
       REAL HKNEE1,XDEEP1,XWID1,XT(MAXPRO),XTC(MAXPRO),XWIDX
@@ -105,7 +106,7 @@ C     ***********************************************************************
       INTEGER NPRO,NPRO1,NVMR,JZERO,IV,IP,IVAR,JCONT,JVMR
       INTEGER IDGAS(MAXGAS),ISOGAS(MAXGAS),IPAR,JPAR,IVMR,NP
       INTEGER IDAT,JFSH,JHYDRO,ICOND,JFSH1,JCONT1
-      REAL HTAN,PTAN,R,REFRADIUS,XCOL,ETOP
+      REAL HTAN,PTAN,R,REFRADIUS,XCOL,ETOP,XLIM1,XLIM2
       REAL GASDATA(20,5),XVMR(MAXGAS),XMOLWT,XXMOLWT(MAXPRO)
       REAL CALCMOLWT,XRHO(MAXPRO)
       REAL RADCOND,DENSCOND,MWCOND
@@ -4003,8 +4004,6 @@ C         Q is specific density = particles/gram = (particles/cm3) / (g/cm3)
           ENDDO
 
           JKNEE=-1
-c         Added XF=1 as it appeared to be missing comp. mod 32
-          XF=1 
 C         find levels in atmosphere that span pknee
           DO J=1,NPRO-1
            IF(P(J).GE.PKNEE.AND.P(J+1).LT.PKNEE)THEN
@@ -4407,7 +4406,9 @@ C        Q(J)=ND(J)/RHO
 
 C          Q(J) = EXP(-((Y-Y0)/XWIDX)**2)/(XWIDX*SQRT(PI))
           Q(J) = EXP(-((Y-Y0)/XWIDX)**2)
-          XFAC=(1-EXP(-((Y-YHAZE)/WHAZE)**2))
+          XFAC = EXP(-((Y-YHAZE)/WHAZE)**2)
+          XFAC = 1.0 - XFAC
+
           IF(J.GT.KHAZE)XFAC=0.0
           Q(J) = Q(J)*XFAC
 
@@ -4457,6 +4458,268 @@ C        *** This renormalisation is pretty accurate, but not quite accurate
 C        *** enough and so it gets updated in gsetrad.f
 
 
+        ELSEIF(VARIDENT(IVAR,3).EQ.53)THEN
+C        Model 53. Based on Model 7. Profile modelled with a variable abundance at a fixed 
+C        pressure level and variable fractional scale height above and below.
+C        Profile abudance at P > PKNEE cannot exceed a limiting value.
+C        ***************************************************************
+         PKNEE = VARPARAM(IVAR,1)
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+           XDEEP = XN(NXTEMP+1)
+           XDEEP1 = XN(NXTEMP+3)
+         ELSE
+           XDEEP = EXP(XN(NXTEMP+1))
+           XDEEP1 = EXP(XN(NXTEMP+3))
+         ENDIF
+         XFSH  = EXP(XN(NXTEMP+2))
+         XFAC = (1.0-XFSH)/XFSH
+         DXFAC = -1.0/XFSH
+       
+         CALL VERINT(P,H,NPRO,HKNEE,PKNEE)
+         JFSH = 0       
+
+         DELH=1000.0
+         DO J=1,NPRO
+          PMIN = ABS(P(J)-PKNEE)
+          IF(PMIN.LT.DELH)THEN
+           JFSH = J
+           DELH=PMIN
+          ENDIF
+         ENDDO
+
+C         print*,pknee,jfsh,p(jfsh)
+
+         IF(JFSH.LT.2.OR.JFSH.GT.NPRO-1)THEN
+          print*,'SUBPROFRETG. Must choose pressure level'
+          print*,'within range of profile'
+          STOP
+         ENDIF
+
+
+         X1(JFSH)=XDEEP
+
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+            XMAP(NXTEMP+1,IPAR,JFSH)=1.0
+         ELSE
+            XMAP(NXTEMP+1,IPAR,JFSH)=X1(JFSH)
+         ENDIF
+
+
+         DO J=JFSH+1,NPRO 
+             DELH = H(J)-H(J-1)   
+             X1(J)=X1(J-1)*EXP(-DELH*XFAC/SCALE(J))
+             XMAP(NXTEMP+1,IPAR,J)=XMAP(NXTEMP+1,IPAR,J-1)*
+     1                  EXP(-DELH*XFAC/SCALE(J))
+             XMAP(NXTEMP+2,IPAR,J)=(-DELH/SCALE(J))*DXFAC*
+     1          X1(J-1)*EXP(-DELH*XFAC/SCALE(J)) +
+     2          XMAP(NXTEMP+2,IPAR,J-1)*EXP(-DELH*XFAC/SCALE(J))
+              XMAP(NXTEMP+3,IPAR,J)=0.0
+
+             IF(X1(J).LT.1e-36)X1(J)=1e-36
+
+         ENDDO
+
+         DO J=JFSH-1,1,-1             
+             DELH = H(J)-H(J+1)
+             X1(J)=X1(J+1)*EXP(-DELH*XFAC/SCALE(J))
+             IF(X1(J).LT.XDEEP1)THEN
+              XMAP(NXTEMP+1,IPAR,J)=XMAP(NXTEMP+1,IPAR,J+1)*
+     1                  EXP(-DELH*XFAC/SCALE(J))
+              XMAP(NXTEMP+2,IPAR,J)=(-DELH/SCALE(J))*DXFAC*
+     1          X1(J+1)*EXP(-DELH*XFAC/SCALE(J)) +
+     2          XMAP(NXTEMP+2,IPAR,J+1)*EXP(-DELH*XFAC/SCALE(J))
+              XMAP(NXTEMP+3,IPAR,J)=0.0
+             ELSE
+              X1(J)=XDEEP1
+              IF(VARIDENT(IVAR,1).EQ.0)THEN
+               XMAP(NXTEMP+3,IPAR,JFSH)=1.0
+              ELSE
+               XMAP(NXTEMP+3,IPAR,JFSH)=XDEEP1
+              ENDIF
+              XMAP(NXTEMP+1,IPAR,J)=0.0
+              XMAP(NXTEMP+2,IPAR,J)=0.0
+             ENDIF
+         ENDDO
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.54)THEN
+C        Model 54. New cloud profile based on Galileo probe nephelometer main cloud.
+C        Progile is represented as an exponential (in terms of log pressure) above the cloud peak
+C        and a gaussian below. with a specified optical
+C        thickness centred at a variable pressure level plus a variable FWHM (log press) in 
+C        log pressure 
+C        ***************************************************************
+
+         XDEEP = EXP(XN(NXTEMP+1))
+         PKNEE = EXP(XN(NXTEMP+2))
+         XWID  = EXP(XN(NXTEMP+3))
+         XWID1  = EXP(XN(NXTEMP+4))
+
+         Y0=-ALOG(PKNEE)
+
+         K=-1
+
+         DO J=1,NPRO-1
+          IF(P(J).GE.PKNEE.AND.P(J+1).LT.PKNEE)K=J 
+         ENDDO
+
+C         print*,'K = ',K
+C         print*,'XWID,XWID1 = ',XWID,XWID1
+
+         IF(K.LT.0)THEN
+          print*,'subprofretg error in model 54. Cannot find KNEE'
+          STOP
+         ENDIF
+
+C        **** Want to normalise to get optical depth right. ***
+C        ND is the particles per cm3 (but will be rescaled)
+C        OD is in units of particles/cm2 = particles/cm3 x length(cm)
+C        OD(J)=ND(J)*SCALE(J)*1E5
+C        Q is specific density = particles/gram = particles/cm3 x g/cm3
+C        Q(J)=ND(J)/RHO         
+         
+         XOD=0.
+         DO J=1,NPRO
+          Y=-ALOG(P(J))          
+
+          IF(J.LE.K)THEN
+C           Gaussian cut-off below
+            Q(J) = EXP(-((Y-Y0)/XWID1)**2)	
+          ELSE
+C           Exponential decay above
+            Q(J) = EXP(-(Y-Y0)/XWID)
+          ENDIF
+
+          IF(AMFORM.EQ.0)THEN
+           XMOLWT=MOLWT
+          ELSE
+           XMOLWT=XXMOLWT(J)
+          ENDIF
+
+          RHO = (0.1013*XMOLWT/R)*(P(J)/T(J))
+
+          ND(J) = Q(J)*RHO 
+          OD(J) = ND(J)*SCALE(J)*1e5
+
+          XOD=XOD+OD(J)
+   
+          X1(J)=Q(J)
+
+         ENDDO
+
+C        Empirical correction to XOD
+         XOD = XOD*0.25
+
+         DO J=1,NPRO
+
+          X1(J)=Q(J)*XDEEP/XOD
+
+          Y=ALOG(P(J))          
+          
+          IF(X1(J).LT.1E-36)X1(J)=1E-36
+
+          IF(VARIDENT(IVAR,1).EQ.0)THEN
+            XMAP(NXTEMP+1,IPAR,J)=X1(J)/XDEEP
+          ELSE
+            XMAP(NXTEMP+1,IPAR,J)=X1(J)
+          ENDIF
+
+C         This section is not correct, but this model only ever used for
+C         scattering cases, where the derivatives are calculated numerically.
+C         ***********************************************************************
+          XMAP(NXTEMP+2,IPAR,J)=2.*(Y-Y0)*X1(J)/XWID**2
+          XMAP(NXTEMP+3,IPAR,J)=-2.0*((Y-Y0)**2)*X1(J)/XWID**3
+
+          XMAP(NXTEMP+2,IPAR,J)=Y0*2.*(Y-Y0)*X1(J)/XWID**2
+          XMAP(NXTEMP+3,IPAR,J)=-2.0*((Y-Y0)**2)*X1(J)/XWID**2
+     &             -  X1(J)/XWID
+C         ***********************************************************************
+
+         ENDDO
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.55)THEN
+C        Model 55. Profile modelled with a variable abundance at a fixed 
+C        pressure level and variable fractional scale height above and below
+C        that level. Profile is limited to remain between variable limits
+C        ***************************************************************
+         PKNEE = VARPARAM(IVAR,1)
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+           XDEEP = XN(NXTEMP+1)
+         ELSE
+           XDEEP = EXP(XN(NXTEMP+1))
+         ENDIF
+         XFSH  = EXP(XN(NXTEMP+2))
+         XFAC = (1.0-XFSH)/XFSH
+         DXFAC = -1.0/XFSH
+
+         XLIM1  = XDEEP/EXP(XN(NXTEMP+3))
+         XLIM2  = XDEEP*EXP(XN(NXTEMP+4))
+
+
+C         print*,XLIM1,XDEEP,XLIM2
+C         print*,XFSH,XFAC
+         CALL VERINT(P,H,NPRO,HKNEE,PKNEE)
+         JFSH = 0       
+
+         DELH=1000.0
+         DO J=1,NPRO
+          PMIN = ABS(P(J)-PKNEE)
+          IF(PMIN.LT.DELH)THEN
+           JFSH = J
+           DELH=PMIN
+          ENDIF
+         ENDDO
+
+         IF(JFSH.LT.2.OR.JFSH.GT.NPRO-1)THEN
+          print*,'SUBPROFRETG. Must choose pressure level'
+          print*,'within range of profile'
+          STOP
+         ENDIF
+
+         X1(JFSH)=XDEEP
+
+         IF(VARIDENT(IVAR,1).EQ.0)THEN
+            XMAP(NXTEMP+1,IPAR,JFSH)=1.0
+         ELSE
+            XMAP(NXTEMP+1,IPAR,JFSH)=X1(JFSH)
+         ENDIF
+
+
+         DO J=JFSH+1,NPRO 
+             DELH = H(J)-H(J-1)
+             X1(J)=X1(J-1)*EXP(-DELH*XFAC/SCALE(J))
+             IF(X1(J).LT.XLIM1)THEN
+               X1(J)=XLIM1
+               XMAP(NXTEMP+3,IPAR,J)=1.0
+             ELSE
+               XMAP(NXTEMP+1,IPAR,J)=XMAP(NXTEMP+1,IPAR,J-1)*
+     1                  EXP(-DELH*XFAC/SCALE(J))
+               XMAP(NXTEMP+2,IPAR,J)=(-DELH/SCALE(J))*DXFAC*
+     1          X1(J-1)*EXP(-DELH*XFAC/SCALE(J)) +
+     2          XMAP(NXTEMP+2,IPAR,J-1)*EXP(-DELH*XFAC/SCALE(J))
+             ENDIF
+
+             IF(X1(J).LT.1e-36)X1(J)=1e-36
+C             print*,J,H(J),SCALE(J),X1(J),XLIM1
+
+         ENDDO
+
+         DO J=JFSH-1,1,-1             
+             DELH = H(J)-H(J+1)
+             X1(J)=X1(J+1)*EXP(-DELH*XFAC/SCALE(J))
+             IF(X1(J).GT.XLIM2)THEN
+              X1(J)=XLIM2
+              XMAP(NXTEMP+4,IPAR,J)=1.0
+             ELSE
+              XMAP(NXTEMP+1,IPAR,J)=XMAP(NXTEMP+1,IPAR,J+1)*
+     1                  EXP(-DELH*XFAC/SCALE(J))
+              XMAP(NXTEMP+2,IPAR,J)=(-DELH/SCALE(J))*DXFAC*
+     1          X1(J+1)*EXP(-DELH*XFAC/SCALE(J)) +
+     2          XMAP(NXTEMP+2,IPAR,J+1)*EXP(-DELH*XFAC/SCALE(J))
+             ENDIF
+             IF(X1(J).GT.1e10)X1(J)=1e10
+C             print*,J,H(J),SCALE(J),X1(J),XLIM2
+
+         ENDDO
 
         ELSE
 
@@ -5482,10 +5745,18 @@ C                  methane and above tropopause
                  ENDIF
 	       ELSE IF (SVPFLAG(IGAS).EQ.2) THEN
 c		 * assume gas is sourced from interior and has no local minima 
-c		   ie the gas can only decrease with increasing altitude *
-		   DO J=2,NPRO
-		     IF (VMR(J,IGAS).GT.VMR(J-1,IGAS))THEN
-		       VMR(J,IGAS)=VMR(J-1,IGAS)
+c		   ie the gas cannit increase above cold trap
+                   XMIN1=VMR(1,IGAS)
+                   PMIN1=P(1)
+                   DO J=2,NPRO
+                    IF(VMR(J,IGAS).LT.XMIN1.AND.P(J).GT.0.08)THEN
+                     XMIN1=VMR(J,IGAS)
+                     PMIN1=P(J)
+                    ENDIF
+                   ENDDO
+		   DO J=1,NPRO
+		     IF (P(J).LE.PMIN1)THEN
+		       VMR(J,IGAS)=XMIN1
 		     ENDIF
 		   ENDDO
 	       ELSE IF (SVPFLAG(IGAS).EQ.3) THEN

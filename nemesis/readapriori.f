@@ -108,7 +108,7 @@ C     a priori covariance matrix
       character*100 opfile,buffer,ipfile,runname,rifile,xscfil
       integer nxx,nsec,ncont1,nlay,tmp,iex
       real xwid,ewid,y,y0,lambda0,vi(mx),vtmp(mx),xt(mx)
-      real xwid1,ewid1
+      real xwid1,ewid1,xlim1,xlim2,elim1,elim2
       real r0,er0,dr,edr,vm,nm,nmshell,nimag,delv,xy,v0
       real xldeep,eldeep,xlhigh,elhigh,arg1,nimag1
       real v1,v1err,v2,v2err,p1,p1err,p2,p2err,p3
@@ -2833,6 +2833,165 @@ C            Read in xdeep, pknee, xwid
              lx(ix)=1
 
              sx(ix,ix) = (ewid1/xwid1)**2
+
+             nx = nx+4
+
+           elseif (varident(ivar,3).eq.53)then
+C            ******** profile held as a value at a certain pressure and 
+C            ******** fractional scale height 
+C            Read in xknee,fsh,pknee
+             read(27,*)pknee
+             read(27,*)xknee,eknee
+             read(27,*)xfsh,efsh
+             read(27,*)xdeep,edeep
+             varparam(ivar,1) = pknee
+             ix = nx+1
+             if(varident(ivar,1).eq.0)then
+C             *** temperature, leave alone ********
+              x0(ix)=xknee
+              err = eknee
+             else
+C             *** vmr, fcloud, para-H2 or cloud, take logs *********
+              if(xknee.gt.0)then
+                x0(ix)=alog(xknee)
+                lx(ix)=1
+              else
+                print*,'Error in readapriori - xknee must be > 0'
+                stop
+              endif
+              err = eknee/xknee
+             endif
+             sx(ix,ix)=err**2
+             ix = nx+2
+             if(xfsh.gt.0.0)then
+               x0(ix) = alog(xfsh)
+               lx(ix)=1
+             else
+               print*,'Error in readapriori - xfsh must be > 0'
+               stop
+             endif
+             sx(ix,ix) = (efsh/xfsh)**2
+             ix = nx+3
+             if(varident(ivar,1).eq.0)then
+C             *** temperature, leave alone ********
+              x0(ix)=xdeep
+              err = edeep
+             else
+C             *** vmr, fcloud, para-H2 or cloud, take logs *********
+              if(xdeep.gt.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+              else
+                print*,'Error in readapriori - xdeep must be > 0'
+                stop
+              endif
+              err = edeep/xdeep
+             endif
+             sx(ix,ix)=err**2
+
+             nx = nx+3
+
+           elseif (varident(ivar,3).eq.54)then
+C            ** profile held as integrated OD, peak pressure and FWHM (log P) (Gaussian) **
+C            ** but with gaussian shape below peak and exponential shape above.
+C            ** Designed to mimic Galileo Probe Nephelometer cloud.
+
+             read(27,*)xdeep,edeep
+             read(27,*)pknee,eknee
+             read(27,*)xwid,ewid
+             read(27,*)xwid1,ewid1
+             
+             ix = nx+1
+             if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+             else
+               print*,'Error in readapriori. xdeep must be > 0.0'
+               stop
+             endif
+
+
+             err = edeep/xdeep
+             sx(ix,ix)=err**2
+
+             ix = nx+2
+             x0(ix) = alog(pknee)
+             lx(ix)=1
+
+             sx(ix,ix) = (eknee/pknee)**2
+
+             ix = nx+3
+             x0(ix) = alog(xwid)
+             lx(ix)=1
+
+             sx(ix,ix) = (ewid/xwid)**2
+
+             ix = nx+4
+             x0(ix) = alog(xwid1)
+             lx(ix)=1
+
+             sx(ix,ix) = (ewid1/xwid1)**2
+
+             nx = nx+4
+
+           elseif (varident(ivar,3).eq.55)then
+C            ******** profile held as a value at a certain pressure and 
+C            ******** fractional scale height, limited to remain in retrievable given range
+
+             read(27,*)pknee
+             read(27,*)xknee,eknee
+             read(27,*)xfsh,efsh
+             read(27,*)xlim1,elim1
+             read(27,*)xlim2,elim2
+             varparam(ivar,1) = pknee
+
+             ix = nx+1
+             if(varident(ivar,1).eq.0)then
+C             *** temperature, leave alone ********
+              x0(ix)=xknee
+              err = eknee
+             else
+C             *** vmr, fcloud, para-H2 or cloud, take logs *********
+              if(xknee.gt.0)then
+                x0(ix)=alog(xknee)
+                lx(ix)=1
+              else
+                print*,'Error in readapriori - xknee must be > 0'
+                stop
+              endif
+              err = eknee/xknee
+             endif
+             sx(ix,ix)=err**2
+
+             ix = nx+2
+             if(xfsh.gt.0.0)then
+               x0(ix) = alog(xfsh)
+               lx(ix)=1
+             else
+               print*,'Error in readapriori - xfsh must be > 0'
+               stop
+             endif
+             sx(ix,ix) = (efsh/xfsh)**2
+
+             ix = nx+3
+             if(xlim1.gt.0.0)then
+               x0(ix) = alog(xlim1)
+               lx(ix)=1
+             else
+               print*,'Error in readapriori - xlim1 must be > 0'
+               stop
+             endif
+             sx(ix,ix) = (elim1/xlim1)**2
+
+             ix = nx+4
+             if(xlim2.gt.0.0)then
+               x0(ix) = alog(xlim2)
+               lx(ix)=1
+             else
+               print*,'Error in readapriori - xlim2 must be > 0'
+               stop
+             endif
+             sx(ix,ix) = (elim2/xlim2)**2
 
              nx = nx+4
 

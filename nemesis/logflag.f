@@ -62,6 +62,7 @@ C       Variable is not temperature  - may need to take exponent
       if(imod.eq.44)iflag=1 ! inhomogenous disc double grey parameterised T-profile
       if(imod.eq.45)iflag=1 ! inhomogenous disc double grey parameterised T-profile
       if(imod.eq.49)iflag=1 ! profile multiplier
+      if(imod.eq.53)iflag=1 ! Modified model 7 profile         
       if(imod.eq.1.and.ip.eq.2)iflag=1 ! log fsh - fixed knee
       if(imod.eq.20.and.ip.eq.2)iflag=1 ! log fsh - fixed knee
       if(imod.eq.4.and.ip.eq.2)iflag=1 ! log fsh - var. knee
@@ -86,7 +87,7 @@ C       Variable is not temperature  - may need to take exponent
           if(ip.eq.2)iflag=1 
           if(ip.eq.3)iflag=1 
       endif
-      if(imod.eq.52)then 
+      if(imod.eq.52.or.imod.eq.54.or.imod.eq.55)then 
           if(ip.eq.1)iflag=1 	       ! Gaussian/Lorentz cloud
           if(ip.eq.2)iflag=1 
           if(ip.eq.3)iflag=1 

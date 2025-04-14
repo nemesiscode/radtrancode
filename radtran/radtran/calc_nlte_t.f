@@ -1,5 +1,6 @@
 C-----------------------------------------------------------------------
-      subroutine calc_nlte_t(T,p,v,iwave,inlte_flag,Tnlte)
+      subroutine calc_nlte_t(T,p,v,iwave,inlte_flag,nlte_k1,nlte_A,
+     >                       Tnlte)
 C-----------------------------------------------------------------------
 C
 C	Apply some basic non-LTE functions to the emission temperatures.
@@ -14,12 +15,12 @@ C	  iwave	 int		=0 v is in wavenumbers
 C	           			=1 v is in microns
 C	  inlte_flag real		flag to specify nLTE expression to use
 C					=0 assume perfect LTE (ie do nothing)
-C					=1 Orton form as in Radtran manual P27 approx for Saturn/Titan
-C					=2 Manuel Lopez Puertas CH3 calcs for k1=1e-11 for Titan
-C					=3 Manuel Lopez Puertas CH3 calcs for k1=1e-12 for Titan
-C					<0 Manuel Lopez Puertas expression using k1=10^inlte_flag
-C					   (-12.0 with order of mage uncertainty is a reasonable value
-C					    so values of -11.5 to -12.5)
+C					=1 Manuel Lopez Puertas expression using
+C					(For Titan CH3 we used nlte_k1=7e-13, nlte_A=3.23, see Nixon et al 2025 JWST paper)
+C					=2 Orton form as in Radtran manual P27 approx for Saturn/Titan
+C					>2 assume perfect LTE (ie do nothing)
+C       nlte_k1    real       k1 value from Lopez Puertas expression (eg 7.0e-13)
+C       nlte_A     real       A value from Lopez Puertas expression (eg 3.23)
 C
 C	OUT:
 C	  Tnlte	real		equivalent non-LTE emission temperature (K)
@@ -42,51 +43,43 @@ C	  cirsradg_wave and you'll see what I mean.
 C
 C-----------------------------------------------------------------------
 C     20/10/23	Nick Teanby		Original
+C     14/4/25	Nick Teanby		Updated for use with .lte file
 C-----------------------------------------------------------------------
       implicit none
       real T,p,v,Tnlte
       integer iwave
-      real inlte_flag
+      integer inlte_flag
+      real nlte_k1,nlte_A
       real f,B
-      real kboltz,k1,A,Ntot
-      parameter (kboltz=1.380658e-23, A=3.23)
+      real kboltz,Ntot
+      parameter (kboltz=1.380658e-23)
       real planck_wave, invplanck_wave
       external planck_wave, invplanck_wave
       
-      if (nint(inlte_flag).eq.0) then
+      if (inlte_flag.eq.0) then
 c     ** leave T unchanged, ie assume perfect LTE **        
          Tnlte = T
-      else if (nint(inlte_flag).eq.1) then
+	else if (inlte_flag.eq.1) then
+c     ** Manuel Lopez Puertas expression for nLTE/LTE ratio **
+         print*,'k1, A =',nlte_k1,nlte_A
+c     ** do a basic check on k1 to catch any confusion with old format **
+	   if ((nlte_k1.lt.1.0e-20) .or. (nlte_k1.gt.1.0e-3)) then
+	     print*,'k1=',nlte_k1,' ERROR: calc_nlte_t: k1 out of range!'
+	     stop
+	   endif 
+c	   total number density in molecules/cm3
+	   Ntot = ( p*101325. / (kboltz*T) ) * 1.0e-6
+c        scale factor for Planck function
+	   f = ( nlte_k1*Ntot ) / ( nlte_A + nlte_k1*Ntot )
+	   B = planck_wave(iwave,v,T)
+	   Tnlte = invplanck_wave(iwave,v,B*f)   
+      else if (inlte_flag.eq.2) then
 c     ** Orton formula from Radtran manual P27, estimated for saturn and titan **
 c     planck function is scaled by F=P(atm)*1e6/(1 + p(atm)*1e6) 
 C	ie. some smooth function that =0.5 at 1ubar
 	   f = p*1.0e6 / (1.0 + p*1.0e6)
 	   B = planck_wave(iwave,v,T)
 	   Tnlte = invplanck_wave(iwave,v,B*f)
-      else if (nint(inlte_flag).eq.2) then
-c     ** Approx to Manuel Lopez Puertas CH3 calcs for k1=1e-11
-	   f = p*1.3e8 / (1.0 + p*1.3e8)
-	   B = planck_wave(iwave,v,T)
-	   Tnlte = invplanck_wave(iwave,v,B*f)
-      else if (nint(inlte_flag).eq.3) then
-c     ** Approx to Manuel Lopez Puertas CH3 calcs for k1=1e-12
-	   f = p*1.3e7 / (1.0 + p*1.3e7)
-	   B = planck_wave(iwave,v,T)
-	   Tnlte = invplanck_wave(iwave,v,B*f)
-	else if (inlte_flag.lt.0.0) then
-c     ** Manuel Lopez Puertas expression for nLTE/LTE ratio where k1=10^inlte_flag
-c	   nLTE k1 constant from the negative flag value
-	   k1 = 10.0**inlte_flag
-	   if (inlte_flag.gt.-10.0) then
-	     print*,'k1=',k1,' this seems way too large!'
-	     stop
-	   endif 
-c	   total number density in molecules/cm3
-	   Ntot = ( p*101325. / (kboltz*T) ) * 1.0e-6
-c        scale factor for Planck function
-	   f = ( k1*Ntot ) / ( A + k1*Ntot )
-	   B = planck_wave(iwave,v,T)
-	   Tnlte = invplanck_wave(iwave,v,B*f)   
       else
 c     ** default to doing nothing (always a good plan, lols!) **
          Tnlte = T

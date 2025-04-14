@@ -177,9 +177,10 @@ C Definition of input and output variables ...
       REAL output(maxpat),doutputdq(maxpat,maxlay,maxgas+2+maxcon)
       REAL rad1,xfac,RADIUS1,p1,p2
 
-c NTLE stuff
-	real Tnlte
+c NLTE stuff (inlte_flag,nlte_k1,nlte_A passed via a common block at end)
 	integer inlte_flag
+	real nlte_k1,nlte_A
+	real Tnlte
 	
 C Definition of general variables ...
       INTEGER i,j,k,l,ipath,ig,iray,ipath1,lstcel,ipath2
@@ -324,7 +325,7 @@ C Common blocks ...
 
       integer idiag,iquiet
       common/diagnostic/idiag,iquiet
-      common/list_of_flags/inlte_flag
+      common/nlte_flags/inlte_flag,nlte_k1,nlte_A
 
 
 C********************************* CODE ********************************
@@ -931,7 +932,7 @@ C           matrix inversion crashing
               IF(ig.EQ.1)THEN
                  call calc_nlte_t(emtemp(j,ipath),
      1               press(layinc(j,ipath)),
-     1               vwave,iwave,inlte_flag,Tnlte)
+     1               vwave,iwave,inlte_flag,nlte_k1,nlte_A,Tnlte)
 c                    bb(j,ipath) = planck_wave(ispace,vwave,
 c     1					emtemp(j,ipath))
 c                    dbdt(j,ipath) = planckg_wave(ispace,vwave,
@@ -1154,7 +1155,7 @@ C           matrix inversion crashing
               IF(ig.EQ.1)THEN
                  call calc_nlte_t(emtemp(j,ipath),
      1               press(layinc(j,ipath)),
-     1               vwave,iwave,inlte_flag,Tnlte)
+     1               vwave,iwave,inlte_flag,nlte_k1,nlte_A,Tnlte)
 c                    bb(j,ipath) = planck_wave(ispace,vwave,
 c     1					emtemp(j,ipath))
 c                    dbdt(j,ipath) = planckg_wave(ispace,vwave,

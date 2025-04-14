@@ -28,12 +28,14 @@ C     Pat Irwin	21/2/12	Original version
 C	Nick Teanby	25/10/23	Added inlte_flag and common block to avoid
 C				changing loads of function calls (this is only needed
 C				by cirsradg_wave which is called from multiple places)
+C	Nick Teanby	14/4/25	non-LTE stuff moved to an optional .lte file,  
+C                             makes more sense than having it here
+C					nLTE flags now handled by:
+C                             cirsrtfg_wave.f, cirsradg_wave.f, calc_nlte_t.f
 C
 C     ********************************************************************
       character*(*) runname
       integer inormal,iray,ih2o,ich4,io3,iptf,imie,inh3,iuvscat
-      real inlte_flag
-      common/list_of_flags/inlte_flag
 
       call file(runname,runname,'fla')
 
@@ -47,7 +49,6 @@ C     ********************************************************************
       read(12,*)iptf
       read(12,*)imie
       read(12,*)iuvscat
-      read(12,*)inlte_flag
       close(12)
 
       return

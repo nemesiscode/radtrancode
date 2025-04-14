@@ -141,6 +141,14 @@ C     Need simple way of passing planetary radius to nemesis
       integer idiag,iquiet
       common/diagnostic/idiag,iquiet
 
+c  ** non-LTE things - passed to cirsradg_wave using a common block **
+	character*100 nltefile
+	logical nlteexist
+	integer inlte_flag
+	real nlte_k1,nlte_A
+      common/nlte_flags/inlte_flag,nlte_k1,nlte_A
+
+
 C     ************************* CODE ***********************
 
 C      PRINT*,'CIRSRTFG_WAVE - DEBUG'
@@ -190,6 +198,20 @@ C     If such a file exists then read in the data
          CLOSE(13)
       ENDIF
 
+c  ** set if an non-LTE .lte definition file is present **
+      call file(runname,nltefile,'lte')
+      inquire(file=nltefile,exist=nlteexist)
+      if (nlteexist) then
+         open(14,file=nltefile,status='old')
+         read(14,*) inlte_flag
+         if (inlte_flag.eq.1) then
+c        * option 1 need k1 and A parameters *    
+           read(14,*) nlte_k1,nlte_A
+         endif
+         close(14)
+      else
+         inlte_flag = 0
+      endif
 
 C Call subpathg to create layers, paths and the driver file.
 C	  MOLWTX = XXMOLWT

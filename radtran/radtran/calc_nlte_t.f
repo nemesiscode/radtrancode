@@ -61,7 +61,6 @@ c     ** leave T unchanged, ie assume perfect LTE **
          Tnlte = T
 	else if (inlte_flag.eq.1) then
 c     ** Manuel Lopez Puertas expression for nLTE/LTE ratio **
-         print*,'k1, A =',nlte_k1,nlte_A
 c     ** do a basic check on k1 to catch any confusion with old format **
 	   if ((nlte_k1.lt.1.0e-20) .or. (nlte_k1.gt.1.0e-3)) then
 	     print*,'k1=',nlte_k1,' ERROR: calc_nlte_t: k1 out of range!'

@@ -11,7 +11,7 @@ C     ***********************************************************************
       include '../includes/arrdef.f'
       include '../includes/pathcom.f'
       integer i,j,ncont1, iunit
-      real dummy,omega(10)
+      real dummy,omega(maxcon)
       character*100 xscfil,buffer
       integer idiag,iquiet
       common/diagnostic/idiag,iquiet

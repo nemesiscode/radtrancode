@@ -79,9 +79,10 @@ C     ***********************************************************************
       real, intent(out) :: xmap(maxv,maxgas+2+maxcon,maxpro)
       integer, intent(out) :: ncont,ierr
 
+      REAL DY,PSTRAT
       REAL XN(MX),DPEXP,DELH,XFAC,DXFAC,XTMP,SUM,PMIN,XSTEP
       REAL H(MAXPRO),P(MAXPRO),T(MAXPRO),VMR(MAXPRO,MAXGAS)
-      REAL PMIN1,XMIN1
+      REAL PMIN1,XMIN1,XMID,XNOW
       REAL CONT(MAXCON,MAXPRO),X,XREF(MAXPRO),X1(MAXPRO)
       REAL PKNEE,HKNEE,XDEEP,XFSH,PARAH2(MAXPRO),XH,XKEEP,X2(MAXPRO)
       REAL HKNEE1,XDEEP1,XWID1,XT(MAXPRO),XTC(MAXPRO),XWIDX
@@ -94,7 +95,7 @@ C     ***********************************************************************
       DOUBLE PRECISION Q(MAXPRO),OD(MAXPRO),ND(MAXPRO),XOD
       INTEGER ISCALE(MAXGAS),NPVAR,MAXLAT,ILAPSE
       INTEGER NLATREF,ILATREF,JLAT,KLAT,ICUT,JX,JLEV,ILEV
-      INTEGER ISO1,IGAS1,JGAS
+      INTEGER ISO1,IGAS1,JGAS,IKNEE
       PARAMETER (MAXLAT=20)
       REAL HREF(MAXLAT,MAXPRO),TREF(MAXLAT,MAXPRO),FLAT
       REAL PREF(MAXLAT,MAXPRO),VMRREF(MAXLAT,MAXPRO,MAXGAS)
@@ -1537,7 +1538,7 @@ C         ---------------------------------------------------------------
 C         Now make sure that vmr does not rise again once condensation has
 C         begun. i.e. freeze vmr at the cold trap.
 
-          IF(IFLA.EQ.1.AND.X1(I).GT.X1(I-1))THEN
+          IF(IFLA.EQ.1.AND.P(I).LT.0.3.AND.X1(I).GT.X1(I-1))THEN
            X1(I)=X1(I-1)
            XMAP(NXTEMP+2,IPAR,I)=XMAP(NXTEMP+2,IPAR,I-1)
           ENDIF
@@ -2622,7 +2623,7 @@ C         IF(X1(J).LT.1e-36)X1(J)=1e-36
 
         ELSEIF(VARIDENT(IVAR,3).EQ.27)THEN
 C        Model 27: Step profile. (Nick Teanby)
-C		XN1 = log(xdeep)		[= xdeep if Temperature]
+C		XN1 = log(xdeep)	[= xdeep if Temperature]
 C		XN2 = log(xshallow)	[= xshallow if Temperature]
 C		XN3 = log(pknee)
 C 
@@ -4554,16 +4555,22 @@ C        ***************************************************************
          XWID  = EXP(XN(NXTEMP+3))
          XWID1  = EXP(XN(NXTEMP+4))
 
+         PHAZE = VARPARAM(IVAR,1)
+         WHAZE = VARPARAM(IVAR,2)
+
          Y0=-ALOG(PKNEE)
+         YHAZE=ALOG(PHAZE)
 
          K=-1
+         KHAZE=-1
 
          DO J=1,NPRO-1
           IF(P(J).GE.PKNEE.AND.P(J+1).LT.PKNEE)K=J 
+          IF(P(J).GE.PHAZE.AND.P(J+1).LT.PHAZE)KHAZE=J
          ENDDO
 
-C         print*,'K = ',K
-C         print*,'XWID,XWID1 = ',XWID,XWID1
+C         print*,'K, KHAZE = ',K,KHAZE
+C         print*,'XWID,XWID1,WHAZE = ',XWID,XWID1,WHAZE
 
          IF(K.LT.0)THEN
           print*,'subprofretg error in model 54. Cannot find KNEE'
@@ -4588,6 +4595,13 @@ C           Gaussian cut-off below
 C           Exponential decay above
             Q(J) = EXP(-(Y-Y0)/XWID)
           ENDIF
+
+          XFAC = EXP(-((Y-YHAZE)/WHAZE)**2)
+          XFAC = 1.0 - XFAC
+
+          IF(J.GT.KHAZE)XFAC=0.0
+          Q(J) = Q(J)*XFAC
+
 
           IF(AMFORM.EQ.0)THEN
            XMOLWT=MOLWT
@@ -4721,6 +4735,100 @@ C             print*,J,H(J),SCALE(J),X1(J),XLIM2
 
          ENDDO
 
+        ELSEIF(VARIDENT(IVAR,3).EQ.56)THEN
+C        Model 56. Condensing gas, but no associated cloud. Model requires
+C        the deep gas abundance, middle gas abundance (above fixed knee pressure) and the 
+C        desired maximum relative humidity
+C        ***************************************************************
+
+         XDEEP = EXP(XN(NXTEMP+1))
+         XMID = EXP(XN(NXTEMP+2))
+         XRH  = EXP(XN(NXTEMP+3))
+         PKNEE = VARPARAM(IVAR,1)
+
+C         print*,'subprofretg. Mod56: xdeep,xmid,xrh,pknee',
+C     & xdeep,xmid,xrh,pknee
+         IDAT=0
+         DO I=1,NGAS
+          IF(GASDATA(I,1).EQ.IDGAS(IPAR))THEN
+            A = GASDATA(I,2)
+            B = GASDATA(I,3)
+            C = GASDATA(I,4)
+            D = GASDATA(I,5)
+C            print*,'svp',A,B,C,D
+            IDAT=1
+          ENDIF
+	 ENDDO
+    
+
+         IF(IDAT.EQ.0)THEN
+          if(idiag.gt.0)then
+           print*,'Subprofretg: Gas SVP data cannot be found'
+           print*,IPAR,IDGAS(IPAR)
+          endif
+         ENDIF
+
+         IFLA=0
+         IKNEE=0
+         DO I=1,NPRO
+          IF(P(I).GT.PKNEE)THEN
+            XNOW=XDEEP
+          ELSE
+            XNOW=XMID
+            IKNEE=1
+          ENDIF
+          P1=P(I)*XNOW
+          PS=XRH*DPEXP(A+B/T(I)+C*T(I)+D*T(I)*T(I))
+C          print*,'dd',I,P(I),XNOW,P1,PS,PS/P(I)
+          IF(P1.LT.PS)THEN
+           X1(I)=XNOW
+          ELSE
+           X1(I)=PS/P(I)
+           IFLA=1
+          ENDIF
+          XMAP(NXTEMP+1+IKNEE,IPAR,I)=X1(I)
+C          print*,'d2',I,X1(I)
+
+C         Now make sure that vmr does not rise again once condensation has
+C         begun. i.e., freeze vmr at the cold trap near 0.1 bar.
+
+C          IF(IFLA.EQ.1.AND.(T(I).GT.T(I-1)).AND.(X1(I).GT.X1(I-1)))THEN
+          IF((IFLA.EQ.1).AND.(P(I).LT.0.3).AND.(X1(I).GT.X1(I-1)))THEN
+           X1(I)=X1(I-1)
+           XMAP(NXTEMP+1,IPAR,I)=XMAP(NXTEMP+1,IPAR,I-1)
+           XMAP(NXTEMP+2,IPAR,I)=XMAP(NXTEMP+2,IPAR,I-1)
+          ENDIF
+C          print*,'subprofretg Mod56: prf',i,p(i),x1(i)
+         ENDDO
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.57)THEN
+C        Model 1. Variable deep abundance, fixed knee pressure and variable
+C        abundance at lower pressure
+C        ***************************************************************
+         PKNEE = VARPARAM(IVAR,1)
+         PSTRAT = VARPARAM(IVAR,2)
+         XDEEP = EXP(XN(NXTEMP+1))
+         XMID  = EXP(XN(NXTEMP+2))
+
+         CALL VERINT(P,H,NPRO,HKNEE,PKNEE)
+
+         DX = ALOG(PSTRAT)-ALOG(PKNEE)      
+         DO J=1,NPRO
+          X1(J)=XDEEP
+          XMAP(NXTEMP+1,IPAR,J)=X1(J)
+          IF(P(J).LT.PKNEE)THEN
+           DY = ALOG(P(J))-ALOG(PKNEE)
+           F = DY/DX
+           X1(J)=EXP((1-F)*ALOG(XDEEP) + F*ALOG(XMID)) 
+           XMAP(NXTEMP+1,IPAR,J)=(1-F)*X1(J)
+           XMAP(NXTEMP+2,IPAR,J)=F*X1(J)
+          ENDIF
+
+          IF(X1(J).LT.1e-36)X1(J)=1e-36
+
+         ENDDO
+
+
         ELSE
 
          print*,'Subprofretg: Model parametrisation code is not defined'
@@ -4728,6 +4836,7 @@ C             print*,J,H(J),SCALE(J),X1(J),XLIM2
          STOP
 
         ENDIF
+
 
        ELSE
 
@@ -5465,6 +5574,10 @@ C        25       CONTINUE
 C         if(idiag.gt.0)print*,'Surface gravity (log10(g))'
          IPAR = -1
          NP = 1
+        ELSEIF(VARIDENT(IVAR,1).EQ.334)THEN
+C         if(idiag.gt.0)print*,'x-vector copy'
+         IPAR = -1
+         NP = 0
         ELSEIF(VARIDENT(IVAR,1).EQ.222)THEN
 C         if(idiag.gt.0)print*,'Sromovsky cloud layering'
          IPAR = -1
@@ -5588,6 +5701,7 @@ C         if(idiag.gt.0)print*,'Creme Brulee layering'
         IF(IPAR.LE.NVMR)THEN
          DO I=1,NPRO
           VMR(I,IPAR)=X1(I)
+C          print*,'dd',ipar,i,p(i),vmr(i,ipar)
          ENDDO
 
 C        Extra section for combined cloud/gas profile - Model 10 and
@@ -5787,7 +5901,15 @@ C     Now make sure the resulting VMRs add up to 1.0 for an
 C     AMFORM=1 profile
       IF(AMFORM.EQ.1)THEN
         if(idiag.gt.0)print*,'ISCALE : ',(ISCALE(J),J=1,NVMR)
+C        print*,'adjust1'
+C        do i=1,npro
+C         print*,i,p(i),vmr(i,1)
+C        enddo
         CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
+C        print*,'subprofretg: adjust2, NH3'
+C        do i=1,npro
+C         print*,i,p(i),vmr(i,1)
+C        enddo
         if(idiag.gt.0)print*,'IERR  = ',IERR
 
         IF(IERR.EQ.1)THEN
@@ -5853,6 +5975,7 @@ C     ************* Write out modified profiles *********
 	  WRITE(2,506)H(I),P(I),T(I),(VMR(I,J),J=1,NVMR)
 506       FORMAT(1X,F13.3,E13.5,F13.4,40(E13.5))
 C          if(idiag.gt.0)print*,'sub7',I,P(I),T(I)
+C         print*,'x',i,p(i),vmr(i,1)
 505   CONTINUE
 C
 52    CONTINUE

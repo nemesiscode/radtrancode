@@ -120,6 +120,8 @@ C       Variable is not temperature  - may need to take exponent
       if(imod.eq.3)iflag=1	! Log scaling factor
       if(imod.eq.10)iflag=1	! Log scaling factor
       if(imod.eq.11)iflag=1	! Log scaling factor
+      if(imod.eq.56)iflag=1	! Log scaling factor
+      if(imod.eq.57)iflag=1	! Log scaling factor
 
       if(imod.eq.22)then 
        iflag=1			! Brown dwarf T-profile

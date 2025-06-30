@@ -94,7 +94,7 @@ C     ****************************************************************
       real ref(maxlat,maxpro),clen,SXMINFAC,arg,valb,alb,refp,errp
       real xknee,xrh,erh,xcdeep,ecdeep,radius,Grav,plim
       real xcwid,ecwid,ptrop,refradius,xsc,ascat,escat,shape,eshape
-      real clen1,clen2,press1,press2,clen3
+      real clen1,clen2,press1,press2,clen3,xmid,emid,pstrat
       integer nlong,ilong,ipar,k1,k2
       parameter (Grav=6.672E-11)
 C     SXMINFAC is minimum off-diagonal factor allowed in the
@@ -2900,6 +2900,7 @@ C            ** Designed to mimic Galileo Probe Nephelometer cloud.
              read(27,*)pknee,eknee
              read(27,*)xwid,ewid
              read(27,*)xwid1,ewid1
+             read(27,*)varparam(ivar,1),varparam(ivar,2)
              
              ix = nx+1
              if(xdeep.gt.0.0)then
@@ -2994,6 +2995,88 @@ C             *** vmr, fcloud, para-H2 or cloud, take logs *********
              sx(ix,ix) = (elim2/xlim2)**2
 
              nx = nx+4
+
+           elseif (varident(ivar,3).eq.56)then
+C            Variable deep abundance, middle abundance, max relative humidity and knee pressure
+             read(27,*)xdeep,edeep
+             read(27,*)xmid,emid
+             read(27,*)xrh,erh
+C            read flag to say if you want the RH to apply at all levels (0)
+C                                  or only above the condensation level (1)
+             read(27,*)pknee
+
+             varparam(ivar,1)=pknee
+
+             ix = nx+1
+             if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+             else
+               print*,'Error in readapriori. xdeep must be > 0.0'
+               stop
+             endif
+             err = edeep/xdeep
+             sx(ix,ix)=err**2
+
+             ix = nx+2
+             if(xmid.gt.0.0)then
+                x0(ix)=alog(xmid)
+                lx(ix)=1
+             else
+               print*,'Error in readapriori. xmid must be > 0.0'
+               stop
+             endif
+             err = emid/xmid
+             sx(ix,ix)=err**2
+
+             ix = nx+3
+             if(xrh.gt.0.0)then
+               x0(ix) = alog(xrh)
+               lx(ix)=1
+             else
+               print*,'Error in readapriori - xrh must be > 0'
+               stop
+             endif
+             sx(ix,ix) = (erh/xrh)**2
+
+             nx=nx+3
+
+           elseif (varident(ivar,3).eq.57)then
+C            ******** profile held as deep amount, upper amount, knee pressure and upper pressure  ** 
+C            Read in xdeep,fsh,pknee,pstrat
+             read(27,*)pknee,pstrat
+             read(27,*)xdeep,edeep
+             read(27,*)xfsh,efsh
+             varparam(ivar,1) = pknee
+             varparam(ivar,2) = pstrat
+             ix = nx+1
+             if(varident(ivar,1).eq.0)then
+C             *** temperature, leave alone ********
+C              x0(ix)=xdeep
+C              err = edeep
+             else
+C             *** vmr, para-H2 or cloud, take logs *********
+              if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+              else
+                print*,'Error in readapriori. xdeep must be > 0.0'
+                stop
+              endif
+              err = edeep/xdeep
+             endif
+             sx(ix,ix)=err**2
+             ix = nx+2
+             if(xfsh.gt.0.0)then
+               x0(ix) = alog(xfsh)
+	       lx(ix)=1
+             else
+               print*,'Error in readapriori - xfsh must be > 0'
+               stop
+             endif
+             sx(ix,ix) = (efsh/xfsh)**2
+
+             nx = nx+2
 
            else         
 
@@ -3717,6 +3800,13 @@ C           **** surface ln(g) of planet *******
             if(idiag.gt.0)print*,'mass2 = ',mass2
             nx = nx+1
 
+
+C **************** add mass variable  ***************
+           elseif(varident(ivar,1).eq.334)then
+C           **** copy part of the state vector to another place *******
+C           **** useful for setting nimag of one cloud mode to be the same
+C           **** as that for another cloud mode
+            read(27,*)(varparam(ivar,i),i=1,3)
 
 
 C **************** Sromovsky Cloud Model  ***************

@@ -144,6 +144,8 @@
 #       LNF            11/08/2021 Updated H2 and HD relative abundances and PF
 #                      coefficients to match HITRAN2016.
 #       NAT            18/11/2024 Fixed CH3 to match PF in Sinclair+2020
+#       NAT            17/7/2025 Added gas 139, propene (C3H6)
+#                      PF fit from Sung et al 2018 Tab4
 
  ------------------------------------------------
   1                 gas identifier
@@ -1159,5 +1161,11 @@
   1
   1 1.00000   107.223 (916)  isotope id, relative abun, mass #
      +0.00000E+00 +1.00000E+01 +0.00000E+00 +0.00000E+00
+------------------------------------------------
+ 139                 gas identifier
+C3H6 
+  1
+  1 1.0000000   42.0000   (211)  isotope id, relative abun, mass #
+     -7.43800e-02  2.30220e-03 -1.17889e-05  5.49603e-08
 
 

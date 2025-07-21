@@ -179,7 +179,7 @@ C     3 scale profile in .ref file by the exponent of a number.
       do 10 ivar=1,nvar
          csx = -1.0			!particles are assumed to be homogeneous by default
          read(27,*)(varident(ivar,j),j=1,3)
-         if(varident(ivar,1).le.100)then
+         if(varident(ivar,1).le.200)then
 C          parameter must be an atmospheric one.
 
            if(varident(ivar,3).eq.0)then
@@ -4389,7 +4389,7 @@ C     the mass using the a priori log(g) AND radius
 
        do 21 ivarx=1,nvarx
         npx=1
-        if(varidentx(ivarx,1).le.100)then
+        if(varidentx(ivarx,1).le.200)then
           npx=npvar(varidentx(ivarx,3),npro,varparamx(ivarx,1))
         endif
         if(varidentx(ivarx,1).eq.888)npx=int(varparamx(ivarx,1))
@@ -4407,7 +4407,7 @@ C     the mass using the a priori log(g) AND radius
         ioff=0
         do 22 ivar=1,nvar
          np=1
-         if(varident(ivar,1).le.100)then
+         if(varident(ivar,1).le.200)then
            np=npvar(varident(ivar,3),npro,varparam(ivar,1))
          endif
          if(varident(ivar,1).eq.888)np=int(varparam(ivar,1))

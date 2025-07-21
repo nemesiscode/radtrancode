@@ -565,7 +565,7 @@ C     First skip header
        JSPEC=-1
        JVMR=-1
        IPAR=-1
-       IF(VARIDENT(IVAR,1).LE.100)THEN
+       IF(VARIDENT(IVAR,1).LE.200)THEN
         IF(VARIDENT(IVAR,1).EQ.0)THEN
 C        variable is Temperature
          DO I=1,NPRO

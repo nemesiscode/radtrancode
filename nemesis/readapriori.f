@@ -108,7 +108,7 @@ C     a priori covariance matrix
       character*100 opfile,buffer,ipfile,runname,rifile,xscfil
       integer nxx,nsec,ncont1,nlay,tmp,iex
       real xwid,ewid,y,y0,lambda0,vi(mx),vtmp(mx),xt(mx)
-      real xwid1,ewid1,xlim1,xlim2,elim1,elim2
+      real xwid1,ewid1,xlim1,xlim2,elim1,elim2,vx(mx)
       real r0,er0,dr,edr,vm,nm,nmshell,nimag,delv,xy,v0
       real xldeep,eldeep,xlhigh,elhigh,arg1,nimag1
       real v1,v1err,v2,v2err,p1,p1err,p2,p2err,p3
@@ -124,6 +124,7 @@ C     a priori covariance matrix
       integer idiag,iquiet
       common/diagnostic/idiag,iquiet
       common/model446/j446
+      common/passwave/vx
 
 C     Initialise a priori parameters
       do i=1,mx
@@ -2892,9 +2893,9 @@ C             *** vmr, fcloud, para-H2 or cloud, take logs *********
              nx = nx+3
 
            elseif (varident(ivar,3).eq.54)then
-C            ** profile held as integrated OD, peak pressure and FWHM (log P) (Gaussian) **
+C            ** profile held as integrated OD, peak pressure and FWHM (log P) **
 C            ** but with gaussian shape below peak and exponential shape above.
-C            ** Designed to mimic Galileo Probe Nephelometer cloud.
+C            ** Designed to mimic the main Galileo Probe Nephelometer cloud.
 
              read(27,*)xdeep,edeep
              read(27,*)pknee,eknee
@@ -3001,8 +3002,6 @@ C            Variable deep abundance, middle abundance, max relative humidity an
              read(27,*)xdeep,edeep
              read(27,*)xmid,emid
              read(27,*)xrh,erh
-C            read flag to say if you want the RH to apply at all levels (0)
-C                                  or only above the condensation level (1)
              read(27,*)pknee
 
              varparam(ivar,1)=pknee
@@ -3077,6 +3076,146 @@ C             *** vmr, para-H2 or cloud, take logs *********
              sx(ix,ix) = (efsh/xfsh)**2
 
              nx = nx+2
+
+           elseif (varident(ivar,3).eq.58)then
+C            ******** profile held as value at a VARIABLE knee pressure
+C            ******** plus a fractional scale height. Below the knee
+C            ******** pressure the profile is set to drop off exponentially
+C            Like model 32, but parameter order swapped and model assumed xdeep means
+C            Integrated opacity, not the specific density at pknee
+C            Read in xdeep,fsh,pknee
+
+             read(27,*)xdeep,edeep
+             read(27,*)pknee,eknee
+             read(27,*)xfsh,efsh
+
+
+             ix = nx+1
+             if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+             else
+               print*,'Error in readapriori. xdeep must be > 0.0'
+               stop
+             endif
+
+
+             err = edeep/xdeep
+             sx(ix,ix)=err**2
+
+             ix = nx+2
+             x0(ix) = alog(pknee)
+             lx(ix)=1
+
+             sx(ix,ix) = (eknee/pknee)**2
+
+             ix = nx+3
+             x0(ix) = alog(xfsh)
+             lx(ix)=1
+
+             sx(ix,ix) = (efsh/xfsh)**2
+
+             nx = nx+3
+
+           elseif (varident(ivar,3).eq.59)then
+C            Variable deep abundance, middle abundance above knee, 
+C            fractional scale height in middle region, max relative humidity 
+C            and knee pressure
+             read(27,*)xdeep,edeep
+             read(27,*)xmid,emid
+             read(27,*)xfsh,efsh
+             read(27,*)xrh,erh
+             read(27,*)pknee
+
+             varparam(ivar,1)=pknee
+
+             ix = nx+1
+             if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+             else
+               print*,'Error in readapriori. xdeep must be > 0.0'
+               stop
+             endif
+             err = edeep/xdeep
+             sx(ix,ix)=err**2
+
+             ix = nx+2
+             if(xmid.gt.0.0)then
+                x0(ix)=alog(xmid)
+                lx(ix)=1
+             else
+               print*,'Error in readapriori. xmid must be > 0.0'
+               stop
+             endif
+             err = emid/xmid
+             sx(ix,ix)=err**2
+
+             ix = nx+3
+             if(xmid.gt.0.0)then
+                x0(ix)=alog(xfsh)
+                lx(ix)=1
+             else
+               print*,'Error in readapriori. xfsh must be > 0.0'
+               stop
+             endif
+             err = efsh/xfsh
+             sx(ix,ix)=err**2
+
+             ix = nx+4
+             if(xrh.gt.0.0)then
+               x0(ix) = alog(xrh)
+               lx(ix)=1
+             else
+               print*,'Error in readapriori - xrh must be > 0'
+               stop
+             endif
+             sx(ix,ix) = (erh/xrh)**2
+
+             nx=nx+4
+
+           elseif (varident(ivar,3).eq.60)then
+C            ** profile held as max specific density, top pressure, width (logp) and FWHM (log P) (Gaussian) **
+C            Read in xdeep, pknee, xwid
+
+             read(27,*)xdeep,edeep
+             read(27,*)pknee,eknee
+             read(27,*)ywid,eywid
+             read(27,*)xwid,ewid
+
+
+             ix = nx+1
+             if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+             else
+               print*,'Error in readapriori. xdeep must be > 0.0'
+               stop
+             endif
+
+
+             err = edeep/xdeep
+             sx(ix,ix)=err**2
+
+             ix = nx+2
+             x0(ix) = alog(pknee)
+             lx(ix)=1
+
+             sx(ix,ix) = (eknee/pknee)**2
+
+             ix = nx+3
+             x0(ix) = alog(ywid)
+             lx(ix)=1
+
+             sx(ix,ix) = (eywid/ywid)**2
+
+             ix = nx+4
+             x0(ix) = alog(xwid)
+             lx(ix)=1
+
+             sx(ix,ix) = (ewid/xwid)**2
+
+             nx = nx+4
 
            else         
 
@@ -3302,12 +3441,11 @@ C				wavenumbers)
 
                call get_xsecA(opfile,nmode,nwave,wave,xsec)
                if(np.ne.nwave)then
-       print*,'Error in readapriori.f. Number of wavelengths in ref.'
+       print*,'Warning in readapriori.f. Number of wavelengths in ref.'
        print*,'index file does not match number of wavelengths in'
-       print*,'xsc file. Wavelengths in these two files should match'
+       print*,'xsc file. Wavelengths in these two files usually match'
                 print*,rifile,np
                 print*,opfile,nwave
-                stop
                endif
 
                varparam(ivar,2)=clen
@@ -3334,6 +3472,7 @@ C              read x-section normalising wavelength (-1 to not normalise)
                  x0(ix)=alog(nimag)
                  sx(ix,ix)=(err/nimag)**2
                  lx(ix)=1
+                 vx(ix)=vi(i)
                 endif
                enddo
              close(28)
@@ -3439,18 +3578,21 @@ C              read fraction and error
                  x0(ix)=alog(nimag)
                  sx(ix,ix)=(err/nimag)**2
                  lx(ix)=1
+                 vx(ix)=vi(i)
                 endif
                 if(clen.gt.0) then
                  ix=nx+3+np+i
                  x0(ix)=alog(nimag1)
                  sx(ix,ix)=(err1/nimag1)**2
                  lx(ix)=1
+                 vx(ix)=vi(i)
                 else
                  if(i.eq.1)then
                   ix=nx+4+i
                   x0(ix)=alog(nimag1)
                   sx(ix,ix)=(err1/nimag1)**2
                   lx(ix)=1
+                  vx(ix)=vi(i)
                  endif
                 endif               
                enddo
@@ -3560,9 +3702,11 @@ C              read x-section normalising wavelength (-1 to not normalise)
                 x0(ix)=alog(nimag)		!set next position in a priori vector to core imag RI
                 sx(ix,ix)=(err/nimag)**2	!set a priori covariance matrix
                 lx(ix)=1
+                vx(ix)=vi(i)
                 x0(ix+np)=alog(nimagshell)  !ditto with shell imag RI
                 sx(ix+np,ix+np)=(errshell/nimagshell)**2
                 lx(ix+np)=1
+                vx(ix+np)=vi(i)
                enddo
              close(28)
 

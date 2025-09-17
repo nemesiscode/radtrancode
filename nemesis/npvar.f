@@ -6,7 +6,7 @@ C     the require parameterisation scheme.
 C
 C     Input variable
 C	imod	integer	Require parameterisation scheme ID.
-C  	npro	integer	Number of vertical levels in .ref file
+C	npro	integer	Number of vertical levels in .ref file
 C	vpar1	real	varparam(ivar,1)
 C
 C     Output variable
@@ -22,7 +22,7 @@ C     **************************************************************
       common/diagnostic/idiag,iquiet
 
       np=1
-      if(imod.le.57)then
+      if(imod.le.60)then
         if(imod.eq.-1)np = npro
         if(imod.eq.0)np = npro
         if(imod.eq.1)np = 2
@@ -81,6 +81,9 @@ C     **************************************************************
         if(imod.eq.55)np = 4
         if(imod.eq.56)np = 3
         if(imod.eq.57)np = 2
+        if(imod.eq.58)np = 3
+        if(imod.eq.59)np = 4
+        if(imod.eq.60)np = 4
       else
         print*,'npvar:  Model parameterisation not defined = ',imod
       endif

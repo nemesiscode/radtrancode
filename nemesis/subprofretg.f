@@ -4270,8 +4270,11 @@ C        ***************************************************************
          XWID  = EXP(XN(NXTEMP+4))
 
 
+         print*,'XDEEP, PKNEE, YWID, XWID = ',XDEEP, PKNEE, YWID, XWID
          Y0=ALOG(PKNEE)
          Y1=Y0+YWID
+
+         print*,'Y0,Y1 = ',Y0,Y1
 
 C        **** Want to normalise to get optical depth right. ***
 C        ND is the particles per cm3 (but will be rescaled)
@@ -4337,6 +4340,8 @@ C         anyway, where XMAP is unused. PGJI 8/12/23
           XMAP(NXTEMP+2,IPAR,J)=Y0*2.*(Y-Y0)*X1(J)/XWID**2
           XMAP(NXTEMP+3,IPAR,J)=-2.0*((Y-Y0)**2)*X1(J)/XWID**2
      &             -  X1(J)/XWID
+
+          print*,J,P(J),X1(J),Q(J)
 
          ENDDO
 
@@ -4828,6 +4833,295 @@ C        ***************************************************************
 
          ENDDO
 
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.58)THEN
+C        Model 58. Profile is represented by a value at a variable pressure level
+C        plus a fractional scale height. Below the knee pressure the profile is
+C        set to drop exponentially. Similar model to model 38, but thickness is now
+C        optical thickness, not the specific density at pknee
+C        FHWM is also folded into total opacity, but this gets renormalised
+C        by gsetrad.f anyway. wid
+C        ***************************************************************
+
+         IF(VARIDENT(IVAR,1).GE.0)THEN
+          print*,'Warning from SUBPROFRETG. You are using a'
+          print*,'cloud profile parameterisation for a non-cloud'
+          print*,'variable'
+          STOP
+         ENDIF
+
+
+C        Calculate gradient numerically as it's just too hard otherwise
+         DO 217 ITEST=1,4
+
+         XDEEP = EXP(XN(NXTEMP+1))
+         PKNEE = EXP(XN(NXTEMP+2))
+         XFSH  = EXP(XN(NXTEMP+3))
+
+         DX=0.05*XN(NXTEMP+ITEST)
+
+         IF(DX.EQ.0.)DX=0.1
+
+         IF(ITEST.EQ.2)THEN
+            XDEEP=EXP(XN(NXTEMP+1)+DX)
+         ENDIF
+         IF(ITEST.EQ.3)THEN
+            PKNEE  = EXP(XN(NXTEMP+2)+DX)
+         ENDIF
+         IF(ITEST.EQ.4)THEN
+            XFSH = EXP(XN(NXTEMP+3)+DX)
+         ENDIF
+
+         CALL VERINT(P,H,NPRO,HKNEE,PKNEE)
+         if(idiag.gt.0)print*,pknee,hknee
+
+C        Start ND,Q,OD at zero
+C        N is in units of particles/cm3
+C        OD is in units of particles/cm2 = particles/cm3 x length(cm)
+C        Q is specific density = particles/gram = (particles/cm3) / (g/cm3)
+         DO J=1,NPRO
+           ND(J)=0.
+           OD(J)=0
+           Q(J)=0.
+         ENDDO
+
+         JKNEE=-1
+         XF=1.
+C        find levels in atmosphere that span pknee
+         DO J=1,NPRO-1
+           IF(P(J).GE.PKNEE.AND.P(J+1).LT.PKNEE)THEN
+            JKNEE=J
+           ENDIF
+         ENDDO
+
+         IF(JKNEE.LT.0)THEN
+           print*,'subprofretg: Error in model 32. Stop'
+           print*,'IVAR,XDEEP,XFSH,PKNEE'
+           print*,IVAR,XDEEP,XFSH,PKNEE
+           STOP
+         ENDIF
+
+         DELH=H(JKNEE+1)-HKNEE
+         XFAC=0.5*(SCALE(JKNEE)+SCALE(JKNEE+1))*XFSH
+         ND(JKNEE+1)=DPEXP(-DELH/XFAC)
+
+         DELH = HKNEE-H(JKNEE)
+         XFAC=XF
+         ND(JKNEE)=DPEXP(-DELH/XFAC)
+
+         DO J=JKNEE+2,NPRO
+           DELH = H(J)-H(J-1)
+           XFAC = SCALE(J)*XFSH
+           ND(J) = ND(J-1)*DPEXP(-DELH/XFAC)
+         ENDDO
+
+         DO J=1,JKNEE-1
+           DELH = H(JKNEE)-H(J)
+           XFAC = XF
+           ND(J) = DPEXP(-DELH/XFAC)
+         ENDDO
+
+         DO J=1,NPRO
+            IF(AMFORM.EQ.0)THEN
+             XMOLWT=MOLWT
+            ELSE
+             XMOLWT=XXMOLWT(J)
+            ENDIF
+C           Calculate density of atmosphere  (g/cm3)
+            RHO = (0.1013*XMOLWT/R)*(P(J)/T(J))
+C           Calculate initial particles/gram
+            Q(J)=ND(J)/RHO
+         ENDDO
+
+C        Now integrate optical thickness
+         OD(NPRO)=ND(NPRO)*SCALE(NPRO)*XFSH*1E5
+         JFSH=-1
+         DO J=NPRO-1,1,-1
+           IF(J.GT.JKNEE)THEN
+             DELH = H(J+1) - H(J)
+             XFAC = SCALE(J)*XFSH
+             OD(J)=OD(J+1)+(ND(J) - ND(J+1))*XFAC*1E5
+           ELSE
+             IF(J.EQ.JKNEE)THEN
+              DELH = H(J+1)-HKNEE
+              XFAC = 0.5*(SCALE(J)+SCALE(J+1))*XFSH
+              OD(J)=OD(J+1)+(1. - ND(J+1))*XFAC*1E5
+              DELH = HKNEE-H(J)
+              XFAC = XF
+              OD(J)=OD(J)+(1. - ND(J))*XFAC*1E5
+             ELSE
+              DELH = H(J+1)-H(J)
+              XFAC = XF
+              OD(J)=OD(J+1)+(ND(J+1) - ND(J))*XFAC*1E5
+             ENDIF
+           ENDIF
+         ENDDO
+
+         ODX=OD(1)
+
+C        Now normalise specific density profile.
+C        This is also redone in gsetrad.f to make this totally secure.
+         DO J=1,NPRO
+           OD(J)=OD(J)*XDEEP/ODX
+           ND(J)=ND(J)*XDEEP/ODX
+           Q(J)=Q(J)*XDEEP/ODX
+           IF(Q(J).GT.1e10)Q(J)=1e10
+           IF(Q(J).LT.1e-36)Q(J)=1e-36
+           NTEST=ISNAN(Q(J))
+           IF(NTEST)THEN
+            if(idiag.gt.0)then
+             print*,'Error in subprofretg.f, cloud density is NAN'
+             print*,'Setting to 1e-36'
+            endif
+            Q(J)=1e-36
+           ENDIF
+
+           IF(ITEST.EQ.1)THEN
+            X1(J)=Q(J)
+           ELSE
+            XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
+           ENDIF
+
+         ENDDO
+
+217      CONTINUE
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.59)THEN
+C        Model 56. Condensing gas, but no associated cloud. Model requires
+C        the deep gas abundance, middle gas abundance (at fixed knee pressure)
+C        fractional scale height above knee and the desired maximum 
+C        relative humidity
+C        ***************************************************************
+
+         XDEEP = EXP(XN(NXTEMP+1))
+         XMID = EXP(XN(NXTEMP+2))
+         XFSH  = EXP(XN(NXTEMP+3))
+         XRH  = EXP(XN(NXTEMP+4))
+         PKNEE = VARPARAM(IVAR,1)
+
+C         print*,'subprofretg. Mod59: xdeep,xmid,xrh,pknee',
+C     & xdeep,xmid,xrh,pknee
+         IDAT=0
+         DO I=1,NGAS
+          IF(GASDATA(I,1).EQ.IDGAS(IPAR))THEN
+            A = GASDATA(I,2)
+            B = GASDATA(I,3)
+            C = GASDATA(I,4)
+            D = GASDATA(I,5)
+C            print*,'svp',A,B,C,D
+            IDAT=1
+          ENDIF
+	 ENDDO
+   
+         IF(IDAT.EQ.0)THEN
+          if(idiag.gt.0)then
+           print*,'Subprofretg: Gas SVP data cannot be found'
+           print*,IPAR,IDGAS(IPAR)
+          endif
+         ENDIF
+
+         XFAC = (1.0-XFSH)/XFSH
+         DXFAC = -1.0/XFSH
+
+         CALL VERINT(P,H,NPRO,HKNEE,PKNEE)
+         JFSH = 0
+
+         IFLA=0
+         IKNEE=0
+
+         DO I=1,NPRO
+          IF(P(I).GT.PKNEE)THEN
+            XNOW=XDEEP
+          ELSE
+            IF(JFSH.EQ.0)THEN
+             DELH=H(I)-HKNEE
+             XNOW = XMID*EXP(-DELH*XFAC/SCALE(I))
+            ELSE
+             DELH=H(J)-H(J-1)
+             XNOW = X1(J-1)*EXP(-DELH*XFAC/SCALE(I))
+             JFSH=1
+            ENDIF
+          ENDIF
+          P1=P(I)*XNOW
+          PS=XRH*DPEXP(A+B/T(I)+C*T(I)+D*T(I)*T(I))
+          IF(P1.LT.PS)THEN
+           X1(I)=XNOW
+          ELSE
+           X1(I)=PS/P(I)
+           IFLA=1
+          ENDIF
+          XMAP(NXTEMP+1+IKNEE,IPAR,I)=X1(I)
+
+C         Now make sure that vmr does not rise again once condensation has
+C         begun. i.e., freeze vmr at the cold trap near 0.1 bar.
+
+          IF((IFLA.EQ.1).AND.(P(I).LT.0.3).AND.(X1(I).GT.X1(I-1)))THEN
+           X1(I)=X1(I-1)
+           XMAP(NXTEMP+1,IPAR,I)=XMAP(NXTEMP+1,IPAR,I-1)
+           XMAP(NXTEMP+2,IPAR,I)=XMAP(NXTEMP+2,IPAR,I-1)
+          ENDIF
+         ENDDO
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.60)THEN
+C        Similar to model 51 as profile is represented a modified Gaussian with a specified optical
+C        thickness, an upper pressure level, width of cloud (log press) and then width of Gaussian 
+C        tail off of cloud above and below. However, the thickness is the specific density at the lower
+C        pressure and no renormlisation takes place.
+C        ***************************************************************
+
+         XDEEP = EXP(XN(NXTEMP+1))
+         PKNEE = EXP(XN(NXTEMP+2))
+         YWID  = EXP(XN(NXTEMP+3))
+         XWID  = EXP(XN(NXTEMP+4))
+
+
+         Y0=ALOG(PKNEE)
+         Y1=Y0+YWID
+
+         DO J=1,NPRO
+
+          IF(AMFORM.EQ.0)THEN
+           XMOLWT=MOLWT
+          ELSE
+           XMOLWT=XXMOLWT(J)
+          ENDIF
+
+          Y=ALOG(P(J))          
+
+          IF(Y.LT.Y0)THEN
+           Q(J) = XDEEP*EXP(-((Y-Y0)/XWID)**2)
+          ELSE
+           IF(Y.GE.Y0.AND.Y.LE.Y1)THEN
+            Q(J) = XDEEP
+           ELSE
+            Q(J) = XDEEP*EXP(-((Y-Y1)/XWID)**2)
+           ENDIF
+          ENDIF
+
+          X1(J)=Q(J)
+
+         ENDDO
+
+         DO J=1,NPRO
+
+          IF(VARIDENT(IVAR,1).EQ.0)THEN
+            XMAP(NXTEMP+1,IPAR,J)=X1(J)/XDEEP
+          ELSE
+            XMAP(NXTEMP+1,IPAR,J)=X1(J)
+          ENDIF
+
+C         Incomplete XMAP. Have not yet folded in new model.
+C         Not a priority as this is for scattering calculations
+C         anyway, where XMAP is unused. PGJI 8/12/23
+
+          XMAP(NXTEMP+2,IPAR,J)=2.*(Y-Y0)*X1(J)/XWID**2
+          XMAP(NXTEMP+3,IPAR,J)=-2.0*((Y-Y0)**2)*X1(J)/XWID**3
+
+          XMAP(NXTEMP+2,IPAR,J)=Y0*2.*(Y-Y0)*X1(J)/XWID**2
+          XMAP(NXTEMP+3,IPAR,J)=-2.0*((Y-Y0)**2)*X1(J)/XWID**2
+     &             -  X1(J)/XWID
+
+         ENDDO
 
         ELSE
 

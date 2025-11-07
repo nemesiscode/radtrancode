@@ -110,7 +110,7 @@ C     Set measurement vector and source vector lengths here.
       integer n_alambda
       real st(mx,mx),varparamx(mvar,mparam)
       real sn(mx,mx),sm(mx,mx),xnx(mx),stx(mx,mx),ynx(my)
-      integer ifix(mx),ifixx(mx)
+      integer ifix(mx),ifixx(mx),i1,i2,nn
 
       integer nvar,varident(mvar,3),lin,lin0,lpre,ispace,nav(mgeom),k
       real varparam(mvar,mparam)
@@ -245,9 +245,10 @@ C     Calculate inverse of sa.
        do i=1,nx
         print*,i,xa(i),(sa(i,j),j=1,nx)
        enddo
-       print*,'Aborting...'
+C       print*,'Aborting...'
+       print*,'Continuing...'
        print*,'***********************************'
-       stop
+C       stop
       endif
 
 C     Find if any of the variables have such small error that we can 
@@ -292,6 +293,17 @@ C     Load state vector with a priori
        xn(i)=xa(i)
       enddo
 
+      do ivar=1,nvar 
+       if(varident(ivar,1).eq.334)then
+          i1=int(varparam(ivar,1))
+          i2=int(varparam(ivar,2))
+          nn=int(varparam(ivar,3))
+          do i=1,nn
+           xn(i1+i-1)=xn(i2+i-1)
+           xa(i1+i-1)=xa(i2+i-1)
+          enddo
+       endif
+      enddo
       if(lin.eq.1.or.lin.eq.3)then
 
        if(lin.eq.1) then
@@ -365,8 +377,8 @@ C      Calc. gradient of all elements of xnx matrix.
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2     nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
-     3     jradx,jloggx,jfracx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,
-     4	   iprfcheck)
+     3     jradx,jloggx,jfracx,RADIUS,nxx,xnx,sa,ifixx,ny,ynx,kkx,
+     4     kiter,iprfcheck)
          endif
        elseif(iscat.eq.1.or.iscat.eq.3.or.iscat.eq.4)then
          if(idiag.gt.0)then
@@ -375,20 +387,20 @@ C      Calc. gradient of all elements of xnx matrix.
          CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2    nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
-     3    jradx,jloggx,jfracx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,
+     3    jradx,jloggx,jfracx,RADIUS,nxx,xnx,sa,ifixx,ny,ynx,kkx,kiter,
      4	  iprfcheck)
          if(idiag.gt.0)print*,'forwardnogX - A1 - called OK'
        elseif(iscat.eq.2)then
          if(idiag.gt.0)print*,'Calling intradfield - A1'
-         CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
-     1    vconvT,gasgiant,lin0,nvarx,varidentx,
+         CALL intradfield(runname,ispace,xlat,xlon,nwaveT,vwaveT,
+     1    nconvT,vconvT,gasgiant,lin0,nvarx,varidentx,
      2    varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,jradx,jloggx,
      3    jfracx,RADIUS,nxx,xnx)
          if(idiag.gt.0)print*,'intradfield called OK'
          CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin0,
      2    nvarx,varidentx,varparamx,jsurfx,jalbx,jxscx,jtanx,jprex,
-     3    jradx,jloggx,jfracx,RADIUS,nxx,xnx,ifixx,ny,ynx,kkx,kiter,
+     3    jradx,jloggx,jfracx,RADIUS,nxx,xnx,sa,ifixx,ny,ynx,kkx,kiter,
      4	  iprfcheck)
        elseif(iscat.eq.5.or.iscat.eq.6)then
 !     Added ISCAT = 6 option in coreret
@@ -482,7 +494,7 @@ C      Calculate inverse of se
          CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1    wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2    nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3    jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
+     3    jlogg,jfrac,RADIUS,nx,xn,sa,ifix,ny,yn,kk,kiter,iprfcheck)
         endif
 
 C        if(idiag.gt.0)print*,'forwardavfovX OK, jpre = ',jpre
@@ -494,21 +506,21 @@ C        if(idiag.gt.0)print*,'forwardavfovX OK, jpre = ',jpre
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3   jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
+     3   jlogg,jfrac,RADIUS,nx,xn,sa,ifix,ny,yn,kk,kiter,iprfcheck)
 
 C        if(idiag.gt.0)print*,'forwardnogX OK, jpre = ',jpre
 
        elseif(iscat.eq.2)then
 
         if(idiag.gt.0)print*,'Calling intradfield - B',gasgiant
-        CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
-     1   vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
-     2   jxsc,jtan,jpre,jrad,jlogg,jfrac,RADIUS,nx,xn)
+        CALL intradfield(runname,ispace,xlat,xlon,nwaveT,vwaveT,
+     1   nconvT,vconvT,gasgiant,lin,nvar,varident,varparam,
+     2   jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,jfrac,RADIUS,nx,xn)
         if(idiag.gt.0)print*,'intradfield - B called OK'
         CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1   wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2   nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3   jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,iprfcheck)
+     3   jlogg,jfrac,RADIUS,nx,xn,sa,ifix,ny,yn,kk,kiter,iprfcheck)
         if(idiag.gt.0)print*,'B - OK'
        elseif(iscat.eq.5.or.iscat.eq.6) then
 !     Added ISCAT = 6 option in coreret      
@@ -575,7 +587,7 @@ C     vectors xn, yn
       if(idiag.gt.0)print*,'iterred,kiter',iterred,kiter
 
       do 401 iter = iterred, kiter
-
+        print*,'iter = ',iter
         if(ica.eq.1)then
          write(40,*)''
          write(40,*)nx,ny,kiter
@@ -606,6 +618,22 @@ C          x_out(i+183)=x_out(i)
 C         endif
         enddo
 
+        do ivar=1,nvar
+         if(varident(ivar,1).eq.334)then
+          i1=int(varparam(ivar,1))
+          i2=int(varparam(ivar,2))
+          nn=int(varparam(ivar,3))
+          do i=1,nn
+           x_out(i1+i-1)=x_out(i2+i-1)
+          enddo
+         endif
+        enddo
+
+C       Nasty fix to stop pressure getting bigger than 1.55
+C        if(exp(x_out(5)).gt.1.55)x_out(5)=alog(1.55)
+C       Nasty fix to stop pressure getting smaller than 1.0
+C        if(exp(x_out(5)).lt.1.0)x_out(5)=alog(1.0)
+
         do i=1,nx
          xn1(i) = xn(i) + (x_out(i)-xn(i))/(1.0+alambda)
 
@@ -631,12 +659,12 @@ C        Add additional brake for model 102 to stop silly fractions.
 C        Check to see if log numbers have gone out of range
          if(lx(i).eq.1)then
           if(xn1(i).gt.85.or.xn1(i).lt.-85)then
-           if(idiag.gt.0)then
-             print*,'Coreret - log(number gone out of range)'
-           endif
-           if(idiag.gt.0)print*,'Increasing brake'
+           print*,'Coreret - log(number gone out of range)'
+           print*,i,xn1(i)   
+           print*,'Increasing brake'
            alambda=alambda*10
-           if(alambda.gt.1e10)alambda=1e10
+           alambda=1e10
+           print*,'Alambda = ',alambda
            goto 401
           else
            if(idiag.gt.0)then
@@ -694,12 +722,14 @@ C        if(idiag.gt.0)print*,JPRE,NCONT,FLAGH2P
           endif
          endif
          if(varident(ivar,1).eq.445)np = 3+(2*int(varparam(ivar,1)))
+         if(varident(ivar,1).eq.448)np = 2
          if(varident(ivar,1).eq.222)np = 8
          if(varident(ivar,1).eq.223)np = 9
          if(varident(ivar,1).eq.224)np = 9
          if(varident(ivar,1).eq.225)np = 11
          if(varident(ivar,1).eq.226)np = 8
          if(varident(ivar,1).eq.227)np = 7
+         if(varident(ivar,1).eq.111)np = 2 + int(varparam(ivar,1))
 
          do j=ix,ix+np-1
 
@@ -872,7 +902,8 @@ C       temporary kernel matrix kk1. Does it improve the fit?
            CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1      wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2      lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3      jlogg,jfrac,RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter,iprfcheck)
+     3      jlogg,jfrac,RADIUS,nx,xn1,sa,ifix,ny,yn1,kk1,kiter,
+     4      iprfcheck)
           endif
 
          elseif(iscat.eq.1.or.iscat.eq.3.or.iscat.eq.4)then
@@ -881,16 +912,18 @@ C       temporary kernel matrix kk1. Does it improve the fit?
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3     jlogg,jfrac,RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter,iprfcheck)
+     3     jlogg,jfrac,RADIUS,nx,xn1,sa,ifix,ny,yn1,kk1,kiter,
+     4     iprfcheck)
          elseif(iscat.eq.2)then
          if(idiag.gt.0)print*,'Calling intradfield - C'
-          CALL intradfield(runname,ispace,xlat,nwaveT,vwaveT,nconvT,
-     1     vconvT,gasgiant,lin,nvar,varident,varparam,jsurf,jalb,
-     2     jxsc,jtan,jpre,jrad,jlogg,jfrac,RADIUS,nx,xn1)
+          CALL intradfield(runname,ispace,xlat,xlon,nwaveT,vwaveT,
+     1     nconvT,vconvT,gasgiant,lin,nvar,varident,varparam,
+     2     jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,jfrac,RADIUS,nx,xn1)
           CALL forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1     wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,lin,
      2     nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3     jlogg,jfrac,RADIUS,nx,xn1,ifix,ny,yn1,kk1,kiter,iprfcheck)
+     3     jlogg,jfrac,RADIUS,nx,xn1,sa,ifix,ny,yn1,kk1,kiter,
+     4     iprfcheck)
          elseif(iscat.eq.5.or.iscat.eq.6)then
 !     Added ISCAT = 6 option in coreret
          if(idiag.gt.0)print*,'Calling forwardnogXVenus - C'
@@ -1055,7 +1088,11 @@ C       perform the last 2 iterations using the highest-ranked grid
            GOTO 202
          endif
         endif
-       
+
+C        print*,'Kcheck ',iter
+C        do i=1,ny
+C         print*,kk(i,1:6)
+C        enddo
 401   continue       
 
 
@@ -1170,6 +1207,11 @@ C
       endif
 
 202   if(ica.eq.1)close(40)
+
+C      print*,'Kcheck2 ',iter
+C      do i=1,ny
+C         print*,kk(i,1:6)
+C      enddo
 
       if(ica.eq.1)then
 C      Write out k-matrix for reference

@@ -1,4 +1,4 @@
-      subroutine intradfield(runname,ispace,xlat,nwave,vwave,
+      subroutine intradfield(runname,ispace,xlat,xlon,nwave,vwave,
      1 nconv,vconv,gasgiant,lin,nvar,varident,
      2 varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,jlogg,jfrac,RADIUS,
      3 nx,xn)
@@ -60,7 +60,7 @@ C     **************************************************************
       include '../radtran/includes/gascom.f'
       include '../radtran/includes/planrad.f'
       include 'arraylen.f'
-      real xlat,xref,dx,radius
+      real xlat,xlon,xref,dx,radius
       integer layint,inormal,itype,nlayer,laytyp
       integer iray,iptf,imie,imie1
       integer nwave,ix,ix1,iav,nwave1
@@ -186,8 +186,9 @@ C      Set up all files for a direct cirsrad run
        if(idiag.gt.0)print*,'Calling gsetrad - gasgiant = ',gasgiant
        call gsetrad(intname,iscat,nmu,mu,wtmu,isol,dist,
      1     lowbc,galb,nf,nconv,vconv,fwhm,ispace,gasgiant,
-     2     layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,lin,
-     3     nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,xmap)
+     2     layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,xlon,
+     3     lin,nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,
+     4     tsurf,xmap)
 
        if(idiag.gt.0)print*,'Calling cirsrtf_wave'
        call CIRSrtf_wave(intname, dist, inormal, iray, fwhm, ispace,

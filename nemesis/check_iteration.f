@@ -44,6 +44,7 @@ C     **********************************************************
        if(varident(ivar,1).eq.225)np = 11
        if(varident(ivar,1).eq.225)np = 8
        if(varident(ivar,1).eq.227)np = 7
+       if(varident(ivar,1).eq.11)np = 2+int(varparam(ivar,1))
 
        do i=1,np
          tmp(i)=xn(i+istart)

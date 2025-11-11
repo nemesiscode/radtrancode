@@ -15,7 +15,7 @@ C       ch4overh2       real    CH4/H2
 C       NH3MIX		real	NH3 vmr
 C
 C     Output variable
-C       rayleighj       real    scattering cross section (cm2)
+C       rayleighls       real    scattering cross section (cm2)
 C
 C     **************************************************************
       IMPLICIT NONE

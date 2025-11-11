@@ -95,6 +95,7 @@ C     ****************************************************************
       real xknee,xrh,erh,xcdeep,ecdeep,radius,Grav,plim
       real xcwid,ecwid,ptrop,refradius,xsc,ascat,escat,shape,eshape
       real clen1,clen2,press1,press2,clen3,xmid,emid,pstrat
+      real pbot,ebot
       integer nlong,ilong,ipar,k1,k2
       parameter (Grav=6.672E-11)
 C     SXMINFAC is minimum off-diagonal factor allowed in the
@@ -106,7 +107,8 @@ C     a priori covariance matrix
       integer nprox,nvarx,varidentx(mvar,3),ioffx,ivarx
       integer npx,ioff,icond,npvar,jloggx,iplanet,jxscx,jlev
       character*100 opfile,buffer,ipfile,runname,rifile,xscfil
-      integer nxx,nsec,ncont1,nlay,tmp,iex
+      integer nxx,nsec,ncont1,nlay,tmp,iex,nc
+      real nr1(mx),ni1(mx),yi,yr
       real xwid,ewid,y,y0,lambda0,vi(mx),vtmp(mx),xt(mx)
       real xwid1,ewid1,xlim1,xlim2,elim1,elim2,vx(mx)
       real r0,er0,dr,edr,vm,nm,nmshell,nimag,delv,xy,v0
@@ -180,7 +182,7 @@ C     3 scale profile in .ref file by the exponent of a number.
       do 10 ivar=1,nvar
          csx = -1.0			!particles are assumed to be homogeneous by default
          read(27,*)(varident(ivar,j),j=1,3)
-         if(varident(ivar,1).le.200)then
+         if(varident(ivar,1).le.100)then
 C          parameter must be an atmospheric one.
 
            if(varident(ivar,3).eq.0)then
@@ -2699,6 +2701,7 @@ C            * profile is a multiple of the gas profile of
 C            *another gas. Used for things like CH4 isotopologues
 C            * where, for example CH3D is a fixed factor of the CH4
 C            * profile, which is a variable and varies with height.
+C            * Also works for cloud profiles if ID < 0.
 C            Read in ID,ISO of gas profile to multiply.
              read(27,*)k1,k2
              read(27,*)xdeep,edeep
@@ -3217,6 +3220,57 @@ C            Read in xdeep, pknee, xwid
 
              nx = nx+4
 
+           elseif (varident(ivar,3).eq.61)then
+C            ** profile held specific density at a cloud top pressure, the fractional
+C            scale height below that and bottom pressure, with a gaussian tail-off above and below
+
+             read(27,*)xdeep,edeep
+             read(27,*)ptop,etop
+             read(27,*)pbot,ebot
+             read(27,*)xfsh,efsh
+             read(27,*)xwid,ewid
+
+
+             ix = nx+1
+             if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+             else
+               print*,'Error in readapriori. xdeep must be > 0.0'
+               stop
+             endif
+
+
+             err = edeep/xdeep
+             sx(ix,ix)=err**2
+
+             ix = nx+2
+             x0(ix) = alog(ptop)
+             lx(ix)=1
+
+             sx(ix,ix) = (etop/ptop)**2
+
+             ix = nx+3
+             x0(ix) = alog(pbot)
+             lx(ix)=1
+
+             sx(ix,ix) = (ebot/pbot)**2
+ 
+             ix=nx+4
+
+             x0(ix) = alog(xfsh)
+             lx(ix)=1
+
+             sx(ix,ix) = (efsh/xfsh)**2
+
+             ix = nx+5
+             x0(ix) = alog(xwid)
+             lx(ix)=1
+
+             sx(ix,ix) = (ewid/xwid)**2
+
+             nx = nx+5
+
            else         
 
             print*,'vartype profile parametrisation not recognised'
@@ -3501,6 +3555,58 @@ C                xfac = exp(-arg*arg)
              endif
 
 
+
+           elseif (varident(ivar,1).eq.448)then
+C            Fixed refractive index cloud
+             read(27,1)rifile
+
+             open(28,file=rifile,status='old')
+
+               call get_xsecA(opfile,nmode,nwave,wave,xsec)
+
+C              Read mean radius and error
+               read(28,*)r0,er0
+               ix=nx+1
+               x0(ix)=alog(r0)
+               sx(ix,ix)=(er0/r0)**2
+               lx(ix)=1
+
+C              Read radius variance and error
+               read(28,*)dr,edr
+               ix=nx+2
+               x0(ix)=alog(dr)
+               sx(ix,ix)=(edr/dr)**2
+               lx(ix)=1
+
+C              read x-section normalising wavelength (-1 to not normalise)
+               read(28,*)lambda0
+               varparam(ivar,1)=lambda0
+
+C              Read number of wavelengths 
+               read(28,*)np
+C               print*,'np = ',np
+               do i=1,np
+                 read(28,*)vi(i),nr1(i),ni1(i)
+C                 print*,i,vi(i),nr1(i),ni1(i)
+               enddo
+
+             close(28)
+
+
+             buffer='refindexN.dat'
+             buffer(9:9)=char(ivar+48)
+C             print*,buffer
+             open(12,file=buffer,status='unknown')
+
+             do i = 1,nwave
+                 call verint(vi,nr1,np,yr,wave(i))
+                 call verint(vi,ni1,np,yi,wave(i))
+                 write(12,*)wave(i),yr,yi
+C                 print*,wave(i),yr,yi
+             enddo
+             close(12)
+
+             nx = nx+2
 
            elseif (varident(ivar,1).eq.446)then
 C            ** Variable cloud particle size distribution and composition
@@ -4478,6 +4584,44 @@ C********************** ACS-MIR ILS model *******************************
 
 
 
+           elseif(varident(ivar,1).eq.111)then
+C           Multicomponent gaussian cloud
+            read(27,*)nc
+            varparam(ivar,1)=nc
+            read(27,*)(varparam(ivar,1+i),i=1,nc)
+            read(27,*)pknee,eknee
+            read(27,*)xwid,ewid
+
+            ix = nx+1
+            x0(ix) = alog(pknee)
+            lx(ix)=1
+
+            sx(ix,ix) = (eknee/pknee)**2
+
+            ix = nx+2
+            x0(ix) = alog(xwid)
+            lx(ix)=1
+
+            sx(ix,ix) = (ewid/xwid)**2
+
+            do i = 1,nc
+             ix = nx+2+i
+             read(27,*)xdeep,edeep
+             if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+             else
+               print*,'Error in readapriori (111). xdeep must be > 0.0'
+               stop
+             endif
+
+             err = edeep/xdeep
+             sx(ix,ix)=err**2 
+
+            enddo
+
+            nx = nx+2+nc
+
            elseif(varident(ivar,1).eq.102)then
             ix = nx+1
             read(27,*)x0(ix),err
@@ -4533,7 +4677,7 @@ C     the mass using the a priori log(g) AND radius
 
        do 21 ivarx=1,nvarx
         npx=1
-        if(varidentx(ivarx,1).le.200)then
+        if(varidentx(ivarx,1).le.100)then
           npx=npvar(varidentx(ivarx,3),npro,varparamx(ivarx,1))
         endif
         if(varidentx(ivarx,1).eq.888)npx=int(varparamx(ivarx,1))
@@ -4551,7 +4695,7 @@ C     the mass using the a priori log(g) AND radius
         ioff=0
         do 22 ivar=1,nvar
          np=1
-         if(varident(ivar,1).le.200)then
+         if(varident(ivar,1).le.100)then
            np=npvar(varident(ivar,3),npro,varparam(ivar,1))
          endif
          if(varident(ivar,1).eq.888)np=int(varparam(ivar,1))

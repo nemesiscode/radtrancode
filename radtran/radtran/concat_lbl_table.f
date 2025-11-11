@@ -177,9 +177,9 @@ C******************************** CODE *********************************
 
       PRINT*,'Table1'
       PRINT*,'Index, Wavelength or Wavenumber'
-      DO I=1,NPOINT1
-        PRINT*,I,VMIN1+(I-1)*DELV1
-      ENDDO
+      PRINT*,1,VMIN1
+      PRINT*,' to '
+      PRINT*,NPOINT1,VMIN1+(NPOINT1-1)*DELV1
 
       PRINT*,'Enter starting and finishing wavelength indices of that'
       PRINT*,'part of Table 1 you want to extract and concatenate,'
@@ -188,9 +188,9 @@ C******************************** CODE *********************************
 
       PRINT*,'Table2'
       PRINT*,'Index, Wavelength or Wavenumber'
-      DO I=1,NPOINT2
-        PRINT*,I,VMIN2+(I-1)*DELV2
-      ENDDO
+      PRINT*,1,VMIN2
+      PRINT*,' to '
+      PRINT*,NPOINT2,VMIN2+(NPOINT2-1)*DELV2
 
       PRINT*,'Enter starting and finishing wavelength indices of that'
       PRINT*,'part of Table 2 you want to extract and concatenate,'
@@ -248,13 +248,17 @@ C******************************** CODE *********************************
       ENDIF
 
       WRITE(*,*)'Wavelengths/wavenumbers'
-      DO 403 J=I1,I2
-        print*,J,VMIN1+(J-1)*DELV1
-403   CONTINUE
-      DO 503 J=J1,J2
-        print*,J,VMIN2+(J-1)*DELV2
-503   CONTINUE           
-
+C      DO 403 J=I1,I2
+C        print*,J,VMIN1+(J-1)*DELV1
+C403   CONTINUE
+C      DO 503 J=J1,J2
+C        print*,J,VMIN2+(J-1)*DELV2
+C503   CONTINUE           
+      PRINT*,I1,VMIN1+(I1-1)*DELV1
+      PRINT*,I2,VMIN1+(I2-1)*DELV1
+      PRINT*,'then'
+      PRINT*,J1,VMIN2+(J1-1)*DELV1
+      PRINT*,J2,VMIN2+(J2-1)*DELV1
       N1=ABS(NT1)
 
       DO 30 K=1,N1

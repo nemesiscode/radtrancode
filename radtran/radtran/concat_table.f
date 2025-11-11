@@ -40,7 +40,7 @@ C MAXOUT the maximum number of output points
       REAL G_ORD2(MAXG),K_G2(MAXG),DEL_G2(MAXG)
       REAL TABLE(MAXK,MAXK,MAXG)
 
-      CHARACTER*100 KTAFIL1,KTAFIL2,OPFILE1,OPFILE2,OPFILE3,OUTFIL
+      CHARACTER*150 KTAFIL1,KTAFIL2,OPFILE1,OPFILE2,OPFILE3,OUTFIL
       CHARACTER*1 ANS
       integer idiag,iquiet
       common/diagnostic/idiag,iquiet
@@ -157,7 +157,7 @@ C******************************** CODE *********************************
         READ(LUN1,REC=IREC)G_ORD1(J)
         READ(LUN2,REC=IREC)G_ORD2(J)
         IREC=IREC+1
-        IF(G_ORD1(J).NE.G_ORD2(J)) THEN
+        IF(ABS(G_ORD1(J)/G_ORD2(J)-1).GT.0.05) THEN
          PRINT*,'J, G_ORD1 <> G_ORD2',J, G_ORD1(J),G_ORD2(J)
          PRINT*,'Continue (Y/N)?'
          READ(5,23)ANS
@@ -171,7 +171,7 @@ C******************************** CODE *********************************
         READ(LUN1,REC=IREC)DEL_G1(J)
         READ(LUN2,REC=IREC)DEL_G2(J)
         IREC=IREC+1
-        IF(DEL_G1(J).NE.DEL_G2(J)) THEN
+        IF(ABS(DEL_G1(J)/DEL_G2(J)-1).GT.0.05) THEN
          PRINT*,'J,DEL_G1 <> DEL_G2',J,DEL_G1(J),DEL_G2(J)
          PRINT*,'Continue (Y/N)?'
          READ(5,23)ANS
@@ -186,7 +186,7 @@ C******************************** CODE *********************************
       DO 311 J=1,NP1
         READ(LUN1,REC=IREC)PRESS1(J)
         READ(LUN2,REC=IREC)PRESS2(J)
-        IF(PRESS1(J).NE.PRESS2(J))THEN
+        IF(ABS(PRESS1(J)/PRESS2(J)-1).GT.0.05)THEN
          PRINT*,'PRESS1(J) <> PRESS2(J)',PRESS1(J),PRESS2(J)
          PRINT*,'Continue (Y/N)?'
          READ(5,23)ANS
@@ -201,7 +201,7 @@ C******************************** CODE *********************************
        DO 312 J=1,NT1
         READ(LUN1,REC=IREC)TEMP1(J)
         READ(LUN2,REC=IREC)TEMP2(J)
-        IF(TEMP1(J).NE.TEMP2(J))THEN
+        IF(ABS(TEMP1(J)/TEMP2(J)-1).GT.0.05)THEN
          PRINT*,'TEMP1(J) <> TEMP2(J)',TEMP1(J),TEMP2(J)
          PRINT*,'Continue (Y/N)?'
          READ(5,23)ANS

@@ -101,6 +101,13 @@ C         WRITE(*,*)temp2(i,j)
 307    CONTINUE       
       ENDIF
 
+C     Read in central wavelengths if non-uniform grid
+      IF(DELV.LE.0.0)THEN
+       DO 303 J=1,NPOINT
+        READ(LUN0,REC=IREC)VCEN(J)
+        IREC=IREC+1
+303    CONTINUE
+      ENDIF
 
       IREC = IREC0
 
@@ -111,10 +118,15 @@ C         WRITE(*,*)temp2(i,j)
       IF(IPFORM.LT.1.OR.IPFORM.GT.2)GOTO 304  
 
       IF(IPFORM.EQ.1)THEN
-       CALL PROMPT('Enter wavenumber [cm^-1] : ')
-       READ*,VV
-       N1 = 1 + NINT((VV - VMIN)/DELV)
-       WRITE(*,*)'Bin = ',N1,' Wavenumber = ',(VMIN + (N1-1)*DELV)
+       IF(DELV.GT.0)THEN
+        CALL PROMPT('Enter wavenumber [cm^-1] : ')
+        READ*,VV
+        N1 = 1 + NINT((VV - VMIN)/DELV)
+        WRITE(*,*)'Bin = ',N1,' Wavenumber = ',(VMIN + (N1-1)*DELV)
+       ELSE
+        CALL PROMPT('Enter channel number : ')
+        READ*,N1
+       ENDIF
 
        IREC = IREC0 + NP*ABS(NT)*(N1 - 1)
        WRITE(*,*)'IREC = ',IREC
@@ -125,8 +137,6 @@ C            print*,j,k,irec,table(j,k)
             IREC = IREC + 1
 30      CONTINUE
 20     CONTINUE
-
-
 
        WRITE(*,*)'Enter Pressure [atm] and Temperature [K]'
        READ*,P1,T1
@@ -281,7 +291,7 @@ C            print*,j,k,irec,table(j,k)
           VCEN(I)=VMIN+(I-1)*DELV
          ENDDO
         ENDIF
-        WRITE(12,*)(VCEN(I),I=1,NPOINT)
+C        WRITE(12,*)(VCEN(I),I=1,NPOINT)
 
         WRITE(*,*)'Enter Pressure [atm] and Temperature [K]'
         READ*,P1,T1

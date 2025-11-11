@@ -83,6 +83,7 @@ C         Find relevant points in tabulated files.
           IF(I1.LT.0.OR.I2.LT.0)THEN
            PRINT*,'Error in lblconv2 - wavelength/wavenumber not'
            PRINT*,'covered by lbltables'
+           print*,'First',NWAVE,VWAVE(1),VWAVE(NWAVE),I1,I2
            STOP         
           ENDIF 
 
@@ -123,9 +124,10 @@ C           Hanning Instrument Shape
 
            IF(ISHAPE.GT.0.AND.ISHAPE.LT.3)THEN
             IF(F1.LT.0.0.OR.F2.LT.0.0)THEN
-             print*,'Warning: lblconv1. F1 or F2 < 0.0'
+             print*,'Warning: lblconv2. F1 or F2 < 0.0'
              print*,F1,F2
-             stop
+             if(F1.LT.0.0)F1=0.0
+             if(F2.LT.0.0)F2=0.0
             ENDIF
            ENDIF
 
@@ -175,8 +177,9 @@ C            Find relevant points in tabulated files.
              ENDDO
 
              IF(I1.LT.0.OR.I2.LT.0)THEN
-              PRINT*,'Error in lblconv1 - wavelength/wavenumber not'
+              PRINT*,'Error in lblconv2 - wavelength/wavenumber not'
               PRINT*,'covered by lbltables'
+              PRINT*,'Second',NWAVE,VWAVE(1),VWAVE(NWAVE),I1,I2
               STOP         
              ENDIF 
 

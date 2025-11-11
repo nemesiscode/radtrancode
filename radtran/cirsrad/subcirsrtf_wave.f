@@ -145,7 +145,7 @@ C-----------------------------------------------------------------------
         if(idiag.gt.0)WRITE(*,*)'NPATH,NWAVE,NOUT = ',NPATH,NWAVE,NOUT
 
       	IF (NOUT.GT.MAXOUT3) THEN
-                PRINT*,'MAXOUT3 = ',MAXOUT3
+                PRINT*,'NOUT,MAXOUT3 = ',NOUT,MAXOUT3
         	WRITE(*,1080)
         	STOP
       	ENDIF
@@ -177,7 +177,7 @@ C-----------------------------------------------------------------------
          endif
 	 CALL read_klbllist (klist, ngas, idgas, isogas, nwave, vwave)
          if(idiag.gt.0)then
- 	  WRITE(*,*)'     read_klist COMPLETE'
+ 	  WRITE(*,*)'     read_klbllist COMPLETE'
 	  WRITE(*,*)' '
          endif
         ENDIF

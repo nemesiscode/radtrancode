@@ -290,10 +290,20 @@ C        Set up all files for a direct cirsrad run
      3    lin,nvar,varident,varparam,nx,xn,jalb,jxsc,jtan,jpre,tsurf,
      4    xmap)
 
+C         print*,'forwardavfoxX',nwave1
+C         do i=1,nwave1
+C          print*,i,vwave1(i)
+C         enddo
 
          call CIRSrtfg_wave(runname, dist, inormal, iray, fwhm, ispace, 
      1    vwave1,nwave1,itype, nem, vem, emissivity, tsurf, gradtsurf, 
      2    nx, xmap, vconv1, nconv1, npath, calcout, gradients,iscat)
+
+C         print*,nconv1
+C         do i=1,nconv1
+C          print*,i,vconv1(i),calcout(i)
+C         enddo
+
 
 C        Need to assume order of paths. First path is assumed to be
 C        thermal emission

@@ -82,13 +82,6 @@ C					          things up between platforms
           print*,vwave,vmin,vmin+(npoint-1)*delv
          endif
 
-C         vwavex = VMIN + (N1-1)*DELV
-C         XT = ABS(vwave - vwavex)
-C         IF(XT.GT.EPS)THEN
-C          print*,'Wavenumber does not match'
-C          print*,vwave,vwavex
-C          stop
-C         ENDIF
 
          IREC = IREC0+NP*ABS(NT)*(N1-1)
 

@@ -160,6 +160,11 @@ C Calculate total path (length*(amagat)^2)
         CALL FPREAD(vwave,T,KPARA,H2ALPHA,HEALPHA,DAH2DT,DAHEDT,
      1   deltaf)
 
+        if(idump.eq.1)then
+         print*,vwave,T,KPARA,deltaf
+         print*,(h2alpha(i),i=1,kpara)
+         print*,(healpha(i),i=1,kpara)
+        endif
         IF (fpara.LT.0.0) THEN
           AH2H2 = H2ALPHA(KPARA)
           AH2HE = HEALPHA(KPARA)
@@ -171,7 +176,8 @@ C Calculate total path (length*(amagat)^2)
           x1 = 1.0 + (fpara - 0.25)/deltaf 
           j = INT(x1)
           f = x1 - j
-C          print*,'NPARACON: x1,deltaf,fpara,j,f: ', x1,deltaf,fpara,j,f
+          if(idump.eq.1)print*,'NPARACON: x1,deltaf,fpara,j,f: ', 
+     1     x1,deltaf,fpara,j,f
           IF (j.LT.1) THEN
             j = 1
             f = 0.0
@@ -197,6 +203,7 @@ C          print*,'NPARACON: x1,deltaf,fpara,j,f: ', x1,deltaf,fpara,j,f
         DABSORB(7) = (DH2DFP*qh2*qh2 + DHEDFP*qh2*qhe)*TAU
 
         IF (idump.EQ.1) THEN
+          print*,AH2H2,qh2,AH2He,qhe
           WRITE(*,*)vwave, 'cm-1: total (alpha*tau) is ',ABSORB
         ENDIF
 

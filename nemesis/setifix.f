@@ -72,6 +72,7 @@ C     Set minimum fractional error to fix variable.
        if(varident(ivar,1).eq.227)np = 7
        if(varident(ivar,1).eq.228)np = 7
        if(varident(ivar,1).eq.229)np = 7
+       if(varident(ivar,1).eq.111)np = 2+int(varparam(ivar,1))
 
        do i=1,np
         ix = nxtemp+i

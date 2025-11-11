@@ -93,8 +93,9 @@ C     *******************************************************
 C     ****************   CODE *******************************
 C     *******************************************************
 
+
 C     Set idiag to 1 for standard print statements. Set to zero to suppress
-      idiag=1
+      idiag=0
 C     Set iquiet to 1 to reduce writing to intermdiate meta files (such as .drv)
       iquiet=0
 
@@ -316,18 +317,23 @@ C     outputs
 C      Calculate the tabulated wavelengths of c-k look up tables
        do igeom=1,ngeom
         nconv1=nconv(igeom)
+C        print*,nconv1
         do j=1,nconv1
          vconv1(j)=vconv(igeom,j)
+C         print*,j,vconv1(j)
         enddo
         CALL wavesetb(runname,vkstart,vkend,vkstep,nconv1,vconv1,
      1  fwhm,nwave1,vwave1)
+C        print*,nwave1
         do j=1,nwave1
          vwave(igeom,j)=vwave1(j)
+C         print*,j,vwave1(j)
         enddo
         nwave(igeom)=nwave1
         if(idiag.gt.0)print*,igeom,nconv1,nwave1
        enddo
       endif
+
 
       if(ilbl.eq.2)then
        call file(runname,sfile,'sha')
@@ -338,13 +344,18 @@ C      Calculate the tabulated wavelengths of c-k look up tables
 C      Calculate the tabulated wavelengths of lbl look up tables
        do igeom=1,ngeom
         nconv1=nconv(igeom)
+        print*,'igeom',igeom
+        print*,'vconv',nconv1
         do j=1,nconv1
          vconv1(j)=vconv(igeom,j)
+         print*,igeom,j,vconv1(j)
         enddo
         CALL wavesetc(runname,vkstart,vkend,vkstep,nconv1,vconv1,
      1  fwhm,ishape,nwave1,vwave1)
+        print*,'vwave',nwave1
         do j=1,nwave1
          vwave(igeom,j)=vwave1(j)
+         print*,igeom,j,vwave1(j)
         enddo
         nwave(igeom)=nwave1
        enddo

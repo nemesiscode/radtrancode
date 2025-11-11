@@ -23,7 +23,7 @@ C     ***********************************************************
       implicit none     
       integer mpoint,i,j,l,npoints
       real pi,sum,dv
-      parameter (mpoint=1000,pi=3.1415927)
+      parameter (mpoint=3000,pi=3.1415927)
       real vi(mpoint),k(mpoint),n(mpoint),vm,nm
       real va(mpoint),na(mpoint),ka(mpoint),d1,d2
       real km,alpha,beta,v,y(mpoint),delta

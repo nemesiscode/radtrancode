@@ -311,6 +311,7 @@ C      therefore need to reseed it to continue to get pseudo-random numbers
          if(varident(ivar,1).eq.225)np = 11
          if(varident(ivar,1).eq.226)np = 8
          if(varident(ivar,1).eq.227)np = 7
+         if(varident(ivar,1).eq.111)np = 2+int(varparam(ivar,1))
 
          if(varident(ivar,1).eq.0.and.np.eq.npro)then
           ioffx=0

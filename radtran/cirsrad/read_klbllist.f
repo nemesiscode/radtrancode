@@ -83,7 +83,7 @@ C-----------------------------------------------------------------------
       IF(ktafil(nkl).EQ.null)GOTO 20
 
       CALL file(ktafil(nkl),ktafil(nkl),'lta')
-      WRITE(*,1030)ktafil(nkl)
+C      WRITE(*,1030)ktafil(nkl)
       GOTO 10
 	
 20    nkl = nkl - 1
@@ -94,11 +94,11 @@ C
 C	Open appropriate LBL lookup files and compare. 
 C
 C-----------------------------------------------------------------------
-      WRITE(*,*)' READ_KLBLLIST.f :: Number of l-files = ',nkl
+C      WRITE(*,*)' READ_KLBLLIST.f :: Number of l-files = ',nkl
 
       DO i=1,nkl
         unit(i) = 100 + i
-        WRITE(*,1035)KTAFIL(i)
+C        WRITE(*,1035)KTAFIL(i)
         CALL read_klblhead(ktafil(i),unit(i),npt(i),xmin(i),delx(i),
      1   idgask(i),isogask(i),pk,tk,t2k,np(i),nt(i),irec(i))
         xmax(i) = xmin(i) + (npt(i) - 1) * delx(i)

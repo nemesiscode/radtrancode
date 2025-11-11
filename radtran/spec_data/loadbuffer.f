@@ -129,7 +129,7 @@ C      print*,'VBOT,WING = ',VBOT,WING
       ENDDO
 111   IREC=IREC+1
 
-      print*,'IREC = ',irec
+C      print*,'IREC = ',irec
       IF(IREC.GT.DBSIZ)GOTO 102
 
       READ(DBLUN,110,REC=IREC)BUFFER(1:DBRECL)

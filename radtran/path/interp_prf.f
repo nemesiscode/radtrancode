@@ -9,7 +9,7 @@ c-----------------------------------------------------------------------
       implicit none
 
       integer nvmr_max,npro_max,nvmr,npro,npro1
-      parameter (nvmr_max=30,npro_max=300)
+      parameter (nvmr_max=30,npro_max=2000)
       integer amform,iplanet,idiso(nvmr_max,2)
       real latitude,molwt
       real vmrs(npro_max,nvmr_max),vmrs1(npro_max,nvmr_max)

@@ -92,13 +92,15 @@ C       See if file is present forcing FWHM to vary with wavelength/wavenumber
         INQUIRE(FILE=FWHMFILE,EXIST=FWHMEXIST)
 C       If such a file exists then read in the data
         IF(FWHMEXIST)THEN
-         if(idiag.gt.0)then
-          print*,'Reading FWHM infomration from : ',FWHMFILE
-         endif
+C         if(idiag.gt.0)then
+          print*,'Reading FWHM information from : ',FWHMFILE
+C         endif
          OPEN(13,FILE=FWHMFILE,status='old')
           READ(13,*)NFWHM
+C          PRINT*,NFWHM
           DO I=1,NFWHM
            READ(13,*)VFWHM(I),XFWHM(I)
+C           PRINT*,VFWHM(I),XFWHM(I)
           ENDDO
          CLOSE(13)
         ENDIF
@@ -109,6 +111,7 @@ C
 C-----------------------------------------------------------------------
 
 
+        
 
         CALL subcirsrtf_wave(opfile, Dist, INormal, Iray, ispace, 
      1          vwave,nwave,npath,itype,nem,vem,emissivity,tsurf,
@@ -141,13 +144,14 @@ C-----------------------------------------------------------------------
         ENDIF
 
 
-C        open(12,file='test.out',status='unknown')
-C        write(12,*)nwave
+        open(12,file='test.out',status='unknown')
+        write(12,*)nwave
         DO I= 1, npath
            DO J= 1, nwave
               K= I+(J-1)*npath
               y(J)= output(K)
-C              write(12,*)vwave(j),y(J)
+              write(12,*)vwave(j),y(J)
+C              if(j.le.200)print*,vwave(j),y(J)
            ENDDO
 
            if(ilbl.eq.0)then
@@ -162,15 +166,18 @@ C           Trapezium rule integrator
      1      vconv,yout,FWHMEXIST,NFWHM,VFWHM,XFWHM)
            endif
 
-C           write(12,*)nconv
+           write(12,*)nconv
            DO J= 1, nconv
               K= I+(J-1)*npath
               convout(K)= yout(J)
-C              write(12,*)vconv(j),yout(j)
+              write(12,*)vconv(j),yout(j)
+C              if(j.le.20)print*,vconv(j),yout(j)
            ENDDO
 
         ENDDO
-C        close(12) 
+
+        close(12) 
+
 
         deallocate(y,yout)
 

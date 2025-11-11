@@ -142,9 +142,11 @@ C      lrep=.true.
       print*,(mu1(i),i=1,nmu)
       print*,(wt1(i),i=1,nmu)
       print*, (radg(i),i=1,nmu) 
+      print*,'i,tau,1-eps,omega,bnu,tauray'
       do i=1,nlay
        print*,i,tau(i),(1.0 - eps(i)),omegas(i),bnu(i),tauray(i)
       end do
+      print*,'i,1-eps,omega,lfrac(1:ncont)'
       do i=1,nlay
        print*,i,(1.0 - eps(i)),omegas(i),(lfrac(j,i),j=1,ncont)
        sum=0.0
@@ -222,6 +224,8 @@ C ********************************
 
 C      lrep=.true.
       lrep=.false.
+
+
 C     PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
 C     Precalculate phase function arrays if new wavelength
       IF(IGDIST.EQ.1) THEN
@@ -291,7 +295,7 @@ C        Transfer matrices to storage
            PMIR(IC,IP,JP)=PPLMI(IP,JP)
           END DO
          END DO
-
+C         print*,IC,PPLR(IC,1,1),PMIR(IC,1,1)
 800     CONTINUE
        ENDIF
 C     PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
@@ -410,6 +414,7 @@ C       Assign phase function coefficients for each atmospheric layer
           if(idump.gt.0)print*,J1,FRAC,SFRAC
           if(lrep)print*,'j1,frac,sfrac',J1,FRAC,SFRAC
 
+
           IF(FRAC.GT.0.0)THEN
            DO JP = 1,NMU
             DO IP = 1,NMU
@@ -417,6 +422,12 @@ C       Assign phase function coefficients for each atmospheric layer
              PPLMI(IP,JP) = PMIN(J1,IC,IP,JP)
             END DO
            END DO
+
+C           IF(L.EQ.15)THEN
+C            print*,J1,PPLPL(1,1),PPLMI(1,1)
+C           ENDIF
+ 
+
            if(idump.gt.0)print*,'Layer ',L,' Adding fraction ',
      &	    FRAC,' of mode ',J1
            if(lrep)print*,'Layer ',L,' Adding fraction ',
@@ -435,6 +446,10 @@ C       Assign phase function coefficients for each atmospheric layer
              PRINT*,(PPLMIS(JP,IP),IP=1,NMU)
             ENDDO
            endif
+C           IF(L.EQ.15)THEN
+C            print*,J1,FRAC,PPLPLS(1,1),PPLMIS(1,1)
+C           ENDIF
+
           ENDIF
 
          END DO
@@ -456,6 +471,12 @@ C       Assign phase function coefficients for each atmospheric layer
              PPLMI(IP,JP) = PMIR(IC,IP,JP)
             END DO
           END DO
+
+C          IF(L.EQ.15)THEN
+C            print*,'RAY',TAUR,TAUSCAT+TAUR,FRAC,PPLPL(1,1),
+C     &       PPLMI(1,1)
+C          ENDIF
+
           if(idump.gt.0)print*,'Layer ',L,' Adding fraction ',
      &		FRAC,' of Rayleigh scattering'
           if(lrep)print*,'Layer ',L,' Adding fraction ',
@@ -476,6 +497,9 @@ C       Assign phase function coefficients for each atmospheric layer
             ENDDO
            endif
 
+C           IF(L.EQ.15)THEN
+C            print*,J1,FRAC,PPLPLS(1,1),PPLMIS(1,1)
+C           ENDIF
 
          ENDIF
 
@@ -548,6 +572,12 @@ C       P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P*P
          if(idump.gt.0.or.lrep)print*,'cloud layer ',l,iscl(l)
 C         OMEGA=0.3
  	 CALL DOUBLE1(IC,L,RL(1,1,L),TL(1,1,L),JL(1,1,L),NMU,MAXMU)
+
+C         IF(L.EQ.15)THEN
+C          print*,L,TAUT,OMEGA,RL(1,1,L),TL(1,1,L),JL(1,1,L)
+C          stop
+C         ENDIF
+
         END IF
 
 2000  CONTINUE

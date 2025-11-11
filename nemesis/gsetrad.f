@@ -92,6 +92,7 @@ C     ************************************************************************
 
       integer ncont1,xflag,nwave,np,np1
       real xlatx,xlonx,wave(max_wave),frac
+      real ww(mx),ss(mx),s1(mx),y1,y2,wx
       real xsec(max_mode,max_wave,2),nimag(max_wave)
       real nreal(max_wave),r0,v0,clen,k2(max_wave)
       real srefind(max_wave,2),parm(3),rs(3),vm,nm
@@ -100,17 +101,17 @@ C     ************************************************************************
       integer iprfcheck,check_profile,nmode,inorm
       real xod(maxcon),xscal(maxcon),cwid,pmeth
       real minlam,lambda0
-      integer flagh2p,nstep
+      integer flagh2p,nstep,iparam
       integer jsurfx,jalbx,jxscx,jtanx,jprex,nprox,icheck,icont
       integer jradx,npvar,jloggx,npro,nvmr,ierr,ierrx,nxsc,jcont
       real x,y
-      real xnx(mx)
+      real xnx(mx),vx(mx)
       real stx(mx,mx),xdnu,xtest
       real xmapx(maxv,maxgas+2+maxcon,maxpro)
       integer jpara,jfracx
       character*100 runname,buffer,aname,rdw
-      logical miebool
-      integer pvar,mievar(max_mode)
+      logical miebool,vinterp
+      integer pvar,mievar(max_mode),ic,nc
       real xiscatmie(max_mode),xnormmie(max_mode)
       integer ivar,i,j,nalb,nalb1
       real alb(maxsec),valb(maxsec)
@@ -131,7 +132,7 @@ C     ************************************************************************
       real csx,nrealshell(max_wave),nimagshell(max_wave),nmshell
       integer idiag,iquiet
       common/diagnostic/idiag,iquiet
-     
+      common/passwave/vx
       if(idiag.gt.0)print*,'gsetrad, lin = ',lin
 
 C     Look to see if the CIA file refined has variable para-H2 or not.
@@ -488,13 +489,15 @@ C     See if Sromovsky cloud layer model is specified.
        if(varident(ivar,3).eq.46.or.varident(ivar,3).eq.47)icheck=1
        if(varident(ivar,1).lt.0.and.varident(ivar,3).eq.49)icheck=1
        if(varident(ivar,3).ge.50.and.varident(ivar,3).le.52)icheck=1
-       if(varident(ivar,3).eq.54)icheck=1
+       if(varident(ivar,3).eq.54.or.varident(ivar,3).eq.58)icheck=1
+C       if(varident(ivar,1).eq.111)icheck=1
       enddo
 
 
 C     Check to see if anything bad has happened in the .prf file before 
 C     running subpath
       iprfcheck=check_profile(runname)
+      print*,'iprfcheck = ',iprfcheck
 
 C     Compute the drv file to get the aerosol optical depths
       if(icheck.eq.1.and.iprfcheck.eq.0) then
@@ -547,7 +550,8 @@ C              print*,'gsetrad',icont,od1,xod(icont),xscal(icont)
           if(varident(ivar,3).eq.14.or.varident(ivar,3).eq.15.
      & or.varident(ivar,3).eq.47.or.varident(ivar,3).eq.50.
      & or.varident(ivar,3).eq.51.or.varident(ivar,3).eq.52.
-     & or.varident(ivar,3).eq.54)then
+     & or.varident(ivar,3).eq.54.or.varident(ivar,3).eq.58.
+     & or.varident(ivar,3).eq.49)then
               icont=abs(varident(ivar,1))
               od1=exp(xn(nx1+1))
               xscal(icont)=xod(icont)/od1
@@ -601,6 +605,9 @@ C           if(idiag.gt.0)print*,'xxz1',ivar,varparam(ivar,2),np
            endif
 C           if(idiag.gt.0)print*,'xxz1',ivar,varparam(ivar,2),np
           endif
+          if(varident(ivar,1).eq.448)then
+           np = 2
+          endif
           if(varident(ivar,1).eq.445)np = 3+2*int(varparam(ivar,1))
           if(varident(ivar,1).eq.222)np = 8
           if(varident(ivar,1).eq.223)np = 9
@@ -608,6 +615,20 @@ C           if(idiag.gt.0)print*,'xxz1',ivar,varparam(ivar,2),np
           if(varident(ivar,1).eq.225)np = 11
           if(varident(ivar,1).eq.226)np = 8
           if(varident(ivar,1).eq.227)np = 7
+
+          if(varident(ivar,1).eq.111)then
+           nc=int(varparam(ivar,1))
+           do ic=1,nc
+            icont=int(varparam(ivar,1+ic))
+            od1 = exp(xn(nx1+2+ic))
+            xscal(icont)=xod(icont)/od1
+C            print*,'AA',icont,od1,xscal(icont)
+            do j=1,NN
+               dust(icont,j)=dust(icont,j)/xscal(icont)
+            enddo
+           enddo
+           np = 2+nc
+          endif
 
          endif
 
@@ -664,7 +685,7 @@ C       check that rescaling has happened correctly
        if(varident(ivar,1).eq.225)np = 11
        if(varident(ivar,1).eq.226)np = 8
        if(varident(ivar,1).eq.227)np = 7
-          
+       if(varident(ivar,1).eq.111)np = 2+int(varparam(ivar,1))   
 
        if(varident(ivar,1).eq.444.or.varident(ivar,1).eq.445.
      & or.varident(ivar,1).eq.446)then
@@ -677,6 +698,7 @@ C       check that rescaling has happened correctly
            r0 = exp(xn(nx1+1))
            v0 = exp(xn(nx1+2))
            if(idiag.gt.0)print*,varident(ivar,1),' r0,v0 = ',r0,v0
+ 
            if(varident(ivar,1).eq.445)then
             csx = exp(xn(nx1+3))
             nmshell = varparam(ivar,6)
@@ -691,43 +713,77 @@ C       check that rescaling has happened correctly
            lambda0 = varparam(ivar,5)
            call get_xsecA(runname,nmode,nwave,wave,xsec)
 
-C          np1 should now match nwave
+C          np1 usually matches nwave
+           vinterp=.false.
            if(np1.ne.nwave)then
              if(idiag.gt.0)then
               print*,'Warning from gsetrad.f, nwave in refindex file is'
               print*,'different from that in .xsc file.'
+              print*,'Need to interpolate'
              endif
+             if(varident(ivar,1).eq.444)then
+               do i=1,np1
+                ww(i)=vx(nx1+2+i)
+                ss(i)=xn(nx1+2+i)
+                print*,'aa',i,ww(i),ss(i)
+               enddo
+             else
+               do i=1,np1
+                ww(i)=vx(nx1+3+i)
+                ss(i)=xn(nx1+3+i)
+                s1(i)=xn(nx1+3+np1+i)
+               enddo
+             endif
+             vinterp=.true.
            endif
            do i=1,nwave
             if(varident(ivar,1).eq.444)then
-             if(varparam(ivar,2).gt.0.0)then
-              nimag(i)=exp(xn(nx1+2+i))
-              nimagshell(i) = 0.0
+             if(clen.gt.0.0)then
+              if(vinterp)then
+               call verint(ww,ss,np1,y1,wave(i))
+               nimag(i)=exp(y1)
+               nimagshell(i)=0.0
+              else
+               nimag(i)=exp(xn(nx1+2+i))
+               nimagshell(i) = 0.0
+              endif
              else
               nimag(i)=exp(xn(nx1+3))
 C              if(idiag.gt.0)print*,'xxy',nx1,nx1+3,exp(xn(nx1+3))
               nimagshell(i) = 0.0
              endif
-            else
-             if(varident(ivar,1).eq.445)then
-              if(varparam(ivar,2).gt.0.0)then
+            endif
+
+            if(varident(ivar,1).eq.445)then
+             if(clen.gt.0.0)then
+              if(vinterp)then
+               call verint(ww,ss,np1,y1,wave(i))
+               nimag(i)=exp(y1)
+               call verint(ww,s1,np1,y1,wave(i))
+               nimagshell(i)=exp(y1)
+              else
                nimag(i)=exp(xn(nx1+3+i))
                nimagshell(i) = exp(xn(nx1+3+i+np1))
-              else
-               nimag(i)=exp(xn(nx1+3))
-               nimagshell(i) = exp(xn(nx1+3+np1))
               endif
              else
-              nimag(i)=exp(xn(nx1+3))
-              nimagshell(i) = exp(xn(nx1+3+np1)) 
+               nimag(i)=exp(xn(nx1+3))
+               nimagshell(i) = exp(xn(nx1+3+np1)) 
              endif
             endif
+
             if(varident(ivar,1).eq.446)then
              frac=xn(nx1+3)
-             if(varparam(ivar,2).gt.0.0)then
-              nimag(i)=exp((1.0-frac)*xn(nx1+3+i)+
+             if(clen.gt.0.0)then
+              if(vinterp)then
+               call verint(ww,ss,np1,y1,wave(i))
+               call verint(ww,s1,np1,y2,wave(i))
+               nimag(i)=exp((1.0-frac)*y1+frac*y2)
+               nimagshell(i) = 0.0
+              else
+               nimag(i)=exp((1.0-frac)*xn(nx1+3+i)+
      &           frac*xn(nx1+3+np1+i))
-              nimagshell(i) = 0.0
+               nimagshell(i) = 0.0
+              endif
              else
               nimag(i)=exp((1.0-frac)*xn(nx1+4)+frac*xn(nx1+5))
 C              if(idiag.gt.0)print*,'xxy',nx1,nx1+3,exp(xn(nx1+3))
@@ -842,6 +898,8 @@ C             if(idiag.gt.0)print*,'xx',wave(i),nreal(i),nimag(i)
            else
 C           Code hack to apply same scattering propeties to all modes
 C           from 1 to -(imode)
+            print*,'Deprecated option in gsetrad.f'
+            stop
             do i1=1,-imode
              call modmakephase(iwave,i1,inorm,iscatmie,
      1   parm,rs,srefind,runname,lambda0,csx,
@@ -866,6 +924,62 @@ C           from 1 to -(imode)
              endif
             endif
            endif
+
+       endif
+
+
+       if(varident(ivar,1).eq.448)then
+
+           iwave=ispace
+           if(iwave.eq.0)iwave=2
+
+           imode=varident(ivar,2)
+
+           lambda0=varparam(ivar,1)
+
+           r0 = exp(xn(nx1+1))
+           v0 = exp(xn(nx1+2))
+
+           call get_xsecA(runname,nmode,nwave,wave,xsec)
+
+           buffer='refindexN.dat'
+           buffer(9:9)=char(ivar+48)
+           open(12,file=buffer,status='old')
+
+           do j = 1,nwave
+             read(12,*)wx,srefind(j,1),srefind(j,2)
+           enddo
+
+           close(12)
+
+           inorm=1
+           iscatmie=1
+           csx=-1.0
+
+C          Find minimum wavelength
+           if(ispace.eq.0)then
+             minlam=1e4/wave(nwave)
+           else
+             minlam=wave(1)
+           endif
+
+           parm(1)=r0
+           parm(2)=v0
+           if(iscatmie.eq.1)then
+             parm(3)=(1. - 3 * parm(2))/parm(2)
+            else
+             parm(3)=0.0
+           endif
+
+           rs(1)=0.015*minlam
+           rs(2)=0.
+           rs(3)=rs(1)
+
+           call modmakephase(iwave,imode,inorm,iscatmie,
+     1   parm,rs,srefind,runname,lambda0,csx,
+     2   nrealshell,nimagshell)
+
+         np = 2
 
        endif
 

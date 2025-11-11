@@ -542,8 +542,8 @@ C       open output file for internal radiation field output.
         ivenera=0
         inetflux=0
         do ipath=1,npath
-C         if(imod(ipath).eq.24)ish=1
-         if(imod(ipath).eq.24)ivenera=1
+         if(imod(ipath).eq.24)ish=1
+C         if(imod(ipath).eq.24)ivenera=1
 C         if(imod(ipath).eq.24)inetflux=1
         enddo
         if(idiag.gt.0)print*,'ish = ',ish
@@ -656,6 +656,7 @@ C         if(imod(ipath).eq.24)inetflux=1
         ENDIF
 
 
+C        print*,'Start'
         DO I = 1, nwave
 		x = vwave(I)
                 esurf = interpem(nem,vem,emissivity,x)
@@ -765,7 +766,7 @@ C-----------------------------------------------------------------------
 	      bsec(L) = xsec(2,K,L)
 	      asec2(L) = xsec2(1,K,L)
 	      bsec2(L) = xsec2(2,K,L)
-C              if(j.eq.5)then
+C              if(i.eq.1)then
 C               print*,L,vsec(L),asec(L),bsec(L),asec2(L),bsec2(L)
 C              endif
 	    ENDDO
@@ -773,8 +774,8 @@ C              endif
 	    CALL csplint (vsec, asec, asec2,nsec, x, tau)
 	    CALL csplint (vsec, bsec, bsec2,nsec, x, tau2)
 
-C            if(j.eq.5)print*,'x = ',x
-C            if(j.eq.5)print*,j,k,tau,tau2
+C            if(i.eq.1)print*,'x = ',x
+C            if(i.eq.1)print*,j,k,tau,tau2
 
             if(tau.lt.tau2)then
 C              if tau < tau2 then cubic spline interpolation has gone wrong. Do linear 
@@ -803,7 +804,7 @@ C              endif
                tau2=bsec(nsec)
               endif
 
-C              if(j.eq.5)then
+C              if(i.eq.1)then
 C                print*,'new tau,tau2 ',tau,tau2
 C                if(jf.gt.0)then
 C                  print*,jf,vsec(jf),vsec(jf+1),xf
@@ -870,6 +871,7 @@ C 	           endif
 C                 endif
             endif
 
+C            if(i.eq.1)print*,'XZ',K,J,cont(K,J)
             if(cont(K,J).lt.0.and.idiag.gt.0)then
                print*,'CONT,K,J',cont(k,j),k,j
             endif
@@ -885,7 +887,7 @@ C           if(j.eq.5)print*,taucon(j),tauscat(j)
            taucloud(K,J) = tau
            tauclscat(K,J) = tau2   
 	   tausc(K) = tau2
-C           if(j.eq.5)then
+C           if(i.eq.1)then
 C              print*,j,k,taucon(j),tau,tauscat(j),tau2
 C           endif
 C          ##### f(J) is average phase function ######
@@ -936,7 +938,8 @@ C			    Can occasionally get -ve AvCONTMPs at
 C			    edge of Karkoschka CH4 data.
  			    taucon(J) = taucon(J) + AvgCONTMP
  			    taugasc(J) = taugasc(J) + AvgCONTMP
-                          endif
+C                            if(i.eq.1)print*,'CC',K,J,taucon(J) 
+                         endif
 
 			ENDDO
 C-----------------------------------------------------------------------
@@ -964,7 +967,7 @@ C	ID1= 0 means no diagnostic print statements while in CIACON.
 			XLEN = DELH(J)
 
 C       This goes off to do the collision induced-absorption
-C                        print*,'FLAGH2P = ',FLAGH2P
+C                        if(i.eq.1)print*,'FLAGH2P = ',FLAGH2P
 	             	IF(FLAGH2P.EQ.1)THEN
                 	   FPARA = HFP(J)
  			   CALL NPARACON(vv,P,T,
@@ -979,6 +982,7 @@ C                        print*,'FLAGH2P = ',FLAGH2P
 C                        print*,'FFF',J,taucon(J)
 			taucon(J)= taucon(J) + AvgCONTMP
 			taugasc(J)= taugasc(J) + AvgCONTMP
+C                        if(i.eq.1)print*,'C1',K,J,taucon(J) 
 
 C	The code below is if Rayleigh scattering is considered.
 C        print*,'IRAY, ITYPE = ',IRAY,ITYPE
@@ -1015,6 +1019,7 @@ C               Set vv to the current WAVENUMBER
 C                 if(j.eq.5)then
 C                  print*,J,taucon(j),taugasc(j),tauscat(j)
 C                 endif
+C                  if(i.eq.1)print*,'C2',K,J,taucon(J) 
 	        endif
 
 C               Calculate single-scattering contribution
@@ -1107,7 +1112,8 @@ C                                print*,L,j,kl_g(L,j)
                          KL_G(1,J)=KL_G(1,J)+KOUTLBL(J,K)*FRAC(J,K)
 
 			ENDDO
-
+C                        if(J.eq.10.and.I.EQ.1)print*,'KL',I,
+C     1				X,J,KL_G(1,J)
 	        ENDIF
 
         ENDDO
@@ -1134,6 +1140,8 @@ C                print*,'NG = ',NG
      1					* utotl(J)
 				taugas(J) = taugasc(J) + kl_g(Ig,J) 
      1					* utotl(J)
+C                         if(i.eq.1)print*,'YY',J,taucon(J),kl_g(Ig,J),
+C     1					utotl(J),tautmp(J)
 			ENDDO
 C-----------------------------------------------------------------------
 C
@@ -1446,9 +1454,12 @@ C			 print*,J,FPRAMAN(J),H2ABUND(J),DENS(J),tauram
 			 dtmp2 = dble(tautmp(layinc(J,Ipath))+tauram)
                          omegas(J)=dtmp1/dtmp2
 			 eps(J) = 1.0d00 - omegas(J)
-C                         print*,'XX',tauscat(layinc(J,Ipath)),
+C                         if(I.EQ.1)THEN
+C                         print*,'XX',J,Ipath,layinc(J,Ipath),
+C     &  tauscat(layinc(J,Ipath)),
 C     1  tautmp(layinc(J,Ipath)),tauram,dtmp1,dtmp2,
-C     2  J,omegas(J),eps(J)
+C     2  omegas(J),eps(J)
+C                         endif
 		        ELSE
   				EPS(J)=1.0
          			omegaS(J)=0.
@@ -1508,10 +1519,10 @@ C               matrix inversion crashing
 
                 IF (itype.EQ.11) THEN
 
-C                if(IG.eq.10)then
+C                if(I.eq.1)then
 C                        WRITE (*,*) '     CALLING scloud11wave'
 C                        WRITE (*,*)'IRAY,INORMAL = ',IRAY,INORMAL
-C                        print*,sol_ang,solar
+C                        print*,I,x,sol_ang,solar
 C                        print*,emiss_ang,aphi
 C                        print*,radg
 C                        print*,lowbc,galb1
@@ -1538,7 +1549,7 @@ C                 endif
 
 
  		  	corkout(Ipath,Ig) = xfac*rad1
-
+C                        if(I.EQ.1)print*,'corkout',corkout(Ipath,Ig)
 
                         if(SROMPOL)then
                          dtr=3.1415927/180.0
@@ -1667,8 +1678,9 @@ C                  sums everything anyway.
                          xrad1=xrad1+xfac*drad
                         endif
 
-
-C                  Now calculate flux in 'clear'  regions
+                  xrad2=0.0
+                  if(xf.lt.1.0) then
+C                  Now calculate flux in 'clear'  regions if cloud fraction is less than 1.0
 C                  Use scloud12wavex here and adjust the input to just compute the hazy bits 
                         do icont=1,ncont
                          if(icloud(icont,1).eq.0) then
@@ -1727,6 +1739,8 @@ C     & tauclx(2,25),icloudx(1,25),icloudx(2,25),fcoverx(25)
                          xrad2=xrad2+xfac*drad
                         endif
 
+                  endif
+                        
  		  	corkout(Ipath,Ig) = xf*xrad1 + (1-xf)*xrad2
 
 C                        print*,'xf,r1,r2, total',xf,xrad1,xrad2,
@@ -2686,6 +2700,7 @@ C-----------------------------------------------------------------------
 			ENDDO
 C		 	print*,'Ipath, I, output',Ipath,I,
 C     1				output(Ipath,I)
+C			if(I.LE.200)print*,'OUT',I,X,output(Ipath,I)
 		ENDDO
  
                 if(ivenera.eq.1)then

@@ -1,7 +1,7 @@
       subroutine forwardnogX(runname,ispace,iscat,fwhm,ngeom,nav,
      1 wgeom,flat,flon,nwave,vwave,nconv,vconv,angles,gasgiant,
      2 lin,nvar,varident,varparam,jsurf,jalb,jxsc,jtan,jpre,jrad,
-     3 jlogg,jfrac,RADIUS,nx,xn,ifix,ny,yn,kk,kiter,icheck)
+     3 jlogg,jfrac,RADIUS,nx,xn,sa,ifix,ny,yn,kk,kiter,icheck)
 C     $Id:
 C     **************************************************************
 C     Subroutine to calculate a synthetic spectrum and KK-matrix using
@@ -59,6 +59,7 @@ C                               xn (if included)
 C       RADIUS		real    Planetary radius at 0km altitude
 C       nx              integer Number of elements in state vector
 C       xn(mx)          real	State vector
+C       sa(mx,mx)	real	A priori covariance matrix
 C	ifix(mx)	integer Vector showing which elements we need
 C				 gradients for
 C       ny      	integer Number of elements in measured spectra array
@@ -100,6 +101,7 @@ C     **************************************************************
       real layht,tsurf,esurf,angles(mgeom,mav,3),flon(mgeom,mav)
       real xn(mx),yn(my),kk(my,mx),ytmp(my),ystore(my)
       real vconv1(mconv),vwave1(mwave),xlon,ysav(mx,2*my)
+      real sa(mx,mx),exa(mx)
       integer ny,jsurf,jalb,jtan,jpre,nem,nav(mgeom)
       integer nphi,ipath,iconv,k,jxsc
       integer nmu,isol,lowbc,nf,nf1,nx2,kiter
@@ -165,6 +167,10 @@ C      if(idiag.gt.0)print*,(xn(i),i=1,nx)
        stop
       endif
 
+      do i=1,nx
+       exa(i)=sqrt(sa(i,i))
+      enddo
+
       call setup(runname,gasgiant,nmu,mu,wtmu,isol,dist,lowbc,
      1 galb,nf1,nphi,layht,tsurf,nlayer,laytyp,layint)
 
@@ -223,7 +229,7 @@ C     Initialise arrays
 
 C        New bit to increase number of Fourier components depending on
 C        miniumum zenith angle
-         if(iscat.eq.1.and.z_ang.ge.0.0)then
+         if(isol.eq.1.and.iscat.eq.1.and.z_ang.ge.0.0)then
            nf = int(30*z_ang/90.0)
 C            nf=9
 C            nf=0
@@ -231,7 +237,9 @@ C            nf=20
          else
            nf=nf1
          endif
-
+  
+         print*,'Angles : ',sol_ang,emiss_ang,aphi
+         print*,'nf = ',nf
          if(idiag.gt.0)print*,'Angles : ',sol_ang,emiss_ang,aphi
          if(idiag.gt.0)print*,'nf = ',nf
          xlat = flat(igeom,iav)
@@ -267,8 +275,9 @@ C          if(idiag.gt.0)print*,'forwardnogX, ix,nx = ',ix,nx
           print*,'forwardnogX, ix,nx = ',ix,nx
           if(ix.gt.0)then
             xref = xn(ix)
-            dx = 0.05*xref
-            if(dx.eq.0)dx = 0.1
+            dx=0.1*exa(ix)
+C            dx = 0.05*xref
+C            if(dx.eq.0)dx = 0.1
             if(ix.eq.jrad)dx=10.
             if(ix.eq.jtan)then
              if(emiss_ang.lt.0)then
@@ -278,13 +287,15 @@ C          if(idiag.gt.0)print*,'forwardnogX, ix,nx = ',ix,nx
              endif
             endif
 C           Special fix for retrieval test
-            if(ix.eq.9)then
-             dx=0.1
-            endif                             
+C            if(ix.eq.5.or.ix.eq.8.or.ix.eq.12)then
+C             dx=0.1
+C            endif                             
+            print*,'forwardnogX, xn(ix),dx,xn(ix)+dx = ',
+     & xn(ix),dx,xn(ix)+dx,exp(xn(ix)),exp(xn(ix)+dx)
             xn(ix)=xn(ix)+dx
           endif
 
-c         if(idiag.gt.0)print*,'ix,xref,dx,xn(ix)',ix,xref,dx,xn(ix)
+          if(idiag.gt.0)print*,'ix,xref,dx,xn(ix)',ix,xref,dx,xn(ix)
           if(jsurf.gt.0)then
            tsurf = xn(jsurf)
           endif
@@ -322,7 +333,8 @@ C        Set up parameters for scattering cirsrad run.
          CALL READFLAGS(runname,INORMAL,IRAY,IH2O,ICH4,IO3,INH3,
      1    IPTF,IMIE, iuvscat)
          IMIE1=IMIE
-          itype=11			! scloud11wave
+C          itype=11			! scloud11wave
+          itype=14			! scloud14wave
 
           if(idiag.gt.0)print*,'************** FORWARDNOGX ***********'
           if(idiag.gt.0)print*,'******** INORMAL = ',INORMAL
@@ -384,7 +396,9 @@ C          if(idiag.gt.0)print*,'Npath, ix = ',npath,ix
 C          if(idiag.gt.0)print*,'Transferring calculation'
 C         Unless an SCR calculation, first path is assumed to be thermal emission
 
-          if(idiag.gt.0)print*,'ICREAD = ',icread
+          if(idiag.gt.0)then
+           print*,'ICREAD (tests if a gas cell is included) = ',icread
+          endif
           if(icread.ne.1)then       
            ipath=1
            do j=1,nconv1
@@ -402,10 +416,12 @@ C         Unless an SCR calculation, first path is assumed to be thermal emissio
            enddo
 
            if(ix.eq.0)then
+C            open(13,file='test1.out',status='unknown')
             do j=1,nconv1 
              if(nav(igeom).eq.2.and.iav.eq.2.and.xgeom.lt.0.0)then
 C             Need to do minnaert line-average calculation
 C             First find k_minnaert
+C              print*,nav(igeom),iav,xgeom
               xI0 = ysav(ix+1,ioff+j)	! extract previous radiance calc at mu=1
               xI1 = ytmp(ioff+j)
               if(xI0.gt.0.0.and.xI1.gt.0)then
@@ -416,10 +432,13 @@ C             First find k_minnaert
               yn(ioff+j)=lineav(xI0,xk)
               if(idiag.gt.0)print*,ix,ioff,ix+1,ioff+j
              else
+C              print*,'A'
               yn(ioff+j)=yn(ioff+j)+xgeom*ytmp(ioff+j)
               ystore(ioff+j)=ytmp(ioff+j)
+C              write(13,*)j,ioff,yn(ioff+j),ystore(ioff+j)
              endif
             enddo
+C            close(13)
            else
             do j=1,nconv1
              if(nav(igeom).eq.2.and.iav.eq.2.and.xgeom.lt.0.0)then
@@ -437,6 +456,13 @@ C             First find k_minnaert
              else             
               kk(ioff+j,ix)=kk(ioff+j,ix)+xgeom*
      1                      (ytmp(ioff+j) - ystore(ioff+j))/dx  
+C              if(ix.eq.8)print*,'AA',j,ystore(ioff+j),ytmp(ioff+j),
+C     1          dx,kk(ioff+j,ix)
+C              if(ix.ge.5.and.ix.le.6)then
+C               print*,'forwardnogx_kkA',ystore(ioff+j),
+C     &  ytmp(ioff+j),dx,kk(ioff+j,ix)
+C              endif
+ 
              endif
             enddo 
             xn(ix)=xref
@@ -447,6 +473,7 @@ C             First find k_minnaert
 
           else
 
+C           print*,'Oh'
            do j=1,nconv1
              iconv=-1
              do k=1,nconv1
@@ -480,6 +507,10 @@ C             First find k_minnaert
      1                      (ytmp(ioff+j) - ystore(ioff+j))/dx  
              kk(ioff+j1,ix)=kk(ioff+j1,ix)+xgeom*
      1                      (ytmp(ioff+j1) - ystore(ioff+j1))/dx  
+C             if(ix.ge.5.and.ix.le.6)then
+C              print*,'forwardnogx_kkB',ystore(ioff+j),
+C     &  ytmp(ioff+j),dx,kk(ioff+j,ix)
+C             endif
             enddo 
             xn(ix)=xref
 
@@ -498,10 +529,13 @@ C             First find k_minnaert
         ioff = ioff + 2*nconv1
        endif
 
+       print*,igeom
+
 100   continue
 
       close(ulog)
 
+C      print*,'Oh1'
 
       return
 

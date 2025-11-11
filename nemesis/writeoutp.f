@@ -173,6 +173,7 @@ C     Spectra is in transmission units
         if(varident(ivar,1).eq.225)np = 11
         if(varident(ivar,1).eq.226)np = 8
         if(varident(ivar,1).eq.227)np = 7
+        if(varident(ivar,1).eq.111)np = 2+int(varparam(ivar,1))
 
         write(lout,*)np
 

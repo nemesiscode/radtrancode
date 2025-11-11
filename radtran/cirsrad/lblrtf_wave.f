@@ -271,15 +271,15 @@ C
        IF(XX0.LT.0.)THEN
         XX0 = 0.0
        ENDIF
-       PRINT*,'Calling init_cont',XX0,VMAX+VREL,WING
+C       PRINT*,'Calling init_cont',XX0,VMAX+VREL,WING
 
        CALL INIT_CONT(XX0,VMAX+VREL,WING)
-       print*,'NBIN = ',NBIN
-       do i=1,nbin
-        print*,i,vbin(i)
-       enddo
+C       print*,'NBIN = ',NBIN
+C       do i=1,nbin
+C        print*,i,vbin(i)
+C       enddo
        VBOT=VBIN(1)
-       PRINT*,'VBOT = ',VBOT
+C       PRINT*,'VBOT = ',VBOT
        IBS(1)=1
        IBS(2)=2
 
@@ -288,13 +288,13 @@ C      Read in 2 arrays of lines
        CALL FNDWAV(DBLE(XX0))
        FSTREC = DBREC
 
-       PRINT*,'FSTREC = ',FSTREC
+C       PRINT*,'FSTREC = ',FSTREC
 
        MAXLIN1=MAXLIN
        print*,'lblrtf_wave : maxlin = ',MAXLIN1
        DX0 = DBLE(XX0)
        DX1 = DBLE(VMAX+VREL)
-       print*,'lblrtf_wave : DX0,DX1 ',DX0,DX1
+C       print*,'lblrtf_wave : DX0,DX1 ',DX0,DX1
        CALL LOADBUFFER(DX0,DX1,FSTREC,MAXLIN1,MAXBIN,IB,
      1   NGAS,IDGAS,ISOGAS,VBOT,WING,NLINR,VLIN,SLIN,ALIN,ELIN,IDLIN,
      2 SBLIN,PSHIFT,DOUBV,TDW,TDWS,LLQ,NXTREC,FSTLIN,LSTLIN,LASTBIN)
@@ -373,7 +373,7 @@ C          need the current height profile
         close(13)
 
         print*,'ISHAPE = ',ISHAPE
-C        open(37,file='raw.dat',status='unknown')
+        open(37,file='raw.dat',status='unknown')
 134     VV=VV+DBLE(DELV)
         XX=VV
         IF(ispace.eq.1)XX=1e4/VV
@@ -394,10 +394,11 @@ C        open(37,file='raw.dat',status='unknown')
          yp(I,1)=yp(I,2)
          yp(I,2)= output(I)
         ENDDO
-C        write(37,*),vv,output(1)
+        write(37,*),vv,output(1)
 
+C       Skip convolution on first wavenumber
         IF(IFLAG.EQ.1)THEN
-
+C           print*,'Calling lblconv'
            CALL lblconv(opfile,fwhm,ishape,npath,ispace,vv,delv,yp,
      1      nconv,dble(vconv),yout,ynor,FWHMEXIST,NFWHM,VFWHM,XFWHM,
      2      FINSTEXIST,minst,ninst,vinst,finst)
@@ -415,7 +416,7 @@ C        write(37,*),vv,output(1)
     
 
         IF(VV.LT.DBLE(VMAX))GOTO 134
-C        close(37)
+        close(37)
         DO I=1,NPATH
          DO J=1,NCONV
           YOUT(I,J)=YOUT(I,J)/YNOR(I,J)

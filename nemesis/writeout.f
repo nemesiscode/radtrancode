@@ -332,6 +332,7 @@ C1000  format(1x,i4,1x,f10.4,1x,e15.8,1x,e15.8,1x,f7.2,1x,e15.8,1x,f9.5)
          np = 5
         endif
        endif
+       if(varident(ivar,1).eq.448)np = 2
        if(varident(ivar,1).eq.445)np = 3+(2*int(varparam(ivar,1)))
        if(varident(ivar,1).eq.443)np = 3
        if(varident(ivar,1).eq.442)np = 4
@@ -342,6 +343,7 @@ C1000  format(1x,i4,1x,f10.4,1x,e15.8,1x,e15.8,1x,f7.2,1x,e15.8,1x,f9.5)
        if(varident(ivar,1).eq.225)np = 11
        if(varident(ivar,1).eq.226)np = 8
        if(varident(ivar,1).eq.227)np = 7
+       if(varident(ivar,1).eq.111)np = 2+int(varparam(ivar,1))
 
        write(lout,*)
      &  '   i, ix, xa          sa_err       xn          xn_err'

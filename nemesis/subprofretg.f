@@ -79,7 +79,7 @@ C     ***********************************************************************
       real, intent(out) :: xmap(maxv,maxgas+2+maxcon,maxpro)
       integer, intent(out) :: ncont,ierr
 
-      REAL DY,PSTRAT
+      REAL DY,PSTRAT,PBOT,HBOT,DELH1,XBOT,QP
       REAL XN(MX),DPEXP,DELH,XFAC,DXFAC,XTMP,SUM,PMIN,XSTEP
       REAL H(MAXPRO),P(MAXPRO),T(MAXPRO),VMR(MAXPRO,MAXGAS)
       REAL PMIN1,XMIN1,XMID,XNOW
@@ -106,7 +106,7 @@ C     ***********************************************************************
       INTEGER ICLOUD(MAXCON,MAXPRO),NCONT1,JSPEC,IFLA,I1,I2
       INTEGER NPRO,NPRO1,NVMR,JZERO,IV,IP,IVAR,JCONT,JVMR
       INTEGER IDGAS(MAXGAS),ISOGAS(MAXGAS),IPAR,JPAR,IVMR,NP
-      INTEGER IDAT,JFSH,JHYDRO,ICOND,JFSH1,JCONT1
+      INTEGER IDAT,JFSH,JHYDRO,ICOND,JFSH1,JCONT1,IC,NC
       REAL HTAN,PTAN,R,REFRADIUS,XCOL,ETOP,XLIM1,XLIM2
       REAL GASDATA(20,5),XVMR(MAXGAS),XMOLWT,XXMOLWT(MAXPRO)
       REAL CALCMOLWT,XRHO(MAXPRO)
@@ -565,7 +565,7 @@ C     First skip header
        JSPEC=-1
        JVMR=-1
        IPAR=-1
-       IF(VARIDENT(IVAR,1).LE.200)THEN
+       IF(VARIDENT(IVAR,1).LE.100)THEN
         IF(VARIDENT(IVAR,1).EQ.0)THEN
 C        variable is Temperature
          DO I=1,NPRO
@@ -4136,7 +4136,9 @@ C         This is also redone in gsetrad.f to make this totally secure.
 
         ELSEIF(VARIDENT(IVAR,3).EQ.49)THEN
 C        ***************************************************************
-C        Model 49. Profile is multiple of another profile
+C        Model 49. Profile is multiple of another profile if the 
+C        variable is a gas, and if a cloud has the same vertical distribution
+C        as another cloud, but an independent opacity.
 C        ***************************************************************
 
          IGAS1=INT(VARPARAM(IVAR,1))
@@ -4837,10 +4839,10 @@ C        ***************************************************************
         ELSEIF(VARIDENT(IVAR,3).EQ.58)THEN
 C        Model 58. Profile is represented by a value at a variable pressure level
 C        plus a fractional scale height. Below the knee pressure the profile is
-C        set to drop exponentially. Similar model to model 38, but thickness is now
+C        set to drop exponentially. Similar model to model 32, but thickness is now
 C        optical thickness, not the specific density at pknee
-C        FHWM is also folded into total opacity, but this gets renormalised
-C        by gsetrad.f anyway. wid
+C        FWHM is also folded into total opacity, but this gets renormalised
+C        by gsetrad.f anyway.
 C        ***************************************************************
 
          IF(VARIDENT(IVAR,1).GE.0)THEN
@@ -4987,7 +4989,7 @@ C        This is also redone in gsetrad.f to make this totally secure.
 217      CONTINUE
 
         ELSEIF(VARIDENT(IVAR,3).EQ.59)THEN
-C        Model 56. Condensing gas, but no associated cloud. Model requires
+C        Model 59. Condensing gas, but no associated cloud. Model requires
 C        the deep gas abundance, middle gas abundance (at fixed knee pressure)
 C        fractional scale height above knee and the desired maximum 
 C        relative humidity
@@ -5123,6 +5125,66 @@ C         anyway, where XMAP is unused. PGJI 8/12/23
 
          ENDDO
 
+        ELSEIF(VARIDENT(IVAR,3).EQ.61)THEN
+C        Similar to model 60 as profile is represented a modified Gaussian with a specified density 
+C        at an upper pressure level, the fsh below that, a bottom cloud pressure and then 
+C        width of Gaussian tail off of cloud above and below. 
+C        ***************************************************************
+
+         XDEEP = EXP(XN(NXTEMP+1))
+         PKNEE = EXP(XN(NXTEMP+2))
+         PBOT  = EXP(XN(NXTEMP+3))
+         XFSH  = EXP(XN(NXTEMP+4))
+         XWID  = EXP(XN(NXTEMP+5))
+
+         XFAC = (1.0-XFSH)/XFSH
+
+         CALL VERINT(P,H,NPRO,HKNEE,PKNEE)
+         CALL VERINT(P,H,NPRO,HBOT,PBOT)
+         JFSH = 0
+
+
+         Y0=ALOG(PKNEE)
+         Y1=ALOG(PBOT)
+
+         JFSH=0
+         DO J=NPRO,1,-1
+
+          IF(AMFORM.EQ.0)THEN
+           XMOLWT=MOLWT
+          ELSE
+           XMOLWT=XXMOLWT(J)
+          ENDIF
+
+          Y=ALOG(P(J))          
+
+          IF(Y.LT.Y0)THEN
+           X1(J) = XDEEP*EXP(-((Y-Y0)/XWID)**2)
+          ELSE
+           IF(Y.LT.Y1)THEN
+            IF(JFSH.EQ.0)THEN
+             DELH=H(J)-HKNEE
+             QP=XDEEP
+             JFSH=1
+            ELSE
+             DELH=H(J)-H(J+1)
+             QP=X1(J+1)
+             DELH1=HBOT-H(J+1)
+            ENDIF
+            print*,QP,DELH,XFAC,SCALE(J)
+            X1(J)=QP*EXP(-DELH*XFAC/SCALE(J))
+            XBOT=QP*EXP(-DELH1*XFAC/SCALE(J))
+           ELSE
+            X1(J) = XBOT*EXP(-((Y-Y1)/XWID)**2)
+           ENDIF
+          ENDIF
+
+C          print*,J,Y,Y0,Y1,X1(J),XDEEP,XBOT
+
+         ENDDO
+
+C        No XMAP calaculated for this model.
+
         ELSE
 
          print*,'Subprofretg: Model parametrisation code is not defined'
@@ -5169,7 +5231,7 @@ C         if(idiag.gt.0)print*,'Variable profile fraction'
          IPAR = -1
          NP = 1
         ELSEIF(VARIDENT(IVAR,1).EQ.444.OR.VARIDENT(IVAR,1).EQ.445.
-     &OR.VARIDENT(IVAR,1).EQ.446)THEN
+     &OR.VARIDENT(IVAR,1).EQ.446.OR.VARIDENT(IVAR,1).EQ.448)THEN
 C         if(idiag.gt.0)print*,'Variable size and RI'
 C        See if there is an associated IMOD=21 cloud. In which case
 C        modifying the radius will affect the vertical cloud distribution.
@@ -5296,6 +5358,7 @@ C          post-processing in gsetrad.f
 
 
          ENDIF
+
          IF(VARIDENT(IVAR,1).EQ.445)THEN
           NP = 3+(2*INT(VARPARAM(IVAR,1)))
          ELSE
@@ -5313,7 +5376,9 @@ C          post-processing in gsetrad.f
            ENDIF
           ENDIF
          ENDIF
-
+         IF(VARIDENT(IVAR,1).EQ.448)THEN
+          NP = 2
+         ENDIF
 
 
       ELSEIF(VARIDENT(IVAR,1).EQ.443)THEN
@@ -5982,10 +6047,91 @@ C         if(idiag.gt.0)print*,'Creme Brulee layering'
          IPAR = -1
          NP = 7
 
+        ELSEIF(VARIDENT(IVAR,1).EQ.111)THEN
+c        if(idiag.gt.0)print*,'Multi-component gaussian cloud
+C        Profile is represented a Gaussian with a specified optical
+C        thicknesses of several components centred at a variable pressure level plus 
+C        a variable FWHM (log press) in height.
+C        FHWM is also folded into total opacity, but this gets renormalised
+C        by gsetrad.f anyway.
+C        ***************************************************************
+
+         PKNEE = EXP(XN(NXTEMP+1))
+         XWID  = EXP(XN(NXTEMP+2))
+         Y0=ALOG(PKNEE)
+
+         NC=VARPARAM(IVAR,1)
+
+
+         XDEEP = EXP(XN(NXTEMP+1))
+
+C        ND is the particles per cm3 (but will be rescaled)
+C        OD is in units of particles/cm2 = particles/cm3 x length(cm)
+C        OD(J)=ND(J)*SCALE(J)*1E5
+C        Q is specific density = particles/gram = particles/cm3 x g/cm3
+C        Q(J)=ND(J)/RHO         
+         
+         XOD=0.
+         DO J=1,NPRO
+
+           IF(AMFORM.EQ.0)THEN
+            XMOLWT=MOLWT
+           ELSE
+            XMOLWT=XXMOLWT(J)
+           ENDIF
+
+           RHO = (0.1013*XMOLWT/R)*(P(J)/T(J))
+
+           Y=ALOG(P(J))          
+
+           Q(J) = 1./(XWID*SQRT(PI))*EXP(-((Y-Y0)/XWID)**2)
+           ND(J) = Q(J)*RHO 
+           OD(J) = ND(J)*SCALE(J)*1e5
+           IF(ISNAN(OD(J)))OD(J)=1e-36
+           IF(OD(J).LT.1e-36)OD(J)=1e-36
+           IF(ISNAN(Q(J)))Q(J)=1e-36
+           IF(Q(J).LT.1e-36)Q(J)=1e-36
+
+           XOD=XOD+OD(J)
+   
+           X1(J)=Q(J)
+         ENDDO
+
+C        Empirical correction to XOD
+         XOD = XOD*0.25
+C         print*,'test XOD = ',XOD
+         IPAR=-1
+     
+         DO IC=1,NC
+          XDEEP = EXP(XN(NXTEMP+2+IC))
+          JCONT1 = INT(VARPARAM(IVAR,1+IC))
+
+C          print*,'test1',IC,NC,JCONT1,XDEEP,PKNEE,XWID
+          IF(JCONT1.LE.NCONT)THEN
+
+           DO J=1,NPRO
+
+            X1(J)=Q(J)*XDEEP/XOD
+            IF(ISNAN(X1(J)))X1(J)=1e-36
+            IF(X1(J).LT.1e-36)X1(J)=1e-36
+            CONT(JCONT1,J)=X1(J)
+C            print*,J,JCONT1,X1(J)
+           ENDDO
+          ELSE
+           print*,'subprofretg: Error in model 111'
+           print*,'JCONT1 out of range : ',JCONT1,NCONT
+           STOP
+          ENDIF
+
+         ENDDO
+
+         NP = 2+NC
+
         ELSE
 
          print*,'SUBPROFRETG: VARTYPE NOT RECOGNISED'
          STOP
+
         ENDIF
  
        ENDIF
@@ -6282,6 +6428,7 @@ C      if(idiag.gt.0)print*,'subprofretg. Writing aerosol.prf'
       WRITE(2,10)BUFFER
       WRITE(2,*)NPRO, NCONT
       DO 41 I=1,NPRO
+C        print*,H(I),(CONT(J,I),J=1,NCONT)
         WRITE(2,*) H(I),(CONT(J,I),J=1,NCONT)
         if(idiag.gt.0)print*,H(I),(CONT(J,I),J=1,NCONT)
 41    CONTINUE

@@ -95,8 +95,13 @@ C     miscellaneous variables used in main code
       CHARACTER*100 IPFILA,NMFILE
       CHARACTER*80 TEXT,TEXT1
       LOGICAL ASKYN,OK,DEF,BIT,REFL
+      integer idiag,iquiet
+      common/diagnostic/idiag,iquiet
+
 C--------------------------------------------------------------
 C
+      idiag=1
+
 C     initialise flags
       INTERV=.FALSE.
       LINED=.FALSE.

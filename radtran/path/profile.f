@@ -121,17 +121,26 @@ C      First skip header
         READ(1,*)IPLANET,LATITUDE,NPRO,NVMR,MOLWT
        ELSE
         READ(1,*)IPLANET,LATITUDE,NPRO,NVMR
+        print*,IPLANET,LATITUDE,NPRO,NVMR
+       ENDIF
+       IF(NPRO.GT.MAXPRO)THEN
+        PRINT*,'NPRO > MAXPRO'
+        PRINT*,NPRO,MAXPRO
+        STOP
        ENDIF
        PNAME = SNAME(IPLANET)
        DO 20 I=1,NVMR
          READ(1,*)ID(I),ISO(I)
+         print*,ID(I),ISO(I)
          IF(AMFORM.EQ.1)ISCALE(I)=1
 20     CONTINUE
 C      Skip header
        READ(1,*)
        DO 30 I=1,NPRO
          READ(1,*)H(I),P(I),T(I),(VMR(I,J),J=1,NVMR)
+C         print*,H(I),P(I),T(I),(VMR(I,J),J=1,NVMR)
 30     CONTINUE
+       print*,'test0',H(1),P(1),T(1),(VMR(1,I),I=1,NVMR)
        CLOSE(UNIT=1)
 
        AMFLAG=.TRUE.
@@ -144,7 +153,10 @@ C      Skip header
          FRAC=ABS(FRAC-1.0)
          IF(FRAC.GT.XFMIN.AND.AMFLAG)THEN
           PRINT*,'Warning in Profile.f. AMFORM = 1, but the sum'
-          PRINT*,'of vmrs does not add up to 1.0'
+          PRINT*,'of vmrs does not quite add up to 1.0'
+          print*,'Total = ',FRAC+1
+          print*,'Pressure level = ',I
+          print*,(VMR(I,J),J=1,NVMR)
           AMFLAG=.FALSE.
          ENDIF
 303      CONTINUE 
@@ -533,7 +545,7 @@ C --------------------------------------------------------------------
 
 C --------------------------------------------------------------------
       ELSE IF(COMM.EQ.'N')THEN
-        CALL PROMPT('Enter exisiting vmr profile number : ')
+        CALL PROMPT('Enter existing vmr profile number : ')
         READ*,NCONV
         CALL PROMPT('Enter constant : ')
         READ*,VMRCONV
@@ -546,13 +558,21 @@ C --------------------------------------------------------------------
         DO 622 I=1,NPRO
          VMR(I,NVMR)=VMR(I,NCONV)*VMRCONV
 622     CONTINUE
+        print*,'test1',(VMR(1,I),I=1,NVMR)
 
         IF(AMFORM.EQ.1)THEN
+         DO I=1,NVMR
+          ISCALE(I)=1
+         ENDDO
          ISCALE(NCONV)=0
+         ISCALE(NVMR)=0
          CALL ADJUSTVMR(NPRO,NVMR,VMR,ISCALE,IERR)
          IF(IERR.EQ.1)THEN
              PRINT*,'Warning: A VMR has gone negative'
          ENDIF
+         print*,'test2',(VMR(1,I),I=1,NVMR)
+
+
         ENDIF
 C --------------------------------------------------------------------
       ELSE IF(COMM.EQ.'L')THEN

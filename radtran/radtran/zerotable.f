@@ -125,7 +125,7 @@ C program since execution.
       WRITE(*,*)'Enter FWHM, DELV and NPOINT : '
       READ*,FWHM,DELV,NPOINT
 
-      IF(DELV.EQ.0)THEN
+      IF(DELV.LE.0)THEN
        Print*,'Enter separation of wavelengths : '
        read*,DELX
        VMAX = VMIN + (NPOINT - 1)*DELX

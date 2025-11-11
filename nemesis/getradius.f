@@ -74,6 +74,7 @@ C        if(idiag.gt.0)print*,'D',(VARIDENT(IVAR,J),J=1,3),NP
         IF(VARIDENT(IVAR,1).EQ.225)NP=11
         IF(VARIDENT(IVAR,1).EQ.226)NP=8
         IF(VARIDENT(IVAR,1).EQ.227)NP=7
+        IF(VARIDENT(IVAR,1).EQ.111)NP=2+int(varparam(ivar,1))
        ENDIF
 
 C       if(idiag.gt.0)print*,'B',NP,XN(NXTEMP+1:NXTEMP+NP)

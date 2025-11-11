@@ -56,6 +56,7 @@ C       Skip to right point in xn array
         if(varident(ivar,1).eq.222)np = 8
         if(varident(ivar,1).eq.224)np = 9
         if(varident(ivar,1).eq.227)np = 7
+        if(varident(ivar,1).eq.227)np = 2+int(varparam(ivar,1)
         ix=ix+np
 
        else

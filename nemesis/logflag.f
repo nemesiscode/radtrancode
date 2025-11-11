@@ -124,6 +124,7 @@ C       Variable is not temperature  - may need to take exponent
       if(imod.eq.56)iflag=1	! Log scaling factor
       if(imod.eq.59)iflag=1	! Log scaling factor
       if(imod.eq.60)iflag=1	! Log scaling factor
+      if(imod.eq.61)iflag=1	! Log scaling factor
       if(imod.eq.57)iflag=1	! Log scaling factor
 
       if(imod.eq.22)then 
@@ -141,6 +142,7 @@ C       Variable is not temperature  - may need to take exponent
       if(ivar.eq.333)iflag=0	! Planet surface gravity
       if(ivar.eq.444)iflag=1	! Particle size and ref. index
       if(ivar.eq.446)iflag=1	! Particle size and ref. index
+      if(ivar.eq.448)iflag=1	! Particle size and ref. index
       if(ivar.eq.446.and.ip.eq.3)iflag=0	! fraction
       if(ivar.eq.445)iflag=1	! Particle size and ref. index (coated sphere)
       if(ivar.eq.443)then
@@ -165,6 +167,7 @@ C       Variable is not temperature  - may need to take exponent
       if(ivar.eq.225)iflag=1	! Revised cloud model with ext UTC and trunk.
       if(ivar.eq.226)iflag=1	! Two cloud model
       if(ivar.eq.227)iflag=1	! Creme Brulee
+      if(ivar.eq.111)iflag=1	! Multicomponent cloud
       logflag=iflag
 
       return

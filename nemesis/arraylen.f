@@ -19,10 +19,10 @@ C     Set mx to equal maxv, defined in arrdef.f
 C     Set my to idim, defined in arrdef.f
 C     Set mwave to equal maxbin, defined in arrdef.f
 C     Set mconv to idim, defined in arrdef.f
-      parameter (my=idim,mconv=idim,mx=maxv,mwave=maxbin)
+      parameter (my=idim,mconv=idim,mx=maxv,mwave=mpoint)
 
 C     Set other parameters
-      parameter (mparam=100,mvar=12,mgeom=100,mav=700)
+      parameter (mparam=30,mvar=14,mgeom=100,mav=700)
       parameter (lat_tolerance=3.0)
 
 C     ****************************************************************

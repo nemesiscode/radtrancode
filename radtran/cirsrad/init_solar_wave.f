@@ -66,6 +66,7 @@ C       Skip header
 
         do i = 1,maxbin
   		  read (iunit,*,end=20) wave(i), rad(i)
+C                  print*,i,wave(i),rad(i)
 		  npt = npt + 1
         enddo
 20	continue

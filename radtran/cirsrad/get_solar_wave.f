@@ -28,6 +28,11 @@ C-----------------------------------------------------------------------
          stop
         endif
 
+C        print*,'Get_solar_wave: '
+C        print*,dist
+C        print*,x
+C        print*,solar
+
 	call interp(wave, rad, npt, y, x)
 C       Add catch to stop extrapolation beyond provided solar spectrum
 C       wavelengths.    
@@ -52,7 +57,7 @@ C       in units of W um-1 or W (cm-1)-1
         else
           solar = y
         endif
-
+C        print*,'get_solar_wave : ',solar
 	return
 
 	end

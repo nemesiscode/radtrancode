@@ -103,7 +103,7 @@ C     **************************************************************
       real vconv1(mconv),vwave1(mwave),xlon,ysav(mx,2*my)
       real sa(mx,mx),exa(mx)
       integer ny,jsurf,jalb,jtan,jpre,nem,nav(mgeom)
-      integer nphi,ipath,iconv,k,jxsc
+      integer nphi,ipath,iconv,k,jxsc,isol1
       integer nmu,isol,lowbc,nf,nf1,nx2,kiter
       real dist,galb,sol_ang,emiss_ang,z_ang,aphi,vv
       double precision mu(maxmu),wtmu(maxmu)
@@ -150,6 +150,14 @@ C      enddo
 C      do j=1,ngeom
 C       if(idiag.gt.0)print*,nwave(j),(vwave(j,i),i=1,nwave(j))
 C       if(idiag.gt.0)print*,nconv(j),(vconv(j,i),i=1,nconv(j))
+C       print*,'igeom = ',j
+C       print*,'AA nconv = ',nconv(j)
+C       print*,vconv(j,1),vconv(j,nconv(j))
+C       print*,'AA nwave = ',nwave(j)
+C       print*,vwave(j,1),vwave(j,nwave(j))
+C      enddo
+C       if(idiag.gt.0)print*,nwave(j),(vwave(j,i),i=1,nwave(j))
+C       if(idiag.gt.0)print*,nconv(j),(vconv(j,i),i=1,nconv(j))
 C      enddo
 C      if(idiag.gt.0)print*,gasgiant,lin,nvar
 C      do i=1,nvar
@@ -186,7 +194,7 @@ C     Initialise arrays
        enddo
       enddo
 
-      call setup(runname,gasgiant,nmu,mu,wtmu,isol,dist,lowbc,
+      call setup(runname,gasgiant,nmu,mu,wtmu,isol1,dist,lowbc,
      1 galb,nf1,nphi,layht,tsurf,nlayer,laytyp,layint)
 
       if(jsurf.gt.0)then
@@ -217,9 +225,21 @@ C     Initialise arrays
          sol_ang = angles(igeom,iav,1)
          emiss_ang = angles(igeom,iav,2)
          aphi = angles(igeom,iav,3)
-
          dtr = pi/180.0
          xmu = cos(emiss_ang*dtr)
+
+
+C        Extra catch in case sol_ang > 90.0, in which case we're
+C        looking on the nightside and so the calculation will be
+C        azimuthally symmetric.
+
+         isol = isol1
+         print*,'sol_ang = ',sol_ang
+         if(sol_ang.gt.90.0.and.iscat.eq.1)then
+          isol = 0
+          nf = 0
+          print*,'Reset isol'
+         endif
 
          if(sol_ang.lt.emiss_ang) then
            z_ang = sol_ang
@@ -227,21 +247,23 @@ C     Initialise arrays
            z_ang = emiss_ang
          endif
 
-C        New bit to increase number of Fourier components depending on
+C        Set number of Fourier components depending on
 C        miniumum zenith angle
-         if(isol.eq.1.and.iscat.eq.1.and.z_ang.ge.0.0)then
+         print*,'isol, iscat, z_ang',isol,iscat,z_ang
+         if(isol.eq.1.and.iscat.eq.1)then
+          if(z_ang.ge.0.0)then
            nf = int(30*z_ang/90.0)
-C            nf=9
-C            nf=0
-C            nf=20
-         else
-           nf=nf1
-         endif
-  
-         print*,'Angles : ',sol_ang,emiss_ang,aphi
-         print*,'nf = ',nf
-         if(idiag.gt.0)print*,'Angles : ',sol_ang,emiss_ang,aphi
-         if(idiag.gt.0)print*,'nf = ',nf
+          else
+           nf = nf1 
+C           nf = 0
+          endif
+         endif 
+
+         print*,'Angles (sol, emiss, phi) : ',sol_ang,emiss_ang,aphi
+         print*,'isol, nf = ',isol,nf
+C         if(idiag.gt.0)print*,'Angles (sol, emiss, phi) : ',
+C     &     sol_ang,emiss_ang,aphi
+         if(idiag.gt.0)print*,'isol, nf = ',nf
          xlat = flat(igeom,iav)
          xlon = flon(igeom,iav)
          xgeom = wgeom(igeom,iav)

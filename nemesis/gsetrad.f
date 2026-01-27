@@ -725,7 +725,7 @@ C          np1 usually matches nwave
                do i=1,np1
                 ww(i)=vx(nx1+2+i)
                 ss(i)=xn(nx1+2+i)
-                print*,'aa',i,ww(i),ss(i)
+C                print*,'aa',i,ww(i),ss(i)
                enddo
              else
                do i=1,np1

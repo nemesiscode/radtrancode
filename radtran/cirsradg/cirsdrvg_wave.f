@@ -303,7 +303,7 @@ C     if present.
       iform=0
 
       nv=1
-      DO i=1,300
+      DO i=1,maxpro
         xmap(1,12,i)=1.0
       ENDDO
 

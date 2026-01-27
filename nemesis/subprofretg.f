@@ -2500,6 +2500,7 @@ CC         Reverse profile array which by convention goes up in the atmosphere
 C          XP1(1+NP-J)=XN(NXTEMP+J)
 C         ENDDO
 
+         print*,'subprofretg: model 25'
          NP = INT(VARPARAM(IVAR,1))
          DO J=1,NP
 C         Reverse profile array which by convention goes up in the atmosphere
@@ -2518,6 +2519,7 @@ C        Fit a cubic spline to the points, dealing with discontinuities where ne
           ENDIF
           IF(k.gt.0)EXIT
          ENDDO
+         print*,'subprofretfg: k = ',k
          IF(k.gt.0)THEN
           CALL CSPLINE(LP1(1:k),XP1(1:k),k,1e30,1e30,XP2(1:k))
           CALL CSPLINE(LP1(k+1:np),XP1(k+1:np),np-k,1e30,
@@ -4571,6 +4573,7 @@ C        ***************************************************************
          K=-1
          KHAZE=-1
 
+         print*,'subprofretg model 54 : ',NXTEMP+2,PKNEE
          DO J=1,NPRO-1
           IF(P(J).GE.PKNEE.AND.P(J+1).LT.PKNEE)K=J 
           IF(P(J).GE.PHAZE.AND.P(J+1).LT.PHAZE)KHAZE=J
@@ -4817,8 +4820,6 @@ C        ***************************************************************
          XDEEP = EXP(XN(NXTEMP+1))
          XMID  = EXP(XN(NXTEMP+2))
 
-         CALL VERINT(P,H,NPRO,HKNEE,PKNEE)
-
          DX = ALOG(PSTRAT)-ALOG(PKNEE)      
          DO J=1,NPRO
           X1(J)=XDEEP
@@ -4830,7 +4831,7 @@ C        ***************************************************************
            XMAP(NXTEMP+1,IPAR,J)=(1-F)*X1(J)
            XMAP(NXTEMP+2,IPAR,J)=F*X1(J)
           ENDIF
-
+        
           IF(X1(J).LT.1e-36)X1(J)=1e-36
 
          ENDDO

@@ -313,6 +313,13 @@ C     If we are doing an SCR cell, then we only need half the
 C     wavelengths in the spx file as we're calculating both WB and SB
 C     outputs
 
+C     Initialise vwave array (not sure why, but it must be initialised)
+      do igeom=1,mgeom
+       do i=1,mwave
+        vwave(igeom,i)=0.0
+       enddo
+      enddo
+
       if(ilbl.eq.0)then
 C      Calculate the tabulated wavelengths of c-k look up tables
        do igeom=1,ngeom
@@ -342,24 +349,39 @@ C         print*,j,vwave1(j)
        close(13)
 
 C      Calculate the tabulated wavelengths of lbl look up tables
+       print*,'mgeom,mwave,mconv',mgeom,mwave,mconv
        do igeom=1,ngeom
         nconv1=nconv(igeom)
         print*,'igeom',igeom
-        print*,'vconv',nconv1
+        print*,'nconv',nconv1
         do j=1,nconv1
          vconv1(j)=vconv(igeom,j)
-         print*,igeom,j,vconv1(j)
+C         print*,igeom,j,vconv1(j)
         enddo
+        print*,'vconv range: ',vconv1(1),vconv1(nconv1)
+        print*,'Calling wavesetc'
         CALL wavesetc(runname,vkstart,vkend,vkstep,nconv1,vconv1,
      1  fwhm,ishape,nwave1,vwave1)
-        print*,'vwave',nwave1
+        print*,'nwave1',nwave1
         do j=1,nwave1
          vwave(igeom,j)=vwave1(j)
-         print*,igeom,j,vwave1(j)
+C         if(j.eq.1) then 
+C          print*,igeom,j,vwave1(j)
+C         else
+C          print*,igeom,j,vwave1(j),vwave1(j)-vwave1(j-1)
+C         endif
         enddo
         nwave(igeom)=nwave1
+        print*,'vwave range: ',vwave1(1),vwave1(nwave1)
+C        print*,'d0',vwave(1,1),vwave(1,nwave(1)),nwave(1)
+C        print*,'d01',vwave(2,1),vwave(2,nwave(2)),nwave(2)
+C        print*,'d1',vwave(igeom,1),vwave(igeom,nwave(igeom))
        enddo
       endif
+
+C      do igeom=1,ngeom
+C        print*,'d2',vwave(igeom,1),vwave(igeom,nwave(igeom))
+C      enddo
 
 C     set up a priori of x and its covariance
       CALL readapriori(runname,lin,lpre,xlat,npro,nvar,varident,
@@ -372,6 +394,11 @@ C     set up a priori of x and its covariance
          st(i,j)=sa(i,j)
         ENDDO
       ENDDO 
+
+      do igeom=1,ngeom
+        print*,'check vwave range',igeom,vwave(igeom,1),
+     1   vwave(igeom,nwave(igeom))
+      enddo
 
       idump=0  ! flag for diagnostic print dumps
       ica=0
@@ -403,6 +430,38 @@ C     set up a priori of x and its covariance
 
       ilbl1=ilbl
 	
+C      print*,runname,ispace,iscat,ilbl,ica,kiter,phlimit
+C      print*,fwhm,xlat,xlon
+C      print*,ngeom,(nav(j),j=1,ngeom)
+C      do j=1,ngeom
+C       print*,'nemesis: igeom = ',j
+C       print*,'nemesis nconv = ',nconv(j)
+C       print*,vconv(j,1),vconv(j,nconv(j))
+C       print*,'nemesis nwave = ',nwave(j)
+C       print*,vwave(j,1),vwave(j,nwave(j))
+C       do i=1,nav(j)
+C        print*,(angles(j,i,k),k=1,3)
+C        print*,wgeom(j,i)
+C        print*,flat(j,i)
+C        print*,flon(j,i)
+C       enddo
+C      enddo
+C      print*,gasgiant,lin,lpre,nvar
+C      do i=1,nvar
+C       print*,i,(varident(i,j),j=1,3)
+C       print*,i,(varparam(i,j),j=1,mparam)
+C      enddo
+C      print*,npro,jsurf,jalb,jxsc
+C      print*,jtan,jpre,jrad,jlogg,jfrac
+C      print*,nx
+C      do i=1,nx
+C       print*,i,lx(i),xa(i),sa(i,i)
+C      enddo
+C      print*,ny
+C      do i=1,ny
+C       print*,i,y(i),se(i)
+C      enddo
+
       call coreret(runname,ispace,iscat,ilbl,ica,kiter,phlimit,
      1  fwhm,xlat,xlon,ngeom,nav,nwave,vwave,nconv,vconv,angles,
      2  gasgiant,lin,lpre,nvar,varident,varparam,npro,jsurf,jalb,jxsc,

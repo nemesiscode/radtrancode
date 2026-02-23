@@ -295,7 +295,7 @@ C       ***************** Surface temperature correction ***********
 
       do ivar=1,nvar
 
-       if(idiag.gt.0)print*,'gsetrad - ',ivar,varident(ivar,1)
+       if(idiag.gt.0)print*,'gsetrad - (x)',ivar,varident(ivar,1)
 
 
        if(varident(ivar,1).eq.887)then
@@ -497,7 +497,7 @@ C       if(varident(ivar,1).eq.111)icheck=1
 C     Check to see if anything bad has happened in the .prf file before 
 C     running subpath
       iprfcheck=check_profile(runname)
-      print*,'iprfcheck = ',iprfcheck
+      print*,'iprfcheck,icheck = ',iprfcheck,icheck
 
 C     Compute the drv file to get the aerosol optical depths
       if(icheck.eq.1.and.iprfcheck.eq.0) then
@@ -516,6 +516,8 @@ C     Compute the drv file to get the aerosol optical depths
          READ(BUFFER,*)NN,NDUST
          DO 105 J=1,NN
            READ(12,*)DUSTH(J),(DUST(I,J),I=1,NDUST)
+           if(idiag.gt.0)print*,'gsetrad dust',DUSTH(J),
+     &      (DUST(I,J),I=1,NDUST)
 105      CONTINUE
         close(12)
 
@@ -541,7 +543,8 @@ C     Compute the drv file to get the aerosol optical depths
               od1=exp(xn(nx1+3))
               xscal(icont)=xod(icont)/od1
 
-C              print*,'gsetrad',icont,od1,xod(icont),xscal(icont)
+              if(idiag.gt.0)print*,'gsetrad xx',icont,od1,
+     & xod(icont),xscal(icont)
 
               do j=1,NN
                dust(icont,j)=dust(icont,j)/xscal(icont)
@@ -560,6 +563,8 @@ C              print*,'gsetrad',icont,od1,xod(icont),xscal(icont)
      1          od1,xscal(icont)
               endif
               do j=1,NN
+               if(idiag.gt.0)print*,icont,j,dust(icont,j),
+     1             xscal(icont)
                dust(icont,j)=dust(icont,j)/xscal(icont)
               enddo
           endif

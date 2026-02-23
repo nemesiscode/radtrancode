@@ -76,6 +76,8 @@ C       Arrays
         integer idiag,iquiet
         common/diagnostic/idiag,iquiet
 
+        integer iprint
+        common/diagprint/iprint
 
         if(idiag.gt.0)print*,'CIRSRTF_WAVE - ILBL = ',ILBL
         IF(ILBL.EQ.2)THEN
@@ -143,14 +145,15 @@ C-----------------------------------------------------------------------
            STOP
         ENDIF
 
-
-        open(12,file='test.out',status='unknown')
-        write(12,*)nwave
+        if(iprint.eq.1)then
+         open(12,file='test.out',status='unknown')
+         write(12,*)nwave
+        endif
         DO I= 1, npath
            DO J= 1, nwave
               K= I+(J-1)*npath
               y(J)= output(K)
-              write(12,*)vwave(j),y(J)
+              if(iprint.eq.1)write(12,*)vwave(j),y(J)
 C              if(j.le.200)print*,vwave(j),y(J)
            ENDDO
 
@@ -166,17 +169,17 @@ C           Trapezium rule integrator
      1      vconv,yout,FWHMEXIST,NFWHM,VFWHM,XFWHM)
            endif
 
-           write(12,*)nconv
+           if(iprint.eq.1)write(12,*)nconv
            DO J= 1, nconv
               K= I+(J-1)*npath
               convout(K)= yout(J)
-              write(12,*)vconv(j),yout(j)
+              if(iprint.eq.1)write(12,*)vconv(j),yout(j)
 C              if(j.le.20)print*,vconv(j),yout(j)
            ENDDO
 
         ENDDO
 
-        close(12) 
+        if(iprint.eq.1)close(12) 
 
 
         deallocate(y,yout)

@@ -103,7 +103,8 @@ C     Solar spectrum variables and flags
       common/solardat/iread, iform, solradius, solwave, solrad,  solnpt
       integer idiag,iquiet
       common/diagnostic/idiag,iquiet
-
+      integer iprint
+      common/diagprint/iprint
 
 
 C-----------------------------------------------------------------------
@@ -115,6 +116,7 @@ C-----------------------------------------------------------------------
       jloggf=-1
 
       idiag=0
+      iprint=0
 
       CALL system_clock(count_rate=cr)
       CALL system_clock(count_max=cm)

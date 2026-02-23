@@ -187,6 +187,16 @@ C        Overwrite NLAY
          ENDIF
          DO 106 I=1,NLAY
           READ(12,*)PNOW
+          IF(PNOW.GT.P(1))THEN
+           PRINT*,'Warning from layer.f for LAYTYP=4'
+           PRINT*,'Pressures in pressure.lay should '
+           PRINT*,'be <= largest pressure in .prf file.'
+          ENDIF
+          IF(PNOW.LE.P(NPRO))THEN
+           PRINT*,'Warning from layer.f for LAYTYP=4'
+           PRINT*,'Pressures in pressure.lay should '
+           PRINT*,'be > smallest pressure in .prf file.'
+          ENDIF
           CALL VERINT(P,H,NPRO,BASEH(I),PNOW)
 106      CONTINUE
         CLOSE(12)
@@ -319,6 +329,7 @@ C       mixing ratio
         CALL VERINT(H,FPH2I,NPRO,FPNOW,HEIGHT)	! para-H2
         CALL VERINT(H,FCLOUDI,NPRO,FCNOW,HEIGHT) ! fcloud
 
+
         DO J=1,NDUST
          DO M=1,NPRO
           TMP(M)=1.0*ICLOUDI(J,M)
@@ -402,7 +413,7 @@ C     Now check that layer properties are realistic
        IF(PP(I,J).LT.0.0)ICHECK=1
       ENDDO
       DO J=1,NCONT
-       IF(CONT(J,I).LT.0.0)ICHECK=1
+       IF(CONT(J,I).LT.0.0.OR.ISNAN(CONT(J,I)))ICHECK=1
       ENDDO
 
       IF(ICHECK.EQ.1)THEN
@@ -445,6 +456,7 @@ C      in the vertical path.
         SUM=0.
         DO L=1,NLAY
          I=L+NLAYER
+C         print*,J,L,I,CONT(J,I)
          SUM=SUM+CONT(J,I)
         END DO
         if(idiag.gt.0)PRINT*,'Total number/cm2 for vertical path = ',SUM

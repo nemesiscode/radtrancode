@@ -138,6 +138,8 @@ C     Set measurement vector and source vector lengths here.
       real phi,ophi,chisq,xchi,oxchi,tmpvar
       integer idiag,iquiet
       common/diagnostic/idiag,iquiet
+      integer iprint
+      common/diagprint/iprint
 
 C     **************************** CODE ********************************
 
@@ -1213,7 +1215,7 @@ C      do i=1,ny
 C         print*,kk(i,1:6)
 C      enddo
 
-      if(ica.eq.1)then
+      if(ica.eq.1.and.iprint.eq.1)then
 C      Write out k-matrix for reference
        OPEN(52,file='kk.out',form='unformatted',status='unknown')
        write(52)y,yn

@@ -85,7 +85,8 @@ C     Solar spectrum variables and flags
      1  cellpress,celltemp
       integer idiag,iquiet
       common/diagnostic/idiag,iquiet
-
+      integer iprint
+      common/diagprint/iprint
 C     ******************************************************
 
 
@@ -98,6 +99,8 @@ C     Set idiag to 1 for standard print statements. Set to zero to suppress
       idiag=0
 C     Set iquiet to 1 to reduce writing to intermdiate meta files (such as .drv)
       iquiet=0
+C     Set iprint to 1 to output kk.out and test.out (LBL) files
+      iprint=0
 
 C     Read in reference gas information data
       CALL RESERVEGAS

@@ -102,7 +102,7 @@ C     SXMINFAC is minimum off-diagonal factor allowed in the
 C     a priori covariance matrix
       parameter (SXMINFAC = 0.001)
       real varparamx(mvar,mparam),xnx(mx),sxx(mx,mx),xdiff
-      integer ivar,nlevel,jsurfx,icont,j446
+      integer ivar,nlevel,jsurfx,icont,j446,ik
       integer jalbx,jtanx,jprex,jradx,jlat,ilat,nlat
       integer nprox,nvarx,varidentx(mvar,3),ioffx,ivarx
       integer npx,ioff,icond,npvar,jloggx,iplanet,jxscx,jlev
@@ -1334,7 +1334,7 @@ C            nlay = number of homogeneous layers in .drv file
               stop
              endif
              do i=1,np
-              read(28,*)pknee,xdeep,edeep!pressure, aerosol density, error
+              read(28,*)pknee,xdeep,edeep  !pressure, aerosol density, error
               pref(i)=pknee
               ix = i+nx
 C             For vmrs and cloud density always hold the log. 
@@ -1382,6 +1382,7 @@ c             stop
                 print*,'Error readapriori.f: np + 2 > MPARAM'
                 print*,'Either reduce value of np in ',ipfile
                 print*,'or increase value of MPARAM (arraylen.f)'
+                print*,np,MPARAM
                 stop
                endif            
                delp = log(varparam(ivar,j+2))-log(varparam(ivar,i+2))
@@ -1403,6 +1404,7 @@ C            Note that if more than one VARIDENT(IVAR,3) = 25 profile to be retr
 C            Therefore if more than one VARIDENT(IVAR,3) = 25 profile to be retrieved, best to make the first profile the one with the highest pressure resolution
              inquire(file='pressure.lay',exist=filexist)
              if(filexist.eqv..FALSE.)then
+              print*,'readapriori: updating pressure.lay file'
               open(901,file='pressure.lay',status='unknown')
                write(901,*)'*********Header***********'
                write(901,*)nlay
@@ -3005,9 +3007,10 @@ C            Variable deep abundance, middle abundance, max relative humidity an
              read(27,*)xdeep,edeep
              read(27,*)xmid,emid
              read(27,*)xrh,erh
-             read(27,*)pknee
+             read(27,*)pknee, icond
 
              varparam(ivar,1)=pknee
+             varparam(ivar,2)=icond
 
              ix = nx+1
              if(xdeep.gt.0.0)then
@@ -3555,6 +3558,105 @@ C                xfac = exp(-arg*arg)
              endif
 
 
+
+           elseif (varident(ivar,1).eq.447)then
+C            ** Variable cloud particle size distribution and composition
+             read(27,1)rifile
+
+             open(28,file=rifile,status='old')
+
+              ix=nx 
+              do ik=1,2
+C               Read mean radius and error
+                read(28,*)r0,er0
+                ix=ix+1
+
+                x0(ix)=alog(r0)
+                sx(ix,ix)=(er0/r0)**2
+                lx(ix)=1
+C               Read radius variance and error
+                read(28,*)dr,edr
+
+                ix=ix+1
+                x0(ix)=alog(dr)
+                sx(ix,ix)=(edr/dr)**2
+                lx(ix)=1
+              enddo
+              read(28,*)r0,er0
+              ix=ix+1
+              x0(ix)=alog(r0)
+               sx(ix,ix)=(er0/r0)**2
+               lx(ix)=1
+            
+C              Read number of wavelengths and correlation length (wavelength/
+C				wavenumbers)
+               read(28,*)np,clen
+               varparam(ivar,1)=np
+
+
+               call get_xsecA(opfile,nmode,nwave,wave,xsec)
+               if(np.ne.nwave)then
+       print*,'Warning in readapriori.f. Number of wavelengths in ref.'
+       print*,'index file does not match number of wavelengths in'
+       print*,'xsc file. Wavelengths in these two files usually match'
+                print*,rifile,np
+                print*,opfile,nwave
+               endif
+
+               varparam(ivar,2)=clen
+
+C              read reference wavelength and nr at that wavelength
+               read(28,*)vm,nm
+               if(MCMCflag.eq.1)then
+                nm = MCMCreal
+               endif
+               varparam(ivar,3)=vm
+               varparam(ivar,4)=nm
+
+C              read x-section normalising wavelength (-1 to not normalise)
+               read(28,*)lambda0
+               varparam(ivar,5)=lambda0
+               do i=1,np             
+                read(28,*)vi(i),nimag,err,nimag1,err1
+                ix=ix+1
+                if(i.eq.1.or.clen.gt.0.0)then
+                 x0(ix)=alog(nimag)
+                 sx(ix,ix)=(err/nimag)**2
+                 lx(ix)=1
+                 vx(ix)=vi(i)
+                 ix=ix+1
+                 x0(ix)=alog(nimag1)
+                 sx(ix,ix)=(err1/nimag1)**2
+                 lx(ix)=1
+                 vx(ix)=vi(i)
+                endif
+               enddo
+             close(28)
+
+C            *** restart here with recoding. 
+
+             if(clen.gt.0.0)then
+              do i=1,np
+               do j=i+1,np
+                delv = vi(i)-vi(j)
+                arg = abs(delv/clen)
+                xfac = exp(-arg)
+C                xfac = exp(-arg*arg)
+                if(xfac.ge.SXMINFAC)then  
+                 sx(nx+2+i,nx+2+j)=
+     &  sqrt(sx(nx+2+i,nx+2+i)*sx(nx+2+j,nx+2+j))*xfac
+                 sx(nx+2+j,nx+2+i)=sx(nx+2+i,nx+2+j)
+                endif
+               enddo
+              enddo
+
+              nx = nx+2+np
+
+             else
+
+              nx = nx + 3
+
+             endif
 
            elseif (varident(ivar,1).eq.448)then
 C            Fixed refractive index cloud

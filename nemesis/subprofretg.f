@@ -3924,6 +3924,8 @@ C        Empirical correction to XOD
           IF(ISNAN(X1(J)))X1(J)=1e-36
           IF(X1(J).LT.1e-36)X1(J)=1e-36
 
+C          print*,'test',J,X1(J)
+
           Y=ALOG(P(J))          
           
           IF(VARIDENT(IVAR,1).EQ.0)THEN
@@ -4755,8 +4757,12 @@ C        ***************************************************************
          XMID = EXP(XN(NXTEMP+2))
          XRH  = EXP(XN(NXTEMP+3))
          PKNEE = VARPARAM(IVAR,1)
-
-C         print*,'subprofretg. Mod56: xdeep,xmid,xrh,pknee',
+         ICOND = INT(VARPARAM(IVAR,2))
+C        ICOND flag controls behaviour at condensation level
+C        ICOND = 0 means that gas partial pressure cannot exceed RH*SVP
+C        ICOND = 1 means that partial pressure is fixed until it exceeds SVP
+C                  and is THEN limited to RH*SVP (Brooke 1998 model)
+C         print*,'subprofretg. Mod56: xdeep,xmid,xrh,pknee,icond',
 C     & xdeep,xmid,xrh,pknee
          IDAT=0
          DO I=1,NGAS
@@ -4788,12 +4794,19 @@ C            print*,'svp',A,B,C,D
             IKNEE=1
           ENDIF
           P1=P(I)*XNOW
-          PS=XRH*DPEXP(A+B/T(I)+C*T(I)+D*T(I)*T(I))
+          XFAC=1.0
+          IF(ICOND.EQ.0)XFAC=XRH
+
+          PS=XFAC*DPEXP(A+B/T(I)+C*T(I)+D*T(I)*T(I))
 C          print*,'dd',I,P(I),XNOW,P1,PS,PS/P(I)
           IF(P1.LT.PS)THEN
            X1(I)=XNOW
           ELSE
-           X1(I)=PS/P(I)
+           IF(ICOND.EQ.0)THEN
+            X1(I)=PS/P(I)
+           ELSE
+            X1(I)=XRH*PS/P(I)
+           ENDIF
            IFLA=1
           ENDIF
           XMAP(NXTEMP+1+IKNEE,IPAR,I)=X1(I)
@@ -6431,7 +6444,7 @@ C      if(idiag.gt.0)print*,'subprofretg. Writing aerosol.prf'
       DO 41 I=1,NPRO
 C        print*,H(I),(CONT(J,I),J=1,NCONT)
         WRITE(2,*) H(I),(CONT(J,I),J=1,NCONT)
-        if(idiag.gt.0)print*,H(I),(CONT(J,I),J=1,NCONT)
+        if(idiag.gt.0)print*,'subx',H(I),(CONT(J,I),J=1,NCONT)
 41    CONTINUE
       CLOSE(2)
 

@@ -22,7 +22,7 @@ C     Set mconv to idim, defined in arrdef.f
       parameter (my=idim,mconv=idim,mx=maxv,mwave=mpoint)
 
 C     Set other parameters
-      parameter (mparam=30,mvar=14,mgeom=100,mav=700)
+      parameter (mparam=50,mvar=15,mgeom=10,mav=10)
       parameter (lat_tolerance=3.0)
 
 C     ****************************************************************

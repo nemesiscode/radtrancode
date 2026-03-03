@@ -22,7 +22,7 @@ C     **************************************************************
       common/diagnostic/idiag,iquiet
 
       np=1
-      if(imod.le.61)then
+      if(imod.le.62)then
         if(imod.eq.-1)np = npro
         if(imod.eq.0)np = npro
         if(imod.eq.1)np = 2
@@ -85,6 +85,7 @@ C     **************************************************************
         if(imod.eq.59)np = 4
         if(imod.eq.60)np = 4
         if(imod.eq.61)np = 5
+        if(imod.eq.62)np = 4
       else
         print*,'npvar:  Model parameterisation not defined = ',imod
       endif

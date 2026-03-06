@@ -6568,10 +6568,10 @@ C           ENDDO
 1000  CONTINUE
 
 
-      print*,'intermediate clouds'
-      DO I=1,NPRO
-        PRINT*,P(I),(CONT(J,I),J=1,NCONT)
-      ENDDO
+C      print*,'intermediate clouds'
+C      DO I=1,NPRO
+C        PRINT*,P(I),(CONT(J,I),J=1,NCONT)
+C      ENDDO
 
 
 
@@ -6806,10 +6806,10 @@ C
 52    CONTINUE
       CLOSE(2)
 
-      print*,'Final subprofretg clouds'
-      DO I=1,NPRO
-        PRINT*,P(I),(CONT(J,I),J=1,NCONT)
-      ENDDO
+C      print*,'Final subprofretg clouds'
+C      DO I=1,NPRO
+C        PRINT*,P(I),(CONT(J,I),J=1,NCONT)
+C      ENDDO
 
       OPEN(UNIT=2,FILE='aerosol.prf',STATUS='UNKNOWN')
 C      if(idiag.gt.0)print*,'subprofretg. Writing aerosol.prf'

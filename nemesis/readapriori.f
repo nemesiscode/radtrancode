@@ -95,7 +95,7 @@ C     ****************************************************************
       real xknee,xrh,erh,xcdeep,ecdeep,radius,Grav,plim
       real xcwid,ecwid,ptrop,refradius,xsc,ascat,escat,shape,eshape
       real clen1,clen2,press1,press2,clen3,xmid,emid,pstrat
-      real pbot,ebot,xscale,exscale
+      real pbot,ebot,xscale,exscale,yfsh,eyfsh
       integer nlong,ilong,ipar,k1,k2
       parameter (Grav=6.672E-11)
 C     SXMINFAC is minimum off-diagonal factor allowed in the
@@ -3328,6 +3328,172 @@ C            relative humidity rate of decrease
              sx(ix,ix) = (exscale/xscale)**2
 
              nx=nx+4
+
+           elseif (varident(ivar,3).eq.63)then
+C            Variable deep abundance, middle abundance, max relative humidity,
+C            relative humidity rate of decrease, cloud opacity, cloud fsd,
+C            pknee and associated cloud ID, phaze, whaze
+             read(27,*)xdeep,edeep
+             read(27,*)xmid,emid
+             read(27,*)xrh,erh
+             read(27,*)xscale,exscale
+             read(27,*)xcdeep,ecdeep
+             read(27,*)xfsh,efsh
+             read(27,*)varparam(ivar,1),varparam(ivar,2)
+             read(27,*)varparam(ivar,3),varparam(ivar,4)
+
+             ix = nx+1
+             if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+             else
+               print*,'Error in readapriori. xdeep must be > 0.0'
+               stop
+             endif
+             err = edeep/xdeep
+             sx(ix,ix)=err**2
+
+             ix = nx+2
+             if(xmid.gt.0.0)then
+                x0(ix)=alog(xmid)
+                lx(ix)=1
+             else
+               print*,'Error in readapriori. xmid must be > 0.0'
+               stop
+             endif
+             err = emid/xmid
+             sx(ix,ix)=err**2
+
+             ix = nx+3
+             if(xrh.gt.0.0)then
+               x0(ix) = alog(xrh)
+               lx(ix)=1
+             else
+               print*,'Error in readapriori - xrh must be > 0'
+               stop
+             endif
+             sx(ix,ix) = (erh/xrh)**2
+
+             ix = nx+4
+             if(xscale.gt.0.0)then
+               x0(ix) = alog(xscale)
+               lx(ix)=1
+             else
+               print*,'Error in readapriori - xscale must be > 0'
+               stop
+             endif
+             sx(ix,ix) = (exscale/xscale)**2
+
+             ix = nx+5
+             if(xcdeep.gt.0.0)then
+               x0(ix) = alog(xcdeep)
+               lx(ix)=1
+             else
+               print*,'Error in readapriori - xcdeep must be > 0'
+               stop
+             endif
+             sx(ix,ix) = (edeep/xcdeep)**2
+
+             ix = nx+6
+             if(xscale.gt.0.0)then
+               x0(ix) = alog(xfsh)
+               lx(ix)=1
+             else
+               print*,'Error in readapriori - xfsh must be > 0'
+               stop
+             endif
+             sx(ix,ix) = (efsh/xfsh)**2
+
+             nx=nx+6
+
+           elseif (varident(ivar,3).eq.64)then
+C            Variable deep abundance, middle abundance, fsh above pknee, max relative humidity,
+C            relative humidity rate of decrease, cloud opacity, cloud fsd,
+C            pknee and associated cloud ID, phaze, whaze
+             read(27,*)xdeep,edeep
+             read(27,*)xmid,emid
+             read(27,*)yfsh,eyfsh
+             read(27,*)xrh,erh
+             read(27,*)xscale,exscale
+             read(27,*)xcdeep,ecdeep
+             read(27,*)xfsh,efsh
+             read(27,*)varparam(ivar,1),varparam(ivar,2)
+             read(27,*)varparam(ivar,3),varparam(ivar,4)
+
+             ix = nx+1
+             if(xdeep.gt.0.0)then
+                x0(ix)=alog(xdeep)
+                lx(ix)=1
+             else
+               print*,'Error in readapriori. xdeep must be > 0.0'
+               stop
+             endif
+             err = edeep/xdeep
+             sx(ix,ix)=err**2
+
+             ix = nx+2
+             if(xmid.gt.0.0)then
+                x0(ix)=alog(xmid)
+                lx(ix)=1
+             else
+               print*,'Error in readapriori. xmid must be > 0.0'
+               stop
+             endif
+             err = emid/xmid
+             sx(ix,ix)=err**2
+
+             ix = nx+3
+             if(yfsh.gt.0.0)then
+                x0(ix)=alog(yfsh)
+                lx(ix)=1
+             else
+               print*,'Error in readapriori. yfsh must be > 0.0'
+               stop
+             endif
+             err = eyfsh/yfsh
+             sx(ix,ix)=err**2
+
+             ix = nx+4
+             if(xrh.gt.0.0)then
+               x0(ix) = alog(xrh)
+               lx(ix)=1
+             else
+               print*,'Error in readapriori - xrh must be > 0'
+               stop
+             endif
+             sx(ix,ix) = (erh/xrh)**2
+
+             ix = nx+5
+             if(xscale.gt.0.0)then
+               x0(ix) = alog(xscale)
+               lx(ix)=1
+             else
+               print*,'Error in readapriori - xscale must be > 0'
+               stop
+             endif
+             sx(ix,ix) = (exscale/xscale)**2
+
+             ix = nx+6
+             if(xcdeep.gt.0.0)then
+               x0(ix) = alog(xcdeep)
+               lx(ix)=1
+             else
+               print*,'Error in readapriori - xcdeep must be > 0'
+               stop
+             endif
+             sx(ix,ix) = (edeep/xcdeep)**2
+
+             ix = nx+7
+             if(xscale.gt.0.0)then
+               x0(ix) = alog(xfsh)
+               lx(ix)=1
+             else
+               print*,'Error in readapriori - xfsh must be > 0'
+               stop
+             endif
+             sx(ix,ix) = (efsh/xfsh)**2
+
+             nx=nx+7
 
            else         
 

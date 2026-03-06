@@ -490,6 +490,7 @@ C     See if Sromovsky cloud layer model is specified.
        if(varident(ivar,1).lt.0.and.varident(ivar,3).eq.49)icheck=1
        if(varident(ivar,3).ge.50.and.varident(ivar,3).le.52)icheck=1
        if(varident(ivar,3).eq.54.or.varident(ivar,3).eq.58)icheck=1
+       if(varident(ivar,3).eq.63.or.varident(ivar,3).eq.64)icheck=1
 C       if(varident(ivar,1).eq.111)icheck=1
       enddo
 
@@ -541,6 +542,30 @@ C     Compute the drv file to get the aerosol optical depths
           if(varident(ivar,3).eq.10)then
               icont=int(varparam(ivar,1))
               od1=exp(xn(nx1+3))
+              xscal(icont)=xod(icont)/od1
+
+              if(idiag.gt.0)print*,'gsetrad xx',icont,od1,
+     & xod(icont),xscal(icont)
+
+              do j=1,NN
+               dust(icont,j)=dust(icont,j)/xscal(icont)
+              enddo
+          endif
+          if(varident(ivar,3).eq.63)then
+              icont=abs(int(varparam(ivar,2)))
+              od1=exp(xn(nx1+5))
+              xscal(icont)=xod(icont)/od1
+
+              if(idiag.gt.0)print*,'gsetrad xx',icont,od1,
+     & xod(icont),xscal(icont)
+
+              do j=1,NN
+               dust(icont,j)=dust(icont,j)/xscal(icont)
+              enddo
+          endif
+          if(varident(ivar,3).eq.64)then
+              icont=abs(int(varparam(ivar,2)))
+              od1=exp(xn(nx1+6))
               xscal(icont)=xod(icont)/od1
 
               if(idiag.gt.0)print*,'gsetrad xx',icont,od1,
@@ -859,8 +884,8 @@ C             if(idiag.gt.0)print*,'xx mod',i,n1(i)
 
            do i=1,pvar
             if(mievar(i).eq.imode)then
-             inorm=xnormmie(i)
-             iscatmie=xiscatmie(i)
+             inorm=int(xnormmie(i))
+             iscatmie=int(xiscatmie(i))
             endif
            enddo
 

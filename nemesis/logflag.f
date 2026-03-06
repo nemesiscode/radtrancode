@@ -126,6 +126,8 @@ C       Variable is not temperature  - may need to take exponent
       if(imod.eq.60)iflag=1	! Log scaling factor
       if(imod.eq.61)iflag=1	! Log scaling factor
       if(imod.eq.62)iflag=1	! Log scaling factor
+      if(imod.eq.63)iflag=1	! Log scaling factor
+      if(imod.eq.64)iflag=1	! Log scaling factor
       if(imod.eq.57)iflag=1	! Log scaling factor
 
       if(imod.eq.22)then 

@@ -82,7 +82,7 @@ C     ***********************************************************************
       REAL DY,PSTRAT,PBOT,HBOT,DELH1,XBOT,QP
       REAL XN(MX),DPEXP,DELH,XFAC,DXFAC,XTMP,SUM,PMIN,XSTEP
       REAL H(MAXPRO),P(MAXPRO),T(MAXPRO),VMR(MAXPRO,MAXGAS)
-      REAL PMIN1,XMIN1,XMID,XNOW
+      REAL PMIN1,XMIN1,XMID,XNOW,XSCALE
       REAL CONT(MAXCON,MAXPRO),X,XREF(MAXPRO),X1(MAXPRO)
       REAL PKNEE,HKNEE,XDEEP,XFSH,PARAH2(MAXPRO),XH,XKEEP,X2(MAXPRO)
       REAL HKNEE1,XDEEP1,XWID1,XT(MAXPRO),XTC(MAXPRO),XWIDX
@@ -100,7 +100,7 @@ C     ***********************************************************************
       REAL HREF(MAXLAT,MAXPRO),TREF(MAXLAT,MAXPRO),FLAT
       REAL PREF(MAXLAT,MAXPRO),VMRREF(MAXLAT,MAXPRO,MAXGAS)
       REAL LATREF(MAXLAT),MOLWTREF(MAXLAT),XFSHREF
-      REAL XRH,XCDEEP,P1,PS,PS1,PH,Y1,Y2,YY1,YY2,ODX
+      REAL XRH,XCDEEP,P1,PS,PS1,PH,Y1,Y2,YY1,YY2,ODX,XRH1
       real plog,p1log,p2log,p2,v1log,v2log,grad,p3
       REAL XCH4,PCH4,PCUT,GETRADIUS,RPARTICLE,SHAPE
       INTEGER ICLOUD(MAXCON,MAXPRO),NCONT1,JSPEC,IFLA,I1,I2
@@ -565,6 +565,7 @@ C     First skip header
        JSPEC=-1
        JVMR=-1
        IPAR=-1
+C       print*,IVAR,(VARIDENT(IVAR,K),K=1,3)
        IF(VARIDENT(IVAR,1).LE.100)THEN
         IF(VARIDENT(IVAR,1).EQ.0)THEN
 C        variable is Temperature
@@ -847,7 +848,7 @@ C         Calculate density of atmosphere (g/cm3)
 
           RHO = (0.1013*XMOLWT/R)*(P(J)/T(J))
           ND(J)=ND(J+1)*EXP(DELH/XFAC)
-          DNDH(J)=-ND(J)*DELH/(XFAC**2)+EXP(DELH/XFAC)*DNDH(J+1)
+          DNDH(J)=SNGL(-ND(J)*DELH/(XFAC**2))+EXP(DELH/XFAC)*DNDH(J+1)
           OD(J)=OD(J+1)+(ND(J) - ND(J+1))*XFAC*1E5
           Q(J)=ND(J)/RHO
           DQDH(J) = DNDH(J)/RHO
@@ -867,9 +868,9 @@ C         Calculate density of atmosphere (g/cm3)
           IF(Q(J).GT.1e10)Q(J)=1e10
           IF(Q(J).LT.1e-36)Q(J)=1e-36
 
-          DNDH(J)=DNDH(J)*XDEEP/XOD
-          DQDH(J)=DQDH(J)*XDEEP/XOD
-          DQDX(J)=Q(J)
+          DNDH(J)=SNGL(DNDH(J)*XDEEP/XOD)
+          DQDH(J)=SNGL(DQDH(J)*XDEEP/XOD)
+          DQDX(J)=SNGL(Q(J))
 
           XMAP(NXTEMP+1,IPAR,J)=DQDX(J)*XDEEP
           XMAP(NXTEMP+2,IPAR,J)=DQDH(J)*XFAC
@@ -1041,7 +1042,7 @@ C           Calculate density of atmosphere  (g/cm3)
              JFSH=1
             ELSE
              ND(J)=ND(J-1)*DPEXP(-DELH/XFAC)
-             DNDH(J)=ND(J)*DELH/(XFAC**2)+DPEXP(-DELH/XFAC)*DNDH(J-1)
+          DNDH(J)=SNGL(ND(J)*DELH/(XFAC**2))+DPEXP(-DELH/XFAC)*DNDH(J-1)
             ENDIF
             Q(J)=ND(J)/RHO
            ENDIF
@@ -1081,9 +1082,9 @@ C         post-processing in gsetrad.f
            ENDIF
 
            IF(ITEST.EQ.1)THEN
-            X1(J)=Q(J)
+            X1(J)=SNGL(Q(J))
            ELSE
-            XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
+            XMAP(NXTEMP+ITEST-1,IPAR,J)=SNGL((Q(J)-X1(J))/DX)
            ENDIF
 
           ENDDO
@@ -1186,7 +1187,7 @@ C           Calculate density of atmosphere  (g/cm3)
              JFSH=1
             ELSE
              ND(J)=ND(J-1)*DPEXP(-DELH/XFAC)
-             DNDH(J)=ND(J)*DELH/(XFAC**2)+DPEXP(-DELH/XFAC)*DNDH(J-1)
+         DNDH(J)=SNGL(ND(J)*DELH/(XFAC**2))+DPEXP(-DELH/XFAC)*DNDH(J-1)
             ENDIF
             Q(J)=ND(J)/RHO
             DQDH(J) = DNDH(J)/RHO
@@ -1236,14 +1237,14 @@ C         post-processing in gsetrad.f
            ENDIF
 
            IF(ITEST.EQ.1)THEN
-            X1(J)=Q(J)
+            X1(J)=SNGL(Q(J))
            ELSE
-            XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
+            XMAP(NXTEMP+ITEST-1,IPAR,J)=SNGL((Q(J)-X1(J))/DX)
            ENDIF
 
-           DNDH(J)=DNDH(J)*XDEEP/XOD
-           DQDH(J)=DQDH(J)*XDEEP/XOD
-           DQDX(J)=Q(J)/XOD
+           DNDH(J)=SNGL(DNDH(J)*XDEEP/XOD)
+           DQDH(J)=SNGL(DQDH(J)*XDEEP/XOD)
+           DQDX(J)=SNGL(Q(J)/XOD)
 
           ENDDO
 
@@ -1398,7 +1399,7 @@ C          OD is in units of particles/cm2 = particles/cm3 x length(cm)
 C          In this case this is the scale height at the top level.
            OD(NPRO)=ND(NPRO)*SCALE(NPRO)*1E5
 C          Q is specific density = particles/gram = particles/cm3 x g/cm3
-           XTC(NPRO)=ND(NPRO)/RHO         
+           XTC(NPRO)=SNGL(ND(NPRO)/RHO)         
          
 C           print*,'HKNEE = ',HKNEE
 C           print*,H(NPRO),ND(NPRO),RHO,OD(NPRO),XTC(NPRO)
@@ -1422,7 +1423,7 @@ C           Calculate density of atmosphere (g/cm3)
              ND(J)=0.0
              OD(J)=OD(J+1)
             ENDIF
-            XTC(J)=ND(J)/RHO
+            XTC(J)=SNGL(ND(J)/RHO)
  
 C            print*,H(J),ND(J),RHO,OD(J),XTC(J)
 
@@ -1437,7 +1438,7 @@ C          gsetrad.f
            DO J=1,NPRO
             OD(J)=XCDEEP*OD(J)/XOD
             ND(J)=XCDEEP*ND(J)/XOD
-            XTC(J)=XCDEEP*XTC(J)/XOD
+            XTC(J)=SNGL(XCDEEP*XTC(J)/XOD)
             IF(H(J).LT.HKNEE)THEN
              IF(H(J+1).GE.HKNEE)THEN
               XTC(J)=XTC(J)*(1.0 - (HKNEE-H(J))/(H(J+1)-H(J)))
@@ -1538,9 +1539,11 @@ C         ---------------------------------------------------------------
 C         Now make sure that vmr does not rise again once condensation has
 C         begun. i.e. freeze vmr at the cold trap.
 
-          IF(IFLA.EQ.1.AND.P(I).LT.0.3.AND.X1(I).GT.X1(I-1))THEN
+          IF(I.GT.1)THEN
+           IF(IFLA.EQ.1.AND.P(I).LT.0.3.AND.X1(I).GT.X1(I-1))THEN
            X1(I)=X1(I-1)
            XMAP(NXTEMP+2,IPAR,I)=XMAP(NXTEMP+2,IPAR,I-1)
+           ENDIF
           ENDIF
 
          ENDDO
@@ -1644,7 +1647,7 @@ C        Q(J)=ND(J)/RHO
 
           XOD=XOD+OD(J)
    
-          X1(J)=Q(J)
+          X1(J)=SNGL(Q(J))
 
          ENDDO
 
@@ -1655,7 +1658,7 @@ C        Empirical correction to XOD
 
          DO J=1,NPRO
 
-          X1(J)=Q(J)*XDEEP/XOD   
+          X1(J)=SNGL(Q(J)*XDEEP/XOD)   
 
           IF(VARIDENT(IVAR,1).EQ.0)THEN
             XMAP(NXTEMP+1,IPAR,J)=X1(J)/XDEEP
@@ -1714,7 +1717,7 @@ C        Q(J)=ND(J)/RHO
 
           XOD=XOD+OD(J)
    
-          X1(J)=Q(J)
+          X1(J)=SNGL(Q(J))
 
          ENDDO
 
@@ -1724,7 +1727,7 @@ C        Empirical correction to XOD
 
          DO J=1,NPRO
          
-          X1(J)=Q(J)*XDEEP/XOD   
+          X1(J)=SNGL(Q(J)*XDEEP/XOD)   
 
           IF(VARIDENT(IVAR,1).EQ.0)THEN
             XMAP(NXTEMP+1,IPAR,J)=X1(J)/XDEEP
@@ -1732,10 +1735,10 @@ C        Empirical correction to XOD
             XMAP(NXTEMP+1,IPAR,J)=X1(J)
           ENDIF
          
-          XMAP(NXTEMP+2,IPAR,J)=(XDEEP/(XOD*PI))*2.*
-     &                                  (Y-Y0)*XWID/XX**2
-          XMAP(NXTEMP+3,IPAR,J)=XWID*(XDEEP/(XOD*PI))*
-     &					(XX - 2*XWID**2)/XX**2
+          XMAP(NXTEMP+2,IPAR,J)=SNGL((XDEEP/(XOD*PI))*2.*
+     &                                  (Y-Y0)*XWID/XX**2)
+          XMAP(NXTEMP+3,IPAR,J)=SNGL(XWID*(XDEEP/(XOD*PI))*
+     &				 (XX - 2*XWID**2)/XX**2)
 
          ENDDO
 
@@ -2068,7 +2071,7 @@ C          Calculate density of atmosphere (g/cm3)
              ND(J)=1e-35
            ENDIF 
 
-           DNDH(J)=-ND(J)*DELH/(XFAC**2)+EXP(DELH/XFAC)*DNDH(J+1)
+         DNDH(J)=SNGL(-ND(J)*DELH/(XFAC**2))+EXP(DELH/XFAC)*DNDH(J+1)
 
            OD(J)=OD(J+1)+(ND(J) - ND(J+1))*XFAC*1E5
            Q(J)=ND(J)/RHO
@@ -2128,14 +2131,14 @@ C         post-processing in gsetrad.f
            ENDIF
 
            IF(ITEST.EQ.1)THEN
-            X1(J)=Q(J)
+            X1(J)=SNGL(Q(J))
            ELSE
-            XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
+            XMAP(NXTEMP+ITEST-1,IPAR,J)=SNGL((Q(J)-X1(J))/DX)
            ENDIF
 
-           DNDH(J)=DNDH(J)*XDEEP/XOD
-           DQDH(J)=DQDH(J)*XDEEP/XOD
-           DQDX(J)=Q(J)/XOD
+           DNDH(J)=SNGL(DNDH(J)*XDEEP/XOD)
+           DQDH(J)=SNGL(DQDH(J)*XDEEP/XOD)
+           DQDX(J)=SNGL(Q(J)/XOD)
 
           ENDDO
 
@@ -2292,7 +2295,7 @@ C           Calculate density of atmosphere  (g/cm3)
              JFSH=1
             ELSE
              ND(J)=ND(J-1)*DPEXP(-DELH/XFAC)
-             DNDH(J)=ND(J)*DELH/(XFAC**2)+DPEXP(-DELH/XFAC)*DNDH(J-1)
+         DNDH(J)=SNGL(ND(J)*DELH/(XFAC**2))+DPEXP(-DELH/XFAC)*DNDH(J-1)
             ENDIF
             Q(J)=ND(J)/RHO
             DQDH(J) = DNDH(J)/RHO
@@ -2340,14 +2343,14 @@ C         post-processing in gsetrad.f
            ENDIF
 
            IF(ITEST.EQ.1)THEN
-            X1(J)=Q(J)
+            X1(J)=SNGL(Q(J))
            ELSE
-            XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
+            XMAP(NXTEMP+ITEST-1,IPAR,J)=SNGL((Q(J)-X1(J))/DX)
            ENDIF
 
-           DNDH(J)=DNDH(J)*XDEEP/XOD
-           DQDH(J)=DQDH(J)*XDEEP/XOD
-           DQDX(J)=Q(J)/XOD
+           DNDH(J)=SNGL(DNDH(J)*XDEEP/XOD)
+           DQDH(J)=SNGL(DQDH(J)*XDEEP/XOD)
+           DQDX(J)=SNGL(Q(J)/XOD)
 
           ENDDO
 
@@ -2674,7 +2677,7 @@ C        Model 28: Modify just one element of a continuous profile
 C        ***************************************************************
 
 c         Level in profile to be changed
-          JLEV = VARPARAM(IVAR,1)
+          JLEV = INT(VARPARAM(IVAR,1))
 
           DO I=1,NPRO
 
@@ -3062,7 +3065,7 @@ C         Now integrate optical thickness
            ENDIF
           ENDDO
 
-          ODX=OD(1)
+          ODX=SNGL(OD(1))
 
 C         Now normalise specific density profile.
 C         This is also redone in gsetrad.f to make this totally secure.
@@ -3082,9 +3085,9 @@ C         This is also redone in gsetrad.f to make this totally secure.
            ENDIF
 
            IF(ITEST.EQ.1)THEN
-            X1(J)=Q(J)
+            X1(J)=SNGL(Q(J))
            ELSE
-            XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
+            XMAP(NXTEMP+ITEST-1,IPAR,J)=SNGL((Q(J)-X1(J))/DX)
            ENDIF
 
           ENDDO
@@ -3706,16 +3709,16 @@ C                     afternoon terminators.
 
          DO J=1,4
           I=1
-          ILON=LONZ(J)
-          IX=NXTEMP + (ILON-1)*5+1
+          ILON=INT(LONZ(J))
+          IX=NXTEMP + INT(ILON-1)*5+1
           ALPHAP=EXP(XN(IX))
-          IX=NXTEMP + (ILON-1)*5+2
+          IX=NXTEMP + INT(ILON-1)*5+2
           BETAP=EXP(XN(IX))
-          IX=NXTEMP + (ILON-1)*5+3
+          IX=NXTEMP + INT(ILON-1)*5+3
           KIRP=EXP(XN(IX))
-          IX=NXTEMP + (ILON-1)*5+4
+          IX=NXTEMP + INT(ILON-1)*5+4
           GAMMAV1=EXP(XN(IX))
-          IX=NXTEMP + (ILON-1)*5+5
+          IX=NXTEMP + INT(ILON-1)*5+5
           GAMMAV2=EXP(XN(IX))
 
           CALL PARMENTIERGUILLOT1(IPLANET,LATITUDE,NPRO,
@@ -3746,10 +3749,10 @@ C                     afternoon terminators.
            DXD2=FLONG*GLINE(2,I,K)*(COS(LATITUDE*DTR))**XPC
            DXD3=(1-(COS(LATITUDE*DTR))**XPC)*0.5*GLINE(3,I,K)
            DXD4=(1-(COS(LATITUDE*DTR))**XPC)*0.5*GLINE(4,I,K)
-           IX1 = NXTEMP+LONZ(1)*5+K
-           IX2 = NXTEMP+LONZ(2)*5+K
-           IX3 = NXTEMP+LONZ(3)*5+K
-           IX4 = NXTEMP+LONZ(4)*5+K
+           IX1 = NXTEMP+INT(LONZ(1))*5+K
+           IX2 = NXTEMP+INT(LONZ(2))*5+K
+           IX3 = NXTEMP+INT(LONZ(3))*5+K
+           IX4 = NXTEMP+INT(LONZ(4))*5+K
            XMAP(IX1,IPAR,I)=DXD1
            XMAP(IX2,IPAR,I)=DXD2
            XMAP(IX3,IPAR,I)=DXD3
@@ -3842,7 +3845,7 @@ C        Empirical correction to XOD
 
          DO J=1,NPRO
 
-          X1(J)=Q(J)*(XDEEP+XDEEP1)/XOD   
+          X1(J)=SNGL(Q(J)*(XDEEP+XDEEP1)/XOD)   
 
 C         These gradients are not quite correct.
           IF(VARIDENT(IVAR,1).EQ.0)THEN
@@ -3912,7 +3915,7 @@ C        Q(J)=ND(J)/RHO
 
           XOD=XOD+OD(J)
    
-          X1(J)=Q(J)
+          X1(J)=SNGL(Q(J))
          ENDDO
 
 C        Empirical correction to XOD
@@ -3920,7 +3923,7 @@ C        Empirical correction to XOD
 
          DO J=1,NPRO
 
-          X1(J)=Q(J)*XDEEP/XOD
+          X1(J)=SNGL(Q(J)*XDEEP/XOD)
           IF(ISNAN(X1(J)))X1(J)=1e-36
           IF(X1(J).LT.1e-36)X1(J)=1e-36
 
@@ -4108,7 +4111,7 @@ C         Now integrate optical thickness
            ENDIF
           ENDDO
 
-          ODX=OD(1)
+          ODX=SNGL(OD(1))
 
 C         Now normalise specific density profile.
 C         This is also redone in gsetrad.f to make this totally secure.
@@ -4128,9 +4131,9 @@ C         This is also redone in gsetrad.f to make this totally secure.
            ENDIF
 
            IF(ITEST.EQ.1)THEN
-            X1(J)=Q(J)
+            X1(J)=SNGL(Q(J))
            ELSE
-            XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
+            XMAP(NXTEMP+ITEST-1,IPAR,J)=SNGL((Q(J)-X1(J))/DX)
            ENDIF
 
           ENDDO
@@ -4234,7 +4237,7 @@ C        Q(J)=ND(J)/RHO
 
           XOD=XOD+OD(J)
    
-          X1(J)=Q(J)
+          X1(J)=SNGL(Q(J))
 
          ENDDO
 
@@ -4243,7 +4246,7 @@ C        Empirical correction to XOD
 
          DO J=1,NPRO
 
-          X1(J)=Q(J)*XDEEP/XOD
+          X1(J)=SNGL(Q(J)*XDEEP/XOD)
 
           Y=ALOG(P(J))          
           XX = (Y-Y0)**2 + XWID**2
@@ -4317,7 +4320,7 @@ C        Q(J)=ND(J)/RHO
 
           XOD=XOD+OD(J)
    
-          X1(J)=Q(J)
+          X1(J)=SNGL(Q(J))
 
          ENDDO
 
@@ -4326,7 +4329,7 @@ C        Empirical correction to XOD
 
          DO J=1,NPRO
 
-          X1(J)=Q(J)*XDEEP/XOD
+          X1(J)=SNGL(Q(J)*XDEEP/XOD)
 
           Y=ALOG(P(J))          
           
@@ -4432,7 +4435,7 @@ C     & XFAC,SNGL(Q(J))
 
           XOD=XOD+OD(J)
    
-          X1(J)=Q(J)
+          X1(J)=SNGL(Q(J))
 
          ENDDO
 
@@ -4441,7 +4444,7 @@ C        Empirical correction to XOD
 
          DO J=1,NPRO
 
-          X1(J)=Q(J)*XDEEP/XOD
+          X1(J)=SNGL(Q(J)*XDEEP/XOD)
 
           Y=ALOG(P(J))          
           
@@ -4628,7 +4631,7 @@ C           Exponential decay above
 
           XOD=XOD+OD(J)
    
-          X1(J)=Q(J)
+          X1(J)=SNGL(Q(J))
 
          ENDDO
 
@@ -4637,7 +4640,7 @@ C        Empirical correction to XOD
 
          DO J=1,NPRO
 
-          X1(J)=Q(J)*XDEEP/XOD
+          X1(J)=SNGL(Q(J)*XDEEP/XOD)
 
           Y=ALOG(P(J))          
           
@@ -4815,11 +4818,15 @@ C          print*,'d2',I,X1(I)
 C         Now make sure that vmr does not rise again once condensation has
 C         begun. i.e., freeze vmr at the cold trap near 0.1 bar.
 
+           
 C          IF(IFLA.EQ.1.AND.(T(I).GT.T(I-1)).AND.(X1(I).GT.X1(I-1)))THEN
-          IF((IFLA.EQ.1).AND.(P(I).LT.0.3).AND.(X1(I).GT.X1(I-1)))THEN
-           X1(I)=X1(I-1)
-           XMAP(NXTEMP+1,IPAR,I)=XMAP(NXTEMP+1,IPAR,I-1)
-           XMAP(NXTEMP+2,IPAR,I)=XMAP(NXTEMP+2,IPAR,I-1)
+          IF(I.GT.1)THEN
+           IF((IFLA.EQ.1).AND.(P(I).LT.0.3).AND.(X1(I).GT.X1(I-1)))THEN
+C            print*,I,P(I),IFLA
+            X1(I)=X1(I-1)
+            XMAP(NXTEMP+1,IPAR,I)=XMAP(NXTEMP+1,IPAR,I-1)
+            XMAP(NXTEMP+2,IPAR,I)=XMAP(NXTEMP+2,IPAR,I-1)
+           ENDIF
           ENDIF
 C          print*,'subprofretg Mod56: prf',i,p(i),x1(i)
          ENDDO
@@ -4973,7 +4980,7 @@ C        Now integrate optical thickness
            ENDIF
          ENDDO
 
-         ODX=OD(1)
+         ODX=SNGL(OD(1))
 
 C        Now normalise specific density profile.
 C        This is also redone in gsetrad.f to make this totally secure.
@@ -4993,9 +5000,9 @@ C        This is also redone in gsetrad.f to make this totally secure.
            ENDIF
 
            IF(ITEST.EQ.1)THEN
-            X1(J)=Q(J)
+            X1(J)=SNGL(Q(J))
            ELSE
-            XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
+            XMAP(NXTEMP+ITEST-1,IPAR,J)=SNGL((Q(J)-X1(J))/DX)
            ENDIF
 
          ENDDO
@@ -5114,7 +5121,7 @@ C        ***************************************************************
            ENDIF
           ENDIF
 
-          X1(J)=Q(J)
+          X1(J)=SNGL(Q(J))
 
          ENDDO
 
@@ -5198,6 +5205,76 @@ C          print*,J,Y,Y0,Y1,X1(J),XDEEP,XBOT
          ENDDO
 
 C        No XMAP calaculated for this model.
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.62)THEN
+C        Model 62. Condensing gas, but no associated cloud. Model requires
+C        the deep gas abundance, middle gas abundance (above fixed knee pressure) and the 
+C        desired maximum relative humidity, and rate of decrease of RH above this condensation
+C        level
+C        ***************************************************************
+
+         XDEEP = EXP(XN(NXTEMP+1))
+         XMID = EXP(XN(NXTEMP+2))
+         XRH  = EXP(XN(NXTEMP+3))
+         XSCALE  = EXP(XN(NXTEMP+4))
+         PKNEE = VARPARAM(IVAR,1)
+
+         IDAT=0
+         DO I=1,NGAS
+          IF(GASDATA(I,1).EQ.IDGAS(IPAR))THEN
+            A = GASDATA(I,2)
+            B = GASDATA(I,3)
+            C = GASDATA(I,4)
+            D = GASDATA(I,5)
+C            print*,'svp',A,B,C,D
+            IDAT=1
+          ENDIF
+	 ENDDO
+    
+
+         IF(IDAT.EQ.0)THEN
+          if(idiag.gt.0)then
+           print*,'Subprofretg: Gas SVP data cannot be found'
+           print*,IPAR,IDGAS(IPAR)
+           stop
+          endif
+         ENDIF
+
+         IFLA=0
+         IKNEE=0
+         DO I=1,NPRO
+          IF(P(I).GT.PKNEE)THEN
+            XNOW=XDEEP
+          ELSE
+            XNOW=XMID
+            IKNEE=1
+          ENDIF
+          P1=P(I)*XNOW
+
+          PS=DPEXP(A+B/T(I)+C*T(I)+D*T(I)*T(I))
+          IF(P1.LT.PS)THEN
+            X1(I)=XNOW
+          ELSE
+            IF(IFLA.EQ.0)IFLA=I
+            DELH=H(I)-H(IFLA)
+            XRH1=XRH*EXP(-DELH/XSCALE)
+            X1(I)=XRH1*PS/P(I)
+          ENDIF
+
+C          XMAP(NXTEMP+1+IKNEE,IPAR,I)=X1(I)
+
+C         Now make sure that vmr does not rise again once condensation has
+C         begun. i.e., freeze vmr at the cold trap near 0.1 bar.
+
+           
+          IF(I.GT.1)THEN
+           IF((IFLA.GT.0).AND.(P(I).LT.0.3).AND.(X1(I).GT.X1(I-1)))THEN
+            X1(I)=X1(I-1)
+C            XMAP(NXTEMP+1,IPAR,I)=XMAP(NXTEMP+1,IPAR,I-1)
+C            XMAP(NXTEMP+2,IPAR,I)=XMAP(NXTEMP+2,IPAR,I-1)
+           ENDIF
+          ENDIF
+         ENDDO
 
         ELSE
 
@@ -5361,9 +5438,9 @@ C          post-processing in gsetrad.f
             ENDIF
 
             IF(ITEST.EQ.1)THEN
-             X2(J)=Q(J)
+             X2(J)=SNGL(Q(J))
             ELSE
-             XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X2(J))/DX
+             XMAP(NXTEMP+ITEST-1,IPAR,J)=SNGL((Q(J)-X2(J))/DX)
             ENDIF
 
            ENDDO
@@ -5501,9 +5578,9 @@ C          post-processing in gsetrad.f
             ENDIF
 
 C            IF(ITEST.EQ.1)THEN
-             X1(J)=Q(J)
+             X1(J)=SNGL(Q(J))
 C            ELSE
-C             XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
+C             XMAP(NXTEMP+ITEST-1,IPAR,J)=SNGL((Q(J)-X1(J))/DX)
 C            ENDIF
 
            ENDDO
@@ -5550,7 +5627,7 @@ C          Q is specific density = particles/gram = (particles/cm3) / (g/cm3)
          IF(HTOP.LE.HKNEE)THEN
             DO J=1,NPRO
                Q(J)=1.e-36
-               X1(J)=Q(J)
+               X1(J)=SNGL(Q(J))
             ENDDO
          ELSE   
            JFSH=-1
@@ -5641,9 +5718,9 @@ C            ENDIF
              Q(J)=1.0e-36
             ENDIF
 C            IF(ITEST.EQ.1)THEN
-             X1(J)=Q(J)
+             X1(J)=SNGL(Q(J))
 C            ELSE
-C             XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
+C             XMAP(NXTEMP+ITEST-1,IPAR,J)=SNGL((Q(J)-X1(J))/DX)
 C            ENDIF
 
           ENDDO
@@ -5793,7 +5870,7 @@ C            ENDIF
 	     Q(J)=1.0e-36
             ENDIF
 C            IF(ITEST.EQ.1)THEN
-             X1(J)=Q(J)
+             X1(J)=SNGL(Q(J))
 C            ELSE
 C             XMAP(NXTEMP+ITEST-1,IPAR,J)=(Q(J)-X1(J))/DX
 C            ENDIF
@@ -5929,7 +6006,7 @@ C            ENDIF
              Q(J)=1.0e-36
             ENDIF
 
-            X1(J)=Q(J)
+            X1(J)=SNGL(Q(J))
             if(idiag.gt.0)print*,'H(J),X1(J),Q(J)'
             if(idiag.gt.0)print*,H(J),X1(J),Q(J)
             JCONT=1
@@ -6074,7 +6151,7 @@ C        ***************************************************************
          XWID  = EXP(XN(NXTEMP+2))
          Y0=ALOG(PKNEE)
 
-         NC=VARPARAM(IVAR,1)
+         NC=INT(VARPARAM(IVAR,1))
 
 
          XDEEP = EXP(XN(NXTEMP+1))
@@ -6108,7 +6185,7 @@ C        Q(J)=ND(J)/RHO
 
            XOD=XOD+OD(J)
    
-           X1(J)=Q(J)
+           X1(J)=SNGL(Q(J))
          ENDDO
 
 C        Empirical correction to XOD
@@ -6125,7 +6202,7 @@ C          print*,'test1',IC,NC,JCONT1,XDEEP,PKNEE,XWID
 
            DO J=1,NPRO
 
-            X1(J)=Q(J)*XDEEP/XOD
+            X1(J)=SNGL(Q(J)*XDEEP/XOD)
             IF(ISNAN(X1(J)))X1(J)=1e-36
             IF(X1(J).LT.1e-36)X1(J)=1e-36
             CONT(JCONT1,J)=X1(J)

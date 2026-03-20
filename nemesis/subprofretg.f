@@ -72,7 +72,8 @@ C     ***********************************************************************
 
       integer, intent(in) :: xflag,ispace,iscat,nvar,nx,jpre
       integer, intent(in) :: varident(mvar,3),flagh2p
-      real, intent(in) ::varparam(mvar,mparam),xlat,xlon
+      real, intent(in) ::xlat,xlon
+      real varparam(mvar,mparam)
       character (len=100) :: ipfile,aname,buffer
       logical, intent(in) :: gasgiant
 
@@ -89,11 +90,13 @@ C     ***********************************************************************
       REAL RHO,F,DQDX(MAXPRO),DX,PLIM,XFACP,CWID,PTROP, NEWF
       REAL DNDH(MAXPRO),DQDH(MAXPRO),FCLOUD(MAXPRO),HTOP,PTOP
       REAL dtempdx(MAXPRO,5),T0,Teff,alpha,ntemp,tau0,QC(MAXPRO)
-      REAL XP1(MAXPRO),LP1(MAXPRO),XP2(MAXPRO),GRAD1
-      REAL LPMIN,LPMAX,DLP,XPS(MAXPRO),XP2S(MAXPRO)
+      REAL XP1(MAXPRO),LP1(MAXPRO),XP2(MAXPRO),GRAD1,X3(MAXPRO)
+      REAL LPMIN,LPMAX,DLP,XPS(MAXPRO),XP2S(MAXPRO),PCEN
       REAL CTAU(MAXPRO),SETXLAPSE,XLAPSE,U,XF,TB,XCORR
+      REAL XCDEEP1,XCDEEP2,XWIDC1,XWIDC2,PCLOUD
+      REAL PHAZE1,WHAZE1,PHAZE2,WHAZE2
       DOUBLE PRECISION Q(MAXPRO),OD(MAXPRO),ND(MAXPRO),XOD
-      INTEGER ISCALE(MAXGAS),NPVAR,MAXLAT,ILAPSE
+      INTEGER ISCALE(MAXGAS),NPVAR,MAXLAT,ILAPSE,ICEN
       INTEGER NLATREF,ILATREF,JLAT,KLAT,ICUT,JX,JLEV,ILEV
       INTEGER ISO1,IGAS1,JGAS,IKNEE
       PARAMETER (MAXLAT=20)
@@ -104,6 +107,7 @@ C     ***********************************************************************
       real plog,p1log,p2log,p2,v1log,v2log,grad,p3
       REAL XCH4,PCH4,PCUT,GETRADIUS,RPARTICLE,SHAPE
       INTEGER ICLOUD(MAXCON,MAXPRO),NCONT1,JSPEC,IFLA,I1,I2
+      INTEGER JSPEC1,JSPEC2,JPAR1,JPAR2,IFLA1,IFLA2
       INTEGER NPRO,NPRO1,NVMR,JZERO,IV,IP,IVAR,JCONT,JVMR
       INTEGER IDGAS(MAXGAS),ISOGAS(MAXGAS),IPAR,JPAR,IVMR,NP
       INTEGER IDAT,JFSH,JHYDRO,ICOND,JFSH1,JCONT1,IC,NC
@@ -140,8 +144,8 @@ C     ***********************************************************************
       INTEGER IMODEL
       REAL ALPHAP,BETAP,KIRP,GAMMAV1,GAMMAV2,TSTAR,RSTAR,SDIST
       REAL XLINE(4,MAXPRO),GLINE(4,MAXPRO,5),DXD1,DXD2,DXD3,DXD4
-      REAL LONZ(4),TOUT(MAXPRO),PHAZE,YHAZE,WHAZE
-      INTEGER IX1,IX2,IX3,IX4,ILON,KHAZE
+      REAL LONZ(4),TOUT(MAXPRO),PHAZE,YHAZE,WHAZE,YHAZE1,YHAZE2
+      INTEGER IX1,IX2,IX3,IX4,ILON,KHAZE,KHAZE1,KHAZE2
       integer idiag,iquiet
       common/diagnostic/idiag,iquiet
 
@@ -563,6 +567,8 @@ C     First skip header
       DO 1000 IVAR = 1,NVAR
        JCONT=-1
        JSPEC=-1
+       JSPEC1=-1
+       JSPEC2=-1
        JVMR=-1
        IPAR=-1
 C       print*,IVAR,(VARIDENT(IVAR,K),K=1,3)
@@ -5288,7 +5294,7 @@ C        ***************************************************************
          XRH  = EXP(XN(NXTEMP+3))
          XSCALE  = EXP(XN(NXTEMP+4))
          XCDEEP = EXP(XN(NXTEMP+5))
-         XFSH  = EXP(XN(NXTEMP+6))
+         XWID  = EXP(XN(NXTEMP+6))
          PKNEE = VARPARAM(IVAR,1)
          PHAZE = VARPARAM(IVAR,3)
          WHAZE = VARPARAM(IVAR,4)
@@ -5346,6 +5352,8 @@ C            print*,'svp',A,B,C,D
            IF(I.LT.NPRO)THEN
             IF(P(I).GE.PHAZE.AND.P(I+1).LT.PHAZE)KHAZE=I
            ENDIF
+C          Assign PCOND to varparam array
+           VARPARAM(IVAR,5)=PCOND
 
 C          Now make sure that vmr does not rise again once condensation has
 C          begun. i.e., freeze vmr at the cold trap near 0.1 bar.
@@ -5415,10 +5423,10 @@ C           Exponential decay above
 
 
         ELSEIF(VARIDENT(IVAR,3).EQ.64)THEN
-C        Model 64. Condensing gas, and associated cloud. Model requires
-C        the deep gas abundance, middle gas abundance (above fixed knee pressure), fsh above that 
+C        Model 64. Jovian condensing NH3, and associated cloud. Model requires
+C        the deep gas abundance, middle gas abundance (above knee pressure), fsh above that 
 C        level, desired maximum relative humidity, rate of decrease of RH above this condensation
-C        level, cloud opacity and cloud fsh
+C        level, cloud1 opacity and cloud fsh
 C        ***************************************************************
 
          XDEEP = EXP(XN(NXTEMP+1))
@@ -5428,7 +5436,158 @@ C        ***************************************************************
          XRH  = EXP(XN(NXTEMP+4))
          XSCALE  = EXP(XN(NXTEMP+5))
          XCDEEP = EXP(XN(NXTEMP+6))
-         XFSH  = EXP(XN(NXTEMP+7))
+         XWID  = EXP(XN(NXTEMP+7))
+         PKNEE = VARPARAM(IVAR,1)
+         PHAZE = VARPARAM(IVAR,3)
+         WHAZE = VARPARAM(IVAR,4)
+
+C        Find where the gas will condense and if so put cloud there with required FSH.
+C        Set JSPEC to required cloud ID
+         JSPEC = ABS(INT(VARPARAM(IVAR,2)))
+         JPAR = NVMR+1+JSPEC
+         if(idiag.gt.0) print*,'Mod64, JPAR = ', JPAR
+
+         IDAT=0
+         DO I=1,NGAS
+          IF(GASDATA(I,1).EQ.IDGAS(IPAR))THEN
+            A = GASDATA(I,2)
+            B = GASDATA(I,3)
+            C = GASDATA(I,4)
+            D = GASDATA(I,5)
+C            print*,'svp',A,B,C,D
+            IDAT=1
+          ENDIF
+	 ENDDO
+    
+
+         IF(IDAT.EQ.0)THEN
+           print*,'Subprofretg: Gas SVP data cannot be found'
+           print*,IPAR,IDGAS(IPAR)
+           stop
+         ENDIF
+
+         IFLA=0
+         IKNEE=0
+         KHAZE=-1
+         DO I=1,NPRO
+           IF(P(I).GT.PKNEE)THEN
+             XNOW=XDEEP
+           ELSE
+             IF(IKNEE.EQ.0)THEN
+              XNOW=XMID
+              IKNEE=I
+             ELSE
+              IF(IFLA.EQ.0)THEN
+               DELH=H(I)-H(I-1)
+               XNOW=X1(I-1)*EXP(-DELH*YFAC/SCALE(I))
+              ENDIF
+             ENDIF
+           ENDIF
+           P1=P(I)*XNOW
+
+           PS=DPEXP(A+B/T(I)+C*T(I)+D*T(I)*T(I))
+           IF(P1.LT.PS)THEN
+             X1(I)=XNOW
+           ELSE
+             IF(IFLA.EQ.0)THEN
+              IFLA=I
+              HCOND=H(IFLA)
+              PCOND=P(IFLA)
+             ENDIF
+             DELH=H(I)-HCOND
+             XRH1=XRH*EXP(-DELH/XSCALE)
+             X1(I)=XRH1*PS/P(I)
+           ENDIF
+           IF(I.LT.NPRO)THEN
+            IF(P(I).GE.PHAZE.AND.P(I+1).LT.PHAZE)KHAZE=I
+           ENDIF
+C          Assign PCOND to VARPARAM array.
+           VARPARAM(IVAR,5)=PCOND
+
+C          Now make sure that vmr does not rise again once condensation has
+C          begun. i.e., freeze vmr at the cold trap near 0.1 bar.
+           
+           IF(I.GT.1)THEN
+            IF((IFLA.GT.0).AND.(P(I).LT.0.3).AND.(X1(I).GT.X1(I-1)))THEN
+             X1(I)=X1(I-1)
+            ENDIF
+           ENDIF
+
+         ENDDO
+
+         print*,'Model 64 diagnostics'
+         print*,'pcloud,pcond,phaze = ',pcloud,pcond,phaze
+         print*,'Condensing cloud = ',jspec
+
+
+C        Now put a cloud at the condensation level
+
+C        **** Want to normalise to get optical depth right. ***
+C        ND is the particles per cm3 (but will be rescaled)
+C        OD is in units of particles/cm2 = particles/cm3 x length(cm)
+C        OD(J)=ND(J)*SCALE(J)*1E5
+C        Q is specific density = particles/gram = particles/cm3 x g/cm3
+C        Q(J)=ND(J)/RHO
+
+         XWID1=0.05
+         XOD=0.
+         Y0=-ALOG(PCOND)
+         YHAZE=-ALOG(PHAZE)
+
+         DO J=1,NPRO
+          Y=-ALOG(P(J))
+
+          IF(J.LE.IFLA)THEN
+C           Gaussian cut-off below
+            Q(J) = EXP(-((Y-Y0)/XWID1)**2)
+          ELSE
+C           Exponential decay above
+            Q(J) = EXP(-(Y-Y0)/XWID)
+          ENDIF
+
+          IF(KHAZE.GT.0)THEN
+           XFAC = EXP(-((Y-YHAZE)/WHAZE)**2)
+           XFAC = 1.0 - XFAC
+           IF(J.GT.KHAZE)XFAC=0.0
+           Q(J) = Q(J)*XFAC
+          ENDIF
+
+          IF(AMFORM.EQ.0)THEN
+           XMOLWT=MOLWT
+          ELSE
+           XMOLWT=XXMOLWT(J)
+          ENDIF
+
+          RHO = (0.1013*XMOLWT/R)*(P(J)/T(J))
+
+          ND(J) = Q(J)*RHO
+          OD(J) = ND(J)*SCALE(J)*1e5
+
+          XOD=XOD+OD(J)
+
+          X2(J)=SNGL(Q(J))
+
+          IF(X2(J).LT.1E-36)X2(J)=1E-36
+
+         ENDDO
+
+
+        ELSEIF(VARIDENT(IVAR,3).EQ.65)THEN
+C        Model 65. Condensing gas, and associated cloud. Model requires
+C        the deep gas abundance, middle gas abundance (above fixed knee pressure), fsh above that 
+C        level, desired maximum relative humidity, rate of decrease of RH above this condensation
+C        level, cloud opacity and cloud fsh and cloud base offset
+C        ***************************************************************
+
+         XDEEP = EXP(XN(NXTEMP+1))
+         XMID = EXP(XN(NXTEMP+2))
+         YFSH  = EXP(XN(NXTEMP+3))
+         YFAC = (1.0-YFSH)/YFSH
+         XRH  = EXP(XN(NXTEMP+4))
+         XSCALE  = EXP(XN(NXTEMP+5))
+         XCDEEP = EXP(XN(NXTEMP+6))
+         XWID  = EXP(XN(NXTEMP+7))
+         XWID1  = EXP(XN(NXTEMP+8))
          PKNEE = VARPARAM(IVAR,1)
          PHAZE = VARPARAM(IVAR,3)
          WHAZE = VARPARAM(IVAR,4)
@@ -5485,6 +5644,13 @@ C            print*,'svp',A,B,C,D
               IFLA=I
               HCOND=H(IFLA)
               PCOND=P(IFLA)
+              PCEN=EXP(ALOG(PCOND)-2*XWID1)
+              ICEN=0
+              DO J=1,NPRO
+               IF(P(J).LE.PCEN.AND.ICEN.EQ.0)THEN
+                 ICEN=J
+               ENDIF
+              ENDDO
              ENDIF
              DELH=H(I)-HCOND
              XRH1=XRH*EXP(-DELH/XSCALE)
@@ -5493,6 +5659,8 @@ C            print*,'svp',A,B,C,D
            IF(I.LT.NPRO)THEN
             IF(P(I).GE.PHAZE.AND.P(I+1).LT.PHAZE)KHAZE=I
            ENDIF
+C          Assign PCOND to VARPARAM array.
+           VARPARAM(IVAR,5)=PCOND
 
 C          Now make sure that vmr does not rise again once condensation has
 C          begun. i.e., freeze vmr at the cold trap near 0.1 bar.
@@ -5505,8 +5673,9 @@ C          begun. i.e., freeze vmr at the cold trap near 0.1 bar.
 
          ENDDO
 
-         print*,'Model 64 diagnostics'
+         print*,'Model 65 diagnostics'
          print*,'pknee,pcond,phaze = ',pknee,pcond,phaze
+         print*,'pcen,xwid1,xwid = ',PCEN,XWID1,XWID
          print*,'Condensing cloud = ',jspec
 
 C        Now put a cloud at the condensation level
@@ -5518,15 +5687,15 @@ C        OD(J)=ND(J)*SCALE(J)*1E5
 C        Q is specific density = particles/gram = particles/cm3 x g/cm3
 C        Q(J)=ND(J)/RHO
 
-         XWID1=0.05
          XOD=0.
-         Y0=-ALOG(PCOND)
+         Y0=-ALOG(PCEN)
          YHAZE=-ALOG(PHAZE)
+
 
          DO J=1,NPRO
           Y=-ALOG(P(J))
 
-          IF(J.LE.IFLA)THEN
+          IF(J.LE.ICEN)THEN
 C           Gaussian cut-off below
             Q(J) = EXP(-((Y-Y0)/XWID1)**2)
           ELSE
@@ -5560,7 +5729,224 @@ C           Exponential decay above
 
          ENDDO
 
+        ELSEIF(VARIDENT(IVAR,3).EQ.66)THEN
+C        Model 66. Jovian condensing NH3, and associated clouds. Model requires
+C        the deep gas abundance, middle gas abundance (above knee pressure), fsh above that 
+C        level, desired maximum relative humidity, rate of decrease of RH above this condensation
+C        level, cloud1 opacity and cloud fsh
+C        ***************************************************************
 
+         XDEEP = EXP(XN(NXTEMP+1))
+         XMID = EXP(XN(NXTEMP+2))
+         YFSH  = EXP(XN(NXTEMP+3))
+         YFAC = (1.0-YFSH)/YFSH
+         XRH  = EXP(XN(NXTEMP+4))
+         XSCALE  = EXP(XN(NXTEMP+5))
+         XCDEEP1 = EXP(XN(NXTEMP+6))
+         XWIDC1  = EXP(XN(NXTEMP+7))
+         PCLOUD  = EXP(XN(NXTEMP+8))
+         XCDEEP2 = EXP(XN(NXTEMP+9))
+         XWIDC2  = EXP(XN(NXTEMP+10))
+         PHAZE1 = VARPARAM(IVAR,3)
+         WHAZE1 = VARPARAM(IVAR,4)
+         PHAZE2 = VARPARAM(IVAR,5)
+         WHAZE2 = VARPARAM(IVAR,6)
+
+C        Find where the gas will condense and if so put cloud there with required FSH.
+C        Set JSPEC to required cloud ID
+         JSPEC1 = ABS(INT(VARPARAM(IVAR,1)))
+         JSPEC2 = ABS(INT(VARPARAM(IVAR,2)))
+         JPAR1 = NVMR+1+JSPEC1
+         JPAR2 = NVMR+1+JSPEC2
+         if(idiag.gt.0) print*,'Mod66, JPARs = ', JPAR1,JPAR2
+
+         IDAT=0
+         DO I=1,NGAS
+          IF(GASDATA(I,1).EQ.IDGAS(IPAR))THEN
+            A = GASDATA(I,2)
+            B = GASDATA(I,3)
+            C = GASDATA(I,4)
+            D = GASDATA(I,5)
+C            print*,'svp',A,B,C,D
+            IDAT=1
+          ENDIF
+	 ENDDO
+    
+
+         IF(IDAT.EQ.0)THEN
+           print*,'Subprofretg: Gas SVP data cannot be found'
+           print*,IPAR,IDGAS(IPAR)
+           stop
+         ENDIF
+
+         IFLA1=0
+         IFLA2=0
+         IKNEE=0
+         KHAZE1=-1
+         KHAZE2=-1
+         DO I=1,NPRO
+           IF(P(I).GT.PKNEE)THEN
+             XNOW=XDEEP
+           ELSE
+             IF(IKNEE.EQ.0)THEN
+              XNOW=XMID
+              IKNEE=I
+             ELSE
+              IF(IFLA2.EQ.0)THEN
+               DELH=H(I)-H(I-1)
+               XNOW=X1(I-1)*EXP(-DELH*YFAC/SCALE(I))
+              ENDIF
+             ENDIF
+           ENDIF
+           P1=P(I)*XNOW
+
+           IF(P(I).LT.PCLOUD.AND.IFLA1.EQ.0)THEN
+            IFLA1=I
+           ENDIF
+           
+           PS=DPEXP(A+B/T(I)+C*T(I)+D*T(I)*T(I))
+           IF(P1.LT.PS)THEN
+             X1(I)=XNOW
+           ELSE
+             IF(IFLA2.EQ.0)THEN
+              IFLA2=I
+              HCOND=H(IFLA2)
+              PCOND=P(IFLA2)
+             ENDIF
+             DELH=H(I)-HCOND
+             XRH1=XRH*EXP(-DELH/XSCALE)
+             X1(I)=XRH1*PS/P(I)
+           ENDIF
+           IF(I.LT.NPRO)THEN
+            IF(P(I).GE.PHAZE1.AND.P(I+1).LT.PHAZE1)KHAZE1=I
+            IF(P(I).GE.PHAZE2.AND.P(I+1).LT.PHAZE2)KHAZE2=I
+           ENDIF
+C          Assign PCOND to VARPARAM array.
+           VARPARAM(IVAR,7)=PCOND
+
+C          Now make sure that vmr does not rise again once condensation has
+C          begun. i.e., freeze vmr at the cold trap near 0.1 bar.
+           
+           IF(I.GT.1)THEN
+            IF((IFLA2.GT.0).AND.(P(I).LT.0.3).AND.
+     & (X1(I).GT.X1(I-1)))THEN
+             X1(I)=X1(I-1)
+            ENDIF
+           ENDIF
+
+         ENDDO
+
+         print*,'Model 66 diagnostics'
+         print*,'pcloud,pcond,phaze = ',pcloud,pcond,phaze
+         print*,'Condensing clouds = ',jspec1,jspec2
+         print*,'ifla1,ifla2',ifla1,ifla2
+         print*,'Press: ',p(ifla1),p(ifla2)
+         print*,'phaze1,khaze1',phaze1,khaze1
+         print*,'phaze2,khaze2',phaze2,khaze2
+C        Now put a cloud at pcloud
+
+C        **** Want to normalise to get optical depth right. ***
+C        ND is the particles per cm3 (but will be rescaled)
+C        OD is in units of particles/cm2 = particles/cm3 x length(cm)
+C        OD(J)=ND(J)*SCALE(J)*1E5
+C        Q is specific density = particles/gram = particles/cm3 x g/cm3
+C        Q(J)=ND(J)/RHO
+
+         XWID1=0.05
+         XOD=0.
+         Y0=-ALOG(PCLOUD)
+         YHAZE1=-ALOG(PHAZE1)
+
+         DO J=1,NPRO
+          Y=-ALOG(P(J))
+
+          IF(J.LE.IFLA1)THEN
+C           Gaussian cut-off below
+            Q(J) = EXP(-((Y-Y0)/XWID1)**2)
+          ELSE
+C           Exponential decay above
+            Q(J) = EXP(-(Y-Y0)/XWIDC1)
+          ENDIF
+C          print*,'aa',J,P(J),Q(J)
+          IF(KHAZE1.GT.0)THEN
+           XFAC = EXP(-((Y-YHAZE1)/WHAZE1)**2)
+           XFAC = 1.0 - XFAC
+           IF(J.GT.KHAZE1)XFAC=0.0
+           Q(J) = Q(J)*XFAC
+          ENDIF
+C          print*,'bb',J,P(J),Q(J)
+
+          IF(AMFORM.EQ.0)THEN
+           XMOLWT=MOLWT
+          ELSE
+           XMOLWT=XXMOLWT(J)
+          ENDIF
+
+          RHO = (0.1013*XMOLWT/R)*(P(J)/T(J))
+
+          ND(J) = Q(J)*RHO
+          OD(J) = ND(J)*SCALE(J)*1e5
+
+          XOD=XOD+OD(J)
+
+          X2(J)=SNGL(Q(J))
+
+          IF(X2(J).LT.1E-36)X2(J)=1E-36
+C          print*,'cc',J,P(J),X2(J)
+
+         ENDDO
+
+
+C        Now put a cloud at the condensation level
+
+C        **** Want to normalise to get optical depth right. ***
+C        ND is the particles per cm3 (but will be rescaled)
+C        OD is in units of particles/cm2 = particles/cm3 x length(cm)
+C        OD(J)=ND(J)*SCALE(J)*1E5
+C        Q is specific density = particles/gram = particles/cm3 x g/cm3
+C        Q(J)=ND(J)/RHO
+
+         XWID1=0.05
+         XOD=0.
+         Y0=-ALOG(PCOND)
+         YHAZE2=-ALOG(PHAZE2)
+
+         DO J=1,NPRO
+          Y=-ALOG(P(J))
+
+          IF(J.LE.IFLA2)THEN
+C           Gaussian cut-off below
+            Q(J) = EXP(-((Y-Y0)/XWID1)**2)
+          ELSE
+C           Exponential decay above
+            Q(J) = EXP(-(Y-Y0)/XWIDC2)
+          ENDIF
+
+          IF(KHAZE2.GT.0)THEN
+           XFAC = EXP(-((Y-YHAZE2)/WHAZE2)**2)
+           XFAC = 1.0 - XFAC
+           IF(J.GT.KHAZE2)XFAC=0.0
+           Q(J) = Q(J)*XFAC
+          ENDIF
+
+          IF(AMFORM.EQ.0)THEN
+           XMOLWT=MOLWT
+          ELSE
+           XMOLWT=XXMOLWT(J)
+          ENDIF
+
+          RHO = (0.1013*XMOLWT/R)*(P(J)/T(J))
+
+          ND(J) = Q(J)*RHO
+          OD(J) = ND(J)*SCALE(J)*1e5
+
+          XOD=XOD+OD(J)
+
+          X3(J)=SNGL(Q(J))
+
+          IF(X3(J).LT.1E-36)X3(J)=1E-36
+
+         ENDDO
 
         ELSE
 
@@ -6527,6 +6913,20 @@ C        **********************************************************
            CONT(JSPEC,I)=X2(I)
 C           print*,I,JSPEC,X2(I)
 C           PRINT*,(CONT(J,I),J=1,NCONT)
+          ENDDO
+         ENDIF
+C        **********************************************************
+
+C        Extra section for combined cloud/gas profile - Model 66
+C        **********************************************************
+         IF(JSPEC1.GT.0.AND.JSPEC1.LE.NCONT)THEN
+          DO I=1,NPRO
+           CONT(JSPEC1,I)=X2(I)
+          ENDDO
+         ENDIF
+         IF(JSPEC2.GT.0.AND.JSPEC2.LE.NCONT)THEN
+          DO I=1,NPRO
+           CONT(JSPEC2,I)=X3(I)
           ENDDO
          ENDIF
 C        **********************************************************

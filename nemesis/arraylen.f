@@ -17,7 +17,7 @@ C	  retrieval stages
  
 C     Set mx to equal maxv, defined in arrdef.f
 C     Set my to idim, defined in arrdef.f
-C     Set mwave to equal maxbin, defined in arrdef.f
+C     Set mwave to equal mpoint, defined in arrdef.f
 C     Set mconv to idim, defined in arrdef.f
       parameter (my=idim,mconv=idim,mx=maxv,mwave=mpoint)
 

@@ -491,6 +491,7 @@ C     See if Sromovsky cloud layer model is specified.
        if(varident(ivar,3).ge.50.and.varident(ivar,3).le.52)icheck=1
        if(varident(ivar,3).eq.54.or.varident(ivar,3).eq.58)icheck=1
        if(varident(ivar,3).eq.63.or.varident(ivar,3).eq.64)icheck=1
+       if(varident(ivar,3).eq.65.or.varident(ivar,3).eq.66)icheck=1
 C       if(varident(ivar,1).eq.111)icheck=1
       enddo
 
@@ -559,6 +560,10 @@ C     Compute the drv file to get the aerosol optical depths
               if(idiag.gt.0)print*,'gsetrad xx',icont,od1,
      & xod(icont),xscal(icont)
 
+              print*,'gsetrad 63',icont,od1,
+     & xod(icont),xscal(icont),
+     & (exp(xn(j)),j=nx1+1,nx1+6)
+
               do j=1,NN
                dust(icont,j)=dust(icont,j)/xscal(icont)
               enddo
@@ -571,10 +576,62 @@ C     Compute the drv file to get the aerosol optical depths
               if(idiag.gt.0)print*,'gsetrad xx',icont,od1,
      & xod(icont),xscal(icont)
 
+              print*,'gsetrad 64',icont,od1,
+     & xod(icont),xscal(icont),
+     & (exp(xn(j)),j=nx1+1,nx1+7)
+
               do j=1,NN
                dust(icont,j)=dust(icont,j)/xscal(icont)
               enddo
           endif
+          if(varident(ivar,3).eq.65)then
+              icont=abs(int(varparam(ivar,2)))
+              od1=exp(xn(nx1+6))
+              xscal(icont)=xod(icont)/od1
+
+              if(idiag.gt.0)print*,'gsetrad xx',icont,od1,
+     & xod(icont),xscal(icont)
+
+              print*,'gsetrad 65',icont,od1,
+     & xod(icont),xscal(icont),
+     & (exp(xn(j)),j=nx1+1,nx1+7)
+
+              do j=1,NN
+               dust(icont,j)=dust(icont,j)/xscal(icont)
+              enddo
+          endif
+          if(varident(ivar,3).eq.66)then
+              icont=abs(int(varparam(ivar,1)))
+              od1=exp(xn(nx1+6))
+              xscal(icont)=xod(icont)/od1
+
+              if(idiag.gt.0)print*,'gsetrad 66',icont,od1,
+     & xod(icont),xscal(icont)
+
+              print*,'gsetrad 66',icont,od1,
+     & xod(icont),xscal(icont),
+     & (exp(xn(j)),j=nx1+1,nx1+10)
+
+              do j=1,NN
+               dust(icont,j)=dust(icont,j)/xscal(icont)
+              enddo
+
+              icont=abs(int(varparam(ivar,2)))
+              od1=exp(xn(nx1+9))
+              xscal(icont)=xod(icont)/od1
+
+              if(idiag.gt.0)print*,'gsetrad 66',icont,od1,
+     & xod(icont),xscal(icont)
+
+              print*,'gsetrad 66',icont,od1,
+     & xod(icont),xscal(icont),
+     & (exp(xn(j)),j=nx1+1,nx1+10)
+
+              do j=1,NN
+               dust(icont,j)=dust(icont,j)/xscal(icont)
+              enddo
+          endif
+
           if(varident(ivar,3).eq.14.or.varident(ivar,3).eq.15.
      & or.varident(ivar,3).eq.47.or.varident(ivar,3).eq.50.
      & or.varident(ivar,3).eq.51.or.varident(ivar,3).eq.52.
@@ -681,6 +738,7 @@ C           if(idiag.gt.0)print*,DUSTH(J),(DUST(I,J),I=1,NDUST)
         close(12)
 
 C       check that rescaling has happened correctly
+        print*,'Recalling subpath'
         call subpath(runname)
 
       endif

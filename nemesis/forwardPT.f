@@ -321,7 +321,7 @@ C     pre-calculated array
          dh = height(ipath+1)-height(ipath)
 
          area = area + 0.5*(y1(ipath)+y1(ipath+1))*dh
-         yarea(ipath)=0.5*(y1(ipath)+y1(ipath+1))*dh
+         yarea(ipath)=sngl(0.5*(y1(ipath)+y1(ipath+1))*dh)
          do j=1,nx
           darea(j)=darea(j)+0.5*(y2(ipath,j)+y2(ipath+1,j))*dh
          enddo

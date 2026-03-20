@@ -338,7 +338,7 @@ C        Get base heights of layers
           do 207 ipath=1,npath-1
            dh = height(ipath+1)-height(ipath)
            area = area + 0.5*(y1(ipath)+y1(ipath+1))*dh
-           yarea(ipath)=0.5*(y1(ipath)+y1(ipath+1))*dh
+           yarea(ipath)=sngl(0.5*(y1(ipath)+y1(ipath+1))*dh)
 207       continue
           yarea(npath)=0.
 

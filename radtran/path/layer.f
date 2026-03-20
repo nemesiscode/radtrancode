@@ -450,9 +450,12 @@ C      in the vertical path.
        PRINT*,'Number of dust types = ',NCONT
        PRINT*,'NLAY = ',NLAY
       endif
+       PRINT*,'Number of dust types = ',NCONT
+       PRINT*,'NLAY = ',NLAY
       IF(NCONT.GT.0)THEN
        DO J=1,NCONT
         if(idiag.gt.0)PRINT*,'Dust type = ',J
+        PRINT*,'Dust type = ',J
         SUM=0.
         DO L=1,NLAY
          I=L+NLAYER
@@ -460,6 +463,7 @@ C         print*,J,L,I,CONT(J,I)
          SUM=SUM+CONT(J,I)
         END DO
         if(idiag.gt.0)PRINT*,'Total number/cm2 for vertical path = ',SUM
+        PRINT*,'Total number/cm2 for vertical path = ',SUM
        END DO
       END IF
 

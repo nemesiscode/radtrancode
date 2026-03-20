@@ -62,7 +62,7 @@ C     ****************************************************************
           if((varident(ivar,3).eq.0).or.(varident(ivar,3).eq.25))then
 C         ********* continuous profile ************************
             if(varident(ivar,3).eq.25)then
-             np = varparam(ivar,1)
+             np = int(varparam(ivar,1))
              clen = 1.5
             else
              np = npro

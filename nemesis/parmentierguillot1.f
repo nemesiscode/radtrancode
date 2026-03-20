@@ -225,7 +225,7 @@ C     ********************************************************
   
       G1 = (YL(I+1)-YL(I))/(X2-X1)
 
-      YLINT = (1.0-FX)*YL(I)+FX*YL(I+1)
+      YLINT = SNGL((1.0-FX)*YL(I)+FX*YL(I+1))
       Y=10.0**YLINT
 
       GRAD=SNGL(Y*LOG(10.0)*G1)

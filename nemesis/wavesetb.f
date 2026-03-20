@@ -93,8 +93,8 @@ C     just set the calculation wavelengths to be the convolution wavelengths
            if(idiag.gt.0)print*,vcentral,vconv(i),dv
 
            if(dv.lt.0.00001)then
-            j1=((vfil(1)-vkstart)/vkstep)-1
-            j2=((vfil(nsub)-vkstart)/vkstep)+1
+            j1=int((vfil(1)-vkstart)/vkstep)-1
+            j2=int((vfil(nsub)-vkstart)/vkstep)+1
             v1 = vkstart + (j1-1)*vkstep
             v2 = vkstart + (j2-1)*vkstep
             if(idiag.gt.0)print*,j1,j2,v1,v2

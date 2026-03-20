@@ -70,7 +70,7 @@ C     ****************************************************************
 57         if(abs(tmp1-vconvfull(igeom,counter)).lt.1e-5)then!if specified wavelength in reduced grid also present in full grid, store wavelength and subscript
             if(tmp2.le.irank)then!only select wavelengths with correct rank
              vconv(igeom,cindex)=tmp1
-             rank(igeom,cindex)=tmp2
+             rank(igeom,cindex)=int(tmp2)
              rdwindices(igeom,cindex)=counter
              if((tmp2.le.irank).and.(tmp2.gt.irank-rankdiff))then
               vconvi(igeom,cindex3)=tmp1

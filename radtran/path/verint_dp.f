@@ -43,10 +43,10 @@ C
 30    CONTINUE
       IF(I.EQ.1)I=2
       YOUT=Y(I-1)+(Y(I)-Y(I-1))*(XIN-X(I-1))/(X(I)-X(I-1))
-      if(X(I-1).eq.X(I))then YOUT=Y(I)
+      if(X(I-1).eq.X(I))YOUT=Y(I)
       if (isnan(YOUT)) then
        YOUT=Y(I)
-      end if
+      endif
 
       RETURN
       END

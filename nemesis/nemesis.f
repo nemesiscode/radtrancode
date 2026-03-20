@@ -100,7 +100,7 @@ C     Set idiag to 1 for standard print statements. Set to zero to suppress
 C     Set iquiet to 1 to reduce writing to intermdiate meta files (such as .drv)
       iquiet=0
 C     Set iprint to 1 to output kk.out and test.out (LBL) files
-      iprint=0
+      iprint=1
 
 C     Read in reference gas information data
       CALL RESERVEGAS
@@ -366,6 +366,11 @@ C         print*,igeom,j,vconv1(j)
         CALL wavesetc(runname,vkstart,vkend,vkstep,nconv1,vconv1,
      1  fwhm,ishape,nwave1,vwave1)
         print*,'nwave1',nwave1
+        if(nwave1.gt.mwave)then
+         print*,'Error in nemesis nwave1 > mwave'
+         print*,nwave1,mwave
+         stop
+        endif
         do j=1,nwave1
          vwave(igeom,j)=vwave1(j)
 C         if(j.eq.1) then 
@@ -478,6 +483,7 @@ C     Simple errors, set to sqrt of diagonal of ST
       enddo
 
 C     write output
+
       CALL writeout(iform,runname,ispace,lout,ispec,xlat,xlon,npro,
      1 nvar,varident,varparam,nx,ny,y,yn,se,xa,sa,xn,err1,ngeom,
      2 nconv,vconv,gasgiant,jpre,jrad,jlogg,jfrac,iscat,lin)
@@ -494,6 +500,7 @@ C       Write out all the error matrices if only one case retrieved
       CALL readrefiplan(runname,iplanet,xlat,RADIUS)
 
 C     write out setup files for last successful iteration
+
       call calc_input_files(runname,ispace,iscat,fwhm,flat,flon,nconv,
      1 vconv,angles,gasgiant,lin,nvar,varident,varparam,jsurf,
      2 jalb,jxsc,jtan,jpre,jrad,jlogg,jfrac,RADIUS,nx,xn)

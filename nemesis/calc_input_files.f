@@ -162,6 +162,7 @@ C     Set up all files for a direct cirsrad run
        if(idiag.gt.0)print*,'gsetradV called OK'
       else
        if(idiag.gt.0)print*,'calling gsetrad'
+
        call gsetrad(runname,iscat,nmu,mu,wtmu,isol,dist,
      1 lowbc,galb,nf,nconv1,vconv1,fwhm,ispace,gasgiant,
      2 layht,nlayer,laytyp,layint,sol_ang,emiss_ang,aphi,xlat,xlon,

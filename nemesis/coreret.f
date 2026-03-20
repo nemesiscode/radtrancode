@@ -105,7 +105,7 @@ C     Set measurement vector and source vector lengths here.
       
       real xn(mx),se1(my),se(my,my),calc_phiret,sf(my,my)
       real fwhm,xlat,xlatx,xdiff,xn1(mx),x_out(mx)
-      real xlonx,RADIUS,xlon
+      real xlonx,RADIUS,xlon,x1
       integer nprox,nvarx,varidentx(mvar,3),jsurfx,nxx,ix,np,npro
       integer n_alambda
       real st(mx,mx),varparamx(mvar,mparam)
@@ -610,14 +610,10 @@ C       Now calculate next iterated xn1
 
 C       Force fixed state vector elements to remain fixed!
         do i=1,nx
+         print*,'coreret',i,xn(i),exp(xn(i)),x_out(i),exp(x_out(i))
          if(ifix(i).eq.1)then
           x_out(i)=xn(i)
          endif
-C        Nasty hack to set haze2 refractive index to haze1 for
-C        Toledo model.
-C         if(i.ge.11.and.i.le.191)then 
-C          x_out(i+183)=x_out(i)
-C         endif
         enddo
 
         do ivar=1,nvar
@@ -631,10 +627,6 @@ C         endif
          endif
         enddo
 
-C       Nasty fix to stop pressure getting bigger than 1.55
-C        if(exp(x_out(5)).gt.1.55)x_out(5)=alog(1.55)
-C       Nasty fix to stop pressure getting smaller than 1.0
-C        if(exp(x_out(5)).lt.1.0)x_out(5)=alog(1.0)
 
         do i=1,nx
          xn1(i) = xn(i) + (x_out(i)-xn(i))/(1.0+alambda)
@@ -734,6 +726,22 @@ C        if(idiag.gt.0)print*,JPRE,NCONT,FLAGH2P
          if(varident(ivar,1).eq.111)np = 2 + int(varparam(ivar,1))
 
          do j=ix,ix+np-1
+
+C         New fix to stop PH3 (modelled with model 57) increasing
+C         with height.
+          if(varident(ivar,1).eq.28)then
+           if(varident(ivar,3).eq.57.and.j.eq.ix) then
+            if(xn1(j+1).gt.xn1(j)) then
+             x1=0.5*(xn1(j)+xn1(j+1))
+             xn1(j+1)=x1
+             xn1(j)=x1
+             if(idiag.gt.0)then
+              print*,'Model 57 increasing with height.'
+              print*,'Force to not increase and set to mean'
+             endif
+            endif
+           endif
+          endif
 
           if(varident(ivar,3).eq.31)then
            if(varident(ivar,1).eq.0)then

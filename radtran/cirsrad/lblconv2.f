@@ -72,6 +72,7 @@ C         Find relevant points in tabulated files.
           I1=-1
           I2=-1
           DO I=1,NWAVE
+C           print*,I,NWAVE,VWAVE(I),V1,V2
            IF(VWAVE(I).GE.V1.AND.I1.LT.0)THEN
             I1=I
            ENDIF
@@ -79,11 +80,15 @@ C         Find relevant points in tabulated files.
             I2=I
            ENDIF
           ENDDO
+C          print*,'vconvrange = ',vconv(1),vconv(nconv),nconv
+C          print*,'vwaverange = ',vwave(1),vwave(nwave),nwave
+C          print*,'v1,v2,i1,i2',V1,V2,I1,I2
 
           IF(I1.LT.0.OR.I2.LT.0)THEN
            PRINT*,'Error in lblconv2 - wavelength/wavenumber not'
            PRINT*,'covered by lbltables'
            print*,'First',NWAVE,VWAVE(1),VWAVE(NWAVE),I1,I2
+           print*,J,VCONV(J),V1,V2
            STOP         
           ENDIF 
 

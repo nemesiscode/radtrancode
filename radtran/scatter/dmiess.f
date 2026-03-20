@@ -123,13 +123,13 @@ C
       RRFX =  RRF * RX                                                  
       T(1) =  ( X**2 ) * ( RFR**2 + RFI**2 )                            
       T(1) =  SQRT( T(1) )                                              
-      NMX1 =  1.30* T(1)                                                
+      NMX1 =  INT(1.30* T(1))                                                
 C                                                                       
       IF ( NMX1 .LE. LL-1 )   GO TO 21                                  
          WRITE(6,8)                                                     
          QEXT=-1
          RETURN                                                        
-   21 NMX2 = T(1) * 1.2                                                 
+   21 NMX2 = INT(T(1) * 1.2)                                                 
       IF ( NMX1 .GT.  150 )   GO TO 22                                  
          NMX1 = 150                                                     
          NMX2 = 135                                                     
@@ -367,7 +367,7 @@ C
       TC2  =  ACAP(N) * RF   +  N * RX                                  
       FN1  =  ( TC1 * TA(3)  -  TA(1) ) /  ( TC1 * WFN(2) - WFN(1) )    
       FN2  =  ( TC2 * TA(3)  -  TA(1) ) /  ( TC2 * WFN(2) - WFN(1) )    
-      M    =  WVNO * R                                                  
+      M    =  INT(WVNO * R)                                                  
       IF ( N .LT. M )   GO TO 1002                                      
       IF ( IFLAG .EQ. 2 )   GO TO 1001                                  
       IF ( CDABS(  ( FN1-FNA ) / FN1  )  .LT.  1.0E-09   .AND.           

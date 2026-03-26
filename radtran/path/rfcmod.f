@@ -80,7 +80,7 @@ C     now sorting
       END IF
       IF(FCLOUDH(I).GT.FCLOUDH(I+1))THEN
        if(idiag.gt.0)then
-        print*,'rfpmod: reordering'
+        print*,'rfcmod: reordering'
         print*,I,FCLOUDH(I),FCLOUDH(I+1)
        endif
        TD1=FCLOUDH(I+1)

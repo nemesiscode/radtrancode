@@ -152,7 +152,8 @@ c       if such a file exists then read in the data
           open(13,file=instfile,status='old')
           read(13,*)ninst
           if (ninst.gt.minst) then
-            pause 'ERROR: lblrtf_wave: ninst .gt. minst'
+            print*,'ERROR: lblrtf_wave: ninst .gt. minst'
+            stop
           endif
           do i=1,ninst
             read(13,*)vinst(i),finst(i)
@@ -394,7 +395,7 @@ C          need the current height profile
          yp(I,1)=yp(I,2)
          yp(I,2)= output(I)
         ENDDO
-        write(37,*),vv,output(1)
+        write(37,*)vv,output(1)
 
 C       Skip convolution on first wavenumber
         IF(IFLAG.EQ.1)THEN

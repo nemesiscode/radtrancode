@@ -308,7 +308,8 @@ C1000  format(1x,i4,1x,f10.4,1x,e15.8,1x,e15.8,1x,f7.2,1x,e15.8,1x,f9.5)
        elseif(varident(ivar,1).eq.445.or.varident(ivar,1).eq.42)then
         write(lout,*)(varparam(ivar,j),j=1,6)
        else
-        write(lout,*)(varparam(ivar,j),j=1,5)
+C        write(lout,*)(varparam(ivar,j),j=1,5)
+        write(lout,*)(varparam(ivar,j),j=1,10)
        endif
        np=1
        if(varident(ivar,3).le.100)then
@@ -333,6 +334,7 @@ C1000  format(1x,i4,1x,f10.4,1x,e15.8,1x,e15.8,1x,f7.2,1x,e15.8,1x,f9.5)
         endif
        endif
        if(varident(ivar,1).eq.448)np = 2
+       if(varident(ivar,1).eq.449)np = 3
        if(varident(ivar,1).eq.445)np = 3+(2*int(varparam(ivar,1)))
        if(varident(ivar,1).eq.443)np = 3
        if(varident(ivar,1).eq.442)np = 4

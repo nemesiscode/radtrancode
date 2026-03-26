@@ -148,6 +148,7 @@ C       Variable is not temperature  - may need to take exponent
       if(ivar.eq.444)iflag=1	! Particle size and ref. index
       if(ivar.eq.446)iflag=1	! Particle size and ref. index
       if(ivar.eq.448)iflag=1	! Particle size and ref. index
+      if(ivar.eq.449)iflag=1	! Scale factor for n_imag
       if(ivar.eq.446.and.ip.eq.3)iflag=0	! fraction
       if(ivar.eq.445)iflag=1	! Particle size and ref. index (coated sphere)
       if(ivar.eq.443)then

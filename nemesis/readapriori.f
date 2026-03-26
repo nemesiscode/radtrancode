@@ -4163,6 +4163,72 @@ C                 print*,wave(i),yr,yi
 
              nx = nx+2
 
+
+           elseif (varident(ivar,1).eq.449)then
+C            Variable refractive index nimag factor
+             read(27,1)rifile
+
+             open(28,file=rifile,status='old')
+C              Read mean radius and error
+               read(28,*)r0,er0
+               ix=nx+1
+               x0(ix)=alog(r0)
+               sx(ix,ix)=(er0/r0)**2
+               lx(ix)=1
+
+C              Read radius variance and error
+               read(28,*)dr,edr
+               ix=nx+2
+               x0(ix)=alog(dr)
+               sx(ix,ix)=(edr/dr)**2
+               lx(ix)=1
+
+C              Read number of wavelengths and correlation length (wavelength/
+C                               wavenumbers)
+               read(28,*)np
+               varparam(ivar,1)=np
+              call get_xsecA(opfile,nmode,nwave,wave,xsec)
+               if(np.ne.nwave)then
+       print*,'Warning in readapriori.f. Number of wavelengths in ref.'
+       print*,'index file does not match number of wavelengths in'
+       print*,'xsc file. Wavelengths in these two files usually match'
+                print*,rifile,np
+                print*,opfile,nwave
+               endif
+
+C              read reference wavelength and nr at that wavelength
+               read(28,*)vm,nm
+               varparam(ivar,2)=vm
+               varparam(ivar,3)=nm
+
+C              read x-section normalising wavelength (-1 to not normalise)
+               read(28,*)lambda0
+               varparam(ivar,4)=lambda0
+
+C              read in n_imag factor and error
+               read(28,*)xf,exf
+               ix=nx+3
+               x0(ix)=alog(xf)
+               sx(ix,ix)=(exf/xf)**2
+               lx(ix)=1
+
+               do i=1,np
+                read(28,*)vi(i),ni1(i)
+               enddo
+             close(28)
+
+             buffer='mod449N.dat'
+             buffer(7:7)=char(ivar+48)
+             open(12,file=buffer,status='unknown')
+             do i = 1,nwave
+                 call verint(vi,alog(ni1),np,yi,wave(i))
+                 write(12,*)wave(i),exp(yi)
+             enddo
+             close(12)
+
+             nx = nx+3
+
+
            elseif (varident(ivar,1).eq.446)then
 C            ** Variable cloud particle size distribution and composition
              read(27,1)rifile

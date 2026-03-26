@@ -92,7 +92,7 @@ C     ************************************************************************
 
       integer ncont1,xflag,nwave,np,np1
       real xlatx,xlonx,wave(max_wave),frac
-      real ww(mx),ss(mx),s1(mx),y1,y2,wx
+      real ww(mx),ss(mx),s1(mx),y1,y2,wx,xf
       real xsec(max_mode,max_wave,2),nimag(max_wave)
       real nreal(max_wave),r0,v0,clen,k2(max_wave)
       real srefind(max_wave,2),parm(3),rs(3),vm,nm
@@ -695,6 +695,9 @@ C           if(idiag.gt.0)print*,'xxz1',ivar,varparam(ivar,2),np
           if(varident(ivar,1).eq.448)then
            np = 2
           endif
+          if(varident(ivar,1).eq.449)then
+           np = 3
+          endif
           if(varident(ivar,1).eq.445)np = 3+2*int(varparam(ivar,1))
           if(varident(ivar,1).eq.222)np = 8
           if(varident(ivar,1).eq.223)np = 9
@@ -1068,6 +1071,109 @@ C          Find minimum wavelength
      2   nrealshell,nimagshell)
 
          np = 2
+
+       endif
+
+
+       if(varident(ivar,1).eq.449)then
+
+           iwave=ispace
+           if(iwave.eq.0)iwave=2
+
+           imode=varident(ivar,2)
+
+
+           r0 = exp(xn(nx1+1))
+           v0 = exp(xn(nx1+2))
+           xf = exp(xn(nx1+3))
+           np1 = int(varparam(ivar,1))
+           vm = varparam(ivar,2)
+           nm = varparam(ivar,3)
+           lambda0=varparam(ivar,4)
+ 
+           call get_xsecA(runname,nmode,nwave,wave,xsec)
+
+           buffer='mod449N.dat'
+           buffer(7:7)=char(ivar+48)
+           open(12,file=buffer,status='old')
+
+           do j = 1,nwave
+             read(12,*)wx,nimag(j)
+             nimag(j)=nimag(j)*xf
+           enddo
+           
+           close(12)
+
+C          Compute nreal from KK
+           if(ispace.eq.0)then
+C            nimag in wavenumber space, can transfer directly
+             do i=1,nwave
+              v1(i)=wave(i)
+              k1(i)=nimag(i)
+              vm1=vm
+             enddo
+           else
+C           If nimag is in wavelength space, need to convert to wavenumbers
+             do i=1,nwave
+              v1(i)=1e4/wave(nwave+1-i)
+              k1(i)=nimag(nwave+1-i)
+              vm1=1e4/vm
+             enddo
+           endif
+
+           call kk_new_sub(nwave,v1,k1,vm1,nm,n1)
+
+           buffer='refindexN.dat'
+           buffer(9:9)=char(ivar+48)
+           open(12,file=buffer,status='unknown')
+
+           if(ispace.eq.0)then
+            do i=1,nwave
+             nreal(i)=n1(i)
+            enddo
+           else
+            do i=1,nwave
+             nreal(i)=n1(nwave+1-i)
+            enddo
+           endif
+
+           inorm=1
+           iscatmie=1
+           csx=-1.0
+
+C          Find minimum wavelength
+           if(ispace.eq.0)then
+             minlam=1e4/wave(nwave)
+           else
+             minlam=wave(1)
+           endif
+
+           do i=1,nwave
+            srefind(i,1)=nreal(i)
+            srefind(i,2)=nimag(i)
+            write(12,*)wave(i),nreal(i),nimag(i)
+           enddo
+           close(12)
+
+
+
+           parm(1)=r0
+           parm(2)=v0
+           if(iscatmie.eq.1)then
+             parm(3)=(1. - 3 * parm(2))/parm(2)
+            else
+             parm(3)=0.0
+           endif
+
+           rs(1)=0.015*minlam
+           rs(2)=0.
+           rs(3)=rs(1)
+
+           call modmakephase(iwave,imode,inorm,iscatmie,
+     1   parm,rs,srefind,runname,lambda0,csx,
+     2   nrealshell,nimagshell)
+
+         np = 3
 
        endif
 

@@ -5731,9 +5731,9 @@ C           Exponential decay above
 
         ELSEIF(VARIDENT(IVAR,3).EQ.66)THEN
 C        Model 66. Jovian condensing NH3, and associated clouds. Model requires
-C        the deep gas abundance, middle gas abundance (above knee pressure), fsh above that 
-C        level, desired maximum relative humidity, rate of decrease of RH above this condensation
-C        level, cloud1 opacity and cloud fsh
+C        the deep gas abundance, middle gas abundance (above PCLOUD pressure), PCLOUD, fsh above that 
+C        level, desired maximum relative humidity once condensing, rate of decrease of RH above 
+C        this condensation level, cloud1 opacity and cloud1 fsh, cloud2 opacity and cloud2 fsh
 C        ***************************************************************
 
          XDEEP = EXP(XN(NXTEMP+1))
@@ -5772,41 +5772,35 @@ C            print*,'svp',A,B,C,D
           ENDIF
 	 ENDDO
     
-
          IF(IDAT.EQ.0)THEN
-           print*,'Subprofretg: Gas SVP data cannot be found'
+           print*,'Subprofretg: Model 66. Gas SVP data cannot be found'
            print*,IPAR,IDGAS(IPAR)
            stop
          ENDIF
 
          IFLA1=0
          IFLA2=0
-         IKNEE=0
          KHAZE1=-1
          KHAZE2=-1
          DO I=1,NPRO
-           IF(P(I).GT.PKNEE)THEN
+           IF(P(I).GT.PCLOUD)THEN
              XNOW=XDEEP
            ELSE
-             IF(IKNEE.EQ.0)THEN
+             IF(IFLA1.EQ.0)THEN
               XNOW=XMID
-              IKNEE=I
+              IFLA1=I
              ELSE
-              IF(IFLA2.EQ.0)THEN
-               DELH=H(I)-H(I-1)
-               XNOW=X1(I-1)*EXP(-DELH*YFAC/SCALE(I))
-              ENDIF
+              DELH=H(I)-H(I-1)
+              XNOW=X1(I-1)*EXP(-DELH*YFAC/SCALE(I))
              ENDIF
            ENDIF
            P1=P(I)*XNOW
-
-           IF(P(I).LT.PCLOUD.AND.IFLA1.EQ.0)THEN
-            IFLA1=I
-           ENDIF
            
            PS=DPEXP(A+B/T(I)+C*T(I)+D*T(I)*T(I))
-           IF(P1.LT.PS)THEN
+C           print*,I,P(I),XNOW,P1,PS
+           IF(P1.LT.PS.AND.IFLA2.EQ.0)THEN
              X1(I)=XNOW
+C             print*,X1(I)
            ELSE
              IF(IFLA2.EQ.0)THEN
               IFLA2=I
@@ -5816,6 +5810,7 @@ C            print*,'svp',A,B,C,D
              DELH=H(I)-HCOND
              XRH1=XRH*EXP(-DELH/XSCALE)
              X1(I)=XRH1*PS/P(I)
+C             print*,XRH,XRH1,X1(I)
            ENDIF
            IF(I.LT.NPRO)THEN
             IF(P(I).GE.PHAZE1.AND.P(I+1).LT.PHAZE1)KHAZE1=I
@@ -5833,14 +5828,14 @@ C          begun. i.e., freeze vmr at the cold trap near 0.1 bar.
              X1(I)=X1(I-1)
             ENDIF
            ENDIF
-
+C           PRINT*,X1(I)
          ENDDO
 
          print*,'Model 66 diagnostics'
-         print*,'pcloud,pcond,phaze = ',pcloud,pcond,phaze
+         print*,'pcloud,pcond = ',pcloud,pcond
          print*,'Condensing clouds = ',jspec1,jspec2
          print*,'ifla1,ifla2',ifla1,ifla2
-         print*,'Press: ',p(ifla1),p(ifla2)
+         print*,'p(ifla1),p(ifla2): ',p(ifla1),p(ifla2)
          print*,'phaze1,khaze1',phaze1,khaze1
          print*,'phaze2,khaze2',phaze2,khaze2
 C        Now put a cloud at pcloud
@@ -5994,7 +5989,8 @@ C         if(idiag.gt.0)print*,'Variable profile fraction'
          IPAR = -1
          NP = 1
         ELSEIF(VARIDENT(IVAR,1).EQ.444.OR.VARIDENT(IVAR,1).EQ.445.
-     &OR.VARIDENT(IVAR,1).EQ.446.OR.VARIDENT(IVAR,1).EQ.448)THEN
+     &OR.VARIDENT(IVAR,1).EQ.446.OR.VARIDENT(IVAR,1).EQ.448.
+     &OR.VARIDENT(IVAR,1).EQ.449)THEN
 C         if(idiag.gt.0)print*,'Variable size and RI'
 C        See if there is an associated IMOD=21 cloud. In which case
 C        modifying the radius will affect the vertical cloud distribution.
@@ -6141,6 +6137,9 @@ C          post-processing in gsetrad.f
          ENDIF
          IF(VARIDENT(IVAR,1).EQ.448)THEN
           NP = 2
+         ENDIF
+         IF(VARIDENT(IVAR,1).EQ.449)THEN
+          NP = 3
          ENDIF
 
 

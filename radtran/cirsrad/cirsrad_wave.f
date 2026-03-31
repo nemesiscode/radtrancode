@@ -170,7 +170,7 @@ C		Scattering variables
         REAL    uplft(maxmu,maxmu,maxscatlay,maxf)	
         DOUBLE PRECISION mu1(maxmu), wt1(maxmu), galb, galb1, 
      1		pplsto(0:40,maxmu,maxmu,maxscatlay),
-     2		pmisto(0:40,maxmu,maxmu,maxscatlay),
+     2		pmisto(0:40,maxmu,maxmu,maxscatlay),xom,
      3          eps(maxscatlay),epsS(maxlay),omegas(maxscatlay),
      4		epsb(maxscatlay),omegasb(maxscatlay)
 	LOGICAL	scatter, single, sphsingle
@@ -1397,8 +1397,8 @@ C          model 14 SCR wideband transmission
 	ELSEIF (imod(ipath).EQ.15) THEN
 
            if(idiag.eq.1) then 
-       WRITE(*,*) 'CIRSRAD_WAVE: Imod= 15 =Multiple Scattering, ',
-     1 ' creating output'
+C       WRITE(*,*) 'CIRSRAD_WAVE: Imod= 15 =Multiple Scattering, ',
+C     1 ' creating output'
            endif
 
 		do J = 1, nlays
@@ -1960,16 +1960,11 @@ C               upwelling radiation field to local temperature.
                 enddo
 
 
-C                WRITE (*,*) '     CALLING scloud11flux, nf = ',nf
+                WRITE (*,*) '     CALLING scloud11flux, nf = ',nf
 		call scloud11flux(radg, solar, sol_ang, 
      1             lowbc, galb1, iray, mu1, wt1, nmu, nf, Ig, x,
      2             vv, eps, omegas, bnu, taus, taur, 
      3             nlayer, ncont, lfrac, umif, uplf)
-
-C                do k=1,nlays
-C                 print*,k,press(k),(umif(j,k,1),j=1,nmu)
-C                 print*,k,press(k),(uplf(j,k,1),j=1,nmu)
-C                enddo
 
                 do J = 1, nlays
                         if(Ig.eq.1)then
@@ -1980,15 +1975,14 @@ C                enddo
                         IF(TAUSCAT(layinc(J,Ipath)).GT.0.0) THEN
                                 dtmp1 = dble(tauscat(layinc(J,Ipath)))
                                 dtmp2 = dble(tautmp(layinc(J,Ipath)))
-				omegas(J)=dtmp1/dtmp2
-                                eps(J) = 1.0d00 - omegas(J)
+				xom=dtmp1/dtmp2
+                                epsS(J) = 1.0d00 - xom
                         ELSE
-                                EPS(J)=1.0
-				omegas(J)=0.
+                                epsS(J)=1.0
                         END IF
+                        print*,J,emtemp(J,Ipath),epsS(J)
                 enddo
-
-                call hgaverage(nlays,ncont,taus,eps,lfrac,
+                call hgaverage(nlays,ncont,taus,epsS,lfrac,
      1           taur,x,f1,g11,g21)
 
                 call limbscatter(nlays,nmu,wt1,mu1,eps,bnu,
@@ -1997,9 +1991,10 @@ C                enddo
  		corkout(Ipath,Ig) = rad1
 
 	ELSEIF (imod(ipath).EQ.23) THEN
-
-                WRITE(*,*) 'CIRSRAD_WAVE: Imod= 23 = modified source, ',
+            if(idiag.gt.0)then
+              WRITE(*,*) 'CIRSRAD_WAVE: Imod= 23 = modified source, ',
      1                  ' creating output'
+            endif
 C                print*,ispace,x
 C       ************************************************************
 C       First need to read in the internal field at ALL altitudes
@@ -2042,7 +2037,7 @@ C       ************************************************************
 
                 enddo
 
-                call hgaverage(nlays,ncont,taus,epsS,lfrac,
+                call hgaveragelimb(nlays,ncont,taus,epsS,lfrac,
      1           taur,x,f1,g11,g21)
 
                 if(isol.eq.0)then
@@ -2050,7 +2045,6 @@ C       ************************************************************
      1            taus,basehS,scaleS,f1,g11,g21,nlayerf,basehf,
      2            umif,uplf,nff,Jsource,Ig,I)
                 else
-C                 print*,'Calling scatsourcesol'
                  call scatsourcesol(nlays,nmuf,wt1,mu1,epsS,bnuS,
      1            basehS,ibaseH,tautmp,emiss_ang,sol_ang,aphi,solar,
      2            f1,g11,g21,nlayerf,basehf,umift,uplft,nff,Jsource,

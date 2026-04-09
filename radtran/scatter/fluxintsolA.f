@@ -92,7 +92,7 @@ C     **************************************************************
           stop
          endif
 
-         j0 = int(xaphi)
+         j0 = 1+ int(xaphi)
          up = (1.0-ff)*radmi(imu,jf,j0)+ff*radmi(imu,jf+1,j0)
          down = (1.0-ff)*radpl(imu,jf,j0)+ff*radpl(imu,jf+1,j0)
 

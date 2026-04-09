@@ -33,7 +33,6 @@ F_SOURCES = \
 	interp_phase.f \
 	iup.f \
 	kk_new_sub.f \
-	kk_sub_revised.f \
 	matinv8.f \
 	matrices.f \
 	miescat.f \
@@ -101,9 +100,7 @@ bin :    \
 	Normxsc \
         Readphase \
 	Testray \
-	Testkk \
 	Test_pmat6 \
-	Convert_phase_list \
 	Testsubfithg
 
 Makephase : makephase.f $(LIBRARY)
@@ -120,14 +117,6 @@ Readphase : readphase.f $(LIBRARY)
 
 Testray : testray.f $(LIBRARY)
 	$(FC) $(FCFLAGS) -o $(BIN)/Testray testray.f $(LIBRARY) \
-	$(LIB)/rtm_util.a $(FRECIPES)
-
-Testkk : testkk.f $(LIBRARY)
-	$(FC) $(FCFLAGS) -o $(BIN)/Testkk testkk.f $(LIBRARY) \
-	$(LIB)/path.a $(LIB)/rtm_util.a $(FRECIPES)
-
-Convert_phase_list : convert_phase_list.f $(LIBRARY)
-	$(FC) $(FCFLAGS) -o $(BIN)/Convert_phase_list convert_phase_list.f $(LIBRARY) \
 	$(LIB)/rtm_util.a $(FRECIPES)
 
 Test_pmat6 : test_pmat6.f $(LIBRARY)

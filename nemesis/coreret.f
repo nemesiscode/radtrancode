@@ -610,7 +610,7 @@ C       Now calculate next iterated xn1
 
 C       Force fixed state vector elements to remain fixed!
         do i=1,nx
-         print*,'coreret',i,xn(i),exp(xn(i)),x_out(i),exp(x_out(i))
+C         print*,'coreret',i,xn(i),exp(xn(i)),x_out(i),exp(x_out(i)),ifix(i)
          if(ifix(i).eq.1)then
           x_out(i)=xn(i)
          endif

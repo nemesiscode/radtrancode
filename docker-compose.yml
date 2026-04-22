@@ -2,7 +2,7 @@ services:
   # Name of the service is 'nemesis'
   nemesis:
     build: .
-    image: nemesis-app
+    image: patrickirwinoxford/docker_nemesis
     # Automatically sets the stack limit
     ulimits:
       stack: -1

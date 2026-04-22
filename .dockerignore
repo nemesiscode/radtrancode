@@ -1,0 +1,23 @@
+# Git metadata (Safe to ignore)
+.git
+.gitignore
+
+# Docker config (Safe to ignore - not needed INSIDE the image)
+Dockerfile
+docker-compose.yml
+
+# Compiled objects and libraries (MUST ignore to avoid architecture conflicts)
+**/*.o
+**/*.mod
+**/*.a
+**/*.so
+
+# Local output directories (Ignore to keep build fresh)
+bin/
+obj/
+lib/
+
+# Junk files
+*.log
+*.tmp
+.DS_Store

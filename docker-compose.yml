@@ -1,0 +1,16 @@
+services:
+  # Name of the service is 'nemesis'
+  nemesis:
+    build: .
+    image: nemesis-app
+    # Automatically sets the stack limit
+    ulimits:
+      stack: -1
+    # Mounts your current folder to /data inside the container
+    volumes:
+      - .:/data
+    # Tells the container to start in the /data folder
+    working_dir: /data
+    # Allows the container to stay open if you want to use it interactively
+    stdin_open: true
+    tty: true

@@ -1,8 +1,12 @@
-Welcome to the new Github repository of the radtrancode project. This project is the development area for the Radtrans and Nemesis codes for radiative transfer calculations and retrievals, originally written in Oxford University.
+Welcome to the Github repository of the radtrancode project. This project is the development area for the Radtrans and Nemesis codes for radiative transfer calculations and retrievals, originally written in Oxford University.
 
+If you want to use radtrancode/nemesis you have one of two options:
+1) You can check out the repository and compile it yourself on your system (details are below)
+2) You can pull a pre-compiled 'image' of the code from Docker Hub at https://hub.docker.com/r/patrickirwinoxford/docker_nemesis and run it with Docker. 
 
-
-If you are new to the system and want to check out the radtrancode repository onto you local system, please do the following steps: 
+If you want to use the docker image, you will also need to add aliases to your shell setup file, which can be found at https://github.com/shubhamvkulkarni/Docker_aliases_for_NEMESIS.git. Depending on whether you use .cshrc, .bashrc or .zsh, you need to download the appropriate add_nemesis_docker_aliases file AND the list of executables, nemesis_executables.txt, into your home directory and run the shell script there. This will add aliases to your shell setup file so that when you run Nemesis, or any other of the radtrancode executables, the system will automatically run the Docker build. All input/output files are passed seamlessly into and out of the Docker 'container'. I am infinitely grateful to my recently graduated D.Phil. student, Shubham Kulkarni, for setting up the Docker route. 
+ 
+If you want to compile radtrancode/nemesis yourself (and thus be able to edit the code and recompile as you wish), please do the following steps: 
 
 -------------------------
 
@@ -59,13 +63,13 @@ git pull origin
 
 (updates the default branch master)
 
-To check in your updates to github/gitlab you type
+To check in your updates to github you type
 
 ```
 git push origin <branchname>
 ```
-Remember to check the ``ISYS`` variable for your specific compilation (check the AACOMPILE
-instructions).  It is also helpful to add the following to your BASHRC/CSHRC file:
+To compile the code, please look at the instrunctions in AACOMPILE.txt. Remember to check the ``ISYS`` variable for your specific compilation (check AACOMPILE.txt).
+It is also helpful to add the following to your BASHRC/CSHRC file:
 
 ``
 export RADREPO=/PATH-TO/radtrancode/

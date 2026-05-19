@@ -1,9 +1,18 @@
+# Dockerfile to build a Docker container for NEMESIS
+# 
+# ~Shubham K - 08/04/2026 - initial release
+# ______________________________________________________________________________________________
+
+
+# Using an older version of Ubuntu that supports older gfortran
 FROM ubuntu:16.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# -o pipefail helps catching errors during build
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+# Install development tools and compilers from an older version of Ubuntu
 RUN sed -i \
     -e 's|http://archive.ubuntu.com/ubuntu|http://old-releases.ubuntu.com/ubuntu|g' \
     -e 's|http://security.ubuntu.com/ubuntu|http://old-releases.ubuntu.com/ubuntu|g' \
@@ -19,6 +28,7 @@ RUN sed -i \
     tcsh \
     && rm -rf /var/lib/apt/lists/*
 
+# Env variables required to compile NEMESIS
 ENV RADREPO=/app
 ENV RADSRC=/app/radtran
 ENV BIN=/app/bin
@@ -26,6 +36,7 @@ ENV OBJ=/app/obj
 ENV LIB=/app/lib
 ENV PATH=/app/bin:${PATH}
 
+# Flags
 ENV CC=gcc-5
 ENV FCOMP=gfortran-5
 ENV FC=gfortran-5
@@ -38,12 +49,21 @@ WORKDIR /app
 
 RUN mkdir -p "${BIN}" "${OBJ}" "${LIB}"
 
+# Copy all files from root dir to /app
 COPY . .
 
+# Check the ISYS flag - only as a precaution
 RUN sed -i 's/ISYS=1/ISYS=4/g' "${RADSRC}/rtm_util/isys.f" || true
+
+# Older instruction - this line is now redundant, but kept here for backward compatibility
 RUN find "${RADSRC}" -type f -name "*.f" -exec sed -i "s/READONLY/ACTION='READ'/g" {} + || true
+
+# In all the makefiles, the line below adds the U flag to avoid timestamp issues
 RUN find . -type f \( -name "makefile" -o -name "Makefile" \) -exec sed -i 's/ar rv /ar rvU /g' {} + || true
 
+# The block below is where the actual compilation of NEMESIS happens. Here, makeradtranlib and makeradtranbin 
+# are replaced by their individual commands. This helps identify any compilation issues. 'touch *.f' is used
+# to update timestamps and force recompilation to avoid stale dependencies. 
 RUN set -eux && \
     ulimit -s unlimited && \
     cd /app/FOVgreg && make clean && make lib && \
@@ -71,5 +91,6 @@ RUN set -eux && \
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
+# Call entrypoint.sh when 'docker run' is used. 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["/bin/bash"]

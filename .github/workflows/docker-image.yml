@@ -1,36 +1,58 @@
+# Name of the GitHub Actions
 name: Build and Push Docker Image
 
+# Defines when this workflow runs
 on:
+  # Run automatically when code is pushed to the master branch
   push:
     branches: [ "master" ]
+
+  # Allow manual triggering from GitHub Actions UI
   workflow_dispatch:
 
+# Jobs to execute
 jobs:
   build-and-push:
+
+    # Use GitHub-hosted Ubuntu runner
     runs-on: ubuntu-latest
 
+    # Execute the following steps
     steps:
+
+      # Download repository code onto runner
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Enable CPU emulation for multi-architecture builds
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
 
+      # Set up Docker Buildx for advanced image builds
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # Log into Docker Hub using GitHub secrets
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # Build Docker image and push it to Docker Hub
       - name: Build and push image
         uses: docker/build-push-action@v5
         with:
+          # Build using the current repository folder
           context: .
+
+          # Push image after successful build
           push: true
+
+          # Build for ARM64 architecture
           platforms: linux/arm64
+
+          # Image tags to upload
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/docker_nemesis:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/docker_nemesis:${{ github.sha }}

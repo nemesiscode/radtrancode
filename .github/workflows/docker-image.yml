@@ -49,8 +49,8 @@ jobs:
           # Push image after successful build
           push: true
 
-          # Build for ARM64 architecture
-          platforms: linux/arm64
+          # Publish a manifest list that contains both native AMD64 and ARM64 images
+          platforms: linux/amd64,linux/arm64
 
           # Image tags to upload
           tags: |

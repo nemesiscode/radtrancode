@@ -12,13 +12,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 # -o pipefail helps catching errors during build
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# Install development tools and compilers from an older version of Ubuntu
-RUN sed -i \
-    -e 's|http://archive.ubuntu.com/ubuntu|http://old-releases.ubuntu.com/ubuntu|g' \
-    -e 's|http://security.ubuntu.com/ubuntu|http://old-releases.ubuntu.com/ubuntu|g' \
-    /etc/apt/sources.list && \
-    printf 'Acquire::Check-Valid-Until "false";\n' > /etc/apt/apt.conf.d/99no-check-valid && \
-    apt-get update && apt-get install -y --no-install-recommends \
+# Install development tools and compilers from Ubuntu 16.04
+RUN apt-get update && apt-get install -y --no-install-recommends \
     bash \
     build-essential \
     findutils \

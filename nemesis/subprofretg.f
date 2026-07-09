@@ -786,11 +786,11 @@ C        New gradient correction if fsh is held as logs
      2          XMAP(NXTEMP+2,IPAR,J-1)*EXP(-DELH*XFAC/SCALE(J))
 
              IF(JFSH.EQ.0)THEN
-               XMAP(NXTEMP+3,IPAR,J)=PKNEE*(XFAC/P(J))*
+               XMAP(NXTEMP+3,IPAR,J)=XFAC*
      1             X1(J-1)*EXP(-DELH*XFAC/SCALE(J))
              ENDIF
              XMAP(NXTEMP+3,IPAR,J)=XMAP(NXTEMP+3,IPAR,J)+
-     1          XMAP(NXTEMP+2,IPAR,J-1)*EXP(-DELH*XFAC/SCALE(J))
+     1          XMAP(NXTEMP+3,IPAR,J-1)*EXP(-DELH*XFAC/SCALE(J))
 
              JFSH = 1
 

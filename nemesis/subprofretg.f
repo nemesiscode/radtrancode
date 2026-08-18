@@ -3924,24 +3924,21 @@ C        Q(J)=ND(J)/RHO
 C        Empirical correction to XOD
          XOD = XOD*0.25
 
+
 c        New Loop corrects chain rule differentiation for XMAP:
          DO J=1,NPRO
            Y = ALOG(P(J))         
            X1(J) = SNGL(Q(J)*XDEEP/XOD)
 
-          X1(J)=SNGL(Q(J)*XDEEP/XOD)
-          IF(ISNAN(X1(J)))X1(J)=1e-36
-          IF(X1(J).LT.1e-36)X1(J)=1e-36
+           IF(ISNAN(X1(J)))X1(J)=1e-36
+           IF(X1(J).LT.1e-36)X1(J)=1e-36
 
-C          print*,'test',J,X1(J)
-
-          Y=ALOG(P(J))          
-          
-          IF(VARIDENT(IVAR,1).EQ.0)THEN
-            XMAP(NXTEMP+1,IPAR,J)=X1(J)/XDEEP
-          ELSE
-            XMAP(NXTEMP+1,IPAR,J)=X1(J)
-          ENDIF
+C          -- State Vector Element 1: ln(XDEEP / tau) --
+           IF(VARIDENT(IVAR,1).EQ.0)THEN
+             XMAP(NXTEMP+1,IPAR,J) = X1(J)/XDEEP
+           ELSE
+             XMAP(NXTEMP+1,IPAR,J) = X1(J)
+           ENDIF
 
 C          -- State Vector Element 2: ln(PKNEE) (chain rule factor * PKNEE) --
 C          Note: d/d(ln PKNEE) = d/dY0 * (dY0 / d(ln PKNEE)) where dY0/d(ln PKNEE) = 1.
@@ -3953,6 +3950,7 @@ C          -- State Vector Element 3: ln(XWID) (chain rule factor * XWID) --
            XMAP(NXTEMP+3,IPAR,J) = (term1 - term2) * XWID
 
          ENDDO
+
 c        Here was the original loop for comparison:
 c         DO J=1,NPRO
 c

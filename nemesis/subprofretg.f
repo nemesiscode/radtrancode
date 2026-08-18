@@ -124,6 +124,7 @@ C     ***********************************************************************
       REAL DLAT,GRADTOUT(MAXPRO,5),TINT
       INTEGER ILONG,JLONG,ILAT
       REAL MOLWT,SCALE(MAXPRO),XMAP1,SCALEH,DTR
+      REAL term1,term2
       PARAMETER (DTR=PI/180.)
 
       INTEGER NLOCATE,J1,MLON,MTHET,MLAT,NLAT
@@ -978,8 +979,7 @@ C        Calculate gradient numerically as it's just too hard otherwise
           XFSH  = EXP(XN(NXTEMP+2))
           PKNEE = EXP(XN(NXTEMP+3))
 
-c          DX=0.05*XN(NXTEMP+ITEST-1) - changed 16/12/2024 LNF
-          DX=0.05*XN(NXTEMP+ITEST)
+          DX=0.05*XN(NXTEMP+ITEST-1) 
           IF(DX.EQ.0.)DX=0.1
 
           IF(ITEST.EQ.2)THEN
@@ -1119,8 +1119,7 @@ C        Calculate gradient numerically as it's just too hard otherwise
           XFSH  = EXP(XN(NXTEMP+2))
           HKNEE = XN(NXTEMP+3)
 
-c          DX=0.05*XN(NXTEMP+ITEST-1) - changed 16/12/2024 LNF
-          DX=0.05*XN(NXTEMP+ITEST)
+          DX=0.05*XN(NXTEMP+ITEST-1) 
           IF(DX.EQ.0.)DX=0.1
 
           IF(ITEST.GT.1)THEN
@@ -2031,8 +2030,7 @@ C        Calculate gradient numerically as it's just too hard otherwise
           HKNEE = XN(NXTEMP+3)
           CWID = XN(NXTEMP+4)
 
-c          DX=0.05*XN(NXTEMP+ITEST-1) - changed 16/12/2024 LNF
-          DX=0.05*XN(NXTEMP+ITEST)
+          DX=0.05*XN(NXTEMP+ITEST-1) 
           IF(DX.EQ.0.)DX=0.1
 
           IF(ITEST.GT.1)THEN
@@ -2236,8 +2234,7 @@ C         Need radius from associated 444/445 particle parameterisation
           REFRADIUS=VARPARAM(IVAR,2)
           XFSH=XFSH*REFRADIUS/RPARTICLE
 
-c          DX=0.05*XN(NXTEMP+ITEST-1) - changed 16/12/2024 LNF
-          DX=0.05*XN(NXTEMP+ITEST)
+          DX=0.05*XN(NXTEMP+ITEST-1) 
 
           IF(DX.EQ.0.)DX=0.1
 
@@ -2970,8 +2967,7 @@ C        Calculate gradient numerically as it's just too hard otherwise
           XFSH  = EXP(XN(NXTEMP+2))
           PKNEE = EXP(XN(NXTEMP+3))
 
-c          DX=0.05*XN(NXTEMP+ITEST-1) - changed 16/12/2024 LNF
-          DX=0.05*XN(NXTEMP+ITEST)
+          DX=0.05*XN(NXTEMP+ITEST-1) 
 
           IF(DX.EQ.0.)DX=0.1
 
@@ -3876,7 +3872,8 @@ C        *** enough and so it gets updated in gsetrad.f
 
 
         ELSEIF(VARIDENT(IVAR,3).EQ.47)THEN
-C        Model 14. Profile is represented a Gaussian with a specified optical
+C        Model 47, updated from Model 14. 
+C        Profile is represented a Gaussian with a specified optical
 C        thickness centred at a variable pressure level plus a variable FWHM (log press) in 
 C        height.
 C        FHWM is also folded into total opacity, but this gets renormalised
@@ -3927,7 +3924,10 @@ C        Q(J)=ND(J)/RHO
 C        Empirical correction to XOD
          XOD = XOD*0.25
 
+c        New Loop corrects chain rule differentiation for XMAP:
          DO J=1,NPRO
+           Y = ALOG(P(J))         
+           X1(J) = SNGL(Q(J)*XDEEP/XOD)
 
           X1(J)=SNGL(Q(J)*XDEEP/XOD)
           IF(ISNAN(X1(J)))X1(J)=1e-36
@@ -3943,14 +3943,38 @@ C          print*,'test',J,X1(J)
             XMAP(NXTEMP+1,IPAR,J)=X1(J)
           ENDIF
 
-          XMAP(NXTEMP+2,IPAR,J)=2.*(Y-Y0)*X1(J)/XWID**2
-          XMAP(NXTEMP+3,IPAR,J)=-2.0*((Y-Y0)**2)*X1(J)/XWID**3
+C          -- State Vector Element 2: ln(PKNEE) (chain rule factor * PKNEE) --
+C          Note: d/d(ln PKNEE) = d/dY0 * (dY0 / d(ln PKNEE)) where dY0/d(ln PKNEE) = 1.
+           XMAP(NXTEMP+2,IPAR,J) = 2.0 * (Y - Y0) * X1(J) / XWID**2
 
-          XMAP(NXTEMP+2,IPAR,J)=Y0*2.*(Y-Y0)*X1(J)/XWID**2
-          XMAP(NXTEMP+3,IPAR,J)=-2.0*((Y-Y0)**2)*X1(J)/XWID**2
-     &             -  X1(J)/XWID
+C          -- State Vector Element 3: ln(XWID) (chain rule factor * XWID) --
+           term1 = 2.0 * (Y - Y0)**2 * X1(J) / XWID**3
+           term2 = X1(J) / XWID
+           XMAP(NXTEMP+3,IPAR,J) = (term1 - term2) * XWID
 
          ENDDO
+c        Here was the original loop for comparison:
+c         DO J=1,NPRO
+c
+c          X1(J)=Q(J)*XDEEP/XOD
+c          IF(ISNAN(X1(J)))X1(J)=1e-36
+c          IF(X1(J).LT.1e-36)X1(J)=1e-36
+c
+c          Y=ALOG(P(J))          
+c          
+c          IF(VARIDENT(IVAR,1).EQ.0)THEN
+c            XMAP(NXTEMP+1,IPAR,J)=X1(J)/XDEEP
+c          ELSE
+c            XMAP(NXTEMP+1,IPAR,J)=X1(J)
+c          ENDIF
+c
+c          XMAP(NXTEMP+2,IPAR,J)=2.*(Y-Y0)*X1(J)/XWID**2
+c          XMAP(NXTEMP+3,IPAR,J)=-2.0*((Y-Y0)**2)*X1(J)/XWID**3
+c
+c          XMAP(NXTEMP+2,IPAR,J)=Y0*2.*(Y-Y0)*X1(J)/XWID**2
+c          XMAP(NXTEMP+3,IPAR,J)=-2.0*((Y-Y0)**2)*X1(J)/XWID**2
+c     &             -  X1(J)/XWID
+c         ENDDO
 
 C        *** This renormalisation is pretty accurate, but not quite accurate
 C        *** enough and so it gets updated in gsetrad.f
@@ -3979,9 +4003,17 @@ C        Calculate gradient numerically as it's just too hard otherwise
           XFSH  = EXP(XN(NXTEMP+2))
           PKNEE = EXP(XN(NXTEMP+3))
           PTOP = EXP(XN(NXTEMP+4))
+          XF=1.0
 
-c          DX=0.05*XN(NXTEMP+ITEST-1) - changed 16/12/2024 LNF
-          DX=0.05*XN(NXTEMP+ITEST)
+c          DX=0.05*XN(NXTEMP+ITEST)
+
+c         DX and ITEST was not being handled correctly - altered 18/08/2026 (LNF)
+          IF(ITEST.EQ.1) THEN
+            DX = 0.05 * XN(NXTEMP+1)
+          ELSE
+            DX = 0.05 * XN(NXTEMP + ITEST - 1)
+          ENDIF
+
 
           IF(DX.EQ.0.)DX=0.1
 
@@ -6007,8 +6039,8 @@ C        modifying the radius will affect the vertical cloud distribution.
 C         Calculate gradient numerically as it's just too hard otherwise
           DO 25 ITEST=1,2
 
-c          DX=0.05*XN(NXTEMP+ITEST-1) - changed 16/12/2024 LNF
-           DX=0.05*XN(NXTEMP+ITEST)
+           DX=0.05*XN(NXTEMP+ITEST-1) 
+
            IF(DX.EQ.0.)DX=0.1
 
            IF(ITEST.EQ.2)THEN
@@ -6160,8 +6192,8 @@ C		works for MultiNest
 C         Calculate gradient numerically as it's just too hard otherwise
 C	       DO 26 ITEST=1,2
 
-c          DX=0.05*XN(NXTEMP+ITEST-1) - changed 16/12/2024 LNF
-           DX=0.05*XN(NXTEMP+ITEST)
+           DX=0.05*XN(NXTEMP+ITEST-1) 
+
            IF(DX.EQ.0.)DX=0.1
 
 C          Start ND,Q,OD at zero
@@ -6281,9 +6313,7 @@ C	works for MultiNest***
          IF(XDEEP.GT.0)THEN
 C         Calculate gradient numerically as it's just too hard otherwise
 C	       DO 26 ITEST=1,2
-
-c          DX=0.05*XN(NXTEMP+ITEST-1) - changed 16/12/2024 LNF
-           DX=0.05*XN(NXTEMP+ITEST)
+           DX=0.05*XN(NXTEMP+ITEST-1) 
            IF(DX.EQ.0.)DX=0.1
 
 C          Start ND,Q,OD at zero
@@ -6426,8 +6456,7 @@ C		 Currently only works for MultiNest
 C         Calculate gradient numerically as it's just too hard otherwise
 C	       DO 26 ITEST=1,2
 
-c          DX=0.05*XN(NXTEMP+ITEST-1) - changed 16/12/2024 LNF
-           DX=0.05*XN(NXTEMP+ITEST)
+           DX=0.05*XN(NXTEMP+ITEST-1) 
            IF(DX.EQ.0.)DX=0.1
 
 C          Start ND,Q,OD at zero
@@ -6581,9 +6610,8 @@ C          XFSH=XFSHREF*REFRADIUS/RPARTICLE
 
 C         Calculate gradient numerically as it's just too hard otherwise
 C          DO 25 ITEST=1,2
-
-c          DX=0.05*XN(NXTEMP+ITEST-1) - changed 16/12/2024 LNF
-           DX=0.05*XN(NXTEMP+ITEST)
+ 
+           DX=0.05*XN(NXTEMP+ITEST-1) 
            IF(DX.EQ.0.)DX=0.1
 C
 C           IF(ITEST.EQ.2)THEN

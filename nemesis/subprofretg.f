@@ -4087,11 +4087,18 @@ C          print*,JKNEE,JTOP
           DELH = HKNEE-H(JKNEE)
           XFAC=0.05*SCALE(JKNEE)
           ND(JKNEE)=DPEXP(-DELH/XFAC)
-           
-          DO J=1,JKNEE-1
-           DELH = H(JKNEE)-H(J)
-           ND(J) = DPEXP(-DELH/XFAC)
-          ENDDO
+       
+C         Fixing integration below the PKNEE - LNF 18/08/2026
+          DO J=JKNEE-1, 1, -1
+            DELH = H(J+1)-H(J)
+            XFAC = 0.05*SCALE(J)  ! Switched to local scale height.
+            ND(J) = ND(J+1) * DPEXP(-DELH/XFAC)
+          ENDDO       
+c          DO J=1,JKNEE-1 ! Original code, replaced by above
+c           DELH = H(JKNEE)-H(J)
+c           ND(J) = DPEXP(-DELH/XFAC)
+c          ENDDO
+
          
           DO J=JKNEE+2,JTOP
            DELH = H(J)-H(J-1)
@@ -4101,12 +4108,28 @@ C          print*,JKNEE,JTOP
 
           XFAC=0.05*SCALE(JTOP)
 
-          DO J=JTOP+1,NPRO
-           DELH = H(J)-HTOP
-           ND(J) = ND(JTOP)*DPEXP(-DELH/XFAC)
+c        Fixing integration above the PTOP - LNF 18/08/2026
+          DO J=JTOP+1, NPRO
+            IF(J.EQ.JTOP+1) THEN
+c           Decay from JTOP to HTOP using the retrieved cloud scale height
+              DELH = HTOP - H(JTOP)
+              XFAC = SCALE(JTOP)*XFSH
+              ND(J) = ND(JTOP) * DPEXP(-DELH/XFAC)
+c           Decay from HTOP to the JTOP+1 grid point using the 5% cut-off
+              DELH = H(J) - HTOP
+              XFAC = 0.05 * SCALE(JTOP)
+              ND(J) = ND(J) * DPEXP(-DELH/XFAC)
+            ELSE
+c           Cascade the 5% decay upwards layer by layer
+              DELH = H(J) - H(J-1)
+              XFAC = 0.05 * SCALE(J-1) 
+              ND(J) = ND(J-1) * DPEXP(-DELH/XFAC)
+            ENDIF
           ENDDO
-
-
+c          DO J=JTOP+1,NPRO ! Original code, replaced by above
+c           DELH = H(J)-HTOP
+c           ND(J) = ND(JTOP)*DPEXP(-DELH/XFAC)
+c          ENDDO
 C          DO J=1,NPRO
 C           print*,J,H(J),P(I),ND(J)
 C          ENDDO          

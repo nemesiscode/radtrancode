@@ -766,6 +766,7 @@ C        New gradient correction if fsh is held as logs
          CALL VERINT(P,H,NPRO,HKNEE,PKNEE)
          JFSH = 0
 
+c Modified to include gradient calculations for the variable knee pressure model
          DO J=1,NPRO
           X1(J)=XDEEP
           IF(VARIDENT(IVAR,1).EQ.0)THEN
@@ -773,32 +774,76 @@ C        New gradient correction if fsh is held as logs
           ELSE
             XMAP(NXTEMP+1,IPAR,J)=X1(J)
           ENDIF
+          
           IF(P(J).LT.PKNEE)THEN  
              IF(JFSH.EQ.0)THEN
                DELH=H(J)-HKNEE
              ELSE
                DELH=H(J)-H(J-1)
              ENDIF
+             
              X1(J)=X1(J-1)*EXP(-DELH*XFAC/SCALE(J))
+             
              XMAP(NXTEMP+1,IPAR,J)=XMAP(NXTEMP+1,IPAR,J-1)*
-     1                  EXP(-DELH*XFAC/SCALE(J))
+     1                              EXP(-DELH*XFAC/SCALE(J))
+             
              XMAP(NXTEMP+2,IPAR,J)=(-DELH/SCALE(J))*DXFAC*
      1          X1(J-1)*EXP(-DELH*XFAC/SCALE(J)) +
      2          XMAP(NXTEMP+2,IPAR,J-1)*EXP(-DELH*XFAC/SCALE(J))
 
              IF(JFSH.EQ.0)THEN
-               XMAP(NXTEMP+3,IPAR,J)=XFAC*
-     1             X1(J-1)*EXP(-DELH*XFAC/SCALE(J))
+               ! Corrected analytical derivative with negative sign
+               XMAP(NXTEMP+3,IPAR,J) = -XFAC * X1(J)
+             ELSE
+               ! Corrected
+               XMAP(NXTEMP+3,IPAR,J) = XMAP(NXTEMP+3,IPAR,J-1) * 
+     1                                 EXP(-DELH*XFAC/SCALE(J))
              ENDIF
-             XMAP(NXTEMP+3,IPAR,J)=XMAP(NXTEMP+3,IPAR,J)+
-     1          XMAP(NXTEMP+3,IPAR,J-1)*EXP(-DELH*XFAC/SCALE(J))
 
              JFSH = 1
 
              IF(X1(J).LT.1e-36)X1(J)=1e-36
 
-           END IF
+          ELSE
+             ! Explicitly zero out gradients below the knee pressure
+             XMAP(NXTEMP+2,IPAR,J) = 0.0
+             XMAP(NXTEMP+3,IPAR,J) = 0.0
+          END IF
          ENDDO
+
+    !      DO J=1,NPRO
+    !       X1(J)=XDEEP
+    !       IF(VARIDENT(IVAR,1).EQ.0)THEN
+    !         XMAP(NXTEMP+1,IPAR,J)=1.0
+    !       ELSE
+    !         XMAP(NXTEMP+1,IPAR,J)=X1(J)
+    !       ENDIF
+    !       IF(P(J).LT.PKNEE)THEN  
+    !          IF(JFSH.EQ.0)THEN
+    !            DELH=H(J)-HKNEE
+    !          ELSE
+    !            DELH=H(J)-H(J-1)
+    !          ENDIF
+    !          X1(J)=X1(J-1)*EXP(-DELH*XFAC/SCALE(J))
+    !          XMAP(NXTEMP+1,IPAR,J)=XMAP(NXTEMP+1,IPAR,J-1)*
+    !  1                  EXP(-DELH*XFAC/SCALE(J))
+    !          XMAP(NXTEMP+2,IPAR,J)=(-DELH/SCALE(J))*DXFAC*
+    !  1          X1(J-1)*EXP(-DELH*XFAC/SCALE(J)) +
+    !  2          XMAP(NXTEMP+2,IPAR,J-1)*EXP(-DELH*XFAC/SCALE(J))
+
+    !          IF(JFSH.EQ.0)THEN
+    !            XMAP(NXTEMP+3,IPAR,J)=XFAC*
+    !  1             X1(J-1)*EXP(-DELH*XFAC/SCALE(J))
+    !          ENDIF
+    !          XMAP(NXTEMP+3,IPAR,J)=XMAP(NXTEMP+3,IPAR,J)+
+    !  1          XMAP(NXTEMP+3,IPAR,J-1)*EXP(-DELH*XFAC/SCALE(J))
+
+    !          JFSH = 1
+
+    !          IF(X1(J).LT.1e-36)X1(J)=1e-36
+
+    !        END IF
+    !      ENDDO
 
         ELSEIF(VARIDENT(IVAR,3).EQ.5)THEN
 C        Model 5. Continuous profile, but variable with latitude.

@@ -232,6 +232,16 @@ C		Misc variables or continuum variables
         INTEGER LUNIS,IRECL,IOFF,NLAYERF,NMUF,NWAVEF,NGF,IFLUX,NFF
         integer fintrad,first
         character*100 fintname
+
+C       Cap on the scattering cross section (see the note where it is
+C       applied).  XCAPFR = 0.0 caps the scattering at the extinction
+C       and changes nothing else.  XCAPFR > 0 (e.g. 3.0E-4) rounds the
+C       corner off over that fraction of the extinction: smoother for
+C       a numerical Jacobian, but it adds an absorption of up to
+C       XCAPFR/4 of the extinction to particles whose single scattering
+C       albedo is above 1-XCAPFR.
+        REAL    TAUABS, XCAP, XCAPFR
+        PARAMETER (XCAPFR=0.0)
 C		Common blocks and parameters
 
 C       Solar reference spectrum common block
@@ -777,43 +787,10 @@ C              endif
 C            if(i.eq.1)print*,'x = ',x
 C            if(i.eq.1)print*,j,k,tau,tau2
 
-            if(tau.lt.tau2)then
-C              if tau < tau2 then cubic spline interpolation has gone wrong. Do linear 
-C              interpolation instead.
-
-C              if(j.eq.5)then
-C               print*,'tau lt tau2: Particle type ',K
-C               print*,'Do linear interpolation'
-C              endif
-
-              jf=-1
-              do l=1,nsec-1
-                if(x.ge.vsec(l).and.x.lt.vsec(l+1))then
-                   xf = (x-vsec(l))/(vsec(l+1)-vsec(l))
-                   tau = (1.0-xf)*asec(l)+xf*asec(l+1)
-                   tau2 = (1.0-xf)*bsec(l)+xf*bsec(l+1)
-                   jf=l
-                endif
-              enddo
-              if(x.le.vsec(1))then
-               tau=asec(1)
-               tau2=bsec(1)
-              endif
-              if(x.ge.vsec(nsec))then
-               tau=asec(nsec)
-               tau2=bsec(nsec)
-              endif
-
-C              if(i.eq.1)then
-C                print*,'new tau,tau2 ',tau,tau2
-C                if(jf.gt.0)then
-C                  print*,jf,vsec(jf),vsec(jf+1),xf
-C                  print*,asec(jf),asec(jf+1)
-C                  print*,bsec(jf),bsec(jf+1)
-C                endif               
-C              endif
-
-            endif
+C           The test 'if (tau .lt. tau2) then redo both by linear
+C           interpolation' used to sit here.  It is replaced by a cap
+C           on tau2, applied after the two negative-value branches
+C           below; see the note there.
 
 	    if(tau.lt.0.or.isnan(asec2(1)))then
 C              if(j.eq.5)then
@@ -870,6 +847,27 @@ C 		    print*,bsec(jf),bsec(jf+1)
 C 	           endif
 C                 endif
             endif
+
+C           Where the two splines cross, the scattering cross section
+C           comes out larger than the extinction.  Keep the splined
+C           extinction and cap the scattering at it.  (The old test
+C           replaced BOTH by linear interpolation, which made the
+C           extinction itself jump between its splined and its linear
+C           value whenever the single scattering albedo was close to 1.)
+C           This comes after the two negative-value branches above on
+C           purpose: they may replace tau, and the cap has to see the
+C           value that is actually used.  tau2 is left untouched unless
+C           the cap acts.
+            XCAP = XCAPFR*ABS(tau)
+            TAUABS = tau - tau2
+            IF(TAUABS.LT.XCAP)THEN
+              IF(TAUABS.LE.-XCAP)THEN
+                TAUABS = 0.0
+              ELSE
+                TAUABS = (TAUABS+XCAP)**2/(4.0*XCAP)
+              ENDIF
+              tau2 = tau - TAUABS
+            ENDIF
 
 C            if(i.eq.1)print*,'XZ',K,J,cont(K,J)
             if(cont(K,J).lt.0.and.idiag.gt.0)then

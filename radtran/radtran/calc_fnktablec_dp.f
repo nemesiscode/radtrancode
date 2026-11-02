@@ -54,6 +54,15 @@ C--------------------------------------------------------------
       INCLUDE '../includes/lcocom.f'
 
 C-----------------------------------------------------------------------------
+C     Double precision spectral-coordinate variables.
+C     VMIN and DELV themselves are REAL in /PATHVA/, so do not
+C     change their type here.
+      DOUBLE PRECISION VMIN_DP,VMAX_DP,DELV_DP
+      DOUBLE PRECISION VSTART_DP,VEND_DP,VV_DP
+      DOUBLE PRECISION VMIN1_DP,VMAX1_DP
+      DOUBLE PRECISION VCEN_DP(MPOINT)
+
+
       INTEGER LUN,LOOP,LUN0,LUN1,MDATA,MFIL,NGMAX,N1
       PARAMETER (LUN=2,LUN0=30,LUN1=31,MFIL=1000)
 c      PARAMETER (NGMAX=51)
@@ -71,16 +80,25 @@ c      PARAMETER (NGMAX=51)
       REAL KNU0,DELAD,Y0,EL
       REAL QROT,FRAC1,MAXDV
 
-      REAL P1,TE1,TEMP1(MAXK),PRESS1(MAXK),VCEN(MPOINT)
+      REAL P1,TE1,TEMP1(MAXK),PRESS1(MAXK)
       REAL TEMP2(MAXK,MAXK)
       REAL TABLE(MAXK,MAXK,MAXG)
       REAL G_ORD(MAXG),K_G(MAXG),DEL_G(MAXG),ERRK(MAXG)
+      REAL VMIN_OUT,DELV_OUT,VCEN_OUT
 C     G_ORD: Gauss-Legendre ordinates for calculating the k-distribution.
 C     K_G: Calculated k-distribution.
 C     DEL_G: Gauss-Legendre weights for integration.
 C     **** all these are now defined by zgauleg.f ***
       integer idiag,iquiet
+
+
+
+
       common/diagnostic/idiag,iquiet
+
+
+      
+
 
 
 c LNF - Added this to prevent hard-coding
@@ -124,22 +142,44 @@ c  ** calc g_ord and del_g **
 
       IF(IREG.EQ.0.OR.IREG.EQ.2)THEN
        CALL PROMPT('Enter minumum wavenumber/wavelength X: ')
-       READ*,VMIN
+       READ*,VMIN_DP
        CALL PROMPT('Enter DELX and NPOINT : ')
-       READ*,DELV,NPOINT
-       VMAX=VMIN + (NPOINT-1)*DELV
-       PRINT*,' XMIN -> XMAX by DELX: ',VMIN,VMAX,DELV
+       READ*,DELV_DP,NPOINT
+
+       VMAX_DP=VMIN_DP + DBLE(NPOINT-1)*DELV_DP
+
+       PRINT*,' XMIN -> XMAX by DELX: ',
+     1        VMIN_DP,VMAX_DP,DELV_DP
+
        DO I=1,NPOINT
-        VCEN(I)=VMIN+(I-1)*DELV
+        VCEN_DP(I)=VMIN_DP+DBLE(I-1)*DELV_DP
        ENDDO
+
+C      Single-precision copies for existing common-block variables.
+       VMIN=REAL(VMIN_DP)
+       DELV=REAL(DELV_DP)
+      
+      
       ELSE
        CALL PROMPT('Enter number of points : ')
        READ*,NPOINT
        CALL PROMPT('Enter central wavenumbers/wavelengths : ')
-       READ*,(VCEN(I),I=1,NPOINT)
-       VMIN=VCEN(1)
-       VMAX=VCEN(NPOINT)
-       DELV=-1.0
+       READ*,(VCEN_DP(I),I=1,NPOINT)
+
+       VMIN_DP=VCEN_DP(1)
+       VMAX_DP=VCEN_DP(NPOINT)
+       DELV_DP=-1.0D0
+
+C      Single-precision copies for existing NEMESIS variables.
+       VMIN=REAL(VMIN_DP)
+       DELV=REAL(DELV_DP)
+      ENDIF
+
+      IF(NPOINT.GT.MPOINT)THEN
+       PRINT*,'NPOINT > MPOINT'
+       PRINT*,NPOINT,MPOINT
+       PRINT*,'Reduce NPOINT or increase MPOINT and recompile'
+       STOP
       ENDIF
 
       CALL PROMPT('Square bins (0), or non-square(1) : ')
@@ -151,14 +191,14 @@ c  ** calc g_ord and del_g **
 
 C      Calculate min/max wavelength/wavenumbers for continuum calculation
        IF(IWAVE.EQ.0)THEN
-          VMIN1 = 1E4/(VMAX+0.5*FWHM)
-          VMAX1 = 1E4/(VMIN-0.5*FWHM)
+          VMIN1_DP = 1.0D4/(VMAX_DP+0.5D0*DBLE(FWHM))
+          VMAX1_DP = 1.0D4/(VMIN_DP-0.5D0*DBLE(FWHM))
        ELSE
-          VMIN1=VMIN-0.5*FWHM
-          VMAX1=VMAX+0.5*FWHM
+          VMIN1_DP = VMIN_DP-0.5D0*DBLE(FWHM)
+          VMAX1_DP = VMAX_DP+0.5D0*DBLE(FWHM)
        ENDIF
 
-       print*,'test: VMIN1,VMAX1 = ',VMIN1,VMAX1
+       print*,'test: VMIN1,VMAX1 = ',VMIN1_DP,VMAX1_DP
        
       ELSE
 
@@ -175,14 +215,14 @@ C      Read min/max wavelength/wavenumbers for continuum calculation
        READ*,VMINC,VMAXC
 C      Convert wavelength range to wavenumber range if IWAVE=0
        IF(IWAVE.EQ.0)THEN
-          VMIN1 = 1E4/VMAXC
-          VMAX1 = 1E4/VMINC
+          VMIN1_DP = 1.0D4/DBLE(VMAXC)
+          VMAX1_DP = 1.0D4/DBLE(VMINC)
        ELSE
-          VMIN1 = VMINC
-          VMAX1 = VMAXC
+          VMIN1_DP = DBLE(VMINC)
+          VMAX1_DP = DBLE(VMAXC)
        ENDIF
 
-       print*,'test: VMIN1,VMAX1 = ',VMIN1,VMAX1
+       print*,'test: VMIN1,VMAX1 = ',VMIN1_DP,VMAX1_DP
 
        PRINT*,'Same bin shape for all output points(0) or'
        CALL PROMPT('new filter profile each time(1) : ')
@@ -309,7 +349,8 @@ C      (for exoplanet k-tables)
 C     If we want code to 'snap' to nearest point in table, even if
 C     regularly gridded, set DELV=-1 now.
       IF(IREG.EQ.2)THEN
-       DELV=-1.
+       DELV_DP=-1.0D0
+       DELV=-1.0
       ENDIF
 
 C     Add in extra buffer to list wavelengths if a non-uniform grid is
@@ -320,8 +361,13 @@ C     specified
       PRINT*,'IREC0 = ',irec0
       WRITE(LUN0,REC=1)IREC0
       WRITE(LUN0,REC=2)NPOINT
-      WRITE(LUN0,REC=3)VMIN
-      WRITE(LUN0,REC=4)DELV
+C     K-table remains in the standard single-precision format.
+      VMIN_OUT=REAL(VMIN_DP)
+      DELV_OUT=REAL(DELV_DP)
+      WRITE(LUN0,REC=3) VMIN_OUT
+      WRITE(LUN0,REC=4) DELV_OUT
+c      WRITE(LUN0,REC=3)VMIN
+c      WRITE(LUN0,REC=4)DELV
       WRITE(LUN0,REC=5)FWHM
       WRITE(LUN0,REC=6)NP
       WRITE(LUN0,REC=7)NT
@@ -358,16 +404,16 @@ C     specified
 C     Write out central wavelengths if non-uniform grid
       IF(DELV.LE.0.0)THEN
        DO 303 J=1,NPOINT
-        WRITE(LUN0,REC=IREC)VCEN(J)
-C        PRINT*,J,VCEN(J)
+        VCEN_OUT=REAL(VCEN_DP(J))
+        WRITE(LUN0,REC=IREC)VCEN_OUT
         IREC=IREC+1
 303    CONTINUE
       ENDIF
 
 C     Calculate continuum absorption for all pressures/temperatures
-
-      PRINT*,'Calculating Continuum' 
-      PRINT*,'VMIN1,VMAX1,WING,VREL',VMIN1,VMAX1,WING,VREL
+      PRINT*,'Calculating Continuum'
+      PRINT*,'VMIN1_DP,VMAX1_DP,WING,VREL',
+     1 VMIN1_DP,VMAX1_DP,WING,VREL
 
       N1=ABS(NT)
       DO 102 K=1,N1
@@ -419,10 +465,13 @@ C          Read in temperature specific linedata file.
 
             PRINT*,'Continuum. J,K = ',J,K,' P = ',P1,' T = ',
      & 	    TE1
-   
-cc            WRITE(*,*)'CALLING lbl_kcont'
+            
+            VMIN1=REAL(VMIN1_DP)
+            VMAX1=REAL(VMAX1_DP)
+
             CALL LBL_KCONT(VMIN1,VMAX1,WING,VREL,P1,TE1,
-     1      IDGAS(1),ISOGAS(1),FRAC1,IPROC(1),J,K,MAXDV,IPTF,IEXO)
+     1      IDGAS(1),ISOGAS(1),FRAC1,IPROC(1),J,K,MAXDV,IPTF,IEXO)   
+cc            WRITE(*,*)'CALLING lbl_kcont'
 cc            WRITE(*,*)'lbl_kcont COMPLETE'
 cc            WRITE(*,*)' '
 
@@ -434,33 +483,35 @@ cc            WRITE(*,*)' '
       IREC=IREC0
 
       OPEN(UNIT=LUN1,FILE='tempk.dat',STATUS='UNKNOWN')
-      WRITE(LUN1,*)VMIN,VMAX,DELV
+      WRITE(LUN1,*)VMIN_DP,VMAX_DP,DELV_DP
       WRITE(LUN1,*)NP,(PRESS1(J),J=1,NP)
       WRITE(LUN1,*)NT,(TEMP1(J),J=1,NT)
 
       PRINT*,'Calculating LBL spectra and k-distribution'
 
       DO 10 IPOINT=1,NPOINT
-        WRITE(*,*)'Current Wave: ',VCEN(IPOINT)
-        WRITE(LUN1,*)'Current Wave: ',VCEN(IPOINT)
+        WRITE(*,*)'Current Wave: ',VCEN_DP(IPOINT)
+        WRITE(LUN1,*)'Current Wave: ',VCEN_DP(IPOINT)
 
         IF(SQBIN.EQ.0)THEN
-            VSTART = VCEN(IPOINT) - 0.5*FWHM
-            VEND = VSTART+FWHM
+            VSTART_DP=VCEN_DP(IPOINT)-0.5D0*DBLE(FWHM)
+            VEND_DP=VSTART_DP+DBLE(FWHM)
 
             IF(IWAVE.EQ.0)THEN
-                VV = VSTART
-                VSTART = 1E4/VEND
-                VEND = 1E4/VV
+                VV_DP=VSTART_DP
+                VSTART_DP=1.0D4/VEND_DP
+                VEND_DP=1.0D4/VV_DP
                 NFIL=25
                 DO I=1,NFIL
-                 VFIL(I)=VSTART+FLOAT(I-1)*(VEND-VSTART)/FLOAT(NFIL-1)
+                 VV_DP=VSTART_DP+DBLE(I-1)*
+     1             (VEND_DP-VSTART_DP)/DBLE(NFIL-1)
+                 VFIL(I)=REAL(VV_DP)
                  TFIL(I)=(VFIL(I)/VFIL(1))**2
                 ENDDO
             ELSE
                 NFIL=2
-                VFIL(1)=VSTART
-                VFIL(2)=VEND
+                VFIL(1)=REAL(VSTART_DP)
+                VFIL(2)=REAL(VEND_DP)
                 TFIL(1)=1.0
                 TFIL(2)=1.0
             ENDIF
@@ -468,10 +519,11 @@ cc            WRITE(*,*)' '
             IF(IPOINT.EQ.1.OR.IMULTI.EQ.1)THEN
              READ(IFIL,*)VFILC
              READ(IFIL,*)NFIL
-             IF(VFILC.NE.VCEN(IPOINT).AND.IMULTI.EQ.1)THEN
+             IF(DBLE(VFILC).NE.VCEN_DP(IPOINT).AND.
+     1          IMULTI.EQ.1)THEN
               PRINT*,'*** WARNING *** Calc_ktablec'
               PRINT*,'VFILC,VCEN not the same'
-              PRINT*,VFILC,VCEN(IPOINT)
+              PRINT*,VFILC,VCEN_DP(IPOINT)
              ENDIF
              IF(NFIL.GT.MFIL)THEN
               PRINT*,'*** WARNING *** Calc_ktablec'
@@ -493,7 +545,8 @@ C               STOP
 
 C           Centre filter
             DO I=1,NFIL
-              V1(I) = V2(I)+VCEN(IPOINT)
+c              V1(I) = V2(I)+VCEN(IPOINT)
+              V1(I)=V2(I)+REAL(VCEN_DP(IPOINT))
             ENDDO
 
             IF(IWAVE.EQ.1)THEN
@@ -510,11 +563,11 @@ C            Modify filter function if in wavelength space
              ENDDO
             ENDIF
 
-            VSTART=VFIL(1)
-            VEND=VFIL(NFIL)
+            VSTART_DP=DBLE(VFIL(1))
+            VEND_DP=DBLE(VFIL(NFIL))
 
         ENDIF
-        PRINT*,'VSTART,VEND = ',VSTART,VEND
+        PRINT*,'VSTART,VEND = ',VSTART_DP,VEND_DP
 C        PRINT*,'NFIL = ',NFIL
 C        DO I=1,NFIL
 C         PRINT*,VFIL(I),TFIL(I)
@@ -568,20 +621,21 @@ C            defined by lbl_kcont.f)
             WRITE(LUN1,*)'Pressure, temperature: ',P1,TE1
 	    
 	    
-	    
-            CALL LBL_FKNEW_DP(IWAVE,VSTART,VEND,P1,TE1,
+            CALL LBL_FKNEW_DP(IWAVE,VSTART_DP,VEND_DP,P1,TE1,
      1          IDGAS(1),ISOGAS(1),IPROC(1),J,K,FRAC1,MAXDV,IPTF,
-     2		NPOINT)
+     2          NPOINT)
 
+            DELV_DP=(VEND_DP-VSTART_DP)/DBLE(NPOINT)
 
-            DELV=(VEND-VSTART)/FLOAT(NPOINT)
+            CALL CALC_FKDIST_WAVEC_DP(IWAVE,VSTART_DP,DELV_DP,
+     1          NPOINT,NFIL,VFIL,TFIL,G_ORD,DEL_G,K_G,NGMAX,NG)
 	    
 
 c	    print*,'CALC_FNKTABLEC_DP (VSTART,DELV): ',vstart,delv
 c	    print*,'CALC_FNKTABLEC_DP (NPOINT): ',npoint
             
-	    CALL CALC_FKDIST_WAVEC_DP(IWAVE,DBLE(VSTART),DBLE(DELV),NPOINT,
-     1    NFIL,VFIL,TFIL,G_ORD,DEL_G,K_G,NGMAX,NG)
+c	    CALL CALC_FKDIST_WAVEC_DP(IWAVE,DBLE(VSTART),DBLE(DELV),NPOINT,
+c     1    NFIL,VFIL,TFIL,G_ORD,DEL_G,K_G,NGMAX,NG)
 
             WRITE(LUN1,*)(K_G(LOOP),LOOP=1,NG)
 

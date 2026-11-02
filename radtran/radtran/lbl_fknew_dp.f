@@ -100,7 +100,8 @@ C***************************** VARIABLES *******************************
 
 C Definition of input parameters ...
       INTEGER IDGAS,ISOGAS,IPROC,IP,IT,IWAVE
-      REAL PRESS,TEMP,VSTART,VEND,MAXDV,FRAC,FPOINT
+      REAL PRESS,TEMP,MAXDV,FRAC,FPOINT
+      DOUBLE PRECISION VSTART,VEND
 
 
 C The include files ...
@@ -296,7 +297,7 @@ C (= VMIN - 0.5*FWHM) and VEND (= VSTART + FWHM).
 C      NPOINT = 3*INT((VEND - VSTART)/MXWID)
 C Actually a factor of 3 still gives quite a jumpy spectrum. Increase
 C to 6.
-      FPOINT = 10.*(VEND - VSTART)/MXWID
+      FPOINT = 6.*(VEND - VSTART)/MXWID
 cc      WRITE(*,*)'LBL_FKNEW.f :: NPOINT = ',NPOINT
 
       IF(FPOINT.GE.FLOAT(MPOINT))THEN
@@ -327,7 +328,8 @@ c     pretabulate some line calculation parameters
       enddo
 
       do i=1,npoint
-        V = VSTART + FLOAT(I - 1)*DELV
+c        V = VSTART + FLOAT(I - 1)*DELV
+        V = VSTART + DBLE(I-1)*DELV
         CURBIN = INT((V - VBIN(1))/WING) + 1
         IBIN1 = CURBIN - 1
         IBIN2 = CURBIN + 1
@@ -363,7 +365,8 @@ c###################################################
 
 C Infinite resolution
       DO 103 I=1,NPOINT
-        VV = DBLE(VSTART) + DBLE(I - 1)*DBLE(DELV)
+c        VV = DBLE(VSTART) + DBLE(I - 1)*DBLE(DELV)
+        VV = VSTART + DBLE(I-1)*DELV
 c LNF removed single precision:        V = SNGL(VV)
 	V = VV
         ASSIGN 2001 TO LABEL
@@ -430,6 +433,11 @@ cc        WRITE(*,*)' '
 cc        WRITE(*,*)'Resetting TAUTMP to zero.'
         TAUTMP = 0.0
       ENDIF
+      IF(ISNAN(TAUTMP))THEN
+            WRITE(*,*)'Error in lbl_fknew_dp - TAUTMP is NaN'
+            WRITE(*,*)'I,V,CURBIN = ',I,V,CURBIN
+            TAUTMP=0.0
+      ENDIF
 
 
 C=======================================================================
@@ -460,7 +468,8 @@ C=======================================================================
 
 C Compute absorption coefficient for normal incidence
         DO 52 LINE=FSTLIN(JBIN),LSTLIN(JBIN)
-          DV=SNGL(vlin(line)-VV)
+c          DV=SNGL(vlin(line)-VV)
+          DV = VLIN(LINE) - VV
           IF(ABS(DV).LE.MAXDV)THEN
            X  = ABS(DV)/ad_arr(line)
            FNH3=-1.0
@@ -479,6 +488,11 @@ C Compute absorption coefficient for normal incidence
 c 	   WRITE(*,*)' Stopping program.'
 c 	   STOP
            TAUTMP=0.0
+        ENDIF
+        IF(ISNAN(TAUTMP))THEN
+            WRITE(*,*)'Error in lbl_fknew_dp - TAUTMP is NaN'
+            WRITE(*,*)'I,V,CURBIN = ',I,V,CURBIN
+            TAUTMP=0.0
         ENDIF
 507   CONTINUE
 

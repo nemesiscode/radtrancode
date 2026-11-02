@@ -42,16 +42,25 @@ C***************************** VARIABLES *******************************
 
       INCLUDE '../includes/arrdef.f'
 
-C Input parameters ...
+C Input parameters ...      
       INTEGER NPOINT,NG,NGMAX,IWAVE,ICH,NFIL,ITYPE
-      DOUBLE PRECISION VMIN,VMAX,DELV,V1,V2
-      REAL VV,G_ORD(NGMAX)
+      
+      REAL G_ORD(NGMAX)
       REAL VFIL(NFIL),TFIL(NFIL),WFIL     
       CHARACTER*1 ANS
 
       REAL K_G(NGMAX)
       DOUBLE PRECISION OUTPUT(MPOINT),OUTPUT1(MPOINT)
-      DOUBLE PRECISION X(MPOINT),VMIN1,VMAX1,DELV1,Y1,X1(MPOINT)
+      DOUBLE PRECISION X(MPOINT),DELV1,Y1,X1(MPOINT)
+
+      DOUBLE PRECISION VMIN,VMAX,DELV
+      DOUBLE PRECISION V1,V2
+      DOUBLE PRECISION VSTART,VEND
+      REAL VV
+      DOUBLE PRECISION VMIN1,VMAX1
+      DOUBLE PRECISION VCEN(MPOINT)
+
+
 
 
       COMMON /SPECTRUM/ OUTPUT
@@ -72,6 +81,15 @@ C General parameters ...
       PARAMETER (XMINK=-35.0)
       integer idiag,iquiet
       common/diagnostic/idiag,iquiet
+
+      idiag = 0
+
+      IF(idiag.GT.0) WRITE(*,*)'--- ENTER CALC_FKDIST_WAVEC_DP ---'
+      IF(idiag.GT.0) WRITE(*,*)'NPOINT = ',NPOINT
+      IF(idiag.GT.0) WRITE(*,*)'VMIN, DELV = ',VMIN,DELV
+      IF(idiag.GT.0) WRITE(*,*)'OUTPUT(1) = ',OUTPUT(1)
+      IF(idiag.GT.0) WRITE(*,*)'OUTPUT(NPOINT) = ',OUTPUT(NPOINT)
+
 
 C******************************** CODE *********************************
 
@@ -165,6 +183,8 @@ C=======================================================================
       KMAX = CEILING(YMAX)
       if(idiag.gt.0)print*,'FKDIST_WAVEC_DP (KMIN, KMAX):',KMIN,KMAX
       if(idiag.gt.0)print*,'FKDIST_WAVEC_DP (YMIN, YMAX):',YMIN,YMAX
+
+      IF(idiag.GT.0) WRITE(*,*)'KMIN,KMAX = ',KMIN,KMAX
       IF(YMIN.EQ.YMAX)THEN
         DO I=1,NG
           IF(KMIN.EQ.XMINK)THEN
@@ -192,9 +212,26 @@ C=======================================================================
         WFIL=1.0
         IF(NFIL.GT.0)THEN
          IF(VV.GE.VFIL(1).AND.VV.LE.VFIL(NFIL))THEN
+          IF(idiag.GT.0) WRITE(*,*)'Before INTERP: I,VV = ',I,VV
+          IF(idiag.GT.0) WRITE(*,*)'VFIL range = ',VFIL(1),VFIL(NFIL)
+          IF(idiag.GT.0) WRITE(*,*)'TFIL range = ',
+     1               MINVAL(TFIL(1:NFIL)),MAXVAL(TFIL(1:NFIL))
+          
           CALL INTERP(VFIL,TFIL,NFIL,WFIL,VV)
+
+          IF(idiag.GT.0) WRITE(*,*)'After INTERP: WFIL = ',WFIL
+
+          IF(ISNAN(WFIL))THEN
+           IF(idiag.GT.0) WRITE(*,*)'NaN WFIL at I = ',I
+           IF(idiag.GT.0) WRITE(*,*)'VV = ',VV
+           IF(idiag.GT.0) WRITE(*,*)'VFIL(1),VFIL(NFIL) = ',
+     1                VFIL(1),VFIL(NFIL)
+           IF(idiag.GT.0) WRITE(*,*)'NFIL = ',NFIL
+           STOP
+          ENDIF
+
          ELSE
-           WFIL=0.0
+          WFIL=0.0
          ENDIF
         ENDIF
 C        print*,VV,NFIL,WFIL
@@ -205,11 +242,20 @@ C        print*,VV,NFIL,WFIL
         IF(XFR.GE.0.5.AND.K.LT.NKINT)K = K + 1
         F(K) = F(K) + WFIL
 306   CONTINUE
+      DO K=1,NKINT
+       IF(ISNAN(F(K)))THEN
+        WRITE(*,*)'NaN in F at K = ',K
+        WRITE(*,*)'F(K) = ',F(K)
+        STOP
+       ENDIF
+      ENDDO
       SUM = 0.0
       DO 307 K=1,NKINT
         SUM = SUM + F(K)
         G(K) =  SUM
 307   CONTINUE
+      IF(idiag.GT.0) WRITE(*,*)'FILTER SUM = ',SUM
+
 
       DO 311 K=1,NKINT
        G(K)=G(K)/SUM
@@ -291,7 +337,6 @@ C      print*,SUM
       DO I=1,NG
        DEL_G(I)=DEL_G(I)/SUM
       ENDDO
-
       IG=1
       GG=DEL_G(IG)
       SUM=0.
